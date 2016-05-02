@@ -1,0 +1,620 @@
+/* Copyright 2011-2016 Tyler Gilbert; 
+ * This file is part of Stratify OS.
+ *
+ * Stratify OS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Stratify OS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * 
+ */
+
+/*! \mainpage
+ *
+ * <small>\ref VERSION</small>
+ *
+ * \section INTRO Introduction
+ *
+ * <b>Stratify OS</b> is an RTOS designed to drastically reduce development time.  It does this using these principles:
+ * - Pre-installed Kernel
+ * - Deep hardware integration
+ * - Applications are built and installed separate from the kernel
+ *
+ * We ship hardware <b>pre-installed with Stratify OS</b> (much like many single board computers are pre-installed with Linux).  This means
+ * you don't need to do any RTOS code integration.  Just start building your application.
+ *
+ * Having <b>deep hardware integration</b> means <b>Stratify OS</b> runs on fewer processors but provides drivers for almost
+ * all the included hardware.  So no more writing or integrating UART/SPI/I2C drivers.  That is already-ready.
+ *
+ * Your first step after getting your Stratify enabled board is to <b>write your application</b>.  The application is built
+ * and installed independent of the kernel.  Your application is binary compatible with all Stratify boards using the same
+ * processor core.  This means you can build a web server and run it on any board with ethernet or wifi.
+ *
+ * \section START Start Coding
+ *
+ * This section is the kernel documentation.  You only need to read this is you want to tinker with the kernel.  The API used
+ * for application is <a href="../../StratifyLib/html/"><b>Stratify OS</b> Applib API documentation</a>. If you want finer control,
+ * you can use the built-in \ref POSIX and \ref STDC functions.
+ *
+ */
+
+/*! \file */
+
+/*! \addtogroup STFY Stratify OS
+ * @{
+ *
+ * \details <b>Stratify OS</b> includes two main APIs for users: the \ref STDC and the \ref POSIX API.
+ *
+ */
+
+/*! \addtogroup LINK_LAYER Link Transport Layer (for remote access to system)
+ * @{
+ *
+ */
+
+/*! @} */
+
+/*! \addtogroup IFACE_DEV Device Interface
+ * @{
+ *
+ */
+
+/*! @} */
+
+/*!
+ *
+ * \addtogroup STDC C Standard Library
+ * @{
+ * \details <b>Stratify OS</b> comes pre-installed with the majority of the C Standard library including:
+ * - <assert.h>
+ * - <ctype.h>
+ * - <errno.h>
+ * - <float.h>
+ * - <inttypes.h>
+ * - <iso646.h>
+ * - <limits.h>
+ * - <locale.h>
+ * - <math.h>
+ * - <setjmp.h>
+ * - <signal.h>
+ * - <stdarg.h>
+ * - <stdbool.h>
+ * - <stddef.h>
+ * - <stdint.h>
+ * - <stdio.h>
+ * - <stdlib.h>
+ * - <string.h>
+ * - <tgmath.h>
+ * - <time.h>
+ * - <wchar.h>
+ * - <wctype.h>
+ *
+ * The following C standard library components are not available:
+ * - <complex.h>
+ * - <fenv.h>
+ *
+ * If you need to familiarize yourself with the details of the C Standard Library, try
+ * the <a href="http://en.wikipedia.org/wiki/C_standard_library">Wikipedia page</a>.
+ *
+ *
+ */
+
+/*! @} */
+
+/*! \addtogroup POSIX POSIX
+ * @{
+ *
+ * \details The POSIX API contains functions that allow users to create new threads, access files as well as hardware, and
+ * perform interprocess communication.
+ */
+
+/*! \addtogroup TIME Time
+ * @{
+ *
+ * \details Unix style time functions are available in <b>Stratify OS</b> as documented herein.  The C standard library
+ * time functions are also available (see \ref STDC).
+ *
+ */
+
+/*! @} */
+
+/*! \addtogroup UNISTD Unix Standard (unistd)
+ * @{
+ *
+ */
+
+/*! \addtogroup UNI_FS Filesystem
+ * @{
+ */
+
+/*! \addtogroup UNI_PERMS Permissions
+ * @{
+ */
+
+/*! @} */
+
+/*! \addtogroup UNI_FILE_ACCESS Access
+ * @{
+ */
+
+/*! @} */
+
+/*! \addtogroup UNI_FILDES Descriptor Handling
+ * @{
+ */
+
+/*! @} */
+
+/*! @} */
+
+/*! \addtogroup UNI_PROCESS Processes
+ * @{
+ */
+
+/*! @} */
+
+/*! \addtogroup UNI_SLEEP Sleep Funcions
+ * @{
+ */
+
+/*! @} */
+
+
+
+/*! @} */
+
+/*! \addtogroup PTHREAD Posix Threads (pthread)
+ * @{
+ */
+
+/*! @} */
+
+/*! \addtogroup SIGNAL Signal Handling
+ * @{
+ */
+
+/*! @} */
+
+/*! \addtogroup GRP Groups
+ * @{
+ */
+
+/*! @} */
+
+/*! \addtogroup PWD Password
+ * @{
+ */
+
+/*! @} */
+
+/*! \addtogroup SEMAPHORE Semaphore
+ * @{
+ */
+
+/*! @} */
+
+/*! \addtogroup MQUEUE Message Queue (mqueue)
+ * @{
+ */
+
+/*! @} */
+
+/*! \addtogroup DIRENT Directory Entry (dirent)
+ * @{
+ */
+
+/*! @} */
+
+/*! \addtogroup ERRNO Error Numbers
+ * @{
+ *
+ * \details
+ *
+ * Many functions write the \a errno value to indicate which error has occured.  The list below associates
+ * \a errno values to their descriptions.  Alternatively, \a perror() can be used to show the description
+ * of the error on the stderr descriptor (normally the same descriptor as the stdout).  For example:
+ * \code
+ * int fd;
+ * fd = open("/noexist", O_RDONLY);
+ * if ( fd < 0 ){
+ * 	perror("Could not open /noexist");
+ * }
+ * \endcode
+ *
+ * The above code outputs "Could not open /noexist: No such file or directory\n" on the stderr while \a errno is
+ * assigned a value of 2.
+ *
+ * - EPERM 1:  Not super-user (Not owner)
+ * - ENOENT 2:  No such file or directory
+ * - ESRCH 3:  No such process
+ * - EINTR 4:  Interrupted system call
+ * - EIO 5:  I/O error
+ * - ENXIO 6:  No such device or address
+ * - E2BIG 7:  Arg list too long
+ * - ENOEXEC 8:  Exec format error
+ * - EBADF 9:  Bad file number
+ * - ECHILD 10:  No children
+ * - EAGAIN 11:  Resource temporarily unavailable
+ * - ENOMEM 12:  Not enough core
+ * - EACCES 13:  Permission denied
+ * - EFAULT 14:  Bad address
+ * - ENOTBLK 15:  Block device required
+ * - EBUSY 16:  Mount device busy
+ * - EEXIST 17:  File exists
+ * - EXDEV 18:  Cross-device link
+ * - ENODEV 19:  No such device
+ * - ENOTDIR 20:  Not a directory
+ * - EISDIR 21:  Is a directory
+ * - EINVAL 22:  Invalid argument
+ * - ENFILE 23:  Too many open files in system
+ * - EMFILE 24:  Too many open files
+ * - ENOTTY 25:  Not a character device
+ * - ETXTBSY 26:  Text file busy
+ * - EFBIG 27:  File too large
+ * - ENOSPC 28:  No space left on device
+ * - ESPIPE 29:  Illegal seek
+ * - EROFS 30:  Read only file system
+ * - EMLINK 31:  Too many links
+ * - EPIPE 32:  Broken pipe
+ * - EDOM 33:  Math arg out of domain of func
+ * - ERANGE 34:  Math result not representable
+ * - ENOMSG 35:  No message of desired type
+ * - EIDRM 36:  Identifier removed
+ * - ECHRNG 37:  Channel number out of range
+ * - EL2NSYNC 38:  Level 2 not synchronized
+ * - EL3HLT 39:  Level 3 halted
+ * - EL3RST 40:  Level 3 reset
+ * - ELNRNG 41:  Link number out of range
+ * - EUNATCH 42:  Protocol driver not attached
+ * - ENOCSI 43:  No CSI structure available
+ * - EL2HLT 44:  Level 2 halted
+ * - EDEADLK 45:  Deadlock condition
+ * - ENOLCK 46:  No record locks available
+ * - EBADE 50:  Invalid exchange
+ * - EBADR 51:  Invalid request descriptor
+ * - EXFULL 52:  Exchange full
+ * - ENOANO 53:  No anode
+ * - EBADRQC 54:  Invalid request code
+ * - EBADSLT 55:  Invalid slot
+ * - EDEADLOCK 56:  File locking deadlock error
+ * - EBFONT 57:  Bad font file fmt
+ * - ENOSTR 60:  Device not a stream
+ * - ENODATA 61:  No data (for no delay io)
+ * - ETIME 62:  Timer expired
+ * - ENOSR 63:  Out of streams resources
+ * - ENONET 64:  Machine is not on the network
+ * - ENOPKG 65:  Package not installed
+ * - EREMOTE 66:  The object is remote
+ * - ENOLINK 67:  The link has been severed
+ * - EADV 68:  Advertise error
+ * - ESRMNT 69:  Srmount error
+ * - ECOMM 70:  Communication error on send
+ * - EPROTO 71:  Protocol error
+ * - EMULTIHOP 74:  Multihop attempted
+ * - ELBIN 75:  Inode is remote (not really error)
+ * - EDOTDOT 76:  Cross mount point (not really error)
+ * - EBADMSG 77:  Trying to read unreadable message
+ * - EFTYPE 79:  Inappropriate file type or format
+ * - ENOTUNIQ 80:  Given log. name not unique
+ * - EBADFD 81:  f.d. invalid for this operation
+ * - EREMCHG 82:  Remote address changed
+ * - ELIBACC 83:  Can't access a needed shared lib
+ * - ELIBBAD 84:  Accessing a corrupted shared lib
+ * - ELIBSCN 85:  .lib section in a.out corrupted
+ * - ELIBMAX 86:  Attempting to link in too many libs
+ * - ELIBEXEC 87:  Attempting to exec a shared library
+ * - ENOSYS 88:  Function not implemented
+ * - ENMFILE 89      :  No more files
+ * - ENOTEMPTY 90:  Directory not empty
+ * - ENAMETOOLONG 91:  File or path name too long
+ * - ELOOP 92:  Too many symbolic links
+ * - EOPNOTSUPP 95:  Operation not supported on transport endpoint
+ * - EPFNOSUPPORT 96 :  Protocol family not supported
+ * - ECONNRESET 104  :  Connection reset by peer
+ * - ENOBUFS 105:  No buffer space available
+ * - EAFNOSUPPORT 106 :  Address family not supported by protocol family
+ * - EPROTOTYPE 107:  Protocol wrong type for socket
+ * - ENOTSOCK 108:  Socket operation on non-socket
+ * - ENOPROTOOPT 109:  Protocol not available
+ * - ESHUTDOWN 110:  Can't send after socket shutdown
+ * - ECONNREFUSED 111:  Connection refused
+ * - EADDRINUSE 112:  Address already in use
+ * - ECONNABORTED 113:  Connection aborted
+ * - ENETUNREACH 114:  Network is unreachable
+ * - ENETDOWN 115:  Network interface is not configured
+ * - ETIMEDOUT 116:  Connection timed out
+ * - EHOSTDOWN 117:  Host is down
+ * - EHOSTUNREACH 118:  Host is unreachable
+ * - EINPROGRESS 119:  Connection already in progress
+ * - EALREADY 120:  Socket already connected
+ * - EDESTADDRREQ 121:  Destination address required
+ * - EMSGSIZE 122:  Message too long
+ * - EPROTONOSUPPORT 123:  Unknown protocol
+ * - ESOCKTNOSUPPORT 124:  Socket type not supported
+ * - EADDRNOTAVAIL 125:  Address not available
+ * - ENETRESET 126
+ * - EISCONN 127:  Socket is already connected
+ * - ENOTCONN 128:  Socket is not connected
+ * - ETOOMANYREFS 129
+ * - EPROCLIM 130
+ * - EUSERS 131
+ * - EDQUOT 132
+ * - ESTALE 133
+ * - ENOTSUP 134:  Not supported
+ * - ENOMEDIUM 135   :  No medium (in tape drive)
+ * - ENOSHARE 136    :  No such host or network path
+ * - ECASECLASH 137  :  Filename exists with different case
+ * - EILSEQ 138
+ * - EOVERFLOW 139:  Value too large for defined data type
+ * - ECANCELED 140:  Operation canceled
+ * - ENOTRECOVERABLE 141:  State not recoverable
+ * - EOWNERDEAD 142:  Previous owner died
+ * - ESTRPIPE 143:  Streams pipe error
+ * - EWOULDBLOCK EAGAIN:  Operation would block
+ */
+
+/*! @} */
+
+/*! @} */
+
+#ifndef STRATIFY_H_
+#define STRATIFY_H_
+
+//Standard libraries
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <time.h>
+#include <pthread.h>
+#include <sys/lock.h>
+#include "mcu/mcu.h"
+#include "mcu/types.h"
+#include "mcu/task.h"
+
+#include "trace.h"
+#include "iface/device_config.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/*! \details This function puts the controller
+ * in hibernate mode.  All CPU and peripheral activity is stopped.
+ * The RTC continues running and will wake up the controller
+ * after \a seconds has elapsed.  When the controller wakes up, it resumes
+ * execution in the same state as before \a hibernate() was called.
+ *
+ * Hibernate corresponds to \a CORE_SLEEP_DEEPSLEEP.  It can be woken up
+ * before \a seconds elapsed if other interrupts are enabled such
+ * as pin change interrupts. See the device specific documentation
+ * for wakeup events for \a CORE_SLEEP_DEEPSLEEP.
+ *
+ * @param seconds Number of seconds to hibernate (zero to hibernate indefinitely)
+ *
+ */
+int hibernate(int seconds);
+
+ /*! \details This function turns the controller off. The RTC
+  * stays on and wakes up the controller after \a seconds has elapsed. When
+  * the controller wakes up from power down, it resets.
+  *
+  * @param seconds Number of seconds to powerdown (zero to powedown indefinitely)
+  *
+  *
+  */
+void powerdown(int seconds);
+
+
+/*! \details This function is weakly bound to code
+ * that initializes each filesystem and starts any processes
+ * that are designed to auto-run.  It can be completely replaced so
+ * that users can customize the startup sequence.
+ */
+void * initial_thread(void * arg) MCU_WEAK;
+
+/*! \details Format the filesystem that is mounted at \a path.
+ * \return Zero on success
+ *
+ */
+int mkfs(const char * path);
+
+
+/*! \details Mount the filesystem specified at \a path
+ * @param path The path to the filesystem (specified at build time)
+ * @return Zero on success
+ */
+int mount(const char * path);
+
+/*! \details Unmount the filesystem specified at \a path
+ * @param path The path to the filesystem (specified at build time)
+ * @return Zero on success
+ */
+int unmount(const char * path);
+
+
+/*! \details Launch an application from a data file system.
+ *
+ * The options are:
+ * - LINK_APPFS_EXEC_OPTIONS_REPLACE
+ * - LINK_APPFS_EXEC_OPTIONS_FLASH
+ * - LINK_APPFS_EXEC_OPTIONS_STARTUP (only with LINK_APPFS_EXEC_OPTIONS_FLASH)
+ * - LINK_APPFS_EXEC_OPTIONS_REPLACE
+ * - LINK_APPFS_EXEC_OPTIONS_ORPHAN
+ *
+ * Here is an example of launching a new application:
+ * \code
+ * #include <caos.h>
+ *
+ * pid_t p;
+ * int status;
+ * char exec_path[PATH_MAX];
+ *
+ * p = launch("/home/HelloWorld", exec_path, 0, LINK_APPFS_EXEC_OPTIONS_FLASH, 0, 0, 0);
+ *
+ * wait(&status); //wait until hello world is done running
+ * unlink(exec_path); //delete the installed image (or just leave it there to run again)
+ *
+ * \endcode
+ *
+ *
+ * @param path Path to launch binary
+ * @param exec_dest The path to store the path where the binary is installed (e.g. /app/flash/0-HelloWorld)
+ * @param args Pointer to the arguments for launch
+ * @param options Install options mask (flash, startup, etc)
+ * @param ram_size The amount of RAM that will be allocated to stack/heap (excludes code even if running from RAM), set to zero for default RAM size
+ * @param update_progress Callback to show progress of install/launch
+ * @param envp Null for this version
+ * @return Zero on success
+ */
+int launch(const char * path,
+		char * exec_path,
+		const char * args,
+		int options,
+		int ram_size,
+		int (*update_progress)(int, int),
+		char *const envp[]
+);
+
+
+/*! \brief Install an application
+ * \details This function installs an application in flash or RAM
+ * @param path The source path
+ * @param exec_path A destination buffer for the path to execute once installed
+ * @param options Install options
+ * @param ram_size The number of bytes to use for heap/stack
+ * @param update_progress Callback to show progress of the install
+ * @return Zero on success
+ */
+int install(const char * path,
+		char * name,
+		int options,
+		int ram_size,
+		int (*update_progress)(int, int));
+
+void htoa(char * dest, int num);
+char htoc(int nibble);
+
+
+/*! \brief To be implemented by user. Default returns zero.
+ *
+ * @param request Request to execute
+ * @param data Single argument to the request
+ * @return Returns result of request operation
+ */
+int kernel_request(int request, void * data) MCU_WEAK;
+
+/*! \details This structure is for executing a function as a result of an interrupt
+ * in non-privileged mode.
+ */
+typedef struct {
+	int tid;
+	int si_signo;
+	int si_sigcode;
+	int sig_value;
+	int keep;
+} signal_callback_t;
+
+typedef struct {
+	//bool logged;
+	uint32_t tid;
+	uint32_t pid;
+	fault_t fault;
+	//time_t time;
+	//unsigned int useconds;
+} sched_fault_t;
+
+/*! \details This function can be set as the callback for mcu_action_t.
+ * In this case, the context is pointing to a signal_callback_t.  When
+ * the event happens, it will send a signal to the specified task.
+ *
+ * If keep is non-zero, the signal will be sent each time the interrupt happens.
+ * Otherwise, the signal is just sent one time.
+ *
+ * In the example below, the thread below will receive a SIGUSR1 the next time
+ * the external interrupt goes low.  The run_on_sigusr1() will execute when the
+ * signal is received.
+ *
+ * \code
+ * #include <pthread.h>
+ * #include <signal.h>
+ * #include <stfy/Hal.hpp>
+ *
+ * void run_on_sigusr1(int a){
+ * 	printf("got sigusr1\n");
+ * }
+ *
+ * Eint intr(0);
+ * intr.init();
+ *
+ * signal(SIGUSR1, (_sig_func_ptr)run_on_sigusr1);
+ *
+ * signal_callback_t sig; //this must be valid when the interrupt happens
+ * sig.tid = pthread_self();
+ * sig.signo = SIGUSR1;
+ * sig.keep = 0;
+ * intr.setaction(0, EINT_ACTION_EVENT_FALLING, signal_callback, &sig);
+ * \endcode
+ *
+ */
+int signal_callback(void * context, mcu_event_t data);
+
+
+#define STFY_SCHED_TIMEVAL_SECONDS 2048
+#define STFY_USECOND_PERIOD (1000000UL * STFY_SCHED_TIMEVAL_SECONDS)
+
+struct sched_timeval {
+	u32 tv_sec; //SCHED_TIMEVAL_SECONDS seconds each
+	u32 tv_usec; //up to 1000000 * SCHED_TIMEVAL_SECONDS
+};
+
+typedef struct {
+	pthread_attr_t attr /*! This holds the task's pthread attributes */;
+	volatile void * block_object /*! The blocking object */;
+	union {
+		volatile int exit_status /*! The task's exit status */;
+		void * (*init)(void*) /*! Task 0 init routine */;
+	};
+	pthread_mutex_t * signal_delay_mutex /*! The mutex to lock if the task cannot be interrupted */;
+	volatile struct sched_timeval wake /*! When to wake the task */;
+	volatile u16 flags /*! This indicates whether the process is active or not */;
+	volatile u16 priority /*! The current priority */;
+	trace_id_t trace_id /*! Trace ID is PID is being traced (0 otherwise) */;
+} sched_task_t;
+
+typedef struct MCU_PACK {
+	u8 clk_usecond_tmr;
+	u8 task_total;
+	u16 resd;
+	u32 clk_usec_mult;
+	u32 clk_nsec_div;
+	const char * stdin_dev;
+	const char * stdout_dev;
+	const char * stderr_dev;
+	const char * sys_name;
+	const char * sys_version;
+	int sys_memory_size;
+	int sys_flags;
+	void * link_transport;
+} stfy_board_config_t;
+
+
+//must be provided by board support package
+extern volatile sched_task_t stfy_sched_table[];
+extern task_t stfy_task_table[];
+extern const stfy_board_config_t stfy_board_config;
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /*  STRATIFY_H_ */
+
+/*! @} */

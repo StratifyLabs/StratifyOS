@@ -1,0 +1,120 @@
+/* Copyright 2011-2016 Tyler Gilbert; 
+ * This file is part of Stratify OS.
+ *
+ * Stratify OS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Stratify OS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * 
+ */
+
+/*! \addtogroup WDT Watch Dog Timer (WDT)
+ * @{
+ *
+ * \ingroup CORE
+ *
+ * \details The Watch Dog Timer (WDT) is used to reset the device if the timer expires.  It is
+ * designed as a fail safe to prevent software from freezing the processor.  It should be
+ * integrated at the OS level to ensure no application processes or threads disable
+ * context switching.
+ *
+ * The following code example initializes the WDT using the internal RC oscillator.
+ * \code
+ * wdt_init(WDT_MODE_RESET|WDT_MODE_CLK_SRC_INTERNAL_RC, 3000);
+ * \endcode
+ *
+ * If three seconds (3000ms) passes without a call to wdt_reset(), the MCU will reset.
+ *
+ */
+
+/*! \file
+ * \brief Watch Dog Timer Header File
+ *
+ */
+
+#ifndef WDT_H_
+#define WDT_H_
+
+#include "arch.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/*! \details This enum lists the valid values of
+ * the WDT clock sources.  Not all sources
+ * are supported on all devices.  Consult the device
+ * documentation to see which sources are supported.
+ *
+ * The WDT can be an OR'd value of one clock source and one of
+ * WDT_MODE_RESET or WDT_MODE_INTERRUPT.  For example:
+ * \code
+ * wdt_init(WDT_MODE_RESET|WDT_MODE_CLK_SRC_INTERNAL_RC, 3000);
+ * \endcode
+ *
+ */
+typedef enum {
+	WDT_MODE_RESET /*! Reset the device when the WDT times out */ = (1<<0),
+	WDT_MODE_INTERRUPT /*! Interrupt the processor on a WDT time out */ = (1<<1),
+	WDT_MODE_CLK_SRC_INTERNAL_RC /*! WDT clock source is an internal RC oscillator */ = (0<<2),
+	WDT_MODE_CLK_SRC_MAIN /*! WDT clock source is the same as the core CPU */ = (1<<2),
+	WDT_MODE_CLK_SRC_RTC /*! WDT is clocked the same as the RTC (usually 32KHz) */ = (2<<2),
+	WDT_MODE_CLK_SRC_WDT_OSC /*! The WDT is clock using the dedicated WDT oscillator */ = (3<<2)
+} wdt_mode_t;
+
+#define WDT_MODE_CLK_SRC_MASK (0x07 << 2 )
+
+/*! \details This function opens the watch dog timer.  The timer
+ * will run and either reset or interrupt the device at
+ * the specified interval.
+ *
+ * Once the WDT is intialized, it cannot be disabled and must
+ * be reset (wdt_reset()) on a regular basis to prevent a device
+ * reset or interrupt.
+ *
+ * \return An HWPL Error code (Zero on success)
+ */
+int mcu_wdt_init( int mode /*! The WDT mode to use (see \ref wdt_mode_t) */,
+		int interval /*! The timeout value in ms */) MCU_PRIV_CODE;
+
+
+/*! \details This callback will be executed on a WDT interrupt.
+ *
+ * @param callback Function to be executed when
+ */
+void mcu_wdt_set_callback(mcu_callback_t callback);
+
+/*! \details This function resets the watchdog timer
+ * so that it won't trigger until the interval has expired.
+ * This should be called more frequently than 1/interval to prevent
+ * the WDT from triggering a reset or interrupt.
+ */
+void mcu_wdt_reset(void);
+
+void mcu_wdt_priv_reset(void * args) MCU_PRIV_CODE;
+
+int mcu_wdt_setaction(int (*action)(const void *, void *)) MCU_PRIV_CODE;
+
+
+/*! \details This function sets the WDT timeout interval in ms.
+ * \return Zero on success.
+ */
+int mcu_wdt_setinterval(int interval) MCU_PRIV_CODE;
+
+#ifdef __cplusplus
+}
+#endif
+
+
+#endif /* WDT_H_ */
+
+/*! @} */
