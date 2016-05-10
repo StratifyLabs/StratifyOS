@@ -23,13 +23,25 @@
 
 #include "iface/dev/ioctl.h"
 
+/*! \details Unsigned 8-bit value */
 typedef uint8_t u8;
+/*! \details Signed 8-bit value */
+typedef int8_t s8;
 typedef int8_t i8;
+/*! \details Unsigned 16-bit value */
 typedef uint16_t u16;
+/*! \details Signed 16-bit value */
+typedef int16_t s16;
 typedef int16_t i16;
+/*! \details Unsigned 32-bit value */
 typedef uint32_t u32;
+/*! \details Signed 32-bit value */
+typedef int32_t s32;
 typedef int32_t i32;
+/*! \details Unsigned 64-bit value */
 typedef uint64_t u64;
+/*! \details Signed 64-bit value */
+typedef int64_t s64;
 typedef int64_t i64;
 
 

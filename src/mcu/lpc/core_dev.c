@@ -282,6 +282,7 @@ int _mcu_core_enable_clkout(int clk_source, int div){
 
 int mcu_core_setirqprio(int port, void * arg){
 	IRQn_Type irq;
+	s8 prio;
 	core_irqprio_t * p = arg;
 	irq = (IRQn_Type)_mcu_irq_map[p->periph];
 	if( irq == 0xFF ){
@@ -320,6 +321,17 @@ int mcu_core_setirqprio(int port, void * arg){
 		return -1;
 	}
 #endif
-	NVIC_SetPriority( irq, p->prio );
+
+	prio = DEV_MIDDLE_PRIORITY + p->prio;
+
+	if( prio < 1 ){
+		prio = 1;
+	}
+
+	if( prio > (DEV_MIDDLE_PRIORITY*2-1)){
+		prio = DEV_MIDDLE_PRIORITY*2-1;
+	}
+
+	NVIC_SetPriority( irq, prio );
 	return 0;
 }

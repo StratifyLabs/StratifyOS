@@ -78,8 +78,8 @@ typedef enum {
  * the clock out attributes (see \ref I_CORE_SETCLKOUT).
  */
 typedef struct MCU_PACK {
-	uint32_t src /*! \brief The clock output source (see \ref core_clkout_src_t) */;
-	uint32_t div /*! \brief The clock divide value applied to src */;
+	u32 src /*! \brief The clock output source (see \ref core_clkout_src_t) */;
+	u32 div /*! \brief The clock divide value applied to src */;
 } core_clkout_t;
 
 
@@ -153,10 +153,10 @@ typedef enum {
  * for configuring the Core port.
  */
 typedef struct MCU_PACK {
-	uint32_t serial_number[4] /*! \brief The serial number of the device (from the silicon) */;
-	uint32_t clock /*! \brief The current clock speed */;
-	uint32_t signature /*! \brief The software signature */;
-	uint8_t reset_type /*! \brief The source of the last reset */;
+	u32 serial_number[4] /*! \brief The serial number of the device (from the silicon) */;
+	u32 clock /*! \brief The current clock speed */;
+	u32 signature /*! \brief The software signature */;
+	u8 reset_type /*! \brief The source of the last reset */;
 } core_attr_t;
 
 /*!  \brief This requests reads the core attributes.
@@ -174,8 +174,8 @@ typedef struct MCU_PACK {
  * set the functionality of pins.
  */
 typedef struct MCU_PACK {
-	uint8_t periph_port /*! \brief Peripheral port value (e.g. 0 for I2C0) */;
-	uint8_t periph_func /*! \brief Peripheral port function (see \ref core_periph_t) */;
+	u8 periph_port /*! \brief Peripheral port value (e.g. 0 for I2C0) */;
+	u8 periph_func /*! \brief Peripheral port function (see \ref core_periph_t) */;
 	pio_t io /*! \brief PIO port and pin (see \ref pio_t) */;
 } core_pinfunc_t;
 
@@ -185,9 +185,9 @@ typedef struct MCU_PACK {
  * request to set the interrupt priority for peripherals.
  */
 typedef struct MCU_PACK {
-	uint8_t periph /*! \brief The peripheral type  (see \ref core_periph_t) */;
-	uint8_t prio /*! \brief The priority (lower number is higher priority on ARM CM3 */;
-	uint8_t port /*! \brief The peripheral port number (e.g. 0 for I2C0) */;
+	u8 periph /*! \brief The peripheral type  (see \ref core_periph_t) */;
+	s8 prio /*! \brief Relative priority value -- less than zero to decrease priority */;
+	u8 port /*! \brief The peripheral port number (e.g. 0 for I2C0) */;
 } core_irqprio_t;
 
 /*! \brief See below for details.

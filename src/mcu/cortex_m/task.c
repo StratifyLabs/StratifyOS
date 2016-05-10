@@ -98,7 +98,7 @@ int task_init(int interval,
 	NVIC_SetPriority(SysTick_IRQn, DEV_MIDDLE_PRIORITY);
 	NVIC_SetPriority(PendSV_IRQn, DEV_MIDDLE_PRIORITY);
 	NVIC_SetPriority(SVCall_IRQn, DEV_MIDDLE_PRIORITY-1);  //elevate so serial hardware doesn't interrupt
-	NVIC_SetPriority(HardFault_IRQn, 1);
+	NVIC_SetPriority(HardFault_IRQn, 0);
 
 #if !defined __lpc82x
 	NVIC_SetPriority(DebugMonitor_IRQn, 0);

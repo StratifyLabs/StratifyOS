@@ -99,6 +99,7 @@ int _mcu_pio_set_event(int port, int event, int pin){
 				(pin == 12) ||
 				(pin == 13) ||
 				(pin == 14) ){
+			errno = EINVAL;
 			return -1;
 		}
 #endif
