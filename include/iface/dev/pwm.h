@@ -152,7 +152,9 @@ typedef struct MCU_PACK {
 /*! \brief Get the PWM attributes (\ref pwm_attr_t)
  * \hideinitializer
  */
-#define I_PWM_GETATTR _IOCTLR(PWM_IOC_IDENT_CHAR, I_GLOBAL_GETATTR, pwm_attr_t)
+#define I_PWM_ATTR _IOCTLR(PWM_IOC_IDENT_CHAR, I_GLOBAL_ATTR, pwm_attr_t)
+#define I_PWM_GETATTR I_PWM_ATTR
+
 /*! \brief Set the PWM attributes (\ref pwm_attr_t)
  * \hideinitializer
  */

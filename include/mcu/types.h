@@ -175,7 +175,8 @@ typedef enum {
  *
  * \hideinitializer
  */
-#define I_GLOBAL_GETATTR 0
+#define I_GLOBAL_ATTR 0
+#define I_GLOBAL_GETATTR I_GLOBAL_ATTR
 
 /*! \details This defines a global ioctl() request.  It
  * specifies to write the peripheral's attribute data structure.

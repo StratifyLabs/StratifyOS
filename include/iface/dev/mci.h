@@ -68,17 +68,18 @@ typedef struct MCU_PACK {
 /*! \brief IOCTL request to get the attributes.
  * \hideinitializer
  */
-#define I_MCI_GETATTR _IOCTLR(MCI_IOC_IDENT_CHAR, I_GLOBAL_GETATTR, pio_attr_t)
+#define I_MCI_ATTR _IOCTLR(MCI_IOC_IDENT_CHAR, I_GLOBAL_ATTR, mci_attr_t)
+#define I_MCI_GETATTR I_MCI_ATTR
 
 /*! \brief IOCTL request to set the attributes.
  * \hideinitializer
  */
-#define I_MCI_SETATTR _IOCTLW(MCI_IOC_IDENT_CHAR, I_GLOBAL_SETATTR, pio_attr_t)
+#define I_MCI_SETATTR _IOCTLW(MCI_IOC_IDENT_CHAR, I_GLOBAL_SETATTR, mci_attr_t)
 
 /*! \brief IOCTL request to set the action.
  * \hideinitializer
  */
-#define I_MCI_SETACTION _IOCTLW(MCI_IOC_IDENT_CHAR, I_GLOBAL_SETACTION, pio_action_t)
+#define I_MCI_SETACTION _IOCTLW(MCI_IOC_IDENT_CHAR, I_GLOBAL_SETACTION, mcu_action_t)
 
 
 #define I_MCI_TOTAL 0

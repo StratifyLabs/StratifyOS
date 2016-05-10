@@ -128,7 +128,8 @@ typedef struct MCU_PACK {
 
 /*! \brief IOCTL request to get attributes.
  */
-#define I_EINT_GETATTR _IOCTLR(EINT_IOC_IDENT_CHAR, I_GLOBAL_GETATTR, eint_attr_t)
+#define I_EINT_ATTR _IOCTLR(EINT_IOC_IDENT_CHAR, I_GLOBAL_ATTR, eint_attr_t)
+#define I_EINT_GETATTR I_EINT_ATTR
 
 /*! \brief IOCTL request to set the attributes (set pin assignment)
  */

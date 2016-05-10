@@ -101,7 +101,8 @@ typedef struct MCU_PACK {
  * \endcode
  * \hideinitializer
  */
-#define I_ETH_GETATTR _IOCTLR(ETH_IOC_IDENT_CHAR, I_GLOBAL_GETATTR, eth_attr_t)
+#define I_ETH_ATTR _IOCTLR(ETH_IOC_IDENT_CHAR, I_GLOBAL_ATTR, eth_attr_t)
+#define I_ETH_GETATTR I_ETH_ATTR
 
 /*! \brief See below for details.
  * \details This requests writes the ETH attributes.

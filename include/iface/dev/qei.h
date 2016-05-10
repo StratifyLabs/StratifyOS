@@ -101,7 +101,9 @@ typedef mcu_action_t qei_action_t;
 /*! \brief This request gets the QEI attributes.
  * \hideinitializer
  */
-#define I_QEI_GETATTR _IOCTLR(QEI_IOC_IDENT_CHAR, I_GLOBAL_GETATTR, qei_attr_t)
+#define I_QEI_ATTR _IOCTLR(QEI_IOC_IDENT_CHAR, I_GLOBAL_ATTR, qei_attr_t)
+#define I_QEI_GETATTR I_QEI_ATTR
+
 /*! \brief This request sets the QEI attributes.
  * \hideinitializer
  */

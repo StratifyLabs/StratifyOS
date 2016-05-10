@@ -132,7 +132,8 @@ typedef struct MCU_PACK {
  * \endcode
  * \hideinitializer
  */
-#define I_DAC_GETATTR _IOCTLR(DAC_IOC_IDENT_CHAR, I_GLOBAL_GETATTR, dac_attr_t)
+#define I_DAC_ATTR _IOCTLR(DAC_IOC_IDENT_CHAR, I_GLOBAL_ATTR, dac_attr_t)
+#define I_DAC_GETATTR I_DAC_ATTR
 
 /*! \brief See below for details.
  * \details This requests writes the DAC attributes.

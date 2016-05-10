@@ -215,7 +215,8 @@ typedef struct MCU_PACK {
  * \hideinitializer
  *
  */
-#define I_TMR_GETATTR _IOCTLR(TMR_IOC_IDENT_CHAR, I_GLOBAL_GETATTR, tmr_attr_t)
+#define I_TMR_ATTR _IOCTLR(TMR_IOC_IDENT_CHAR, I_GLOBAL_ATTR, tmr_attr_t)
+#define I_TMR_GETATTR I_TMR_ATTR
 /*! \brief This request sets the timer attributes.
  * \hideinitializer
  */

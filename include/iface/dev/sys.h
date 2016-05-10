@@ -238,15 +238,15 @@ typedef struct MCU_PACK {
  * #include <stdio.h>
  * ...
  * sys_attr_t attr;
- * ioctl(fildes, I_SYS_GETATTR, &attr);
+ * ioctl(fildes, I_SYS_ATTR, &attr);
  * printf("Version is %s\n", attr.version);
  * \endcode
  *
  * \hideinitializer
  *
  */
-#define I_SYS_GETATTR _IOCTLR(SYS_IOC_CHAR, 0, sys_attr_t)
-#define I_SYS_GETATTR_150 _IOCTLR(SYS_IOC_CHAR, 0, sys_attr_150_t)
+#define I_SYS_ATTR _IOCTLR(SYS_IOC_CHAR, 0, sys_attr_t)
+#define I_SYS_GETATTR I_SYS_ATTR
 
 /*! \brief See below for details.
  * \details This request gets the information about the specified task.

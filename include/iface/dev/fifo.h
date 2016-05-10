@@ -82,7 +82,7 @@
 
 /*! \brief FIFO Attributes
  * \details This structure defines the attributes of a FIFO.
- *  The attributes are read-only using \ref I_FIFO_GETATTR.
+ *  The attributes are read-only using \ref I_FIFO_ATTR.
  */
 typedef struct MCU_PACK {
 	uint32_t size /*! \brief The total number of bytes in the FIFO */;
@@ -103,11 +103,12 @@ typedef struct MCU_PACK {
  * Example:
  * \code
  * fifo_attr_t attr;
- * ioctl(fifo_fd, I_FIFO_GETATTR, &attr);
+ * ioctl(fifo_fd, I_FIFO_ATTR, &attr);
  * \endcode
  * \hideinitializer
  */
-#define I_FIFO_GETATTR _IOCTLR(FIFO_IOC_CHAR, 0, fifo_attr_t)
+#define I_FIFO_ATTR _IOCTLR(FIFO_IOC_CHAR, 0, fifo_attr_t)
+#define I_FIFO_GETATTR I_FIFO_ATTR
 
 
 /*! \brief This request flushes all data out of the fifo (third ioctl() arg is omitted).

@@ -161,7 +161,8 @@ typedef struct MCU_PACK {
 
 /*!  \brief This requests reads the core attributes.
  */
-#define I_CORE_GETATTR _IOCTLR(CORE_IOC_IDENT_CHAR, I_GLOBAL_GETATTR, core_attr_t)
+#define I_CORE_ATTR _IOCTLR(CORE_IOC_IDENT_CHAR, I_GLOBAL_ATTR, core_attr_t)
+#define I_CORE_GETATTR I_CORE_ATTR
 
 /*! \brief This requests writes the core attributes.
  */

@@ -53,7 +53,8 @@ extern "C" {
 /*! \brief This request gets the terminal attributes
  * \hideinitializer
  */
-#define I_TTY_GETATTR _IOCTLR(TTY_IOC_CHAR, 1, struct termios)
+#define I_TTY_ATTR _IOCTLR(TTY_IOC_CHAR, 1, struct termios)
+#define I_TTY_GETATTR I_TTY_ATTR
 
 
 

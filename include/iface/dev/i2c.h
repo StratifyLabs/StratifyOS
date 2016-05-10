@@ -151,8 +151,8 @@ typedef enum {
  *
  */
 typedef struct MCU_PACK {
-	i2c_transfer_t transfer /*! \brief The I2C transfer type */;
-	uint16_t slave_addr /*! \brief The slave address */;
+	u16 transfer /*! \brief The I2C transfer type (\sa i2c_transfer_t) */;
+	u16 slave_addr /*! \brief The slave address */;
 } i2c_setup_t;
 
 typedef i2c_setup_t i2c_reqattr_t; //legacy support
@@ -174,7 +174,8 @@ typedef mcu_action_t i2c_action_t;
 /*! \brief This request gets the I2C attributes.
  * \hideinitializer
  */
-#define I_I2C_GETATTR _IOCTLR(I2C_IOC_IDENT_CHAR, I_GLOBAL_GETATTR, i2c_attr_t)
+#define I_I2C_ATTR _IOCTLR(I2C_IOC_IDENT_CHAR, I_GLOBAL_ATTR, i2c_attr_t)
+#define I_I2C_GETATTR I_I2C_ATTR
 
 /*! \brief This request sets the I2C attributes.
  * \hideinitializer

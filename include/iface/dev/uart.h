@@ -157,7 +157,9 @@ typedef struct MCU_PACK {
  * \hideinitializer
  *
  */
-#define I_UART_GETATTR _IOCTLR(UART_IOC_IDENT_CHAR, I_GLOBAL_GETATTR, uart_attr_t)
+#define I_UART_ATTR _IOCTLR(UART_IOC_IDENT_CHAR, I_GLOBAL_ATTR, uart_attr_t)
+#define I_UART_GETATTR I_UART_ATTR
+
 /*! \brief This request sets the UART attributes.
  * \hideinitializer
  */

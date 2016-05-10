@@ -71,10 +71,11 @@ extern "C" {
 
 
 typedef struct {
-	uint8_t pin_assign /*! ignored */;
+	u8 pin_assign /*! ignored */;
 } flash_attr_t;
 
-#define I_FLASH_GETATTR _IOCTLR(FLASH_IOC_IDENT_CHAR, I_GLOBAL_GETATTR, flash_attr_t)
+#define I_FLASH_ATTR _IOCTLR(FLASH_IOC_IDENT_CHAR, I_GLOBAL_ATTR, flash_attr_t)
+#define I_FLASH_GETATTR I_FLASH_ATTR
 #define I_FLASH_SETATTR _IOCTLW(FLASH_IOC_IDENT_CHAR, I_GLOBAL_SETATTR, flash_attr_t)
 #define I_FLASH_SETACTION _IOCTLW(FLASH_IOC_IDENT_CHAR, I_GLOBAL_SETACTION, flash_attr_t)
 
@@ -137,9 +138,9 @@ typedef struct {
  * \details This data structure holds the details of a flash page.
  */
 typedef struct {
-	uint32_t page /*! \brief The page number */;
-	uint32_t addr /*! \brief The starting address */;
-	uint32_t size /*! \brief The page size */;
+	u32 page /*! \brief The page number */;
+	u32 addr /*! \brief The starting address */;
+	u32 size /*! \brief The page size */;
 } flash_pageinfo_t;
 
 /*! \brief Flash page write data using I_FLASH_WRITEPAGE
@@ -147,9 +148,9 @@ typedef struct {
  * using I_FLASH_WRITEPAGE.
  */
 typedef struct MCU_PACK {
-	uint32_t addr /*! The address to write to */;
-	uint32_t nbyte /*! The number of bytes to write */;
-	uint8_t buf[FLASH_MAX_WRITE_SIZE] /*! \brief A buffer for writing to the flash */;
+	u32 addr /*! The address to write to */;
+	u32 nbyte /*! The number of bytes to write */;
+	u8 buf[FLASH_MAX_WRITE_SIZE] /*! \brief A buffer for writing to the flash */;
 } flash_writepage_t;
 
 

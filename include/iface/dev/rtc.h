@@ -156,7 +156,7 @@ typedef struct MCU_PACK {
 
 /*! \brief RTC IO Attributes
  * \details This data structure defines
- * the structure used with I_GETATTR and I_SETATTR
+ * the structure used with I_RTC_ATTR and I_RTC_SETATTR
  * ioctl requests on the RTC.  It is also used when opening the RTC.
  */
 typedef struct MCU_PACK {
@@ -165,7 +165,8 @@ typedef struct MCU_PACK {
 	uint32_t freq /*! Calibration frequency for setting the pre-scalar */;
 } rtc_attr_t;
 
-#define I_RTC_GETATTR _IOCTLR(RTC_IOC_IDENT_CHAR, I_GLOBAL_GETATTR, rtc_attr_t)
+#define I_RTC_ATTR _IOCTLR(RTC_IOC_IDENT_CHAR, I_GLOBAL_ATTR, rtc_attr_t)
+#define I_RTC_GETATTR I_RTC_ATTR
 #define I_RTC_SETATTR _IOCTLW(RTC_IOC_IDENT_CHAR, I_GLOBAL_SETATTR, rtc_attr_t)
 #define I_RTC_SETACTION _IOCTLW(RTC_IOC_IDENT_CHAR, I_GLOBAL_SETACTION, rtc_action_t)
 

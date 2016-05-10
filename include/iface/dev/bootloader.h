@@ -162,10 +162,8 @@ typedef struct MCU_PACK {
  * link_ioctl(LINK_BOOTLOADER_FILDES, I_BOOTLOADER_GETATTR, &attr);
  * \endcode
  */
-#define I_BOOTLOADER_GETATTR _IOCTLR(BOOTLOADER_IOC_IDENT_CHAR, 1, bootloader_attr_t)
-
-/*! \brief Access attr for version 1.4.x */
-#define I_BOOTLOADER_GETATTR_14X _IOCTLR(BOOTLOADER_IOC_IDENT_CHAR, 1, bootloader_attr_14x_t)
+#define I_BOOTLOADER_ATTR _IOCTLR(BOOTLOADER_IOC_IDENT_CHAR, 1, bootloader_attr_t)
+#define I_BOOTLOADER_GETATTR I_BOOTLOADER_ATTR
 
 /*! \brief See below for details.
  * \details This request invokes a reset.  The third IOCTL argument is a

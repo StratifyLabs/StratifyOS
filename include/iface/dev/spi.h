@@ -164,7 +164,9 @@ typedef mcu_action_t spi_action_t;
 /*! \brief This request gets the SPI attributes.
  * \hideinitializer
  */
-#define I_SPI_GETATTR _IOCTLR(SPI_IOC_IDENT_CHAR, I_GLOBAL_GETATTR, spi_attr_t)
+#define I_SPI_ATTR _IOCTLR(SPI_IOC_IDENT_CHAR, I_GLOBAL_ATTR, spi_attr_t)
+#define I_SPI_GETATTR I_SPI_ATTR
+
 /*! \brief This request sets the SPI attributes.
  * \hideinitializer
  */

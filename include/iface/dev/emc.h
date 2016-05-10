@@ -89,7 +89,8 @@ typedef struct MCU_PACK {
 
 
 
-#define I_EMC_GETATTR _IOCTLR(EMC_IOC_IDENT_CHAR, I_GLOBAL_GETATTR, eint_attr_t)
+#define I_EMC_ATTR _IOCTLR(EMC_IOC_IDENT_CHAR, I_GLOBAL_ATTR, eint_attr_t)
+#define I_EMC_GETATTR I_EMC_ATTR
 
 /*! \brief IOCTL request to set the attributes
  */

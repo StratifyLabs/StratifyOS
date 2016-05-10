@@ -190,7 +190,8 @@ typedef struct MCU_PACK {
 /*! \details Request the disk attributes.
  * \hideinitializer
  */
-#define I_DISK_GETATTR _IOCTLR(DISK_IOC_CHAR, 11, disk_attr_t)
+#define I_DISK_ATTR _IOCTLR(DISK_IOC_CHAR, 11, disk_attr_t)
+#define I_DISK_GETATTR I_DISK_ATTR
 
 /*! \details See if the disk is busy.
  * This ioctl call will return greater than one if the

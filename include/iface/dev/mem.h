@@ -108,7 +108,8 @@ typedef struct MCU_PACK {
 /*! \brief This request gets the memory attributes.
  * \hideinitializer
  */
-#define I_MEM_GETATTR _IOCTLR(MEM_IOC_IDENT_CHAR, I_GLOBAL_GETATTR, mem_attr_t)
+#define I_MEM_ATTR _IOCTLR(MEM_IOC_IDENT_CHAR, I_GLOBAL_ATTR, mem_attr_t)
+#define I_MEM_GETATTR I_MEM_ATTR
 #define I_MEM_SETATTR _IOCTLW(MEM_IOC_IDENT_CHAR, I_GLOBAL_SETATTR, mem_attr_t)
 #define I_MEM_SETACTION _IOCTLW(MEM_IOC_IDENT_CHAR, I_GLOBAL_SETACTION, mem_attr_t)
 

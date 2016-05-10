@@ -152,7 +152,8 @@ typedef struct MCU_PACK {
  * \endcode
  * \hideinitializer
  */
-#define I_ADC_GETATTR _IOCTLR(ADC_IOC_IDENT_CHAR, I_GLOBAL_GETATTR, adc_attr_t)
+#define I_ADC_ATTR _IOCTLR(ADC_IOC_IDENT_CHAR, I_GLOBAL_ATTR, adc_attr_t)
+#define I_ADC_GETATTR I_ADC_ATTR
 
 /*! \brief See below for details.
  * \details This requests writes the ADC attributes.

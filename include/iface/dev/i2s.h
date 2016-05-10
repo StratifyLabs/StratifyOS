@@ -82,7 +82,8 @@ typedef mcu_action_t i2s_action_t;
 /*! \brief This request gets the I2S attributes.
  * \hideinitializer
  */
-#define I_I2S_GETATTR _IOCTLR(I2S_IOC_IDENT_CHAR, I_GLOBAL_GETATTR, i2s_attr_t)
+#define I_I2S_ATTR _IOCTLR(I2S_IOC_IDENT_CHAR, I_GLOBAL_ATTR, i2s_attr_t)
+#define I_I2S_GETATTR I_I2S_ATTR
 
 /*! \brief This request sets the I2S attributes.
  * \hideinitializer

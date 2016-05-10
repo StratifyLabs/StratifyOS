@@ -101,9 +101,9 @@ enum hio_subtype {
  *
  *
  * 	typedef struct MCU_PACK {
- * 		uint8_t in_button; //four bits in LSb's
- * 		uint8_t in_dpad; //four bits HIO_DPAD_UP, etc
- * 		uint8_t out_led; //One bit in LSb
+ * 		u8 in_button; //four bits in LSb's
+ * 		u8 in_dpad; //four bits HIO_DPAD_UP, etc
+ * 		u8 out_led; //One bit in LSb
  * 		int16_t in_joystick[2]; //two analog values
  * 		int16_t joystick_extrema[2]; //min then max value of joystick
  * 	} my_desc_t;
@@ -113,9 +113,9 @@ enum hio_subtype {
  *
  */
 typedef struct MCU_PACK {
-	uint8_t type /*! \brief The type of data (ie HIO_TYPE_UINT8) */;
-	uint8_t use /*! \brief How the data is used (such as a button input, or LED) */;
-	uint16_t count /*! \brief The number of values in the descriptor */;
+	u8 type /*! \brief The type of data (ie HIO_TYPE_UINT8) */;
+	u8 use /*! \brief How the data is used (such as a button input, or LED) */;
+	u16 count /*! \brief The number of values in the descriptor */;
 } hio_desc_t;
 
 
@@ -124,8 +124,8 @@ typedef struct MCU_PACK {
  */
 typedef struct MCU_PACK {
 	const hio_desc_t * report_desc /*! \brief A pointer to the HIO report descriptor */;
-	uint16_t count /*! \brief Number of total descriptor entries (hio_desc_t) */;
-	uint16_t size /*! \brief Size in bytes of the report */;
+	u16 count /*! \brief Number of total descriptor entries (hio_desc_t) */;
+	u16 size /*! \brief Size in bytes of the report */;
 } hio_attr_t;
 
 

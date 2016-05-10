@@ -124,7 +124,9 @@ typedef void (*usb_event_handler_t)(usb_spec_event_t);
 /*! \brief This request gets the USB attributes.
  * \hideinitializer
  */
-#define I_USB_GETATTR _IOCTLR(USB_IOC_IDENT_CHAR, I_GLOBAL_GETATTR, usb_attr_t)
+#define I_USB_ATTR _IOCTLR(USB_IOC_IDENT_CHAR, I_GLOBAL_ATTR, usb_attr_t)
+#define I_USB_GETATTR I_USB_ATTR
+
 /*! \brief This request sets the USB attributes.
  * \hideinitializer
  */

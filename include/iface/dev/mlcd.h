@@ -104,7 +104,8 @@ typedef struct MCU_PACK {
  * \endcode
  * \hideinitializer
  */
-#define I_MLCD_GETATTR _IOCTLR(MLCD_IOC_CHAR, 0, mlcd_attr_t)
+#define I_MLCD_ATTR _IOCTLR(MLCD_IOC_CHAR, 0, mlcd_attr_t)
+#define I_MLCD_GETATTR I_MLCD_ATTR
 
 /*! \details This request clears the LCD.  This does not
  * affect the video memory.  This is only supported on

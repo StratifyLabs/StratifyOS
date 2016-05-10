@@ -105,7 +105,8 @@ typedef struct MCU_PACK {
  * \endcode
  * \hideinitializer
  */
-#define I_DEVFIFO_GETATTR _IOCTLR(DEVFIFO_IOC_CHAR, 0, devfifo_attr_t)
+#define I_DEVFIFO_ATTR _IOCTLR(DEVFIFO_IOC_CHAR, 0, devfifo_attr_t)
+#define I_DEVFIFO_GETATTR I_DEVFIFO_ATTR
 
 #define I_DEVFIFO_TOTAL 1
 

@@ -189,7 +189,8 @@ static inline u32 pio_mcu_event_mask(mcu_event_t event){ return (u32)event; }
 /*! \brief IOCTL request to get the attributes.
  * \hideinitializer
  */
-#define I_PIO_GETATTR _IOCTLR(PIO_IOC_IDENT_CHAR, I_GLOBAL_GETATTR, pio_attr_t)
+#define I_PIO_ATTR _IOCTLR(PIO_IOC_IDENT_CHAR, I_GLOBAL_ATTR, pio_attr_t)
+#define I_PIO_GETATTR I_PIO_ATTR
 
 /*! \brief IOCTL request to set the attributes.
  * \hideinitializer
