@@ -28,11 +28,6 @@
 
 #if MCU_SPI_PORTS > 0
 
-extern void _mcu_ssp_dev_power_on(int port);
-extern void _mcu_ssp_dev_power_off(int port);
-extern int _mcu_ssp_dev_powered_on(int port);
-extern int _mcu_ssp_dev_read(const device_cfg_t * cfg, device_transfer_t * rop);
-extern int _mcu_ssp_dev_write(const device_cfg_t * cfg, device_transfer_t * wop);
 
 typedef struct {
 	char * volatile rx_buf;
@@ -49,64 +44,56 @@ typedef struct {
 
 
 
-static spi_local_t spi_local MCU_SYS_MEM;
-static void exec_callback(void * data);
+static spi_local_t spi_local[MCU_SPI_PORTS] MCU_SYS_MEM;
 
-static int spi_port_transfer(int is_read, device_transfer_t * dop);
+static LPC_SPI_Type * const spi_regs[MCU_SPI_PORTS] = MCU_SPI_REGS;
+static u8 const spi_irqs[MCU_SPI_PORTS] = MCU_SPI_IRQS;
+
+static void exec_callback(int port, void * data);
+
+
+
+static int spi_port_transfer(int port, int is_read, device_transfer_t * dop);
 static int byte_swap(int port, int byte);
 
 void _mcu_spi_dev_power_on(int port){
-	if( port != 2 ){
-		_mcu_ssp_dev_power_on(port);
-		return;
-	}
-	if ( spi_local.ref_count == 0 ){
+	if ( spi_local[port].ref_count == 0 ){
 		switch(port){
 		case 2:
 			_mcu_lpc_core_enable_pwr(PCSPI);
-			_mcu_core_priv_enable_irq((void*)SPI_IRQn);
+			_mcu_core_priv_enable_irq((void*)(u32)(spi_irqs[port]));
 			break;
 		}
-		spi_local.duplex_mem = NULL;
-		spi_local.callback = NULL;
+		spi_local[port].duplex_mem = NULL;
+		spi_local[port].callback = NULL;
 	}
-	spi_local.ref_count++;
+	spi_local[port].ref_count++;
 
 }
 
 void _mcu_spi_dev_power_off(int port){
-	if( port != 2 ){
-		_mcu_ssp_dev_power_off(port);
-		return;
-	}
-	if ( spi_local.ref_count > 0 ){
-		if ( spi_local.ref_count == 1 ){
-			_mcu_core_priv_disable_irq((void*)SPI_IRQn);
+	if ( spi_local[port].ref_count > 0 ){
+		if ( spi_local[port].ref_count == 1 ){
+			_mcu_core_priv_disable_irq((void*)(u32)(spi_irqs[port]));
 			_mcu_lpc_core_disable_pwr(PCSPI);
 		}
-		spi_local.ref_count--;
+		spi_local[port].ref_count--;
 	}
 }
 
 int _mcu_spi_dev_powered_on(int port){
-	if( port != 2 ){
-		return _mcu_ssp_dev_powered_on(port);
-	}
-	return ( spi_local.ref_count != 0 );
+	return ( spi_local[port].ref_count != 0 );
 }
 
 
 int mcu_spi_getattr(int port, void * ctl){
-	if( port != 2 ){
-		return mcu_ssp_getattr(port, ctl);
-	}
-
+	LPC_SPI_Type * regs = spi_regs[port];
 	spi_attr_t * ctlp = (spi_attr_t*)ctl;
-	ctlp->pin_assign = spi_local.pin_assign;
+	ctlp->pin_assign = spi_local[port].pin_assign;
 
 
 	//Master
-	if ( LPC_SPI->SPCR & (1<<5) ){
+	if ( regs->CR & (1<<5) ){
 		//Slave
 		ctlp->master = SPI_ATTR_MASTER;
 	} else {
@@ -114,7 +101,7 @@ int mcu_spi_getattr(int port, void * ctl){
 	}
 
 	//width
-	ctlp->width = (LPC_SPI->SPCR >> 8) & 0x0F;
+	ctlp->width = (regs->CR >> 8) & 0x0F;
 	if ( ctlp->width == 0 ){
 		ctlp->width = 16;
 	}
@@ -123,13 +110,13 @@ int mcu_spi_getattr(int port, void * ctl){
 	ctlp->format = SPI_ATTR_FORMAT_SPI;
 
 	//Mode
-	ctlp->mode = (LPC_SPI->SPCR >> 3) & 0x03;
+	ctlp->mode = (regs->CR >> 3) & 0x03;
 
 	//bitrate
-	if ( LPC_SPI->SPCCR < 8 ){
+	if ( regs->CCR < 8 ){
 		ctlp->bitrate = -1;
 	} else {
-		ctlp->bitrate = mcu_board_config.core_periph_freq / (LPC_SPI->SPCCR);
+		ctlp->bitrate = mcu_board_config.core_periph_freq / (regs->CCR);
 	}
 
 
@@ -137,9 +124,7 @@ int mcu_spi_getattr(int port, void * ctl){
 }
 
 int mcu_spi_setattr(int port, void * ctl){
-	if( port != 2 ){
-		return mcu_ssp_setattr(port, ctl);
-	}
+	LPC_SPI_Type * regs = spi_regs[port];
 	uint32_t cr0, cpsr;
 	uint32_t tmp;
 	spi_attr_t * ctlp = (spi_attr_t*)ctl;
@@ -204,114 +189,109 @@ int mcu_spi_setattr(int port, void * ctl){
 		return -1;
 	}
 
-	LPC_SPI->SPCCR = cpsr & 0xFE;
-	LPC_SPI->SPCR = cr0;
+	regs->CCR = cpsr & 0xFE;
+	regs->CR = cr0;
 
 
-	spi_local.pin_assign = ctlp->pin_assign;
+	spi_local[port].pin_assign = ctlp->pin_assign;
 
 	return 0;
 }
 
 int mcu_spi_swap(int port, void * ctl){
-	if( port != 2 ){
-		return mcu_ssp_swap(port, ctl);
-	}
 	return byte_swap(port, (int)ctl);
 }
 
 int mcu_spi_setduplex(int port, void * ctl){
-	if( port != 2 ){
-		return mcu_ssp_setduplex(port, ctl);
-	}
-	spi_local.duplex_mem = (void * volatile)ctl;
+	spi_local[port].duplex_mem = (void * volatile)ctl;
 	return 0;
 }
 
-void exec_callback(void * data){
-	LPC_SPI->SPCR &= ~(SPIE); //disable the interrupt
-	if ( spi_local.callback != NULL ){
-		if( spi_local.callback(spi_local.context, data) == 0 ){
-			spi_local.callback = NULL;
+void exec_callback(int port, void * data){
+	LPC_SPI_Type * regs = spi_regs[port];
+	regs->CR &= ~(SPIE); //disable the interrupt
+	if ( spi_local[port].callback != NULL ){
+		if( spi_local[port].callback(spi_local[port].context, data) == 0 ){
+			spi_local[port].callback = NULL;
 		}
 	}
 }
 
 int mcu_spi_setaction(int port, void * ctl){
-	if( port != 2 ){
-		return mcu_ssp_setaction(port, ctl);
-	}
+	LPC_SPI_Type * regs = spi_regs[port];
+
 	mcu_action_t * action = (mcu_action_t*)ctl;
 	if( action->callback == 0 ){
 		//cancel any ongoing operation
-		if ( LPC_SPI->SPCR & (SPIE) ){
-			exec_callback(DEVICE_OP_CANCELLED);
+		if ( regs->CR & (SPIE) ){
+			exec_callback(port, DEVICE_OP_CANCELLED);
 		}
 	}
 
-	spi_local.callback = action->callback;
-	spi_local.context = action->context;
+	spi_local[port].callback = action->callback;
+	spi_local[port].context = action->context;
+	_mcu_core_setirqprio(spi_irqs[port], action->prio);
+
 	return 0;
 }
 
 
 int byte_swap(int port, int byte){
-	LPC_SPI->SPDR = byte; //start the next transfer
-	while( !(LPC_SPI->SPSR) ); //wait for transfer to complete
-	return LPC_SPI->SPDR;
+	LPC_SPI_Type * regs = spi_regs[port];
+	regs->DR = byte; //start the next transfer
+	while( !(regs->SR) ); //wait for transfer to complete
+	return regs->DR;
 }
 
 int _mcu_spi_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
-	if( cfg->periph.port != 2 ){
-		return _mcu_ssp_dev_write(cfg, wop);
-	}
-	return spi_port_transfer(0, wop);
+	return spi_port_transfer(cfg->periph.port, 0, wop);
 }
 
 int _mcu_spi_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
-	if( cfg->periph.port != 2 ){
-		return _mcu_ssp_dev_read(cfg, rop);
-	}
-	return spi_port_transfer(1, rop);
+	return spi_port_transfer(cfg->periph.port, 1, rop);
 }
 
 void _mcu_core_spi_isr(void){
 	int tmp;
+	const int port = 0;
+	LPC_SPI_Type * regs = spi_regs[port];
 
-	(volatile int)LPC_SPI->SPSR;
+
+	(volatile int)regs->SR;
 	//! \todo Check for errors
 
-	tmp = LPC_SPI->SPDR;
-	if ( spi_local.rx_buf != NULL ){
-		*spi_local.rx_buf++ = tmp;
+	tmp = regs->DR;
+	if ( spi_local[port].rx_buf != NULL ){
+		*spi_local[port].rx_buf++ = tmp;
 	}
 
-	if ( spi_local.size ){
-		spi_local.size--;
+	if ( spi_local[port].size ){
+		spi_local[port].size--;
 	}
 
-	if ( spi_local.size ){
-		if ( spi_local.tx_buf != NULL ){
-			tmp = *spi_local.tx_buf++;
+	if ( spi_local[port].size ){
+		if ( spi_local[port].tx_buf != NULL ){
+			tmp = *spi_local[port].tx_buf++;
 		} else {
 			tmp = 0xFF;
 		}
 
-		LPC_SPI->SPDR = tmp;
+		regs->DR = tmp;
 	}
 
-	LPC_SPI->SPINT |= (SPIF_INT); //clear the interrupt flag
+	regs->INT |= (SPIF_INT); //clear the interrupt flag
 
-	if ( spi_local.size == 0 ){
-		exec_callback(0);
+	if ( spi_local[port].size == 0 ){
+		exec_callback(0, 0);
 	}
 }
 
-int spi_port_transfer(int is_read, device_transfer_t * dop){
+int spi_port_transfer(int port, int is_read, device_transfer_t * dop){
+	LPC_SPI_Type * regs = spi_regs[port];
 	int size;
 	size = dop->nbyte;
 
-	if ( LPC_SPI->SPCR & (SPIE) ){
+	if ( regs->CR & (SPIE) ){
 		errno = EAGAIN;
 		return -1;
 	}
@@ -321,24 +301,24 @@ int spi_port_transfer(int is_read, device_transfer_t * dop){
 	}
 
 	if ( is_read ){
-		spi_local.rx_buf = dop->buf;
-		spi_local.tx_buf = spi_local.duplex_mem;
+		spi_local[port].rx_buf = dop->buf;
+		spi_local[port].tx_buf = spi_local[port].duplex_mem;
 	} else {
-		spi_local.tx_buf = dop->buf;
-		spi_local.rx_buf = spi_local.duplex_mem;
+		spi_local[port].tx_buf = dop->buf;
+		spi_local[port].rx_buf = spi_local[port].duplex_mem;
 	}
-	spi_local.size = size;
-	spi_local.callback = dop->callback;
-	spi_local.context = dop->context;
-	LPC_SPI->SPCR |= SPIE; //enable the interrupt
-	if ( spi_local.tx_buf ){
+	spi_local[port].size = size;
+	spi_local[port].callback = dop->callback;
+	spi_local[port].context = dop->context;
+	regs->CR |= SPIE; //enable the interrupt
+	if ( spi_local[port].tx_buf ){
 		//! \todo This won't handle spi widths other than 8 bits
-		LPC_SPI->SPDR = *spi_local.tx_buf++;
+		regs->DR = *spi_local[port].tx_buf++;
 	} else {
-		LPC_SPI->SPDR = 0xFF;
+		regs->DR = 0xFF;
 	}
 
-	spi_local.ret = size;
+	spi_local[port].ret = size;
 
 	return 0;
 }

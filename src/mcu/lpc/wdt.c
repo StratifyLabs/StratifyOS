@@ -103,7 +103,12 @@ int mcu_wdt_setinterval(int interval){
 	counts = interval*500/4;
 #else
 	int clk_src;
+
+#if LPC_WDT_API == 1
+	clk_src = 0;
+#else
 	clk_src = LPC_WDT->CLKSEL & 0x03;
+#endif
 	//Set the clock source
 	counts = 0xFFFFFFFF;
 	switch(clk_src){

@@ -219,9 +219,12 @@ int mcu_pio_setaction(int port, void * ctl){
 #ifdef LPCXX7X_8X
 	//This is the interrupt for GPIO0 and GPIO2
 	_mcu_core_priv_enable_irq((void*)GPIO_IRQn);
+	_mcu_core_setirqprio(EINT3_IRQn, action->prio);
 #else
 	//This is the interrupt for GPIO0 and GPIO2 (shared with EINT3)
 	_mcu_core_priv_enable_irq((void*)EINT3_IRQn);
+	_mcu_core_setirqprio(EINT3_IRQn, action->prio);
+
 #endif
 
 	return 0;
@@ -246,7 +249,7 @@ int mcu_pio_setattr(int port, void * ctl){
 	__IO u32 * regs_pin;
 	__IO u32 * regs_od = &(LPC_PINCON->PINMODE_OD0);
 #endif
-	LPC_GPIO_TypeDef * gpio_regs = (LPC_GPIO_TypeDef *)LPC_GPIO0_BASE + port;
+	LPC_GPIO_Type * gpio_regs = (LPC_GPIO_Type *)LPC_GPIO0_BASE + port;
 
 	if( attr->mode & PIO_MODE_INPUT ){
 		gpio_regs->DIR&=(~attr->mask);
@@ -346,24 +349,24 @@ int mcu_pio_setattr(int port, void * ctl){
 }
 
 int mcu_pio_setmask(int port, void * ctl){
-	LPC_GPIO_TypeDef * gpio_regs = (LPC_GPIO_TypeDef *)LPC_GPIO0_BASE;
+	LPC_GPIO_Type * gpio_regs = (LPC_GPIO_Type *)LPC_GPIO0_BASE;
 	gpio_regs[port].SET=(int)ctl;
 	return 0;
 }
 
 int mcu_pio_clrmask(int port, void * ctl){
-	LPC_GPIO_TypeDef * gpio_regs = (LPC_GPIO_TypeDef *)LPC_GPIO0_BASE;
+	LPC_GPIO_Type * gpio_regs = (LPC_GPIO_Type *)LPC_GPIO0_BASE;
 	gpio_regs[port].CLR=(int)ctl;
 	return 0;
 }
 
 int mcu_pio_get(int port, void * ctl){
-	LPC_GPIO_TypeDef * gpio_regs = (LPC_GPIO_TypeDef *)LPC_GPIO0_BASE;
+	LPC_GPIO_Type * gpio_regs = (LPC_GPIO_Type *)LPC_GPIO0_BASE;
 	return gpio_regs[port].PIN;
 }
 
 int mcu_pio_set(int port, void * ctl){
-	LPC_GPIO_TypeDef * gpio_regs = (LPC_GPIO_TypeDef *)LPC_GPIO0_BASE;
+	LPC_GPIO_Type * gpio_regs = (LPC_GPIO_Type *)LPC_GPIO0_BASE;
 	gpio_regs[port].PIN=(int)ctl;
 	return 0;
 }

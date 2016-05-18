@@ -29,12 +29,12 @@
 #define WRITE_OP 0
 #define READ_OP 1
 
-static LPC_MCI_TypeDef * const mci_regs_table[MCU_MCI_PORTS] = MCU_MCI_REGS;
+static LPC_MCI_Type * const mci_regs_table[MCU_MCI_PORTS] = MCU_MCI_REGS;
 
 static void exec_callback(int port, void * data);
 
 
-static int mcu_mci_write_fifo(LPC_MCI_TypeDef * regs, uint32_t * src, int nbyte);
+static int mcu_mci_write_fifo(LPC_MCI_Type * regs, uint32_t * src, int nbyte);
 
 typedef union {
 	uint16_t ptr16;
@@ -86,7 +86,7 @@ int mcu_mci_getattr(int port, void * ctl){
 
 int mcu_mci_setattr(int port, void * ctl){
 	mci_attr_t * attr = ctl;
-	LPC_MCI_TypeDef * regs = mci_regs_table[port];
+	LPC_MCI_Type * regs = mci_regs_table[port];
 
 	int32_t clkdiv;
 
@@ -167,14 +167,14 @@ int mcu_mci_setaction(int port, void * ctl){
 	return 0;
 }
 
-static int mcu_mci_write_fifo(LPC_MCI_TypeDef * regs, uint32_t * src, int nbyte){
+static int mcu_mci_write_fifo(LPC_MCI_Type * regs, uint32_t * src, int nbyte){
 	return nbyte;
 }
 
 
 int _mcu_mci_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
 	int port = cfg->periph.port;
-	LPC_MCI_TypeDef * regs = mci_regs_table[port];
+	LPC_MCI_Type * regs = mci_regs_table[port];
 
 	//int num_blocks;
 

@@ -136,6 +136,7 @@ typedef enum {
 
 #define CORE_PERIPH_GPIO CORE_PERIPH_PIO
 #define CORE_PERIPH_SDC CORE_PERIPH_MCI
+#define CORE_PERIPH_ETH CORE_PERIPH_ENET
 
 /*! \details This lists the sleep modes supported by HWPL
  *
@@ -219,9 +220,6 @@ typedef struct MCU_PACK {
 /*! \brief This request invokes the bootloader.
  */
 #define I_CORE_INVOKEBOOTLOADER _IOCTL(CORE_IOC_IDENT_CHAR, I_GLOBAL_TOTAL + 3)
-/*! \brief This request sets the IRQ priority.
- */
-#define I_CORE_SETIRQPRIO _IOCTLW(CORE_IOC_IDENT_CHAR, I_GLOBAL_TOTAL + 4, core_irqprio_t)
 
 /*! \brief See below for details.
  * \details This configures the clkout functionality.
@@ -233,7 +231,7 @@ typedef struct MCU_PACK {
  * \endcode
  *
  */
-#define I_CORE_SETCLKOUT _IOCTLW(CORE_IOC_IDENT_CHAR, I_GLOBAL_TOTAL + 5, core_clkout_t)
+#define I_CORE_SETCLKOUT _IOCTLW(CORE_IOC_IDENT_CHAR, I_GLOBAL_TOTAL + 4, core_clkout_t)
 
 /*! \brief See below for details.
  * \details This configures the main clock divide functionality.  This can be used to
@@ -244,9 +242,9 @@ typedef struct MCU_PACK {
  * \endcode
  *
  */
-#define I_CORE_SETCLKDIVIDE _IOCTL(CORE_IOC_IDENT_CHAR, I_GLOBAL_TOTAL + 6)
+#define I_CORE_SETCLKDIVIDE _IOCTL(CORE_IOC_IDENT_CHAR, I_GLOBAL_TOTAL + 5)
 
-#define I_CORE_TOTAL 7
+#define I_CORE_TOTAL 6
 
 #ifdef __cplusplus
 }

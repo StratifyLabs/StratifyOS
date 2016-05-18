@@ -42,7 +42,7 @@ static void ssp_fill_tx_fifo(int port);
 static void ssp_empty_rx_fifo(int port);
 static int byte_swap(int port, int byte);
 
-LPC_SSP_TypeDef * const ssp_regs_table[MCU_SSP_PORTS] = MCU_SSP_REGS;
+LPC_SSP_Type * const ssp_regs_table[MCU_SSP_PORTS] = MCU_SSP_REGS;
 
 int _mcu_spi_dev_port_is_invalid(int port){
 	if ( (uint32_t)port >= MCU_SSP_PORTS ){
@@ -104,7 +104,7 @@ int _mcu_spi_dev_powered_on(int port){
 
 
 int mcu_spi_getattr(int port, void * ctl){
-	LPC_SSP_TypeDef * regs;
+	LPC_SSP_Type * regs;
 	spi_attr_t * ctlp = (spi_attr_t*)ctl;
 	uint8_t tmp;
 
@@ -152,7 +152,7 @@ int mcu_spi_getattr(int port, void * ctl){
 }
 
 int mcu_spi_setattr(int port, void * ctl){
-	LPC_SSP_TypeDef * regs;
+	LPC_SSP_Type * regs;
 	uint32_t cr0, cr1, cpsr;
 	uint32_t tmp;
 	spi_attr_t * ctlp = (spi_attr_t*)ctl;
@@ -300,7 +300,7 @@ int mcu_spi_setaction(int port, void * ctl){
 
 
 int byte_swap(int port, int byte){
-	LPC_SSP_TypeDef * regs;
+	LPC_SSP_Type * regs;
 	regs = ssp_regs_table[port];
 	regs->DR = byte;
 	while ( regs->SR & SSPSR_BSY ){
@@ -321,7 +321,7 @@ int _mcu_spi_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
 }
 
 void ssp_fill_tx_fifo(int port){
-	LPC_SSP_TypeDef * regs;
+	LPC_SSP_Type * regs;
 	regs = ssp_regs_table[port];
 	int size = 0;
 	while ( (regs->SR & SSPSR_TNF) && spi_local[port].size && (size < 8) ){
@@ -337,7 +337,7 @@ void ssp_fill_tx_fifo(int port){
 }
 
 void ssp_empty_rx_fifo(int port){
-	LPC_SSP_TypeDef * regs;
+	LPC_SSP_Type * regs;
 	regs = ssp_regs_table[port];
 	while ( regs->SR & SSPSR_RNE ){
 		if ( spi_local[port].rx_buf != NULL ){
@@ -349,7 +349,7 @@ void ssp_empty_rx_fifo(int port){
 }
 
 void _mcu_core_ssp_isr(int port){
-	LPC_SSP_TypeDef * regs;
+	LPC_SSP_Type * regs;
 	regs = ssp_regs_table[port];
 	ssp_fill_tx_fifo(port);
 	ssp_empty_rx_fifo(port);
@@ -375,7 +375,7 @@ void _mcu_core_ssp1_isr(void){
 
 int ssp_port_transfer(int port, int is_read, device_transfer_t * dop){
 	int size;
-	LPC_SSP_TypeDef * regs;
+	LPC_SSP_Type * regs;
 	size = dop->nbyte;
 	if ( size == 0 ){
 		return 0;

@@ -24,7 +24,7 @@
 
 extern void _mcu_set_sleep_mode(int * level);
 #ifdef __lpc17xx__
-extern LPC_GPDMACH_TypeDef * _mcu_dma_get_channel(uint32_t chan);
+extern LPC_GPDMACH_Type * _mcu_dma_get_channel(uint32_t chan);
 #endif
 
 int _mcu_core_sleep(core_sleep_t level){
@@ -32,7 +32,7 @@ int _mcu_core_sleep(core_sleep_t level){
 #ifdef __lpc17xx__
 	int tmp;
 
-	LPC_GPDMACH_TypeDef * channel_regs;
+	LPC_GPDMACH_Type * channel_regs;
 
 	//Wait for any DMA transactions on RAM to complete (AHB transactions are OK in idle but not deep sleep)
 	for(tmp = 0; tmp < DMA_MAX_CHANNEL; tmp++){

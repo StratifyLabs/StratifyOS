@@ -36,7 +36,7 @@
  * #include <stdio.h>
  * #include "mcu/mcu.h"
  *
- * int my_tmr_action(void * context, uint32_t value){
+ * int my_tmr_action(void * context, u32 value){
  * 	//take some action on an eint event -- this runs in priveleged, handler mode, it should be fast and short
  * 	return 1; //return non-zero to keep the action between successive events
  * }
@@ -113,7 +113,7 @@ extern "C" {
 
 #ifndef TMR_SAMPLE_T
 #define TMR_SAMPLE_T
-typedef uint32_t tmr_sample_t;
+typedef u32 tmr_sample_t;
 #endif
 
 /*! \details This lists the valid values for the
@@ -199,16 +199,18 @@ typedef struct MCU_PACK {
  * for opening or reconfiguring a timer port.
  */
 typedef struct MCU_PACK {
-	uint8_t pin_assign /*! \brief The GPIO configuration to use (see \ref LPC17XXDEV) */;
-	uint32_t freq /*! \brief The target clock frequency when writing and the actual when reading (only applicable to \ref TMR_CLKSRC_CPU) */;
-	uint8_t clksrc /*! \brief The clock source (see \ref tmr_clksrc_t) */;
-	uint8_t counter_mode /*! \brief Deprecated */;
-	uint8_t enabled_oc_chans /*! \brief The mask of enabled output compare channels.  Enabled
+	u8 pin_assign /*! \brief The GPIO configuration to use (see \ref LPC17XXDEV) */;
+	u8 clksrc /*! \brief The clock source (see \ref tmr_clksrc_t) */;
+	u8 counter_mode /*! \brief Deprecated */;
+	u8 enabled_oc_chans /*! \brief The mask of enabled output compare channels.  Enabled
 	channels that do not exist are ignored. These are only set if the output compare units will
 	use GPIO. */;
-	uint8_t enabled_ic_chans /*! \brief The mask of enabled input capture channels.  Enabled
+	u8 enabled_ic_chans /*! \brief The mask of enabled input capture channels.  Enabled
 	channels that do not exist are ignored. These are only set if the input capture units will
 	use GPIO. */;
+	u8 resd[3];
+	u32 freq /*! \brief The target clock frequency when writing and the actual when reading (only applicable to \ref TMR_CLKSRC_CPU) */;
+
 } tmr_attr_t;
 
 /*! \brief This request gets the timer attributes.
@@ -321,7 +323,7 @@ typedef struct MCU_PACK {
  * \details This request writes the value of the timer.
  * For example:
  * \code
- * uint32_t value = 1000000;
+ * u32 value = 1000000;
  * ioctl(tmr_fd, I_TMR_SET, value);
  * \endcode
  * \hideinitializer
@@ -332,7 +334,7 @@ typedef struct MCU_PACK {
  * \details This request reads the value of the timer.
  * For example:
  * \code
- * uint32_t value;
+ * u32 value;
  * value = ioctl(tmr_fd, I_TMR_GET);
  * \endcode
  * \hideinitializer

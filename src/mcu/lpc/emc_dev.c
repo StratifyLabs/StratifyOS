@@ -12,8 +12,8 @@
 #if MCU_EMC_PORTS > 0
 
 
-LPC_EMC_Static_TypeDef * const mcu_static_regs[MCU_EMC_CHANS] = MCU_EMC_STATIC_REGS;
-LPC_EMC_Dynamic_TypeDef * const mcu_dynamic_regs[MCU_EMC_CHANS] = MCU_EMC_DYNAMIC_REGS;
+LPC_EMC_Static_Type * const mcu_static_regs[MCU_EMC_CHANS] = MCU_EMC_STATIC_REGS;
+LPC_EMC_Dynamic_Type * const mcu_dynamic_regs[MCU_EMC_CHANS] = MCU_EMC_DYNAMIC_REGS;
 
 void _mcu_emc_dev_power_on(int port){
 
@@ -71,13 +71,13 @@ int mcu_emc_setattr(int port, void * ctl){
 
 	if( attr->mode & EMC_MODE_DYNAMIC ){
 		//dynamic configuration
-		LPC_EMC_Dynamic_TypeDef * dyn_regs = mcu_dynamic_regs[attr->channel];
+		LPC_EMC_Dynamic_Type * dyn_regs = mcu_dynamic_regs[attr->channel];
 
 		dyn_regs->DynamicConfig = 0;
 
 	} else {
 		//static configuration
-		LPC_EMC_Static_TypeDef * static_regs = mcu_static_regs[attr->channel];
+		LPC_EMC_Static_Type * static_regs = mcu_static_regs[attr->channel];
 
 		//check static configuration
 		tmp = 0;

@@ -36,13 +36,9 @@
 
 #if MCU_TMR_PORTS > 0
 
+static LPC_TIM_Type * const tmr_regs_table[NUM_TMRS] = MCU_TMR_REGS;
+static u8 const tmr_irqs[MCU_TMR_PORTS] = MCU_TMR_IRQS;
 
-LPC_TIM_TypeDef * const tmr_regs_table[NUM_TMRS] = {
-		LPC_TIM0,
-		LPC_TIM1,
-		LPC_TIM2,
-		LPC_TIM3
-};
 
 
 struct tmr_cfg {
@@ -82,7 +78,7 @@ void _mcu_tmr_dev_power_on(int port){
 			_mcu_lpc_core_enable_pwr(PCTIM3);
 			break;
 		}
-		_mcu_core_priv_enable_irq((void*)TIMER0_IRQn + port);
+		_mcu_core_priv_enable_irq((void*)(u32)(tmr_irqs[port]));
 	}
 	_mcu_tmr_local[port].ref_count++;
 }
@@ -92,7 +88,7 @@ void _mcu_tmr_dev_power_off(int port){
 	if ( _mcu_tmr_local[port].ref_count > 0 ){
 		if ( _mcu_tmr_local[port].ref_count == 1 ){
 			_mcu_tmr_clear_actions(port);
-			_mcu_core_priv_disable_irq((void*)(TIMER0_IRQn + port));
+			_mcu_core_priv_disable_irq((void*)(u32)(tmr_irqs[port]));
 			switch(port){
 			case 0:
 				_mcu_lpc_core_disable_pwr(PCTIM0);
@@ -373,21 +369,21 @@ int mcu_tmr_setattr(int port, void * ctl){
 }
 
 int mcu_tmr_on(int port, void * ctl){
-	LPC_TIM_TypeDef * regs;
+	LPC_TIM_Type * regs;
 	regs = tmr_regs_table[port];
 	regs->TCR = 1;
 	return 0;
 }
 
 int mcu_tmr_off(int port, void * ctl){
-	LPC_TIM_TypeDef * regs;
+	LPC_TIM_Type * regs;
 	regs = tmr_regs_table[port];
 	regs->TCR = 0;
 	return 0;
 }
 
 int mcu_tmr_setoc(int port, void * ctl){
-	LPC_TIM_TypeDef * regs;
+	LPC_TIM_Type * regs;
 	regs = tmr_regs_table[port];
 	//Write the output compare value
 	tmr_reqattr_t * req = (tmr_reqattr_t*)ctl;
@@ -395,12 +391,17 @@ int mcu_tmr_setoc(int port, void * ctl){
 		errno = EINVAL;
 		return -1;
 	}
+
+#if MCU_TMR_API == 1
+	regs->MR[req->channel] = req->value;
+#else
 	((uint32_t*)&(regs->MR0))[ req->channel ] = req->value;
+#endif
 	return 0;
 }
 
 int mcu_tmr_getoc(int port, void * ctl){
-	LPC_TIM_TypeDef * regs;
+	LPC_TIM_Type * regs;
 	regs = tmr_regs_table[port];
 	//Read the output compare channel
 	tmr_reqattr_t * req = (tmr_reqattr_t*)ctl;
@@ -408,12 +409,16 @@ int mcu_tmr_getoc(int port, void * ctl){
 		errno = EINVAL;
 		return -1;
 	}
+#if MCU_TMR_API == 1
+	req->value = regs->MR[req->channel];
+#else
 	req->value = ((uint32_t*)&(regs->MR0))[ req->channel ];
+#endif
 	return 0;
 }
 
 int mcu_tmr_setic(int port, void * ctl){
-	LPC_TIM_TypeDef * regs;
+	LPC_TIM_Type * regs;
 	regs = tmr_regs_table[port];
 	unsigned int chan;
 	tmr_reqattr_t * req = (tmr_reqattr_t*)ctl;
@@ -422,12 +427,16 @@ int mcu_tmr_setic(int port, void * ctl){
 		errno = EINVAL;
 		return -1;
 	}
+#if MCU_TMR_API == 1
+	regs->CR[chan] = req->value;
+#else
 	((uint32_t*)&(regs->CR0))[ req->channel ] = req->value;
+#endif
 	return 0;
 }
 
 int mcu_tmr_getic(int port, void * ctl){
-	LPC_TIM_TypeDef * regs;
+	LPC_TIM_Type * regs;
 	unsigned int chan;
 	regs = tmr_regs_table[port];
 	tmr_reqattr_t * req = (tmr_reqattr_t*)ctl;
@@ -436,7 +445,11 @@ int mcu_tmr_getic(int port, void * ctl){
 		errno = EINVAL;
 		return -1;
 	}
+#if MCU_TMR_API == 1
+	req->value = regs->CR[chan];
+#else
 	req->value = ((uint32_t*)&(regs->CR0))[ chan ];
+#endif
 	return 0;
 }
 
@@ -462,13 +475,16 @@ int _mcu_tmr_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
 	action = (mcu_action_t*)wop->buf;
 	action->callback = wop->callback;
 	action->context = wop->context;
+
+	_mcu_core_setirqprio(tmr_irqs[port], action->prio);
+
 	return mcu_tmr_setaction(port, action);
 }
 
 
 int mcu_tmr_setaction(int port, void * ctl){
 	tmr_action_t * action = (tmr_action_t*)ctl;
-	LPC_TIM_TypeDef * regs;
+	LPC_TIM_Type * regs;
 	regs = tmr_regs_table[port];
 	int chan;
 	int event;
@@ -537,14 +553,14 @@ int _mcu_tmr_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
 }
 
 int mcu_tmr_set(int port, void * ctl){
-	LPC_TIM_TypeDef * regs;
+	LPC_TIM_Type * regs;
 	regs = tmr_regs_table[port];
 	regs->TC = (uint32_t)ctl;
 	return 0;
 }
 
 int mcu_tmr_get(int port, void * ctl){
-	LPC_TIM_TypeDef * regs;
+	LPC_TIM_Type * regs;
 	regs = tmr_regs_table[port];
 	return regs->TC;
 }
@@ -555,11 +571,31 @@ static void tmr_isr(int port); //This is speed optimized
 //Four timers with 4 OC's and 2 IC's each
 void tmr_isr(int port){
 	int flags;
-	LPC_TIM_TypeDef * regs;
+	LPC_TIM_Type * regs;
 	regs = tmr_regs_table[port];
 	flags = (regs->IR & 0x3F);
 	regs->IR = flags; //clear the flags
 	//execute the callbacks
+#if MCU_TMR_API == 1
+	if( flags & MR0_FLAG ){
+		_mcu_core_exec_event_handler(&(_mcu_tmr_local[port].handler[0]), (mcu_event_t)regs->MR[0]);
+	}
+	if( flags & MR1_FLAG ){
+		_mcu_core_exec_event_handler(&(_mcu_tmr_local[port].handler[1]), (mcu_event_t)regs->MR[1]);
+	}
+	if( flags & MR2_FLAG ){
+		_mcu_core_exec_event_handler(&(_mcu_tmr_local[port].handler[2]), (mcu_event_t)regs->MR[2]);
+	}
+	if( flags & MR3_FLAG ){
+		_mcu_core_exec_event_handler(&(_mcu_tmr_local[port].handler[3]), (mcu_event_t)regs->MR[3]);
+	}
+	if( flags & CR0_FLAG ){
+		_mcu_core_exec_event_handler(&(_mcu_tmr_local[port].handler[4]), (mcu_event_t)regs->CR[0]);
+	}
+	if( flags & CR1_FLAG ){
+		_mcu_core_exec_event_handler(&(_mcu_tmr_local[port].handler[5]), (mcu_event_t)regs->CR[1]);
+	}
+#else
 	if( flags & MR0_FLAG ){
 		_mcu_core_exec_event_handler(&(_mcu_tmr_local[port].handler[0]), (mcu_event_t)regs->MR0);
 	}
@@ -578,6 +614,7 @@ void tmr_isr(int port){
 	if( flags & CR1_FLAG ){
 		_mcu_core_exec_event_handler(&(_mcu_tmr_local[port].handler[5]), (mcu_event_t)regs->CR1);
 	}
+#endif
 }
 
 void _mcu_core_tmr0_isr(void){

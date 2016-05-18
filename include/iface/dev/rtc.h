@@ -150,7 +150,7 @@ typedef enum {
  */
 typedef struct MCU_PACK {
 	rtc_time_t time /*! \brief The time for the alarm */;
-	uint8_t type /*! \brief The type of alarm (\ref rtc_alarm_type_t) */;
+	u8 type /*! \brief The type of alarm (\ref rtc_alarm_type_t) */;
 } rtc_alarm_t;
 
 
@@ -160,8 +160,8 @@ typedef struct MCU_PACK {
  * ioctl requests on the RTC.  It is also used when opening the RTC.
  */
 typedef struct MCU_PACK {
-	uint8_t pin_assign /*! Always 0 */;
-	uint8_t clock /*! The source clock */;
+	u8 pin_assign /*! Always 0 */;
+	u8 clock /*! The source clock */;
 	uint32_t freq /*! Calibration frequency for setting the pre-scalar */;
 } rtc_attr_t;
 

@@ -19,7 +19,7 @@
  * for opening or reconfiguring the EEPROM port.
  */
 typedef struct MCU_PACK {
-	uint32_t size;
+	u32 size;
 } eeprom_attr_t;
 
 #define I_EEPROM_ATTR _IOCTLR(EEPROM_IOC_IDENT_CHAR, I_GLOBAL_ATTR, mem_attr_t)

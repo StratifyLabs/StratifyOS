@@ -164,9 +164,10 @@ void _mcu_core_delay_ms(u32 ms);
 
 void _mcu_core_priv_bootloader_api(void * args) MCU_PRIV_CODE;
 
-int _mcu_core_priv_validate_callback(mcu_callback_t callback);
+int _mcu_core_priv_validate_callback(mcu_callback_t callback) MCU_PRIV_CODE;
 
-void _mcu_core_exec_event_handler(mcu_event_handler_t * event, mcu_event_t arg);
+void _mcu_core_exec_event_handler(mcu_event_handler_t * event, mcu_event_t arg) MCU_PRIV_CODE;
+int _mcu_core_setirqprio(int irq, int prio) MCU_PRIV_CODE;
 
 
 /*! \details
@@ -200,7 +201,6 @@ int mcu_core_setpinfunc(int port, void * arg) MCU_PRIV_CODE;
 int mcu_core_sleep(int port, void * arg) MCU_PRIV_CODE;
 int mcu_core_reset(int port, void * arg) MCU_PRIV_CODE;
 int mcu_core_invokebootloader(int port, void * arg) MCU_PRIV_CODE;
-int mcu_core_setirqprio(int port, void * arg) MCU_PRIV_CODE;
 int mcu_core_setclkout(int port, void * arg) MCU_PRIV_CODE;
 int mcu_core_setclkdivide(int port, void * arg) MCU_PRIV_CODE;
 

@@ -49,7 +49,7 @@ extern "C" {
 
 #ifndef QEI_SAMPLE_T
 #define QEI_SAMPLE_T
-typedef uint32_t qei_sample_t;
+typedef u32 qei_sample_t;
 #endif
 
 /*! \details This defines the bits used in
@@ -86,12 +86,13 @@ typedef enum {
  * for opening or reconfiguring the QEI port.
  */
 typedef struct MCU_PACK {
-	uint8_t pin_assign /*! \brief The GPIO configuration to use (see \ref LPC17XXDEV) */;
-	uint32_t max_pos /*! \brief The maximum position (QEI rolls over at this point) */;
-	uint32_t velocity_comp /*! \brief The Velocity compare value */;
-	uint32_t filter /*! \brief The filter coefficient (0 to disable) */;
-	uint32_t mode /*! \brief The QEI mode (see \ref qei_mode_t) */;
-	uint32_t vfreq /*! \brief The frequency at which to update the velocity in Hz */;
+	u8 pin_assign /*! \brief The GPIO configuration to use (see \ref LPC17XXDEV) */;
+	u8 resd[3];
+	u32 max_pos /*! \brief The maximum position (QEI rolls over at this point) */;
+	u32 velocity_comp /*! \brief The Velocity compare value */;
+	u32 filter /*! \brief The filter coefficient (0 to disable) */;
+	u32 mode /*! \brief The QEI mode (see \ref qei_mode_t) */;
+	u32 vfreq /*! \brief The frequency at which to update the velocity in Hz */;
 } qei_attr_t;
 
 /*! \brief This defines a QEI action.
@@ -118,7 +119,7 @@ typedef mcu_action_t qei_action_t;
  *
  * Example:
  * \code
- * uint32_t value;
+ * u32 value;
  * value = ioctl(qei_fd, I_QEI_READ);
  * \endcode
  * \hideinitializer

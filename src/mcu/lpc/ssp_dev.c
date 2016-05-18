@@ -45,7 +45,8 @@ static void ssp_fill_tx_fifo(int port);
 static void ssp_empty_rx_fifo(int port);
 static int byte_swap(int port, int byte);
 
-LPC_SSP_TypeDef * const ssp_regs_table[MCU_SSP_PORTS] = MCU_SSP_REGS;
+static LPC_SSP_Type * const ssp_regs_table[MCU_SSP_PORTS] = MCU_SSP_REGS;
+static u8 const ssp_irqs[MCU_SSP_PORTS] = MCU_SSP_IRQS;
 
 #ifdef LPCXX7X_8X
 static void enable_pin(int pio_port, int pio_pin) MCU_PRIV_CODE;
@@ -59,6 +60,9 @@ void enable_pin(int pio_port, int pio_pin){
 
 void _mcu_ssp_dev_power_on(int port){
 	if ( ssp_local[port].ref_count == 0 ){
+
+		_mcu_core_priv_enable_irq((void*)(u32)(ssp_irqs[port]));
+
 		switch(port){
 		case 0:
 #if defined __lpc13uxx || __lpc13xx
@@ -66,7 +70,6 @@ void _mcu_ssp_dev_power_on(int port){
 			LPC_SYSCON->PRESETCTRL |= (1<<0);
 #endif
 			_mcu_lpc_core_enable_pwr(PCSSP0);
-			_mcu_core_priv_enable_irq((void*)SSP0_IRQn);
 			break;
 
 		case 1:
@@ -75,13 +78,11 @@ void _mcu_ssp_dev_power_on(int port){
 			LPC_SYSCON->PRESETCTRL |= (1<<2);
 #endif
 			_mcu_lpc_core_enable_pwr(PCSSP1);
-			_mcu_core_priv_enable_irq((void*)SSP1_IRQn);
 			break;
 
 #if MCU_SSP_PORTS > 2
 		case 2:
 			_mcu_lpc_core_enable_pwr(PCSSP2);
-			_mcu_core_priv_enable_irq((void*)SSP2_IRQn);
 			break;
 #endif
 		}
@@ -95,13 +96,15 @@ void _mcu_ssp_dev_power_on(int port){
 void _mcu_ssp_dev_power_off(int port){
 	if ( ssp_local[port].ref_count > 0 ){
 		if ( ssp_local[port].ref_count == 1 ){
+
+			_mcu_core_priv_disable_irq((void*)(u32)(ssp_irqs[port]));
+
 			switch(port){
 			case 0:
 #if defined __lpc13uxx || __lpc13xx
 				LPC_SYSCON->SSP0CLKDIV = 0;
 				LPC_SYSCON->PRESETCTRL &= ~(1<<0);
 #endif
-				_mcu_core_priv_disable_irq((void*)SSP0_IRQn);
 				_mcu_lpc_core_disable_pwr(PCSSP0);
 				break;
 			case 1:
@@ -109,12 +112,10 @@ void _mcu_ssp_dev_power_off(int port){
 				LPC_SYSCON->SSP0CLKDIV = 0;
 				LPC_SYSCON->PRESETCTRL &= ~(1<<2);
 #endif
-				_mcu_core_priv_disable_irq((void*)SSP1_IRQn);
 				_mcu_lpc_core_disable_pwr(PCSSP1);
 				break;
 #ifdef LPCXX7X_8X
 			case 2:
-				_mcu_core_priv_disable_irq((void*)SSP2_IRQn);
 				_mcu_lpc_core_disable_pwr(PCSSP2);
 				break;
 #endif
@@ -130,7 +131,7 @@ int _mcu_ssp_dev_powered_on(int port){
 
 
 int mcu_ssp_getattr(int port, void * ctl){
-	LPC_SSP_TypeDef * regs;
+	LPC_SSP_Type * regs;
 	spi_attr_t * ctlp = (spi_attr_t*)ctl;
 
 	uint8_t tmp;
@@ -181,7 +182,7 @@ int mcu_ssp_getattr(int port, void * ctl){
 }
 
 int mcu_ssp_setattr(int port, void * ctl){
-	LPC_SSP_TypeDef * regs;
+	LPC_SSP_Type * regs;
 	uint32_t cr0, cr1, cpsr;
 	uint32_t tmp;
 	spi_attr_t * ctlp = (spi_attr_t*)ctl;
@@ -356,7 +357,7 @@ int mcu_ssp_setduplex(int port, void * ctl){
 	return 0;
 }
 
-static void exec_callback(int port, LPC_SSP_TypeDef * regs, void * data){
+static void exec_callback(int port, LPC_SSP_Type * regs, void * data){
 	regs->IMSC &= ~(SSPIMSC_RXIM|SSPIMSC_RTIM); //Kill the interrupts
 	if ( ssp_local[port].size == 0 ){
 		_mcu_core_exec_event_handler(&(ssp_local[port].handler), (mcu_event_t)0);
@@ -366,7 +367,7 @@ static void exec_callback(int port, LPC_SSP_TypeDef * regs, void * data){
 
 int mcu_ssp_setaction(int port, void * ctl){
 	mcu_action_t * action = (mcu_action_t*)ctl;
-	LPC_SSP_TypeDef * regs;
+	LPC_SSP_Type * regs;
 	regs = ssp_regs_table[port];
 
 	if( action->callback == 0 ){
@@ -384,12 +385,15 @@ int mcu_ssp_setaction(int port, void * ctl){
 	ssp_local[port].handler.callback = action->callback;
 	ssp_local[port].handler.context = action->context;
 
+	_mcu_core_setirqprio(ssp_irqs[port], action->prio);
+
+
 	return 0;
 }
 
 
 int byte_swap(int port, int byte){
-	LPC_SSP_TypeDef * regs;
+	LPC_SSP_Type * regs;
 	regs = ssp_regs_table[port];
 	regs->DR = byte;
 	while ( regs->SR & SSPSR_BSY ){
@@ -411,7 +415,7 @@ int _mcu_ssp_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
 }
 
 void ssp_fill_tx_fifo(int port){
-	LPC_SSP_TypeDef * regs;
+	LPC_SSP_Type * regs;
 	regs = ssp_regs_table[port];
 	int size = 0;
 	while ( (regs->SR & SSPSR_TNF) && ssp_local[port].size && (size < 8) ){
@@ -427,7 +431,7 @@ void ssp_fill_tx_fifo(int port){
 }
 
 void ssp_empty_rx_fifo(int port){
-	LPC_SSP_TypeDef * regs;
+	LPC_SSP_Type * regs;
 	regs = ssp_regs_table[port];
 	while ( regs->SR & SSPSR_RNE ){
 		if ( ssp_local[port].rx_buf != NULL ){
@@ -439,7 +443,7 @@ void ssp_empty_rx_fifo(int port){
 }
 
 void _mcu_core_ssp_isr(int port){
-	LPC_SSP_TypeDef * regs;
+	LPC_SSP_Type * regs;
 	regs = ssp_regs_table[port];
 	ssp_empty_rx_fifo(port);
 	ssp_fill_tx_fifo(port);
@@ -462,7 +466,7 @@ void _mcu_core_ssp2_isr(void){
 
 int ssp_port_transfer(int port, int is_read, device_transfer_t * dop){
 	int size;
-	LPC_SSP_TypeDef * regs;
+	LPC_SSP_Type * regs;
 	size = dop->nbyte;
 
 	regs = ssp_regs_table[port];

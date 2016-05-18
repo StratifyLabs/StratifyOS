@@ -30,8 +30,8 @@ extern __IO uint32_t * _mcu_get_iocon_regs(int port, int pin);
 #define WRITE_OP 0
 #define READ_OP 1
 
-static inline LPC_I2C_TypeDef * i2c_get_regs(int port) MCU_ALWAYS_INLINE;
-LPC_I2C_TypeDef * i2c_get_regs(int port){ return LPC_I2C; }
+static inline LPC_I2C_Type * i2c_get_regs(int port) MCU_ALWAYS_INLINE;
+LPC_I2C_Type * i2c_get_regs(int port){ return LPC_I2C; }
 
 typedef union {
 	uint16_t ptr16;
@@ -121,7 +121,7 @@ int mcu_i2c_getattr(int port, void * ctl){
 }
 
 int mcu_i2c_setattr(int port, void * ctl){
-	LPC_I2C_TypeDef * i2c_regs;
+	LPC_I2C_Type * i2c_regs;
 	i2c_attr_t * ctl_ptr;
 	int count;
 	pio_attr_t pattr;
@@ -217,7 +217,7 @@ static void be_done(int port){
 void _mcu_core_i2c_isr(void) {
 	uint8_t stat_value;
 	const int port = 0;
-	LPC_I2C_TypeDef * i2c_regs;
+	LPC_I2C_Type * i2c_regs;
 	// this handler deals with master read and master write only
 	i2c_regs = i2c_get_regs(port);
 
@@ -336,7 +336,7 @@ void _mcu_core_i2c_isr(void) {
 }
 
 int i2c_transfer(int port, int op, device_transfer_t * dop){
-	LPC_I2C_TypeDef * i2c_regs;
+	LPC_I2C_Type * i2c_regs;
 	int size = dop->nbyte;
 	i2c_regs = i2c_get_regs(port);
 

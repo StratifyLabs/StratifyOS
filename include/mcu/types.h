@@ -149,7 +149,8 @@ typedef struct {
  * \sa I_SETACTION
  */
 typedef struct {
-	uint8_t channel /*! \brief The channel (a GPIO pin or timer channel) */;
+	u8 channel /*! \brief The channel (a GPIO pin or timer channel) */;
+	s8 prio /*! \brief The interrupt priority */;
 	int event /*! \brief The peripheral specific event */;
 	mcu_callback_t callback /*! \brief The function to call.  First argument is the context, second argument is peripheral specific */;
 	void * context /*! \brief The context to execute the callback in */;

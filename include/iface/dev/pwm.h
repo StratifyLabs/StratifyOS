@@ -97,7 +97,7 @@ extern "C" {
 /*! \brief This defines the type for the PWM duty cycle read/write
  * operations.  This definition is MCU specific.
  */
-typedef uint32_t pwm_duty_t;
+typedef u32 pwm_duty_t;
 #endif
 
 /*! \brief This defines a PWM sample type.
@@ -132,12 +132,12 @@ typedef enum {
  * for configuring the DAC port.
  */
 typedef struct MCU_PACK {
-	uint8_t pin_assign /*! \brief The GPIO configuration to use (see \ref LPC17XXDEV) */;
-	uint8_t enabled_channels /*! \brief Enabled channels bit-mask */;
-	uint16_t flags /*! Attribute flags for configuring the PWM unit */;
+	u8 pin_assign /*! \brief The GPIO configuration to use (see \ref LPC17XXDEV) */;
+	u8 enabled_channels /*! \brief Enabled channels bit-mask */;
+	u8 flags /*! Attribute flags for configuring the PWM unit */;
+	u8 resd;
 	pwm_duty_t top /*! \brief The top value of the PWM counter */;
-	uint32_t freq /*! \brief The PWM timer frequency (target value on write, actual value on read); The period
-	is the "top" member divided by "freq" */;
+	u32 freq /*! \brief The PWM timer frequency (target value on write, actual value on read); The period is the "top" member divided by "freq" */;
 } pwm_attr_t;
 
  /*! \brief Structure to set the duty cycle of a channel.
@@ -145,7 +145,7 @@ typedef struct MCU_PACK {
   * do a quick write of the PWM value and is used with \ref I_PWM_SET.
   */
 typedef struct MCU_PACK {
-	uint8_t channel /*! \brief The channel */;
+	u8 channel /*! \brief The channel */;
 	pwm_duty_t duty /*! \brief The duty cycle */;
 } pwm_reqattr_t;
 

@@ -34,7 +34,6 @@ int (* const _mcu_core_ioctl_func_table[I_GLOBAL_TOTAL + I_CORE_TOTAL])(int, voi
 		mcu_core_sleep,
 		mcu_core_reset,
 		mcu_core_invokebootloader,
-		mcu_core_setirqprio,
 		mcu_core_setclkout,
 		mcu_core_setclkdivide
 };

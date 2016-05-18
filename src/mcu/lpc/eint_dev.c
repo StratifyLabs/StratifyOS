@@ -96,6 +96,8 @@ int mcu_eint_setaction(int port, void * ctl){
 	eint_local[port].handler.context = action->context;
 
 	set_event(port, action->event);
+	_mcu_core_setirqprio(EINT0_IRQn + port, action->prio);
+
 	return 0;
 }
 

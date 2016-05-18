@@ -121,9 +121,10 @@ typedef mcu_action_t eint_action_t;
  * controlling external interrupt IO peripherals.
  */
 typedef struct MCU_PACK {
-	uint8_t pin_assign /*! \brief The Pin assignment to use (see \ref LPC17XXDEV) */;
-	uint8_t value /*! \brief Value of input at pin (1 for high and zero for low) */;
-	uint16_t mode /*! \brief Pin mode for pulling up/down/float */;
+	u8 pin_assign /*! \brief The Pin assignment to use (see \ref LPC17XXDEV) */;
+	u8 value /*! \brief Value of input at pin (1 for high and zero for low) */;
+	u8 mode /*! \brief Pin mode for pulling up/down/float */;
+	u8 resd;
 } eint_attr_t;
 
 /*! \brief IOCTL request to get attributes.

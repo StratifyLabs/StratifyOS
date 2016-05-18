@@ -145,12 +145,13 @@ enum {
  * for opening or reconfiguring the UART port.
  */
 typedef struct MCU_PACK {
-	uint8_t pin_assign /*! \brief The GPIO configuration to use (see \ref LPC17XXDEV) */;
-	uint8_t start /*! \brief The number of start bits */;
-	uint8_t stop /*! \brief The number of stop bits */;
-	uint8_t parity /*! \brief The type of parity */;
-	uint32_t baudrate /*! \brief The UART baudrate */;
-	uint8_t width /*! \brief The character width */;
+	u8 pin_assign /*! \brief The GPIO configuration to use (see \ref LPC17XXDEV) */;
+	u8 start /*! \brief The number of start bits */;
+	u8 stop /*! \brief The number of stop bits */;
+	u8 parity /*! \brief The type of parity */;
+	u8 width /*! \brief The character width */;
+	u8 resd[3];
+	u32 baudrate /*! \brief The UART baudrate */;
 } uart_attr_t;
 
 /*! \brief This request gets the UART attributes.

@@ -37,7 +37,7 @@
  * 	int fd;
  * 	i2c_attr_t attr;
  * 	i2c_reqattr_t req;
- * 	uint8_t data[8];
+ * 	u8 data[8];
  *
  * 	fd = open("/dev/i2c0", O_RDWR);
  * 	if ( fd < 0 ){
@@ -162,8 +162,9 @@ typedef i2c_setup_t i2c_reqattr_t; //legacy support
  * for configuring the I2C port.
  */
 typedef struct MCU_PACK {
-	uint8_t pin_assign /*! \brief The GPIO configuration to use (see \ref LPC17XXDEV) */;
-	uint32_t bitrate /*! \brief The I2C bitrate */;
+	u8 pin_assign /*! \brief The GPIO configuration to use (see \ref LPC17XXDEV) */;
+	u8 resd[3];
+	u32 bitrate /*! \brief The I2C bitrate */;
 } i2c_attr_t;
 
 

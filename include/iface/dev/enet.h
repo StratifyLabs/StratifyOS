@@ -69,7 +69,6 @@ enum {
 	ENET_FLAGS_USERMII /*! \brief Use RMII */ = (1<<0),
 	ENET_FLAGS_FULLDUPLEX /*! \brief Use Full Duplex */ = (1<<1),
 	ENET_FLAGS_HALFDUPLEX /*! \brief Use Half Duplex (default) */ = 0,
-
 };
 
 
@@ -87,9 +86,10 @@ typedef mcu_action_t enet_action_t;
  * controlling external interrupt IO peripherals.
  */
 typedef struct MCU_PACK {
-	uint8_t pin_assign /*! \brief The Pin assignment to use (see \ref LPC17XXDEV) */;
-	uint32_t flags /*! \brief Flag settings (see ENET_FLAGS_*) */;
-	uint8_t mac_addr[6] /*! \brief MAC address */;
+	u8 pin_assign /*! \brief The Pin assignment to use (see \ref LPC17XXDEV) */;
+	u8 resd;
+	u16 flags /*! \brief Flag settings (see ENET_FLAGS_*) */;
+	u8 mac_addr[6] /*! \brief MAC address */;
 } enet_attr_t;
 
 /*! \brief IOCTL request to get attributes.

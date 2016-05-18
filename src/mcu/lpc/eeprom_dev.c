@@ -37,8 +37,12 @@ typedef struct MCU_PACK {
 	uint8_t ref_count;
 } eeprom_local_t;
 
-static eeprom_local_t eeprom_local;
-static void exec_callback(void * data);
+static eeprom_local_t eeprom_local[MCU_EEPROM_PORTS];
+LPC_EEPROM_Type * const eeprom_regs[MCU_EEPROM_PORTS] = MCU_EEPROM_REGS;
+u8 const eeprom_irqs[MCU_EEPROM_PORTS] = MCU_EEPROM_IRQS;
+
+
+static void exec_callback(int port, void * data);
 
 static int calc_offset(int loc){
 	return loc % MCU_EEPROM_PAGE_SIZE;
@@ -52,45 +56,47 @@ static int calc_page(int loc){
 void _mcu_eeprom_dev_power_on(int port){
 	uint8_t phase[3];
 	int cpu_mhz;
-
-	if( eeprom_local.ref_count == 0 ){
-		LPC_EEPROM->PWRDWN = 0;
+	LPC_EEPROM_Type * regs = eeprom_regs[port];
+	if( eeprom_local[port].ref_count == 0 ){
+		regs->PWRDWN = 0;
 
 		//enable the interrupt
-		_mcu_core_priv_enable_irq((void*)(EEPROM_IRQn));
+		_mcu_core_priv_enable_irq((void*)(u32)(eeprom_irqs[port]));
 
 		//initialize the EEPROM clock
-		LPC_EEPROM->CLKDIV = (mcu_board_config.core_cpu_freq / 375000) - 1;
+		regs->CLKDIV = (mcu_board_config.core_cpu_freq / 375000) - 1;
 
 		//initialize the STATE register
 		cpu_mhz = mcu_board_config.core_cpu_freq / 1000000;
 		phase[0] = (((cpu_mhz*15) + 500) / 1000) - 1;
 		phase[1] = (((cpu_mhz*55) + 500) / 1000) - 1;
 		phase[2] = (((cpu_mhz*35) + 500) / 1000) - 1;
-		LPC_EEPROM->WSTATE = phase[0] | (phase[1]<<8) | (phase[2]<<16);
+		regs->WSTATE = phase[0] | (phase[1]<<8) | (phase[2]<<16);
 
 	}
 
-	eeprom_local.ref_count++;
+	eeprom_local[port].ref_count++;
 }
 
 void _mcu_eeprom_dev_power_off(int port){
+	LPC_EEPROM_Type * regs = eeprom_regs[port];
 
-	if ( eeprom_local.ref_count > 0 ){
-		if ( eeprom_local.ref_count == 1 ){
+	if ( eeprom_local[port].ref_count > 0 ){
+		if ( eeprom_local[port].ref_count == 1 ){
 			//disable the interrupt
-			_mcu_core_priv_disable_irq((void*)(EEPROM_IRQn));
+			_mcu_core_priv_disable_irq((void*)(u32)(eeprom_irqs[port]));
 
 			//power down
-			LPC_EEPROM->PWRDWN = 1;
+			regs->PWRDWN = 1;
 		}
-		eeprom_local.ref_count--;
+		eeprom_local[port].ref_count--;
 	}
 
 }
 
 int _mcu_eeprom_dev_powered_on(int port){
-	return ( LPC_EEPROM->PWRDWN & (1<<0) ) == 0;
+	LPC_EEPROM_Type * regs = eeprom_regs[port];
+	return ( regs->PWRDWN & (1<<0) ) == 0;
 }
 
 
@@ -106,8 +112,8 @@ int mcu_eeprom_setattr(int port, void * ctl){
 int mcu_eeprom_setaction(int port, void * ctl){
 	mcu_action_t * action = (mcu_action_t *)ctl;
 	if( action->callback == 0 ){
-		if( eeprom_local.buf != 0 ){
-			exec_callback(DEVICE_OP_CANCELLED);
+		if( eeprom_local[port].buf != 0 ){
+			exec_callback(port, DEVICE_OP_CANCELLED);
 		}
 	}
 
@@ -115,19 +121,20 @@ int mcu_eeprom_setaction(int port, void * ctl){
 		return -1;
 	}
 
-	eeprom_local.handler.callback = action->callback;
-	eeprom_local.handler.context = action->context;
+	eeprom_local[port].handler.callback = action->callback;
+	eeprom_local[port].handler.context = action->context;
 	return -1;
 }
 
 
 int _mcu_eeprom_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
+	int port = cfg->periph.port;
 	if ( wop->nbyte == 0 ){
 		return 0;
 	}
 
 	//Check to see if the port is busy
-	if ( eeprom_local.buf != 0 ){
+	if ( eeprom_local[port].buf != 0 ){
 		errno = EAGAIN;
 		return -1;
 	}
@@ -139,44 +146,45 @@ int _mcu_eeprom_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
 	}
 
 	//Initialize variables
-	eeprom_local.buf = wop->buf;
-	eeprom_local.len = wop->nbyte;
-	eeprom_local.isread = 0;
+	eeprom_local[port].buf = wop->buf;
+	eeprom_local[port].len = wop->nbyte;
+	eeprom_local[port].isread = 0;
 
-	eeprom_local.page = calc_page(wop->loc);
-	eeprom_local.offset = calc_offset(wop->loc);
+	eeprom_local[port].page = calc_page(wop->loc);
+	eeprom_local[port].offset = calc_offset(wop->loc);
 
 	//Check the local buffer for bytes that are immediately available
 	if( _mcu_core_priv_validate_callback(wop->callback) < 0 ){
 		return -1;
 	}
 
-	eeprom_local.handler.callback = wop->callback;
-	eeprom_local.handler.context = wop->context;
+	eeprom_local[port].handler.callback = wop->callback;
+	eeprom_local[port].handler.context = wop->context;
 
 	//fill the page
-	LPC_EEPROM->ADDR = eeprom_local.offset;
-	LPC_EEPROM->CMD = 3;
+	LPC_EEPROM_Type * regs = eeprom_regs[port];
+	regs->ADDR = eeprom_local[port].offset;
+	regs->CMD = 3;
 	do {
-		LPC_EEPROM->WDATA = *eeprom_local.buf;
+		regs->WDATA = *eeprom_local[port].buf;
 		//wait until the previous data has written
-		while( (LPC_EEPROM->INT_STATUS & (1<<26)) == 0 ){
+		while( (regs->INTSTAT & (1<<26)) == 0 ){
 			;
 		}
-		LPC_EEPROM->INT_CLR_STATUS = (1<<26);
-		eeprom_local.len--;
-		eeprom_local.offset++;
-		eeprom_local.buf++;
-	} while( (eeprom_local.offset < MCU_EEPROM_PAGE_SIZE) && (eeprom_local.len > 0) );
+		regs->INTSTATCLR = (1<<26);
+		eeprom_local[port].len--;
+		eeprom_local[port].offset++;
+		eeprom_local[port].buf++;
+	} while( (eeprom_local[port].offset < MCU_EEPROM_PAGE_SIZE) && (eeprom_local[port].len > 0) );
 
 
 
-	LPC_EEPROM->ADDR = eeprom_local.page << 6;
-	eeprom_local.page++;
-	eeprom_local.offset = 0;
-	LPC_EEPROM->INT_SET_ENABLE = (1<<28);
+	regs->ADDR = eeprom_local[port].page << 6;
+	eeprom_local[port].page++;
+	eeprom_local[port].offset = 0;
+	regs->INT_SET_ENABLE = (1<<28);
 
-	LPC_EEPROM->CMD = 6; //erase/program page
+	regs->CMD = 6; //erase/program page
 
 
 	return 0;
@@ -184,12 +192,14 @@ int _mcu_eeprom_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
 }
 
 int _mcu_eeprom_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
+	int port = cfg->periph.port;
+
 	if ( rop->nbyte == 0 ){
 		return 0;
 	}
 
 	//Check to see if the port is busy
-	if ( eeprom_local.buf != 0 ){
+	if ( eeprom_local[port].buf != 0 ){
 		errno = EAGAIN;
 		return -1;
 	}
@@ -202,75 +212,80 @@ int _mcu_eeprom_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
 
 
 	//Initialize variables
-	eeprom_local.buf = rop->buf;
-	eeprom_local.len = rop->nbyte;
-	eeprom_local.page = calc_page(rop->loc);
-	eeprom_local.offset = calc_offset(rop->loc);
-
-	LPC_EEPROM->INT_CLR_STATUS = (1<<26) | (1<<28);
+	eeprom_local[port].buf = rop->buf;
+	eeprom_local[port].len = rop->nbyte;
+	eeprom_local[port].page = calc_page(rop->loc);
+	eeprom_local[port].offset = calc_offset(rop->loc);
 
 
-	LPC_EEPROM->ADDR = eeprom_local.offset | (eeprom_local.page << 6);
-	LPC_EEPROM->CMD = 0 | (1<<3);
+	LPC_EEPROM_Type * regs = eeprom_regs[port];
+	regs->INTSTATCLR = (1<<26) | (1<<28);
+
+
+	regs->ADDR = eeprom_local[port].offset | (eeprom_local[port].page << 6);
+	regs->CMD = 0 | (1<<3);
 	do {
-		*eeprom_local.buf = LPC_EEPROM->RDATA;
+		*eeprom_local[port].buf = regs->RDATA;
 		//wait until the previous data has been read
-		while( (LPC_EEPROM->INT_STATUS & (1<<26)) == 0 ){
+		while( (regs->INTSTAT & (1<<26)) == 0 ){
 			;
 		}
-		LPC_EEPROM->INT_CLR_STATUS = (1<<26);
-		eeprom_local.len--;
-		eeprom_local.offset++;
-		eeprom_local.buf++;
+		regs->INTSTATCLR = (1<<26);
+		eeprom_local[port].len--;
+		eeprom_local[port].offset++;
+		eeprom_local[port].buf++;
 
-		if( eeprom_local.offset == MCU_EEPROM_PAGE_SIZE ){
-			eeprom_local.offset = 0;
-			eeprom_local.page++;
-			LPC_EEPROM->ADDR = (eeprom_local.page << 6);
-			LPC_EEPROM->CMD = 0 | (1<<3);
+		if( eeprom_local[port].offset == MCU_EEPROM_PAGE_SIZE ){
+			eeprom_local[port].offset = 0;
+			eeprom_local[port].page++;
+			regs->ADDR = (eeprom_local[port].page << 6);
+			regs->CMD = 0 | (1<<3);
 		}
 
-	} while( eeprom_local.len > 0 );
-	eeprom_local.buf = 0;
+	} while( eeprom_local[port].len > 0 );
+	eeprom_local[port].buf = 0;
 	return rop->nbyte;
 }
 
-void exec_callback(void * data){
-	eeprom_local.buf = 0;
-	LPC_EEPROM->INT_CLR_ENABLE = (1<<26)|(1<<28); //disable the interrupts
-	_mcu_core_exec_event_handler(&(eeprom_local.handler), 0);
+void exec_callback(int port, void * data){
+	LPC_EEPROM_Type * regs = eeprom_regs[port];
+	eeprom_local[port].buf = 0;
+	regs->INTENCLR = (1<<26)|(1<<28); //disable the interrupts
+	_mcu_core_exec_event_handler(&(eeprom_local[port].handler), 0);
 }
 
 void _mcu_core_eeprom_isr(void){
-	uint32_t status = LPC_EEPROM->INT_STATUS;
-	LPC_EEPROM->INT_CLR_STATUS = status;
+	const int port = 0;
+	LPC_EEPROM_Type * regs = eeprom_regs[port];
+	uint32_t status = regs->INTSTAT;
+	regs->INTSTATCLR = status;
 	if( status & (1<<28) ){
 		//this was a program/erase action
-		if( eeprom_local.len > 0 ){
-			LPC_EEPROM->ADDR = eeprom_local.offset;
-			LPC_EEPROM->CMD = 3;
+		if( eeprom_local[port].len > 0 ){
+			regs->ADDR = eeprom_local[port].offset;
+			regs->CMD = 3;
 			do {
-				LPC_EEPROM->WDATA = *eeprom_local.buf;
+				regs->WDATA = *eeprom_local[port].buf;
 				//wait until the previous data has written
-				while( (LPC_EEPROM->INT_STATUS & (1<<26)) == 0 ){
+				while( (regs->INTSTAT & (1<<26)) == 0 ){
 					;
 				}
-				LPC_EEPROM->INT_CLR_STATUS = (1<<26);
-				eeprom_local.len--;
-				eeprom_local.offset++;
-				eeprom_local.buf++;
-			} while( (eeprom_local.offset < MCU_EEPROM_PAGE_SIZE) && (eeprom_local.len > 0) );
+				regs->INTSTATCLR = (1<<26);
+				eeprom_local[port].len--;
+				eeprom_local[port].offset++;
+				eeprom_local[port].buf++;
+			} while( (eeprom_local[port].offset < MCU_EEPROM_PAGE_SIZE) && (eeprom_local[port].len > 0) );
 
-			LPC_EEPROM->ADDR = eeprom_local.page << 6;
-			LPC_EEPROM->CMD = 6; //erase/program page
-			eeprom_local.page++;
-			eeprom_local.offset = 0;
+			regs->ADDR = eeprom_local[port].page << 6;
+			regs->CMD = 6; //erase/program page
+			eeprom_local[port].page++;
+			eeprom_local[port].offset = 0;
 			return;
 		}
 	}
 
-	if( eeprom_local.len == 0 ){
-		exec_callback(0);
+	if( eeprom_local[port].len == 0 ){
+		exec_callback(0, 0);
 	}
 }
 

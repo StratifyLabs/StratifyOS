@@ -134,6 +134,7 @@ typedef u32 adc_sample_t;
  */
 typedef struct MCU_PACK {
 	u8 pin_assign /*! \brief The pin assignment to use (see \ref LPC17XXDEV) */;
+	u8 resd;
 	u16 enabled_channels /*! \brief A mask of the enabled channels (a one means the channel is enabled) */;
 	u32 freq /*! \brief The read update frequency (can't be zero).  This is a target value when
 	writing and the actual value when reading. */;

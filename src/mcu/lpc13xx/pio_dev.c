@@ -31,52 +31,52 @@ typedef struct {
 
 static pio_local_t _mcu_pio_local[MCU_PIO_PORTS] MCU_SYS_MEM;
 static int _mcu_pio_set_event(int port, int event, int pin);
-static LPC_GPIO_TypeDef * const pio_regs_table[MCU_PIO_PORTS] = MCU_PIO_REGS;
+static LPC_GPIO_Type * const pio_regs_table[MCU_PIO_PORTS] = MCU_PIO_REGS;
 __IO uint32_t * _mcu_get_iocon_regs(int port, int pin);
 
 static __IO uint32_t * const iocon_table[3*12+6] = {
-		(__IO uint32_t*)(LPC_IOCON_BASE + offsetof(LPC_IOCON_TypeDef, RESET_PIO0_0)),
-		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_TypeDef, PIO0_1)),
-		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_TypeDef, PIO0_2)),
-		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_TypeDef, PIO0_3)),
-		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_TypeDef, PIO0_4)),
-		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_TypeDef, PIO0_5)),
-		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_TypeDef, PIO0_6)),
-		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_TypeDef, PIO0_7)),
-		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_TypeDef, PIO0_8)),
-		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_TypeDef, PIO0_9)),
-		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_TypeDef, JTAG_TCK_PIO0_10)),
-		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_TypeDef, JTAG_TDI_PIO0_11)),
-		(__IO uint32_t*)(LPC_IOCON_BASE + offsetof(LPC_IOCON_TypeDef, JTAG_TMS_PIO1_0)),
-		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_TypeDef, JTAG_TDO_PIO1_1)),
-		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_TypeDef, JTAG_nTRST_PIO1_2)),
-		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_TypeDef, SWDIO_PIO1_3)),
-		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_TypeDef, PIO1_4)),
-		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_TypeDef, PIO1_5)),
-		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_TypeDef, PIO1_6)),
-		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_TypeDef, PIO1_7)),
-		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_TypeDef, PIO1_8)),
-		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_TypeDef, PIO1_9)),
-		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_TypeDef, PIO1_10)),
-		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_TypeDef, PIO1_11)),
-		(__IO uint32_t*)(LPC_IOCON_BASE + offsetof(LPC_IOCON_TypeDef, PIO2_0)),
-		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_TypeDef, PIO2_1)),
-		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_TypeDef, PIO2_2)),
-		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_TypeDef, PIO2_3)),
-		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_TypeDef, PIO2_4)),
-		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_TypeDef, PIO2_5)),
-		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_TypeDef, PIO2_6)),
-		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_TypeDef, PIO2_7)),
-		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_TypeDef, PIO2_8)),
-		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_TypeDef, PIO2_9)),
-		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_TypeDef, PIO2_10)),
-		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_TypeDef, PIO2_11)),
-		(__IO uint32_t*)(LPC_IOCON_BASE + offsetof(LPC_IOCON_TypeDef, PIO3_0)),
-		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_TypeDef, PIO3_1)),
-		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_TypeDef, PIO3_2)),
-		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_TypeDef, PIO3_3)),
-		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_TypeDef, PIO3_4)),
-		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_TypeDef, PIO3_5))
+		(__IO uint32_t*)(LPC_IOCON_BASE + offsetof(LPC_IOCON_Type, RESET_PIO0_0)),
+		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_Type, PIO0_1)),
+		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_Type, PIO0_2)),
+		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_Type, PIO0_3)),
+		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_Type, PIO0_4)),
+		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_Type, PIO0_5)),
+		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_Type, PIO0_6)),
+		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_Type, PIO0_7)),
+		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_Type, PIO0_8)),
+		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_Type, PIO0_9)),
+		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_Type, JTAG_TCK_PIO0_10)),
+		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_Type, JTAG_TDI_PIO0_11)),
+		(__IO uint32_t*)(LPC_IOCON_BASE + offsetof(LPC_IOCON_Type, JTAG_TMS_PIO1_0)),
+		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_Type, JTAG_TDO_PIO1_1)),
+		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_Type, JTAG_nTRST_PIO1_2)),
+		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_Type, SWDIO_PIO1_3)),
+		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_Type, PIO1_4)),
+		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_Type, PIO1_5)),
+		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_Type, PIO1_6)),
+		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_Type, PIO1_7)),
+		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_Type, PIO1_8)),
+		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_Type, PIO1_9)),
+		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_Type, PIO1_10)),
+		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_Type, PIO1_11)),
+		(__IO uint32_t*)(LPC_IOCON_BASE + offsetof(LPC_IOCON_Type, PIO2_0)),
+		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_Type, PIO2_1)),
+		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_Type, PIO2_2)),
+		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_Type, PIO2_3)),
+		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_Type, PIO2_4)),
+		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_Type, PIO2_5)),
+		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_Type, PIO2_6)),
+		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_Type, PIO2_7)),
+		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_Type, PIO2_8)),
+		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_Type, PIO2_9)),
+		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_Type, PIO2_10)),
+		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_Type, PIO2_11)),
+		(__IO uint32_t*)(LPC_IOCON_BASE + offsetof(LPC_IOCON_Type, PIO3_0)),
+		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_Type, PIO3_1)),
+		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_Type, PIO3_2)),
+		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_Type, PIO3_3)),
+		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_Type, PIO3_4)),
+		(__IO uint32_t*)(LPC_IOCON_BASE+ offsetof(LPC_IOCON_Type, PIO3_5))
 };
 
 void _mcu_pio_dev_power_on(int port){
@@ -107,7 +107,7 @@ int _mcu_pio_dev_powered_on(int port){
 
 int _mcu_pio_set_event(int port, int event, int pin){
 	uint32_t mask;
-	LPC_GPIO_TypeDef * regs = pio_regs_table[port];
+	LPC_GPIO_Type * regs = pio_regs_table[port];
 
 	mask = (1<<pin);
 
@@ -186,7 +186,7 @@ int mcu_pio_setattr(int port, void * ctl){
 	pio_attr_t * attr;
 	attr = ctl;
 	__IO uint32_t * regs_iocon;
-	LPC_GPIO_TypeDef * gpio_regs = pio_regs_table[port];
+	LPC_GPIO_Type * gpio_regs = pio_regs_table[port];
 
 	if( attr->mode & PIO_MODE_INPUT ){
 		//set as input
@@ -246,32 +246,32 @@ int mcu_pio_setattr(int port, void * ctl){
 }
 
 int mcu_pio_setmask(int port, void * ctl){
-	LPC_GPIO_TypeDef * gpio_regs = pio_regs_table[port];
+	LPC_GPIO_Type * gpio_regs = pio_regs_table[port];
 	uint32_t mask = (int)ctl;
 	gpio_regs->MASKED_ACCESS[mask] = mask;
 	return 0;
 }
 
 int mcu_pio_clrmask(int port, void * ctl){
-	LPC_GPIO_TypeDef * gpio_regs = pio_regs_table[port];
+	LPC_GPIO_Type * gpio_regs = pio_regs_table[port];
 	uint32_t mask = (int)ctl;
 	gpio_regs->MASKED_ACCESS[mask] = 0;
 	return 0;
 }
 
 int mcu_pio_get(int port, void * ctl){
-	LPC_GPIO_TypeDef * gpio_regs = pio_regs_table[port];
+	LPC_GPIO_Type * gpio_regs = pio_regs_table[port];
 	return gpio_regs->DATA;
 }
 
 int mcu_pio_set(int port, void * ctl){
-	LPC_GPIO_TypeDef * regs = pio_regs_table[port];
+	LPC_GPIO_Type * regs = pio_regs_table[port];
 	regs->DATA=(int)ctl;
 	return 0;
 }
 
 void _mcu_core_pio_isr(int port){
-	LPC_GPIO_TypeDef * regs = pio_regs_table[port];
+	LPC_GPIO_Type * regs = pio_regs_table[port];
 	uint32_t status;
 	status = regs->RIS;
 	regs->IC |= status;

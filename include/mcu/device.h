@@ -30,7 +30,6 @@
 #include "mcu/flash.h"
 #include "mcu/mci.h"
 #include "mcu/mem.h"
-#include "mcu/gpio.h"
 #include "mcu/i2c.h"
 #include "mcu/i2s.h"
 #include "mcu/pio.h"

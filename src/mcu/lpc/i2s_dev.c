@@ -35,10 +35,11 @@
 
 //__IO uint32_t * _mcu_get_iocon_regs(int port, int pin);
 
-static LPC_I2S_TypeDef * const i2s_regs_table[MCU_I2S_PORTS] = MCU_I2S_REGS;
+static LPC_I2S_Type * const i2s_regs_table[MCU_I2S_PORTS] = MCU_I2S_REGS;
+static u8 const i2s_irqs[MCU_I2S_PORTS] = MCU_I2S_IRQS;
 
-static inline LPC_I2S_TypeDef * i2s_get_regs(int port) MCU_ALWAYS_INLINE;
-LPC_I2S_TypeDef * i2s_get_regs(int port){
+static inline LPC_I2S_Type * i2s_get_regs(int port) MCU_ALWAYS_INLINE;
+LPC_I2S_Type * i2s_get_regs(int port){
 	return i2s_regs_table[port];
 }
 
@@ -73,7 +74,7 @@ void _mcu_i2s_dev_power_on(int port){
 			_mcu_lpc_core_enable_pwr(PCI2S);
 			break;
 		}
-		_mcu_core_priv_enable_irq((void*)I2S_IRQn);
+		_mcu_core_priv_enable_irq((void*)(u32)(i2s_irqs[port]));
 		i2s_local[port].rx.handler.callback = NULL;
 		i2s_local[port].tx.handler.callback = NULL;
 		i2s_local[port].rx.bufp = 0;
@@ -85,7 +86,7 @@ void _mcu_i2s_dev_power_on(int port){
 void _mcu_i2s_dev_power_off(int port){
 	if ( i2s_local[port].ref_count > 0 ){
 		if ( i2s_local[port].ref_count == 1 ){
-			_mcu_core_priv_disable_irq((void*)(I2S_IRQn));
+			_mcu_core_priv_disable_irq((void*)(u32)(i2s_irqs[port]));
 			switch(port){
 			case 0:
 				_mcu_lpc_core_disable_pwr(PCI2S);
@@ -106,7 +107,7 @@ int mcu_i2s_getattr(int port, void * ctl){
 }
 
 int mcu_i2s_setattr(int port, void * ctl){
-	LPC_I2S_TypeDef * i2s_regs = i2s_get_regs(port);
+	LPC_I2S_Type * i2s_regs = i2s_get_regs(port);
 	i2s_attr_t * p = ctl;
 	u32 audio_reg = 0;
 	u32 bits;
@@ -255,24 +256,26 @@ int mcu_i2s_setaction(int port, void * ctl){
 
 	}
 
+	_mcu_core_setirqprio(i2s_irqs[port], action->prio);
+
 
 	return 0;
 }
 
 int mcu_i2s_mute(int port, void * ctl){
-	LPC_I2S_TypeDef * i2s_regs = i2s_get_regs(port);
+	LPC_I2S_Type * i2s_regs = i2s_get_regs(port);
 	i2s_regs->DAO |= (1<<15);
 	return 0;
 
 }
 int mcu_i2s_unmute(int port, void * ctl){
-	LPC_I2S_TypeDef * i2s_regs = i2s_get_regs(port);
+	LPC_I2S_Type * i2s_regs = i2s_get_regs(port);
 	i2s_regs->DAO &= ~(1<<15);
 	return 0;
 }
 
 u8 read_rx_data(int port){
-	LPC_I2S_TypeDef * i2s_regs = i2s_get_regs(port);
+	LPC_I2S_Type * i2s_regs = i2s_get_regs(port);
 	u8 level = ((i2s_regs->STATE >> 8)  & 0x0F);
 	u8 i;
 	if( level > i2s_local[port].rx.len ){
@@ -286,7 +289,7 @@ u8 read_rx_data(int port){
 }
 
 u8 write_tx_data(int port){
-	LPC_I2S_TypeDef * i2s_regs = i2s_get_regs(port);
+	LPC_I2S_Type * i2s_regs = i2s_get_regs(port);
 	u8 level = 8 - ((i2s_regs->STATE >> 16)  & 0x0F);
 	u8 i;
 	if( level > i2s_local[port].tx.len ){
@@ -303,7 +306,7 @@ int _mcu_i2s_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
 	int port = DEVICE_GET_PORT(cfg);
 
 	//Grab the registers
-	LPC_I2S_TypeDef * i2s_regs = i2s_get_regs(port);
+	LPC_I2S_Type * i2s_regs = i2s_get_regs(port);
 
 	if ( i2s_regs->IRQ & (1<<1) ){ //is tx interrupt already enabled
 		errno = EAGAIN;
@@ -336,7 +339,7 @@ int _mcu_i2s_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
 	int port = DEVICE_GET_PORT(cfg);
 	int nsamples;
 
-	LPC_I2S_TypeDef * i2s_regs = i2s_get_regs(port);
+	LPC_I2S_Type * i2s_regs = i2s_get_regs(port);
 
 	//read from the RXFIFO
 
@@ -371,7 +374,7 @@ int _mcu_i2s_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
 
 void _mcu_core_i2s_isr(void){
 	int port = 0;
-	LPC_I2S_TypeDef * i2s_regs = i2s_get_regs(port);
+	LPC_I2S_Type * i2s_regs = i2s_get_regs(port);
 	if( i2s_local[port].rx.bufp ){
 		read_rx_data(port);
 		if( i2s_local[port].rx.len == 0 ){

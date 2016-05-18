@@ -110,9 +110,10 @@ typedef enum {
  *
  */
 typedef struct MCU_PACK {
-	uint8_t pin_assign /*! \brief The GPIO configuration to use (see \ref LPC17XXDEV) */;
-	uint8_t mode /*! \brief The mode see \ref usb_attr_mode_t */;
-	uint32_t crystal_freq /*! \brief The crystal oscillator frequency */;
+	u8 pin_assign /*! \brief The GPIO configuration to use (see \ref LPC17XXDEV) */;
+	u8 mode /*! \brief The mode see \ref usb_attr_mode_t */;
+	u16 resd;
+	u32 crystal_freq /*! \brief The crystal oscillator frequency */;
 } usb_attr_t;
 
 /*! \brief See details below.

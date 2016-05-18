@@ -116,8 +116,8 @@ typedef mcu_action_t pio_action_t;
  * \details This data structures holds the details of a single port/pin combination.
  */
 typedef struct MCU_PACK {
-	uint8_t port /*! \brief The port number */;
-	uint8_t pin /*! \brief The pin number */;
+	u8 port /*! \brief The port number */;
+	u8 pin /*! \brief The pin number */;
 } pio_t;
 
 /*! \details This lists the PIN mode options.  Not all
@@ -148,7 +148,8 @@ typedef enum {
  */
 typedef struct MCU_PACK {
 	pio_sample_t mask /*! \brief Each bit set in the mask will be set to \a mode using I_PIO_SET_PINMODE */;
-	uint16_t mode /*! \brief OR the pio_mode_t */;
+	u16 mode /*! \brief OR the pio_mode_t */;
+	u16 resd;
 } pio_attr_t;
 
 typedef struct MCU_PACK {

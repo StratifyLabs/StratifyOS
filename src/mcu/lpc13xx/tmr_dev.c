@@ -31,7 +31,7 @@
 #define CR0_FLAG (1<<4)
 #define CR1_FLAG (1<<5)
 
-LPC_TMR_TypeDef * const tmr_regs_table[MCU_TMR_PORTS] = MCU_TMR_REGS;
+LPC_TMR_Type * const tmr_regs_table[MCU_TMR_PORTS] = MCU_TMR_REGS;
 
 struct tmr_cfg {
 	uint8_t pin_assign;
@@ -374,21 +374,21 @@ int mcu_tmr_setattr(int port, void * ctl){
 }
 
 int mcu_tmr_on(int port, void * ctl){
-	LPC_TMR_TypeDef * regs;
+	LPC_TMR_Type * regs;
 	regs = tmr_regs_table[port];
 	regs->TCR = 1;
 	return 0;
 }
 
 int mcu_tmr_off(int port, void * ctl){
-	LPC_TMR_TypeDef * regs;
+	LPC_TMR_Type * regs;
 	regs = tmr_regs_table[port];
 	regs->TCR = 0;
 	return 0;
 }
 
 int mcu_tmr_setoc(int port, void * ctl){
-	LPC_TMR_TypeDef * regs;
+	LPC_TMR_Type * regs;
 	regs = tmr_regs_table[port];
 	//Write the output compare value
 	tmr_reqattr_t * req = (tmr_reqattr_t*)ctl;
@@ -401,7 +401,7 @@ int mcu_tmr_setoc(int port, void * ctl){
 }
 
 int mcu_tmr_getoc(int port, void * ctl){
-	LPC_TMR_TypeDef * regs;
+	LPC_TMR_Type * regs;
 	regs = tmr_regs_table[port];
 	//Read the output compare channel
 	tmr_reqattr_t * req = (tmr_reqattr_t*)ctl;
@@ -414,7 +414,7 @@ int mcu_tmr_getoc(int port, void * ctl){
 }
 
 int mcu_tmr_setic(int port, void * ctl){
-	LPC_TMR_TypeDef * regs;
+	LPC_TMR_Type * regs;
 	regs = tmr_regs_table[port];
 	unsigned int chan;
 	tmr_reqattr_t * req = (tmr_reqattr_t*)ctl;
@@ -428,7 +428,7 @@ int mcu_tmr_setic(int port, void * ctl){
 }
 
 int mcu_tmr_getic(int port, void * ctl){
-	LPC_TMR_TypeDef * regs;
+	LPC_TMR_Type * regs;
 	unsigned int chan;
 	regs = tmr_regs_table[port];
 	tmr_reqattr_t * req = (tmr_reqattr_t*)ctl;
@@ -459,7 +459,7 @@ int _mcu_tmr_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
 
 int mcu_tmr_setaction(int port, void * ctl){
 	tmr_action_t * action = (tmr_action_t*)ctl;
-	LPC_TMR_TypeDef * regs;
+	LPC_TMR_Type * regs;
 	regs = tmr_regs_table[port];
 	int chan;
 	int event;
@@ -528,14 +528,14 @@ int _mcu_tmr_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
 }
 
 int mcu_tmr_set(int port, void * ctl){
-	LPC_TMR_TypeDef * regs;
+	LPC_TMR_Type * regs;
 	regs = tmr_regs_table[port];
 	regs->TC = (uint32_t)ctl;
 	return 0;
 }
 
 int mcu_tmr_get(int port, void * ctl){
-	LPC_TMR_TypeDef * regs;
+	LPC_TMR_Type * regs;
 	regs = tmr_regs_table[port];
 	return regs->TC;
 }
@@ -546,7 +546,7 @@ static void tmr_isr(int port); //This is speed optimized
 //Four timers with 4 OC's and 2 IC's each
 void tmr_isr(int port){
 	int flags;
-	LPC_TMR_TypeDef * regs;
+	LPC_TMR_Type * regs;
 	regs = tmr_regs_table[port];
 	flags = (regs->IR & 0x3F);
 	regs->IR = flags; //clear the flags

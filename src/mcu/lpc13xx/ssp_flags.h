@@ -62,8 +62,8 @@
 #define RXDMAE (1<<0)
 #define TXDMAE (1<<1)
 
-static inline LPC_SSP_TypeDef * ssp_get_regs(int port) MCU_ALWAYS_INLINE;
-LPC_SSP_TypeDef * ssp_get_regs(int port){
+static inline LPC_SSP_Type * ssp_get_regs(int port) MCU_ALWAYS_INLINE;
+LPC_SSP_Type * ssp_get_regs(int port){
 	return LPC_SSP;
 }
 

@@ -37,10 +37,12 @@ void enable_opendrain_pin(int pio_port, int pio_pin){
 	mcu_pio_setattr(pio_port, &pattr);
 }
 
-static LPC_I2C_TypeDef * const i2c_regs_table[MCU_I2C_PORTS] = MCU_I2C_REGS;
+static LPC_I2C_Type * const i2c_regs_table[MCU_I2C_PORTS] = MCU_I2C_REGS;
 
-static inline LPC_I2C_TypeDef * i2c_get_regs(int port) MCU_ALWAYS_INLINE;
-LPC_I2C_TypeDef * i2c_get_regs(int port){
+static u8 const i2c_irqs[MCU_I2C_PORTS] = MCU_I2C_IRQS;
+
+static inline LPC_I2C_Type * i2c_get_regs(int port) MCU_ALWAYS_INLINE;
+LPC_I2C_Type * i2c_get_regs(int port){
 	return i2c_regs_table[port];
 }
 
@@ -113,7 +115,7 @@ void _mcu_i2c_dev_power_on(int port){
 			break;
 #endif
 		}
-		_mcu_core_priv_enable_irq((void*)I2C0_IRQn + port);
+		_mcu_core_priv_enable_irq((void*)(u32)(i2c_irqs[port]));
 		i2c_local[port].handler.callback = NULL;
 	}
 	i2c_local[port].ref_count++;
@@ -122,7 +124,7 @@ void _mcu_i2c_dev_power_on(int port){
 void _mcu_i2c_dev_power_off(int port){
 	if ( i2c_local[port].ref_count > 0 ){
 		if ( i2c_local[port].ref_count == 1 ){
-			_mcu_core_priv_disable_irq((void*)(I2C0_IRQn + port));
+			_mcu_core_priv_disable_irq((void*)(u32)(i2c_irqs[port]));
 			switch(port){
 			case 0:
 #if defined __lpc13uxx || __lpc13xx
@@ -156,7 +158,7 @@ int mcu_i2c_getattr(int port, void * ctl){
 }
 
 int mcu_i2c_setattr(int port, void * ctl){
-	LPC_I2C_TypeDef * i2c_regs;
+	LPC_I2C_Type * i2c_regs;
 	i2c_attr_t * ctl_ptr;
 	int count;
 #if defined __lpc13uxx || defined __lpc13xx
@@ -304,6 +306,9 @@ int mcu_i2c_setaction(int port, void * ctl){
 	i2c_local[port].handler.callback = action->callback;
 	i2c_local[port].handler.context = action->context;
 
+	_mcu_core_setirqprio(i2c_irqs[port], action->prio);
+
+
 	return 0;
 }
 
@@ -325,7 +330,7 @@ static void be_done(int port){
 
 static void _mcu_i2c_isr(int port) {
 	uint8_t stat_value;
-	LPC_I2C_TypeDef * i2c_regs;
+	LPC_I2C_Type * i2c_regs;
 	// this handler deals with master read and master write only
 	i2c_regs = i2c_get_regs(port);
 
@@ -450,7 +455,7 @@ void exec_callback(int port, void * data){
 }
 
 int i2c_transfer(int port, int op, device_transfer_t * dop){
-	LPC_I2C_TypeDef * i2c_regs;
+	LPC_I2C_Type * i2c_regs;
 	int size = dop->nbyte;
 	i2c_regs = i2c_get_regs(port);
 

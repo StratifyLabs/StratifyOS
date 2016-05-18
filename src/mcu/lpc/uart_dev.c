@@ -31,7 +31,7 @@
 #if MCU_UART_PORTS > 0
 
 
-//LPC_UART_TypeDef * uart_get_regs(int port);
+//LPC_UART_Type * uart_get_regs(int port);
 
 // Interrupt Enable Register bit definitions
 #define UIER_RBRIE			(1 << 0) 	// Enable data received interrupt
@@ -126,7 +126,8 @@ static uart_local_t uart_local[UART_PORTS] MCU_SYS_MEM;
 static void read_rx_data(int port);
 static void write_tx_data(int port);
 
-LPC_UART_TypeDef * const uart_regs_table[UART_PORTS] = MCU_UART_REGS;
+LPC_UART_Type * const uart_regs_table[UART_PORTS] = MCU_UART_REGS;
+u8 const uart_irqs[UART_PORTS] = MCU_UART_IRQS;
 
 void _mcu_uart_dev_power_on(int port){
 	if ( uart_local[port].ref_count == 0 ){
@@ -167,7 +168,7 @@ void _mcu_uart_dev_power_on(int port){
 void _mcu_uart_dev_power_off(int port){
 	if ( uart_local[port].ref_count > 0 ){
 		if ( uart_local[port].ref_count == 1 ){
-			_mcu_core_priv_disable_irq((void*)(UART0_IRQn + port));
+			_mcu_core_priv_disable_irq((void*)(u32)(uart_irqs[port]));
 			switch(port){
 			case 0:
 #if defined __lpc13uxx
@@ -220,7 +221,7 @@ int mcu_uart_setattr(int port, void * ctl){
 	uint8_t baud_high;
 	uint8_t lcr;
 	uint32_t f_div;
-	LPC_UART_TypeDef * uart_regs;
+	LPC_UART_Type * uart_regs;
 	uart_attr_t * ctl_ptr = (uart_attr_t*)ctl;
 	uart_regs = uart_regs_table[port];
 
@@ -363,7 +364,7 @@ int mcu_uart_setattr(int port, void * ctl){
 #endif
 
 	//! \todo Error check the width
-	_mcu_core_priv_disable_irq((void*)(UART0_IRQn + port));
+	_mcu_core_priv_disable_irq((void*)(u32)(uart_irqs[port]));
 
 	uart_regs->RBR;
 	uart_regs->IIR;
@@ -402,12 +403,12 @@ int mcu_uart_setattr(int port, void * ctl){
 	//! \todo need to store actual baud rate not target baud rate
 	//uart_local[port].attr.baudrate = ctl_ptr->baudrate;
 
-	_mcu_core_priv_enable_irq((void*)UART0_IRQn + port);
+	_mcu_core_priv_enable_irq((void*)(u32)(uart_irqs[port]));
 
 	return 0;
 }
 
-static void exec_readcallback(int port, LPC_UART_TypeDef * uart_regs, void * data){
+static void exec_readcallback(int port, LPC_UART_Type * uart_regs, void * data){
 	_mcu_core_exec_event_handler(&(uart_local[port].read), data);
 
 	//if the callback is NULL now, disable the interrupt
@@ -416,7 +417,7 @@ static void exec_readcallback(int port, LPC_UART_TypeDef * uart_regs, void * dat
 	}
 }
 
-static void exec_writecallback(int port, LPC_UART_TypeDef * uart_regs, void * data){
+static void exec_writecallback(int port, LPC_UART_Type * uart_regs, void * data){
 	uart_local[port].tx_bufp = NULL;
 	//call the write callback
 	_mcu_core_exec_event_handler(&(uart_local[port].write), data);
@@ -430,7 +431,7 @@ static void exec_writecallback(int port, LPC_UART_TypeDef * uart_regs, void * da
 int mcu_uart_setaction(int port, void * ctl){
 	int ret;
 	mcu_action_t * action = (mcu_action_t*)ctl;
-	LPC_UART_TypeDef * uart_regs = uart_regs_table[port];
+	LPC_UART_Type * uart_regs = uart_regs_table[port];
 
 	if( action->callback == 0 ){
 		//if there is an ongoing operation -- cancel it
@@ -475,6 +476,10 @@ int mcu_uart_setaction(int port, void * ctl){
 		errno = EINVAL;
 		return -1;
 	}
+
+	_mcu_core_setirqprio(uart_irqs[port], action->prio);
+
+
 	return 0;
 }
 
@@ -484,7 +489,7 @@ int mcu_uart_clear(int port, void * ctl){
 
 int mcu_uart_flush(int port, void * ctl){
 	//char tmp;
-	LPC_UART_TypeDef * uart_regs = uart_regs_table[port];
+	LPC_UART_Type * uart_regs = uart_regs_table[port];
 	uart_regs->RBR;
 	uart_regs->FCR = UFCR_RX_FIFO_RESET|UFCR_TX_FIFO_RESET;
 	return 0;
@@ -493,7 +498,7 @@ int mcu_uart_flush(int port, void * ctl){
 
 int mcu_uart_getbyte(int port, void * ctl){
 	char * dest;
-	LPC_UART_TypeDef * uart_regs = uart_regs_table[port];
+	LPC_UART_Type * uart_regs = uart_regs_table[port];
 	if( uart_regs->LSR & ULSR_RDR ){ //check to see if a byte is available
 		dest = ctl;
 		*dest = uart_regs->RBR;
@@ -505,7 +510,7 @@ int mcu_uart_getbyte(int port, void * ctl){
 int mcu_uart_getall(int port, void * ctl){
 	char * dest;
 	int i;
-	LPC_UART_TypeDef * uart_regs = uart_regs_table[port];
+	LPC_UART_Type * uart_regs = uart_regs_table[port];
 	dest = ctl;
 	i = 0;
 	if( uart_regs->LSR & ULSR_RDR ){
@@ -522,7 +527,7 @@ int mcu_uart_getall(int port, void * ctl){
 int _mcu_uart_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
 	int len;
 	int port;
-	LPC_UART_TypeDef * uart_regs;
+	LPC_UART_Type * uart_regs;
 
 	//grab the port and registers
 	port = DEVICE_GET_PORT(cfg);
@@ -562,7 +567,7 @@ int _mcu_uart_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
 }
 
 int _mcu_uart_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
-	LPC_UART_TypeDef * uart_regs;
+	LPC_UART_Type * uart_regs;
 	int port;
 	port = DEVICE_GET_PORT(cfg);
 
@@ -599,7 +604,7 @@ int _mcu_uart_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
 }
 
 void read_rx_data(int port){
-	LPC_UART_TypeDef * uart_regs = uart_regs_table[port];
+	LPC_UART_Type * uart_regs = uart_regs_table[port];
 	while( (uart_local[port].rx_len) && (uart_regs->LSR & ULSR_RDR) ){
 		*(uart_local[port].rx_bufp)++ = uart_regs->RBR;
 		uart_local[port].rx_len--;
@@ -609,7 +614,7 @@ void read_rx_data(int port){
 void write_tx_data(int port){
 	int fifo_cnt;
 	fifo_cnt = UART_TX_FIFO_SIZE;
-	LPC_UART_TypeDef * uart_regs = uart_regs_table[port];
+	LPC_UART_Type * uart_regs = uart_regs_table[port];
 	while( (uart_local[port].tx_len > 0) && (fifo_cnt > 0) ){
 		uart_regs->THR = *(uart_local[port].tx_bufp)++;
 		fifo_cnt--;
@@ -619,7 +624,7 @@ void write_tx_data(int port){
 
 void _mcu_uart_isr(int port){
 	//first determine if this is a UART0 interrupt
-	LPC_UART_TypeDef * uart_regs = uart_regs_table[port];
+	LPC_UART_Type * uart_regs = uart_regs_table[port];
 
 	//Read the IIR value
 	uart_regs->IIR;

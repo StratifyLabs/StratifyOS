@@ -30,7 +30,7 @@
 #define WRITE_OVERFLOW (1<<1)
 
 static void update_pwm(int port, int chan, int duty);
-static void exec_callback(int port, LPC_PWM_TypeDef * regs, void * data);
+static void exec_callback(int port, LPC_PWM_Type * regs, void * data);
 
 typedef struct MCU_PACK {
 	const uint32_t * volatile duty;
@@ -44,7 +44,8 @@ typedef struct MCU_PACK {
 
 static pwm_local_t pwm_local[MCU_PWM_PORTS] MCU_SYS_MEM;
 
-LPC_PWM_TypeDef * const pwm_regs_table[MCU_PWM_PORTS] = MCU_PWM_REGS;
+LPC_PWM_Type * const pwm_regs_table[MCU_PWM_PORTS] = MCU_PWM_REGS;
+u8 const pwm_irqs[MCU_PWM_PORTS] = MCU_PWM_IRQS;
 
 void _mcu_pwm_dev_power_on(int port){
 	if ( pwm_local[port].ref_count == 0 ){
@@ -57,7 +58,7 @@ void _mcu_pwm_dev_power_on(int port){
 #endif
 		case 1:
 			_mcu_lpc_core_enable_pwr(PCPWM1);
-			_mcu_core_priv_enable_irq((void*)PWM1_IRQn);
+			_mcu_core_priv_enable_irq((void*)(u32)(pwm_irqs[port]));
 			break;
 		}
 
@@ -76,7 +77,7 @@ void _mcu_pwm_dev_power_off(int port){
 				break;
 #endif
 			case 1:
-				_mcu_core_priv_disable_irq((void*)(PWM1_IRQn));
+				_mcu_core_priv_disable_irq((void*)(u32)(pwm_irqs[port]));
 				_mcu_lpc_core_disable_pwr(PCPWM1);
 				break;
 
@@ -101,7 +102,7 @@ int _mcu_pwm_dev_powered_on(int port){
 int mcu_pwm_getattr(int port, void * ctl){
 	pwm_attr_t * ctlp;
 	ctlp = (pwm_attr_t*)ctl;
-	LPC_PWM_TypeDef * regs = pwm_regs_table[port];
+	LPC_PWM_Type * regs = pwm_regs_table[port];
 
 #ifdef __lpc17xx
 	if( regs == 0 ){
@@ -123,7 +124,7 @@ int mcu_pwm_setattr(int port, void * ctl){
 	//check the GPIO configuration
 	uint32_t tmp;
 	pwm_attr_t * ctl_ptr = (pwm_attr_t *)ctl;
-	LPC_PWM_TypeDef * regs = pwm_regs_table[port];
+	LPC_PWM_Type * regs = pwm_regs_table[port];
 
 #ifdef __lpc17xx
 	if( regs == 0 ){
@@ -292,7 +293,7 @@ int mcu_pwm_setattr(int port, void * ctl){
 
 int mcu_pwm_setaction(int port, void * ctl){
 	mcu_action_t * action = (mcu_action_t*)ctl;
-	LPC_PWM_TypeDef * regs = pwm_regs_table[port];
+	LPC_PWM_Type * regs = pwm_regs_table[port];
 	if( action->callback == 0 ){
 		//cancel any ongoing operation
 		if ( regs->MCR & (1<<0) ){ //If the interrupt is enabled--the pwm is busy
@@ -308,13 +309,15 @@ int mcu_pwm_setaction(int port, void * ctl){
 	pwm_local[port].handler.callback = action->callback;
 	pwm_local[port].handler.context = action->context;
 
+	_mcu_core_setirqprio(pwm_irqs[port], action->prio);
+
 	//need to decode the event
 	return 0;
 }
 
 int mcu_pwm_set(int port, void * ctl){
 	pwm_reqattr_t * writep = (pwm_reqattr_t*)ctl;
-	LPC_PWM_TypeDef * regs = pwm_regs_table[port];
+	LPC_PWM_Type * regs = pwm_regs_table[port];
 
 #ifdef __lpc17xx
 	if( regs == 0 ){
@@ -336,7 +339,7 @@ int mcu_pwm_set(int port, void * ctl){
 
 int _mcu_pwm_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
 	int port = DEVICE_GET_PORT(cfg);
-	LPC_PWM_TypeDef * regs = pwm_regs_table[port];
+	LPC_PWM_Type * regs = pwm_regs_table[port];
 
 #ifdef __lpc17xx
 	if( regs == 0 ){
@@ -366,7 +369,7 @@ int _mcu_pwm_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
 }
 
 void update_pwm(int port, int chan, int duty){
-	LPC_PWM_TypeDef * regs = pwm_regs_table[port];
+	LPC_PWM_Type * regs = pwm_regs_table[port];
 
 	switch(chan){
 	case 0:
@@ -392,7 +395,7 @@ void update_pwm(int port, int chan, int duty){
 	regs->LER |= (1<<(chan+1));
 }
 
-void exec_callback(int port, LPC_PWM_TypeDef * regs, void * data){
+void exec_callback(int port, LPC_PWM_Type * regs, void * data){
 	//stop updating the duty cycle
 	pwm_local[port].duty = NULL;
 
@@ -406,7 +409,7 @@ void exec_callback(int port, LPC_PWM_TypeDef * regs, void * data){
 
 static void _mcu_core_pwm_isr(int port){
 	//Clear the interrupt flag
-	LPC_PWM_TypeDef * regs = pwm_regs_table[port];
+	LPC_PWM_Type * regs = pwm_regs_table[port];
 
 	regs->IR |= (1<<0);
 

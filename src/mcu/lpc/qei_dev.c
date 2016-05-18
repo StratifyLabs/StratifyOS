@@ -28,23 +28,25 @@ typedef struct {
 	uint8_t ref_count;
 } qei_local_t;
 
-static qei_local_t qei_local MCU_SYS_MEM;
+static qei_local_t qei_local[MCU_QEI_PORTS] MCU_SYS_MEM;
+static LPC_QEI_Type * const qei_regs[MCU_QEI_PORTS] = MCU_QEI_REGS;
+static u8 const qei_irqs[MCU_QEI_PORTS] = MCU_QEI_IRQS;
 
 void _mcu_qei_dev_power_on(int port){
-	if ( qei_local.ref_count == 0 ){
+	if ( qei_local[port].ref_count == 0 ){
 		_mcu_lpc_core_enable_pwr(PCQEI);
-		_mcu_core_priv_enable_irq((void*)QEI_IRQn);
+		_mcu_core_priv_enable_irq((void*)(u32)(qei_irqs[port]));
 	}
-	qei_local.ref_count++;
+	qei_local[port].ref_count++;
 }
 
 void _mcu_qei_dev_power_off(int port){
-	if ( qei_local.ref_count > 0 ){
-		if ( qei_local.ref_count == 1 ){
-			_mcu_core_priv_disable_irq((void*)(QEI_IRQn));
+	if ( qei_local[port].ref_count > 0 ){
+		if ( qei_local[port].ref_count == 1 ){
+			_mcu_core_priv_disable_irq((void*)(u32)(qei_irqs[port]));
 			_mcu_lpc_core_disable_pwr(PCQEI);
 		}
-		qei_local.ref_count--;
+		qei_local[port].ref_count--;
 	}
 }
 
@@ -53,6 +55,8 @@ int _mcu_qei_dev_powered_on(int port){
 }
 
 int mcu_qei_setattr(int port, void * ctl){
+
+	LPC_QEI_Type * regs = qei_regs[port];
 	qei_attr_t * ctlp;
 	ctlp = (qei_attr_t*)ctl;
 
@@ -76,61 +80,63 @@ int mcu_qei_setattr(int port, void * ctl){
 		return -1 - offsetof(qei_attr_t, pin_assign);
 	}
 
-	LPC_QEI->MAXPOS = ctlp->max_pos;
-	LPC_QEI->LOAD = mcu_board_config.core_periph_freq / ctlp->vfreq;
+	regs->MAXPOS = ctlp->max_pos;
+	regs->LOAD = mcu_board_config.core_periph_freq / ctlp->vfreq;
 #ifdef __lpc17xx
-	LPC_QEI->FILTER = ctlp->filter;
+	regs->FILTER = ctlp->filter;
 #endif
 
-	LPC_QEI->CONF = 0;
+	regs->CONF = 0;
 	if( ctlp->mode & QEI_MODE_INVERT_DIR ){
-		LPC_QEI->CONF |= (1<<0);
+		regs->CONF |= (1<<0);
 	}
 
 	if( ctlp->mode & QEI_MODE_SIGNAL_MODE ){
-		LPC_QEI->CONF |= (1<<1);
+		regs->CONF |= (1<<1);
 	}
 
 	if( ctlp->mode & QEI_MODE_DOUBLE_EDGE ){
-		LPC_QEI->CONF |= (1<<2);
+		regs->CONF |= (1<<2);
 	}
 
 	if( ctlp->mode & QEI_MODE_INVERT_INDEX ){
-		LPC_QEI->CONF |= (1<<3);
+		regs->CONF |= (1<<3);
 	}
 	return 0;
 }
 
 int mcu_qei_getattr(int port, void * ctl){
+	LPC_QEI_Type * regs = qei_regs[port];
+
 	qei_attr_t * ctlp;
 	ctlp = (qei_attr_t*)ctl;
 
-	ctlp->max_pos = LPC_QEI->MAXPOS;
-	if ( LPC_QEI->LOAD == 0 ){
+	ctlp->max_pos = regs->MAXPOS;
+	if ( regs->LOAD == 0 ){
 		errno = EINVAL;
 		return -1;
 	} else {
-		ctlp->vfreq = mcu_board_config.core_periph_freq / (LPC_QEI->LOAD);
+		ctlp->vfreq = mcu_board_config.core_periph_freq / (regs->LOAD);
 	}
 
 #ifdef __lpc17xx
-	ctlp->filter = LPC_QEI->FILTER;
+	ctlp->filter = regs->FILTER;
 #endif
 
 	ctlp->mode = 0;
-	if ( LPC_QEI->CONF & (1<<0) ){
+	if ( regs->CONF & (1<<0) ){
 		ctlp->mode |= QEI_MODE_INVERT_DIR;
 	}
 
-	if ( LPC_QEI->CONF & (1<<1) ){
+	if ( regs->CONF & (1<<1) ){
 		ctlp->mode |= QEI_MODE_SIGNAL_MODE;
 	}
 
-	if ( LPC_QEI->CONF & (1<<2) ){
+	if ( regs->CONF & (1<<2) ){
 		ctlp->mode |= QEI_MODE_DOUBLE_EDGE;
 	}
 
-	if ( LPC_QEI->CONF & (1<<3) ){
+	if ( regs->CONF & (1<<3) ){
 		ctlp->mode |= QEI_MODE_INVERT_INDEX;
 	}
 
@@ -138,73 +144,90 @@ int mcu_qei_getattr(int port, void * ctl){
 }
 
 int mcu_qei_setaction(int port, void * ctl){
+	LPC_QEI_Type * regs = qei_regs[port];
+
 	mcu_action_t * action = (mcu_action_t*)ctl;
-	LPC_QEI->IEC = 0x1FFF;
+	regs->IEC = 0x1FFF;
 	if( action->event & QEI_ACTION_EVENT_INDEX ){
-		LPC_QEI->IES = (1<<0);
+		regs->IES = (1<<0);
 	}
 
 	if( action->event & QEI_ACTION_EVENT_DIRCHANGE ){
-		LPC_QEI->IES = (1<<4);
+		regs->IES = (1<<4);
 	}
 
 	if( _mcu_core_priv_validate_callback(action->callback) < 0 ){
 		return -1;
 	}
 
-	qei_local.handler.callback = action->callback;
-	qei_local.handler.context = action->context;
+	qei_local[port].handler.callback = action->callback;
+	qei_local[port].handler.context = action->context;
+
+	_mcu_core_setirqprio(qei_irqs[port], action->prio);
+
 
 	return 0;
 }
 
 int _mcu_qei_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
+	const int port = cfg->periph.port;
 	if( _mcu_core_priv_validate_callback(rop->callback) < 0 ){
 		return -1;
 	}
 
-	qei_local.handler.callback = rop->callback;
-	qei_local.handler.context = rop->context;
+	qei_local[port].handler.callback = rop->callback;
+	qei_local[port].handler.context = rop->context;
 	return 0;
 }
 
 int mcu_qei_get(int port, void * ctl){
-	return LPC_QEI->POS;
+	LPC_QEI_Type * regs = qei_regs[port];
+
+	return regs->POS;
 }
 
 int mcu_qei_getvelocity(int port, void * ctl){
-	return LPC_QEI->CAP;
+	LPC_QEI_Type * regs = qei_regs[port];
+
+	return regs->CAP;
 }
 
 int mcu_qei_getindex(int port, void * ctl){
-	return LPC_QEI->INXCNT;
+	LPC_QEI_Type * regs = qei_regs[port];
+
+	return regs->INXCNT;
 }
 
 int mcu_qei_reset(int port, void * ctl){
+	LPC_QEI_Type * regs = qei_regs[port];
+
 	int mask = (int)ctl;
 	if ( mask & QEI_RESET_POS ){
-		LPC_QEI->CON |= (1<<0);
+		regs->CON |= (1<<0);
 	}
 
 	if ( mask & QEI_RESET_VELOCITY ){
-		LPC_QEI->CON |= (1<<2);
+		regs->CON |= (1<<2);
 	}
 
 	if ( mask & QEI_RESET_INDEX ){
-		LPC_QEI->CON |= (1<<3);
+		regs->CON |= (1<<3);
 	}
 
 	if ( mask & QEI_RESET_POS_ONINDEX ){
-		LPC_QEI->CON |= (1<<1);
+		regs->CON |= (1<<1);
 	}
 	return 0;
 }
 
 void _mcu_core_qei_isr(void){
 	int flags;
-	flags = LPC_QEI->INTSTAT;
-	LPC_QEI->CLR = 0x1FFF;
-	_mcu_core_exec_event_handler(&(qei_local.handler), (mcu_event_t)flags);
+	const int port = 0;
+	LPC_QEI_Type * regs = qei_regs[port];
+
+	flags = regs->INTSTAT;
+	regs->CLR = 0x1FFF;
+	_mcu_core_exec_event_handler(&(qei_local[port].handler), (mcu_event_t)flags);
 }
 
 #endif

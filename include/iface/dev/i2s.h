@@ -69,6 +69,7 @@ enum {
  */
 typedef struct MCU_PACK {
 	u8 pin_assign /*! \brief The GPIO configuration to use (see \ref LPC17XXDEV) */;
+	u8 resd[3];
 	u32 mode /*! \brief Word width e.g. I2S_WORDWIDTH_16 */;
 	u32 frequency /*! \brief The I2S audio frequency */;
 	u32 ws_half_period;

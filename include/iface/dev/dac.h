@@ -98,7 +98,7 @@ extern "C" {
 /*! \brief This defines the type of variable
  * used when writing the DAC.
  */
-typedef uint32_t dac_sample_t;
+typedef u32 dac_sample_t;
 #endif
 
 
@@ -109,14 +109,15 @@ typedef mcu_action_t dac_action_t;
  * for configuring the DAC port.
  */
 typedef struct MCU_PACK {
-	uint8_t pin_assign /*! \brief The GPIO configuration to use (see \ref LPC17XXDEV) */;
-	uint8_t enabled_channels /*! \brief The DAC channels to enable */;
-	uint32_t freq /*! \brief The output frequency */;
+	u8 pin_assign /*! \brief The GPIO configuration to use (see \ref LPC17XXDEV) */;
+	u8 enabled_channels /*! \brief The DAC channels to enable */;
+	u16 resd;
+	u32 freq /*! \brief The output frequency */;
 } dac_attr_t;
 
 typedef struct MCU_PACK {
 	dac_sample_t value;
-	uint32_t channel;
+	u32 channel;
 } dac_reqattr_t;
 
 /*! \brief See below for details.

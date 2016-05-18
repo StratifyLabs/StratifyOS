@@ -151,11 +151,12 @@ enum {
  */
 typedef struct MCU_PACK {
 	u8 pin_assign /*! \brief The GPIO configuration to use (see \ref LPC17XXDEV) */;
-	u32 bitrate /*! \brief The SPI bitrate */;
 	u8 mode /*! \brief The SPI mode from 0 to 3 inclusive (CPOL:CPHA or SPI_ATTR_MODE0 to SPI_ATTR_MODE3) */;
 	u8 master /*! \brief Must be set to master (SPI_ATTR_MASTER) */;
 	u8 width /*! \brief The transfer width */;
 	u8 format /*! \brief The SPI output format (SPI_ATTR_FORMAT_SPI, SPI_ATTR_FORMAT_TI or SPI_ATTR_FORMAT_MICROWIRE) */;
+	u8 resd[3];
+	u32 bitrate /*! \brief The SPI bitrate */;
 } spi_attr_t;
 
 

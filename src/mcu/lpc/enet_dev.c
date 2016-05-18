@@ -43,14 +43,20 @@ typedef struct {
 	uint32_t rx_status;
 } enet_local_t;
 
-static enet_local_t enet_local[1] MCU_SYS_MEM; //this is only ever modified by priv code
+static enet_local_t enet_local[MCU_ENET_PORTS] MCU_SYS_MEM; //this is only ever modified by priv code
 
-LPC_EMAC_TypeDef * const enet_regs_table[1] = { LPC_EMAC };
+#if MCU_ENET_API == 0
+LPC_EMAC_Type * const enet_regs_table[MCU_ENET_PORTS] = MCU_ENET_REGS;
+#else
+LPC_ETHERNET_Type * const enet_regs_table[MCU_ENET_PORTS] = MCU_ENET_REGS;
+#endif
+
+u8 const enet_irqs[MCU_ENET_PORTS] = MCU_ENET_IRQS;
 
 void _mcu_enet_dev_power_on(int port){
 	if ( enet_local[port].ref_count == 0 ){
 		_mcu_lpc_core_enable_pwr(PCENET);
-		_mcu_core_priv_enable_irq((void*)ENET_IRQn);
+		_mcu_core_priv_enable_irq((void*)(u32)(enet_irqs[port]));
 		enet_local[port].tx_desc.buf = NULL;
 		enet_local[port].rx_desc.buf = NULL;
 	}
@@ -62,7 +68,7 @@ void _mcu_enet_dev_power_on(int port){
 void _mcu_enet_dev_power_off(int port){
 	if ( enet_local[port].ref_count > 0 ){
 		if ( enet_local[port].ref_count == 1 ){
-			_mcu_core_priv_disable_irq((void*)(ENET_IRQn));
+			_mcu_core_priv_disable_irq((void*)(u32)(enet_irqs[port]));
 			_mcu_lpc_core_disable_pwr(PCENET);
 			enet_local[port].tx_desc.buf = NULL;
 			enet_local[port].rx_desc.buf = NULL;
@@ -81,9 +87,13 @@ int mcu_enet_getattr(int port, void * ctl){
 }
 
 int mcu_enet_setattr(int port, void * ctl){
+
+#if MCU_ENET_API == 1
+
+#else
 	enet_attr_t * attr = ctl;
 
-	LPC_EMAC_TypeDef * regs = enet_regs_table[port];
+	LPC_EMAC_Type * regs = enet_regs_table[port];
 	//set the MAC addr
 
 
@@ -144,7 +154,7 @@ int mcu_enet_setattr(int port, void * ctl){
 
 	//Enable the interrupt
 	regs->IntEnable = 0;
-
+#endif
 	return 0;
 }
 
@@ -160,9 +170,6 @@ int mcu_enet_setaction(int port, void * ctl){
 
 int _mcu_enet_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
 	int port = cfg->periph.port;
-
-	LPC_EMAC_TypeDef * regs = enet_regs_table[port];
-
 
 	if( enet_local[port].rx_desc.buf != 0 ){
 		errno = EAGAIN;
@@ -187,9 +194,14 @@ int _mcu_enet_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
 	//TX interrupt should be enabled
 
 	//trigger the ethernet to send the packet
+#if MCU_ENET_API == 1
+
+#else
+	LPC_EMAC_Type * regs = enet_regs_table[port];
 	regs->RxDescriptor = (uint32_t)(&enet_local[port].rx_desc);
 	regs->RxStatus = (uint32_t)(&enet_local[port].rx_status);
 	regs->RxDescriptorNumber = 1; //one descriptor in the queue
+#endif
 
 
 	return 0;
@@ -198,7 +210,6 @@ int _mcu_enet_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
 int _mcu_enet_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
 	int port = cfg->periph.port;
 
-	LPC_EMAC_TypeDef * regs = enet_regs_table[port];
 
 
 	if( enet_local[port].tx_desc.buf != 0 ){
@@ -225,11 +236,15 @@ int _mcu_enet_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
 	//TX interrupt should be enabled
 
 	//trigger the ethernet to send the packet
+#if MCU_ENET_API == 1
+
+#else
+	LPC_EMAC_Type * regs = enet_regs_table[port];
 	regs->TxDescriptor = (uint32_t)(&enet_local[port].tx_desc);
 	regs->TxStatus = (uint32_t)(&enet_local[port].tx_status);
 	regs->TxProduceIndex = 0;
 	regs->TxDescriptorNumber = 1; //one descriptor in the queue
-
+#endif
 
 	return 0;
 }
