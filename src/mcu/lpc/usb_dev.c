@@ -237,13 +237,14 @@ int mcu_usb_setaction(int port, void * ctl){
 	usb_action_t * action = (usb_action_t*)ctl;
 	int log_ep;
 
+	_mcu_core_setirqprio(USB_IRQn, action->prio);
 
 	if( action->channel & 0x80 ){
-		if( action->callback == 0 ){
+		if( (action->callback == 0) && (action->event == USB_EVENT_WRITE_COMPLETE) ){
 			exec_writecallback(action->channel & ~0x80, DEVICE_OP_CANCELLED);
 		}
 	} else {
-		if( action->callback == 0 ){
+		if( (action->callback == 0) && (action->event == USB_EVENT_DATA_READY) ){
 			exec_readcallback(action->channel & ~0x80, DEVICE_OP_CANCELLED);
 		}
 	}
@@ -547,7 +548,7 @@ int mcu_usb_wr_ep(int port, u32 endpoint_num, const void * src, u32 size){
 
 /*! \details This function services the USB interrupt request.
  */
-void _mcu_core_usb_isr(void){
+void _mcu_core_usb0_isr(void){
 	u32 device_interrupt_status;
 	u32 tmp;
 	int i;
@@ -673,7 +674,6 @@ void slow_ep_int(void){
 
 static void exec_readcallback(int log_ep, void * data){
 	usb_local.read_ready |= (1<<log_ep);
-
 	_mcu_core_exec_event_handler(&(usb_local.read[log_ep]), data);
 }
 

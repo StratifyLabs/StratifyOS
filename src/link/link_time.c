@@ -22,7 +22,7 @@
 #include "link_flags.h"
 
 
-int link_settime(link_phy_t handle, struct tm * t){
+int link_settime(link_transport_phy_t handle, struct tm * t){
 	int fd;
 	int ret;
 	struct link_tm ltm;
@@ -58,7 +58,7 @@ int link_settime(link_phy_t handle, struct tm * t){
 }
 
 
-int link_gettime(link_phy_t handle, struct tm * t){
+int link_gettime(link_transport_phy_t handle, struct tm * t){
 	int fd;
 	int ret;
 	struct link_tm ltm;

@@ -65,7 +65,7 @@ int link_phy_getname(char * dest, const char * last, int len){
 	return 0;
 }
 
-int link_phy_status(link_phy_t handle){
+int link_phy_status(link_transport_phy_t handle){
 
 	//TODO This needs to check to see if the port still exists
 	return 0;
@@ -126,7 +126,7 @@ link_phy_t link_phy_open(const char * name, int baudrate){
 	return handle;
 }
 
-int link_phy_write(link_phy_t handle, const void * buf, int nbyte){
+int link_phy_write(link_transport_phy_t handle, const void * buf, int nbyte){
 	DWORD bytes_written;
 	if( !WriteFile(((link_phydata_t*)handle)->handle, buf, nbyte, &bytes_written, NULL) ){
 		link_error("Failed to write %d bytes from handle:%d\n", nbyte, (int)handle);
@@ -135,7 +135,7 @@ int link_phy_write(link_phy_t handle, const void * buf, int nbyte){
 	return bytes_written;
 }
 
-int link_phy_read(link_phy_t handle, void * buf, int nbyte){
+int link_phy_read(link_transport_phy_t handle, void * buf, int nbyte){
 	DWORD bytes_read;
 	if( !ReadFile(((link_phydata_t*)handle)->handle, buf, nbyte, &bytes_read, NULL) ){
 		link_error("Failed to read %d bytes from handle:%d\n", nbyte, (int)handle);
@@ -144,7 +144,7 @@ int link_phy_read(link_phy_t handle, void * buf, int nbyte){
 	return bytes_read;
 }
 
-int link_phy_close(link_phy_t handle){
+int link_phy_close(link_transport_phy_t handle){
 
 	if( CloseHandle(((link_phydata_t*)handle)->handle) == 0 ){
 		link_error("Failed to close handle\n");
@@ -157,7 +157,7 @@ void link_phy_wait(int msec){
 	Sleep(msec);
 }
 
-void link_phy_flush(link_phy_t handle){
+void link_phy_flush(link_transport_phy_t handle){
 	char c;
 	while( link_phy_read(handle, &c, 1) == 1 ){
 		;
@@ -300,7 +300,7 @@ link_phy_t link_phy_open(const char * name, int baudrate){
 	return phy;
 }
 
-int link_phy_status(link_phy_t handle){
+int link_phy_status(link_transport_phy_t handle){
 	struct termios options;
 	link_phy_container_t * phy = handle;
 	if( handle == LINK_PHY_OPEN_ERROR ){
@@ -312,7 +312,7 @@ int link_phy_status(link_phy_t handle){
 	return 0;
 }
 
-int link_phy_write(link_phy_t handle, const void * buf, int nbyte){
+int link_phy_write(link_transport_phy_t handle, const void * buf, int nbyte){
 	struct termios options;
 	link_phy_container_t * phy = handle;
 
@@ -331,7 +331,7 @@ int link_phy_write(link_phy_t handle, const void * buf, int nbyte){
 	return nbyte;
 }
 
-int link_phy_read(link_phy_t handle, void * buf, int nbyte){
+int link_phy_read(link_transport_phy_t handle, void * buf, int nbyte){
 	int ret;
 	int tmp;
 	link_phy_container_t * phy = handle;
@@ -359,7 +359,7 @@ int link_phy_read(link_phy_t handle, void * buf, int nbyte){
 	return ret;
 }
 
-int link_phy_close(link_phy_t handle){
+int link_phy_close(link_transport_phy_t handle){
 	link_phy_container_t * phy = handle;
 	if( handle == LINK_PHY_OPEN_ERROR ){
 		return LINK_PHY_ERROR;
@@ -376,7 +376,7 @@ void link_phy_wait(int msec){
 	usleep(msec*1000);
 }
 
-void link_phy_flush(link_phy_t handle){
+void link_phy_flush(link_transport_phy_t handle){
 	unsigned char c;
 	while( link_phy_read(handle, &c, 1) == 1 ){
 		;

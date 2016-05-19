@@ -27,11 +27,11 @@
 link_dev_t link_dev = (void*)1;
 link_phy_t link_phy;
 
-int link_phy_lock(link_phy_t handle){
+int link_phy_lock(link_transport_phy_t handle){
 	return 0;
 }
 
-int link_phy_unlock(link_phy_t handle){
+int link_phy_unlock(link_transport_phy_t handle){
 	return 0;
 }
 
@@ -68,7 +68,7 @@ void link_exit(void){
 
 }
 
-int link_disconnect(link_phy_t handle){
+int link_disconnect(link_transport_phy_t handle){
 	return link_driver()->close(handle);
 }
 
@@ -76,7 +76,7 @@ link_phy_t link_connect(const char * sn){
 	char name[LINK_PHY_NAME_MAX];
 	char serialno[256];
 	char last[LINK_PHY_NAME_MAX];
-	link_phy_t handle;
+	link_transport_phy_t handle;
 	int err;
 	int len;
 
@@ -120,7 +120,7 @@ link_phy_t link_connect(const char * sn){
 	return LINK_PHY_OPEN_ERROR;
 }
 
-int link_readserialno(link_phy_t handle, char * serialno, int len){
+int link_readserialno(link_transport_phy_t handle, char * serialno, int len){
 	link_op_t op;
 	link_reply_t reply;
 	int err;
@@ -162,7 +162,7 @@ int link_readserialno(link_phy_t handle, char * serialno, int len){
 }
 
 
-int link_mkfs(link_phy_t handle, const char * path){
+int link_mkfs(link_transport_phy_t handle, const char * path){
 	link_op_t op;
 	link_reply_t reply;
 	int len;
@@ -210,7 +210,7 @@ char * link_new_device_list(int max){
 	char name[LINK_PHY_NAME_MAX];
 	char serialno[LINK_MAX_SN_SIZE];
 	char last[LINK_PHY_NAME_MAX];
-	link_phy_t handle;
+	link_transport_phy_t handle;
 	char * sn_list;
 	char * entry;
 	int cnt;
@@ -289,7 +289,7 @@ char * link_device_list_entry(char * list, int entry){
 	return &(list[entry*LINK_MAX_SN_SIZE]);
 }
 
-int link_handle_err(link_phy_t handle, int err){
+int link_handle_err(link_transport_phy_t handle, int err){
 	int tries;
 	int err2;
 	link_driver()->flush(handle);

@@ -137,7 +137,7 @@ _DECLARE_ISR(eint0);
 _DECLARE_ISR(eint1);
 _DECLARE_ISR(eint2); //20
 _DECLARE_ISR(eint3);
-_DECLARE_ISR(adc);
+_DECLARE_ISR(adc0);
 _DECLARE_ISR(bod);
 _DECLARE_ISR(usb0);
 _DECLARE_ISR(can0);
@@ -153,7 +153,7 @@ _DECLARE_ISR(can_activity);
 _DECLARE_ISR(uart4);
 _DECLARE_ISR(ssp2);
 _DECLARE_ISR(lcd0);
-_DECLARE_ISR(gpio0);
+_DECLARE_ISR(pio0);
 _DECLARE_ISR(pwm0);
 _DECLARE_ISR(eeprom0); //40
 _DECLARE_ISR(cmp0);
@@ -164,65 +164,47 @@ _DECLARE_ISR(cmp1);
 
 #if defined __lpc17xx
 //ISR's -- weakly bound to default handler
-_DECLARE_ISR(dac);
-_DECLARE_ISR(wdt);
+_DECLARE_ISR(wdt);  //0
 _DECLARE_ISR(tmr0);
 _DECLARE_ISR(tmr1);
 _DECLARE_ISR(tmr2);
 _DECLARE_ISR(tmr3);
-
 _DECLARE_ISR(uart0);
 _DECLARE_ISR(uart1);
 _DECLARE_ISR(uart2);
 _DECLARE_ISR(uart3);
-
-void _mcu_core_pwm1_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_i2c0_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_i2c1_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_i2c2_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_ssp0_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_ssp1_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_pll0_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_rtc_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_eint0_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_eint1_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_eint2_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_eint3_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_adc_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_bod_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_usb_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_can_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_dma_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_i2s_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_enet_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_mcpwm_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_qei_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_pll1_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-#ifdef LPCXX7X_8X
-void _mcu_core_mci_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_usbactivity_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_canactivity_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_uart4_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_ssp2_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_lcd_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_pio_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_pwm0_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_eeprom_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_cmp0_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_cmp1_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-#else
-void _mcu_core_rit_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_spi_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_sw0_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_sw1_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_sw2_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_sw3_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_sw4_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_sw5_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_sw6_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_sw7_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-#endif
-
+_DECLARE_ISR(pwm1);
+_DECLARE_ISR(i2c0); //10
+_DECLARE_ISR(i2c1);
+_DECLARE_ISR(i2c2);
+_DECLARE_ISR(spi0);
+_DECLARE_ISR(ssp0);
+_DECLARE_ISR(ssp1);
+_DECLARE_ISR(pll0);
+_DECLARE_ISR(rtc0);
+_DECLARE_ISR(eint0);
+_DECLARE_ISR(eint1);
+_DECLARE_ISR(eint2); //20
+_DECLARE_ISR(eint3);
+_DECLARE_ISR(adc0);
+_DECLARE_ISR(bod);
+_DECLARE_ISR(usb0);
+_DECLARE_ISR(can0);
+_DECLARE_ISR(dma);
+_DECLARE_ISR(i2s0);
+_DECLARE_ISR(enet0);
+_DECLARE_ISR(mci0);
+_DECLARE_ISR(mcpwm0); //30
+_DECLARE_ISR(qei0);
+_DECLARE_ISR(pll1);
+_DECLARE_ISR(sw0);
+_DECLARE_ISR(sw1);
+_DECLARE_ISR(sw2);
+_DECLARE_ISR(sw3);
+_DECLARE_ISR(sw4);
+_DECLARE_ISR(sw5);
+_DECLARE_ISR(sw6);
+_DECLARE_ISR(sw7); //40
 #endif
 
 /*! \details This is the startup code which gets written to
@@ -329,7 +311,7 @@ void (* const _mcu_core_vector_table[])(void) __attribute__ ((section(".startup"
 		_ISR(eint1),
 		_ISR(eint2), //20
 		_ISR(eint3),
-		_ISR(adc),
+		_ISR(adc0),
 		_ISR(bod),
 		_ISR(usb0),
 		_ISR(can0),
@@ -345,7 +327,7 @@ void (* const _mcu_core_vector_table[])(void) __attribute__ ((section(".startup"
 		_ISR(uart4),
 		_ISR(ssp2),
 		_ISR(lcd0),
-		_ISR(gpio0),
+		_ISR(pio0),
 		_ISR(pwm0),
 		_ISR(eeprom0), //40
 		_ISR(cmp0),
@@ -353,8 +335,47 @@ void (* const _mcu_core_vector_table[])(void) __attribute__ ((section(".startup"
 #endif
 
 #if defined __lpc17xx
-
-
+		_ISR(wdt),  //0
+		_ISR(tmr0),
+		_ISR(tmr1),
+		_ISR(tmr2),
+		_ISR(tmr3),
+		_ISR(uart0),
+		_ISR(uart1),
+		_ISR(uart2),
+		_ISR(uart3),
+		_ISR(pwm1),
+		_ISR(i2c0), //10
+		_ISR(i2c1),
+		_ISR(i2c2),
+		_ISR(spi0),
+		_ISR(ssp0),
+		_ISR(ssp1),
+		_ISR(pll0),
+		_ISR(rtc0),
+		_ISR(eint0),
+		_ISR(eint1),
+		_ISR(eint2), //20
+		_ISR(eint3),
+		_ISR(adc0),
+		_ISR(bod),
+		_ISR(usb0),
+		_ISR(can0),
+		_ISR(dma),
+		_ISR(i2s0),
+		_ISR(enet0),
+		_ISR(mci0),
+		_ISR(mcpwm0), //30
+		_ISR(qei0),
+		_ISR(pll1),
+		_ISR(sw0),
+		_ISR(sw1),
+		_ISR(sw2),
+		_ISR(sw3),
+		_ISR(sw4),
+		_ISR(sw5),
+		_ISR(sw6),
+		_ISR(sw7) //40
 #endif
 
 };

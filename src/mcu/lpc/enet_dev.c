@@ -255,7 +255,7 @@ int mcu_enet_inittxpkt(int port, void * ctl){
 	return 0;
 }
 
-void _mcu_core_enet_isr(int port){
+void _mcu_core_enet0_isr(int port){
 
 	//check for a tx or an rx interrupt
 	if( 1 ){ //tx interrupt

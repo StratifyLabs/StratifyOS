@@ -32,6 +32,7 @@ static int set_read_action(const device_cfg_t * cfg, mcu_callback_t callback){
 	action.callback = callback;
 	action.context = (void*)cfg;
 	action.event = cfgp->event;
+	action.prio = 0;
 	if ( cfgp->dev->driver.ioctl(&(cfgp->dev->cfg), cfgp->req_setaction, &action) < 0 ){
 		return -1;
 	}

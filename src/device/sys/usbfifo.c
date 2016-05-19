@@ -33,6 +33,7 @@ static int set_read_action(const device_cfg_t * cfg, mcu_callback_t callback){
 	action.context = (void*)cfg;
 	action.event = USB_EVENT_DATA_READY;
 	action.channel = cfgp->endpoint;
+	action.prio = 0;
 	if( mcu_usb_setaction(cfgp->port, &action) < 0 ){
 		return -1;
 	}

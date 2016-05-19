@@ -135,6 +135,7 @@ enum {
  * actions for the UART callbacks.
  */
 enum {
+	UART_EVENT_NONE /*! No Event (used to adjust priority only) */,
 	UART_EVENT_DATA_READY /*! Data is ready to be read */,
 	UART_EVENT_WRITE_COMPLETE /*! A write has completed */
 };

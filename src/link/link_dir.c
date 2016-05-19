@@ -26,7 +26,7 @@
 
 
 //Access to directories
-int link_mkdir(link_phy_t handle, const char * path, link_mode_t mode){
+int link_mkdir(link_transport_phy_t handle, const char * path, link_mode_t mode){
 	link_op_t op;
 	link_reply_t reply;
 	int len;
@@ -71,7 +71,7 @@ int link_mkdir(link_phy_t handle, const char * path, link_mode_t mode){
 
 }
 
-int link_rmdir(link_phy_t handle, const char * path){
+int link_rmdir(link_transport_phy_t handle, const char * path){
 	link_op_t op;
 	link_reply_t reply;
 	int len;
@@ -111,7 +111,7 @@ int link_rmdir(link_phy_t handle, const char * path){
 	return reply.err;
 }
 
-int link_opendir(link_phy_t handle, const char * dirname){
+int link_opendir(link_transport_phy_t handle, const char * dirname){
 	link_op_t op;
 	link_reply_t reply;
 	int len;
@@ -161,7 +161,7 @@ int link_opendir(link_phy_t handle, const char * dirname){
 	return reply.err;
 }
 
-int link_readdir_r(link_phy_t handle, int dirp, struct link_dirent * entry, struct link_dirent ** result){
+int link_readdir_r(link_transport_phy_t handle, int dirp, struct link_dirent * entry, struct link_dirent ** result){
 	link_op_t op;
 	link_reply_t reply;
 	int len;
@@ -209,7 +209,7 @@ int link_readdir_r(link_phy_t handle, int dirp, struct link_dirent * entry, stru
 	return 0;
 }
 
-int link_closedir(link_phy_t handle, int dirp){
+int link_closedir(link_transport_phy_t handle, int dirp){
 	link_op_t op;
 	link_reply_t reply;
 	int err;

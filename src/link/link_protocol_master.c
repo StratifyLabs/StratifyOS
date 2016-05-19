@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include "iface/link.h"
 
-#include "../../link/link_flags.h"
+#include "link_flags.h"
 
 #include "mcu/debug.h"
 
@@ -26,7 +26,7 @@
 
 #define pkt_checksum(pktp) ((pktp)->data[(pktp)->size])
 
-static int wait_ack(link_transport_t handle, uint8_t checksum, int timeout);
+static int wait_ack(link_transport_phy_t handle, uint8_t checksum, int timeout);
 static int timeout_value = TIMEOUT_VALUE;
 
 void link_transport_mastersettimeout(int t){
@@ -37,7 +37,7 @@ void link_transport_mastersettimeout(int t){
 	}
 }
 
-int link_transport_masterread(link_transport_t handle, void * buf, int nbyte){
+int link_transport_masterread(link_transport_phy_t handle, void * buf, int nbyte){
 	link_pkt_t pkt;
 	char * p;
 	int bytes;
@@ -73,7 +73,7 @@ int link_transport_masterread(link_transport_t handle, void * buf, int nbyte){
 	return bytes;
 }
 
-int link_transport_masterwrite(link_transport_t handle, const void * buf, int nbyte){
+int link_transport_masterwrite(link_transport_phy_t handle, const void * buf, int nbyte){
 	link_pkt_t pkt;
 	char * p;
 	int bytes;
@@ -116,7 +116,7 @@ int link_transport_masterwrite(link_transport_t handle, const void * buf, int nb
 }
 
 
-int wait_ack(link_transport_t handle, uint8_t checksum, int timeout){
+int wait_ack(link_transport_phy_t handle, uint8_t checksum, int timeout){
 	link_ack_t ack;
 	char * p;
 	int count;

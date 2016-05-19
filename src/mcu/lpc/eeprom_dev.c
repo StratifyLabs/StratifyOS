@@ -254,7 +254,7 @@ void exec_callback(int port, void * data){
 	_mcu_core_exec_event_handler(&(eeprom_local[port].handler), 0);
 }
 
-void _mcu_core_eeprom_isr(void){
+void _mcu_core_eeprom0_isr(void){
 	const int port = 0;
 	LPC_EEPROM_Type * regs = eeprom_regs[port];
 	uint32_t status = regs->INTSTAT;

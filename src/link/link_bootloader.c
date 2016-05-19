@@ -23,9 +23,9 @@
 #include <stdbool.h>
 #include <stdarg.h>
 
-static int reset_device(link_phy_t handle, bool invoke_bootloader);
+static int reset_device(link_transport_phy_t handle, bool invoke_bootloader);
 
-int link_bootloader_attr(link_phy_t handle, bootloader_attr_t * attr, uint32_t id){
+int link_bootloader_attr(link_transport_phy_t handle, bootloader_attr_t * attr, uint32_t id){
 	if( link_ioctl(handle, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_GETATTR, attr) < 0 ){
 		//try again with the older version
 		attr->version = 0;
@@ -45,7 +45,7 @@ int link_bootloader_attr(link_phy_t handle, bootloader_attr_t * attr, uint32_t i
 	return 0;
 }
 
-int link_isbootloader(link_phy_t handle){
+int link_isbootloader(link_transport_phy_t handle){
 	bootloader_attr_t attr;
 
 	if( link_bootloader_attr(handle, &attr, 0) < 0 ){
@@ -80,7 +80,7 @@ int link_isbootloader(link_phy_t handle){
 	return 1;
 }
 
-int link_reset(link_phy_t handle){
+int link_reset(link_transport_phy_t handle){
 	link_op_t op;
 	link_debug(LINK_DEBUG_MESSAGE, "try to reset--check bootloader");
 	if( link_isbootloader(handle) ){
@@ -98,7 +98,7 @@ int link_reset(link_phy_t handle){
 	return 0;
 }
 
-int reset_device(link_phy_t handle, bool invoke_bootloader){
+int reset_device(link_transport_phy_t handle, bool invoke_bootloader){
 	//use "/dev/core" to reset
 	int fd;
 	link_op_t op;
@@ -126,11 +126,11 @@ int reset_device(link_phy_t handle, bool invoke_bootloader){
 	return 0;
 }
 
-int link_resetbootloader(link_phy_t handle){
+int link_resetbootloader(link_transport_phy_t handle){
 	return reset_device(handle, true);
 }
 
-int link_eraseflash(link_phy_t handle){
+int link_eraseflash(link_transport_phy_t handle){
 	if( link_ioctl_delay(handle, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_ERASE, NULL, 0, 500) < 0 ){
 		return -1;
 	}
@@ -140,7 +140,7 @@ int link_eraseflash(link_phy_t handle){
 	return 0;
 }
 
-int link_readflash(link_phy_t handle, int addr, void * buf, int nbyte){
+int link_readflash(link_transport_phy_t handle, int addr, void * buf, int nbyte){
 	link_op_t op;
 	link_reply_t reply;
 	int err;
@@ -178,7 +178,7 @@ int link_readflash(link_phy_t handle, int addr, void * buf, int nbyte){
 	return reply.err;
 }
 
-int link_writeflash(link_phy_t handle, int addr, const void * buf, int nbyte){
+int link_writeflash(link_transport_phy_t handle, int addr, const void * buf, int nbyte){
 	bootloader_writepage_t wattr;
 	int page_size;
 	int bytes_written;

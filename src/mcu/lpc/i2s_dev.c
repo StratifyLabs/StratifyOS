@@ -372,7 +372,7 @@ int _mcu_i2s_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
 }
 
 
-void _mcu_core_i2s_isr(void){
+void _mcu_core_i2s0_isr(void){
 	int port = 0;
 	LPC_I2S_Type * i2s_regs = i2s_get_regs(port);
 	if( i2s_local[port].rx.bufp ){

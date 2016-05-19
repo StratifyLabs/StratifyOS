@@ -33,7 +33,7 @@
 #ifndef LINK_H
 #define LINK_H
 
-#include <mcu.h>
+#include <mcu/mcu.h>
 #include <string>
 #include <vector>
 #include "iface/link.h"
@@ -314,7 +314,7 @@ public:
 
     int updateOS(string path, bool verify, bool (*update)(void*,int,int) = 0, void * context = 0);
 
-    link_phy_t handle();
+    link_transport_phy_t handle();
 
     void setProgress(int p){ progress = p; }
     void setProgressMax(int p){ progressMax = p; }
@@ -339,7 +339,7 @@ private:
     volatile int lock;
     void resetProgress(void);
     bool isBoot;
-    link_phy_t phyHandle;
+    link_transport_phy_t phyHandle;
 };
 
 #endif // LINK_H

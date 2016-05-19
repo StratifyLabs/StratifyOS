@@ -22,7 +22,7 @@
 
 #include <stdarg.h>
 
-int link_open(link_phy_t handle, const char * path, int flags, ...){
+int link_open(link_transport_phy_t handle, const char * path, int flags, ...){
 	link_op_t op;
 	link_reply_t reply;
 	link_mode_t mode;
@@ -78,7 +78,7 @@ int link_open(link_phy_t handle, const char * path, int flags, ...){
 }
 
 
-int link_ioctl(link_phy_t handle, int fildes, int request, ...){
+int link_ioctl(link_transport_phy_t handle, int fildes, int request, ...){
 	void * argp;
 	int arg;
 	va_list ap;
@@ -98,7 +98,7 @@ int link_ioctl(link_phy_t handle, int fildes, int request, ...){
 }
 
 
-int link_ioctl_delay(link_phy_t handle, int fildes, int request, void * argp, int arg, int delay){
+int link_ioctl_delay(link_transport_phy_t handle, int fildes, int request, void * argp, int arg, int delay){
 	int rw_size;
 	link_op_t op;
 	link_reply_t reply;
@@ -186,7 +186,7 @@ int link_ioctl_delay(link_phy_t handle, int fildes, int request, void * argp, in
 }
 
 
-int link_read(link_phy_t handle, int fildes, void * buf, int nbyte){
+int link_read(link_transport_phy_t handle, int fildes, void * buf, int nbyte){
 	link_op_t op;
 	link_reply_t reply;
 	int err;
@@ -228,7 +228,7 @@ int link_read(link_phy_t handle, int fildes, void * buf, int nbyte){
 	return reply.err;
 }
 
-int link_write(link_phy_t handle, int fildes, const void * buf, int nbyte){
+int link_write(link_transport_phy_t handle, int fildes, const void * buf, int nbyte){
 	link_op_t op;
 	link_reply_t reply;
 	int err;
@@ -268,7 +268,7 @@ int link_write(link_phy_t handle, int fildes, const void * buf, int nbyte){
 	return reply.err;
 }
 
-int link_close(link_phy_t handle, int fildes){
+int link_close(link_transport_phy_t handle, int fildes){
 	link_op_t op;
 	link_reply_t reply;
 	int err;
@@ -299,7 +299,7 @@ int link_close(link_phy_t handle, int fildes){
 	return reply.err;
 }
 
-int link_symlink(link_phy_t handle, const char * old_path, const char * new_path){
+int link_symlink(link_transport_phy_t handle, const char * old_path, const char * new_path){
 	link_op_t op;
 	link_reply_t reply;
 	int len;
@@ -342,7 +342,7 @@ int link_symlink(link_phy_t handle, const char * old_path, const char * new_path
 	return reply.err;
 }
 
-int link_unlink(link_phy_t handle, const char * path){
+int link_unlink(link_transport_phy_t handle, const char * path){
 	link_op_t op;
 	link_reply_t reply;
 	int len;
@@ -380,7 +380,7 @@ int link_unlink(link_phy_t handle, const char * path){
 }
 
 
-int link_lseek(link_phy_t handle, int fildes, off_t offset, int whence){
+int link_lseek(link_transport_phy_t handle, int fildes, off_t offset, int whence){
 	link_op_t op;
 	link_reply_t reply;
 	int err;
@@ -415,7 +415,7 @@ int link_lseek(link_phy_t handle, int fildes, off_t offset, int whence){
 	return reply.err;
 }
 
-int link_stat(link_phy_t handle, const char * path, struct link_stat * buf){
+int link_stat(link_transport_phy_t handle, const char * path, struct link_stat * buf){
 	link_op_t op;
 	link_reply_t reply;
 	int len;
@@ -468,7 +468,7 @@ int link_stat(link_phy_t handle, const char * path, struct link_stat * buf){
 
 }
 
-int link_fstat(link_phy_t handle, int fildes, struct link_stat * buf){
+int link_fstat(link_transport_phy_t handle, int fildes, struct link_stat * buf){
 	link_op_t op;
 	link_reply_t reply;
 	int err;
@@ -506,7 +506,7 @@ int link_fstat(link_phy_t handle, int fildes, struct link_stat * buf){
 	return reply.err;
 }
 
-int link_rename(link_phy_t handle, const char * old_path, const char * new_path){
+int link_rename(link_transport_phy_t handle, const char * old_path, const char * new_path){
 	link_op_t op;
 	link_reply_t reply;
 	int len;
@@ -551,7 +551,7 @@ int link_rename(link_phy_t handle, const char * old_path, const char * new_path)
 	return reply.err;
 }
 
-int link_chown(link_phy_t handle, const char * path, int owner, int group){
+int link_chown(link_transport_phy_t handle, const char * path, int owner, int group){
 	link_op_t op;
 	link_reply_t reply;
 	int len;
@@ -591,7 +591,7 @@ int link_chown(link_phy_t handle, const char * path, int owner, int group){
 	return reply.err;
 }
 
-int link_chmod(link_phy_t handle, const char * path, int mode){
+int link_chmod(link_transport_phy_t handle, const char * path, int mode){
 	link_op_t op;
 	link_reply_t reply;
 	int len;

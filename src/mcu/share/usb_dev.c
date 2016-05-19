@@ -57,6 +57,7 @@ void usb_dev_priv_init(void * args){
 	action.context = context;
 	action.callback = usb_dev_std_setup;
 	action.event = USB_EVENT_DATA_READY;
+	action.prio = 0;
 	mcu_usb_setaction(context->constants->port, &action);
 	action.event = USB_EVENT_WRITE_COMPLETE;
 	mcu_usb_setaction(context->constants->port, &action);

@@ -221,7 +221,7 @@ int _mcu_core_enable_clkout(int clk_source, int div){
 
 int _mcu_core_setirqprio(int irq, int prio){
 
-	prio = DEV_MIDDLE_PRIORITY + prio;
+	prio = DEV_MIDDLE_PRIORITY - prio;
 	if( prio < 1 ){
 		prio = 1;
 	}

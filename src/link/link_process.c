@@ -26,7 +26,7 @@
 #include "link_flags.h"
 
 
-int link_exec(link_phy_t handle, const char * file){
+int link_exec(link_transport_phy_t handle, const char * file){
 	link_op_t op;
 	link_reply_t reply;
 	int len;
@@ -68,7 +68,7 @@ int link_exec(link_phy_t handle, const char * file){
 
 }
 
-int link_kill_pid(link_phy_t handle, int pid, int signo){
+int link_kill_pid(link_transport_phy_t handle, int pid, int signo){
 	int fd;
 	int err_ioctl;
 	int err;

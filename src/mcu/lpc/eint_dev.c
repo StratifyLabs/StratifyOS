@@ -268,9 +268,7 @@ void _mcu_eint_isr(int port){
 	LPC_SC->EXTINT |= (1<<port); //Clear the interrupt flag
 }
 
-#if defined __lpc17xx
-extern void _mcu_core_pio_isr(void);
-#endif
+
 
 void _mcu_core_eint0_isr(void){
 	_mcu_eint_isr(0);
@@ -284,11 +282,15 @@ void _mcu_core_eint2_isr(void){
 	_mcu_eint_isr(2);
 }
 
+#if defined __lpc17xx
+extern void _mcu_core_pio0_isr(void);
+#endif
+
 void _mcu_core_eint3_isr(void){
 	//check for GPIO interrupts first
 #if defined __lpc17xx
 	if ( LPC_GPIOINT->IntStatus ){
-		_mcu_core_pio_isr();
+		_mcu_core_pio0_isr();
 	}
 #endif
 

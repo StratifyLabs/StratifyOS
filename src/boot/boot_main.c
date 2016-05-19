@@ -6,6 +6,8 @@
 #include "iface/dev/usb.h"
 #include "iface/device_config.h"
 #include "mcu/core.h"
+#include "mcu/uart.h"
+#include "mcu/usb.h"
 #include "mcu/debug.h"
 #include "stratify/usb_dev.h"
 #include "mcu/boot_debug.h"
@@ -160,20 +162,22 @@ static int debug_write_func(const void * buf, int nbyte){
 #endif
 
 void init_hw(void){
-	core_irqprio_t req;
+	mcu_action_t action;
 	_mcu_core_initclock(1);
 	_mcu_core_priv_enable_interrupts(NULL); //Enable the interrupts
 
 	delay_ms(50);
 
 	//This only needs to be enabled for debugging
-	req.periph = CORE_PERIPH_UART;
-	req.port = 0;
-	req.prio = 14;
-	mcu_core_setirqprio(0, &req);
-	req.periph = CORE_PERIPH_USB;
-	req.prio = 15;
-	mcu_core_setirqprio(0, &req);
+	action.callback = 0;
+	action.context = 0;
+	action.channel = 0;
+	action.prio = 2;
+	mcu_uart_setaction(0, &action);
+
+	action.prio = 1;
+	mcu_usb_setaction(0, &action);
+
 
 #ifdef DEBUG_BOOTLOADER
 	u32 * bootloader_start = (u32*)boot_board_config.sw_req_loc;

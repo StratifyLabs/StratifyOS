@@ -100,6 +100,7 @@ typedef enum {
 
 
 typedef enum {
+	USB_EVENT_NONE,
 	USB_EVENT_DATA_READY,
 	USB_EVENT_WRITE_COMPLETE,
 	USB_EVENT_TOTAL

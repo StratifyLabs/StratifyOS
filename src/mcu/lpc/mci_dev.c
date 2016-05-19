@@ -200,7 +200,7 @@ int _mcu_mci_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
 }
 
 
-void _mcu_mci_isr(int port) {
+void _mcu_mci0_isr(int port) {
 	exec_callback(port, 0);
 }
 

@@ -18,27 +18,27 @@
  */
 
 
-#include <mcu.h>
+#include <mcu/mcu.h>
 #include <stdbool.h>
 
 #include "link_flags.h"
 
 
 
-int link_open_stdio(link_phy_t handle /*, const char * name */){
+int link_open_stdio(link_transport_phy_t handle /*, const char * name */){
 	return 0;
 }
 
 
-int link_close_stdio(link_phy_t handle){
+int link_close_stdio(link_transport_phy_t handle){
 	return 0;
 }
 
-int link_read_stdout(link_phy_t handle, void * buf, int nbyte){
+int link_read_stdout(link_transport_phy_t handle, void * buf, int nbyte){
 	return link_driver()->read(handle, buf, nbyte);
 }
 
 
-int link_write_stdin(link_phy_t handle, const void * buf, int nbyte){
+int link_write_stdin(link_transport_phy_t handle, const void * buf, int nbyte){
 	return link_driver()->write(handle, buf, nbyte);
 }

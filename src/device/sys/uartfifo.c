@@ -31,6 +31,7 @@ static int set_read_action(const device_cfg_t * cfg, mcu_callback_t callback){
 	action.callback = callback;
 	action.context = (void*)cfg;
 	action.event = UART_EVENT_DATA_READY;
+	action.prio = 0;
 	if( mcu_uart_setaction(cfgp->port, &action) < 0 ){
 		return -1;
 	}

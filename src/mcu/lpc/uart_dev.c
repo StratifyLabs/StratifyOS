@@ -429,52 +429,54 @@ static void exec_writecallback(int port, LPC_UART_Type * uart_regs, void * data)
 }
 
 int mcu_uart_setaction(int port, void * ctl){
-	int ret;
 	mcu_action_t * action = (mcu_action_t*)ctl;
 	LPC_UART_Type * uart_regs = uart_regs_table[port];
 
 	if( action->callback == 0 ){
 		//if there is an ongoing operation -- cancel it
-		ret = 4;
-		if ( uart_regs->IER & UIER_RBRIE ){
-			//There is an ongoing read operation
-			exec_readcallback(port, uart_regs, DEVICE_OP_CANCELLED);
-			ret = 6;
+
+		if( action->event == UART_EVENT_DATA_READY ){
+			if ( uart_regs->IER & UIER_RBRIE ){
+				//There is an ongoing read operation
+				exec_readcallback(port, uart_regs, DEVICE_OP_CANCELLED);
+			}
+			uart_local[port].read.callback = 0;
+			return 0;
 		}
 
-		if ( uart_regs->IER & UIER_ETBEI ){
-			exec_writecallback(port, uart_regs, DEVICE_OP_CANCELLED);
-			ret = 7;
+		if( action->event == UART_EVENT_WRITE_COMPLETE ){
+			if ( uart_regs->IER & UIER_ETBEI ){
+				exec_writecallback(port, uart_regs, DEVICE_OP_CANCELLED);
+			}
+			uart_local[port].write.callback = 0;
+			return 0;
 		}
 
-		uart_local[port].read.callback = 0;
-		uart_local[port].write.callback = 0;
-
-		return ret;
-	}
-
-
-	if( action->event == UART_EVENT_DATA_READY ){
-
-		if( _mcu_core_priv_validate_callback(action->callback) < 0 ){
-			return -1;
-		}
-
-		uart_local[port].read.callback = action->callback;
-		uart_local[port].read.context = action->context;
-
-		uart_regs->IER |= (UIER_RBRIE);  //enable the receiver interrupt
-		uart_local[port].rx_bufp = NULL;
-	} else if ( action->event == UART_EVENT_WRITE_COMPLETE ){
-		if( _mcu_core_priv_validate_callback(action->callback) < 0 ){
-			return -1;
-		}
-
-		uart_local[port].write.callback = action->callback;
-		uart_local[port].write.context = action->context;
 	} else {
-		errno = EINVAL;
-		return -1;
+
+
+		if( action->event == UART_EVENT_DATA_READY ){
+
+			if( _mcu_core_priv_validate_callback(action->callback) < 0 ){
+				return -1;
+			}
+
+			uart_local[port].read.callback = action->callback;
+			uart_local[port].read.context = action->context;
+
+			uart_regs->IER |= (UIER_RBRIE);  //enable the receiver interrupt
+			uart_local[port].rx_bufp = NULL;
+		} else if ( action->event == UART_EVENT_WRITE_COMPLETE ){
+			if( _mcu_core_priv_validate_callback(action->callback) < 0 ){
+				return -1;
+			}
+
+			uart_local[port].write.callback = action->callback;
+			uart_local[port].write.context = action->context;
+		} else {
+			errno = EINVAL;
+			return -1;
+		}
 	}
 
 	_mcu_core_setirqprio(uart_irqs[port], action->prio);

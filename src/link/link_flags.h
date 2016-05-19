@@ -37,9 +37,9 @@ extern link_dev_t link_dev;
 #define LINK_MAX_SN_SIZE 512
 
 
-int link_handle_err(link_phy_t handle, int err);
+int link_handle_err(link_transport_phy_t handle, int err);
 
-int link_ioctl_delay(link_phy_t handle, int fildes, int request, void * argp, int arg, int delay);
+int link_ioctl_delay(link_transport_phy_t handle, int fildes, int request, void * argp, int arg, int delay);
 
 
 //Functions

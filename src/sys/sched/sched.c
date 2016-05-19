@@ -64,11 +64,10 @@ int sched_check_tid(int id){
 
 void set_uart_priority(void){
 #if MCU_DEBUG
-	core_irqprio_t req;
-	req.port = MCU_DEBUG_PORT;
-	req.periph = CORE_PERIPH_UART;
-	req.prio = 14;
-	mcu_core_setirqprio(0, &req);
+	mcu_action_t action;
+	memset(&action, 0, sizeof(action));
+	action.prio = 2;
+	mcu_uart_setaction(MCU_DEBUG_PORT, &action);
 #endif
 }
 

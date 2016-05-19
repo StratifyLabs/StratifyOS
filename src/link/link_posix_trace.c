@@ -9,7 +9,7 @@
 #include "link_flags.h"
 #include "iface/link.h"
 
-int link_posix_trace_create(link_phy_t handle, uint32_t pid, link_trace_id_t * id){
+int link_posix_trace_create(link_transport_phy_t handle, uint32_t pid, link_trace_id_t * id){
 	link_op_t op;
 	link_reply_t reply;
 	int err;
@@ -42,7 +42,7 @@ int link_posix_trace_create(link_phy_t handle, uint32_t pid, link_trace_id_t * i
 	return reply.err;
 }
 
-int link_posix_trace_tryget_events(link_phy_t handle,
+int link_posix_trace_tryget_events(link_transport_phy_t handle,
 		link_trace_id_t id,
 		void * data,
 		size_t num_bytes){
@@ -90,7 +90,7 @@ int link_posix_trace_tryget_events(link_phy_t handle,
 	return len;
 }
 
-int link_posix_trace_shutdown(link_phy_t handle,
+int link_posix_trace_shutdown(link_transport_phy_t handle,
 		link_trace_id_t id){
 	link_op_t op;
 	link_reply_t reply;

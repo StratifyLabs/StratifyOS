@@ -229,6 +229,7 @@ int open_usecond_tmr(void){
 		return -1;
 	}
 
+	action.prio = 0;
 	action.channel = SCHED_USECOND_TMR_RESET_OC;
 	action.event = TMR_ACTION_EVENT_RESET|TMR_ACTION_EVENT_INTERRUPT;
 	action.callback = usecond_overflow_event;
