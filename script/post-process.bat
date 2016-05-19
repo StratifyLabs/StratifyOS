@@ -12,10 +12,10 @@ set LIB=lib%PROJ%_%NAME%%TYPE%
 echo "Installing include files in %TOOLSPATH%\%HOST%\include"
 xcopy /S /Y ..\include\* %TOOLSPATH%\%HOST%\include
 
-if NOT "%ARCH%"=="link" (
+if NOT "%NAME%"=="link" (
 	echo "Installing linker files in %TOOLSPATH%\%HOST%\lib\ldscripts"
 	xcopy /S /Y ..\ldscript\* %TOOLSPATH%\%HOST%\lib\ldscripts
-	echo D | xcopy /S /Y ..\include\posix\* %TOOLSPATH%\%HOST%\lib\include
+	xcopy /S /Y ..\include\posix\* %TOOLSPATH%\%HOST%\lib\include
 )
 
 if "%NAME%"=="link" (
