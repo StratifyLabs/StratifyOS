@@ -52,7 +52,7 @@ int _mcu_dma_halttransfer(int chan){
 		return -1;
 	}
 
-	if ( chan > DMA_MAX_CHANNEL ){
+	if ( chan > MCU_DMA_CHANNELS ){
 		return -1;
 	}
 

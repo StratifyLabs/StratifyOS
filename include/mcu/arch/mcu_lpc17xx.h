@@ -258,6 +258,11 @@ int _mcu_lpc_flash_get_serialno(uint32_t * dest);
 }
 #endif
 
+
+#define MCU_DMA_CHANNELS 8
+
+#define MCU_DMA_CHANNEL_REGS { LPC_GPDMACH0, LPC_GPDMACH1, LPC_GPDMACH2, LPC_GPDMACH3, LPC_GPDMACH4, LPC_GPDMACH5, LPC_GPDMACH6, LPC_GPDMACH7 }
+
 #include "mcu_lpc_dma.h"
 
 #define MPU_ACCESS_T

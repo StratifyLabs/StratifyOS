@@ -1,26 +1,29 @@
 @echo off
 set TOOLSPATH=%1
 set HOST=%2
-set ARCH=%3
+set PROJ=%3
+set NAME=%4
+set ARCH=%5
+set FLOAT=%6
+set TYPE=%7
+
+set LIB=lib%PROJ%_%NAME%%TYPE%
+
 echo "Installing include files in %TOOLSPATH%\%HOST%\include"
 xcopy /S /Y ..\include\* %TOOLSPATH%\%HOST%\include
+
 if NOT "%ARCH%"=="link" (
 	echo "Installing linker files in %TOOLSPATH%\%HOST%\lib\ldscripts"
 	xcopy /S /Y ..\ldscript\* %TOOLSPATH%\%HOST%\lib\ldscripts
-	echo D | xcopy /S /Y ..\include\dev_sys\* %TOOLSPATH%\%HOST%\lib\include
+	echo D | xcopy /S /Y ..\include\posix\* %TOOLSPATH%\%HOST%\lib\include
 )
 
-if "%ARCH%"=="link" (
-	copy /y ..\src\link\Link.h %TOOLSPATH%\%HOST%\include\hwpl\Link.h
+if "%NAME%"=="link" (
+	copy /y ..\src\link\Link.h %TOOLSPATH%\%HOST%\include\iface\Link.h
 )
 
-if "%ARCH%"=="CRT" (
-	copy /y .\libcrt.a %TOOLSPATH%\%HOST%\lib
-	GOTO :NO_CRT
-)
-
-echo "Installing library file: libcaos_%ARCH%.a in %TOOLSPATH%\%HOST%\lib"
-copy /y .\libcaos_%ARCH%.a %TOOLSPATH%\%HOST%\lib
+echo "Installing library file: %LIB%.a in %TOOLSPATH%\%HOST%\lib\%ARCH%\%FLOAT%"
+copy /y %LIB%.a %TOOLSPATH%\%HOST%\lib\%ARCH%\%FLOAT%
 
 :NO_CRT
 

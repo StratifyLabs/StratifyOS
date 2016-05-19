@@ -8,11 +8,7 @@ FLOAT=$6
 TYPE=$7
 
 LIB=lib${PROJ}_${NAME}${TYPE}
-export SUDO_ASKPASS=${PROJ}/script/ask-pass.sh
 echo "Installing include files in $TOOLSPATH/$HOST/include"
-sudo mkdir -p $TOOLSPATH/$HOST/include/hwpl
-sudo mkdir -p $TOOLSPATH/$HOST/include/hwdl
-sudo mkdir -p $TOOLSPATH/$HOST/include/dev
 sudo mkdir -p $TOOLSPATH/$HOST/lib/ldscripts
 
 sudo rsync -r --exclude=posix ../include/* $TOOLSPATH/$HOST/include
