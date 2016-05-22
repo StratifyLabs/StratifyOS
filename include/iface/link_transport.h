@@ -55,11 +55,10 @@ typedef struct {
 
 typedef struct {
 	int (*getname)(char * dest, const char * last, int len);
-	link_transport_phy_t (*open)(const char * name, int baudrate);
 	int (*lock)(link_transport_phy_t handle);
 	int (*unlock)(link_transport_phy_t handle);
 	int (*status)(link_transport_phy_t handle);
-	link_transport_driver_t driver;
+	link_transport_driver_t dev;
 } link_transport_mdriver_t;
 
 void link_transport_mastersettimeout(int t);

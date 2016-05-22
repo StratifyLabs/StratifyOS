@@ -18,23 +18,20 @@
  */
 
 
-#include <mcu.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+
+#include "mcu/mcu.h"
 #include "link_flags.h"
 
 
 //Access to directories
-int link_mkdir(link_transport_phy_t handle, const char * path, link_mode_t mode){
+int link_mkdir(link_transport_mdriver_t * driver, const char * path, link_mode_t mode){
 	link_op_t op;
 	link_reply_t reply;
 	int len;
 	int err;
-
-	if ( link_dev == NULL ){
-		return LINK_TRANSFER_ERR;
-	}
 
 	link_debug(LINK_DEBUG_MESSAGE, "mkdir %s 0%o", path, mode);
 
@@ -43,20 +40,20 @@ int link_mkdir(link_transport_phy_t handle, const char * path, link_mode_t mode)
 	op.mkdir.path_size = strlen(path) + 1;
 
 	link_debug(LINK_DEBUG_MESSAGE, "Write op");
-	err = link_transport_masterwrite(handle, &op, sizeof(op));
+	err = link_transport_masterwrite(driver, &op, sizeof(op));
 	if ( err < 0 ){
 		return err;
 	}
 
 	//Send the path on the bulk out endpoint
 	link_debug(LINK_DEBUG_MESSAGE, "Write path");
-	len = link_transport_masterwrite(handle, path, op.mkdir.path_size);
+	len = link_transport_masterwrite(driver, path, op.mkdir.path_size);
 	if ( len < 0 ){
 		return LINK_TRANSFER_ERR;
 	}
 
 	//read the reply to see if the file opened correctly
-	err = link_transport_masterread(handle, &reply, sizeof(reply));
+	err = link_transport_masterread(driver, &reply, sizeof(reply));
 	if ( err < 0 ){
 		link_error("Failed to get reply");
 		return err;
@@ -71,13 +68,13 @@ int link_mkdir(link_transport_phy_t handle, const char * path, link_mode_t mode)
 
 }
 
-int link_rmdir(link_transport_phy_t handle, const char * path){
+int link_rmdir(link_transport_mdriver_t * driver, const char * path){
 	link_op_t op;
 	link_reply_t reply;
 	int len;
 	int err;
 
-	if ( link_dev == NULL ){
+	if ( driver == NULL ){
 		return LINK_TRANSFER_ERR;
 	}
 
@@ -86,19 +83,19 @@ int link_rmdir(link_transport_phy_t handle, const char * path){
 	op.rmdir.cmd = LINK_CMD_RMDIR;
 	op.rmdir.path_size = strlen(path) + 1;
 
-	err = link_transport_masterwrite(handle, &op, sizeof(op));
+	err = link_transport_masterwrite(driver, &op, sizeof(op));
 	if ( err < 0 ){
 		return err;
 	}
 
 	//Send the path on the bulk out endpoint
-	len = link_transport_masterwrite(handle, path, op.rmdir.path_size);
+	len = link_transport_masterwrite(driver, path, op.rmdir.path_size);
 	if ( len < 0 ){
 		return LINK_TRANSFER_ERR;
 	}
 
 	//read the reply to see if the file opened correctly
-	err = link_transport_masterread(handle, &reply, sizeof(reply));
+	err = link_transport_masterread(driver, &reply, sizeof(reply));
 	if ( err < 0 ){
 		return err;
 	}
@@ -111,13 +108,13 @@ int link_rmdir(link_transport_phy_t handle, const char * path){
 	return reply.err;
 }
 
-int link_opendir(link_transport_phy_t handle, const char * dirname){
+int link_opendir(link_transport_mdriver_t * driver, const char * dirname){
 	link_op_t op;
 	link_reply_t reply;
 	int len;
 	int err;
 
-	if ( link_dev == NULL ){
+	if ( driver == NULL ){
 		link_error("No device");
 		return 0;
 	}
@@ -131,7 +128,7 @@ int link_opendir(link_transport_phy_t handle, const char * dirname){
 	}
 
 	link_debug(LINK_DEBUG_MESSAGE, "Write op");
-	err = link_transport_masterwrite(handle, &op, sizeof(link_opendir_t));
+	err = link_transport_masterwrite(driver, &op, sizeof(link_opendir_t));
 	if ( err < 0 ){
 		link_error("Failed to transfer command");
 		return 0;
@@ -139,7 +136,7 @@ int link_opendir(link_transport_phy_t handle, const char * dirname){
 
 	//Send the path on the bulk out endpoint
 	link_debug(LINK_DEBUG_MESSAGE, "Write path %s", dirname);
-	len = link_transport_masterwrite(handle, dirname, op.opendir.path_size);
+	len = link_transport_masterwrite(driver, dirname, op.opendir.path_size);
 	if ( len < 0 ){
 		link_error("Failed to write bulk out");
 		return 0;
@@ -147,7 +144,7 @@ int link_opendir(link_transport_phy_t handle, const char * dirname){
 
 	link_debug(LINK_DEBUG_MESSAGE, "Write path len is %d 0x%X", len, reply.err);
 	//read the reply to see if the file opened correctly
-	err = link_transport_masterread(handle, &reply, sizeof(reply));
+	err = link_transport_masterread(driver, &reply, sizeof(reply));
 	if ( err < 0 ){
 		link_error("Failed to read bulk in");
 		return 0;
@@ -161,12 +158,12 @@ int link_opendir(link_transport_phy_t handle, const char * dirname){
 	return reply.err;
 }
 
-int link_readdir_r(link_transport_phy_t handle, int dirp, struct link_dirent * entry, struct link_dirent ** result){
+int link_readdir_r(link_transport_mdriver_t * driver, int dirp, struct link_dirent * entry, struct link_dirent ** result){
 	link_op_t op;
 	link_reply_t reply;
 	int len;
 
-	if ( link_dev == NULL ){
+	if ( driver == NULL ){
 		return -1;
 	}
 
@@ -179,12 +176,12 @@ int link_readdir_r(link_transport_phy_t handle, int dirp, struct link_dirent * e
 	}
 
 	link_debug(LINK_DEBUG_MESSAGE, "Write op");
-	if (link_transport_masterwrite(handle, &op, sizeof(link_readdir_t)) < 0){
+	if (link_transport_masterwrite(driver, &op, sizeof(link_readdir_t)) < 0){
 		return -1;
 	}
 
 	link_debug(LINK_DEBUG_MESSAGE, "Read reply");
-	if (link_transport_masterread(handle, &reply, sizeof(reply)) < 0){
+	if (link_transport_masterread(driver, &reply, sizeof(reply)) < 0){
 		return -1;
 	}
 
@@ -196,7 +193,7 @@ int link_readdir_r(link_transport_phy_t handle, int dirp, struct link_dirent * e
 
 	//Read the bulk in buffer for the result of the read
 	link_debug(LINK_DEBUG_MESSAGE, "Read link dirent");
-	len = link_transport_masterread(handle, entry, sizeof(struct link_dirent));
+	len = link_transport_masterread(driver, entry, sizeof(struct link_dirent));
 	if ( len < 0 ){
 		link_error("Failed to read dirent");
 		return -1;
@@ -209,12 +206,12 @@ int link_readdir_r(link_transport_phy_t handle, int dirp, struct link_dirent * e
 	return 0;
 }
 
-int link_closedir(link_transport_phy_t handle, int dirp){
+int link_closedir(link_transport_mdriver_t * driver, int dirp){
 	link_op_t op;
 	link_reply_t reply;
 	int err;
 
-	if ( link_dev == NULL ){
+	if ( driver == NULL ){
 		return LINK_TRANSFER_ERR;
 	}
 
@@ -222,13 +219,13 @@ int link_closedir(link_transport_phy_t handle, int dirp){
 	op.closedir.dirp = dirp;
 
 	link_debug(LINK_DEBUG_MESSAGE, "Send op");
-	err = link_transport_masterwrite(handle, &op, sizeof(link_closedir_t));
+	err = link_transport_masterwrite(driver, &op, sizeof(link_closedir_t));
 	if ( err < 0 ){
 		return err;
 	}
 
 	link_debug(LINK_DEBUG_MESSAGE, "Get Reply");
-	err = link_transport_masterread(handle, &reply, sizeof(reply));
+	err = link_transport_masterread(driver, &reply, sizeof(reply));
 	if ( err < 0 ){
 		return err;
 	}

@@ -9,17 +9,16 @@ TYPE=$7
 
 LIB=lib${PROJ}_${NAME}${TYPE}
 echo "Installing include files in $TOOLSPATH/$HOST/include"
-mkdir -p $TOOLSPATH/$HOST/lib/ldscripts
 
-sudo rsync -r --exclude=posix ../include/* $TOOLSPATH/$HOST/include
-#sudo cp -Rf ../include/* $TOOLSPATH/$HOST/include
+rsync -r --exclude=posix ../include/* $TOOLSPATH/$HOST/include
 if [ "$NAME" != "link" ]; then
+	mkdir -p $TOOLSPATH/$HOST/lib/ldscripts
 	cp -Rf ../ldscript/* $TOOLSPATH/$HOST/lib/ldscripts
 	cp -Rf ../include/posix/* $TOOLSPATH/$HOST/include
 fi
 
 if [ "$NAME" == "link" ]; then
-	cp -Rf ../src/link/Link.h $TOOLSPATH/$HOST/include/iface
+	cp -Rf ../src/link/Link.h $TOOLSPATH/$HOST/include
 fi
 
 echo "Installing library file: $LIB.a in $TOOLSPATH/$HOST/lib/$ARCH/$FLOAT"

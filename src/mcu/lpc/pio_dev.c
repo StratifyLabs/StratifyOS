@@ -219,7 +219,7 @@ int mcu_pio_setaction(int port, void * ctl){
 #ifdef LPCXX7X_8X
 	//This is the interrupt for GPIO0 and GPIO2
 	_mcu_core_priv_enable_irq((void*)GPIO_IRQn);
-	_mcu_core_setirqprio(EINT3_IRQn, action->prio);
+	_mcu_core_setirqprio(GPIO_IRQn, action->prio);
 #else
 	//This is the interrupt for GPIO0 and GPIO2 (shared with EINT3)
 	_mcu_core_priv_enable_irq((void*)EINT3_IRQn);
@@ -399,7 +399,7 @@ void exec_callback2(void * data){
 	_mcu_core_exec_event_handler(&(_mcu_pio2_local.handler), &ev);
 }
 
-//The pio interrupts use the eint3 interrupt service routine -- this function should be called from there
+//On __lpc17xx The pio interrupts use the eint3 interrupt service routine -- this function should be called from there
 void _mcu_core_pio0_isr(void){
 	if ( LPC_GPIOINT->IntStatus & (1<<0) ){
 		exec_callback0(0);

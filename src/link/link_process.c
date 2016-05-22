@@ -26,7 +26,7 @@
 #include "link_flags.h"
 
 
-int link_exec(link_transport_phy_t handle, const char * file){
+int link_exec(link_transport_mdriver_t * driver, const char * file){
 	link_op_t op;
 	link_reply_t reply;
 	int len;
@@ -38,22 +38,22 @@ int link_exec(link_transport_phy_t handle, const char * file){
 	op.exec.path_size = strlen(file) + 1;
 
 
-	link_debug(LINK_DEBUG_MESSAGE, "Write op (0x%lX)", (long unsigned int)link_dev);
-	err = link_transport_masterwrite(handle, &op, sizeof(link_open_t));
+	link_debug(LINK_DEBUG_MESSAGE, "Write op (0x%lX)", (long unsigned int)driver->dev.handle);
+	err = link_transport_masterwrite(driver, &op, sizeof(link_open_t));
 	if ( err < 0 ){
 		return err;
 	}
 
 	//Send the path on the bulk out endpoint
 	link_debug(LINK_DEBUG_MESSAGE, "Write exec path (%d bytes)", op.exec.path_size);
-	len = link_transport_masterwrite(handle, file, op.exec.path_size);
+	len = link_transport_masterwrite(driver, file, op.exec.path_size);
 	if ( len < 0 ){
 		link_debug(1, "Failed to write bulk output");
 		return LINK_TRANSFER_ERR;
 	}
 
 	//read the reply to see if the file opened correctly
-	err = link_transport_masterread(handle, &reply, sizeof(reply));
+	err = link_transport_masterread(driver, &reply, sizeof(reply));
 	if ( err < 0 ){
 		link_error("Failed to read the reply");
 		return err;
@@ -68,16 +68,16 @@ int link_exec(link_transport_phy_t handle, const char * file){
 
 }
 
-int link_kill_pid(link_transport_phy_t handle, int pid, int signo){
+int link_kill_pid(link_transport_mdriver_t * driver, int pid, int signo){
 	int fd;
 	int err_ioctl;
 	int err;
 	sys_killattr_t killattr;
 
-	fd = link_open(handle, "/dev/sys", LINK_O_RDWR);
+	fd = link_open(driver, "/dev/sys", LINK_O_RDWR);
 	if ( fd < 0 ){
 		link_error("failed to open /dev/sys");
-		return link_handle_err(handle, fd);
+		return link_handle_err(driver, fd);
 	}
 
 	killattr.id = pid;
@@ -85,19 +85,19 @@ int link_kill_pid(link_transport_phy_t handle, int pid, int signo){
 	killattr.si_sigcode = LINK_SI_USER;
 	killattr.si_sigvalue = 0;
 
-	err_ioctl = link_ioctl(handle, fd, I_SYS_KILL, &killattr);
+	err_ioctl = link_ioctl(driver, fd, I_SYS_KILL, &killattr);
 	if( err_ioctl == LINK_PHY_ERROR ){
 		link_error("failed to I_SYS_KILL");
 		return err_ioctl;
 	}
 
 	if( err_ioctl == LINK_PROT_ERROR ){
-		if( link_handle_err(handle, err_ioctl) == LINK_PHY_ERROR ){
+		if( link_handle_err(driver, err_ioctl) == LINK_PHY_ERROR ){
 			return LINK_PHY_ERROR;
 		}
 	}
 
-	if( (err = link_close(handle, fd)) < 0 ){
+	if( (err = link_close(driver, fd)) < 0 ){
 		link_error("failed to close fd");
 		return err;
 	}

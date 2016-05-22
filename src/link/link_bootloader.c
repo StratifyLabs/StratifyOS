@@ -17,19 +17,19 @@
  * 
  */
 
-#include <mcu.h>
-#include "link_flags.h"
-
 #include <stdbool.h>
 #include <stdarg.h>
 
-static int reset_device(link_transport_phy_t handle, bool invoke_bootloader);
+#include "mcu/mcu.h"
+#include "link_flags.h"
 
-int link_bootloader_attr(link_transport_phy_t handle, bootloader_attr_t * attr, uint32_t id){
-	if( link_ioctl(handle, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_GETATTR, attr) < 0 ){
+static int reset_device(link_transport_mdriver_t * driver, bool invoke_bootloader);
+
+int link_bootloader_attr(link_transport_mdriver_t * driver, bootloader_attr_t * attr, uint32_t id){
+	if( link_ioctl(driver, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_GETATTR, attr) < 0 ){
 		//try again with the older version
 		attr->version = 0;
-		link_ioctl(handle, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_GETATTR_14X, attr);
+		//link_ioctl(driver, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_GETATTR_14X, attr);
 		if( (attr->version == 0x150) ||
 				(attr->version == 0x140) ||
 				(attr->version == 0x132) ||
@@ -45,10 +45,10 @@ int link_bootloader_attr(link_transport_phy_t handle, bootloader_attr_t * attr, 
 	return 0;
 }
 
-int link_isbootloader(link_transport_phy_t handle){
+int link_isbootloader(link_transport_mdriver_t * driver){
 	bootloader_attr_t attr;
 
-	if( link_bootloader_attr(handle, &attr, 0) < 0 ){
+	if( link_bootloader_attr(driver, &attr, 0) < 0 ){
 		return 0;
 	}
 
@@ -80,30 +80,30 @@ int link_isbootloader(link_transport_phy_t handle){
 	return 1;
 }
 
-int link_reset(link_transport_phy_t handle){
+int link_reset(link_transport_mdriver_t * driver){
 	link_op_t op;
 	link_debug(LINK_DEBUG_MESSAGE, "try to reset--check bootloader");
-	if( link_isbootloader(handle) ){
+	if( link_isbootloader(driver) ){
 		//execute the request
 		op.ioctl.cmd = LINK_CMD_IOCTL;
 		op.ioctl.fildes = LINK_BOOTLOADER_FILDES;
 		op.ioctl.request = I_BOOTLOADER_RESET;
 		op.ioctl.arg = 0;
-		link_transport_masterwrite(handle, &op, sizeof(link_ioctl_t));
-		link_driver()->close(handle);
+		link_transport_masterwrite(driver, &op, sizeof(link_ioctl_t));
+		driver->dev.close(driver->dev.handle);
 	} else {
 		link_debug(LINK_DEBUG_MESSAGE, "reset device with /dev/core");
-		return reset_device(handle, false);
+		return reset_device(driver, false);
 	}
 	return 0;
 }
 
-int reset_device(link_transport_phy_t handle, bool invoke_bootloader){
+int reset_device(link_transport_mdriver_t * driver, bool invoke_bootloader){
 	//use "/dev/core" to reset
 	int fd;
 	link_op_t op;
 
-	fd = link_open(handle, "/dev/core", LINK_O_RDWR);
+	fd = link_open(driver, "/dev/core", LINK_O_RDWR);
 	if ( fd < 0 ){
 		return -1;
 	}
@@ -121,26 +121,26 @@ int reset_device(link_transport_phy_t handle, bool invoke_bootloader){
 		op.ioctl.request = I_CORE_INVOKEBOOTLOADER;
 	}
 
-	link_transport_masterwrite(handle, &op, sizeof(link_ioctl_t));
-	link_driver()->close(handle);
+	link_transport_masterwrite(driver, &op, sizeof(link_ioctl_t));
+	driver->dev.close(driver->dev.handle);
 	return 0;
 }
 
-int link_resetbootloader(link_transport_phy_t handle){
-	return reset_device(handle, true);
+int link_resetbootloader(link_transport_mdriver_t * driver){
+	return reset_device(driver, true);
 }
 
-int link_eraseflash(link_transport_phy_t handle){
-	if( link_ioctl_delay(handle, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_ERASE, NULL, 0, 500) < 0 ){
+int link_eraseflash(link_transport_mdriver_t * driver){
+	if( link_ioctl_delay(driver, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_ERASE, NULL, 0, 500) < 0 ){
 		return -1;
 	}
 
-	link_driver()->wait(500);
-	link_driver()->wait(500);
+	driver->dev.wait(500);
+	driver->dev.wait(500);
 	return 0;
 }
 
-int link_readflash(link_transport_phy_t handle, int addr, void * buf, int nbyte){
+int link_readflash(link_transport_mdriver_t * driver, int addr, void * buf, int nbyte){
 	link_op_t op;
 	link_reply_t reply;
 	int err;
@@ -152,19 +152,19 @@ int link_readflash(link_transport_phy_t handle, int addr, void * buf, int nbyte)
 
 
 	link_debug(LINK_DEBUG_MESSAGE, "write read flash op");
-	err = link_transport_masterwrite(handle, &op, sizeof(link_read_t));
+	err = link_transport_masterwrite(driver, &op, sizeof(link_read_t));
 	if ( err < 0 ){
 		return err;
 	}
 
 	link_debug(LINK_DEBUG_MESSAGE, "read flash data");
-	len = link_transport_masterread(handle, buf, nbyte);
+	len = link_transport_masterread(driver, buf, nbyte);
 	if ( len < 0 ){
 		return LINK_TRANSFER_ERR;
 	}
 
 	link_debug(LINK_DEBUG_MESSAGE, "read reply");
-	err = link_transport_masterread(handle, &reply, sizeof(reply));
+	err = link_transport_masterread(driver, &reply, sizeof(reply));
 	if ( err < 0 ){
 		return err;
 	}
@@ -178,7 +178,7 @@ int link_readflash(link_transport_phy_t handle, int addr, void * buf, int nbyte)
 	return reply.err;
 }
 
-int link_writeflash(link_transport_phy_t handle, int addr, const void * buf, int nbyte){
+int link_writeflash(link_transport_mdriver_t * driver, int addr, const void * buf, int nbyte){
 	bootloader_writepage_t wattr;
 	int page_size;
 	int bytes_written;
@@ -199,7 +199,7 @@ int link_writeflash(link_transport_phy_t handle, int addr, const void * buf, int
 		memcpy(wattr.buf, buf, page_size);
 
 
-		err = link_ioctl_delay(handle, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_WRITEPAGE, &wattr, 0, 0);
+		err = link_ioctl_delay(driver, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_WRITEPAGE, &wattr, 0, 0);
 		if( err < 0 ){
 			return err;
 		}

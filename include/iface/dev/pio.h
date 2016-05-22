@@ -185,7 +185,9 @@ typedef struct {
  * @param event The mcu_event_t passed to a callback
  * @return Value with bits set to indicate which pin caused an interrupt
  */
+#if !defined __link
 static inline u32 pio_mcu_event_mask(mcu_event_t event){ return (u32)event; }
+#endif
 
 /*! \brief IOCTL request to get the attributes.
  * \hideinitializer

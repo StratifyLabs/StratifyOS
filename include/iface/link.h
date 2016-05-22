@@ -717,14 +717,11 @@ typedef struct {
 } link_appfs_file_t;
 
 
-/*! \addtogroup USB_HANDLE Device Handling
- * @{
+/*! \details This function loads the default driver
+ *
+ * @param driver A pointer to the destination driver
  */
-
-/*! \details This defines the opaque type
- * used to select different USB Link devices.
- */
-typedef volatile void * link_dev_t;
+void link_load_default_driver(link_transport_mdriver_t * driver);
 
 /*! \details This initializes the link framework.  This
  * will be called automatically by link_new_dev() if
@@ -732,6 +729,7 @@ typedef volatile void * link_dev_t;
  * \return Zero on success.
  */
 int link_init(void);
+
 
 /*! \details This shuts down the link framework.
  */
@@ -742,26 +740,27 @@ void link_exit(void);
  * \return The new device or NULL if it could not be opened
  */
 
-link_transport_phy_t link_connect(const char * sn);
+int link_connect(link_transport_mdriver_t * driver, const char * sn);
 
 /*! \details This closes the specified USB Link device.
  *
  */
-int link_disconnect(link_transport_phy_t handle /*! The device to close */);
+int link_disconnect(link_transport_mdriver_t * driver /*! The device to close */);
 
 
 /*! \details This generates a list of available Link
  * devices.
  * \return A pointer to the new string array.
  */
-char * link_new_device_list(int max);
+char * link_new_device_list(link_transport_mdriver_t * driver, int max);
 
 /*! \details This frees a list of USB Link devices
  * (No USB transactions are performed).
  */
 void link_del_device_list(char * sn_list /*! The list to free */);
-
 char * link_device_list_entry(char * list, int entry);
+
+void link_load_default_driver(link_transport_mdriver_t * driver);
 
 /*! \details This function checks to see if there was an error
  * on the last transaction.
@@ -800,41 +799,41 @@ void link_set_debug_callback(void (*write_callback)(link_debug_context_t*));
  * \return The file handle used to read/write/ioctl the file or device; less
  * than zero on an error.
  */
-int link_open(link_transport_phy_t handle, const char * path, int flags, ...);
+int link_open(link_transport_mdriver_t * driver, const char * path, int flags, ...);
 
 /*! \details This function performs ioctl control on device associated
  * with the file descriptor.
  * \return Zero on success or an error code.
  */
-int link_ioctl(link_transport_phy_t handle, int fildes, int request, ...);
+int link_ioctl(link_transport_mdriver_t * driver, int fildes, int request, ...);
 
 /*! \details This function reads the device (or regular file) associated
  * with the file descriptor.
  *
  * \return The number of bytes read or an error code (less than zero).
  */
-int link_read(link_transport_phy_t handle, int fildes, void * buf, int nbyte);
+int link_read(link_transport_mdriver_t * driver, int fildes, void * buf, int nbyte);
 
 /*! \details This function writes the device (or regular file) associated
  * with the file descriptor.
  *
  * \return The number of bytes writte or an error code (less than zero).
  */
-int link_write(link_transport_phy_t handle, int fildes, const void * buf, int nbyte);
+int link_write(link_transport_mdriver_t * driver, int fildes, const void * buf, int nbyte);
 
 /*! \details This function closes the device (or regular file) associated
  * with the file descriptor.
  *
  * \return Zero on success or an error code.
  */
-int link_close(link_transport_phy_t handle, int fildes);
+int link_close(link_transport_mdriver_t * driver, int fildes);
 
 /*! \details This function deletes a file from the
  * device's filesystem.
  *
  * \return Zero on success or an HWPL error code.
  */
-int link_unlink(link_transport_phy_t handle /*! Device handle */, const char * path /*! The full path to the file to delete */);
+int link_unlink(link_transport_mdriver_t * driver /*! Device handle */, const char * path /*! The full path to the file to delete */);
 
 //For block devices and files
 /*! \details For block devices, this function
@@ -842,45 +841,45 @@ int link_unlink(link_transport_phy_t handle /*! Device handle */, const char * p
  *
  * \return Zero on success or an error code.
  */
-int link_lseek(link_transport_phy_t handle, int fildes, off_t offset, int whence);
+int link_lseek(link_transport_mdriver_t * driver, int fildes, off_t offset, int whence);
 
 //For files only
-int link_stat(link_transport_phy_t handle, const char * path, struct link_stat * buf);
-int link_fstat(link_transport_phy_t handle, int fildes, struct link_stat * buf);
+int link_stat(link_transport_mdriver_t * driver, const char * path, struct link_stat * buf);
+int link_fstat(link_transport_mdriver_t * driver, int fildes, struct link_stat * buf);
 
 //Access to directories
 /*! \details This function creates a new directory on
  * the device filesystem.
  * \return 0 on success or an HWPL error code.
  */
-int link_mkdir(link_transport_phy_t handle, const char * path /*! The full path to the directory to create */,
+int link_mkdir(link_transport_mdriver_t * driver, const char * path /*! The full path to the directory to create */,
 		link_mode_t mode /*! Directory mode */);
 
 /*! \details This function removes a directory from
  * the device filesystem.
  * \return 0 on success or an HWPL error code.
  */
-int link_rmdir(link_transport_phy_t handle, const char * path /*! The full path to the directory to remove */);
+int link_rmdir(link_transport_mdriver_t * driver, const char * path /*! The full path to the directory to remove */);
 
 /*! \details This function opens a directory on the device
  * filesystem.  link_readdir() may then be used to
  * read the entries in the directory.
  * \return 0 on success or an HWPL error code.
  */
-int link_opendir(link_transport_phy_t handle, const char * dirname /*! The full path to the directory to open */);
+int link_opendir(link_transport_mdriver_t * driver, const char * dirname /*! The full path to the directory to open */);
 
 /*! \details This function closes a directory that
  * was previously opened with link_opendir().
  *
  * \return 0 on success or an HWPL error code.
  */
-int link_closedir(link_transport_phy_t handle, int dirp /*! The handle for the open directory */);
+int link_closedir(link_transport_mdriver_t * driver, int dirp /*! The handle for the open directory */);
 
 /*! \details This function reads an entry from
  * a the directory that was previously opened with link_opendir().
  * \return 0 on success or an HWPL error code.
  */
-int link_readdir_r(link_transport_phy_t handle, int dirp /*! The directory handle */,
+int link_readdir_r(link_transport_mdriver_t * driver, int dirp /*! The directory handle */,
 		struct link_dirent * entry /*! A pointer to the destination entry */,
 		struct link_dirent ** result /*! Points to \a entry on success */);
 
@@ -889,57 +888,55 @@ int link_readdir_r(link_transport_phy_t handle, int dirp /*! The directory handl
  * emtpy root directory.
  * \return 0 on success or an HWPL error code.
  */
-int link_mkfs(link_transport_phy_t handle, const char * path);
+int link_mkfs(link_transport_mdriver_t * driver, const char * path);
 
 /*! \details This function starts a new process on the device.
  *
  * \return Zero on success or an HWPL error code
  */
-int link_exec(link_transport_phy_t handle, const char * file);
+int link_exec(link_transport_mdriver_t * driver, const char * file);
 
 /*! \details This function creates a new symbolic link.
  *
  * \return Zero on success or an error code.
  */
-int link_symlink(link_transport_phy_t handle, const char * old_path, const char * new_path);
+int link_symlink(link_transport_mdriver_t * driver, const char * old_path, const char * new_path);
 
 /*! \details This function opens the stdio.
  * return Zero on success or an error code.
  */
-int link_open_stdio(link_transport_phy_t handle);
+int link_open_stdio(link_transport_mdriver_t * driver);
 
 /*! \details This function closes the stdio.
  * return Zero on success or an error code.
  */
-int link_close_stdio(link_transport_phy_t handle);
+int link_close_stdio(link_transport_mdriver_t * driver);
 
 /*! \details This function reads the standard output from the device.
  *
  */
-int link_read_stdout(link_transport_phy_t handle, void * buf, int nbyte);
+int link_read_stdout(link_transport_mdriver_t * driver, void * buf, int nbyte);
 
 /*! \details This function writes the standard input to the device.
  *
  */
-int link_write_stdin(link_transport_phy_t handle, const void * buf, int nbyte);
+int link_write_stdin(link_transport_mdriver_t * driver, const void * buf, int nbyte);
 
 /*! \details This function sets the time on the target device according to the
  * specified struct tm.
  * \return Zero on success or an error code
  */
-int link_settime(link_transport_phy_t handle, struct tm * t);
+int link_settime(link_transport_mdriver_t * driver, struct tm * t);
 
 /*! \details This function gets the time on the target device according and
  * stores it in t.
  * \return Zero on success or an error code
  */
-int link_gettime(link_transport_phy_t handle, struct tm * t);
+int link_gettime(link_transport_mdriver_t * driver, struct tm * t);
 
 /*! \details This function sends the specified signal to the specified pid.
  */
-int link_kill_pid(link_transport_phy_t handle, int pid, int signo);
-
-
+int link_kill_pid(link_transport_mdriver_t * driver, int pid, int signo);
 
 
 /*! \details This function reads the address of the security word.
@@ -950,17 +947,17 @@ int link_get_security_addr(u32 * addr);
 /*! \details This renames a file on the filesystem.
  *
  */
-int link_rename(link_transport_phy_t handle, const char * old_path, const char * new_path);
+int link_rename(link_transport_mdriver_t * driver, const char * old_path, const char * new_path);
 
 /*! \details This changes file ownership.
  *
  */
-int link_chown(link_transport_phy_t handle, const char * path, int owner, int group);
+int link_chown(link_transport_mdriver_t * driver, const char * path, int owner, int group);
 
 /*! \details This changes a file mode.
  *
  */
-int link_chmod(link_transport_phy_t handle, const char * path, int mode);
+int link_chmod(link_transport_mdriver_t * driver, const char * path, int mode);
 
 /*! \addtogroup BOOTLOADER Bootloader Functions
  * @{
@@ -973,58 +970,56 @@ int link_chmod(link_transport_phy_t handle, const char * path, int mode);
 /*! \details
  *
  */
-int link_isbootloader(link_transport_phy_t handle);
+int link_isbootloader(link_transport_mdriver_t * driver);
 
 
-int link_bootloader_attr(link_transport_phy_t handle, bootloader_attr_t * attr, u32 id);
+int link_bootloader_attr(link_transport_mdriver_t * driver, bootloader_attr_t * attr, u32 id);
 
 /*! \details
  *
  */
-int link_readserialno(link_transport_phy_t handle, char * serialno, int len);
+int link_readserialno(link_transport_mdriver_t * driver, char * serialno, int len);
 
 
 /*! \details This function resets the device
  * \return 0 on success
  */
-int link_reset(link_transport_phy_t handle);
+int link_reset(link_transport_mdriver_t * driver);
 
 /*! \details This function resets the device and starts the DFU bootloader.
  * \return 0 on success
  */
-int link_resetbootloader(link_transport_phy_t handle);
+int link_resetbootloader(link_transport_mdriver_t * driver);
 
 /*! \details This function reads the flash memory from the device.
  *
  */
-int link_readflash(link_transport_phy_t handle, int addr, void * buf, int nbyte);
+int link_readflash(link_transport_mdriver_t * driver, int addr, void * buf, int nbyte);
 
 /*! \details This function writes the flash memory of the device.
  *
  */
-int link_writeflash(link_transport_phy_t handle, int addr, const void * buf, int nbyte);
+int link_writeflash(link_transport_mdriver_t * driver, int addr, const void * buf, int nbyte);
 
 /*! \details This erases everything in the flash except the bootloader.
  *
  */
-int link_eraseflash(link_transport_phy_t handle);
+int link_eraseflash(link_transport_mdriver_t * driver);
 
 /*! @} */
 
-int link_posix_trace_create(link_transport_phy_t handle,
+int link_posix_trace_create(link_transport_mdriver_t * driver,
 		u32 pid,
 		link_trace_id_t * id);
-int link_posix_trace_tryget_events(link_transport_phy_t handle,
+int link_posix_trace_tryget_events(link_transport_mdriver_t * driver,
 		link_trace_id_t id,
 		void * data,
 		size_t num_bytes);
-int link_posix_trace_shutdown(link_transport_phy_t handle,
+int link_posix_trace_shutdown(link_transport_mdriver_t * driver,
 		link_trace_id_t id);
 
 const char * link_posix_trace_getname(int trace_number);
 
-void link_set_driver(const link_transport_mdriver_t * driver);
-const link_transport_mdriver_t * link_driver();
 
 #if defined( __cplusplus )
 }

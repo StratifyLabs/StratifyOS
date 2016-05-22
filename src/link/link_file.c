@@ -17,12 +17,13 @@
  * 
  */
 
-#include <mcu.h>
-#include "link_flags.h"
 
 #include <stdarg.h>
 
-int link_open(link_transport_phy_t handle, const char * path, int flags, ...){
+#include "mcu/mcu.h"
+#include "link_flags.h"
+
+int link_open(link_transport_mdriver_t * driver, const char * path, int flags, ...){
 	link_op_t op;
 	link_reply_t reply;
 	link_mode_t mode;
@@ -38,7 +39,7 @@ int link_open(link_transport_phy_t handle, const char * path, int flags, ...){
 		mode = 0;
 	}
 
-	link_debug(LINK_DEBUG_MESSAGE, "open %s 0%o 0x%X using 0x%llX", path, mode, flags, (uint64_t)handle);
+	link_debug(LINK_DEBUG_MESSAGE, "open %s 0%o 0x%X using 0x%llX", path, mode, flags, (uint64_t)driver->dev.handle);
 
 
 	op.open.cmd = LINK_CMD_OPEN;
@@ -46,28 +47,28 @@ int link_open(link_transport_phy_t handle, const char * path, int flags, ...){
 	op.open.flags = flags;
 	op.open.mode = mode;
 
-	link_debug(LINK_DEBUG_MESSAGE, "Write open op (0x%lX)", (long unsigned int)link_dev);
-	err = link_transport_masterwrite(handle, &op, sizeof(link_open_t));
+	link_debug(LINK_DEBUG_MESSAGE, "Write open op (0x%lX)", (long unsigned int)driver->dev.handle);
+	err = link_transport_masterwrite(driver, &op, sizeof(link_open_t));
 	if ( err < 0 ){
-		link_error("failed to write open op with handle %llX", (uint64_t)handle);
-		return link_handle_err(handle, err);
+		link_error("failed to write open op with handle %llX", (uint64_t)driver->dev.handle);
+		return link_handle_err(driver, err);
 	}
 
 	//Send the path on the bulk out endpoint
 	link_debug(LINK_DEBUG_MESSAGE, "Write open path (%d bytes)", op.open.path_size);
-	err = link_transport_masterwrite(handle, path, op.open.path_size);
+	err = link_transport_masterwrite(driver, path, op.open.path_size);
 	if ( err < 0 ){
 		link_error("failed to write path");
-		return link_handle_err(handle, err);
+		return link_handle_err(driver, err);
 	}
 
 
 
 	//read the reply to see if the file opened correctly
-	err = link_transport_masterread(handle, &reply, sizeof(reply));
+	err = link_transport_masterread(driver, &reply, sizeof(reply));
 	if ( err < 0 ){
 		link_error("failed to read the reply");
-		return link_handle_err(handle, err);
+		return link_handle_err(driver, err);
 	}
 
 	if ( reply.err < 0 ){
@@ -78,7 +79,7 @@ int link_open(link_transport_phy_t handle, const char * path, int flags, ...){
 }
 
 
-int link_ioctl(link_transport_phy_t handle, int fildes, int request, ...){
+int link_ioctl(link_transport_mdriver_t * driver, int fildes, int request, ...){
 	void * argp;
 	int arg;
 	va_list ap;
@@ -94,20 +95,16 @@ int link_ioctl(link_transport_phy_t handle, int fildes, int request, ...){
 		argp = NULL;
 	}
 
-	return link_ioctl_delay(handle, fildes, request, argp, arg, 0);
+	return link_ioctl_delay(driver, fildes, request, argp, arg, 0);
 }
 
 
-int link_ioctl_delay(link_transport_phy_t handle, int fildes, int request, void * argp, int arg, int delay){
+int link_ioctl_delay(link_transport_mdriver_t * driver, int fildes, int request, void * argp, int arg, int delay){
 	int rw_size;
 	link_op_t op;
 	link_reply_t reply;
 
 	int err;
-
-	if ( link_dev == NULL ){
-		return LINK_TRANSFER_ERR;
-	}
 
 	link_debug(LINK_DEBUG_MESSAGE, "Request is 0x%X", (unsigned int)request);
 
@@ -123,36 +120,36 @@ int link_ioctl_delay(link_transport_phy_t handle, int fildes, int request, void 
 	op.ioctl.cmd = LINK_CMD_IOCTL;
 	op.ioctl.request = request;
 	op.ioctl.arg = arg;
-	err = link_transport_masterwrite(handle, &op, sizeof(link_ioctl_t));
+	err = link_transport_masterwrite(driver, &op, sizeof(link_ioctl_t));
 	if ( err < 0 ){
 		link_error("failed to write op");
-		return link_handle_err(handle, err);
+		return link_handle_err(driver, err);
 	}
 
 	if( _IOCTL_IOCTLW(request) ){
 		//need to write data to the bulk endpoint (argp)
 		link_debug(LINK_DEBUG_MESSAGE, "Sending IOW data");
-		err = link_transport_masterwrite(handle, argp, rw_size);
+		err = link_transport_masterwrite(driver, argp, rw_size);
 		if ( err < 0 ){
 			link_error("failed to write IOW data");
-			return link_handle_err(handle, err);
+			return link_handle_err(driver, err);
 		}
 	}
 
 	if( delay > 0 ){
 		link_debug(LINK_DEBUG_MESSAGE, "Delay for %dms", delay);
-		link_driver()->wait(delay);
+		driver->dev.wait(delay);
 	}
 
 	if( _IOCTL_IOCTLR(request) ){
 		//need to read data from the bulk endpoint
 		link_debug(LINK_DEBUG_MESSAGE, "Getting IOR data %d bytes", rw_size);
-		err = link_transport_masterread(handle, argp, rw_size);
+		err = link_transport_masterread(driver, argp, rw_size);
 		link_debug(LINK_DEBUG_MESSAGE, "Getting IOR data done (%d)", err);
 
 		if ( err < 0 ){
 			link_error("failed to read IOR data");
-			return link_handle_err(handle, err);
+			return link_handle_err(driver, err);
 		}
 
 		if( err != rw_size ){
@@ -163,17 +160,17 @@ int link_ioctl_delay(link_transport_phy_t handle, int fildes, int request, void 
 				return reply.err;
 			}
 
-			return link_handle_err(handle, LINK_PROT_ERROR);
+			return link_handle_err(driver, LINK_PROT_ERROR);
 		}
 
 	}
 
 	//Get the reply
 	link_debug(LINK_DEBUG_MESSAGE, "Read reply");
-	err = link_transport_masterread(handle, &reply, sizeof(reply));
+	err = link_transport_masterread(driver, &reply, sizeof(reply));
 	if ( err < 0 ){
 		link_error("failed to read reply");
-		return link_handle_err(handle, err);
+		return link_handle_err(driver, err);
 	}
 
 	link_errno = reply.err_number;
@@ -186,13 +183,10 @@ int link_ioctl_delay(link_transport_phy_t handle, int fildes, int request, void 
 }
 
 
-int link_read(link_transport_phy_t handle, int fildes, void * buf, int nbyte){
+int link_read(link_transport_mdriver_t * driver, int fildes, void * buf, int nbyte){
 	link_op_t op;
 	link_reply_t reply;
 	int err;
-	if ( link_dev == NULL ){
-		return LINK_TRANSFER_ERR;
-	}
 
 	op.read.cmd = LINK_CMD_READ;
 	op.read.fildes = fildes;
@@ -200,24 +194,24 @@ int link_read(link_transport_phy_t handle, int fildes, void * buf, int nbyte){
 
 
 	link_debug(LINK_DEBUG_MESSAGE, "write read op");
-	err = link_transport_masterwrite(handle, &op, sizeof(link_read_t));
+	err = link_transport_masterwrite(driver, &op, sizeof(link_read_t));
 	if ( err < 0 ){
 		link_error("failed to write op");
-		return link_handle_err(handle, err);
+		return link_handle_err(driver, err);
 	}
 
 	link_debug(LINK_DEBUG_MESSAGE, "read data from the file %d", nbyte);
-	err = link_transport_masterread(handle, buf, nbyte);
+	err = link_transport_masterread(driver, buf, nbyte);
 	if ( err < 0 ){
 		link_error("failed to read data");
-		return link_handle_err(handle, err);
+		return link_handle_err(driver, err);
 	}
 
 	link_debug(LINK_DEBUG_MESSAGE, "read %d of %d bytes", err, nbyte);
-	err = link_transport_masterread(handle, &reply, sizeof(reply));
+	err = link_transport_masterread(driver, &reply, sizeof(reply));
 	if ( err < 0 ){
 		link_error("failed to read reply");
-		return link_handle_err(handle, err);
+		return link_handle_err(driver, err);
 	}
 
 	if ( reply.err < 0 ){
@@ -228,11 +222,11 @@ int link_read(link_transport_phy_t handle, int fildes, void * buf, int nbyte){
 	return reply.err;
 }
 
-int link_write(link_transport_phy_t handle, int fildes, const void * buf, int nbyte){
+int link_write(link_transport_mdriver_t * driver, int fildes, const void * buf, int nbyte){
 	link_op_t op;
 	link_reply_t reply;
 	int err;
-	if ( link_dev == NULL ){
+	if ( driver == NULL ){
 		return LINK_TRANSFER_ERR;
 	}
 
@@ -241,24 +235,24 @@ int link_write(link_transport_phy_t handle, int fildes, const void * buf, int nb
 	op.write.nbyte = nbyte;
 
 	link_debug(LINK_DEBUG_MESSAGE, "Send op (fildes %d nbyte %d)", op.write.fildes, op.write.nbyte);
-	err = link_transport_masterwrite(handle, &op, sizeof(link_write_t));
+	err = link_transport_masterwrite(driver, &op, sizeof(link_write_t));
 	if ( err < 0 ){
 		link_error("failed to write op");
-		return link_handle_err(handle, err);
+		return link_handle_err(driver, err);
 	}
 
 	link_debug(LINK_DEBUG_MESSAGE, "Write data");
-	err = link_transport_masterwrite(handle, buf, nbyte);
+	err = link_transport_masterwrite(driver, buf, nbyte);
 	if ( err < 0 ){
 		link_error("failed to write data");
-		return link_handle_err(handle, err);
+		return link_handle_err(driver, err);
 	}
 
 	//read the reply to see if the file wrote correctly
-	err = link_transport_masterread(handle, &reply, sizeof(reply));
+	err = link_transport_masterread(driver, &reply, sizeof(reply));
 	if ( err < 0 ){
 		link_error("failed to read reply");
-		return link_handle_err(handle, err);
+		return link_handle_err(driver, err);
 	}
 
 	if ( reply.err < 0 ){
@@ -268,27 +262,27 @@ int link_write(link_transport_phy_t handle, int fildes, const void * buf, int nb
 	return reply.err;
 }
 
-int link_close(link_transport_phy_t handle, int fildes){
+int link_close(link_transport_mdriver_t * driver, int fildes){
 	link_op_t op;
 	link_reply_t reply;
 	int err;
 	op.close.cmd = LINK_CMD_CLOSE;
 	op.close.fildes = fildes;
-	if ( link_dev == NULL ){
+	if ( driver == NULL ){
 		return LINK_TRANSFER_ERR;
 	}
 	link_debug(LINK_DEBUG_MESSAGE, "Send Op to close fildes:%d", fildes);
-	err = link_transport_masterwrite(handle, &op, sizeof(link_close_t));
+	err = link_transport_masterwrite(driver, &op, sizeof(link_close_t));
 	if ( err < 0 ){
 		link_error("failed to write op");
-		return link_handle_err(handle, err);
+		return link_handle_err(driver, err);
 	}
 
 	link_debug(LINK_DEBUG_MESSAGE, "Read Reply");
-	err = link_transport_masterread(handle, &reply, sizeof(reply));
+	err = link_transport_masterread(driver, &reply, sizeof(reply));
 	if ( err < 0 ){
 		link_error("failed to read reply");
-		return link_handle_err(handle, err);
+		return link_handle_err(driver, err);
 	}
 
 	if ( reply.err < 0 ){
@@ -299,38 +293,38 @@ int link_close(link_transport_phy_t handle, int fildes){
 	return reply.err;
 }
 
-int link_symlink(link_transport_phy_t handle, const char * old_path, const char * new_path){
+int link_symlink(link_transport_mdriver_t * driver, const char * old_path, const char * new_path){
 	link_op_t op;
 	link_reply_t reply;
 	int len;
 	int err;
-	if ( link_dev == NULL ){
+	if ( driver == NULL ){
 		return LINK_TRANSFER_ERR;
 	}
 	op.symlink.cmd = LINK_CMD_LINK;
 	op.symlink.path_size_old = strlen(old_path) + 1;
 	op.symlink.path_size_new = strlen(new_path) + 1;
 
-	link_debug(LINK_DEBUG_MESSAGE, "Write link op (0x%lX)", (long unsigned int)link_dev);
-	err = link_transport_masterwrite(handle, &op, sizeof(link_symlink_t));
+	link_debug(LINK_DEBUG_MESSAGE, "Write link op (0x%lX)", (long unsigned int)driver->dev.handle);
+	err = link_transport_masterwrite(driver, &op, sizeof(link_symlink_t));
 	if ( err < 0 ){
 		return err;
 	}
 
 	//Send the path on the bulk out endpoint
 	link_debug(LINK_DEBUG_MESSAGE, "Write open path (%d bytes)", op.symlink.path_size_old);
-	len = link_transport_masterwrite(handle, old_path, op.symlink.path_size_old);
+	len = link_transport_masterwrite(driver, old_path, op.symlink.path_size_old);
 	if (len != op.symlink.path_size_old ){
 		return -1;
 	}
 
-	len = link_transport_masterwrite(handle, new_path, op.symlink.path_size_new);
+	len = link_transport_masterwrite(driver, new_path, op.symlink.path_size_new);
 	if ( len < 0 ){
 		return LINK_TRANSFER_ERR;
 	}
 
 	//read the reply to see if the file opened correctly
-	err = link_transport_masterread(handle, &reply, sizeof(reply));
+	err = link_transport_masterread(driver, &reply, sizeof(reply));
 	if ( err < 0 ){
 		return err;
 	}
@@ -342,12 +336,12 @@ int link_symlink(link_transport_phy_t handle, const char * old_path, const char 
 	return reply.err;
 }
 
-int link_unlink(link_transport_phy_t handle, const char * path){
+int link_unlink(link_transport_mdriver_t * driver, const char * path){
 	link_op_t op;
 	link_reply_t reply;
 	int len;
 	int err;
-	if ( link_dev == NULL ){
+	if ( driver == NULL ){
 		return LINK_TRANSFER_ERR;
 	}
 
@@ -356,18 +350,18 @@ int link_unlink(link_transport_phy_t handle, const char * path){
 	op.unlink.cmd = LINK_CMD_UNLINK;
 	op.unlink.path_size = strlen(path) + 1;
 
-	err = link_transport_masterwrite(handle, &op, sizeof(link_unlink_t));
+	err = link_transport_masterwrite(driver, &op, sizeof(link_unlink_t));
 	if ( err < 0 ){
 		return err;
 	}
 
 	//Send the path on the bulk out endpoint
-	len = link_transport_masterwrite(handle, path, op.unlink.path_size);
+	len = link_transport_masterwrite(driver, path, op.unlink.path_size);
 	if ( len < 0 ){
 		return LINK_TRANSFER_ERR;
 	}
 	//read the reply to see if the file opened correctly
-	err = link_transport_masterread(handle, &reply, sizeof(reply));
+	err = link_transport_masterread(driver, &reply, sizeof(reply));
 	if ( err < 0 ){
 		return err;
 	}
@@ -380,12 +374,12 @@ int link_unlink(link_transport_phy_t handle, const char * path){
 }
 
 
-int link_lseek(link_transport_phy_t handle, int fildes, off_t offset, int whence){
+int link_lseek(link_transport_mdriver_t * driver, int fildes, off_t offset, int whence){
 	link_op_t op;
 	link_reply_t reply;
 	int err;
 
-	if ( link_dev == NULL ){
+	if ( driver == NULL ){
 		return LINK_TRANSFER_ERR;
 	}
 	op.lseek.cmd = LINK_CMD_LSEEK;
@@ -394,15 +388,15 @@ int link_lseek(link_transport_phy_t handle, int fildes, off_t offset, int whence
 	op.lseek.whence = whence;
 
 	link_errno = 0;
-	link_debug(LINK_DEBUG_MESSAGE, "seek command 0x%X (0x%lX)", fildes, (long unsigned int)link_dev);
+	link_debug(LINK_DEBUG_MESSAGE, "seek command 0x%X (0x%lX)", fildes, (long unsigned int)driver->dev.handle);
 
-	err = link_transport_masterwrite(handle, &op, sizeof(link_lseek_t));
+	err = link_transport_masterwrite(driver, &op, sizeof(link_lseek_t));
 	if ( err < 0 ){
 		return err;
 	}
 
 	link_debug(LINK_DEBUG_MESSAGE, "wait for reply");
-	err = link_transport_masterread(handle, &reply, sizeof(reply));
+	err = link_transport_masterread(driver, &reply, sizeof(reply));
 	if ( err < 0 ){
 		return err;
 	}
@@ -415,13 +409,13 @@ int link_lseek(link_transport_phy_t handle, int fildes, off_t offset, int whence
 	return reply.err;
 }
 
-int link_stat(link_transport_phy_t handle, const char * path, struct link_stat * buf){
+int link_stat(link_transport_mdriver_t * driver, const char * path, struct link_stat * buf){
 	link_op_t op;
 	link_reply_t reply;
 	int len;
 	int err;
 
-	if ( link_dev == NULL ){
+	if ( driver == NULL ){
 		return LINK_TRANSFER_ERR;
 	}
 
@@ -431,21 +425,21 @@ int link_stat(link_transport_phy_t handle, const char * path, struct link_stat *
 	op.stat.path_size = strlen(path) + 1;
 
 	link_debug(LINK_DEBUG_MESSAGE, "send op %d path size %d", op.stat.cmd, op.stat.path_size);
-	err = link_transport_masterwrite(handle, &op, sizeof(link_stat_t));
+	err = link_transport_masterwrite(driver, &op, sizeof(link_stat_t));
 	if ( err < 0 ){
 		return err;
 	}
 
 	//Send the path on the bulk out endpoint
 	link_debug(LINK_DEBUG_MESSAGE, "write stat path");
-	len = link_transport_masterwrite(handle, path, op.stat.path_size);
+	len = link_transport_masterwrite(driver, path, op.stat.path_size);
 	if ( len < 0 ){
 		return LINK_TRANSFER_ERR;
 	}
 
 	//Get the reply
 	link_debug(LINK_DEBUG_MESSAGE, "read stat reply");
-	err = link_transport_masterread(handle, &reply, sizeof(reply));
+	err = link_transport_masterread(driver, &reply, sizeof(reply));
 	if ( err < 0 ){
 		link_error("failed to read reply");
 		return err;
@@ -455,7 +449,7 @@ int link_stat(link_transport_phy_t handle, const char * path, struct link_stat *
 	if ( reply.err == 0 ){
 		//Read bulk in as the size of the the new data
 		link_debug(LINK_DEBUG_MESSAGE, "read stat data");
-		err = link_transport_masterread(handle, buf, sizeof(struct link_stat));
+		err = link_transport_masterread(driver, buf, sizeof(struct link_stat));
 		if ( err < 0 ){
 			return err;
 		}
@@ -468,32 +462,32 @@ int link_stat(link_transport_phy_t handle, const char * path, struct link_stat *
 
 }
 
-int link_fstat(link_transport_phy_t handle, int fildes, struct link_stat * buf){
+int link_fstat(link_transport_mdriver_t * driver, int fildes, struct link_stat * buf){
 	link_op_t op;
 	link_reply_t reply;
 	int err;
 
-	if ( link_dev == NULL ){
+	if ( driver == NULL ){
 		return LINK_TRANSFER_ERR;
 	}
 
 	op.fstat.cmd = LINK_CMD_FSTAT;
 	op.fstat.fildes = fildes;
 
-	err = link_transport_masterwrite(handle, &op, sizeof(link_fstat_t));
+	err = link_transport_masterwrite(driver, &op, sizeof(link_fstat_t));
 	if ( err < 0 ){
 		return err;
 	}
 
 	//Get the reply
-	err = link_transport_masterread(handle, &reply, sizeof(reply));
+	err = link_transport_masterread(driver, &reply, sizeof(reply));
 	if ( err < 0 ){
 		return err;
 	}
 
 	if ( reply.err == 0 ){
 		//Read bulk in as the size of the the new data
-		err = link_transport_masterread(handle, buf, sizeof(struct link_stat));
+		err = link_transport_masterread(driver, buf, sizeof(struct link_stat));
 		if ( err < 0 ){
 			return err;
 		}
@@ -506,12 +500,12 @@ int link_fstat(link_transport_phy_t handle, int fildes, struct link_stat * buf){
 	return reply.err;
 }
 
-int link_rename(link_transport_phy_t handle, const char * old_path, const char * new_path){
+int link_rename(link_transport_mdriver_t * driver, const char * old_path, const char * new_path){
 	link_op_t op;
 	link_reply_t reply;
 	int len;
 	int err;
-	if ( link_dev == NULL ){
+	if ( driver == NULL ){
 		return LINK_TRANSFER_ERR;
 	}
 
@@ -521,25 +515,25 @@ int link_rename(link_transport_phy_t handle, const char * old_path, const char *
 	op.rename.old_size = strlen(old_path) + 1;
 	op.rename.new_size = strlen(new_path) + 1;
 
-	err = link_transport_masterwrite(handle, &op, sizeof(link_rename_t));
+	err = link_transport_masterwrite(driver, &op, sizeof(link_rename_t));
 	if ( err < 0 ){
 		return err;
 	}
 
 	//Send the old path on the bulk out endpoint
-	len = link_transport_masterwrite(handle, old_path, op.rename.old_size);
+	len = link_transport_masterwrite(driver, old_path, op.rename.old_size);
 	if ( len < 0 ){
 		return LINK_TRANSFER_ERR;
 	}
 
 	//Send the new path on the bulk out endpoint
-	len = link_transport_masterwrite(handle, new_path, op.rename.new_size);
+	len = link_transport_masterwrite(driver, new_path, op.rename.new_size);
 	if ( len < 0 ){
 		return LINK_TRANSFER_ERR;
 	}
 
 	//read the reply to see if the file opened correctly
-	err = link_transport_masterread(handle, &reply, sizeof(reply));
+	err = link_transport_masterread(driver, &reply, sizeof(reply));
 	if ( err < 0 ){
 		return err;
 	}
@@ -551,13 +545,13 @@ int link_rename(link_transport_phy_t handle, const char * old_path, const char *
 	return reply.err;
 }
 
-int link_chown(link_transport_phy_t handle, const char * path, int owner, int group){
+int link_chown(link_transport_mdriver_t * driver, const char * path, int owner, int group){
 	link_op_t op;
 	link_reply_t reply;
 	int len;
 	int err;
 
-	if ( link_dev == NULL ){
+	if ( driver == NULL ){
 		return LINK_TRANSFER_ERR;
 	}
 
@@ -569,20 +563,20 @@ int link_chown(link_transport_phy_t handle, const char * path, int owner, int gr
 	op.chown.gid = group;
 
 	link_debug(LINK_DEBUG_MESSAGE, "Write op");
-	err = link_transport_masterwrite(handle, &op, sizeof(op));
+	err = link_transport_masterwrite(driver, &op, sizeof(op));
 	if ( err < 0 ){
 		return err;
 	}
 
 	//Send the path on the bulk out endpoint
 	link_debug(LINK_DEBUG_MESSAGE, "Write path");
-	len = link_transport_masterwrite(handle, path, op.chown.path_size);
+	len = link_transport_masterwrite(driver, path, op.chown.path_size);
 	if ( len < 0 ){
 		return LINK_TRANSFER_ERR;
 	}
 
 	//read the reply to see if the file opened correctly
-	err = link_transport_masterread(handle, &reply, sizeof(reply));
+	err = link_transport_masterread(driver, &reply, sizeof(reply));
 	if ( err < 0 ){
 		link_errno = reply.err_number;
 		link_debug(LINK_DEBUG_WARNING, "Failed to chown (%d)", link_errno);
@@ -591,13 +585,13 @@ int link_chown(link_transport_phy_t handle, const char * path, int owner, int gr
 	return reply.err;
 }
 
-int link_chmod(link_transport_phy_t handle, const char * path, int mode){
+int link_chmod(link_transport_mdriver_t * driver, const char * path, int mode){
 	link_op_t op;
 	link_reply_t reply;
 	int len;
 	int err;
 
-	if ( link_dev == NULL ){
+	if ( driver == NULL ){
 		return -1;
 	}
 
@@ -608,20 +602,20 @@ int link_chmod(link_transport_phy_t handle, const char * path, int mode){
 	op.chmod.mode = mode;
 
 	link_debug(LINK_DEBUG_MESSAGE, "Write op");
-	err = link_transport_masterwrite(handle, &op, sizeof(op));
+	err = link_transport_masterwrite(driver, &op, sizeof(op));
 	if ( err < 0 ){
 		return err;
 	}
 
 	//Send the path on the bulk out endpoint
 	link_debug(LINK_DEBUG_MESSAGE, "Write path");
-	len = link_transport_masterwrite(handle, path, op.chown.path_size);
+	len = link_transport_masterwrite(driver, path, op.chown.path_size);
 	if ( len < 0 ){
 		return LINK_TRANSFER_ERR;
 	}
 
 	//read the reply to see if the file opened correctly
-	err = link_transport_masterread(handle, &reply, sizeof(reply));
+	err = link_transport_masterread(driver, &reply, sizeof(reply));
 	if ( err < 0 ){
 		link_errno = reply.err_number;
 		link_debug(LINK_DEBUG_WARNING, "Failed to chmod (%d)", link_errno);

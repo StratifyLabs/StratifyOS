@@ -53,7 +53,7 @@ vector<string> Link::listDevices(int max){
 	char * snList;
 	int i;
 	char * sn;
-	snList = link_new_device_list( max );
+	snList = link_new_device_list(d, max);
 	devices.clear();
 	if ( snList ){
 		i = 0;
@@ -70,20 +70,17 @@ Link::Link(){
 	//check to see if the device is connected -- if it is not connected, connect to it
 	stdoutFd = -1;
 	stdinFd = -1;
-	phyHandle = LINK_PHY_OPEN_ERROR;
 	lock = 0;
 	isBoot = false;
 	statusMessage = "";
 	errMsg = "";
 	lastsn = "";
+	d = &drvr;
+	link_load_default_driver(d);
 }
 
 Link::~Link(){}
 
-
-link_phy_t Link::handle(void){
-	return phyHandle;
-}
 
 int Link::lockDevice(void){
 	return 0;
@@ -128,10 +125,8 @@ int Link::init(string sn){
 
 	resetProgress();
 
-	if ( phyHandle == LINK_PHY_OPEN_ERROR ){
-		phyHandle = link_connect(sn.c_str());
-
-		if ( phyHandle == LINK_PHY_OPEN_ERROR ){
+	if ( d->dev.handle == LINK_PHY_OPEN_ERROR ){
+		if( link_connect(d, sn.c_str()) < 0 ){
 			errMsg = "Failed to Connect to Device";
 			return -1;
 		}
@@ -143,9 +138,9 @@ int Link::init(string sn){
 		return -1;
 	}
 
-	link_debug(LINK_DEBUG_MESSAGE, "Check for bootloader on 0x%llX", (uint64_t)phyHandle);
+	link_debug(LINK_DEBUG_MESSAGE, "Check for bootloader on 0x%llX", (uint64_t)d->dev.handle);
 
-	err = link_isbootloader(phyHandle);
+	err = link_isbootloader(d);
 
 	if ( err > 0 ){
 		isBoot = true;
@@ -156,7 +151,7 @@ int Link::init(string sn){
 		return -1;
 	}
 
-	link_debug(LINK_DEBUG_MESSAGE, "Init complete with 0x%llX", (uint64_t)phyHandle);
+	link_debug(LINK_DEBUG_MESSAGE, "Init complete with 0x%llX", (uint64_t)d->dev.handle);
 
 
 	return 0;
@@ -169,9 +164,9 @@ int Link::open(string file, int flags, link_mode_t mode){
 	}
 	lockDevice();
 	for(int tries = 0; tries < MAX_TRIES; tries++){
-		link_debug(LINK_DEBUG_MESSAGE, "Open file %s on 0x%llX", file.c_str(), (uint64_t)phyHandle);
+		link_debug(LINK_DEBUG_MESSAGE, "Open file %s on 0x%llX", file.c_str(), (uint64_t)d->dev.handle);
 
-		err = link_open(phyHandle, file.c_str(), flags, mode);
+		err = link_open(d, file.c_str(), flags, mode);
 		if(err != LINK_PROT_ERROR) break;
 	}
 	unlockDevice();
@@ -188,7 +183,7 @@ int Link::close(int fd){
 	}
 	lockDevice();
 	for(int tries = 0; tries < MAX_TRIES; tries++){
-		err = link_close(phyHandle, fd);
+		err = link_close(d, fd);
 		if(err != LINK_PROT_ERROR) break;
 	}
 	unlockDevice();
@@ -206,7 +201,7 @@ int Link::read(int fd, void * buf, int nbyte){
 	}
 	lockDevice();
 	for(int tries = 0; tries < MAX_TRIES; tries++){
-		err =  link_read(phyHandle, fd, buf, nbyte);
+		err =  link_read(d, fd, buf, nbyte);
 		if(err != LINK_PROT_ERROR) break;
 	}
 	unlockDevice();
@@ -223,7 +218,7 @@ int Link::write(int fd, const void * buf, int nbyte){
 	}
 	lockDevice();
 	for(int tries = 0; tries < MAX_TRIES; tries++){
-		err =  link_write(phyHandle, fd, buf, nbyte);
+		err =  link_write(d, fd, buf, nbyte);
 		if(err != LINK_PROT_ERROR) break;
 	}
 	if ( err < 0 ){
@@ -238,7 +233,7 @@ int Link::readFlash(int addr, void * buf, int nbyte){
 	int err;
 	lockDevice();
 	for(int tries = 0; tries < MAX_TRIES; tries++){
-		err =  link_readflash(phyHandle, addr, buf, nbyte);
+		err =  link_readflash(d, addr, buf, nbyte);
 		if(err != LINK_PROT_ERROR) break;
 	}
 	if ( err < 0 ){
@@ -294,7 +289,7 @@ int Link::writeFlash(int addr, const void * buf, int nbyte){
 	int err;
 	lockDevice();
 	for(int tries = 0; tries < MAX_TRIES; tries++){
-		err =  link_writeflash(phyHandle, addr, buf, nbyte);
+		err =  link_writeflash(d, addr, buf, nbyte);
 		if(err != LINK_PROT_ERROR) break;
 	}
 	if ( err < 0 ){
@@ -313,7 +308,7 @@ int Link::lseek(int fd, int offset, int whence){
 
 	lockDevice();
 	for(int tries = 0; tries < MAX_TRIES; tries++){
-		err = link_lseek(phyHandle, fd, offset, whence);
+		err = link_lseek(d, fd, offset, whence);
 		if(err != LINK_PROT_ERROR) break;
 	}
 	if ( err < 0 ){
@@ -332,7 +327,7 @@ int Link::ioctl(int fd, int request, void * ctl){
 	}
 	lockDevice();
 	for(int tries = 0; tries < MAX_TRIES; tries++){
-		err = link_ioctl(phyHandle, fd, request, ctl);
+		err = link_ioctl(d, fd, request, ctl);
 		if(err != LINK_PROT_ERROR) break;
 	}
 	if ( err < 0 ){
@@ -345,9 +340,9 @@ int Link::ioctl(int fd, int request, void * ctl){
 
 int Link::exit(void){
 	lockDevice();
-	if ( phyHandle != LINK_PHY_OPEN_ERROR ){
-		link_disconnect(phyHandle);
-		phyHandle = LINK_PHY_OPEN_ERROR;
+	if ( d->dev.handle != LINK_PHY_OPEN_ERROR ){
+		link_disconnect(d);
+		d->dev.handle = LINK_PHY_OPEN_ERROR;
 	}
 	unlockDevice();
 	return 0;
@@ -356,10 +351,10 @@ int Link::exit(void){
 
 bool Link::connected(void){
 
-	if( link_driver()->status(phyHandle) == LINK_PHY_ERROR){
-		phyHandle = LINK_PHY_OPEN_ERROR;
+	if( d->status(d) == LINK_PHY_ERROR){
+		d->dev.handle = LINK_PHY_OPEN_ERROR;
 	}
-	return (phyHandle != LINK_PHY_OPEN_ERROR);
+	return (d->dev.handle != LINK_PHY_OPEN_ERROR);
 }
 
 int Link::openStdio(void){
@@ -368,7 +363,7 @@ int Link::openStdio(void){
 		return -1;
 	}
 	lockDevice();
-	err = link_open_stdio(phyHandle);
+	err = link_open_stdio(d);
 	unlockDevice();
 	if ( err < 0 ){
 		if ( err == LINK_TRANSFER_ERR ){
@@ -389,7 +384,7 @@ int Link::closeStdio(void){
 		return -1;
 	}
 	lockDevice();
-	err = link_close_stdio(phyHandle);
+	err = link_close_stdio(d);
 	unlockDevice();
 	if ( err < 0 ){
 		if ( err == LINK_TRANSFER_ERR ){
@@ -411,7 +406,7 @@ int Link::readStdout(void * buf, int nbyte, volatile bool * abort){
 	}
 	//lockDevice();
 	link_errno = 0;
-	err = link_read_stdout(phyHandle, buf, nbyte);
+	err = link_read_stdout(d, buf, nbyte);
 	//unlockDevice();
 	if ( err < 0 ){
 		if ( link_errno == 0 ){
@@ -435,7 +430,7 @@ int Link::writeStdin(const void * buf, int nbyte){
 		return -1;
 	}
 	lockDevice();
-	err = link_write_stdin(phyHandle, buf, nbyte);
+	err = link_write_stdin(d, buf, nbyte);
 	unlockDevice();
 	if ( err < 0 ){
 		if ( err == LINK_TRANSFER_ERR ){
@@ -456,7 +451,7 @@ int Link::stat(string path, struct link_stat * st){
 	}
 	lockDevice();
 	for(int tries = 0; tries < MAX_TRIES; tries++){
-		err = link_stat(phyHandle, path.c_str(), st);
+		err = link_stat(d, path.c_str(), st);
 		if(err != LINK_PROT_ERROR) break;
 	}
 	unlockDevice();
@@ -473,7 +468,7 @@ int Link::getTime(struct tm * gt){
 	}
 	lockDevice();
 	for(int tries = 0; tries < MAX_TRIES; tries++){
-		err = link_gettime(phyHandle, gt);
+		err = link_gettime(d, gt);
 		if(err != LINK_PROT_ERROR) break;
 	}
 	unlockDevice();
@@ -490,7 +485,7 @@ int Link::setTime(struct tm * gt){
 	}
 	lockDevice();
 	for(int tries = 0; tries < MAX_TRIES; tries++){
-		err = link_settime(phyHandle, gt);
+		err = link_settime(d, gt);
 		if(err != LINK_PROT_ERROR) break;
 	}
 	unlockDevice();
@@ -508,7 +503,7 @@ int Link::mkdir(string directory, link_mode_t mode){
 	}
 	lockDevice();
 	for(int tries = 0; tries < MAX_TRIES; tries++){
-		err = link_mkdir(phyHandle, directory.c_str(), mode);
+		err = link_mkdir(d, directory.c_str(), mode);
 		if(err != LINK_PROT_ERROR) break;
 	}
 	unlockDevice();
@@ -525,7 +520,7 @@ int Link::rmdir(string directory){
 	}
 	lockDevice();
 	for(int tries = 0; tries < MAX_TRIES; tries++){
-		err = link_rmdir(phyHandle, directory.c_str());
+		err = link_rmdir(d, directory.c_str());
 		if(err != LINK_PROT_ERROR) break;
 	}
 	unlockDevice();
@@ -542,7 +537,7 @@ int Link::opendir(string directory){
 	}
 	lockDevice();
 	for(int tries = 0; tries < MAX_TRIES; tries++){
-		err = link_opendir(phyHandle, directory.c_str());
+		err = link_opendir(d, directory.c_str());
 		if(err != LINK_PROT_ERROR) break;
 	}
 	unlockDevice();
@@ -559,7 +554,7 @@ int Link::readdir_r(int dirp, struct link_dirent * entry, struct link_dirent ** 
 	}
 	lockDevice();
 	for(int tries = 0; tries < MAX_TRIES; tries++){
-		err = link_readdir_r(phyHandle, dirp, entry, result);
+		err = link_readdir_r(d, dirp, entry, result);
 		if(err != LINK_PROT_ERROR) break;
 	}
 	unlockDevice();
@@ -577,7 +572,7 @@ int Link::closedir(int dirp){
 	}
 	lockDevice();
 	for(int tries = 0; tries < MAX_TRIES; tries++){
-		err = link_closedir(phyHandle, dirp);
+		err = link_closedir(d, dirp);
 		if(err != LINK_PROT_ERROR) break;
 	}
 	unlockDevice();
@@ -594,7 +589,7 @@ int Link::symlink(string oldPath, string newPath){
 	}
 	lockDevice();
 	for(int tries = 0; tries < MAX_TRIES; tries++){
-		err = link_symlink(phyHandle, oldPath.c_str(), newPath.c_str());
+		err = link_symlink(d, oldPath.c_str(), newPath.c_str());
 		if(err != LINK_PROT_ERROR) break;
 	}
 	unlockDevice();
@@ -611,7 +606,7 @@ int Link::unlink(string filename){
 	}
 	lockDevice();
 	for(int tries = 0; tries < MAX_TRIES; tries++){
-		err = link_unlink(phyHandle, filename.c_str());
+		err = link_unlink(d, filename.c_str());
 		if(err != LINK_PROT_ERROR) break;
 	}
 	unlockDevice();
@@ -652,7 +647,7 @@ int Link::cp(string src, string dest, link_mode_t mode, bool toDevice, bool (*up
 		//Create the device file
 		flags = LINK_O_TRUNC | LINK_O_CREAT | LINK_O_WRONLY; //The create new flag settings
 		lockDevice();
-		deviceFile = link_open(phyHandle, dest.c_str(), flags, mode);
+		deviceFile = link_open(d, dest.c_str(), flags, mode);
 
 		fseek(hostFile, 0, SEEK_END);
 		progressMax = ftell(hostFile);
@@ -662,7 +657,7 @@ int Link::cp(string src, string dest, link_mode_t mode, bool toDevice, bool (*up
 
 		if ( deviceFile > 0 ){
 			while( (bytesRead = fread(buffer, 1, bufferSize, hostFile)) > 0 ){
-				if ( (err = link_write(phyHandle, deviceFile, buffer, bytesRead)) != bytesRead ){
+				if ( (err = link_write(d, deviceFile, buffer, bytesRead)) != bytesRead ){
 					errMsg = genError("Failed to write to Link device file", link_errno);
 					if ( err > 0 ){
 						err = -1;
@@ -702,7 +697,7 @@ int Link::cp(string src, string dest, link_mode_t mode, bool toDevice, bool (*up
 			return -2;
 		}
 
-		if ( link_close(phyHandle, deviceFile) ){
+		if ( link_close(d, deviceFile) ){
 			errMsg = genError("Failed to close Link device file", link_errno);
 			unlockDevice();
 			return -1;
@@ -714,7 +709,7 @@ int Link::cp(string src, string dest, link_mode_t mode, bool toDevice, bool (*up
 	} else {
 
 
-		if ( link_stat(phyHandle, src.c_str(), &st) < 0 ){
+		if ( link_stat(d, src.c_str(), &st) < 0 ){
 			errMsg = "Failed to get target file size";
 			return -1;
 		}
@@ -732,12 +727,12 @@ int Link::cp(string src, string dest, link_mode_t mode, bool toDevice, bool (*up
 		//Open the device file
 		flags = LINK_O_RDONLY; //Read the file only
 		lockDevice();
-		deviceFile = link_open(phyHandle, src.c_str(), flags, 0);
+		deviceFile = link_open(d, src.c_str(), flags, 0);
 
 		if ( deviceFile > 0 ){
 			progressMax = st.st_size;
 
-			while( (bytesRead = link_read(phyHandle, deviceFile, buffer, bufferSize)) > 0 ){
+			while( (bytesRead = link_read(d, deviceFile, buffer, bufferSize)) > 0 ){
 				fwrite(buffer, 1, bytesRead, hostFile);
 				progress += bytesRead;
 				if( update != 0 ){
@@ -766,7 +761,7 @@ int Link::cp(string src, string dest, link_mode_t mode, bool toDevice, bool (*up
 
 		fclose(hostFile);
 
-		if ( (err = link_close(phyHandle, deviceFile)) ){
+		if ( (err = link_close(d, deviceFile)) ){
 			if ( err == LINK_TRANSFER_ERR ){
 				errMsg = "Connection Failed";
 				unlockDevice();
@@ -790,7 +785,7 @@ int Link::runApp(string path){
 	}
 	lockDevice();
 	for(int tries = 0; tries < MAX_TRIES; tries++){
-		err = link_exec(phyHandle, path.c_str());
+		err = link_exec(d, path.c_str());
 		if(err != LINK_PROT_ERROR) break;
 	}
 	unlockDevice();
@@ -816,7 +811,7 @@ int Link::format(string path){
 	//Format the filesystem
 	lockDevice();
 	for(int tries = 0; tries < MAX_TRIES; tries++){
-		err = link_mkfs(phyHandle, path.c_str());
+		err = link_mkfs(d, path.c_str());
 		if(err != LINK_PROT_ERROR) break;
 	}
 	unlockDevice();
@@ -834,7 +829,7 @@ int Link::killPid(int pid, int signo){
 	}
 	lockDevice();
 	for(int tries = 0; tries < MAX_TRIES; tries++){
-		err = link_kill_pid(phyHandle, pid, signo);
+		err = link_kill_pid(d, pid, signo);
 		if(err != LINK_PROT_ERROR) break;
 	}
 	unlockDevice();
@@ -847,24 +842,24 @@ int Link::killPid(int pid, int signo){
 
 int Link::reset(void){
 	lockDevice();
-	link_reset(phyHandle);
+	link_reset(d);
 	unlockDevice();
-	phyHandle = LINK_PHY_OPEN_ERROR;
+	d->dev.handle = LINK_PHY_OPEN_ERROR;
 	return 0;
 }
 
 int Link::resetBootloader(void){
 	lockDevice();
-	link_resetbootloader(phyHandle);
+	link_resetbootloader(d);
 	unlockDevice();
-	phyHandle = LINK_PHY_OPEN_ERROR;
+	d->dev.handle = LINK_PHY_OPEN_ERROR;
 	return 0;
 }
 
 int Link::trace_create(int pid, link_trace_id_t * id){
 	int err;
 	lockDevice();
-	err = link_posix_trace_create(phyHandle, pid, id);
+	err = link_posix_trace_create(d, pid, id);
 	if ( err < 0 ){
 		errMsg = genError("Failed to create trace", link_errno);
 	}
@@ -875,7 +870,7 @@ int Link::trace_create(int pid, link_trace_id_t * id){
 int Link::trace_tryget_events(link_trace_id_t id, void * data, size_t num_bytes){
 	int err;
 	lockDevice();
-	err = link_posix_trace_tryget_events(phyHandle, id, data, num_bytes);
+	err = link_posix_trace_tryget_events(d, id, data, num_bytes);
 	if ( err < 0 ){
 		errMsg = genError("Failed to get event", link_errno);
 	}
@@ -886,7 +881,7 @@ int Link::trace_tryget_events(link_trace_id_t id, void * data, size_t num_bytes)
 int Link::trace_shutdown(link_trace_id_t id){
 	int err;
 	lockDevice();
-	err = link_posix_trace_shutdown(phyHandle, id);
+	err = link_posix_trace_shutdown(d, id);
 	if ( err < 0 ){
 		errMsg = genError("Failed to shutdown trace", link_errno);
 	}
@@ -909,7 +904,7 @@ int Link::rename(string old_path, string new_path){
 	}
 	lockDevice();
 	for(int tries = 0; tries < MAX_TRIES; tries++){
-		err = link_rename(phyHandle, old_path.c_str(), new_path.c_str());
+		err = link_rename(d, old_path.c_str(), new_path.c_str());
 		if(err != LINK_PROT_ERROR) break;
 	}
 	unlockDevice();
@@ -926,7 +921,7 @@ int Link::chown(string path, int owner, int group){
 	}
 	lockDevice();
 	for(int tries = 0; tries < MAX_TRIES; tries++){
-		err = link_chown(phyHandle, path.c_str(), owner, group);
+		err = link_chown(d, path.c_str(), owner, group);
 		if(err != LINK_PROT_ERROR) break;
 	}
 	unlockDevice();
@@ -944,7 +939,7 @@ int Link::chmod(string path, int mode){
 	}
 	lockDevice();
 	for(int tries = 0; tries < MAX_TRIES; tries++){
-		err = link_chmod(phyHandle, path.c_str(), mode);
+		err = link_chmod(d, path.c_str(), mode);
 		if(err != LINK_PROT_ERROR) break;
 	}
 	unlockDevice();
@@ -995,8 +990,8 @@ int Link::updateOS(string path, bool verify, bool (*update)(void*,int,int), void
 	rewind(hostFile);
 
 
-	err = link_bootloader_attr(phyHandle, &attr, image_id);
-	//err = link_ioctl(phyHandle, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_GETATTR, &attr);
+	err = link_bootloader_attr(d, &attr, image_id);
+	//err = link_ioctl(d, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_GETATTR, &attr);
 	if( err < 0 ){
 		unlockDevice();
 		errMsg = "Failed to read attributes";
@@ -1020,7 +1015,7 @@ int Link::updateOS(string path, bool verify, bool (*update)(void*,int,int), void
 
 	lockDevice();
 	//first erase the flash
-	err = link_eraseflash(phyHandle);
+	err = link_eraseflash(d);
 	unlockDevice();
 
 	if ( err < 0 ){
@@ -1041,7 +1036,7 @@ int Link::updateOS(string path, bool verify, bool (*update)(void*,int,int), void
 			memset(buffer, 0xFF, 256);
 		}
 
-		if ( (err = link_writeflash(phyHandle, loc, buffer, bytesRead)) != bytesRead ){
+		if ( (err = link_writeflash(d, loc, buffer, bytesRead)) != bytesRead ){
 			errMsg = genError("Failed to write to link flash", link_errno);
 			if ( err < 0 ){
 				err = -1;
@@ -1071,7 +1066,7 @@ int Link::updateOS(string path, bool verify, bool (*update)(void*,int,int), void
 
 			while( (bytesRead = fread(buffer, 1, bufferSize, hostFile)) > 0 ){
 
-				if ( (err = link_readflash(phyHandle, loc, cmpBuffer, bytesRead)) != bytesRead ){
+				if ( (err = link_readflash(d, loc, cmpBuffer, bytesRead)) != bytesRead ){
 					errMsg = genError("Failed to read flash memory", link_errno);
 					if ( err > 0 ){
 						err = -1;
@@ -1110,7 +1105,7 @@ int Link::updateOS(string path, bool verify, bool (*update)(void*,int,int), void
 		}
 
 		//write the stack address
-		if( (err = link_writeflash(phyHandle, startAddr, stackaddr, 256)) != 256 ){
+		if( (err = link_writeflash(d, startAddr, stackaddr, 256)) != 256 ){
 			errMsg = genError("Failed to write stack addr", err);
 			return -1;
 		}
@@ -1118,14 +1113,14 @@ int Link::updateOS(string path, bool verify, bool (*update)(void*,int,int), void
 
 		if( verify == true ){
 			//verify the stack address
-			if( (err = link_readflash(phyHandle, startAddr, buffer, 256)) != 256 ){
+			if( (err = link_readflash(d, startAddr, buffer, 256)) != 256 ){
 				errMsg = genError("Failed to write stack addr", err);
 				fclose(hostFile);
 				return -1;
 			}
 
 			if( memcmp(buffer, stackaddr, 256) != 0 ){
-				link_eraseflash(phyHandle);
+				link_eraseflash(d);
 				errMsg = "Failed to verify stack address";
 				fclose(hostFile);
 				return -1;
@@ -1142,7 +1137,7 @@ int Link::updateOS(string path, bool verify, bool (*update)(void*,int,int), void
 	unlockDevice();
 
 	if( err < 0 ){
-		link_eraseflash(phyHandle);
+		link_eraseflash(d);
 	}
 
 	return checkError(err);

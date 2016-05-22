@@ -15,13 +15,15 @@
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>. */
 
 
-#include "link_flags.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <limits.h>
 #include <errno.h>
+
+#include "link_flags.h"
+
 
 #if defined __win32 || defined __win64
 #include <windows.h>
@@ -233,9 +235,9 @@ int link_phy_getname(char * dest, const char * last, int len){
 }
 
 
-link_phy_t link_phy_open(const char * name, int baudrate){
+link_transport_phy_t link_phy_open(const char * name, int baudrate){
 	char path[1024];
-	link_phy_t phy;
+	link_transport_phy_t phy;
 	int fd;
 	struct termios options;
 

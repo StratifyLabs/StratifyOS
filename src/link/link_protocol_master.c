@@ -16,17 +16,10 @@
 #define TIMEOUT_VALUE 2000
 #endif
 
-#if defined __link
-#define link_phy_read link_driver()->read
-#define link_phy_write link_driver()->write
-#define link_phy_wait link_driver()->wait
-#define link_phy_flush link_driver()->flush
-#endif
-
 
 #define pkt_checksum(pktp) ((pktp)->data[(pktp)->size])
 
-static int wait_ack(link_transport_phy_t handle, uint8_t checksum, int timeout);
+static int wait_ack(link_transport_mdriver_t * driver, uint8_t checksum, int timeout);
 static int timeout_value = TIMEOUT_VALUE;
 
 void link_transport_mastersettimeout(int t){
@@ -37,7 +30,7 @@ void link_transport_mastersettimeout(int t){
 	}
 }
 
-int link_transport_masterread(link_transport_phy_t handle, void * buf, int nbyte){
+int link_transport_masterread(link_transport_mdriver_t * driver, void * buf, int nbyte){
 	link_pkt_t pkt;
 	char * p;
 	int bytes;
@@ -47,13 +40,13 @@ int link_transport_masterread(link_transport_phy_t handle, void * buf, int nbyte
 	p = buf;
 	do {
 
-		if( (err = link_transport_wait_start(handle, &pkt, timeout_value)) < 0 ){
-			link_phy_flush(handle);
+		if( (err = link_transport_wait_start(&driver->dev, &pkt, timeout_value)) < 0 ){
+			driver->dev.flush(driver->dev.handle);
 			return err;
 		}
 
-		if( (err = link_transport_wait_packet(handle, &pkt, timeout_value)) < 0 ){
-			link_phy_flush(handle);
+		if( (err = link_transport_wait_packet(&driver->dev, &pkt, timeout_value)) < 0 ){
+			driver->dev.flush(driver->dev.handle);
 			return err;
 		}
 
@@ -73,7 +66,7 @@ int link_transport_masterread(link_transport_phy_t handle, void * buf, int nbyte
 	return bytes;
 }
 
-int link_transport_masterwrite(link_transport_phy_t handle, const void * buf, int nbyte){
+int link_transport_masterwrite(link_transport_mdriver_t * driver, const void * buf, int nbyte){
 	link_pkt_t pkt;
 	char * p;
 	int bytes;
@@ -95,15 +88,15 @@ int link_transport_masterwrite(link_transport_phy_t handle, const void * buf, in
 		link_transport_insert_checksum(&pkt);
 
 		//send packet
-		if( link_phy_write(handle, &pkt, pkt.size + LINK_PACKET_HEADER_SIZE) != (pkt.size + LINK_PACKET_HEADER_SIZE) ){
+		if( driver->dev.write(driver->dev.handle, &pkt, pkt.size + LINK_PACKET_HEADER_SIZE) != (pkt.size + LINK_PACKET_HEADER_SIZE) ){
 			link_error("Link PHY write failed");
 			return LINK_PHY_ERROR;
 		}
 
 		//received ack of the checksum
-		if( (err = wait_ack(handle, pkt_checksum(&pkt), timeout_value)) < 0 ){
+		if( (err = wait_ack(driver, pkt_checksum(&pkt), timeout_value)) < 0 ){
 			link_error("wait ack failed");
-			link_phy_flush(handle);
+			driver->dev.flush(driver->dev.handle);
 			return err;
 		}
 
@@ -116,7 +109,7 @@ int link_transport_masterwrite(link_transport_phy_t handle, const void * buf, in
 }
 
 
-int wait_ack(link_transport_phy_t handle, uint8_t checksum, int timeout){
+int wait_ack(link_transport_mdriver_t * driver, uint8_t checksum, int timeout){
 	link_ack_t ack;
 	char * p;
 	int count;
@@ -127,7 +120,7 @@ int wait_ack(link_transport_phy_t handle, uint8_t checksum, int timeout){
 	p = (char*)&ack;
 	bytes_read = 0;
 	do {
-		ret = link_phy_read(handle, p, sizeof(ack) - bytes_read);
+		ret = driver->dev.read(driver->dev.handle, p, sizeof(ack) - bytes_read);
 		if( ret < 0 ){
 			link_error("read failed");
 			return LINK_PHY_ERROR;
@@ -142,7 +135,7 @@ int wait_ack(link_transport_phy_t handle, uint8_t checksum, int timeout){
 			count = 0;
 		} else {
 //#ifndef __WINDOWS
-			link_phy_wait(1);
+			driver->dev.wait(1);
 //#endif
 			count+=1;
 			if( count >= timeout ){

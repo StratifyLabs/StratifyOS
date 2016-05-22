@@ -9,7 +9,7 @@
 #include "link_flags.h"
 #include "iface/link.h"
 
-int link_posix_trace_create(link_transport_phy_t handle, uint32_t pid, link_trace_id_t * id){
+int link_posix_trace_create(link_transport_mdriver_t * driver, uint32_t pid, link_trace_id_t * id){
 	link_op_t op;
 	link_reply_t reply;
 	int err;
@@ -20,17 +20,17 @@ int link_posix_trace_create(link_transport_phy_t handle, uint32_t pid, link_trac
 	op.posix_trace_create.pid = pid;
 
 	link_debug(LINK_DEBUG_MESSAGE, "Write open op");
-	err = link_transport_masterwrite(handle, &op, sizeof(link_posix_trace_create_t));
+	err = link_transport_masterwrite(driver, &op, sizeof(link_posix_trace_create_t));
 	if ( err < 0 ){
-		link_error("failed to write open op with handle %d", (int)handle);
-		return link_handle_err(handle, err);
+		link_error("failed to write open op with handle %d", (int)driver->dev.handle);
+		return link_handle_err(driver, err);
 	}
 
 	//read the reply to see if the trace opened correctly
-	err = link_transport_masterread(handle, &reply, sizeof(reply));
+	err = link_transport_masterread(driver, &reply, sizeof(reply));
 	if ( err < 0 ){
 		link_error("failed to read the reply");
-		return link_handle_err(handle, err);
+		return link_handle_err(driver, err);
 	}
 
 	if ( reply.err < 0 ){
@@ -42,7 +42,7 @@ int link_posix_trace_create(link_transport_phy_t handle, uint32_t pid, link_trac
 	return reply.err;
 }
 
-int link_posix_trace_tryget_events(link_transport_phy_t handle,
+int link_posix_trace_tryget_events(link_transport_mdriver_t * driver,
 		link_trace_id_t id,
 		void * data,
 		size_t num_bytes){
@@ -57,17 +57,17 @@ int link_posix_trace_tryget_events(link_transport_phy_t handle,
 	op.posix_trace_tryget_events.trace_id = id;
 
 	link_debug(LINK_DEBUG_MESSAGE, "Write op");
-	err = link_transport_masterwrite(handle, &op, sizeof(link_posix_trace_create_t));
+	err = link_transport_masterwrite(driver, &op, sizeof(link_posix_trace_create_t));
 	if ( err < 0 ){
-		link_error("failed to write open op with handle %d", (int)handle);
-		return link_handle_err(handle, err);
+		link_error("failed to write open op with handle %d", (int)driver->dev.handle);
+		return link_handle_err(driver, err);
 	}
 
 	//read the reply
-	err = link_transport_masterread(handle, &reply, sizeof(reply));
+	err = link_transport_masterread(driver, &reply, sizeof(reply));
 	if ( err < 0 ){
 		link_error("failed to read the reply");
-		return link_handle_err(handle, err);
+		return link_handle_err(driver, err);
 	}
 
 	if ( reply.err < 0 ){
@@ -81,7 +81,7 @@ int link_posix_trace_tryget_events(link_transport_phy_t handle,
 	}
 
 	//now reply.err has the number of bytes that are about to be sent
-	len = link_transport_masterread(handle, data, reply.err);
+	len = link_transport_masterread(driver, data, reply.err);
 	if( len < 0 ){
 		link_error("Failed to read trace events %d", reply.err);
 	}
@@ -90,7 +90,7 @@ int link_posix_trace_tryget_events(link_transport_phy_t handle,
 	return len;
 }
 
-int link_posix_trace_shutdown(link_transport_phy_t handle,
+int link_posix_trace_shutdown(link_transport_mdriver_t * driver,
 		link_trace_id_t id){
 	link_op_t op;
 	link_reply_t reply;
@@ -101,18 +101,18 @@ int link_posix_trace_shutdown(link_transport_phy_t handle,
 	op.posix_trace_shutdown.trace_id = id;
 
 	link_debug(LINK_DEBUG_MESSAGE, "Write shutdown op");
-	err = link_transport_masterwrite(handle, &op, sizeof(link_posix_trace_shutdown_t));
+	err = link_transport_masterwrite(driver, &op, sizeof(link_posix_trace_shutdown_t));
 	if ( err < 0 ){
-		link_error("failed to write op with handle %d", (int)handle);
-		return link_handle_err(handle, err);
+		link_error("failed to write op with handle %d", (int)driver->dev.handle);
+		return link_handle_err(driver, err);
 	}
 
 	//read the reply to see if the trace shutdown correctly
 	link_debug(LINK_DEBUG_MESSAGE, "Wait for shutdown reply");
-	err = link_transport_masterread(handle, &reply, sizeof(reply));
+	err = link_transport_masterread(driver, &reply, sizeof(reply));
 	if ( err < 0 ){
 		link_error("failed to read the reply");
-		return link_handle_err(handle, err);
+		return link_handle_err(driver, err);
 	}
 
 	if ( reply.err < 0 ){

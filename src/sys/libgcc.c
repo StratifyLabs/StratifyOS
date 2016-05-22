@@ -12,7 +12,7 @@
 #if __FPU_USED == 1
 #if 1
 /*
-sudo arm-stratify-eabi-objcopy \
+sudo arm-none-eabi-objcopy \
 	-W __aeabi_fmul \
 	-W __aeabi_dmul \
 	-W __aeabi_fdiv \

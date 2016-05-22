@@ -53,7 +53,7 @@ public:
     /*! \details This function creates a list of serial numbers of
      * all the devices that are attached to the host.
      */
-    static vector<string> listDevices(int max = 64);
+    vector<string> listDevices(int max = 64);
 
     /*! \details This gets the error message if an
      * operation fails.
@@ -314,7 +314,7 @@ public:
 
     int updateOS(string path, bool verify, bool (*update)(void*,int,int) = 0, void * context = 0);
 
-    link_transport_phy_t handle();
+    link_transport_mdriver_t * driver(){ return d; }
 
     void setProgress(int p){ progress = p; }
     void setProgressMax(int p){ progressMax = p; }
@@ -339,7 +339,9 @@ private:
     volatile int lock;
     void resetProgress(void);
     bool isBoot;
-    link_transport_phy_t phyHandle;
+
+    link_transport_mdriver_t drvr;
+    link_transport_mdriver_t * d;
 };
 
 #endif // LINK_H

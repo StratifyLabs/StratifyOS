@@ -146,10 +146,10 @@ typedef enum IRQn
 typedef struct                          /* Common Registers                   */
 {
   __I  uint32_t IntStat;
-  __I  uint32_t IntTCStat;
-  __O  uint32_t IntTCClear;
-  __I  uint32_t IntErrStat;
-  __O  uint32_t IntErrClr;
+  __I  uint32_t INTTCSTAT;
+  __O  uint32_t INTTCCLEAR;
+  __I  uint32_t INTERRSTAT;
+  __O  uint32_t INTERRCLR;
   __I  uint32_t RawIntTCStat;
   __I  uint32_t RawIntErrStat;
   __I  uint32_t ENBLDCHNS;
@@ -157,7 +157,7 @@ typedef struct                          /* Common Registers                   */
   __IO uint32_t SoftSReq;
   __IO uint32_t SoftLBReq;
   __IO uint32_t SoftLSReq;
-  __IO uint32_t Config;
+  __IO uint32_t CONFIG;
   __IO uint32_t Sync;
 } LPC_GPDMA_Type;
 
