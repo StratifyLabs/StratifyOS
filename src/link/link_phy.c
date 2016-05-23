@@ -32,7 +32,7 @@
 typedef struct {
 	HANDLE handle;
 	char name[32];
-} link_phydata_t;
+} link_phy_container_t;
 
 
 #define COM_PORT_NAME "\\\\.\\COM"
@@ -75,17 +75,17 @@ int link_phy_status(link_transport_phy_t handle){
 }
 
 
-link_phy_t link_phy_open(const char * name, int baudrate){
+link_transport_phy_t link_phy_open(const char * name, int baudrate){
 
-	link_phydata_t * handle;
+	link_phy_container_t * handle;
 	DCB params;
 
-	handle = malloc(sizeof(link_phydata_t));
+	handle = malloc(sizeof(link_phy_container_t));
 	if( handle == 0 ){
 		return LINK_PHY_OPEN_ERROR;
 	}
 
-	memset(((link_phydata_t*)handle)->name, 0, 32);
+	memset(((link_phy_container_t*)handle)->name, 0, 32);
 	strncpy(handle->name, name, 31);
 
 	handle->handle = CreateFile(name, GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
@@ -131,7 +131,7 @@ link_phy_t link_phy_open(const char * name, int baudrate){
 
 int link_phy_write(link_transport_phy_t handle, const void * buf, int nbyte){
 	DWORD bytes_written;
-	if( !WriteFile(((link_phydata_t*)handle)->handle, buf, nbyte, &bytes_written, NULL) ){
+	if( !WriteFile(((link_phy_container_t*)handle)->handle, buf, nbyte, &bytes_written, NULL) ){
 		link_error("Failed to write %d bytes from handle:%d\n", nbyte, (int)handle);
 		return LINK_PHY_ERROR;
 	}
@@ -140,7 +140,7 @@ int link_phy_write(link_transport_phy_t handle, const void * buf, int nbyte){
 
 int link_phy_read(link_transport_phy_t handle, void * buf, int nbyte){
 	DWORD bytes_read;
-	if( !ReadFile(((link_phydata_t*)handle)->handle, buf, nbyte, &bytes_read, NULL) ){
+	if( !ReadFile(((link_phy_container_t*)handle)->handle, buf, nbyte, &bytes_read, NULL) ){
 		link_error("Failed to read %d bytes from handle:%d\n", nbyte, (int)handle);
 		return LINK_PHY_ERROR;
 	}
@@ -149,7 +149,7 @@ int link_phy_read(link_transport_phy_t handle, void * buf, int nbyte){
 
 int link_phy_close(link_transport_phy_t handle){
 
-	if( CloseHandle(((link_phydata_t*)handle)->handle) == 0 ){
+	if( CloseHandle(((link_phy_container_t*)handle)->handle) == 0 ){
 		link_error("Failed to close handle\n");
 	}
 	free(handle);

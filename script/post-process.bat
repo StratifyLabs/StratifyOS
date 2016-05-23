@@ -19,7 +19,12 @@ if NOT "%NAME%"=="link" (
 )
 
 if "%NAME%"=="link" (
-	copy /y ..\src\link\Link.h %TOOLSPATH%\%HOST%\include\iface\Link.h
+	mkdir %TOOLSPATH%\%HOST%\include
+	mkdir %TOOLSPATH%\%HOST%\include\posix
+	mkdir %TOOLSPATH%\%HOST%\lib\ldscripts
+	copy /y ..\src\link\Link.h %TOOLSPATH%\%HOST%\include\Link.h
+	copy /y ..\ldscript\*.bat %TOOLSPATH%\%HOST%\lib\ldscripts
+	xcopy /S /Y ..\include\posix\* %TOOLSPATH%\%HOST%\include\posix
 )
 
 echo "Installing library file: %LIB%.a in %TOOLSPATH%\%HOST%\lib\%ARCH%\%FLOAT%"

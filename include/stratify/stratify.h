@@ -374,7 +374,6 @@
 #include <stdlib.h>
 #include <time.h>
 #include <pthread.h>
-#include <sys/lock.h>
 #include "mcu/mcu.h"
 #include "mcu/types.h"
 #include "mcu/task.h"
@@ -382,6 +381,7 @@
 #if defined __link
 #include <posix/trace.h>
 #else
+#include <sys/lock.h>
 #include "trace.h"
 #endif
 #include "iface/device_config.h"

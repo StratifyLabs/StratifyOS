@@ -8,3 +8,4 @@
 /build_debug_mcu_lpc407x_8x/
 /build_debug_sys_arm7em_fpu/
 /build_debug_sys_armv7m/
+/build_release_link/
