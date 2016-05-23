@@ -166,6 +166,40 @@ typedef struct MCU_PACK {
 } usb_dev_cdc_extensionunit_t;
 
 typedef struct MCU_PACK {
+	usb_dev_cdc_header_t header;
+	usb_dev_cdc_acm_t acm;
+	usb_dev_cdc_uniondescriptor_t union_descriptor;
+	usb_dev_cdc_callmanagement_t call_management;
+} usb_cdc_acm_interface_t;
+
+typedef struct MCU_PACK {
+	usb_dev_cdc_header_t header;
+	usb_dev_cdc_acm_t acm;
+	usb_dev_cdc_callmanagement_t call_management;
+} usb_cdc_acm_interface_alt_t;
+
+typedef struct MCU_PACK {
+	u8 bLength;
+	u8 bDescriptorType;
+	u8 bFirstInterface;
+	u8 bInterfaceCount;
+	u8 bFunctionClass;
+	u8 bFunctionSubClass;
+	u8 bFunctionProtocol;
+	u8 iFunction;
+} usb_dev_interface_assocation_t;
+
+typedef struct MCU_PACK {
+	usb_dev_interface_assocation_t if_asso;
+	usb_interface_desc_t ifcontrol /* The interface descriptor */;
+	usb_cdc_acm_interface_t acm /*! The CDC ACM Class descriptor */;
+	usb_ep_desc_t control /* Endpoint:  Interrupt out for control packets */;
+	usb_interface_desc_t ifdata /* The interface descriptor */;
+	usb_ep_desc_t data_out /* Endpoint:  Bulk out */;
+	usb_ep_desc_t data_in /* Endpoint:  Bulk in */;
+} usb_desc_vcp_t;
+
+typedef struct MCU_PACK {
 	uint16_t bcdDevice;
 	uint16_t idProduct;
 	uint16_t idVendor;
