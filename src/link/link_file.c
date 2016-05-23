@@ -290,6 +290,8 @@ int link_close(link_transport_mdriver_t * driver, int fildes){
 		link_debug(LINK_DEBUG_WARNING, "Failed to close file (%d)", link_errno);
 	}
 
+	link_debug(LINK_DEBUG_MESSAGE, "close complete %d", reply.err);
+
 	return reply.err;
 }
 

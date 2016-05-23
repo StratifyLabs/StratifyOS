@@ -52,6 +52,7 @@ const link_transport_mdriver_t link_default_driver = {
 int link_errno;
 
 void link_load_default_driver(link_transport_mdriver_t * driver){
+	link_debug(LINK_DEBUG_MESSAGE, "Load default read driver");
 	memcpy(driver, &link_default_driver, sizeof(link_transport_mdriver_t));
 }
 
@@ -64,7 +65,10 @@ int link_init(void){
 void link_exit(void){}
 
 int link_disconnect(link_transport_mdriver_t * driver){
-	return driver->dev.close(driver->dev.handle);
+	int ret;
+	ret = driver->dev.close(driver->dev.handle);
+	driver->dev.handle = LINK_PHY_OPEN_ERROR;
+	return ret;
 }
 
 int link_connect(link_transport_mdriver_t * driver, const char * sn){
@@ -76,10 +80,20 @@ int link_connect(link_transport_mdriver_t * driver, const char * sn){
 
 	memset(last, 0, LINK_PHY_NAME_MAX);
 
+	if( sn ){
+		strcpy(serialno, sn);
+	} else {
+		strcpy(serialno, "NONE");
+	}
+
+	link_debug(LINK_DEBUG_MESSAGE, "Connect to %s", serialno);
+
+
 	while( (err = driver->getname(name, last, LINK_PHY_NAME_MAX)) == 0 ){
 		//success in getting new name
 		driver->dev.handle = driver->dev.open(name, 0);
 		if( driver->dev.handle != LINK_PHY_OPEN_ERROR ){
+			link_debug(LINK_DEBUG_MESSAGE, "Read serial number for %s", name);
 			if( link_readserialno(driver, serialno, 256) == 0 ){
 				//check for NULL sn, zero length sn or matching sn
 				if( (sn == NULL) || (strlen(sn) == 0) || (strcmp(sn, serialno) == 0) ){
@@ -102,6 +116,8 @@ int link_connect(link_transport_mdriver_t * driver, const char * sn){
 			}
 			link_debug(LINK_DEBUG_MESSAGE, "Close Handle");
 			driver->dev.close(driver->dev.handle);
+			driver->dev.handle = LINK_PHY_OPEN_ERROR;
+
 		} else {
 			link_error("Failed to open %s\n", name);
 		}
@@ -121,7 +137,7 @@ int link_readserialno(link_transport_mdriver_t * driver, char * serialno, int le
 
 	op.cmd = LINK_CMD_READSERIALNO;
 
-	link_debug(LINK_DEBUG_MESSAGE, "Send command (%d) to read serial number", op.cmd);
+	link_debug(LINK_DEBUG_MESSAGE, "Send command (%d) to read serial number on 0x%llX", op.cmd, (u64)driver->dev.handle);
 	err = link_transport_masterwrite(driver, &op, sizeof(link_cmd_t));
 	if ( err < 0 ){
 		link_error("failed to write op");
@@ -204,7 +220,6 @@ char * link_new_device_list(link_transport_mdriver_t * driver, int max){
 	char name[LINK_PHY_NAME_MAX];
 	char serialno[LINK_MAX_SN_SIZE];
 	char last[LINK_PHY_NAME_MAX];
-	link_transport_phy_t handle;
 	char * sn_list;
 	char * entry;
 	int cnt;
@@ -228,21 +243,21 @@ char * link_new_device_list(link_transport_mdriver_t * driver, int max){
 
 	while ( (err = driver->getname(name, last, LINK_PHY_NAME_MAX)) == 0 ){
 		//success in getting new name
-		handle = driver->dev.open(name, 0);
-		if( handle != LINK_PHY_OPEN_ERROR ){
-			if( link_readserialno(handle, serialno, LINK_MAX_SN_SIZE) == 0 ){
+		driver->dev.handle = driver->dev.open(name, 0);
+		if( driver->dev.handle != LINK_PHY_OPEN_ERROR ){
+			if( link_readserialno(driver, serialno, LINK_MAX_SN_SIZE) == 0 ){
 				entry = &(sn_list[LINK_MAX_SN_SIZE*cnt]);
 				strcpy(entry, serialno);
 
-				link_debug(LINK_DEBUG_MESSAGE, "Open dev/sys on 0x%llX", (uint64_t)handle);
+				link_debug(LINK_DEBUG_MESSAGE, "Open dev/sys on 0x%llX", (u64)driver->dev.handle);
 
 				//check to see if device is a bootloader?
-				if( link_isbootloader(handle) ){
+				if( link_isbootloader(driver) ){
 					link_debug(LINK_DEBUG_MESSAGE, "Device is a bootloader\n");
 				} else {
 					sys_fd = link_open(driver, "/dev/sys", LINK_O_RDWR);
 					if( sys_fd >= 0 ){
-						if( link_ioctl(handle, sys_fd, I_SYS_GETATTR, &sys_attr) == 0 ){
+						if( link_ioctl(driver, sys_fd, I_SYS_GETATTR, &sys_attr) == 0 ){
 							//now add the sys_attr to the string list
 							sys_attr.name[NAME_MAX-1] = 0;  //make sure these are zero terminated
 							sys_attr.version[7] = 0;
@@ -251,7 +266,7 @@ char * link_new_device_list(link_transport_mdriver_t * driver, int max){
 									sys_attr.version,
 									serialno);
 						}
-						link_close(driver->dev.handle, sys_fd);
+						link_close(driver, sys_fd);
 					}
 				}
 
@@ -261,6 +276,7 @@ char * link_new_device_list(link_transport_mdriver_t * driver, int max){
 				}
 			}
 			driver->dev.close(driver->dev.handle);
+			driver->dev.handle = LINK_PHY_OPEN_ERROR;
 		}
 		strcpy(last, name);
 	}

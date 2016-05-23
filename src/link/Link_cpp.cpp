@@ -48,7 +48,7 @@ static string genError(string msg, int err_number){
 	return s;
 }
 
-vector<string> Link::listDevices(int max){
+vector<string> Link::listDevices(link_transport_mdriver_t * d, int max){
 	vector<string> devices;
 	char * snList;
 	int i;
@@ -134,6 +134,7 @@ int Link::init(string sn){
 		lastsn = sn;
 
 	} else {
+		link_debug(LINK_DEBUG_MESSAGE, "Already connected");
 		errMsg = genError("Already Connected", 1);
 		return -1;
 	}
@@ -143,6 +144,7 @@ int Link::init(string sn){
 	err = link_isbootloader(d);
 
 	if ( err > 0 ){
+		link_debug(LINK_DEBUG_MESSAGE, "Bootloader connected");
 		isBoot = true;
 	} else if ( err == 0){
 		isBoot = false;
@@ -351,7 +353,7 @@ int Link::exit(void){
 
 bool Link::connected(void){
 
-	if( d->status(d) == LINK_PHY_ERROR){
+	if( d->status(d->dev.handle) == LINK_PHY_ERROR){
 		d->dev.handle = LINK_PHY_OPEN_ERROR;
 	}
 	return (d->dev.handle != LINK_PHY_OPEN_ERROR);

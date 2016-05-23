@@ -91,6 +91,7 @@ int link_reset(link_transport_mdriver_t * driver){
 		op.ioctl.arg = 0;
 		link_transport_masterwrite(driver, &op, sizeof(link_ioctl_t));
 		driver->dev.close(driver->dev.handle);
+		driver->dev.handle = LINK_PHY_OPEN_ERROR;
 	} else {
 		link_debug(LINK_DEBUG_MESSAGE, "reset device with /dev/core");
 		return reset_device(driver, false);
@@ -123,6 +124,7 @@ int reset_device(link_transport_mdriver_t * driver, bool invoke_bootloader){
 
 	link_transport_masterwrite(driver, &op, sizeof(link_ioctl_t));
 	driver->dev.close(driver->dev.handle);
+	driver->dev.handle = LINK_PHY_OPEN_ERROR;
 	return 0;
 }
 

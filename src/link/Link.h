@@ -53,7 +53,7 @@ public:
     /*! \details This function creates a list of serial numbers of
      * all the devices that are attached to the host.
      */
-    vector<string> listDevices(int max = 64);
+    static vector<string> listDevices(link_transport_mdriver_t * d, int max = 64);
 
     /*! \details This gets the error message if an
      * operation fails.

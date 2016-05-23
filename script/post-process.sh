@@ -19,6 +19,9 @@ fi
 
 if [ "$NAME" == "link" ]; then
 	cp -Rf ../src/link/Link.h $TOOLSPATH/$HOST/include
+	mkdir -p $TOOLSPATH/$HOST/include/posix
+	cp -Rf ../ldscript/*.sh $TOOLSPATH/$HOST/lib/ldscripts
+	cp -Rf ../include/posix/* $TOOLSPATH/$HOST/include/posix
 fi
 
 echo "Installing library file: $LIB.a in $TOOLSPATH/$HOST/lib/$ARCH/$FLOAT"

@@ -379,7 +379,11 @@
 #include "mcu/types.h"
 #include "mcu/task.h"
 
+#if defined __link
+#include <posix/trace.h>
+#else
 #include "trace.h"
+#endif
 #include "iface/device_config.h"
 
 #ifdef __cplusplus

@@ -38,7 +38,7 @@ int link_settime(link_transport_mdriver_t * driver, struct tm * t){
 	ltm.tm_year = t->tm_year;
 
 	link_debug(LINK_DEBUG_MESSAGE, "open rtc device");
-	fd = link_open(driver->dev.handle, "/dev/rtc", LINK_O_RDWR);
+	fd = link_open(driver, "/dev/rtc", LINK_O_RDWR);
 	if( fd < 0 ){
 		return -1;
 	}
@@ -50,7 +50,7 @@ int link_settime(link_transport_mdriver_t * driver, struct tm * t){
 			&ltm);
 
 	link_debug(LINK_DEBUG_MESSAGE, "close");
-	if( link_close(driver->dev.handle, fd) < 0 ){
+	if( link_close(driver, fd) < 0 ){
 		return -1;
 	}
 
@@ -64,7 +64,7 @@ int link_gettime(link_transport_mdriver_t * driver, struct tm * t){
 	struct link_tm ltm;
 
 	link_debug(LINK_DEBUG_MESSAGE, "Open RTC fildes");
-	fd = link_open(driver->dev.handle, "/dev/rtc", LINK_O_RDWR);
+	fd = link_open(driver, "/dev/rtc", LINK_O_RDWR);
 	if( fd < 0 ){
 		return -1;
 	}
@@ -79,7 +79,7 @@ int link_gettime(link_transport_mdriver_t * driver, struct tm * t){
 	}
 
 	link_debug(LINK_DEBUG_MESSAGE, "Close RTC fildes");
-	if( link_close(driver->dev.handle, fd) < 0 ){
+	if( link_close(driver, fd) < 0 ){
 		link_error("failed to close");
 		return -1;
 	}

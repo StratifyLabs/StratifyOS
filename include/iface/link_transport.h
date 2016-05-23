@@ -61,6 +61,10 @@ typedef struct {
 	link_transport_driver_t dev;
 } link_transport_mdriver_t;
 
+#if defined __cplusplus
+extern "C" {
+#endif
+
 void link_transport_mastersettimeout(int t);
 int link_transport_masterwrite(link_transport_mdriver_t * driver, const void * buf, int nbyte);
 int link_transport_masterread(link_transport_mdriver_t * driver, void * buf, int nbyte);
@@ -73,5 +77,8 @@ bool link_transport_checksum_isok(link_pkt_t * pkt);
 int link_transport_wait_packet(link_transport_driver_t * driver, link_pkt_t * pkt, int timeout);
 int link_transport_wait_start(link_transport_driver_t * driver, link_pkt_t * pkt, int timeout);
 
+#if defined __cplusplus
+}
+#endif
 
 #endif /* IFACE_LINK_TRANSPORT_H_ */

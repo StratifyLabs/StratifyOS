@@ -72,6 +72,11 @@ int link_transport_masterwrite(link_transport_mdriver_t * driver, const void * b
 	int bytes;
 	int err;
 
+	if( driver == 0 ){
+		link_error("Driver is not available\n");
+		return -1;
+	}
+
 	bytes = 0;
 	p = (void*)buf;
 	pkt.start = LINK_PACKET_START;

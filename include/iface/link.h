@@ -37,6 +37,7 @@
 #include <sys/stat.h>
 #include <time.h>
 
+#define LINK_OPEN_MAX 32
 #define LINK_NAME_MAX 24
 #define LINK_PATH_MAX 64
 
