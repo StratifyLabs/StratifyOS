@@ -77,7 +77,7 @@ typedef struct {
 	device_transfer_t op;
 	mcu_callback_t callback;
 	void * context;
-	int prot;
+	u32 flags;
 } sdspi_state_t;
 
 typedef struct {

@@ -39,6 +39,11 @@
 #define LONG_DELAY 250
 #define SHORT_DELAY 100
 
+#define FLAG_PROTECTED (1<<0)
+#define FLAG_SDSC (1<<1)
+
+
+static int _sdspi_is_sdsc(const device_cfg_t * cfg);
 
 static int _sdspi_erase_blocks(const device_cfg_t * cfg, uint32_t block_num, uint32_t end_block);
 static int _sdspi_busy(const device_cfg_t * cfg);
@@ -85,8 +90,6 @@ int sdspi_open(const device_cfg_t * cfg){
 	attr.mask = (1<<cfg->pcfg.spi.cs.pin);
 	attr.mode = PIO_MODE_OUTPUT | PIO_MODE_DIRONLY;
 	mcu_pio_setattr(cfg->pcfg.spi.cs.port, &attr);
-
-	//state->prot = 0;
 
 	//The device is ready to use
 	return 0;
@@ -171,6 +174,7 @@ int sdspi_read(const device_cfg_t * cfg, device_transfer_t * rop){
 	//first write the header command
 	sdspi_state_t * state = cfg->state;
 	sdspi_r1_t r1;
+	u32 loc;
 
 	if( rop->nbyte != BLOCK_SIZE ){
 		errno = EINVAL;
@@ -189,8 +193,14 @@ int sdspi_read(const device_cfg_t * cfg, device_transfer_t * rop){
 	state->timeout = 0;
 	state->op.tid = rop->tid;
 
+	if( _sdspi_is_sdsc(cfg) ){
+		loc = rop->loc*BLOCK_SIZE;
+	} else {
+		loc = rop->loc;
+	}
 
-	r1 = _sdspi_cmd_r1(cfg, SDSPI_CMD17_READ_SINGLE_BLOCK, rop->loc, state->cmd);
+
+	r1 = _sdspi_cmd_r1(cfg, SDSPI_CMD17_READ_SINGLE_BLOCK, loc, state->cmd);
 	if( r1.u8 != 0x00 ){
 		if( (r1.param_error) ){
 			errno = EINVAL;
@@ -260,6 +270,7 @@ int sdspi_write(const device_cfg_t * cfg, device_transfer_t * wop){
 
 	sdspi_state_t * state = cfg->state;
 	sdspi_r1_t r1;
+	u32 loc;
 
 
 	if( wop->nbyte != BLOCK_SIZE ){
@@ -279,7 +290,13 @@ int sdspi_write(const device_cfg_t * cfg, device_transfer_t * wop){
 	state->buf = wop->buf;
 	state->timeout = 0;
 
-	r1 = _sdspi_cmd_r1(cfg, SDSPI_CMD24_WRITE_SINGLE_BLOCK, wop->loc, state->cmd);
+	if( _sdspi_is_sdsc(cfg) ){
+		loc = wop->loc*BLOCK_SIZE;
+	} else {
+		loc = wop->loc;
+	}
+
+	r1 = _sdspi_cmd_r1(cfg, SDSPI_CMD24_WRITE_SINGLE_BLOCK, loc, state->cmd);
 	if( r1.u8 != 0x00 ){
 		if( (r1.addr_error) || (r1.param_error) ){
 			errno = EINVAL;
@@ -325,7 +342,7 @@ int sdspi_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 	switch(request){
 	case I_DISK_ERASE_BLOCK:
 	case I_DISK_ERASE_DEVICE:
-		if( state->prot == 1 ){
+		if( state->flags & FLAG_PROTECTED ){
 			errno = EROFS;
 			return -1;
 		}
@@ -354,7 +371,8 @@ int sdspi_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 
 	case I_DISK_INIT:
 		//set SPI to 100kbits
-		spi_attr.bitrate = 100000;
+		state->flags = 0;
+		spi_attr.bitrate = 400000;
 		spi_attr.format = SPI_ATTR_FORMAT_SPI;
 		spi_attr.mode = SPI_ATTR_MODE0;
 		spi_attr.width = 8;
@@ -387,7 +405,7 @@ int sdspi_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 
 		if( resp.r1.idle != 1 ){
 			errno = EIO;
-			mcu_priv_debug("No IDLE\n");
+			mcu_priv_debug("No IDLE 0x%X\n", resp.r1.u8);
 			return -5;
 		}
 
@@ -399,6 +417,20 @@ int sdspi_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 			return -6;
 		}
 
+		//disable write protection (SD Cards only)
+		resp.r1 = _sdspi_cmd_r1(cfg, SDSPI_CMD28_SET_WRITE_PROT, 0, 0);
+		if( resp.r1.u8 == 0x01 ){
+			state->flags |= FLAG_SDSC;
+
+			//set block len
+			resp.r1 = _sdspi_cmd_r1(cfg, SDSPI_CMD16_SET_BLOCKLEN, BLOCK_SIZE, 0);
+			if( resp.r1.u8 != 0x01 ){
+				errno = EIO;
+				mcu_priv_debug("NO 16 BLOCK LEN\n");
+				return -7;
+			}
+		}
+
 		//enable checksums
 		resp.r1 = _sdspi_cmd_r1(cfg, SDSPI_CMD59_CRC_ON_OFF, 0xFFFFFFFF, 0);
 		if( resp.r1.u8 != 0x01 ){
@@ -408,15 +440,18 @@ int sdspi_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 		}
 
 		timeout = 0;
+
+		const int timeout_value = 2000;
+
 		do {
-			resp.r1 = _sdspi_cmd_r1(cfg, 55, 0, 0);  //send 55
+			resp.r1 = _sdspi_cmd_r1(cfg, SDSPI_CMD55_APP_CMD, 0, 0);  //send 55
 			if( resp.r1.u8 != 0x01 ){
 				errno = EIO;
 				mcu_priv_debug("NO 55\n");
 				return -7;
 			}
 
-			resp.r1 = _sdspi_cmd_r1(cfg, 41, 1<<30, 0);  //indicate that HC is supported
+			resp.r1 = _sdspi_cmd_r1(cfg, SDSPI_ACMD41_SD_SEND_OP_COND, 1<<30, 0);  //indicate that HC is supported
 			if( (resp.r1.u8 != 0x01) && (resp.r1.u8 != 0x00) ){  //this takes awhile to return to zero
 				errno = EIO;
 				mcu_priv_debug("HC?\n");
@@ -425,9 +460,9 @@ int sdspi_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 			timeout++;
 			//reset wdt
 			mcu_wdt_priv_reset(0);
-		} while( (resp.r1.u8 != 0x00) && (timeout < 500) );
+		} while( (resp.r1.u8 != 0x00) && (timeout < timeout_value) );
 
-		if( timeout == 500 ){
+		if( timeout == timeout_value ){
 			errno = EIO;
 			mcu_priv_debug("TIMEOUT\n");
 			return -9;
@@ -443,6 +478,8 @@ int sdspi_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 		_mcu_core_delay_us(LONG_DELAY);
 		_sdspi_transfer(cfg, 0, 0, CMD_FRAME_SIZE);
 		_sdspi_deassert_cs(cfg);
+
+		mcu_priv_debug("INIT SUCCESS 0x%lX\n", state->flags);
 
 		return 0;
 
@@ -474,7 +511,7 @@ int sdspi_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 		_sdspi_transfer(cfg, 0, 0, CMD_FRAME_SIZE);
 		_sdspi_deassert_cs(cfg);
 
-		//Write block size and address are fixed to BLOCK_SIZE (512)
+		//Write block size and address are fixed to BLOCK_SIZE
 		attr->address_size = BLOCK_SIZE;
 		attr->write_block_size = attr->address_size;
 
@@ -483,7 +520,20 @@ int sdspi_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 			errno = EIO;
 			return -1;
 		}
-		attr->num_write_blocks = (((buffer[7] & 63) << 16) + (buffer[8] << 8) + buffer[9] ) * 1024; //csize * 1024 (csize is size / 512K)
+
+		uint32_t block_len;
+		uint32_t c_size;
+		uint32_t c_mult;
+
+		if( _sdspi_is_sdsc(cfg) ){
+			c_size = (((buffer[6] & 0x03) << 10) + (buffer[7] << 2) + (buffer[8] >> 6));
+			c_mult = 1<<(((buffer[9] & 0x03) << 1) + (buffer[10] >> 7) + 2);
+			block_len = 1 << (buffer[5] & 0x0F);
+			attr->num_write_blocks = (c_size+1) * c_mult * block_len / BLOCK_SIZE;
+		} else {
+			c_size = (((buffer[7] & 63) << 16) + (buffer[8] << 8) + buffer[9] );
+			attr->num_write_blocks = (c_size+1) * 1024*512 / BLOCK_SIZE;  //capacity = (C_SIZE+1)*512KByte -- block is capacity / BLOCK_SIZE
+		}
 		attr->bitrate = 25*1000000;  //TRAN_SPEED should always be 25MHz
 
 		//need to read Status to get AU_Size, ERASE_SIZE, ERASE_TIMEOUT
@@ -500,9 +550,7 @@ int sdspi_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 		} else {
 			erase_timeout = ((buffer[13] << 8) + buffer[14]);
 			attr->erase_block_time = erase_timeout / erase_size;
-			attr->erase_device_time =
-					attr->erase_block_time * attr->num_write_blocks * attr->write_block_size / attr->erase_block_size;
-
+			attr->erase_device_time = attr->erase_block_time * attr->num_write_blocks * attr->write_block_size / attr->erase_block_size;
 		}
 		return 0;
 
@@ -516,9 +564,24 @@ int sdspi_close(const device_cfg_t * cfg){
 	return 0;
 }
 
+int _sdspi_is_sdsc(const device_cfg_t * cfg){
+	sdspi_state_t * state = (sdspi_state_t*)cfg->state;
+
+	if( state->flags & FLAG_SDSC ){
+		return 1;
+	}
+
+	return 0;
+
+}
 
 int _sdspi_erase_blocks(const device_cfg_t * cfg, uint32_t block_num, uint32_t end_block){
 	sdspi_r_t r;
+
+	if( _sdspi_is_sdsc(cfg) ){
+		block_num*=BLOCK_SIZE;
+		end_block*=BLOCK_SIZE;
+	}
 
 	//cmd32, 33, then 38
 	r.r1 = _sdspi_cmd_r1(cfg, SDSPI_CMD32_ERASE_WR_BLK_START, block_num, 0);

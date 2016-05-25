@@ -30,9 +30,13 @@
 #define SDSPI_CMD18_READ_MULTIPLE_BLOCK 18
 #define SDSPI_CMD24_WRITE_SINGLE_BLOCK 24
 #define SDSPI_CMD25_WRITE_MULTIPLE_BLOCK 25
+#define SDSPI_CMD28_SET_WRITE_PROT 28
 #define SDSPI_CMD32_ERASE_WR_BLK_START 32
 #define SDSPI_CMD33_ERASE_WR_BLK_END 33
 #define SDSPI_CMD38_ERASE 38
+
+
+#define SDSPI_ACMD41_SD_SEND_OP_COND 41
 
 #define SDSPI_CMD55_APP_CMD 55
 #define SDSPI_CMD58_READ_OCR 58
@@ -92,6 +96,7 @@ typedef union {
 	uint16_t u16[8];
 	uint8_t u8[16];
 } sdspi_csd_t;
+
 
 typedef union {
 	uint64_t u64[8];
