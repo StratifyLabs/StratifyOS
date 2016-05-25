@@ -212,11 +212,11 @@ void gled_on(void){
 	attr.mask = (1<<mcu_board_config.led.pin);
 	attr.mode = PIO_MODE_OUTPUT | PIO_MODE_DIRONLY;
 	mcu_pio_setattr(mcu_board_config.led.port, &attr);
-	if( boot_board_config.flags & BOOT_BOARD_CONFIG_FLAG_LED_ACTIVE_HIGH ){
+	if( mcu_board_config.flags & MCU_BOARD_CONFIG_FLAG_LED_ACTIVE_HIGH ){
 		//LED is active low
-		mcu_pio_clrmask(mcu_board_config.led.port, (void*)attr.mask);
-	} else {
 		mcu_pio_setmask(mcu_board_config.led.port, (void*)attr.mask);
+	} else {
+		mcu_pio_clrmask(mcu_board_config.led.port, (void*)attr.mask);
 	}
 }
 

@@ -105,8 +105,7 @@ typedef struct MCU_PACK {
 } bootloader_writepage_t;
 
 enum {
-	BOOT_BOARD_CONFIG_FLAG_LED_ACTIVE_HIGH = (1<<0),
-	BOOT_BOARD_CONFIG_FLAG_HW_REQ_ACTIVE_HIGH = (1<<1),
+	BOOT_BOARD_CONFIG_FLAG_HW_REQ_ACTIVE_HIGH = (1<<0),
 };
 
 typedef struct {

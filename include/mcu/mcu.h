@@ -91,11 +91,16 @@ int mcu_sync_io(const device_cfg_t * cfg,
 		int nbyte,
 		int flags);
 
+enum {
+	MCU_BOARD_CONFIG_FLAG_LED_ACTIVE_HIGH = (1<<0)
+};
+
 typedef struct MCU_PACK {
 	u32 core_osc_freq;
 	u32 core_cpu_freq;
 	u32 core_periph_freq;
 	u32 usb_max_packet_zero;
+	u32 flags;
 	pio_t led;
 } mcu_board_config_t;
 
