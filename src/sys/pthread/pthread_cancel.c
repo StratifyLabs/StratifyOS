@@ -50,7 +50,7 @@ int pthread_setcanceltype(int type, int *oldtype){
 	return 0;
 }
 
-void pthread_testcancel(void){
+void pthread_testcancel(){
 }
 
 /*! @} */

@@ -39,7 +39,7 @@
  * 	//take some action on an eint event -- this runs in priveleged, handler mode, it should be fast and short
  * }
  *
- * int configure_eint(void){
+ * int configure_eint(){
  * 	int fd;
  * 	eint_attr_t attr;
  * 	eint_action_t action;

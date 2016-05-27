@@ -215,7 +215,7 @@ extern uint32_t SystemCoreClock;
  *			system has a clock rate change
  * @return	None
  */
-void SystemCoreClockUpdate(void);
+void SystemCoreClockUpdate();
 
 /**
  * @brief	Set up and initialize hardware prior to call to main()
@@ -223,7 +223,7 @@ void SystemCoreClockUpdate(void);
  * @note	Chip_SystemInit() is called prior to the application and sets up
  * system clocking prior to the application starting.
  */
-void Chip_SystemInit(void);
+void Chip_SystemInit();
 
 /**
  * @brief	Clock and PLL initialization based on the external oscillator
@@ -231,13 +231,13 @@ void Chip_SystemInit(void);
  * @note	This function assumes an external crystal oscillator
  * frequency of 12MHz.
  */
-void Chip_SetupXtalClocking(void);
+void Chip_SetupXtalClocking();
 
 /**
  * @brief	Clock and PLL initialization based on the internal oscillator
  * @return	None
  */
-void Chip_SetupIrcClocking(void);
+void Chip_SetupIrcClocking();
 
 /**
  * @}

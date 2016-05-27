@@ -77,11 +77,11 @@ void cafs_sys_setegid(int gid){
 	egid = gid;
 }
 
-int sffs_sys_geteuid(void){
+int sffs_sys_geteuid(){
 	return euid;
 }
 
-int sffs_sys_getegid(void){
+int sffs_sys_getegid(){
 	return egid;
 }
 

@@ -79,22 +79,22 @@ typedef struct {
 
 void task_priv_new_task(new_task_t * task);
 
-static inline void task_save_context(void) MCU_ALWAYS_INLINE;
-void task_save_context(void){
+static inline void task_save_context() MCU_ALWAYS_INLINE;
+void task_save_context(){
 	asm volatile ("MRS r1, psp\n\t"
 			"STMDB r1!, {r4-r11}\n\t"
 			"MSR psp, r1\n\t");
 }
 
-static inline void task_load_context(void) MCU_ALWAYS_INLINE;
-void task_load_context(void){
+static inline void task_load_context() MCU_ALWAYS_INLINE;
+void task_load_context(){
 	asm volatile ("MRS r1, psp\n\t"
 			"LDMFD r1!, {r4-r11}\n\t"
 			"MSR psp, r1\n\t");
 }
 
-static inline void task_return_context(void) MCU_ALWAYS_INLINE;
-void task_return_context(void){
+static inline void task_return_context() MCU_ALWAYS_INLINE;
+void task_return_context(){
 	asm volatile ("mvn.w r0, #2\n\t"); //use non-floating state from PSP and execute from PSP
 	asm volatile ("bx r0\n\t");
 }

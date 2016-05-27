@@ -123,14 +123,14 @@ int rootfs_closedir(const void* cfg, void ** handle){
 	return 0;
 }
 
-int rootfs_not_sup(void){
+int rootfs_not_sup(){
 	errno = ENOTSUP;
 	return -1;
 }
 
-void * rootfs_not_sup_null(void){
+void * rootfs_not_sup_null(){
 	errno = ENOTSUP;
 	return NULL;
 }
 
-void rootfs_not_sup_void(void){}
+void rootfs_not_sup_void(){}

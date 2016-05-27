@@ -10,7 +10,7 @@
 
 #ifdef CL_TEST
 
-void sffs_tp_setfailroutine(void (*routine)(void)); //function called when failing
+void sffs_tp_setfailroutine(void (*routine)()); //function called when failing
 int sffs_tp(const char * file, int line, const char * func, float failrate, const char * desc); //this is a test point
 int sffs_tp_createreport(const char * name);
 int sffs_getcount(const char * desc);

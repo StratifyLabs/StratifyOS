@@ -726,7 +726,7 @@ __STATIC_INLINE uint32_t NVIC_GetPriority(IRQn_Type IRQn)
 
     The function initiates a system reset request to reset the MCU.
  */
-__STATIC_INLINE void NVIC_SystemReset(void)
+__STATIC_INLINE void NVIC_SystemReset()
 {
   __DSB();                                                     /* Ensure all outstanding memory accesses included
                                                                   buffered write are completed before reset */

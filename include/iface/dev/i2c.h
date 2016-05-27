@@ -33,7 +33,7 @@
  * #include <stdio.h>
  * #include "mcu/mcu.h"
  *
- * int access_i2c(void){
+ * int access_i2c(){
  * 	int fd;
  * 	i2c_attr_t attr;
  * 	i2c_reqattr_t req;

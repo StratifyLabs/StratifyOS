@@ -21,7 +21,7 @@
 
 #include "malloc_local.h"
 
-struct mallinfo mallinfo(void){
+struct mallinfo mallinfo(){
 	return _mallinfo_r(_REENT);
 }
 

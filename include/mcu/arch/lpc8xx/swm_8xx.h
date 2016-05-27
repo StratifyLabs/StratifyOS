@@ -218,7 +218,7 @@ typedef enum CHIP_SWM_PIN_FIXED    {
  * @return	Nothing
  * @note	This function only enables the SWM clock.
  */
-STATIC INLINE void Chip_SWM_Init(void)
+STATIC INLINE void Chip_SWM_Init()
 {
 	Chip_Clock_EnablePeriphClock(SYSCTL_CLOCK_SWM);
 }
@@ -228,7 +228,7 @@ STATIC INLINE void Chip_SWM_Init(void)
  * @return	Nothing
  * @note	This function only disables the SWM clock.
  */
-STATIC INLINE void Chip_SWM_Deinit(void)
+STATIC INLINE void Chip_SWM_Deinit()
 {
 	Chip_Clock_DisablePeriphClock(SYSCTL_CLOCK_SWM);
 }

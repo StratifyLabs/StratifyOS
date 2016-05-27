@@ -151,7 +151,7 @@ STATIC INLINE void Chip_Clock_SetupSystemPLL(uint8_t msel, uint8_t psel)
  * @brief	Read System PLL status
  * @return	true if the PLL is locked, false if not locked
  */
-STATIC INLINE bool Chip_Clock_IsSystemPLLLocked(void)
+STATIC INLINE bool Chip_Clock_IsSystemPLLLocked()
 {
 	return (bool) ((LPC_SYSCTL->SYSPLLSTAT & 1) != 0);
 }
@@ -172,7 +172,7 @@ STATIC INLINE void Chip_Clock_SetWDTOSC(CHIP_WDTLFO_OSC_T wdtclk, uint8_t div)
  * @brief   Returns the main clock source
  * @return	Main clock source
  */
-STATIC INLINE CHIP_SYSCTL_MAINCLKSRC_T Chip_Clock_GetMainClockSource(void)
+STATIC INLINE CHIP_SYSCTL_MAINCLKSRC_T Chip_Clock_GetMainClockSource()
 {
 	return (CHIP_SYSCTL_MAINCLKSRC_T) (LPC_SYSCTL->MAINCLKSEL & ~SYSCTL_MAINCLKSEL_RESERVED);
 }
@@ -226,7 +226,7 @@ STATIC INLINE void Chip_Clock_SetUARTClockDiv(uint32_t div)
  * @return	divider for UART clock
  * @note	A value of 0 means the clock is disabled.
  */
-STATIC INLINE uint32_t Chip_Clock_GetUARTClockDiv(void)
+STATIC INLINE uint32_t Chip_Clock_GetUARTClockDiv()
 {
 	return LPC_SYSCTL->UARTCLKDIV & ~SYSCTL_UARTCLKDIV_RESERVED;
 }
@@ -245,7 +245,7 @@ STATIC INLINE void Chip_SYSCTL_SetUSARTFRGDivider(uint8_t div)
  * @brief	Get The USART Fractional Generator Divider
  * @return	Value of USART Fractional Generator Divider
  */
-STATIC INLINE uint32_t Chip_SYSCTL_GetUSARTFRGDivider(void)
+STATIC INLINE uint32_t Chip_SYSCTL_GetUSARTFRGDivider()
 {
 	return LPC_SYSCTL->UARTFRGDIV & ~SYSCTL_UARTFRGDIV_RESERVED;
 }
@@ -264,7 +264,7 @@ STATIC INLINE void Chip_SYSCTL_SetUSARTFRGMultiplier(uint8_t mult)
  * @brief	Get The USART Fractional Generator Multiplier
  * @return	Value of USART Fractional Generator Multiplier
  */
-STATIC INLINE uint32_t Chip_SYSCTL_GetUSARTFRGMultiplier(void)
+STATIC INLINE uint32_t Chip_SYSCTL_GetUSARTFRGMultiplier()
 {
 	return LPC_SYSCTL->UARTFRGMULT & ~SYSCTL_UARTFRGMULT_RESERVED;
 }
@@ -292,13 +292,13 @@ uint32_t Chip_Clock_SetUSARTNBaseClockRate(uint32_t rate, bool fEnable);
  * @brief	Get USART 0/1/2 UART base rate
  * @return	USART 0/1/2 UART base rate
  */
-uint32_t Chip_Clock_GetUSARTNBaseClockRate(void);
+uint32_t Chip_Clock_GetUSARTNBaseClockRate();
 
 /**
  * @brief	Returns the main oscillator clock rate
  * @return	main oscillator clock rate
  */
-STATIC INLINE uint32_t Chip_Clock_GetMainOscRate(void)
+STATIC INLINE uint32_t Chip_Clock_GetMainOscRate()
 {
 	return OscRateIn;
 }
@@ -307,7 +307,7 @@ STATIC INLINE uint32_t Chip_Clock_GetMainOscRate(void)
  * @brief	Returns the internal oscillator (IRC) clock rate
  * @return	internal oscillator (IRC) clock rate
  */
-STATIC INLINE uint32_t Chip_Clock_GetIntOscRate(void)
+STATIC INLINE uint32_t Chip_Clock_GetIntOscRate()
 {
 	return SYSCTL_IRC_FREQ;
 }
@@ -316,7 +316,7 @@ STATIC INLINE uint32_t Chip_Clock_GetIntOscRate(void)
  * @brief	Returns the external clock input rate
  * @return	External clock input rate
  */
-STATIC INLINE uint32_t Chip_Clock_GetExtClockInRate(void)
+STATIC INLINE uint32_t Chip_Clock_GetExtClockInRate()
 {
 	return ExtRateIn;
 }
@@ -367,31 +367,31 @@ void Chip_Clock_SetCLKOUTSource(CHIP_SYSCTL_CLKOUTSRC_T src, uint32_t div);
  * @return	Estimated watchdog oscillator rate
  * @note	This rate is accurate to plus or minus 40%.
  */
-uint32_t Chip_Clock_GetWDTOSCRate(void);
+uint32_t Chip_Clock_GetWDTOSCRate();
 
 /**
  * @brief	Return System PLL input clock rate
  * @return	System PLL input clock rate
  */
-uint32_t Chip_Clock_GetSystemPLLInClockRate(void);
+uint32_t Chip_Clock_GetSystemPLLInClockRate();
 
 /**
  * @brief	Return System PLL output clock rate
  * @return	System PLL output clock rate
  */
-uint32_t Chip_Clock_GetSystemPLLOutClockRate(void);
+uint32_t Chip_Clock_GetSystemPLLOutClockRate();
 
 /**
  * @brief	Return main clock rate
  * @return	main clock rate
  */
-uint32_t Chip_Clock_GetMainClockRate(void);
+uint32_t Chip_Clock_GetMainClockRate();
 
 /**
  * @brief	Return system clock rate
  * @return	system clock rate
  */
-uint32_t Chip_Clock_GetSystemClockRate(void);
+uint32_t Chip_Clock_GetSystemClockRate();
 
 /**
  * @brief	Get IOCONCLKDIV clock rate

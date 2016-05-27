@@ -98,7 +98,7 @@ void mcu_wdt_set_callback(mcu_callback_t callback);
  * This should be called more frequently than 1/interval to prevent
  * the WDT from triggering a reset or interrupt.
  */
-void mcu_wdt_reset(void);
+void mcu_wdt_reset();
 
 void mcu_wdt_priv_reset(void * args) MCU_PRIV_CODE;
 

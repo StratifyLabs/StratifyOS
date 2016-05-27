@@ -128,13 +128,13 @@ uint8_t Chip_IAP_BlankCheckSector(uint32_t strSector, uint32_t endSector);
  * @brief	Read part identification number
  * @return	Part identification number
  */
-uint32_t Chip_IAP_ReadPID(void);
+uint32_t Chip_IAP_ReadPID();
 
 /**
  * @brief	Read boot code version number
  * @return	Boot code version number
  */
-uint8_t Chip_IAP_ReadBootCode(void);
+uint8_t Chip_IAP_ReadBootCode();
 
 /**
  * @brief	Compare the memory contents at two locations
@@ -151,13 +151,13 @@ uint8_t Chip_IAP_Compare(uint32_t dstAdd, uint32_t srcAdd, uint32_t bytescmp);
  * @brief	IAP reinvoke ISP to invoke the bootloader in ISP mode
  * @return	none
  */
-uint8_t Chip_IAP_ReinvokeISP(void);
+uint8_t Chip_IAP_ReinvokeISP();
 
 /**
  * @brief	Read the unique ID
  * @return	Status code to indicate the command is executed successfully or not
  */
-uint32_t Chip_IAP_ReadUID(void);
+uint32_t Chip_IAP_ReadUID();
 
 /**
  * @brief	Erase a page or multiple papers of on-chip flash memory

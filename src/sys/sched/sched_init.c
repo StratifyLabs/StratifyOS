@@ -34,14 +34,14 @@ volatile sched_fault_t sched_fault MCU_SYS_MEM;
 
 #if SINGLE_TASK != 0
 static void * (*start_function)(void*) MCU_SYS_MEM;
-static int start_single(void);
+static int start_single();
 #endif
 
 /*! \details This function initializes the peripheral hardware needed
  * by the scheduler specifically the microsecond timer.
  * \return Zero on success or an error code (see \ref caoslib_err_t)
  */
-int sched_init(void){
+int sched_init(){
 
 #if SINGLE_TASK == 0
 	task_total = stfy_board_config.task_total;
@@ -95,7 +95,7 @@ int sched_start(void * (*init)(void*), int priority){
 }
 
 
-int sched_prepare(void){
+int sched_prepare(){
 
 	if ( mcu_debug_init() ){
 		_mcu_core_priv_disable_interrupts(NULL);
@@ -124,7 +124,7 @@ int sched_prepare(void){
 }
 
 #if SINGLE_TASK != 0
-int start_single(void){
+int start_single(){
 	sched_prepare();
 	start_function(NULL);
 }

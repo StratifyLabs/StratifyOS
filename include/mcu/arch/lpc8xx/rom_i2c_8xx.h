@@ -106,10 +106,10 @@ typedef struct  I2CD_API {
 	ErrorCode_t (*i2c_set_slave_addr)(I2C_HANDLE_T *handle, uint32_t slave_addr_0_3, uint32_t slave_mask_0_3);
 
 	/*!< OTHER support functions */
-	uint32_t        (*i2c_get_mem_size)(void);
+	uint32_t        (*i2c_get_mem_size)();
 	I2C_HANDLE_T *  (*i2c_setup)( uint32_t  i2c_base_addr, uint32_t * start_of_ram);
 	ErrorCode_t     (*i2c_set_bitrate)(I2C_HANDLE_T *handle, uint32_t  p_clk_in_hz, uint32_t bitrate_in_bps);
-	uint32_t        (*i2c_get_firmware_version)(void);
+	uint32_t        (*i2c_get_firmware_version)();
 	CHIP_I2C_MODE_T (*i2c_get_status)(I2C_HANDLE_T *handle);
 	ErrorCode_t     (*i2c_set_timeout)(I2C_HANDLE_T *handle, uint32_t timeout);
 } I2CD_API_T;

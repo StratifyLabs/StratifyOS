@@ -173,7 +173,7 @@ typedef struct {					/*!< DMA Structure */
  */
 STATIC INLINE void Chip_DMA_Init(LPC_DMA_T *pDMA)
 {
-	(void) pDMA;
+	() pDMA;
 	Chip_Clock_EnablePeriphClock(SYSCTL_CLOCK_DMA);
 }
 
@@ -184,7 +184,7 @@ STATIC INLINE void Chip_DMA_Init(LPC_DMA_T *pDMA)
  */
 STATIC INLINE void Chip_DMA_DeInit(LPC_DMA_T *pDMA)
 {
-	(void) pDMA;
+	() pDMA;
 	Chip_Clock_DisablePeriphClock(SYSCTL_CLOCK_DMA);
 }
 

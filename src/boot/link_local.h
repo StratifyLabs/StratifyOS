@@ -26,10 +26,10 @@
 
 #include "stratify/usb_dev.h"
 
-int link_phyopen(void);
+int link_phyopen();
 int link_phyread(void *buf, int nbyte);
 int link_phywrite(void *buf, int nbyte);
-int link_phyclose(void);
+int link_phyclose();
 
 
 #endif /* LINK_LOCAL_H_ */

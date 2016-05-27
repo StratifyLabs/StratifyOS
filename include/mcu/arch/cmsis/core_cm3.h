@@ -1308,7 +1308,7 @@ __STATIC_INLINE void NVIC_SetPriorityGrouping(uint32_t PriorityGroup)
 
     \return                Priority grouping field (SCB->AIRCR [10:8] PRIGROUP field).
  */
-__STATIC_INLINE uint32_t NVIC_GetPriorityGrouping(void)
+__STATIC_INLINE uint32_t NVIC_GetPriorityGrouping()
 {
   return ((SCB->AIRCR & SCB_AIRCR_PRIGROUP_Msk) >> SCB_AIRCR_PRIGROUP_Pos);   /* read priority grouping field */
 }
@@ -1490,7 +1490,7 @@ __STATIC_INLINE void NVIC_DecodePriority (uint32_t Priority, uint32_t PriorityGr
 
     The function initiates a system reset request to reset the MCU.
  */
-__STATIC_INLINE void NVIC_SystemReset(void)
+__STATIC_INLINE void NVIC_SystemReset()
 {
   __DSB();                                                     /* Ensure all outstanding memory accesses included
                                                                   buffered write are completed before reset */
@@ -1588,7 +1588,7 @@ __STATIC_INLINE uint32_t ITM_SendChar (uint32_t ch)
     \return             Received character.
     \return         -1  No character pending.
  */
-__STATIC_INLINE int32_t ITM_ReceiveChar (void) {
+__STATIC_INLINE int32_t ITM_ReceiveChar () {
   int32_t ch = -1;                           /* no character available */
 
   if (ITM_RxBuffer != ITM_RXBUFFER_EMPTY) {
@@ -1607,7 +1607,7 @@ __STATIC_INLINE int32_t ITM_ReceiveChar (void) {
     \return          0  No character available.
     \return          1  Character available.
  */
-__STATIC_INLINE int32_t ITM_CheckChar (void) {
+__STATIC_INLINE int32_t ITM_CheckChar () {
 
   if (ITM_RxBuffer == ITM_RXBUFFER_EMPTY) {
     return (0);                                 /* no character available */

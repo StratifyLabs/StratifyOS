@@ -38,7 +38,7 @@ void _mcu_dma_init(int mode){
 	_mcu_core_priv_enable_irq((void*)DMA_IRQn);
 }
 
-void _mcu_dma_exit(void){
+void _mcu_dma_exit(){
 	//disable the DMA
 	LPC_GPDMA->CONFIG = 0;
 	//Power down the DMA
@@ -62,7 +62,7 @@ int _mcu_dma_halttransfer(int chan){
 }
 
 
-void _mcu_core_dma_isr(void){
+void _mcu_core_dma_isr(){
 	int i;
 	//Execute the channel callbacks if they are available
 	for(i=0; i < MCU_DMA_CHANNELS; i++){

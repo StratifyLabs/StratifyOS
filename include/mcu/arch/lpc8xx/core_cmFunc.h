@@ -61,7 +61,7 @@
 
     \return               Control Register value
  */
-__STATIC_INLINE uint32_t __get_CONTROL(void)
+__STATIC_INLINE uint32_t __get_CONTROL()
 {
   register uint32_t __regControl         __ASM("control");
   return(__regControl);
@@ -87,7 +87,7 @@ __STATIC_INLINE void __set_CONTROL(uint32_t control)
 
     \return               IPSR Register value
  */
-__STATIC_INLINE uint32_t __get_IPSR(void)
+__STATIC_INLINE uint32_t __get_IPSR()
 {
   register uint32_t __regIPSR          __ASM("ipsr");
   return(__regIPSR);
@@ -100,7 +100,7 @@ __STATIC_INLINE uint32_t __get_IPSR(void)
 
     \return               APSR Register value
  */
-__STATIC_INLINE uint32_t __get_APSR(void)
+__STATIC_INLINE uint32_t __get_APSR()
 {
   register uint32_t __regAPSR          __ASM("apsr");
   return(__regAPSR);
@@ -113,7 +113,7 @@ __STATIC_INLINE uint32_t __get_APSR(void)
 
     \return               xPSR Register value
  */
-__STATIC_INLINE uint32_t __get_xPSR(void)
+__STATIC_INLINE uint32_t __get_xPSR()
 {
   register uint32_t __regXPSR          __ASM("xpsr");
   return(__regXPSR);
@@ -126,7 +126,7 @@ __STATIC_INLINE uint32_t __get_xPSR(void)
 
     \return               PSP Register value
  */
-__STATIC_INLINE uint32_t __get_PSP(void)
+__STATIC_INLINE uint32_t __get_PSP()
 {
   register uint32_t __regProcessStackPointer  __ASM("psp");
   return(__regProcessStackPointer);
@@ -152,7 +152,7 @@ __STATIC_INLINE void __set_PSP(uint32_t topOfProcStack)
 
     \return               MSP Register value
  */
-__STATIC_INLINE uint32_t __get_MSP(void)
+__STATIC_INLINE uint32_t __get_MSP()
 {
   register uint32_t __regMainStackPointer     __ASM("msp");
   return(__regMainStackPointer);
@@ -178,7 +178,7 @@ __STATIC_INLINE void __set_MSP(uint32_t topOfMainStack)
 
     \return               Priority Mask value
  */
-__STATIC_INLINE uint32_t __get_PRIMASK(void)
+__STATIC_INLINE uint32_t __get_PRIMASK()
 {
   register uint32_t __regPriMask         __ASM("primask");
   return(__regPriMask);
@@ -222,7 +222,7 @@ __STATIC_INLINE void __set_PRIMASK(uint32_t priMask)
 
     \return               Base Priority register value
  */
-__STATIC_INLINE uint32_t  __get_BASEPRI(void)
+__STATIC_INLINE uint32_t  __get_BASEPRI()
 {
   register uint32_t __regBasePri         __ASM("basepri");
   return(__regBasePri);
@@ -248,7 +248,7 @@ __STATIC_INLINE void __set_BASEPRI(uint32_t basePri)
 
     \return               Fault Mask register value
  */
-__STATIC_INLINE uint32_t __get_FAULTMASK(void)
+__STATIC_INLINE uint32_t __get_FAULTMASK()
 {
   register uint32_t __regFaultMask       __ASM("faultmask");
   return(__regFaultMask);
@@ -278,7 +278,7 @@ __STATIC_INLINE void __set_FAULTMASK(uint32_t faultMask)
 
     \return               Floating Point Status/Control register value
  */
-__STATIC_INLINE uint32_t __get_FPSCR(void)
+__STATIC_INLINE uint32_t __get_FPSCR()
 {
 #if (__FPU_PRESENT == 1) && (__FPU_USED == 1)
   register uint32_t __regfpscr         __ASM("fpscr");
@@ -326,7 +326,7 @@ __STATIC_INLINE void __set_FPSCR(uint32_t fpscr)
   This function enables IRQ interrupts by clearing the I-bit in the CPSR.
   Can only be executed in Privileged modes.
  */
-__attribute__( ( always_inline ) ) __STATIC_INLINE void __enable_irq(void)
+__attribute__( ( always_inline ) ) __STATIC_INLINE void __enable_irq()
 {
   __ASM volatile ("cpsie i" : : : "memory");
 }
@@ -337,7 +337,7 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE void __enable_irq(void)
   This function disables IRQ interrupts by setting the I-bit in the CPSR.
   Can only be executed in Privileged modes.
  */
-__attribute__( ( always_inline ) ) __STATIC_INLINE void __disable_irq(void)
+__attribute__( ( always_inline ) ) __STATIC_INLINE void __disable_irq()
 {
   __ASM volatile ("cpsid i" : : : "memory");
 }
@@ -349,7 +349,7 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE void __disable_irq(void)
 
     \return               Control Register value
  */
-__attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_CONTROL(void)
+__attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_CONTROL()
 {
   uint32_t result;
 
@@ -376,7 +376,7 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE void __set_CONTROL(uint32_t c
 
     \return               IPSR Register value
  */
-__attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_IPSR(void)
+__attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_IPSR()
 {
   uint32_t result;
 
@@ -391,7 +391,7 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_IPSR(void)
 
     \return               APSR Register value
  */
-__attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_APSR(void)
+__attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_APSR()
 {
   uint32_t result;
 
@@ -406,7 +406,7 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_APSR(void)
 
     \return               xPSR Register value
  */
-__attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_xPSR(void)
+__attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_xPSR()
 {
   uint32_t result;
 
@@ -421,7 +421,7 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_xPSR(void)
 
     \return               PSP Register value
  */
-__attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_PSP(void)
+__attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_PSP()
 {
   register uint32_t result;
 
@@ -448,7 +448,7 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE void __set_PSP(uint32_t topOf
 
     \return               MSP Register value
  */
-__attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_MSP(void)
+__attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_MSP()
 {
   register uint32_t result;
 
@@ -475,7 +475,7 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE void __set_MSP(uint32_t topOf
 
     \return               Priority Mask value
  */
-__attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_PRIMASK(void)
+__attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_PRIMASK()
 {
   uint32_t result;
 
@@ -503,7 +503,7 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE void __set_PRIMASK(uint32_t p
     This function enables FIQ interrupts by clearing the F-bit in the CPSR.
     Can only be executed in Privileged modes.
  */
-__attribute__( ( always_inline ) ) __STATIC_INLINE void __enable_fault_irq(void)
+__attribute__( ( always_inline ) ) __STATIC_INLINE void __enable_fault_irq()
 {
   __ASM volatile ("cpsie f" : : : "memory");
 }
@@ -514,7 +514,7 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE void __enable_fault_irq(void)
     This function disables FIQ interrupts by setting the F-bit in the CPSR.
     Can only be executed in Privileged modes.
  */
-__attribute__( ( always_inline ) ) __STATIC_INLINE void __disable_fault_irq(void)
+__attribute__( ( always_inline ) ) __STATIC_INLINE void __disable_fault_irq()
 {
   __ASM volatile ("cpsid f" : : : "memory");
 }
@@ -526,7 +526,7 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE void __disable_fault_irq(void
 
     \return               Base Priority register value
  */
-__attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_BASEPRI(void)
+__attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_BASEPRI()
 {
   uint32_t result;
 
@@ -553,7 +553,7 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE void __set_BASEPRI(uint32_t v
 
     \return               Fault Mask register value
  */
-__attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_FAULTMASK(void)
+__attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_FAULTMASK()
 {
   uint32_t result;
 
@@ -584,7 +584,7 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE void __set_FAULTMASK(uint32_t
 
     \return               Floating Point Status/Control register value
  */
-__attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_FPSCR(void)
+__attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_FPSCR()
 {
 #if (__FPU_PRESENT == 1) && (__FPU_USED == 1)
   uint32_t result;

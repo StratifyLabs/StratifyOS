@@ -35,7 +35,7 @@
  * #include <dev/uart.h>
  *
  *
- * int read_write_uart(void){
+ * int read_write_uart(){
  * 	int fd;
  * 	uart_attr_t attr;
  * 	char buffer[16];

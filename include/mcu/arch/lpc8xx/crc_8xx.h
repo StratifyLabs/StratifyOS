@@ -92,13 +92,13 @@ typedef enum IP_CRC_001_POLY {
  * @brief	Initializes the CRC Engine
  * @return	Nothing
  */
-void Chip_CRC_Init(void);
+void Chip_CRC_Init();
 
 /**
  * @brief	Deinitializes the CRC Engine
  * @return	Nothing
  */
-void Chip_CRC_Deinit(void);
+void Chip_CRC_Deinit();
 
 /**
  * @brief	Set the polynomial used for the CRC calculation
@@ -117,7 +117,7 @@ STATIC INLINE void Chip_CRC_SetPoly(CRC_POLY_T poly, uint32_t flags)
  * @brief	Sets up the CRC engine for CRC16 mode
  * @return	Nothing
  */
-STATIC INLINE void Chip_CRC_UseCRC16(void)
+STATIC INLINE void Chip_CRC_UseCRC16()
 {
 	LPC_CRC->MODE = MODE_CFG_CRC16;
 	LPC_CRC->SEED = CRC_SEED_CRC16;
@@ -127,7 +127,7 @@ STATIC INLINE void Chip_CRC_UseCRC16(void)
  * @brief	Sets up the CRC engine for CRC32 mode
  * @return	Nothing
  */
-STATIC INLINE void Chip_CRC_UseCRC32(void)
+STATIC INLINE void Chip_CRC_UseCRC32()
 {
 	LPC_CRC->MODE = MODE_CFG_CRC32;
 	LPC_CRC->SEED = CRC_SEED_CRC32;
@@ -137,7 +137,7 @@ STATIC INLINE void Chip_CRC_UseCRC32(void)
  * @brief	Sets up the CRC engine for CCITT mode
  * @return	Nothing
  */
-STATIC INLINE void Chip_CRC_UseCCITT(void)
+STATIC INLINE void Chip_CRC_UseCCITT()
 {
 	LPC_CRC->MODE = MODE_CFG_CCITT;
 	LPC_CRC->SEED = CRC_SEED_CCITT;
@@ -164,7 +164,7 @@ STATIC INLINE void Chip_CRC_SetMode(uint32_t mode)
  * @brief	Get the CRC Mode bits
  * @return	The current value of the CRC Mode bits
  */
-STATIC INLINE uint32_t Chip_CRC_GetMode(void)
+STATIC INLINE uint32_t Chip_CRC_GetMode()
 {
 	return LPC_CRC->MODE;
 }
@@ -183,7 +183,7 @@ STATIC INLINE void Chip_CRC_SetSeed(uint32_t seed)
  * @brief	Get the CRC seed value
  * @return	Seed value
  */
-STATIC INLINE uint32_t Chip_CRC_GetSeed(void)
+STATIC INLINE uint32_t Chip_CRC_GetSeed()
 {
 	return LPC_CRC->SEED;
 }
@@ -222,7 +222,7 @@ STATIC INLINE void Chip_CRC_Write32(uint32_t data)
  * @brief	Gets the CRC Sum based on the Mode and Seed as previously configured
  * @return	CRC Checksum value
  */
-STATIC INLINE uint32_t Chip_CRC_Sum(void)
+STATIC INLINE uint32_t Chip_CRC_Sum()
 {
 	return LPC_CRC->SUM;
 }

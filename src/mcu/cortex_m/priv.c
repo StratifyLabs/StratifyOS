@@ -30,14 +30,14 @@ void _mcu_core_delay_us(u32 us){ _delay_us(us); }
 void _mcu_core_delay_ms(u32 ms){ _delay_us(ms*1000); }
 
 
-void _mcu_core_unprivileged_mode(void){
+void _mcu_core_unprivileged_mode(){
 	register uint32_t control;
 	control = __get_CONTROL();
 	control |= 0x01;
 	__set_CONTROL(control);
 }
 
-void _mcu_core_thread_mode(void){
+void _mcu_core_thread_mode(){
 	register uint32_t control;
 	control = __get_CONTROL();
 	control |= 0x02;
@@ -50,7 +50,7 @@ void mcu_core_privcall(core_privcall_t call, void * args){
 	asm volatile("SVC 0\n");
 }
 
-void _mcu_core_svcall_handler(void){
+void _mcu_core_svcall_handler(){
 	register uint32_t * frame;
 	register core_privcall_t call;
 	register void * args;

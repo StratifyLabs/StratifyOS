@@ -29,11 +29,11 @@ static uid_t euid MCU_SYS_MEM;
 static gid_t gid MCU_SYS_MEM;
 static gid_t egid MCU_SYS_MEM;
 
-uid_t geteuid(void){
+uid_t geteuid(){
 	return euid;
 }
 
-uid_t getuid(void){
+uid_t getuid(){
 	return uid;
 }
 
@@ -42,11 +42,11 @@ int seteuid(uid_t uid){
 	return 0;
 }
 
-gid_t getgid(void){
+gid_t getgid(){
 	return gid;
 }
 
-gid_t getegid(void){
+gid_t getegid(){
 	return egid;
 }
 

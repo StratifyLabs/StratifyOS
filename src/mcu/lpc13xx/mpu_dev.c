@@ -20,7 +20,7 @@
 #include "mcu/mpu.h"
 
 
-int mpu_dev_init(void){
+int mpu_dev_init(){
 	int err;
 
 	//Peripherals Regions 0 up to 2

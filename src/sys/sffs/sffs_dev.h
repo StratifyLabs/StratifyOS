@@ -50,8 +50,8 @@ int sffs_dev_erase(const void * cfg);
 int sffs_dev_erasesection(const void * cfg, int loc);
 
 int sysfs_access(int file_mode, int file_uid, int file_gid, int amode);
-int sffs_sys_geteuid(void);
-int sffs_sys_getegid(void);
+int sffs_sys_geteuid();
+int sffs_sys_getegid();
 
 int sffs_dev_getlist_block(const void * cfg);
 void sffs_dev_setlist_block(const void * cfg, int list_block);

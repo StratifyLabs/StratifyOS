@@ -214,7 +214,7 @@ int sched_setscheduler(pid_t pid, int policy, const struct sched_param * param){
  * is switched to the next active task.  If no tasks are active, the CPU idles.
  * \return Zero
  */
-int sched_yield(void){
+int sched_yield(){
 	mcu_core_privcall(task_priv_switch_context, NULL);
 	return 0;
 }

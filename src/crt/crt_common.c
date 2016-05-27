@@ -29,14 +29,14 @@
 #include "mcu/task.h"
 
 #define SCHED_DEFAULT_STACKGUARD_SIZE 32
-extern void (*_ctors)(void);
+extern void (*_ctors)();
 extern int _ctors_size;
-extern void (*_dtors)(void);
+extern void (*_dtors)();
 extern int _dtors_size;
 extern int main(int argc, char * const argv[]);
 
-static void constructors(void);
-static void destructors(void);
+static void constructors();
+static void destructors();
 
 int crt_common(char * path_arg, int * ret, const char * name){
 	task_setstackguard(pthread_self(), &_ebss, SCHED_DEFAULT_STACKGUARD_SIZE);
@@ -81,13 +81,13 @@ int crt_common(char * path_arg, int * ret, const char * name){
 	return 0;
 }
 
-void constructors(void){
+void constructors(){
 	int i;
 	for(i=0; i < (int)&_ctors_size; i++){
 		(&_ctors)[i]();
 	}
 }
-void destructors(void){
+void destructors(){
 	int i;
 	for(i=0; i < (int)&_dtors_size; i++){
 		(&_dtors)[i]();

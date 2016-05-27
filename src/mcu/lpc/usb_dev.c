@@ -47,7 +47,7 @@ static inline void usb_disable_ep(int port, u32 endpoint_num) MCU_ALWAYS_INLINE;
 static inline void usb_set_stall_ep(int port, u32 endpoint_num) MCU_ALWAYS_INLINE;
 static inline void usb_clr_stall_ep(int port, u32 endpoint_num) MCU_ALWAYS_INLINE;
 static inline void usb_cfg_ep(int port, void * ep_desc) MCU_ALWAYS_INLINE;
-static inline void slow_ep_int(void) MCU_ALWAYS_INLINE;
+static inline void slow_ep_int() MCU_ALWAYS_INLINE;
 
 static void exec_readcallback(int ep, void * data);
 static void exec_writecallback(int ep, void * data);
@@ -69,8 +69,8 @@ typedef struct {
 
 static usb_local_t usb_local MCU_SYS_MEM;
 
-static void clear_callbacks(void);
-void clear_callbacks(void){
+static void clear_callbacks();
+void clear_callbacks(){
 	memset(usb_local.write, 0, USB_LOGIC_EP_NUM * sizeof(mcu_event_handler_t));
 	memset(usb_local.read, 0, USB_LOGIC_EP_NUM * sizeof(mcu_event_handler_t));
 }
@@ -84,7 +84,7 @@ static u32 calc_ep_addr (u32 endpoint_num);
 
 //The following should be static
 static void usb_sie_wr_cmd(u32 cmd) MCU_NEVER_INLINE;
-static u32 usb_sie_rd_dat(void) MCU_NEVER_INLINE;
+static u32 usb_sie_rd_dat() MCU_NEVER_INLINE;
 static void usb_sie_wr_cmd_dat(u32 cmd, u32 val);
 static void usb_sie_wr_cmd_ep(u32 ep_num, u32 cmd);
 static u32 usb_sie_rd_cmd_dat(u32 cmd);
@@ -96,7 +96,7 @@ void usb_sie_wr_cmd(u32 cmd){
 	while ((LPC_USB->DevIntSt & CCEMTY_INT) == 0);
 }
 
-u32 usb_sie_rd_dat(void){
+u32 usb_sie_rd_dat(){
 	while ((LPC_USB->DevIntSt & CDFULL_INT) == 0);
 	return LPC_USB->CmdData;
 }
@@ -548,7 +548,7 @@ int mcu_usb_wr_ep(int port, u32 endpoint_num, const void * src, u32 size){
 
 /*! \details This function services the USB interrupt request.
  */
-void _mcu_core_usb0_isr(void){
+void _mcu_core_usb0_isr(){
 	u32 device_interrupt_status;
 	u32 tmp;
 	int i;
@@ -631,7 +631,7 @@ void _mcu_core_usb0_isr(void){
 	return;
 }
 
-void slow_ep_int(void){
+void slow_ep_int(){
 	u32 episr;
 	u32 phy_ep, log_ep;
 	u32 tmp;

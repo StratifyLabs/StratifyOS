@@ -43,14 +43,14 @@
 #include "sched_flags.h"
 #include "../unistd/unistd_flags.h"
 
-static int start_first_thread(void);
+static int start_first_thread();
 
 volatile int8_t sched_current_priority MCU_SYS_MEM;
 volatile int8_t sched_status_changed MCU_SYS_MEM;
 
 
 static void priv_check_sleep_mode(void * args) MCU_PRIV_EXEC_CODE;
-static int check_faults(void);
+static int check_faults();
 static void priv_fault_logged(void * args) MCU_PRIV_EXEC_CODE;
 
 int sched_check_tid(int id){
@@ -62,7 +62,7 @@ int sched_check_tid(int id){
 	return -1;
 }
 
-void set_uart_priority(void){
+void set_uart_priority(){
 #if MCU_DEBUG
 	mcu_action_t action;
 	memset(&action, 0, sizeof(action));
@@ -87,7 +87,7 @@ void set_uart_priority(void){
  * If a lower priority task is executing and a higher priority task goes "active" (for example,
  * after sleep() or usleep() timer is expired), the lower priority task is pre-empted.
  */
-void scheduler(void){
+void scheduler(){
 	u8 do_sleep;
 	sched_priv_assert_status_change();
 
@@ -125,7 +125,7 @@ void priv_fault_logged(void * args){
 	sched_fault.fault.num = 0;
 }
 
-int check_faults(void){
+int check_faults(){
 	char buffer[256];
 
 	if ( sched_fault.fault.num != 0 ){
@@ -198,7 +198,7 @@ void priv_check_sleep_mode(void * args){
 	}
 }
 
-void sched_priv_update_on_stopped(void){
+void sched_priv_update_on_stopped(){
 	int i;
 	int new_priority;
 
@@ -223,7 +223,7 @@ void sched_priv_update_on_stopped(void){
 }
 
 
-void sched_priv_update_on_sleep(void){
+void sched_priv_update_on_sleep(){
 	sched_priv_deassert_active( task_get_current() );
 	sched_priv_update_on_stopped();
 }
@@ -300,7 +300,7 @@ int sched_priv_unblock_all(void * block_object, int unblock_type){
 	return priority;
 }
 
-int start_first_thread(void){
+int start_first_thread(){
 	void * (*init)(void*);
 	pthread_attr_t attr;
 	int err;

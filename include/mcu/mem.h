@@ -79,7 +79,7 @@ int mcu_mem_getsize(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_mem_getpageinfo(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_mem_writepage(int port, void * ctl) MCU_PRIV_CODE;
 
-int _mcu_mem_getsyspage(void) MCU_PRIV_CODE;
+int _mcu_mem_getsyspage() MCU_PRIV_CODE;
 
 
 #ifdef __cplusplus

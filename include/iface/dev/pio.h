@@ -37,7 +37,7 @@
  * #include <dev/pio.h>
  *
  *
- * int pio_example(void){
+ * int pio_example(){
  * 	int fd;
  * 	pio_attr_t attr;
  * 	pio_action_t action;

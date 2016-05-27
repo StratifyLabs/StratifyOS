@@ -130,8 +130,8 @@ void exec_callback(int port, void * data){
 }
 
 //! \todo Should this use DMA instead of this interrupt?
-void _mcu_core_adc0_isr(void);
-void _mcu_core_adc0_isr(void){
+void _mcu_core_adc0_isr();
+void _mcu_core_adc0_isr(){
 	const int port = 0;
 	LPC_ADC_Type * regs = adc_regs[0];
 

@@ -551,10 +551,10 @@ typedef struct MCU_PACK
 } usb_audio_type_II_format_discrete_desc_t;
 
 
-int usbadc_if_get_request (void);
-int usb_dev_adc_if_set_request (void);
-int usbadc_ep_get_request (void);
-int usbadc_ep_set_request (void);
+int usbadc_if_get_request ();
+int usb_dev_adc_if_set_request ();
+int usbadc_ep_get_request ();
+int usbadc_ep_set_request ();
 
 extern uint8_t usbadc_mute;
 extern uint16_t usbadc_current_vol;

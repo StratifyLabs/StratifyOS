@@ -82,7 +82,7 @@ typedef struct {
 	void * handler_caller /*! The handler caller */;
 } fault_t;
 
-int mcu_fault_init(void) MCU_PRIV_CODE;
+int mcu_fault_init() MCU_PRIV_CODE;
 
 /*! \details This function must be provided by the application or
  * OS to handle faults.

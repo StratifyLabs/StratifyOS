@@ -729,12 +729,12 @@ void link_load_default_driver(link_transport_mdriver_t * driver);
  * it is not called explicitly.
  * \return Zero on success.
  */
-int link_init(void);
+int link_init();
 
 
 /*! \details This shuts down the link framework.
  */
-void link_exit(void);
+void link_exit();
 
 /*! \details This opens a USB Link device based on
  * the serial number.
@@ -766,7 +766,7 @@ void link_load_default_driver(link_transport_mdriver_t * driver);
 /*! \details This function checks to see if there was an error
  * on the last transaction.
  */
-int link_get_err(void);
+int link_get_err();
 
 /*! \details This function sets the debugging level for the
  * library (0 for no debugging output).

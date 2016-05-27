@@ -36,14 +36,14 @@ extern int save_filesystem(const char * path);
 extern int load_filesystem(const char * path);
 
 
-static void fail_routine(void){
+static void fail_routine(){
 	failed = 1;
 	save_filesystem("myfilesystem.fs");
 	exit(TP_RET);
 }
 
 
-void diags(void){
+void diags(){
 	const void * cfg;
 	sffs_diag_t diag;
 	cfg = NULL;
@@ -72,7 +72,7 @@ const sffs_cfg_t ccfg = {
 		.name = "disk"
 };
 
-int main(void) {
+int main() {
 	sffs_diag_t diag;
 	const void * cfg = NULL;
 	pid_t child;

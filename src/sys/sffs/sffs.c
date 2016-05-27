@@ -58,7 +58,7 @@ void sffs_unlock(const void * cfg){ //force unlock when a process exits
 #endif
 }
 
-static void lock_sffs(void){
+static void lock_sffs(){
 #ifndef __SIM__
 	if ( pthread_mutex_lock(&__cl_lock_object) < 0 ){
 		sffs_error("Failed to lock caosfs %d\n", errno);
@@ -67,7 +67,7 @@ static void lock_sffs(void){
 #endif
 }
 
-static void unlock_sffs(void){
+static void unlock_sffs(){
 	sffs_dev_setdelay_mutex(NULL);
 #ifndef __SIM__
 	if ( pthread_mutex_unlock(&__cl_lock_object) < 0 ){

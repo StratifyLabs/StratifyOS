@@ -19,100 +19,100 @@
 
 #include "mcu/mcu.h"
 
-void _mcu_core_reset_handler(void);
-void _mcu_core_nmi_isr(void) MCU_WEAK;
+void _mcu_core_reset_handler();
+void _mcu_core_nmi_isr() MCU_WEAK;
 int pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *attr) MCU_WEAK;
 
 /*! \details
  */
-void _mcu_core_fault_handler(void) MCU_WEAK;
-void _mcu_core_hardfault_handler(void) MCU_ALIAS(_mcu_core_fault_handler);
-void _mcu_core_memfault_handler(void) MCU_ALIAS(_mcu_core_fault_handler);
-void _mcu_core_busfault_handler(void) MCU_ALIAS(_mcu_core_fault_handler);
-void _mcu_core_usagefault_handler(void) MCU_ALIAS(_mcu_core_fault_handler);
+void _mcu_core_fault_handler() MCU_WEAK;
+void _mcu_core_hardfault_handler() MCU_ALIAS(_mcu_core_fault_handler);
+void _mcu_core_memfault_handler() MCU_ALIAS(_mcu_core_fault_handler);
+void _mcu_core_busfault_handler() MCU_ALIAS(_mcu_core_fault_handler);
+void _mcu_core_usagefault_handler() MCU_ALIAS(_mcu_core_fault_handler);
 
-void dled_fault_flash(void) MCU_WEAK;
-void dled_nmi_flash(void) MCU_WEAK;
-void dled_isr_flash(void) MCU_WEAK;
+void dled_fault_flash() MCU_WEAK;
+void dled_nmi_flash() MCU_WEAK;
+void dled_isr_flash() MCU_WEAK;
 
-void _mcu_core_default_isr(void) MCU_WEAK;
-void _mcu_core_os_handler(void) MCU_WEAK;
-void _mcu_core_svcall_handler(void) MCU_ALIAS(_mcu_core_os_handler); //Supervisor call (OS environment)
-void _mcu_core_debugmon_handler(void) MCU_ALIAS(_mcu_core_os_handler);
-void _mcu_core_pendsv_handler(void) MCU_ALIAS(_mcu_core_os_handler); //Interrupt request for system-level service (OS environment)
-void _mcu_core_systick_handler(void) MCU_ALIAS(_mcu_core_os_handler);
+void _mcu_core_default_isr() MCU_WEAK;
+void _mcu_core_os_handler() MCU_WEAK;
+void _mcu_core_svcall_handler() MCU_ALIAS(_mcu_core_os_handler); //Supervisor call (OS environment)
+void _mcu_core_debugmon_handler() MCU_ALIAS(_mcu_core_os_handler);
+void _mcu_core_pendsv_handler() MCU_ALIAS(_mcu_core_os_handler); //Interrupt request for system-level service (OS environment)
+void _mcu_core_systick_handler() MCU_ALIAS(_mcu_core_os_handler);
 
 
 //ISR's -- weakly bound to default handler
-void _mcu_core_wdt_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_flash_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_tmr0_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_tmr1_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_tmr2_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_tmr3_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_uart_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_i2c_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_spi_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_ssp0_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_ssp1_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_pio0_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_pio1_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_pio2_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_pio3_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_adc_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_bod_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_usb_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_usbfiq_isr(void) MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_wdt_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_flash_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_tmr0_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_tmr1_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_tmr2_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_tmr3_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_uart_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_i2c_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_spi_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_ssp0_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_ssp1_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_pio0_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_pio1_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_pio2_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_pio3_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_adc_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_bod_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_usb_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_usbfiq_isr() MCU_ALIAS(_mcu_core_default_isr);
 
 
 
-void _mcu_core_eint0_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_eint1_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_eint2_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_eint3_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_eint4_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_eint5_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_eint6_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_eint7_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_eint8_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_eint9_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_eint10_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_eint11_isr(void) MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_eint0_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_eint1_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_eint2_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_eint3_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_eint4_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_eint5_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_eint6_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_eint7_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_eint8_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_eint9_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_eint10_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_eint11_isr() MCU_ALIAS(_mcu_core_default_isr);
 
-void _mcu_core_eint12_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_eint13_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_eint14_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_eint15_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_eint16_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_eint17_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_eint18_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_eint19_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_eint20_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_eint21_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_eint22_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_eint23_isr(void) MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_eint12_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_eint13_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_eint14_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_eint15_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_eint16_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_eint17_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_eint18_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_eint19_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_eint20_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_eint21_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_eint22_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_eint23_isr() MCU_ALIAS(_mcu_core_default_isr);
 
-void _mcu_core_eint24_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_eint25_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_eint26_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_eint27_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_eint28_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_eint29_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_eint30_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_eint31_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_eint32_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_eint33_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_eint34_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_eint35_isr(void) MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_eint24_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_eint25_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_eint26_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_eint27_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_eint28_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_eint29_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_eint30_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_eint31_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_eint32_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_eint33_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_eint34_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_eint35_isr() MCU_ALIAS(_mcu_core_default_isr);
 
-void _mcu_core_eint36_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_eint37_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_eint38_isr(void) MCU_ALIAS(_mcu_core_default_isr);
-void _mcu_core_eint39_isr(void) MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_eint36_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_eint37_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_eint38_isr() MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_eint39_isr() MCU_ALIAS(_mcu_core_default_isr);
 
 
 
-void (* const _mcu_core_vector_table[])(void) __attribute__ ((section(".startup"))) = {
+void (* const _mcu_core_vector_table[])() __attribute__ ((section(".startup"))) = {
 		(void *)&_top_of_stack, // The initial stack pointer
 		_mcu_core_reset_handler, 	 // The reset handler
 		_mcu_core_nmi_isr, 	// The NMI handler -14
@@ -191,10 +191,10 @@ void (* const _mcu_core_vector_table[])(void) __attribute__ ((section(".startup"
 
 };
 
-static void core_init(void);
+static void core_init();
 const char sys_proc_name[] = "sys";
 
-void core_init(void){
+void core_init(){
 	uint32_t *src, *dest;
 	//Copy the data section stored in Flash to RAM
 	src = &_etext;
@@ -225,13 +225,13 @@ void core_init(void){
 	LPC_SYSCON->SYSAHBCLKCTRL = (1<<PCGPIO)|(1<<PCROM)|(1<<PCRAM)|(1<<PCFLASHREG)|(1<<PCFLASHARRAY)|(1<<PCIOCON)|(1<<PCSYS);
 }
 
-extern int _main(void);
+extern int _main();
 
 void _mcu_core_getserialno(uint32_t * serial_number){
 	_mcu_lpc_flash_get_serialno(serial_number);
 }
 
-void _mcu_core_reset_handler(void){
+void _mcu_core_reset_handler(){
 	core_init();
 	_mcu_core_priv_setvectortableaddr((void*)_mcu_core_vector_table);
 	_main(); //This function should never return
@@ -240,24 +240,24 @@ void _mcu_core_reset_handler(void){
 
 /*! \details
  */
-void _mcu_core_nmi_isr(void){
+void _mcu_core_nmi_isr(){
 }
 
 /*! \details
  */
-void _mcu_core_fault_handler(void){
+void _mcu_core_fault_handler(){
 }
 
 /*! \brief
  * \details
  */
-void _mcu_core_os_handler(void){
+void _mcu_core_os_handler(){
 }
 
 /*! \brief
  * \details
  */
-void _mcu_core_default_isr(void){
+void _mcu_core_default_isr(){
 
 }
 
@@ -265,6 +265,6 @@ int pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *attr){
 	return 0;
 }
 
-void dled_fault_flash(void){}
-void dled_nmi_flash(void){}
-void dled_isr_flash(void){}
+void dled_fault_flash(){}
+void dled_nmi_flash(){}
+void dled_isr_flash(){}

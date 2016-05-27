@@ -400,7 +400,7 @@ void exec_callback2(void * data){
 }
 
 //On __lpc17xx The pio interrupts use the eint3 interrupt service routine -- this function should be called from there
-void _mcu_core_pio0_isr(void){
+void _mcu_core_pio0_isr(){
 	if ( LPC_GPIOINT->IntStatus & (1<<0) ){
 		exec_callback0(0);
 	}

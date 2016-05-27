@@ -106,7 +106,7 @@ int sst25vf_read(const device_cfg_t * cfg, device_transfer_t * rop){
 	return mcu_spi_read(cfg, rop);
 }
 
-static void assert_delay(void){
+static void assert_delay(){
 	int loop_max;
 	int tmp;
 

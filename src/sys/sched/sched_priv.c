@@ -56,11 +56,11 @@ void sched_priv_deassert_active(int id){
 	sched_priv_assert_status_change(); //notify the scheduler a task has changed status
 }
 
-void sched_priv_assert_status_change(void){
+void sched_priv_assert_status_change(){
 	sched_status_changed = 1;
 }
 
-inline void sched_priv_deassert_status_change(void){
+inline void sched_priv_deassert_status_change(){
 	sched_status_changed = 0;
 }
 

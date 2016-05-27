@@ -35,12 +35,12 @@
 //  __IO uint32_t RASR_A3;                      /*!< Offset: 0x28  MPU Alias 3 Region Attribute and Size Register */
 
 
-int mpu_enable(void){
+int mpu_enable(){
 	MPU->CTRL = (1<<0)|(1<<2); //enable the MPU -- give priv software access to background map
 	return 0;
 }
 
-int mpu_disable(void){
+int mpu_disable(){
 	MPU->CTRL = 0; //enable the MPU -- give priv software access to background map
 	return 0;
 }

@@ -32,9 +32,9 @@
  *  - ENOTSUP:  function is not supported
  *
  */
-pid_t fork(void);
+pid_t fork();
 
-pid_t _fork(void){
+pid_t _fork(){
 	//This function can not be supported unless the CPU has an MMU
 	errno = ENOTSUP;
 	return -1;
@@ -46,9 +46,9 @@ pid_t _fork(void){
  *  - ENOTSUP:  function is not supported
  *
  */
-pid_t vfork(void);
+pid_t vfork();
 
-pid_t _vfork(void){
+pid_t _vfork(){
 
 	//create a new process copying the characteristic of the current process (has new process ID -- all else identical)
 

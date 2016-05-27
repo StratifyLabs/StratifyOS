@@ -57,12 +57,12 @@ void link_load_default_driver(link_transport_mdriver_t * driver){
 }
 
 
-int link_init(void){
+int link_init(){
 	return 0;
 }
 
 
-void link_exit(void){}
+void link_exit(){}
 
 int link_disconnect(link_transport_mdriver_t * driver){
 	int ret;

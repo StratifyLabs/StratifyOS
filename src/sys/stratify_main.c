@@ -33,15 +33,15 @@
 extern void gled_priv_on(void * args);
 extern void gled_priv_off(void * args);
 void gled_priv_error(void * args) MCU_PRIV_EXEC_CODE;
-static void init_hw(void);
-static void check_reset_source(void);
+static void init_hw();
+static void check_reset_source();
 
 /*! \details This function runs the operating system.
  *
  */
 
-int _main(void) MCU_WEAK;
-int _main(void){
+int _main() MCU_WEAK;
+int _main(){
 	init_hw();
 
 
@@ -60,7 +60,7 @@ int _main(void){
 /*! \details This function initializes the hardware
  *
  */
-void init_hw(void){
+void init_hw(){
 	_mcu_core_initclock(1);
 	mcu_fault_init();
 	_mcu_core_priv_enable_interrupts(NULL); //Enable the interrupts
@@ -73,7 +73,7 @@ void init_hw(void){
 	check_reset_source();
 }
 
-void check_reset_source(void){
+void check_reset_source(){
 	//fault_t fault;
 	core_attr_t attr;
 

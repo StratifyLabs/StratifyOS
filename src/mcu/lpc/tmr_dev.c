@@ -617,19 +617,19 @@ void tmr_isr(int port){
 #endif
 }
 
-void _mcu_core_tmr0_isr(void){
+void _mcu_core_tmr0_isr(){
 	tmr_isr(0);
 }
 
-void _mcu_core_tmr1_isr(void){
+void _mcu_core_tmr1_isr(){
 	tmr_isr(1);
 }
 
-void _mcu_core_tmr2_isr(void){
+void _mcu_core_tmr2_isr(){
 	tmr_isr(2);
 }
 
-void _mcu_core_tmr3_isr(void){
+void _mcu_core_tmr3_isr(){
 	tmr_isr(3);
 }
 

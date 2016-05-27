@@ -394,7 +394,7 @@ void write_tx_data(int port){
 	}
 }
 
-void _mcu_core_uart_isr(void){
+void _mcu_core_uart_isr(){
 	const int port = 0;
 	//first determine if this is a UART0 interrupt
 	LPC_UART_Type * uart_regs = uart_regs_table[port];

@@ -452,15 +452,15 @@ void _mcu_core_ssp_isr(int port){
 	}
 }
 
-void _mcu_core_ssp0_isr(void){
+void _mcu_core_ssp0_isr(){
 	_mcu_core_ssp_isr(0);
 }
 
-void _mcu_core_ssp1_isr(void){
+void _mcu_core_ssp1_isr(){
 	_mcu_core_ssp_isr(1);
 }
 
-void _mcu_core_ssp2_isr(void){
+void _mcu_core_ssp2_isr(){
 	_mcu_core_ssp_isr(2);
 }
 

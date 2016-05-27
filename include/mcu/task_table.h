@@ -45,8 +45,8 @@ extern int task_rr_reload;
 extern volatile task_timer_t task_clock;
 extern volatile int task_current;
 
-static inline int task_get_rr_reload(void) MCU_ALWAYS_INLINE;
-int task_get_rr_reload(void){
+static inline int task_get_rr_reload() MCU_ALWAYS_INLINE;
+int task_get_rr_reload(){
 	return task_rr_reload;
 }
 
@@ -168,8 +168,8 @@ int task_enabled(int id){
 	return ((task_table[id].flags & (TASK_FLAGS_USED)) == TASK_FLAGS_USED);
 }
 
-static inline int task_get_current(void) MCU_ALWAYS_INLINE;
-int task_get_current(void){
+static inline int task_get_current() MCU_ALWAYS_INLINE;
+int task_get_current(){
 	return task_current;
 }
 
@@ -178,8 +178,8 @@ int task_get_pid(int id){
 	return task_table[id].pid;
 }
 
-static inline int task_get_total(void) MCU_ALWAYS_INLINE;
-int task_get_total(void){
+static inline int task_get_total() MCU_ALWAYS_INLINE;
+int task_get_total(){
 	return task_total;
 }
 

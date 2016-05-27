@@ -38,9 +38,9 @@ extern void gled_priv_on(void * args);
 extern void gled_priv_off(void * args);
 void gled_priv_error(void * args);
 
-static void led_startup(void);
-static int init_fs(void);
-static int startup_fs(void);
+static void led_startup();
+static int init_fs();
+static int startup_fs();
 
 static void priv_check_reset_source(void * args) MCU_PRIV_EXEC_CODE;
 
@@ -85,7 +85,7 @@ void * initial_thread(void * arg){
 }
 
 
-void led_startup(void){
+void led_startup(){
 	int i;
 	int duty;
 	const int factor = 30;
@@ -107,7 +107,7 @@ void led_startup(void){
 	}
 }
 
-int init_fs(void){
+int init_fs(){
 	int i;
 	i = 0;
 	while( sysfs_isterminator(&sysfs_list[i]) == false ){
@@ -120,7 +120,7 @@ int init_fs(void){
 	return 0;
 }
 
-int startup_fs(void){
+int startup_fs(){
 	int i;
 	i = 0;
 	int started;

@@ -24,10 +24,10 @@
 #include "task_flags.h"
 
 static volatile uint32_t * volatile stack MCU_SYS_MEM; //static keeps this from being stored on the stack
-static void system_reset(void); //This is used if the OS process returns
-void task_thread_stack_return(void);
+static void system_reset(); //This is used if the OS process returns
+void task_thread_stack_return();
 
-int task_init_single(int (*initial_thread)(void),
+int task_init_single(int (*initial_thread)(),
 		void * system_memory,
 		int system_memory_size){
 
@@ -76,8 +76,8 @@ void task_priv_switch_context(void * args){
 	SCB->ICSR |= (1<<28); //Force a pendSV interrupt
 }
 
-void _mcu_core_pendsv_handler(void) MCU_NAKED;
-void _mcu_core_pendsv_handler(void){
+void _mcu_core_pendsv_handler() MCU_NAKED;
+void _mcu_core_pendsv_handler(){
 	//The value 0xFFFFFFFD is pushed
 #if __thumb2__ == 1
 	asm("mvn.w r0, #2\n\t");
@@ -89,11 +89,11 @@ void _mcu_core_pendsv_handler(void){
 	asm volatile ("pop {pc}\n\t"); //The value 0xFFFFFFFD is popped to do a thread stack return
 }
 
-void task_thread_stack_return(void){
+void task_thread_stack_return(){
 	*stack = TASK_THREAD_RETURN;
 }
 
-void system_reset(void){
+void system_reset(){
 	mcu_core_privcall(_mcu_core_priv_reset, NULL);
 }
 
@@ -102,9 +102,9 @@ int task_interrupt(task_interrupt_t * intr){
 	return 0;
 }
 
-void task_restore(void){}
+void task_restore(){}
 
-void _mcu_core_systick_handler(void){
+void _mcu_core_systick_handler(){
 
 }
 

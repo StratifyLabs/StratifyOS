@@ -269,7 +269,7 @@ int mcu_rtc_setcountevent(int port, void * ctl){
 	return 0;
 }
 
-void _mcu_core_rtc0_isr(void){
+void _mcu_core_rtc0_isr(){
 	const int port = 0;
 	LPC_RTC_Type * regs = rtc_regs[port];
 	rtc_event_t event;

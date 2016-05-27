@@ -270,23 +270,23 @@ void _mcu_eint_isr(int port){
 
 
 
-void _mcu_core_eint0_isr(void){
+void _mcu_core_eint0_isr(){
 	_mcu_eint_isr(0);
 }
 
-void _mcu_core_eint1_isr(void){
+void _mcu_core_eint1_isr(){
 	_mcu_eint_isr(1);
 }
 
-void _mcu_core_eint2_isr(void){
+void _mcu_core_eint2_isr(){
 	_mcu_eint_isr(2);
 }
 
 #if defined __lpc17xx
-extern void _mcu_core_pio0_isr(void);
+extern void _mcu_core_pio0_isr();
 #endif
 
-void _mcu_core_eint3_isr(void){
+void _mcu_core_eint3_isr(){
 	//check for GPIO interrupts first
 #if defined __lpc17xx
 	if ( LPC_GPIOINT->IntStatus ){

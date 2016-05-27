@@ -53,13 +53,13 @@ extern "C" {
 #endif
 
 int sched_start(void * (*init)(void*), int priority);
-int sched_init(void);
+int sched_init();
 
 //Schedule Debugging
-void sched_debug_print_tasks(void);
-void sched_debug_print_active(void);
-void sched_debug_print_executing(void);
-void sched_debug_print_timers(void);
+void sched_debug_print_tasks();
+void sched_debug_print_active();
+void sched_debug_print_executing();
+void sched_debug_print_timers();
 
 void sched_set_fault(int pid, int tid, fault_t * fault);
 

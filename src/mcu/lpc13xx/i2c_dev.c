@@ -214,7 +214,7 @@ static void be_done(int port){
 	}
 }
 
-void _mcu_core_i2c_isr(void) {
+void _mcu_core_i2c_isr() {
 	uint8_t stat_value;
 	const int port = 0;
 	LPC_I2C_Type * i2c_regs;

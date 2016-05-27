@@ -39,7 +39,7 @@
 static void priv_stop_threads(int * send_signal) MCU_PRIV_EXEC_CODE;
 static void priv_zombie_process(int * signal_sent) MCU_PRIV_EXEC_CODE;
 
-int exec_options(void);
+int exec_options();
 
 /*! \details This function causes the calling process
  * to exit with the specified exit code.
@@ -167,7 +167,7 @@ void priv_stop_threads(int * send_signal){
 
 }
 
-int exec_options(void){
+int exec_options(){
 	link_appfs_file_t * hdr;
 	//check to see if the app should discard itself
 	hdr = (link_appfs_file_t *)mpu_addr((uint32_t)task_table[task_get_current()].mem.code.addr);

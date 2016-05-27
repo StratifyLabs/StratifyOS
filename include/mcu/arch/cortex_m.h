@@ -29,13 +29,13 @@ extern "C" {
 
 #define SYSTICK_CTRL_TICKINT (1<<1)
 
-static inline void core_tick_enable_irq(void) MCU_ALWAYS_INLINE;
-void core_tick_enable_irq(void){
+static inline void core_tick_enable_irq() MCU_ALWAYS_INLINE;
+void core_tick_enable_irq(){
 	SysTick->CTRL |= SYSTICK_CTRL_TICKINT;
 }
 
-static inline void core_tick_disable_irq(void) MCU_ALWAYS_INLINE;
-void core_tick_disable_irq(void){
+static inline void core_tick_disable_irq() MCU_ALWAYS_INLINE;
+void core_tick_disable_irq(){
 	SysTick->CTRL &= ~SYSTICK_CTRL_TICKINT;
 }
 
@@ -62,8 +62,8 @@ int core_set_interrupt_priority(int periph, int port, uint8_t priority);
 
 
 int core_fault_init(void (*handler)(int) );
-void core_fault_reset_status(void);
-int core_fault_debug(void);
+void core_fault_reset_status();
+int core_fault_debug();
 
 
 #define r(x) register long x asm("lr")

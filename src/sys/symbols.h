@@ -13,7 +13,7 @@
 
 extern uint32_t const symbols_table[] MCU_WEAK;
 
-static inline uint32_t symbols_total(void){
+static inline uint32_t symbols_total(){
 	int i;
 	i = 0;
 	while(symbols_table[i] != 1 ){

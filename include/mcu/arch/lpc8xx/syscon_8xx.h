@@ -305,7 +305,7 @@ STATIC INLINE void Chip_SYSCTL_PeriphReset(CHIP_SYSCTL_PERIPH_RESET_T periph)
  * @return	An Or'ed value of SYSCTL_RST_*
  * @note	This function returns the detected reset source(s).
  */
-STATIC INLINE uint32_t Chip_SYSCTL_GetSystemRSTStatus(void)
+STATIC INLINE uint32_t Chip_SYSCTL_GetSystemRSTStatus()
 {
 	return LPC_SYSCTL->SYSRSTSTAT & ~SYSCTL_SYSRSTSTAT_RESERVED;
 }
@@ -326,7 +326,7 @@ STATIC INLINE void Chip_SYSCTL_ClearSystemRSTStatus(uint32_t reset)
  * @return	captured POR PIO status
  * @note	Some devices only support index 0.
  */
-STATIC INLINE uint32_t Chip_SYSCTL_GetPORPIOStatus(void)
+STATIC INLINE uint32_t Chip_SYSCTL_GetPORPIOStatus()
 {
 	return LPC_SYSCTL->PIOPORCAP0 & ~SYSCTL_PIOPORCAP0_RESERVED;
 }
@@ -349,7 +349,7 @@ STATIC INLINE void Chip_SYSCTL_SetBODLevels(CHIP_SYSCTL_BODRSTLVL_T rstlvl,
  * @brief	Enable brown-out detection reset
  * @return	Nothing
  */
-STATIC INLINE void Chip_SYSCTL_EnableBODReset(void)
+STATIC INLINE void Chip_SYSCTL_EnableBODReset()
 {
 	LPC_SYSCTL->BODCTRL = (1 << 4) | (LPC_SYSCTL->BODCTRL & ~SYSCTL_BODCTRL_RESERVED);
 }
@@ -358,7 +358,7 @@ STATIC INLINE void Chip_SYSCTL_EnableBODReset(void)
  * @brief	Disable brown-out detection reset
  * @return	Nothing
  */
-STATIC INLINE void Chip_SYSCTL_DisableBODReset(void)
+STATIC INLINE void Chip_SYSCTL_DisableBODReset()
 {
 	LPC_SYSCTL->BODCTRL &= ~((1 << 4) | SYSCTL_BODCTRL_RESERVED);
 }
@@ -389,7 +389,7 @@ STATIC INLINE void Chip_SYSCTL_SetIRQLatency(uint32_t latency)
  * @brief	Get System IRQ latency value
  * @return	IRQ Latency in clock ticks
  */
-STATIC INLINE uint32_t Chip_SYSCTL_GetIRQLatency(void)
+STATIC INLINE uint32_t Chip_SYSCTL_GetIRQLatency()
 {
 	return LPC_SYSCTL->IRQLATENCY & ~SYSCTL_IRQLATENCY_RESERVED;
 }
@@ -414,7 +414,7 @@ STATIC INLINE void Chip_SYSCTL_SetNMISource(uint32_t intsrc)
  * @brief	Enable interrupt used for NMI source
  * @return	Nothing
  */
-STATIC INLINE void Chip_SYSCTL_EnableNMISource(void)
+STATIC INLINE void Chip_SYSCTL_EnableNMISource()
 {
 	LPC_SYSCTL->NMISRC = SYSCTL_NMISRC_ENABLE | (LPC_SYSCTL->NMISRC & ~SYSCTL_NMISRC_RESERVED);
 }
@@ -423,7 +423,7 @@ STATIC INLINE void Chip_SYSCTL_EnableNMISource(void)
  * @brief	Disable interrupt used for NMI source
  * @return	Nothing
  */
-STATIC INLINE void Chip_SYSCTL_DisableNMISource(void)
+STATIC INLINE void Chip_SYSCTL_DisableNMISource()
 {
 	LPC_SYSCTL->NMISRC &= ~(SYSCTL_NMISRC_ENABLE | SYSCTL_NMISRC_RESERVED);
 }
@@ -490,7 +490,7 @@ STATIC INLINE void Chip_SYSCTL_DisablePeriphWakeup(uint32_t periphmask)
  * @return	OR'ed values of SYSCTL_DEEPSLP_* values
  * @note	A high bit indicates the peripheral will power down on deep sleep.
  */
-STATIC INLINE uint32_t Chip_SYSCTL_GetDeepSleepPD(void)
+STATIC INLINE uint32_t Chip_SYSCTL_GetDeepSleepPD()
 {
 	return LPC_SYSCTL->PDSLEEPCFG;
 }
@@ -500,7 +500,7 @@ STATIC INLINE uint32_t Chip_SYSCTL_GetDeepSleepPD(void)
  * @return	OR'ed values of SYSCTL_SLPWAKE_* values
  * @note	A high state indicates the peripehral will powerup on wakeup.
  */
-STATIC INLINE uint32_t Chip_SYSCTL_GetWakeup(void)
+STATIC INLINE uint32_t Chip_SYSCTL_GetWakeup()
 {
 	return LPC_SYSCTL->PDAWAKECFG;
 }
@@ -510,7 +510,7 @@ STATIC INLINE uint32_t Chip_SYSCTL_GetWakeup(void)
  * @return	OR'ed values of SYSCTL_SLPWAKE_* values
  * @note	A high state indicates the peripheral is powered down.
  */
-STATIC INLINE uint32_t Chip_SYSCTL_GetPowerStates(void)
+STATIC INLINE uint32_t Chip_SYSCTL_GetPowerStates()
 {
 	return LPC_SYSCTL->PDRUNCFG;
 }
@@ -519,7 +519,7 @@ STATIC INLINE uint32_t Chip_SYSCTL_GetPowerStates(void)
  * @brief	Return the device ID
  * @return	Device ID
  */
-STATIC INLINE uint32_t Chip_SYSCTL_GetDeviceID(void)
+STATIC INLINE uint32_t Chip_SYSCTL_GetDeviceID()
 {
 	return LPC_SYSCTL->DEVICEID;
 }

@@ -28,7 +28,7 @@
  * #include <mqueue.h>
  * #include <stdio.h>
  *
- * void create_queue_and_send_msg(void){
+ * void create_queue_and_send_msg(){
  * 	mqd_t mdes;
  * 	struct mq_attr attr;
  * 	char msg[32];
@@ -58,7 +58,7 @@
  * #include <mqueue.h>
  * #include <stdio.h>
  *
- * void read_msg(void){
+ * void read_msg(){
  * 	mqd_t mdes;
  * 	char msg[32];
  * 	unsigned msg_prio;
@@ -189,7 +189,7 @@ static void * mq_message_data(struct message * msg){
 	return ptr + sizeof(struct message);
 }
 
-static mq_t * mq_find_free(void){
+static mq_t * mq_find_free(){
 	mq_list_t * entry;
 	mq_list_t * new_entry;
 	mq_list_t * last_entry;

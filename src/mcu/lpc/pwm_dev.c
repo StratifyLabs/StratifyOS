@@ -424,13 +424,13 @@ static void _mcu_core_pwm_isr(int port){
 }
 
 #ifdef LPCXX7X_8X
-void _mcu_core_pwm0_isr(void){
+void _mcu_core_pwm0_isr(){
 	_mcu_core_pwm_isr(0);
 }
 #endif
 
 //This will execute when MR0 overflows
-void _mcu_core_pwm1_isr(void){
+void _mcu_core_pwm1_isr(){
 	_mcu_core_pwm_isr(1);
 }
 

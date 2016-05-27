@@ -155,7 +155,7 @@ typedef struct {
  */
 typedef struct UARTD_API {
 	/*!< UART Configuration functions */
-	uint32_t        (*uart_get_mem_size)(void);	/*!< Get the memory size needed by one Min UART instance */
+	uint32_t        (*uart_get_mem_size)();	/*!< Get the memory size needed by one Min UART instance */
 	UART_HANDLE_T * (*uart_setup)(uint32_t base_addr, uint8_t * ram);	/*!< Setup Min UART instance with provided memory and return the handle to this instance */
 	uint32_t        (*uart_init)(UART_HANDLE_T *handle, UART_CONFIG_T *set);	/*!< Setup baud rate and operation mode for uart, then enable uart */
 

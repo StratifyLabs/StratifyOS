@@ -69,7 +69,7 @@ typedef enum {
 #define SCHED_NUM_SIGNALS 32
 
 //Scheduler timing
-int sched_timing_init(void);
+int sched_timing_init();
 
 extern volatile i8 sched_current_priority;
 extern volatile i8 sched_status_changed;
@@ -110,11 +110,11 @@ static inline trace_id_t sched_get_trace_id(int id) MCU_ALWAYS_INLINE;
 trace_id_t sched_get_trace_id(int id){ return stfy_sched_table[id].trace_id; };
 
 
-static inline int sched_get_current_priority(void) MCU_ALWAYS_INLINE;
-int sched_get_current_priority(void){ return sched_current_priority; };
+static inline int sched_get_current_priority() MCU_ALWAYS_INLINE;
+int sched_get_current_priority(){ return sched_current_priority; };
 
-static inline int sched_status_change_asserted(void) MCU_ALWAYS_INLINE;
-inline int sched_status_change_asserted(void){
+static inline int sched_status_change_asserted() MCU_ALWAYS_INLINE;
+inline int sched_status_change_asserted(){
 	return sched_status_changed;
 }
 
@@ -127,8 +127,8 @@ void sched_priv_set_unblock_type(int id, sched_unblock_type_t unblock_type){
 	stfy_sched_table[id].flags |= unblock_type;
 };
 
-void sched_priv_update_on_sleep(void);
-void sched_priv_update_on_stopped(void);
+void sched_priv_update_on_sleep();
+void sched_priv_update_on_stopped();
 void sched_priv_update_on_wake(int new_priority);
 void sched_priv_cleanup_tasks(void * args);
 
@@ -137,8 +137,8 @@ void sched_priv_deassert(int id, int flag);
 
 void sched_priv_assert_active(int id, int unblock_type);
 void sched_priv_deassert_active(int id);
-void sched_priv_assert_status_change(void);
-void sched_priv_deassert_status_change(void);
+void sched_priv_assert_status_change();
+void sched_priv_deassert_status_change();
 void sched_priv_set_current_priority(int priority);
 void sched_priv_set_trace_id(int tid, trace_id_t id);
 
@@ -201,7 +201,7 @@ void sched_priv_deassert_sync(int id){
 
 int sched_check_tid(int id);
 void sched_microsecond_match_event(int current_match);
-void sched_second_match_event(void);
+void sched_second_match_event();
 
 int sched_send_signal(int id, int sig);
 int sched_send_task_signal(int tid, int sig);
@@ -221,7 +221,7 @@ int sched_new_process(void (*p)(char *),
 		task_memories_t * mem,
 		void * reent);
 
-int sched_update(void);
+int sched_update();
 
 void sched_priv_abnormal_child_stop(int id);
 void sched_priv_stop_task(int id);
@@ -245,8 +245,8 @@ void sched_convert_timespec(struct sched_timeval * tv, const struct timespec * t
 void sched_priv_get_realtime(struct sched_timeval * tv) MCU_PRIV_EXEC_CODE;
 void sched_fault_build_string(char * dest);
 
-int sched_prepare(void);
-void scheduler(void);
+int sched_prepare();
+void scheduler();
 
 #define SCHED_DEBUG 0
 #define sched_debug(...) do { if ( SCHED_DEBUG == 1 ){ mcu_debug("%s:", __func__); mcu_debug(__VA_ARGS__); } } while(0)

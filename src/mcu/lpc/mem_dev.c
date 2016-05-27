@@ -52,7 +52,7 @@ static int get_flash_page(int addr);
 static int get_flash_page_size(int page);
 static int get_flash_page_addr(int page);
 
-static int get_last_boot_page(void);
+static int get_last_boot_page();
 
 static bool is_ram(int addr, int size);
 static int get_ram_page(int addr);
@@ -65,7 +65,7 @@ int _mcu_mem_dev_powered_on(int port){
 	return 1;
 }
 
-int _mcu_mem_getsyspage(void){
+int _mcu_mem_getsyspage(){
 	return (SRAM_PAGES);
 }
 
@@ -325,7 +325,7 @@ int blank_check(int loc, int nbyte){
 	return 0;
 }
 
-int get_last_boot_page(void){
+int get_last_boot_page(){
 	bootloader_api_t api;
 	_mcu_core_priv_bootloader_api(&api);
 

@@ -32,7 +32,7 @@
 /*! \details This function returns the thread ID of the calling process.
  * \return The thread ID of the caller.
  */
-pthread_t pthread_self(void){
+pthread_t pthread_self(){
 	return (pthread_t)task_get_current();
 }
 

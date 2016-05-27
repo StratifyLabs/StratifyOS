@@ -112,7 +112,7 @@ typedef enum MRT_MODE {
  * @brief	Initializes the MRT
  * @return	Nothing
  */
-STATIC INLINE void Chip_MRT_Init(void)
+STATIC INLINE void Chip_MRT_Init()
 {
 	/* Enable the clock to the register interface */
 	Chip_Clock_EnablePeriphClock(SYSCTL_CLOCK_MRT);
@@ -125,7 +125,7 @@ STATIC INLINE void Chip_MRT_Init(void)
  * @brief	De-initializes the MRT Channel
  * @return	Nothing
  */
-STATIC INLINE void Chip_MRT_DeInit(void)
+STATIC INLINE void Chip_MRT_DeInit()
 {
 	/* Disable the clock to the MRT */
 	Chip_Clock_DisablePeriphClock(SYSCTL_CLOCK_MRT);
@@ -285,7 +285,7 @@ STATIC INLINE bool Chip_MRT_Running(LPC_MRT_CH_T *pMRT)
  * @brief	Returns the IDLE channel value
  * @return	IDLE channel value (unshifted in bits 7..4)
  */
-STATIC INLINE uint8_t Chip_MRT_GetIdleChannel(void)
+STATIC INLINE uint8_t Chip_MRT_GetIdleChannel()
 {
 	return (uint8_t) (LPC_MRT->IDLE_CH);
 }
@@ -294,7 +294,7 @@ STATIC INLINE uint8_t Chip_MRT_GetIdleChannel(void)
  * @brief	Returns the IDLE channel value
  * @return	IDLE channel value (shifted in bits 3..0)
  */
-STATIC INLINE uint8_t Chip_MRT_GetIdleChannelShifted(void)
+STATIC INLINE uint8_t Chip_MRT_GetIdleChannelShifted()
 {
 	return (uint8_t) (Chip_MRT_GetIdleChannel() >> 4);
 }
@@ -303,7 +303,7 @@ STATIC INLINE uint8_t Chip_MRT_GetIdleChannelShifted(void)
  * @brief	Returns the interrupt pending status for all MRT channels
  * @return	IRQ pending channel bitfield(bit 0 = MRT0, bit 1 = MRT1, etc.)
  */
-STATIC INLINE uint32_t Chip_MRT_GetIntPending(void)
+STATIC INLINE uint32_t Chip_MRT_GetIntPending()
 {
 	return LPC_MRT->IRQ_FLAG;
 }

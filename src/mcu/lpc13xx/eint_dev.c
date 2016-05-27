@@ -184,48 +184,48 @@ void _mcu_core_eint_isr_32(int port){
 }
 
 
-void _mcu_core_eint0_isr(void){ _mcu_core_eint_isr(0); }
-void _mcu_core_eint1_isr(void){ _mcu_core_eint_isr(1); }
-void _mcu_core_eint2_isr(void){ _mcu_core_eint_isr(2); }
-void _mcu_core_eint3_isr(void){ _mcu_core_eint_isr(3); }
-void _mcu_core_eint4_isr(void){ _mcu_core_eint_isr(4); }
-void _mcu_core_eint5_isr(void){ _mcu_core_eint_isr(5); }
-void _mcu_core_eint6_isr(void){ _mcu_core_eint_isr(6); }
-void _mcu_core_eint7_isr(void){ _mcu_core_eint_isr(7); }
-void _mcu_core_eint8_isr(void){ _mcu_core_eint_isr(8); }
-void _mcu_core_eint9_isr(void){ _mcu_core_eint_isr(9); }
-void _mcu_core_eint10_isr(void){ _mcu_core_eint_isr(10); }
-void _mcu_core_eint11_isr(void){ _mcu_core_eint_isr(11); }
+void _mcu_core_eint0_isr(){ _mcu_core_eint_isr(0); }
+void _mcu_core_eint1_isr(){ _mcu_core_eint_isr(1); }
+void _mcu_core_eint2_isr(){ _mcu_core_eint_isr(2); }
+void _mcu_core_eint3_isr(){ _mcu_core_eint_isr(3); }
+void _mcu_core_eint4_isr(){ _mcu_core_eint_isr(4); }
+void _mcu_core_eint5_isr(){ _mcu_core_eint_isr(5); }
+void _mcu_core_eint6_isr(){ _mcu_core_eint_isr(6); }
+void _mcu_core_eint7_isr(){ _mcu_core_eint_isr(7); }
+void _mcu_core_eint8_isr(){ _mcu_core_eint_isr(8); }
+void _mcu_core_eint9_isr(){ _mcu_core_eint_isr(9); }
+void _mcu_core_eint10_isr(){ _mcu_core_eint_isr(10); }
+void _mcu_core_eint11_isr(){ _mcu_core_eint_isr(11); }
 
-void _mcu_core_eint12_isr(void){ _mcu_core_eint_isr(12); }
-void _mcu_core_eint13_isr(void){ _mcu_core_eint_isr(13); }
-void _mcu_core_eint14_isr(void){ _mcu_core_eint_isr(14); }
-void _mcu_core_eint15_isr(void){ _mcu_core_eint_isr(15); }
-void _mcu_core_eint16_isr(void){ _mcu_core_eint_isr(16); }
-void _mcu_core_eint17_isr(void){ _mcu_core_eint_isr(17); }
-void _mcu_core_eint18_isr(void){ _mcu_core_eint_isr(18); }
-void _mcu_core_eint19_isr(void){ _mcu_core_eint_isr(19); }
-void _mcu_core_eint20_isr(void){ _mcu_core_eint_isr(20); }
-void _mcu_core_eint21_isr(void){ _mcu_core_eint_isr(21); }
-void _mcu_core_eint22_isr(void){ _mcu_core_eint_isr(22); }
-void _mcu_core_eint23_isr(void){ _mcu_core_eint_isr(23); }
+void _mcu_core_eint12_isr(){ _mcu_core_eint_isr(12); }
+void _mcu_core_eint13_isr(){ _mcu_core_eint_isr(13); }
+void _mcu_core_eint14_isr(){ _mcu_core_eint_isr(14); }
+void _mcu_core_eint15_isr(){ _mcu_core_eint_isr(15); }
+void _mcu_core_eint16_isr(){ _mcu_core_eint_isr(16); }
+void _mcu_core_eint17_isr(){ _mcu_core_eint_isr(17); }
+void _mcu_core_eint18_isr(){ _mcu_core_eint_isr(18); }
+void _mcu_core_eint19_isr(){ _mcu_core_eint_isr(19); }
+void _mcu_core_eint20_isr(){ _mcu_core_eint_isr(20); }
+void _mcu_core_eint21_isr(){ _mcu_core_eint_isr(21); }
+void _mcu_core_eint22_isr(){ _mcu_core_eint_isr(22); }
+void _mcu_core_eint23_isr(){ _mcu_core_eint_isr(23); }
 
-void _mcu_core_eint24_isr(void){ _mcu_core_eint_isr(24); }
-void _mcu_core_eint25_isr(void){ _mcu_core_eint_isr(25); }
-void _mcu_core_eint26_isr(void){ _mcu_core_eint_isr(26); }
-void _mcu_core_eint27_isr(void){ _mcu_core_eint_isr(27); }
-void _mcu_core_eint28_isr(void){ _mcu_core_eint_isr(28); }
-void _mcu_core_eint29_isr(void){ _mcu_core_eint_isr(29); }
-void _mcu_core_eint30_isr(void){ _mcu_core_eint_isr(30); }
-void _mcu_core_eint31_isr(void){ _mcu_core_eint_isr(31); }
-void _mcu_core_eint32_isr(void){ _mcu_core_eint_isr_32(32); }
-void _mcu_core_eint33_isr(void){ _mcu_core_eint_isr_32(33); }
-void _mcu_core_eint34_isr(void){ _mcu_core_eint_isr_32(34); }
-void _mcu_core_eint35_isr(void){ _mcu_core_eint_isr_32(35); }
+void _mcu_core_eint24_isr(){ _mcu_core_eint_isr(24); }
+void _mcu_core_eint25_isr(){ _mcu_core_eint_isr(25); }
+void _mcu_core_eint26_isr(){ _mcu_core_eint_isr(26); }
+void _mcu_core_eint27_isr(){ _mcu_core_eint_isr(27); }
+void _mcu_core_eint28_isr(){ _mcu_core_eint_isr(28); }
+void _mcu_core_eint29_isr(){ _mcu_core_eint_isr(29); }
+void _mcu_core_eint30_isr(){ _mcu_core_eint_isr(30); }
+void _mcu_core_eint31_isr(){ _mcu_core_eint_isr(31); }
+void _mcu_core_eint32_isr(){ _mcu_core_eint_isr_32(32); }
+void _mcu_core_eint33_isr(){ _mcu_core_eint_isr_32(33); }
+void _mcu_core_eint34_isr(){ _mcu_core_eint_isr_32(34); }
+void _mcu_core_eint35_isr(){ _mcu_core_eint_isr_32(35); }
 
-void _mcu_core_eint36_isr(void){ _mcu_core_eint_isr_32(36); }
-void _mcu_core_eint37_isr(void){ _mcu_core_eint_isr_32(37); }
-void _mcu_core_eint38_isr(void){ _mcu_core_eint_isr_32(38); }
-void _mcu_core_eint39_isr(void){ _mcu_core_eint_isr_32(39); }
+void _mcu_core_eint36_isr(){ _mcu_core_eint_isr_32(36); }
+void _mcu_core_eint37_isr(){ _mcu_core_eint_isr_32(37); }
+void _mcu_core_eint38_isr(){ _mcu_core_eint_isr_32(38); }
+void _mcu_core_eint39_isr(){ _mcu_core_eint_isr_32(39); }
 
 

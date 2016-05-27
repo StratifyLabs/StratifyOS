@@ -69,7 +69,7 @@ typedef uint8_t (*I2CSlaveXferRecv)(uint8_t data);
  * This callback is called from the I2C slave handler when an I2C slave transfer is
  * completed. It's used to indicate the end of a slave transfer.
  */
-typedef void (*I2CSlaveXferDone)(void);
+typedef void (*I2CSlaveXferDone)();
 
 /**
  * Slave transfer are performed using 3 callbacks. These 3 callbacks handle most I2C

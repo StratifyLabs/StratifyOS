@@ -24,7 +24,7 @@ typedef struct {
 static trace_list_t * trace_first = 0;
 
 
-static void trace_cleanup(void){
+static void trace_cleanup(){
 	trace_list_t * entry;
 	int tid;
 	for(entry = trace_first; entry != 0; entry = entry->next){
@@ -38,7 +38,7 @@ static void trace_cleanup(void){
 }
 
 
-static trace_id_handle_t * trace_find_free(void){
+static trace_id_handle_t * trace_find_free(){
 	trace_list_t * entry;
 	trace_list_t * new_entry;
 	trace_list_t * last_entry;

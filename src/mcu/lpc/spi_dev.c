@@ -251,7 +251,7 @@ int _mcu_spi_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
 	return spi_port_transfer(cfg->periph.port, 1, rop);
 }
 
-void _mcu_core_spi0_isr(void){
+void _mcu_core_spi0_isr(){
 	int tmp;
 	const int port = 0;
 	LPC_SPI_Type * regs = spi_regs[port];

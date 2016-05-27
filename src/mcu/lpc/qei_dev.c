@@ -220,7 +220,7 @@ int mcu_qei_reset(int port, void * ctl){
 	return 0;
 }
 
-void _mcu_core_qei0_isr(void){
+void _mcu_core_qei0_isr(){
 	int flags;
 	const int port = 0;
 	LPC_QEI_Type * regs = qei_regs[port];

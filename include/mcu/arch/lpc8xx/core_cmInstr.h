@@ -322,7 +322,7 @@ __attribute__((section(".revsh_text"))) __STATIC_INLINE __ASM int32_t __REVSH(in
 
     No Operation does nothing. This instruction can be used for code alignment purposes.
  */
-__attribute__( ( always_inline ) ) __STATIC_INLINE void __NOP(void)
+__attribute__( ( always_inline ) ) __STATIC_INLINE void __NOP()
 {
   __ASM volatile ("nop");
 }
@@ -333,7 +333,7 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE void __NOP(void)
     Wait For Interrupt is a hint instruction that suspends execution
     until one of a number of events occurs.
  */
-__attribute__( ( always_inline ) ) __STATIC_INLINE void __WFI(void)
+__attribute__( ( always_inline ) ) __STATIC_INLINE void __WFI()
 {
   __ASM volatile ("wfi");
 }
@@ -344,7 +344,7 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE void __WFI(void)
     Wait For Event is a hint instruction that permits the processor to enter
     a low-power state until one of a number of events occurs.
  */
-__attribute__( ( always_inline ) ) __STATIC_INLINE void __WFE(void)
+__attribute__( ( always_inline ) ) __STATIC_INLINE void __WFE()
 {
   __ASM volatile ("wfe");
 }
@@ -354,7 +354,7 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE void __WFE(void)
 
     Send Event is a hint instruction. It causes an event to be signaled to the CPU.
  */
-__attribute__( ( always_inline ) ) __STATIC_INLINE void __SEV(void)
+__attribute__( ( always_inline ) ) __STATIC_INLINE void __SEV()
 {
   __ASM volatile ("sev");
 }
@@ -366,7 +366,7 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE void __SEV(void)
     so that all instructions following the ISB are fetched from cache or
     memory, after the instruction has been completed.
  */
-__attribute__( ( always_inline ) ) __STATIC_INLINE void __ISB(void)
+__attribute__( ( always_inline ) ) __STATIC_INLINE void __ISB()
 {
   __ASM volatile ("isb");
 }
@@ -377,7 +377,7 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE void __ISB(void)
     This function acts as a special kind of Data Memory Barrier.
     It completes when all explicit memory accesses before this instruction complete.
  */
-__attribute__( ( always_inline ) ) __STATIC_INLINE void __DSB(void)
+__attribute__( ( always_inline ) ) __STATIC_INLINE void __DSB()
 {
   __ASM volatile ("dsb");
 }
@@ -388,7 +388,7 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE void __DSB(void)
     This function ensures the apparent order of the explicit memory operations before
     and after the instruction, without ensuring their completion.
  */
-__attribute__( ( always_inline ) ) __STATIC_INLINE void __DMB(void)
+__attribute__( ( always_inline ) ) __STATIC_INLINE void __DMB()
 {
   __ASM volatile ("dmb");
 }
@@ -614,7 +614,7 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __STREXW(uint32_t va
     This function removes the exclusive lock which is created by LDREX.
 
  */
-__attribute__( ( always_inline ) ) __STATIC_INLINE void __CLREX(void)
+__attribute__( ( always_inline ) ) __STATIC_INLINE void __CLREX()
 {
   __ASM volatile ("clrex" ::: "memory");
 }

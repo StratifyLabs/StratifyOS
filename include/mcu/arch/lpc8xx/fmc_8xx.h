@@ -120,7 +120,7 @@ STATIC INLINE void Chip_FMC_ComputeSignatureBlocks(uint32_t start, uint32_t bloc
  * @brief	Check for signature geenration completion
  * @return	true if the signature computation is running, false if finished
  */
-STATIC INLINE bool Chip_FMC_IsSignatureBusy(void)
+STATIC INLINE bool Chip_FMC_IsSignatureBusy()
 {
 	return (bool) ((LPC_FMC->FMSSTOP & FMC_FLASHSIG_BUSY) != 0);
 }

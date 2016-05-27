@@ -661,24 +661,24 @@ void _mcu_uart_isr(int port){
 	}
 }
 
-void _mcu_core_uart0_isr(void){
+void _mcu_core_uart0_isr(){
 	_mcu_uart_isr(0);
 }
 
 #if MCU_UART_PORTS > 1
-void _mcu_core_uart1_isr(void){
+void _mcu_core_uart1_isr(){
 	_mcu_uart_isr(1);
 }
 #endif
 
 #if MCU_UART_PORTS > 2
-void _mcu_core_uart2_isr(void){
+void _mcu_core_uart2_isr(){
 	_mcu_uart_isr(2);
 }
 #endif
 
 #if MCU_UART_PORTS > 3
-void _mcu_core_uart3_isr(void){
+void _mcu_core_uart3_isr(){
 	_mcu_uart_isr(3);
 }
 #endif

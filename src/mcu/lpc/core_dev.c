@@ -23,7 +23,7 @@
 
 #include "mcu/debug.h"
 
-static core_reset_src_t _mcu_core_get_reset_src(void);
+static core_reset_src_t _mcu_core_get_reset_src();
 static int _mcu_core_enable_clkout(int clk_source, int div);
 void _mcu_set_sleep_mode(int * level);
 static u8 mcu_core_reset_source = CORE_RESET_SRC_SOFTWARE;
@@ -157,7 +157,7 @@ void _mcu_set_sleep_mode(int * level){
 #endif
 }
 
-core_reset_src_t _mcu_core_get_reset_src(void){
+core_reset_src_t _mcu_core_get_reset_src(){
 	core_reset_src_t src = CORE_RESET_SRC_SOFTWARE;
 	uint32_t src_reg;
 

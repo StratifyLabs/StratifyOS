@@ -31,9 +31,9 @@
 /*! \details This function returns the process ID of the calling process.
  * \return The process ID of the caller.
  */
-pid_t getpid(void);
+pid_t getpid();
 
-pid_t _getpid(void){
+pid_t _getpid(){
 #if SINGLE_TASK == 0
 	return (pid_t)task_get_pid( task_get_current() );
 #else

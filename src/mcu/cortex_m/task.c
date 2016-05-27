@@ -37,17 +37,17 @@ task_t * task_table MCU_SYS_MEM;
 volatile int task_current MCU_SYS_MEM;
 
 
-static void task_context_switcher(void);
+static void task_context_switcher();
 static void priv_task_rr_reload(void * args) MCU_PRIV_EXEC_CODE;
 
-static void system_reset(void); //This is used if the OS process returns
-void system_reset(void){
+static void system_reset(); //This is used if the OS process returns
+void system_reset(){
 	mcu_core_privcall(_mcu_core_priv_reset, NULL);
 }
 
 
 int task_init(int interval,
-		void (*scheduler_function)(void),
+		void (*scheduler_function)(),
 		void * system_memory,
 		int system_memory_size){
 	void * system_stack;
@@ -317,14 +317,14 @@ void priv_task_rr_reload(void * args){
 	task_table[task_get_current()].rr_time = task_rr_reload;
 }
 
-void task_reload(void){
+void task_reload(){
 	mcu_core_privcall(priv_task_rr_reload, 0);
 }
 
 /*! \details This function changes to another process.  It is executed
  * during the core systick timer and pend SV interrupts.
  */
-void task_context_switcher(void){
+void task_context_switcher(){
 	int i;
 	asm volatile ("MRS %0, psp\n\t" : "=r" (task_table[task_current].sp) );
 
@@ -437,23 +437,23 @@ void task_priv_switch_context(void * args){
 	SCB->ICSR |= (1<<28);
 }
 
-void _task_check_countflag(void){
+void _task_check_countflag(){
 	if ( SysTick->CTRL & (1<<16) ){ //check the countflag
 		task_table[task_current].rr_time = 0;
 		task_context_switcher();
 	}
 }
 
-void _mcu_core_systick_handler(void) MCU_NAKED;
-void _mcu_core_systick_handler(void){
+void _mcu_core_systick_handler() MCU_NAKED;
+void _mcu_core_systick_handler(){
 	task_save_context();
 	_task_check_countflag();
 	task_load_context();
 	task_return_context();
 }
 
-void _mcu_core_pendsv_handler(void) MCU_NAKED;
-void _mcu_core_pendsv_handler(void){
+void _mcu_core_pendsv_handler() MCU_NAKED;
+void _mcu_core_pendsv_handler(){
 	task_save_context();
 	task_context_switcher();
 	task_load_context();
@@ -477,7 +477,7 @@ void priv_task_restore(void * args){
 	asm volatile ("pop {pc}\n\t");
 }
 
-void task_restore(void){
+void task_restore(){
 	//handlers inserted with task_interrupt() must call this function when the task completes in order to restore the stack
 	mcu_core_privcall(priv_task_restore, NULL);
 }

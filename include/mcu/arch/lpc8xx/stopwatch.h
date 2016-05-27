@@ -43,13 +43,13 @@
  * @brief	Initialize stopwatch
  * @return	Nothing
  */
-void StopWatch_Init(void);
+void StopWatch_Init();
 
 /**
  * @brief	Start a stopwatch
  * @return	Current cycle count
  */
-uint32_t StopWatch_Start(void);
+uint32_t StopWatch_Start();
 
 /**
  * @brief      Returns number of ticks elapsed since stopwatch was started
@@ -65,7 +65,7 @@ STATIC INLINE uint32_t StopWatch_Elapsed(uint32_t startTime)
  * @brief	Returns number of ticks per second of the stopwatch timer
  * @return	Number of ticks per second of the stopwatch timer
  */
-uint32_t StopWatch_TicksPerSecond(void);
+uint32_t StopWatch_TicksPerSecond();
 
 /**
  * @brief	Converts from stopwatch ticks to mS.

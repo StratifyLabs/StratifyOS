@@ -78,7 +78,7 @@ static sem_t * sem_find_named(const char * name){
 	return SEM_FAILED;
 }
 
-static sem_t * sem_find_free(void){
+static sem_t * sem_find_free(){
 	sem_list_t * entry;
 	sem_list_t * new_entry;
 	sem_list_t * last_entry;

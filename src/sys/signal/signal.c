@@ -33,7 +33,7 @@
 #include "../sched/sched_flags.h"
 #include "sig_local.h"
 
-static int alloc_sigactions(void);
+static int alloc_sigactions();
 static int alloc_sigaction(int sig);
 
 /*! \details This function sets the handler for \a sig to
@@ -230,7 +230,7 @@ int sigrelse(int sig){
 }
  */
 
-int alloc_sigactions(void){
+int alloc_sigactions(){
 	int tmp;
 	void * mem;
 	if( GLOBAL_SIGACTIONS == NULL ){

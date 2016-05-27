@@ -73,8 +73,8 @@ typedef struct {
 
 static usb_local_t usb_local MCU_SYS_MEM;
 
-static void clear_callbacks(void);
-void clear_callbacks(void){
+static void clear_callbacks();
+void clear_callbacks(){
 	memset(usb_local.write_callback, 0, USB_LOGIC_EP_NUM * sizeof(void(*)(int)));
 	memset(usb_local.read_callback, 0, USB_LOGIC_EP_NUM * sizeof(void(*)(int)));
 }
@@ -804,7 +804,7 @@ int mcu_usb_wr_ep(int port, uint32_t endpoint_num, const void * src, uint32_t si
 
 /*! \details This function services the USB interrupt request.
  */
-void _mcu_core_usb_isr1(void){
+void _mcu_core_usb_isr1(){
 	uint32_t device_interrupt_status;
 	uint32_t val;
 

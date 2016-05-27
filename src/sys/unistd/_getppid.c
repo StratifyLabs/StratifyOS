@@ -30,7 +30,7 @@
 /*! \details This function returns the process ID of the parent process.
  * \return The process ID of the caller's parent process.
  */
-pid_t getppid(void){
+pid_t getppid(){
 	return (pid_t)task_get_pid( task_get_parent( task_get_current() ) );
 }
 

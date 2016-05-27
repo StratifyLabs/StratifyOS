@@ -21,8 +21,8 @@
 #define LONG_BUFFER_SIZE 1024
 
 
-static int stress_test1(void);
-static int stress_test2(void);
+static int stress_test1();
+static int stress_test2();
 static int rw_test(const char * file, int buffer_size, int num_tests, int open_flags, int open_mode);
 static int wr_test(const char * file, int buffer_size, int num_tests, int open_flags, int open_mode);
 static int test_rw_trunc(const char * file);
@@ -40,12 +40,12 @@ static int test_wr_long_exist(const char * file);
 static int test_wr_short_exist(const char * file);
 
 
-static int open_test(void);
+static int open_test();
 static int run_remove_test(const char * path, bool exists);
 static void * run_open_test(const char * path, int flags, int mode, int expected_errno, const char * condition);
 static int run_close_test(void * f, int expected_errno, const char * condition);
 
-int test_file(void){
+int test_file(){
 	int i;
 	char buffer[32];
 
@@ -154,7 +154,7 @@ int test_file(void){
 	return 0;
 }
 
-int open_test(void){
+int open_test(){
 	void * f;
 	char filename[256];
 
@@ -485,7 +485,7 @@ int rw_test(const char * file, int buffer_size, int num_tests, int open_flags, i
 	return 0;
 }
 
-int stress_test1(void){
+int stress_test1(){
 	int i;
 	int j;
 	int ret;
@@ -563,7 +563,7 @@ int stress_test1(void){
 	return 0;
 }
 
-int stress_test2(void){
+int stress_test2(){
 	int i;
 	struct stat st;
 	char buffer[64];

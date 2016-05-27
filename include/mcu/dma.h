@@ -87,7 +87,7 @@ int _mcu_dma_halttransfer(int chan /*! The channel to halt */) MCU_PRIV_CODE;
 
 /*! \details This function closes and disables the DMA peripheral.
  */
-void _mcu_dma_exit(void) MCU_PRIV_CODE;
+void _mcu_dma_exit() MCU_PRIV_CODE;
 
 int _mcu_dma_transferlist(int operation,
 		int chan,

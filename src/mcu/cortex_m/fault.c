@@ -33,7 +33,7 @@ void usagefault_handler(uint32_t usage_status, hw_stack_frame_t * handler_stack)
 #define get_pc(stack_reg) (((hw_stack_frame_t*)(stack_reg))->pc)
 #define get_link(stack_reg) (((hw_stack_frame_t*)(stack_reg))->lr)
 
-int mcu_fault_init(void){
+int mcu_fault_init(){
 	//initialize the fault handling registers
 	//Bus, mem, and usage faults are enabled so that they do not cause a hard fault
 	SCB->SHCSR |= (SCB_SHCSR_USGFAULTENA_Msk|
@@ -51,8 +51,8 @@ int mcu_fault_load(fault_t * fault){
 	return fault_dev_load(fault);
 }
 
-void _mcu_core_hardfault_handler(void) MCU_WEAK;
-void _mcu_core_hardfault_handler(void){
+void _mcu_core_hardfault_handler() MCU_WEAK;
+void _mcu_core_hardfault_handler(){
 	register hw_stack_frame_t * handler_stack;
 	asm volatile ("MRS %0, msp\n\t" : "=r" (handler_stack) );
 	register uint32_t fault_status;
@@ -102,7 +102,7 @@ void hardfault_handler(uint32_t fault_status, hw_stack_frame_t * handler_stack){
 
 
 /*
-void _mcu_core_default_isr(void){
+void _mcu_core_default_isr(){
 	asm volatile ("MRS %0, msp\n\t" : "=r" (handler_stack) );
 	hw_stack_frame_t * stack;
 	_mcu_core_priv_get_thread_stack_ptr( &stack );
@@ -117,8 +117,8 @@ void _mcu_core_default_isr(void){
 }
 */
 
-void _mcu_core_memfault_handler(void) MCU_WEAK;
-void _mcu_core_memfault_handler(void){
+void _mcu_core_memfault_handler() MCU_WEAK;
+void _mcu_core_memfault_handler(){
 	register void * handler_stack;
 	asm volatile ("MRS %0, msp\n\t" : "=r" (handler_stack) );
 	register uint32_t status;
@@ -169,8 +169,8 @@ void memfault_handler(uint32_t mem_status, hw_stack_frame_t * handler_stack){
 
 }
 
-void _mcu_core_busfault_handler(void) MCU_WEAK;
-void _mcu_core_busfault_handler(void){
+void _mcu_core_busfault_handler() MCU_WEAK;
+void _mcu_core_busfault_handler(){
 	register void * handler_stack;
 	asm volatile ("MRS %0, msp\n\t" : "=r" (handler_stack) );
 	register uint32_t status;
@@ -223,8 +223,8 @@ void busfault_handler(uint32_t bus_status, hw_stack_frame_t * handler_stack){
 	mcu_fault_event_handler(&fault);
 }
 
-void _mcu_core_usagefault_handler(void) MCU_WEAK;
-void _mcu_core_usagefault_handler(void){
+void _mcu_core_usagefault_handler() MCU_WEAK;
+void _mcu_core_usagefault_handler(){
 	register void * handler_stack;
 	asm volatile ("MRS %0, msp\n\t" : "=r" (handler_stack) );
 	register uint32_t status;

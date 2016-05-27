@@ -36,7 +36,7 @@ static sffs_tp_t * find_tp(const char * file, int line);
 static int rand_seed = 0;
 static sffs_tp_t * tp_table;
 static int tp_total;
-static void (*fail_routine)(void);
+static void (*fail_routine)();
 
 static int scan_report(const char * name){
 	FILE * f;
@@ -135,7 +135,7 @@ static int create_report(const char * name){
 	return 0;
 }
 
-static int update_table(void){
+static int update_table(){
 	int size;
 	sffs_tp_t * tmp;
 	if ( tp_table == NULL ){
@@ -210,7 +210,7 @@ int sffs_tp_createreport(const char * name){
 	return create_report(name);
 }
 
-void sffs_tp_setfailroutine(void (*routine)(void)){
+void sffs_tp_setfailroutine(void (*routine)()){
 	fail_routine = routine;
 }
 

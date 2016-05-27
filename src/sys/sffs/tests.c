@@ -47,7 +47,7 @@ int test_run(bool file_test, bool dir_test){
 }
 
 
-int test_dir(void){
+int test_dir(){
 	struct dirent entry;
 	void * handle;
 	int i;

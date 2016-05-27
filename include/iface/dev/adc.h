@@ -38,7 +38,7 @@
  * #include <stdio.h>
  * #include <dev/adc.h>
  *
- * int read_adc(void){
+ * int read_adc(){
  * 	int fd;
  * 	adc_sample_t buffer[16]; //a buffer for 16 samples
  * 	adc_attr_t attr;

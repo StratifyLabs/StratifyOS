@@ -82,11 +82,11 @@ Link::Link(){
 Link::~Link(){}
 
 
-int Link::lockDevice(void){
+int Link::lockDevice(){
 	return 0;
 }
 
-int Link::unlockDevice(void){
+int Link::unlockDevice(){
 	return 0;
 }
 
@@ -103,20 +103,20 @@ int Link::checkError(int err){
 	return err;
 }
 
-int Link::getProgress(void){
+int Link::getProgress(){
 	return progress;
 }
 
-int Link::getProgessMax(void){
+int Link::getProgessMax(){
 	return progressMax;
 }
 
-void Link::resetProgress(void){
+void Link::resetProgress(){
 	progress = 0;
 	progressMax = 0;
 }
 
-string Link::getStatusMessage(void){
+string Link::getStatusMessage(){
 	return statusMessage;
 }
 
@@ -340,7 +340,7 @@ int Link::ioctl(int fd, int request, void * ctl){
 
 }
 
-int Link::exit(void){
+int Link::exit(){
 	lockDevice();
 	if ( d->dev.handle != LINK_PHY_OPEN_ERROR ){
 		link_disconnect(d);
@@ -351,7 +351,7 @@ int Link::exit(void){
 
 }
 
-bool Link::connected(void){
+bool Link::connected(){
 
 	if( d->status(d->dev.handle) == LINK_PHY_ERROR){
 		d->dev.handle = LINK_PHY_OPEN_ERROR;
@@ -359,7 +359,7 @@ bool Link::connected(void){
 	return (d->dev.handle != LINK_PHY_OPEN_ERROR);
 }
 
-int Link::openStdio(void){
+int Link::openStdio(){
 	int err;
 	if ( isBoot ){
 		return -1;
@@ -380,7 +380,7 @@ int Link::openStdio(void){
 	return err;
 }
 
-int Link::closeStdio(void){
+int Link::closeStdio(){
 	int err;
 	if ( isBoot ){
 		return -1;
@@ -842,7 +842,7 @@ int Link::killPid(int pid, int signo){
 	return checkError(err);
 }
 
-int Link::reset(void){
+int Link::reset(){
 	lockDevice();
 	link_reset(d);
 	unlockDevice();
@@ -850,7 +850,7 @@ int Link::reset(void){
 	return 0;
 }
 
-int Link::resetBootloader(void){
+int Link::resetBootloader(){
 	lockDevice();
 	link_resetbootloader(d);
 	unlockDevice();
@@ -891,7 +891,7 @@ int Link::trace_shutdown(link_trace_id_t id){
 	return err;
 }
 
-bool Link::isBootloader(void){
+bool Link::isBootloader(){
 	return isBoot;
 }
 

@@ -34,11 +34,11 @@
 static volatile uint32_t sched_usecond_counter MCU_SYS_MEM;
 
 static int usecond_overflow_event(void * context, mcu_event_t data);
-static int open_usecond_tmr(void);
+static int open_usecond_tmr();
 
 static int priv_usecond_match_event(void * context, mcu_event_t data);
 
-int sched_timing_init(void){
+int sched_timing_init(){
 	if ( open_usecond_tmr() < 0 ){
 		return -1;
 	}
@@ -192,7 +192,7 @@ int priv_usecond_match_event(void * context, mcu_event_t data){
 	return 1;
 }
 
-int open_usecond_tmr(void){
+int open_usecond_tmr(){
 	int err;
 	tmr_attr_t cfg;
 	tmr_action_t action;

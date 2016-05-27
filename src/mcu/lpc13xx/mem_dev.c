@@ -63,7 +63,7 @@ int _mcu_mem_dev_powered_on(int port){
 	return 1;
 }
 
-int _mcu_mem_getsyspage(void){
+int _mcu_mem_getsyspage(){
 	return (SRAM_PAGES);
 }
 

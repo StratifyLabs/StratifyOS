@@ -30,7 +30,7 @@
 
 char mcu_debug_buffer[MCU_DEBUG_BUFFER_SIZE];
 
-int mcu_debug_init(void){
+int mcu_debug_init(){
 	int port;
 	uart_attr_t attr;
 

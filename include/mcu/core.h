@@ -99,7 +99,7 @@ void _mcu_core_setclockinternal(int fclk) MCU_PRIV_CODE;
 /*! \details This sets the CPU block to 72Mhz assuming
  * a 12MHz clock is connected.
  */
-void _mcu_core_setclock_main_12mhz_72mhz(void) MCU_PRIV_CODE;
+void _mcu_core_setclock_main_12mhz_72mhz() MCU_PRIV_CODE;
 
 /*! \details This function sets the USB clock speed to the required
  * value for USB operation on the device.  The target frequency is defined
@@ -142,8 +142,8 @@ void _mcu_core_getserialno(sn_t * serialno) MCU_PRIV_CODE;
 #define MCU_CORE_USB_MAX_PACKET_ZERO_VALUE 64
 
 #ifndef __link
-static inline int _mcu_core_getclock(void) MCU_ALWAYS_INLINE;
-int _mcu_core_getclock(void){ return mcu_board_config.core_cpu_freq; }
+static inline int _mcu_core_getclock() MCU_ALWAYS_INLINE;
+int _mcu_core_getclock(){ return mcu_board_config.core_cpu_freq; }
 #endif
 
 void _mcu_core_priv_enable_interrupts(void * args) MCU_PRIV_CODE;
@@ -156,8 +156,8 @@ void _mcu_core_priv_set_stack_ptr(void * ptr) MCU_PRIV_CODE;
 void _mcu_core_priv_get_thread_stack_ptr(void * ptr) MCU_PRIV_CODE;
 void _mcu_core_priv_set_thread_stack_ptr(void * ptr) MCU_PRIV_CODE;
 
-void _mcu_core_unprivileged_mode(void);
-void _mcu_core_thread_mode(void);
+void _mcu_core_unprivileged_mode();
+void _mcu_core_thread_mode();
 
 void _mcu_core_delay_us(u32 us);
 void _mcu_core_delay_ms(u32 ms);

@@ -43,16 +43,16 @@ const bootloader_api_t _mcu_core_bootloader_api = {
 
 
 
-void gled_on(void);
-void gled_off(void);
+void gled_on();
+void gled_off();
 
-void init_hw(void);
+void init_hw();
 
 static void * stack_ptr;
-static void (*app_reset)(void);
+static void (*app_reset)();
 
 
-void run_bootloader(void);
+void run_bootloader();
 
 void delay_ms(int ms){
 	int i;
@@ -61,20 +61,20 @@ void delay_ms(int ms){
 	}
 }
 
-void led_flash(void){
+void led_flash(){
 	gled_on();
 	delay_ms(500);
 	gled_off();
 	delay_ms(500);
 }
 
-void led_error(void){
+void led_error(){
 	while(1){
 		led_flash();
 	}
 }
 
-void led_flash_run_bootloader(void){
+void led_flash_run_bootloader(){
 	int i;
 	for(i=0; i < 3; i++){
 		gled_on();
@@ -85,14 +85,14 @@ void led_flash_run_bootloader(void){
 }
 
 
-static int check_run_app(void);
-void run_bootloader(void);
+static int check_run_app();
+void run_bootloader();
 
 /*! \details
  */
-int boot_main(void){
+int boot_main(){
 	stack_ptr = (void*)(((uint32_t*)boot_board_config.program_start_addr)[0]);
-	app_reset = (void (*)(void))( (((uint32_t*)boot_board_config.program_start_addr)[1]) );
+	app_reset = (void (*)())( (((uint32_t*)boot_board_config.program_start_addr)[1]) );
 
 	if ( check_run_app() ){
 		app_reset();
@@ -113,7 +113,7 @@ void boot_event(int event, void * args){
 }
 
 
-void run_bootloader(void){
+void run_bootloader(){
 	init_hw();
 
 	//initialize link and run link update
@@ -126,7 +126,7 @@ void run_bootloader(void){
  * or if the device should enter DFU mode.
  * \return Non-zero if the application should be run.
  */
-int check_run_app(void){
+int check_run_app(){
 	//! \todo Check to see if end of text is less than app program start
 	u32 * bootloader_start = (u32*)boot_board_config.sw_req_loc;
 
@@ -161,7 +161,7 @@ static int debug_write_func(const void * buf, int nbyte){
 }
 #endif
 
-void init_hw(void){
+void init_hw(){
 	mcu_action_t action;
 	_mcu_core_initclock(1);
 	_mcu_core_priv_enable_interrupts(NULL); //Enable the interrupts
@@ -207,7 +207,7 @@ void init_hw(void){
 
 }
 
-void gled_on(void){
+void gled_on(){
 	pio_attr_t attr;
 	attr.mask = (1<<mcu_board_config.led.pin);
 	attr.mode = PIO_MODE_OUTPUT | PIO_MODE_DIRONLY;
@@ -223,17 +223,17 @@ void gled_on(void){
 /*! \details This function turns the green LED off by setting the line to high impedance.
  *
  */
-void gled_off(void){
+void gled_off(){
 	pio_attr_t attr;
 	attr.mask = (1<<mcu_board_config.led.pin);
 	attr.mode = PIO_MODE_INPUT | PIO_MODE_DIRONLY;
 	mcu_pio_setattr(mcu_board_config.led.port, &attr);
 }
 
-void _mcu_core_fault_handler(void){}
-void _mcu_core_hardfault_handler(void){}
-void _mcu_core_memfault_handler(void){}
-void _mcu_core_busfault_handler(void){}
-void _mcu_core_usagefault_handler(void){}
+void _mcu_core_fault_handler(){}
+void _mcu_core_hardfault_handler(){}
+void _mcu_core_memfault_handler(){}
+void _mcu_core_busfault_handler(){}
+void _mcu_core_usagefault_handler(){}
 
 /*! @} */

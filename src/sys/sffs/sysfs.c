@@ -171,14 +171,14 @@ int sysfs_access(int file_mode, int file_uid, int file_gid, int amode){
 
 
 
-int sysfs_notsup(void){
+int sysfs_notsup(){
 	errno = ENOTSUP;
 	return -1;
 }
 
-void * sysfs_notsup_null(void){
+void * sysfs_notsup_null(){
 	errno = ENOTSUP;
 	return NULL;
 }
 
-void sysfs_notsup_void(void){}
+void sysfs_notsup_void(){}

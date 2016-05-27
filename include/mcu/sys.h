@@ -34,7 +34,7 @@
 extern "C" {
 #endif
 
-uint32_t _mcu_sys_getsecurity(void) MCU_PRIV_CODE;
+uint32_t _mcu_sys_getsecurity() MCU_PRIV_CODE;
 void _mcu_sys_setsecuritylock(bool enabled) MCU_PRIV_CODE;
 
 #ifdef __cplusplus

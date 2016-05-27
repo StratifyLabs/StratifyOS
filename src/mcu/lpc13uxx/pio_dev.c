@@ -236,8 +236,8 @@ void _mcu_core_pio_isr(int port){
 	}
 }
 
-void _mcu_core_pio0_isr(void){ _mcu_core_pio_isr(0); }
-void _mcu_core_pio1_isr(void){ _mcu_core_pio_isr(1); }
+void _mcu_core_pio0_isr(){ _mcu_core_pio_isr(0); }
+void _mcu_core_pio1_isr(){ _mcu_core_pio_isr(1); }
 
 __IO uint32_t * _mcu_get_iocon_regs(int port, int pin){
 	__IO uint32_t * regs;

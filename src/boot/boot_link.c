@@ -40,8 +40,8 @@ static bool is_erased = false;
 const device_cfg_t flash_dev = { .periph.port = 0 };
 
 
-void gled_on(void);
-void gled_off(void);
+void gled_on();
+void gled_off();
 
 static int read_flash(link_transport_driver_t * driver, int loc, int nbyte);
 static int read_flash_callback(void * context, void * buf, int nbyte);

@@ -20,7 +20,7 @@
 #ifndef GPIO_FLAGS_H_
 #define GPIO_FLAGS_H_
 
-static inline void gpio_init(void) MCU_ALWAYS_INLINE;
+static inline void gpio_init() MCU_ALWAYS_INLINE;
 static inline void gpio_set(int p, int mask) MCU_ALWAYS_INLINE;
 static inline void gpio_clr(int p, int mask) MCU_ALWAYS_INLINE;
 static inline int gpio_tst(int p, int mask) MCU_ALWAYS_INLINE;
@@ -32,7 +32,7 @@ static inline int gpio_tst_dir(int p, int mask) MCU_ALWAYS_INLINE;
 static inline void gpio_wr(int p, int value) MCU_ALWAYS_INLINE;
 static inline int gpio_rd(int p) MCU_ALWAYS_INLINE;
 
-void gpio_init(void){
+void gpio_init(){
 	LPC_SYSCON->SYSAHBCLKCTRL |= SYSAHBCLKCTRL_GPIO;
 }
 

@@ -526,12 +526,12 @@ int i2c_transfer(int port, int op, device_transfer_t * dop){
 	return 0;
 }
 
-void _mcu_core_i2c0_isr(void){ _mcu_i2c_isr(0); }
+void _mcu_core_i2c0_isr(){ _mcu_i2c_isr(0); }
 #if MCU_I2C_PORTS > 1
-void _mcu_core_i2c1_isr(void){ _mcu_i2c_isr(1); }
+void _mcu_core_i2c1_isr(){ _mcu_i2c_isr(1); }
 #endif
 #if MCU_I2C_PORTS > 2
-void _mcu_core_i2c2_isr(void){ _mcu_i2c_isr(2); }
+void _mcu_core_i2c2_isr(){ _mcu_i2c_isr(2); }
 #endif
 
 #endif

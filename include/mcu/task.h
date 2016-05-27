@@ -136,7 +136,7 @@ typedef struct {
  * has been called, task_new_process() or task_new_thread() can be used to create new tasks.
  */
 int task_init(int interval /*! The minimum interval (in ms) between context switches */,
-		void (*scheduler_function)(void) /*! The scheduler function pointer */,
+		void (*scheduler_function)() /*! The scheduler function pointer */,
 		void * system_stack /*! A pointer to the top (highest address) of the system stack */,
 		int system_stack_size /*! The number of bytes used for the system stack */) MCU_PRIV_CODE;
 
@@ -173,7 +173,7 @@ int task_priv_set_stackguard(int tid /*! The task ID */,
 
 int task_setstackguard(int tid, void * stackaddr, int stacksize);
 
-void task_reload(void);
+void task_reload();
 
 
 /*! \details This function gets the amount of time in CPU clocks that the specified task
@@ -218,7 +218,7 @@ int task_get_thread_zero(int pid /*! The process ID */);
  *
  * \return 0
  */
-int task_init_single(int (*initial_thread)(void) /*! the single thread to execute */,
+int task_init_single(int (*initial_thread)() /*! the single thread to execute */,
 		void * system_memory /*! The location of the system memory */,
 		int system_memory_size /*! The size of the system memory */) MCU_PRIV_CODE;
 

@@ -63,19 +63,19 @@ int getpwuid_r (uid_t uid, struct passwd * pwd, char * buffer, size_t bufsize, s
 /*! \details Not implemented (stub only).
  * \return NULL
  */
-struct passwd *getpwent (void){
+struct passwd *getpwent (){
 	return NULL;
 }
 
 /*! \details Not implemented (stub only).
  */
-void setpwent (void){
+void setpwent (){
 
 }
 
 /*! \details Not implemented (stub only).
  */
-void endpwent (void){
+void endpwent (){
 
 }
 

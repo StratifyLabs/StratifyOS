@@ -15,9 +15,9 @@
 
 int test_run(bool file_test, bool dir_test);
 
-int test_dir(void);
+int test_dir();
 int test_listdir(const char * path);
-int test_file(void);
+int test_file();
 
 int test_rw(const char * file);
 int test_rw_long(const char * file);

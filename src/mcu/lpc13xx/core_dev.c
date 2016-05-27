@@ -13,7 +13,7 @@
 
 #include "mcu/debug.h"
 
-static core_reset_src_t _mcu_core_get_reset_src(void);
+static core_reset_src_t _mcu_core_get_reset_src();
 void _mcu_set_sleep_mode(int * level);
 
 
@@ -118,7 +118,7 @@ void _mcu_set_sleep_mode(int * level){
 	*level = 0;
 }
 
-core_reset_src_t _mcu_core_get_reset_src(void){
+core_reset_src_t _mcu_core_get_reset_src(){
 	uint32_t src_reg;
 
 #if defined __lpc13uxx

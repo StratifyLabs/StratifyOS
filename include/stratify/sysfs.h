@@ -34,9 +34,9 @@
 #include "iface/device_config.h"
 #endif
 
-int sysfs_notsup(void);
-void * sysfs_notsup_null(void);
-void sysfs_notsup_void(void);
+int sysfs_notsup();
+void * sysfs_notsup_null();
+void sysfs_notsup_void();
 int sysfs_always_mounted(const void *);
 
 #define SYSFS_NOTSUP ((void*)sysfs_notsup)
@@ -237,7 +237,7 @@ bool sysfs_isterminator(const sysfs_t * fs){
 	return false;
 }
 
-void sysfs_unlock(void);
+void sysfs_unlock();
 
 
 extern const char sysfs_validset[];

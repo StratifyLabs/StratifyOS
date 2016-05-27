@@ -55,8 +55,8 @@ typedef struct {
 
 static usb_local_t usb_local;
 
-static void clear_callbacks(void);
-void clear_callbacks(void){
+static void clear_callbacks();
+void clear_callbacks(){
 	memset(usb_local.callback, 0, USB_LOGIC_EP_NUM * sizeof(void(*)(int)));
 }
 
@@ -68,7 +68,7 @@ void clear_callbacks(void){
 static uint32_t calc_ep_addr (uint32_t endpoint_num);
 
 static void usb_sie_wr_cmd(uint32_t cmd) MCU_NEVER_INLINE;
-static uint32_t usb_sie_rd_dat(void) MCU_NEVER_INLINE;
+static uint32_t usb_sie_rd_dat() MCU_NEVER_INLINE;
 static void usb_sie_wr_cmd_dat(uint32_t cmd, uint32_t val);
 static void usb_sie_wr_cmd_ep(uint32_t ep_num, uint32_t cmd);
 static uint32_t usb_sie_rd_cmd_dat(uint32_t cmd);
@@ -80,7 +80,7 @@ void usb_sie_wr_cmd(uint32_t cmd){
 	while ((LPC_USB->DevIntSt & CCEMTY_INT) == 0);
 }
 
-uint32_t usb_sie_rd_dat(void){
+uint32_t usb_sie_rd_dat(){
 	while ((LPC_USB->DevIntSt & CDFULL_INT) == 0);
 	return LPC_USB->CmdData;
 }
@@ -468,7 +468,7 @@ int mcu_usb_wr_ep(int port, uint32_t endpoint_num, const void * src, uint32_t si
 
 /*! \details This function services the USB interrupt request.
  */
-void _mcu_core_usb_isr(void){
+void _mcu_core_usb_isr(){
 	uint32_t device_interrupt_status;
 	uint32_t tmp;
 	int i;

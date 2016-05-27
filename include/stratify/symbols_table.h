@@ -650,7 +650,7 @@ u32 const symbols_table[] = {
 };
 
 
-u32 symbols_total(void);
+u32 symbols_total();
 
 
 #endif /* STRATIFY_SYMBOLS_TABLE_H_ */

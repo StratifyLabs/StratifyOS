@@ -28,7 +28,7 @@
  * #include "iface/dev/sys/dirent.h"
  * #include <stdio.h>
  *
- * void show_directory(void){
+ * void show_directory(){
  * 	DIR * dirp;
  * 	struct dirent entry;
  * 	struct dirent * result;

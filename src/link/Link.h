@@ -58,39 +58,39 @@ public:
     /*! \details This gets the error message if an
      * operation fails.
      */
-    string errorMessage(void){ return errMsg; }
+    string errorMessage(){ return errMsg; }
 
     /*! \details This gets the current progress of an operation.  This allows
      * multi-threaded applications to update a progress bar while copying files.
      */
-    int getProgress(void);
+    int getProgress();
 
     /*! \details This gets the maximum progress value of the current operation.
      *
      */
-    int getProgessMax(void);
+    int getProgessMax();
 
     /*! \details This gets the status of the current operation in progress.
      *
      */
-    string getStatusMessage(void);
+    string getStatusMessage();
 
     /*! \details This connects to the specified Stratify OS device.  After calling this,
      * other applications will not have access to the device.
      *
      */
     int init(string sn /*! The serial number or an empty string to ignore */);
-    int reinit(void){ return init(lastsn); }
+    int reinit(){ return init(lastsn); }
 
     /*! \details This disconnects from the device.  After calling this,
      * other applications can access the device.
      */
-    int exit(void);
+    int exit();
 
     /*! \details This checks to see if the device is connected.
      * \return true if connected
      */
-    bool connected(void);
+    bool connected();
 
     //These are all the file transfer options over Stratify OS Link
 
@@ -186,7 +186,7 @@ public:
     /*! \details This checks to see if the target is in bootloader mode.
      * \return Non zero if bootloader mode is active.
      */
-    bool isBootloader(void);
+    bool isBootloader();
 
 
     /*! \details This reads the flash memory of the device.
@@ -235,7 +235,7 @@ public:
     /*! \details This function opens the stdio on the device.
      * This is associated with /dev/link-stdio.
      */
-    int openStdio(void);
+    int openStdio();
 
     /*! \details This function reads the stdout from the device.
      * This is associated with /dev/link-stdio.
@@ -252,7 +252,7 @@ public:
     /*! \details This function opens the stdio on the device.
      * This is associated with /dev/link-stdio.
      */
-    int closeStdio(void);
+    int closeStdio();
 
     /*! \details This function kills the process \a pid.
      *
@@ -264,14 +264,14 @@ public:
      *
      * \return Zero on success or less than zero on error
      */
-    int reset(void);
+    int reset();
 
     /*! \details This function resets the device and invokes the DFU bootloader.
      * The connection to the device is terminated with this call.
      *
      * \return Zero on success or less than zero on error
      */
-    int resetBootloader(void);
+    int resetBootloader();
 
     /*! \details This function reads the time from
      * the device.
@@ -334,10 +334,10 @@ private:
     int stdinFd;
     volatile int progress;
     volatile int progressMax;
-    int lockDevice(void);
-    int unlockDevice(void);
+    int lockDevice();
+    int unlockDevice();
     volatile int lock;
-    void resetProgress(void);
+    void resetProgress();
     bool isBoot;
 
     link_transport_mdriver_t drvr;

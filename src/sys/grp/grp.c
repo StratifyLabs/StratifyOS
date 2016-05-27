@@ -76,21 +76,21 @@ int getgrgid_r (gid_t gid, struct group * grp,
  *
  * \return NULL
  */
-struct group *getgrent (void){
+struct group *getgrent (){
 	return NULL;
 }
 
 /*! \details Not implemented (stub only).
  *
  */
-void setgrent (void){
+void setgrent (){
 
 }
 
 /*! \details Not implemented (stub only).
  *
  */
-void endgrent (void){
+void endgrent (){
 
 }
 

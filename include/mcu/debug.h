@@ -46,7 +46,7 @@ extern "C" {
 #define USB_DEV_STAT() 0
 #else
 #define MCU_DEBUG 1
-int mcu_debug_init(void);
+int mcu_debug_init();
 void mcu_priv_write_debug_uart(void * args);
 
 #define MCU_DEBUG_BUFFER_SIZE 256
@@ -84,7 +84,7 @@ extern volatile int usbdev_stat;
 
 extern void gled_priv_on(void * args) MCU_PRIV_CODE;
 extern void gled_priv_off(void * args) MCU_PRIV_CODE;
-extern void gled_toggle(void);
+extern void gled_toggle();
 
 #endif
 

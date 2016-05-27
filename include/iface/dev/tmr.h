@@ -41,7 +41,7 @@
  * 	return 1; //return non-zero to keep the action between successive events
  * }
  *
- * int tmr_example(void){
+ * int tmr_example(){
  * 	int fd;
  * 	tmr_attr_t attr;
  * 	tmr_action_t action;

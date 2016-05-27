@@ -98,7 +98,7 @@ int _mcu_adc_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
 	return 0;
 }
 
-void _mcu_core_adc_isr(void){
+void _mcu_core_adc_isr(){
 	if ( adc_local.len > 0 ){
 		*adc_local.bufp++ = (adc_sample_t)LPC_ADC->GDR;
 		adc_local.len = adc_local.len - sizeof(adc_sample_t);

@@ -118,7 +118,7 @@
  * #include <fcntl.h>
  * #include <dev/i2c.h>
  *
- * int open_i2c(void){
+ * int open_i2c(){
  * 	int fd;
  * 	i2c_attr_t attr;  //for other devices this is spi_attr_t, uart_attr_t, etc
  * 	fd = open("/dev/i2c1", O_RDWR);

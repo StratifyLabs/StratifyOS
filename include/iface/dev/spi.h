@@ -38,7 +38,7 @@
  * #include <stdio.h>
  * #include "mcu/mcu.h"
  *
- * int read_write_spi(void){
+ * int read_write_spi(){
  * 	int fd;
  * 	spi_attr_t attr;
  * 	char buffer[16];

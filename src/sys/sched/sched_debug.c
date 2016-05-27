@@ -27,7 +27,7 @@
 
 #include "sched_flags.h"
 
-void sched_debug_print_tasks(void){
+void sched_debug_print_tasks(){
 	int i;
 	for(i=1; i < task_get_total(); i++){
 		if ( task_enabled(i) ){
@@ -42,7 +42,7 @@ void sched_debug_print_tasks(void){
 	}
 }
 
-void sched_debug_print_active(void){
+void sched_debug_print_active(){
 	int i;
 	mcu_debug("Active Tasks:\n");
 	for(i=1; i < task_get_total(); i++){
@@ -52,7 +52,7 @@ void sched_debug_print_active(void){
 	}
 }
 
-void sched_debug_print_executing(void){
+void sched_debug_print_executing(){
 	int i;
 	mcu_debug("Executing Tasks:\n");
 	for(i=0; i < task_get_total(); i++){
@@ -63,7 +63,7 @@ void sched_debug_print_executing(void){
 }
 
 
-void sched_debug_print_timers(void){
+void sched_debug_print_timers(){
 	int i;
 	uint32_t timer[2];
 	mcu_debug("Task Timers:\n");

@@ -137,13 +137,13 @@ void mcu_wdt_priv_reset(void * args){
 	LPC_WDT->FEED = 0x55;
 }
 
-void mcu_wdt_reset(void){
+void mcu_wdt_reset(){
 	LPC_WDT->FEED = 0xAA;
 	LPC_WDT->FEED = 0x55;
 }
 
 
-void _mcu_core_wdt_isr(void){
+void _mcu_core_wdt_isr(){
 	LPC_WDT->MOD |= (WDINT);
 	if( mcu_wdt_callback != 0 ){
 		if( mcu_wdt_callback(0, 0) == 0 ){

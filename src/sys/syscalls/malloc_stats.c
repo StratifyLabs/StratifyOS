@@ -21,7 +21,7 @@
 #include <stdio.h>
 #include <malloc.h>
 
-void malloc_stats(void){
+void malloc_stats(){
 	_malloc_stats_r(_REENT);
 }
 

@@ -254,7 +254,7 @@ int sysfs_access(int file_mode, int file_uid, int file_gid, int amode){
 	return -1;
 }
 
-void sysfs_unlock(void){
+void sysfs_unlock(){
 	int i;
 	i = 0;
 	while( sysfs_isterminator(&(sysfs_list[i])) == false ){
@@ -265,14 +265,14 @@ void sysfs_unlock(void){
 
 
 
-int sysfs_notsup(void){
+int sysfs_notsup(){
 	errno = ENOTSUP;
 	return -1;
 }
 
-void * sysfs_notsup_null(void){
+void * sysfs_notsup_null(){
 	errno = ENOTSUP;
 	return NULL;
 }
 
-void sysfs_notsup_void(void){}
+void sysfs_notsup_void(){}

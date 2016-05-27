@@ -21,9 +21,9 @@
 #include "mcu/debug.h"
 #include "iface/dev/bootloader.h"
 
-static void core_init(void);
+static void core_init();
 static const char sys_proc_name[] = "sys";
-extern int _main(void);
+extern int _main();
 
 const bootloader_api_t _mcu_core_bootloader_api MCU_WEAK;
 const bootloader_api_t _mcu_core_bootloader_api = {
@@ -31,29 +31,29 @@ const bootloader_api_t _mcu_core_bootloader_api = {
 };
 
 
-void _mcu_core_hardware_id(void) MCU_ALIAS(_mcu_core_default_isr);
+void _mcu_core_hardware_id() MCU_ALIAS(_mcu_core_default_isr);
 
-void _mcu_core_reset_handler(void) __attribute__ ((section(".reset_vector")));
-void _mcu_core_nmi_isr(void) MCU_WEAK;
+void _mcu_core_reset_handler() __attribute__ ((section(".reset_vector")));
+void _mcu_core_nmi_isr() MCU_WEAK;
 int pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *attr) MCU_WEAK;
 
-void _mcu_core_hardfault_handler(void) MCU_WEAK;
-void _mcu_core_memfault_handler(void) MCU_WEAK;
-void _mcu_core_busfault_handler(void) MCU_WEAK;
-void _mcu_core_usagefault_handler(void) MCU_WEAK;
+void _mcu_core_hardfault_handler() MCU_WEAK;
+void _mcu_core_memfault_handler() MCU_WEAK;
+void _mcu_core_busfault_handler() MCU_WEAK;
+void _mcu_core_usagefault_handler() MCU_WEAK;
 
-void dled_fault_flash(void) MCU_WEAK;
-void dled_nmi_flash(void) MCU_WEAK;
-void dled_isr_flash(void) MCU_WEAK;
+void dled_fault_flash() MCU_WEAK;
+void dled_nmi_flash() MCU_WEAK;
+void dled_isr_flash() MCU_WEAK;
 
-void _mcu_core_default_isr(void) MCU_WEAK;
-void _mcu_core_os_handler(void) MCU_WEAK;
-void _mcu_core_svcall_handler(void);
-void _mcu_core_debugmon_handler(void) MCU_ALIAS(_mcu_core_os_handler);
-void _mcu_core_pendsv_handler(void);
-void _mcu_core_systick_handler(void);
+void _mcu_core_default_isr() MCU_WEAK;
+void _mcu_core_os_handler() MCU_WEAK;
+void _mcu_core_svcall_handler();
+void _mcu_core_debugmon_handler() MCU_ALIAS(_mcu_core_os_handler);
+void _mcu_core_pendsv_handler();
+void _mcu_core_systick_handler();
 
-#define _DECLARE_ISR(name) void _mcu_core_##name##_isr(void) MCU_ALIAS(_mcu_core_default_isr)
+#define _DECLARE_ISR(name) void _mcu_core_##name##_isr() MCU_ALIAS(_mcu_core_default_isr)
 #define _ISR(name) _mcu_core_##name##_isr
 
 #if defined __lpc43xx
@@ -211,7 +211,7 @@ _DECLARE_ISR(sw7); //40
  * address 0 (or wherever the text starts if there is another bootloader) in flash memory
  */
 
-void (* const _mcu_core_vector_table[])(void) __attribute__ ((section(".startup"))) = {
+void (* const _mcu_core_vector_table[])() __attribute__ ((section(".startup"))) = {
 		// Core Level - CM3
 		(void*)&_top_of_stack,					// The initial stack pointer
 		_mcu_core_reset_handler,						// The reset handler
@@ -390,7 +390,7 @@ void _mcu_core_getserialno(sn_t * serial_number){
 	_mcu_lpc_flash_get_serialno(serial_number->sn);
 }
 
-void core_init(void){
+void core_init(){
 	uint32_t *src, *dest;
 	src = &_etext; //point src to copy of data that is stored in flash
 	for(dest = &_data; dest < &_edata; ){ *dest++ = *src++; } //Copy from flash to RAM (data)
@@ -427,7 +427,7 @@ void core_init(void){
 #endif
 }
 
-void _mcu_core_reset_handler(void){
+void _mcu_core_reset_handler(){
 	core_init();
 	_mcu_core_priv_setvectortableaddr((void*)_mcu_core_vector_table);
 	_main(); //This function should never return
@@ -436,7 +436,7 @@ void _mcu_core_reset_handler(void){
 
 /*! \details
  */
-void _mcu_core_nmi_isr(void){
+void _mcu_core_nmi_isr(){
 	while(1){
 		dled_nmi_flash();
 	}
@@ -445,14 +445,14 @@ void _mcu_core_nmi_isr(void){
 /*! \brief
  * \details
  */
-void _mcu_core_os_handler(void){
+void _mcu_core_os_handler(){
 	return;
 }
 
 /*! \brief
  * \details
  */
-void _mcu_core_default_isr(void){
+void _mcu_core_default_isr(){
 	while(1){
 		dled_isr_flash();
 	}
@@ -462,11 +462,11 @@ int pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *attr){
 	return 0;
 }
 
-void dled_fault_flash(void){
+void dled_fault_flash(){
 }
-void dled_nmi_flash(void){
+void dled_nmi_flash(){
 }
-void dled_isr_flash(void){
+void dled_isr_flash(){
 }
 
 
