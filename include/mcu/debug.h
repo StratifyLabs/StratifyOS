@@ -82,10 +82,6 @@ extern volatile int usbdev_stat;
 #endif
 
 
-extern void gled_priv_on(void * args) MCU_PRIV_CODE;
-extern void gled_priv_off(void * args) MCU_PRIV_CODE;
-extern void gled_toggle();
-
 #endif
 
 #ifdef __cplusplus

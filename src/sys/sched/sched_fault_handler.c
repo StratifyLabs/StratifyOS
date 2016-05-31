@@ -28,6 +28,7 @@
 #include <errno.h>
 #include <signal.h>
 #include "mcu/mcu.h"
+#include "mcu/core.h"
 
 #include "sched_flags.h"
 #include "../unistd/unistd_flags.h"
@@ -56,11 +57,12 @@ void mcu_fault_event_handler(fault_t * fault){
 #if MCU_DEBUG
 		sched_fault_build_string(mcu_debug_buffer);
 		mcu_priv_write_debug_uart(NULL);
+		_mcu_core_delay_ms(200);
 #endif
 
-		//while(1){}
+		//start the bootloader
+		mcu_core_invokebootloader(0, 0);
 
-		//WDT will force a reset
 	} else {
 
 		//send a signal to kill the task

@@ -251,7 +251,6 @@ void scheduler();
 #define SCHED_DEBUG 0
 #define sched_debug(...) do { if ( SCHED_DEBUG == 1 ){ mcu_debug("%s:", __func__); mcu_debug(__VA_ARGS__); } } while(0)
 #define sched_priv_debug(...) do { if ( SCHED_DEBUG == 1 ){ mcu_priv_debug("%s:", __func__); mcu_priv_debug(__VA_ARGS__); } } while(0)
-extern void gled_priv_error(void * args);
 
 void sched_priv_set_delaymutex(void * args) MCU_PRIV_EXEC_CODE;
 

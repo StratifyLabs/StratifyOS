@@ -186,7 +186,7 @@ extern void crt_load_data(void * global_reent, int code_size, int data_size);
 extern char ** const crt_import_argv(int argc, char * const argv[]);
 
 #include <stfy/son.h>
-#include <stfy/mg.h>
+#include <sgfx/sg.h>
 
 #ifndef USE_FLOAT
 #define USE_FLOAT 1

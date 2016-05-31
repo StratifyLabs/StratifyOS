@@ -74,7 +74,7 @@ void mcu_priv_write_debug_uart(void * args){
 
 	if ( (err = mcu_uart_write((device_cfg_t*)&port, &wop)) == 0 ){
 		while(busy == 1){
-
+			;
 		}
 	} else {
 		if( err < 0 ){

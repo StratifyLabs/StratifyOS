@@ -615,6 +615,11 @@ extern volatile sched_task_t stfy_sched_table[];
 extern task_t stfy_task_table[];
 extern const stfy_board_config_t stfy_board_config;
 
+void stfy_led_startup();
+void stfy_led_priv_on(void * args);
+void stfy_led_priv_off(void * args);
+void stfy_led_priv_error(void * args);
+
 #ifdef __cplusplus
 }
 #endif

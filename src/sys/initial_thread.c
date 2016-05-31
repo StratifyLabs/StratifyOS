@@ -34,19 +34,16 @@
 #include "mcu/pio.h"
 #include "stratify/link.h"
 
-extern void gled_priv_on(void * args);
-extern void gled_priv_off(void * args);
-void gled_priv_error(void * args);
-
-static void led_startup();
 static int init_fs();
 static int startup_fs();
 
 static void priv_check_reset_source(void * args) MCU_PRIV_EXEC_CODE;
 
 void priv_check_reset_source(void * args){
+	u8 * src = args;
 	core_attr_t attr;
 	mcu_core_getattr(0, &attr);
+	*src = attr.reset_type;
 	switch(attr.reset_type){
 	case CORE_RESET_SRC_WDT:
 		mcu_priv_debug("wdt rst\n");
@@ -63,49 +60,38 @@ void priv_check_reset_source(void * args){
 	}
 }
 
+void check_reset_source(void){
+	u8 src;
+	mcu_core_privcall(priv_check_reset_source, &src);
+	mcu_event(MCU_BOARD_CONFIG_EVENT_INIT, 0);
+}
+
+void start_filesystem(void){
+	u32 started;
+	started = startup_fs();
+	mcu_event(MCU_BOARD_CONFIG_EVENT_START_FILESYSTEM, &started);
+}
 
 void * initial_thread(void * arg){
 
-	mcu_core_privcall(priv_check_reset_source, NULL);
+	check_reset_source();
 
 	//Initialize the file systems
 	if ( init_fs() < 0 ){
-		;
+		mcu_event(MCU_BOARD_CONFIG_EVENT_ERROR, (void*)"init_fs");
 	}
 
-	startup_fs();
+	start_filesystem();
 
 	open("/dev/rtc", O_RDWR);
 
-	usleep(100*1000);
-	led_startup();
+	mcu_event(MCU_BOARD_CONFIG_EVENT_START_LINK, 0);
+
 	link_update(stfy_board_config.link_transport); 	//Run the link update thread--never returns
 
 	return NULL;
 }
 
-
-void led_startup(){
-	int i;
-	int duty;
-	const int factor = 30;
-	duty = 0;
-	for(i=0; i < 100; i++){
-		duty = i*factor;
-		mcu_core_privcall(gled_priv_on, 0);
-		usleep(duty);
-		mcu_core_privcall(gled_priv_off, 0);
-		usleep(100*factor - duty);
-	}
-
-	for(i=0; i < 100; i++){
-		duty = i*factor;
-		mcu_core_privcall(gled_priv_on, 0);
-		usleep(100*factor - duty);
-		mcu_core_privcall(gled_priv_off, 0);
-		usleep(duty);
-	}
-}
 
 int init_fs(){
 	int i;
@@ -137,27 +123,4 @@ int startup_fs(){
 	return started;
 }
 
-void gled_priv_on(void * args){
-	pio_attr_t attr;
-	attr.mask = (1<<mcu_board_config.led.pin);
-	attr.mode = PIO_MODE_OUTPUT | PIO_MODE_DIRONLY;
-	mcu_pio_setattr(mcu_board_config.led.port, &attr);
-	if( mcu_board_config.flags & MCU_BOARD_CONFIG_FLAG_LED_ACTIVE_HIGH ){
-		mcu_pio_setmask(mcu_board_config.led.port, (void*)(1<<mcu_board_config.led.pin));
-	} else {
-		mcu_pio_clrmask(mcu_board_config.led.port, (void*)(1<<mcu_board_config.led.pin));
-	}
-}
-
-/*! \details This function turns the green LED off by setting the line to high impedance.
- *
- */
-void gled_priv_off(void * args){
-	pio_attr_t attr;
-	attr.mode = PIO_MODE_INPUT | PIO_MODE_DIRONLY;
-	attr.mask = (1<<mcu_board_config.led.pin);
-	if( mcu_pio_setattr(mcu_board_config.led.port, &attr) < 0 ){
-		mcu_debug("failed to setattr\n");
-	}
-}
 

@@ -66,7 +66,7 @@ void set_uart_priority(){
 #if MCU_DEBUG
 	mcu_action_t action;
 	memset(&action, 0, sizeof(action));
-	action.prio = 2;
+	action.prio = 127;
 	mcu_uart_setaction(MCU_DEBUG_PORT, &action);
 #endif
 }
@@ -98,12 +98,13 @@ void scheduler(){
 	//mcu_wdt_init(WDT_MODE_RESET|WDT_MODE_CLK_SRC_MAIN, SCHED_RR_DURATION * 10 * stfy_board_config.task_total + 5);
 
 	if ( sched_prepare() ){  //this starts memory protection
-		mcu_core_privcall(gled_priv_error, 0);
+		mcu_event(MCU_BOARD_CONFIG_EVENT_ERROR, (void*)"sprep");
 	}
 
+	mcu_debug("Start first thread\n");
 	if ( start_first_thread() ){
 		sched_debug("Start first thread failed\n");
-		mcu_core_privcall(gled_priv_error, 0);
+		mcu_event(MCU_BOARD_CONFIG_EVENT_ERROR, (void*)"strt1t");
 	}
 
 	while(1){

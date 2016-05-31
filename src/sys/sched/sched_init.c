@@ -99,8 +99,11 @@ int sched_prepare(){
 
 	if ( mcu_debug_init() ){
 		_mcu_core_priv_disable_interrupts(NULL);
-		gled_priv_error(0);
+		mcu_event(MCU_BOARD_CONFIG_EVENT_PRIV_ERROR, (void*)"dbgi");
 	}
+
+
+	mcu_debug("MCU Debug started\n");
 
 #if SCHED_USECOND_TMR_SLEEP_OC > -1
 	if ( sched_timing_init() ){
@@ -115,7 +118,7 @@ int sched_prepare(){
 #if USE_MEMORY_PROTECTION > 0
 	if ( task_init_mpu(&_data, stfy_board_config.sys_memory_size) < 0 ){
 		sched_debug("Failed to initialize memory protection\n");
-		gled_priv_error(0);
+		mcu_event(MCU_BOARD_CONFIG_EVENT_PRIV_ERROR, (void*)"tski");
 	}
 #endif
 
