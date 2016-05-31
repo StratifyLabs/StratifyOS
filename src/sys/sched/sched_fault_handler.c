@@ -60,8 +60,8 @@ void mcu_fault_event_handler(fault_t * fault){
 		_mcu_core_delay_ms(200);
 #endif
 
-		//start the bootloader
-		mcu_core_invokebootloader(0, 0);
+		mcu_event(MCU_BOARD_CONFIG_EVENT_PRIV_FATAL, 0);
+
 
 	} else {
 

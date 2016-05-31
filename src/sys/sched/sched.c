@@ -98,13 +98,13 @@ void scheduler(){
 	//mcu_wdt_init(WDT_MODE_RESET|WDT_MODE_CLK_SRC_MAIN, SCHED_RR_DURATION * 10 * stratify_board_config.task_total + 5);
 
 	if ( sched_prepare() ){  //this starts memory protection
-		mcu_event(MCU_BOARD_CONFIG_EVENT_ERROR, (void*)"sprep");
+		mcu_event(MCU_BOARD_CONFIG_EVENT_FATAL, (void*)"sprep");
 	}
 
 	mcu_debug("Start first thread\n");
 	if ( start_first_thread() ){
 		sched_debug("Start first thread failed\n");
-		mcu_event(MCU_BOARD_CONFIG_EVENT_ERROR, (void*)"strt1t");
+		mcu_event(MCU_BOARD_CONFIG_EVENT_FATAL, (void*)"strt1t");
 	}
 
 	while(1){

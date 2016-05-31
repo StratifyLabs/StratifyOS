@@ -99,7 +99,7 @@ int sched_prepare(){
 
 	if ( mcu_debug_init() ){
 		_mcu_core_priv_disable_interrupts(NULL);
-		mcu_event(MCU_BOARD_CONFIG_EVENT_PRIV_ERROR, (void*)"dbgi");
+		mcu_event(MCU_BOARD_CONFIG_EVENT_PRIV_FATAL, (void*)"dbgi");
 	}
 
 
@@ -118,7 +118,7 @@ int sched_prepare(){
 #if USE_MEMORY_PROTECTION > 0
 	if ( task_init_mpu(&_data, stratify_board_config.sys_memory_size) < 0 ){
 		sched_debug("Failed to initialize memory protection\n");
-		mcu_event(MCU_BOARD_CONFIG_EVENT_PRIV_ERROR, (void*)"tski");
+		mcu_event(MCU_BOARD_CONFIG_EVENT_PRIV_FATAL, (void*)"tski");
 	}
 #endif
 

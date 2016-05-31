@@ -64,7 +64,7 @@ void priv_check_reset_source(void * args){
 void check_reset_source(void){
 	u8 src;
 	mcu_core_privcall(priv_check_reset_source, &src);
-	mcu_event(MCU_BOARD_CONFIG_EVENT_INIT, 0);
+	mcu_event(MCU_BOARD_CONFIG_EVENT_START_INIT, 0);
 }
 
 void start_filesystem(void){
@@ -79,7 +79,7 @@ void * stratify_default_thread(void * arg){
 
 	//Initialize the file systems
 	if ( init_fs() < 0 ){
-		mcu_event(MCU_BOARD_CONFIG_EVENT_ERROR, (void*)"init_fs");
+		mcu_event(MCU_BOARD_CONFIG_EVENT_CRITICAL, (void*)"init_fs");
 	}
 
 	start_filesystem();
