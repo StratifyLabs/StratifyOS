@@ -295,7 +295,7 @@ int mcu_i2c_setaction(int port, void * ctl){
 	mcu_action_t * action = (mcu_action_t*)ctl;
 	if( action->callback == 0 ){
 		if ( !(i2c_local[port].state & I2C_DONE_FLAG) ){
-			exec_callback(port, DEVICE_OP_CANCELLED);
+			exec_callback(port, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
 		}
 	}
 

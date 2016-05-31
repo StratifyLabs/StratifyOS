@@ -74,11 +74,11 @@ int sst25vf_tmr_open(const device_cfg_t * cfg){
 	return 0;
 }
 
-static void complete_spi_read(const device_cfg_t * cfg, uint32_t ignore){
+static void complete_spi_read(const device_cfg_t * cfg, mcu_event_t ignore){
 	sst25vf_state_t * state = (sst25vf_state_t*)cfg->state;
 	sst25vf_share_deassert_cs(cfg);
 	if( state->callback != NULL ){
-		state->callback(state->context, NULL);
+		state->callback(state->context, (mcu_event_t)NULL);
 		state->callback = NULL;
 	}
 }

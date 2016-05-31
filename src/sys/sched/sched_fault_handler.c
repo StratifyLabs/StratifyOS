@@ -60,7 +60,7 @@ void mcu_fault_event_handler(fault_t * fault){
 		_mcu_core_delay_ms(200);
 #endif
 
-		mcu_event(MCU_BOARD_CONFIG_EVENT_PRIV_FATAL, 0);
+		mcu_board_event(MCU_BOARD_CONFIG_EVENT_PRIV_FATAL, 0);
 
 
 	} else {

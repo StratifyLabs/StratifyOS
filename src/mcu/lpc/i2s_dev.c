@@ -229,7 +229,7 @@ int mcu_i2s_setaction(int port, void * ctl){
 	if( action->event & I2S_ACTION_EVENT_READ ){
 
 		if( action->callback == 0 ){
-			exec_callback(&i2s_local[port].rx, DEVICE_OP_CANCELLED);
+			exec_callback(&i2s_local[port].rx, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
 		}
 
 		if( _mcu_core_priv_validate_callback(action->callback) < 0 ){
@@ -244,7 +244,7 @@ int mcu_i2s_setaction(int port, void * ctl){
 	if( action->event & I2S_ACTION_EVENT_WRITE ){
 
 		if( action->callback == 0 ){
-			exec_callback(&i2s_local[port].tx, DEVICE_OP_CANCELLED);
+			exec_callback(&i2s_local[port].tx, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
 		}
 
 		if( _mcu_core_priv_validate_callback(action->callback) < 0 ){

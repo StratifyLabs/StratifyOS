@@ -65,8 +65,8 @@ void usb_dev_priv_init(void * args){
 	mcu_usb_attach(context->constants->port, NULL);
 }
 
-int usb_dev_std_setup(void * context_object, mcu_event_t data /*! Callback data */){
-	u32 event = (u32)data;
+int usb_dev_std_setup(void * context_object, mcu_event_t usb_event /*! Callback data */){
+	u32 event = MCU_EVENT_CODE(usb_event);
 	usb_dev_context_t * context = context_object;
 	if ( event == USB_SETUP_EVENT ){
 		usb_dev_std_setup_stage(context);

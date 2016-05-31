@@ -101,7 +101,7 @@ static int data_received(void * context, mcu_event_t data){
 		state->rop->nbyte = state->len;
 		if( (bytes_read = read_buffer(cfgp, state, state->rop)) > 0 ){
 			state->rop->nbyte = bytes_read;
-			if ( state->rop->callback(state->rop->context, NULL) == 0 ){
+			if ( state->rop->callback(state->rop->context, (mcu_event_t)NULL) == 0 ){
 				state->rop = NULL;
 			}
 		}
@@ -136,7 +136,7 @@ int usbfifo_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 		if( action->callback == 0 ){
 			if ( state->rop != NULL ){
 				state->rop->nbyte = -1;
-				if ( state->rop->callback(state->rop->context, DEVICE_OP_CANCELLED) == 0 ){
+				if ( state->rop->callback(state->rop->context, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED)) == 0 ){
 					state->rop = NULL;
 				}
 			}
@@ -149,7 +149,7 @@ int usbfifo_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 		state->tail = 0;
 		if ( state->rop != NULL ){
 			state->rop->nbyte = -1;
-			if ( state->rop->callback(state->rop->context, DEVICE_OP_CANCELLED) == 0 ){
+			if ( state->rop->callback(state->rop->context, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED)) == 0 ){
 				state->rop = NULL;
 			}
 		}

@@ -241,11 +241,11 @@ int mcu_usb_setaction(int port, void * ctl){
 
 	if( action->channel & 0x80 ){
 		if( (action->callback == 0) && (action->event == USB_EVENT_WRITE_COMPLETE) ){
-			exec_writecallback(action->channel & ~0x80, DEVICE_OP_CANCELLED);
+			exec_writecallback(action->channel & ~0x80, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED) );
 		}
 	} else {
 		if( (action->callback == 0) && (action->event == USB_EVENT_DATA_READY) ){
-			exec_readcallback(action->channel & ~0x80, DEVICE_OP_CANCELLED);
+			exec_readcallback(action->channel & ~0x80, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED) );
 		}
 	}
 
@@ -591,8 +591,8 @@ void _mcu_core_usb0_isr(){
 			USB_DEV_DEBUG(0x20);
 			usb_local.connected = 0;
 			for(i = 1; i < USB_LOGIC_EP_NUM; i++){
-				_mcu_core_exec_event_handler(&(usb_local.read[i]), (mcu_event_t)-1);
-				_mcu_core_exec_event_handler(&(usb_local.write[i]), (mcu_event_t)-1);
+				_mcu_core_exec_event_handler(&(usb_local.read[i]), (mcu_event_t)MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
+				_mcu_core_exec_event_handler(&(usb_local.write[i]), (mcu_event_t)MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
 			}
 		}
 
@@ -659,12 +659,12 @@ void slow_ep_int(){
 				//Check for a setup packet
 				if ( (phy_ep == 0) && (tmp & EP_SEL_STP) ){
 					USB_DEV_DEBUG(0x200);
-					_mcu_core_exec_event_handler(&(usb_local.read[0]), (mcu_event_t)USB_SETUP_EVENT);
+					_mcu_core_exec_event_handler(&(usb_local.read[0]), (mcu_event_t)MCU_EVENT_SET_CODE(USB_SETUP_EVENT));
 				} else {
-					exec_readcallback(log_ep, (mcu_event_t)USB_OUT_EVENT);
+					exec_readcallback(log_ep, (mcu_event_t)MCU_EVENT_SET_CODE(USB_OUT_EVENT));
 				}
 			} else {  //These are the IN endpoints
-				exec_writecallback(log_ep, (mcu_event_t)USB_IN_EVENT);
+				exec_writecallback(log_ep, (mcu_event_t)MCU_EVENT_SET_CODE(USB_IN_EVENT));
 			}
 		}
 
@@ -674,7 +674,7 @@ void slow_ep_int(){
 
 static void exec_readcallback(int log_ep, void * data){
 	usb_local.read_ready |= (1<<log_ep);
-	_mcu_core_exec_event_handler(&(usb_local.read[log_ep]), data);
+	_mcu_core_exec_event_handler(&(usb_local.read[log_ep]), (mcu_event_t)data);
 }
 
 static void exec_writecallback(int log_ep, void * data){

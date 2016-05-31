@@ -409,7 +409,7 @@ int mcu_uart_setattr(int port, void * ctl){
 }
 
 static void exec_readcallback(int port, LPC_UART_Type * uart_regs, void * data){
-	_mcu_core_exec_event_handler(&(uart_local[port].read), data);
+	_mcu_core_exec_event_handler(&(uart_local[port].read), (mcu_event_t)data);
 
 	//if the callback is NULL now, disable the interrupt
 	if( uart_local[port].read.callback == NULL ){
@@ -420,7 +420,7 @@ static void exec_readcallback(int port, LPC_UART_Type * uart_regs, void * data){
 static void exec_writecallback(int port, LPC_UART_Type * uart_regs, void * data){
 	uart_local[port].tx_bufp = NULL;
 	//call the write callback
-	_mcu_core_exec_event_handler(&(uart_local[port].write), data);
+	_mcu_core_exec_event_handler(&(uart_local[port].write), (mcu_event_t)data);
 
 	//if the callback is NULL now, disable the interrupt
 	if( uart_local[port].write.callback == NULL ){
@@ -438,7 +438,7 @@ int mcu_uart_setaction(int port, void * ctl){
 		if( action->event == UART_EVENT_DATA_READY ){
 			if ( uart_regs->IER & UIER_RBRIE ){
 				//There is an ongoing read operation
-				exec_readcallback(port, uart_regs, DEVICE_OP_CANCELLED);
+				exec_readcallback(port, uart_regs, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
 			}
 			uart_local[port].read.callback = 0;
 			return 0;
@@ -446,7 +446,7 @@ int mcu_uart_setaction(int port, void * ctl){
 
 		if( action->event == UART_EVENT_WRITE_COMPLETE ){
 			if ( uart_regs->IER & UIER_ETBEI ){
-				exec_writecallback(port, uart_regs, DEVICE_OP_CANCELLED);
+				exec_writecallback(port, uart_regs, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
 			}
 			uart_local[port].write.callback = 0;
 			return 0;

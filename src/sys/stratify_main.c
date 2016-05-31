@@ -38,16 +38,16 @@ int _main(){
 
 	if ( sched_init() < 0 ){ //Initialize the data used for the scheduler
 		_mcu_core_priv_disable_interrupts(NULL);
-		while(1){ mcu_event(MCU_BOARD_CONFIG_EVENT_PRIV_FATAL, 0); }
+		while(1){ mcu_board_event(MCU_BOARD_CONFIG_EVENT_PRIV_FATAL, 0); }
 	}
 
 	if ( sched_start(stratify_board_config.start, 10) < 0 ){
 		_mcu_core_priv_disable_interrupts(NULL);
-		while(1){ mcu_event(MCU_BOARD_CONFIG_EVENT_PRIV_FATAL, 0); }
+		while(1){ mcu_board_event(MCU_BOARD_CONFIG_EVENT_PRIV_FATAL, 0); }
 	}
 
 	_mcu_core_priv_disable_interrupts(NULL);
-	while(1){ mcu_event(MCU_BOARD_CONFIG_EVENT_PRIV_FATAL, 0); }
+	while(1){ mcu_board_event(MCU_BOARD_CONFIG_EVENT_PRIV_FATAL, 0); }
 	return 0;
 }
 

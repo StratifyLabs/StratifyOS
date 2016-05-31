@@ -85,7 +85,7 @@ int mcu_eint_setaction(int port, void * ctl){
 	mcu_action_t * action = (mcu_action_t*)ctl;
 
 	if( action->callback == 0 ){
-		exec_callback(port, DEVICE_OP_CANCELLED);
+		exec_callback(port, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
 	}
 
 	if( _mcu_core_priv_validate_callback(action->callback) < 0 ){

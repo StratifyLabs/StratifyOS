@@ -134,7 +134,7 @@ int uartfifo_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 			//This needs to cancel an ongoing operation
 			if( state->rop != NULL ){
 				state->rop->nbyte = -1;
-				if ( state->rop->callback(state->rop->context, DEVICE_OP_CANCELLED) == 0 ){
+				if ( state->rop->callback(state->rop->context, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED)) == 0 ){
 					state->rop = NULL;
 				}
 			}

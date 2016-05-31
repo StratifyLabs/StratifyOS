@@ -39,8 +39,6 @@
 extern "C" {
 #endif
 
-#define DEVICE_OP_CANCELLED ((void*)0xABCDEF)
-
 #define DEVICE_GET_PORT(x) (x->periph.port)
 
 /*! \brief Data structure for on-chip MCU peripherals.

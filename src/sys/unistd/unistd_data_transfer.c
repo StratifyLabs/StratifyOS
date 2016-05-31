@@ -62,7 +62,7 @@ int priv_data_transfer_callback(void * context, mcu_event_t data){
 	int new_priority;
 	priv_device_data_transfer_t * args = (priv_device_data_transfer_t*)context;
 
-	if( data == DEVICE_OP_CANCELLED ){
+	if( (u32)data == MCU_EVENT_CODE(MCU_EVENT_OP_CANCELLED) ){
 		args->op.nbyte = -1; //ignore any data transferred and return an error
 	}
 

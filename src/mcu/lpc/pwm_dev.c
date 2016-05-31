@@ -297,7 +297,7 @@ int mcu_pwm_setaction(int port, void * ctl){
 	if( action->callback == 0 ){
 		//cancel any ongoing operation
 		if ( regs->MCR & (1<<0) ){ //If the interrupt is enabled--the pwm is busy
-			exec_callback(port, regs, DEVICE_OP_CANCELLED);
+			exec_callback(port, regs, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
 		}
 	}
 

@@ -213,7 +213,7 @@ int mcu_spi_setaction(int port, void * ctl){
 	if( action->callback == 0 ){
 		//cancel any ongoing operation
 		if ( regs->CR & (SPIE) ){
-			exec_callback(port, DEVICE_OP_CANCELLED);
+			exec_callback(port, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
 		}
 	}
 

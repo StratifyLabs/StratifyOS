@@ -18,7 +18,7 @@
 #include "mcu/mcu.h"
 #include "mcu/debug.h"
 
-void mcu_event(int event, void * args){
+void mcu_board_event(int event, void * args){
 	if( mcu_board_config.event != 0 ){
 		mcu_board_config.event(event, args);
 	}

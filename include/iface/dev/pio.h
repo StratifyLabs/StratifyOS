@@ -178,17 +178,6 @@ typedef struct {
 	uint32_t mask /*! \brief Mask of pin(s) that caused interrupt */;
 } pio_action_data_t;
 
-
-/*! \details This function will get the PIO mask value to indicate which
- * pin caused an interrupt
- *
- * @param event The mcu_event_t passed to a callback
- * @return Value with bits set to indicate which pin caused an interrupt
- */
-#if !defined __link
-static inline u32 pio_mcu_event_mask(mcu_event_t event){ return (u32)event; }
-#endif
-
 /*! \brief IOCTL request to get the attributes.
  * \hideinitializer
  */

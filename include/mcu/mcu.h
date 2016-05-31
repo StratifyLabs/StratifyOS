@@ -123,7 +123,7 @@ typedef struct MCU_PACK {
 
 extern const mcu_board_config_t mcu_board_config;
 
-void mcu_event(int event, void * args);
+void mcu_board_event(int event, void * args);
 
 #ifdef __cplusplus
 }

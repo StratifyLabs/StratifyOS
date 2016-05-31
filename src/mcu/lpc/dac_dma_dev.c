@@ -130,7 +130,7 @@ int mcu_dac_setaction(int port, void * ctl){
 	mcu_action_t * action = (mcu_action_t*)ctl;
 	if( action->callback == 0 ){
 		if ( LPC_GPDMA->ENBLDCHNS & (1<<DAC_DMA_CHAN) ){
-			exec_callback(port, DEVICE_OP_CANCELLED);
+			exec_callback(port, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
 		}
 	}
 

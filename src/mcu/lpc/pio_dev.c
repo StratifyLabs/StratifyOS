@@ -36,8 +36,6 @@ static pio_local_t _mcu_pio0_local MCU_SYS_MEM;
 static pio_local_t _mcu_pio2_local MCU_SYS_MEM;
 
 static int _mcu_pio_set_event(int port, int event, int pin);
-static void exec_callback0(void * data);
-static void exec_callback2(void * data);
 
 void _mcu_pio_dev_power_on(int port){
 	if ( port == 0 ){
@@ -183,9 +181,9 @@ int mcu_pio_setaction(int port, void * ctl){
 
 	if( action->callback == 0 ){
 		if( port == 0 ){
-			exec_callback0(DEVICE_OP_CANCELLED);
+			_mcu_core_exec_event_handler(&(_mcu_pio0_local.handler), MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
 		} else if ( port == 2 ){
-			exec_callback2(DEVICE_OP_CANCELLED);
+			_mcu_core_exec_event_handler(&(_mcu_pio2_local.handler), MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
 		}
 	}
 
@@ -370,42 +368,32 @@ int mcu_pio_set(int port, void * ctl){
 	return 0;
 }
 
-void exec_callback0(void * data){
-	pio_event_t ev;
-	if( data == 0 ){
-		ev.status = 0;
-		ev.rising = LPC_GPIOINT->IO0IntStatR;
-		ev.falling = LPC_GPIOINT->IO0IntStatF;
-		LPC_GPIOINT->IO0IntClr = ev.rising | ev.falling;
-	} else {
-		ev.status = (u32)data;
-	}
-
-	_mcu_core_exec_event_handler(&(_mcu_pio0_local.handler), &ev);
+void exec_cancelled0(){
+	_mcu_core_exec_event_handler(&(_mcu_pio0_local.handler), MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
 }
 
-void exec_callback2(void * data){
-	pio_event_t ev;
-	if( data == 0 ){
-		ev.status = 0;
-		ev.rising = LPC_GPIOINT->IO2IntStatR;
-		ev.falling = LPC_GPIOINT->IO2IntStatF;
-		LPC_GPIOINT->IO2IntClr = ev.rising | ev.falling;
-	} else {
-		ev.status = (u32)data;
-	}
-
-	_mcu_core_exec_event_handler(&(_mcu_pio2_local.handler), &ev);
+void exec_cancelled2(){
+	_mcu_core_exec_event_handler(&(_mcu_pio2_local.handler), MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
 }
 
 //On __lpc17xx The pio interrupts use the eint3 interrupt service routine -- this function should be called from there
 void _mcu_core_pio0_isr(){
+	pio_event_t ev;
+
 	if ( LPC_GPIOINT->IntStatus & (1<<0) ){
-		exec_callback0(0);
+		ev.status = 0;
+		ev.rising = LPC_GPIOINT->IO0IntStatR;
+		ev.falling = LPC_GPIOINT->IO0IntStatF;
+		LPC_GPIOINT->IO0IntClr = ev.rising | ev.falling;
+		_mcu_core_exec_event_handler(&(_mcu_pio0_local.handler), &ev);
 	}
 
 	if ( LPC_GPIOINT->IntStatus & (1<<2) ){
-		exec_callback2(0);
+		ev.status = 0;
+		ev.rising = LPC_GPIOINT->IO2IntStatR;
+		ev.falling = LPC_GPIOINT->IO2IntStatF;
+		LPC_GPIOINT->IO2IntClr = ev.rising | ev.falling;
+		_mcu_core_exec_event_handler(&(_mcu_pio2_local.handler), &ev);
 	}
 }
 

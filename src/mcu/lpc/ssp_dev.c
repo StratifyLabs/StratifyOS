@@ -372,7 +372,7 @@ int mcu_ssp_setaction(int port, void * ctl){
 
 	if( action->callback == 0 ){
 		if ( regs->IMSC & (SSPIMSC_RXIM|SSPIMSC_RTIM) ){
-			exec_callback(port, regs, DEVICE_OP_CANCELLED);
+			exec_callback(port, regs, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
 		}
 		ssp_local[port].handler.callback = 0;
 		return 0;

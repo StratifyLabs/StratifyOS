@@ -94,9 +94,19 @@ extern "C" {
 #define MCU_NEVER_INLINE __attribute__((noinline))
 
 
+enum mcu_event_codes {
+	MCU_EVENT_OP_CANCELLED = 0xABCDEF,
+};
+
+
 typedef void * mcu_event_t;
 
-/*! \details This is a HWPL callback pointer.  It is
+#define MCU_EVENT_SET_CODE(x) ((mcu_event_t)((x<<1) | 0x01))
+#define MCU_EVENT_CODE(x) ((u32)x >> 1)
+
+
+
+/*! \details This is a MCU callback pointer.  It is
  * a member of the \ref mcu_action_t structure.
  *
  * See \ref I_SETACTION for an example to use a mcu callback.
