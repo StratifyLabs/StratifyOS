@@ -23,36 +23,31 @@
 
 /*! \file */
 
-#include <stratify/stratify.h>
+#include "stratify/stratify.h"
 #include "config.h"
 #include "mcu/mcu.h"
 #include "mcu/core.h"
 
 #include "sched/sched_flags.h"
 
-extern void gled_priv_on(void * args);
-extern void gled_priv_off(void * args);
-void gled_priv_error(void * args) MCU_PRIV_EXEC_CODE;
 static void init_hw();
-static void check_reset_source();
-
-/*! \details This function runs the operating system.
- *
- */
 
 int _main() MCU_WEAK;
 int _main(){
 	init_hw();
 
-
-	if ( sched_start(initial_thread, 10) < 0 ){
+	if ( sched_init() < 0 ){ //Initialize the data used for the scheduler
 		_mcu_core_priv_disable_interrupts(NULL);
-		gled_priv_error(0);
+		while(1){ mcu_event(MCU_BOARD_CONFIG_EVENT_PRIV_ERROR, 0); }
+	}
+
+	if ( sched_start(stratify_board_config.start, 10) < 0 ){
+		_mcu_core_priv_disable_interrupts(NULL);
+		while(1){ mcu_event(MCU_BOARD_CONFIG_EVENT_PRIV_ERROR, 0); }
 	}
 
 	_mcu_core_priv_disable_interrupts(NULL);
-	gled_priv_error(0);
-	while(1);
+	while(1){ mcu_event(MCU_BOARD_CONFIG_EVENT_PRIV_ERROR, 0); }
 	return 0;
 }
 
@@ -64,46 +59,64 @@ void init_hw(){
 	_mcu_core_initclock(1);
 	mcu_fault_init();
 	_mcu_core_priv_enable_interrupts(NULL); //Enable the interrupts
-
-	if ( sched_init() < 0 ){ //Initialize the hardware used for the scheduler
-		_mcu_core_priv_disable_interrupts(NULL);
-		gled_priv_error(0);
-	}
-
-	check_reset_source();
-}
-
-void check_reset_source(){
-	//fault_t fault;
-	core_attr_t attr;
-
-	mcu_core_getattr(0, &attr);
-
-	switch(attr.reset_type){
-	case CORE_RESET_SRC_WDT:
-		//log the reset
-		break;
-	case CORE_RESET_SRC_POR:
-	case CORE_RESET_SRC_BOR:
-	case CORE_RESET_SRC_EXTERNAL:
-		//read and discard the fault
-		//mcu_fault_load(&fault);
-		break;
-	}
-}
-
-
-void gled_priv_error(void * args){
-	while(1){
-		gled_priv_on(0);
-		_mcu_core_delay_ms(50);
-		gled_priv_off(0);
-		_mcu_core_delay_ms(50);
-	}
 }
 
 int kernel_request(int request, void * data){
 	return 0;
+}
+
+void stratify_led_startup(){
+	int i;
+	int duty;
+	const int factor = 30;
+	duty = 0;
+	for(i=0; i < 100; i++){
+		duty = i*factor;
+		mcu_core_privcall(stratify_led_priv_on, 0);
+		usleep(duty);
+		mcu_core_privcall(stratify_led_priv_off, 0);
+		usleep(100*factor - duty);
+	}
+
+	for(i=0; i < 100; i++){
+		duty = i*factor;
+		mcu_core_privcall(stratify_led_priv_on, 0);
+		usleep(100*factor - duty);
+		mcu_core_privcall(stratify_led_priv_off, 0);
+		usleep(duty);
+	}
+}
+
+void stratify_led_priv_on(void * args){
+	pio_attr_t attr;
+	attr.mask = (1<<mcu_board_config.led.pin);
+	attr.mode = PIO_MODE_OUTPUT | PIO_MODE_DIRONLY;
+	mcu_pio_setattr(mcu_board_config.led.port, &attr);
+	if( mcu_board_config.flags & MCU_BOARD_CONFIG_FLAG_LED_ACTIVE_HIGH ){
+		mcu_pio_setmask(mcu_board_config.led.port, (void*)(1<<mcu_board_config.led.pin));
+	} else {
+		mcu_pio_clrmask(mcu_board_config.led.port, (void*)(1<<mcu_board_config.led.pin));
+	}
+}
+
+
+
+void stratify_led_priv_off(void * args){
+	pio_attr_t attr;
+	attr.mode = PIO_MODE_INPUT | PIO_MODE_DIRONLY;
+	attr.mask = (1<<mcu_board_config.led.pin);
+	if( mcu_pio_setattr(mcu_board_config.led.port, &attr) < 0 ){
+		mcu_debug("failed to setattr\n");
+	}
+}
+
+void stratify_led_priv_error(void * args){
+	while(1){
+		stratify_led_priv_on(0);
+		_mcu_core_delay_ms(50);
+		stratify_led_priv_off(0);
+		_mcu_core_delay_ms(50);
+	}
 }
 
 

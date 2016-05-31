@@ -32,10 +32,10 @@ void sched_debug_print_tasks(){
 	for(i=1; i < task_get_total(); i++){
 		if ( task_enabled(i) ){
 			mcu_debug("Task %d Details (0x%X):\n", i, task_table[i].flags);
-			mcu_debug("\tMem Addr: 0x%X\n", (unsigned int)stfy_sched_table[i].attr.stackaddr);
+			mcu_debug("\tMem Addr: 0x%X\n", (unsigned int)stratify_sched_table[i].attr.stackaddr);
 			mcu_debug("\tCurrent Stack Ptr:  0x%X\n", (unsigned int)task_table[i].sp);
-			mcu_debug("\tStack Size: %d\n", stfy_sched_table[i].attr.stacksize);
-			mcu_debug("\tSched Priority %d\n", stfy_sched_table[i].attr.schedparam.sched_priority);
+			mcu_debug("\tStack Size: %d\n", stratify_sched_table[i].attr.stacksize);
+			mcu_debug("\tSched Priority %d\n", stratify_sched_table[i].attr.schedparam.sched_priority);
 		} else {
 			mcu_debug("Task %d is not enabled\n", i);
 		}

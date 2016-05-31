@@ -104,7 +104,7 @@ int sched_getparam(pid_t pid, struct sched_param * param){
 	//! \todo check the permissions for EPERM
 
 	//copy from sched_table to param
-	memcpy(param, (void*)&stfy_sched_table[tid].attr.schedparam, sizeof(struct sched_param));
+	memcpy(param, (void*)&stratify_sched_table[tid].attr.schedparam, sizeof(struct sched_param));
 	return 0;
 }
 
@@ -123,7 +123,7 @@ int sched_getscheduler(pid_t pid){
 	}
 
 	//return the scheduling policy
-	return PTHREAD_ATTR_GET_SCHED_POLICY( (&(stfy_sched_table[tid].attr)) );
+	return PTHREAD_ATTR_GET_SCHED_POLICY( (&(stratify_sched_table[tid].attr)) );
 }
 
 /*! \details This function gets the round robin interval for \a pid.
@@ -159,7 +159,7 @@ int sched_setparam(pid_t pid, const struct sched_param * param){
 		return -1;
 	}
 
-	args.policy = PTHREAD_ATTR_GET_SCHED_POLICY( (&(stfy_sched_table[args.tid].attr)) );
+	args.policy = PTHREAD_ATTR_GET_SCHED_POLICY( (&(stratify_sched_table[args.tid].attr)) );
 
 	if ( (param->sched_priority > sched_get_priority_max(args.policy)) ||
 			(param->sched_priority < sched_get_priority_min(args.policy)) ){
@@ -224,9 +224,9 @@ void priv_set_scheduling_param(void * args){
 	int id;
 	id = p->tid;
 
-	PTHREAD_ATTR_SET_SCHED_POLICY( (&(stfy_sched_table[id].attr)), p->policy);
+	PTHREAD_ATTR_SET_SCHED_POLICY( (&(stratify_sched_table[id].attr)), p->policy);
 
-	memcpy((void*)&stfy_sched_table[id].attr.schedparam, p->param, sizeof(struct sched_param));
+	memcpy((void*)&stratify_sched_table[id].attr.schedparam, p->param, sizeof(struct sched_param));
 
 	if ( p->policy == SCHED_FIFO ){
 		task_assert_isfifo(id);

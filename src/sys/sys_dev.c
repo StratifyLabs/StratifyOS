@@ -50,18 +50,18 @@ int sys_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 	switch(request){
 	case  I_SYS_GETATTR:
 		strncpy(sys->version, VERSION, 7);
-		strncpy(sys->sys_version, stfy_board_config.sys_version, 7);
+		strncpy(sys->sys_version, stratify_board_config.sys_version, 7);
 		sys->version[7] = 0;
 		strncpy(sys->arch, ARCH, 7);
 		sys->arch[7] = 0;
 		sys->security = _mcu_sys_getsecurity();
 		sys->signature = symbols_table[0];
 		sys->cpu_freq = _mcu_core_getclock();
-		sys->sys_mem_size = stfy_board_config.sys_memory_size;
-		sys->flags = stfy_board_config.sys_flags;
-		strncpy(sys->stdin_name, stfy_board_config.stdin_dev, NAME_MAX-1);
-		strncpy(sys->stdout_name, stfy_board_config.stdout_dev, NAME_MAX-1);
-		strncpy(sys->name, stfy_board_config.sys_name, NAME_MAX-1);
+		sys->sys_mem_size = stratify_board_config.sys_memory_size;
+		sys->flags = stratify_board_config.sys_flags;
+		strncpy(sys->stdin_name, stratify_board_config.stdin_dev, NAME_MAX-1);
+		strncpy(sys->stdout_name, stratify_board_config.stdout_dev, NAME_MAX-1);
+		strncpy(sys->name, stratify_board_config.sys_name, NAME_MAX-1);
 		_mcu_core_getserialno(&(sys->serial));
 		return 0;
 	case I_SYS_GETTASK:
@@ -112,11 +112,11 @@ int read_task(sys_taskattr_t * task){
 			task->is_enabled = 1;
 			task->pid = task_get_pid( task->tid );
 			task->timer = task_priv_gettime(task->tid);
-			task->mem_loc = (uint32_t)stfy_sched_table[task->tid].attr.stackaddr;
-			task->mem_size = stfy_sched_table[task->tid].attr.stacksize;
+			task->mem_loc = (uint32_t)stratify_sched_table[task->tid].attr.stackaddr;
+			task->mem_size = stratify_sched_table[task->tid].attr.stacksize;
 			task->stack_ptr = (uint32_t)task_table[task->tid].sp;
-			task->prio = stfy_sched_table[task->tid].priority;
-			task->prio_ceiling = stfy_sched_table[task->tid].attr.schedparam.sched_priority;
+			task->prio = stratify_sched_table[task->tid].priority;
+			task->prio_ceiling = stratify_sched_table[task->tid].attr.schedparam.sched_priority;
 			task->is_active = (sched_active_asserted(task->tid) != 0) | ((sched_stopped_asserted(task->tid != 0)<<1));
 			task->is_thread = task_isthread_asserted( task->tid );
 

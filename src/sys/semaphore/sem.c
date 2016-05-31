@@ -283,9 +283,9 @@ int sem_close(sem_t *sem){
 
 void priv_sem_post(void * args){
 	int id = *((int*)args);
-	stfy_sched_table[id].block_object = NULL;
+	stratify_sched_table[id].block_object = NULL;
 	sched_priv_assert_active(id, SCHED_UNBLOCK_SEMAPHORE);
-	sched_priv_update_on_wake( stfy_sched_table[id].priority );
+	sched_priv_update_on_wake( stratify_sched_table[id].priority );
 }
 
 /*! \details This function unlocks (increments) the value of
@@ -442,7 +442,7 @@ int sem_unlink(const char *name){
 void priv_sem_wait(void * args){
 	sem_t * sem = (sem_t*)args;
 
-	stfy_sched_table[ task_get_current() ].block_object = args;
+	stratify_sched_table[ task_get_current() ].block_object = args;
 
 	if ( sem->value <= 0){
 		//task must be blocked until the semaphore is available

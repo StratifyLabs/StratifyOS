@@ -95,16 +95,30 @@ enum {
 	MCU_BOARD_CONFIG_FLAG_LED_ACTIVE_HIGH = (1<<0)
 };
 
+enum {
+	MCU_BOARD_CONFIG_EVENT_PRIV_RESET,
+	MCU_BOARD_CONFIG_EVENT_PRIV_ERROR,
+	MCU_BOARD_CONFIG_EVENT_ERROR,
+	MCU_BOARD_CONFIG_EVENT_INIT /*! Args is a pointer to u8 which is the reset type */,
+	MCU_BOARD_CONFIG_EVENT_START_FILESYSTEM /*! Args is a pointer to u32 which says how many processes started */,
+	MCU_BOARD_CONFIG_EVENT_START_LINK,
+	MCU_BOARD_CONFIG_EVENT_TOTAL
+};
+
 typedef struct MCU_PACK {
 	u32 core_osc_freq;
 	u32 core_cpu_freq;
 	u32 core_periph_freq;
 	u32 usb_max_packet_zero;
 	u32 flags;
+	void (*event)(int, void*);
 	pio_t led;
+	u16 resd;
 } mcu_board_config_t;
 
 extern const mcu_board_config_t mcu_board_config;
+
+void mcu_event(int event, void * args);
 
 #ifdef __cplusplus
 }

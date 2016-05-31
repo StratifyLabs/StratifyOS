@@ -107,7 +107,7 @@ int clock_gettime(clockid_t id, struct timespec * tp){
 
 int32_t convert_clocks_to_nanoseconds(int32_t clocks){
 	uint64_t tmp;
-	tmp = (uint64_t)clocks * stfy_board_config.clk_nsec_div + 512;
+	tmp = (uint64_t)clocks * stratify_board_config.clk_nsec_div + 512;
 	return (uint32_t)(tmp / 1024);
 }
 
@@ -115,7 +115,7 @@ void task_timer_to_timespec(struct timespec * tp, uint64_t task_timer){
 	uint64_t nanosec;
 	ldiv_t divide;
 	divide = ldiv(task_timer, _mcu_core_getclock());
-	nanosec = divide.rem * stfy_board_config.clk_nsec_div;
+	nanosec = divide.rem * stratify_board_config.clk_nsec_div;
 	tp->tv_sec = divide.quot;
 	tp->tv_nsec = nanosec;
 }

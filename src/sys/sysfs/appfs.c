@@ -115,7 +115,7 @@ int appfs_init(const void * cfg){
 	memset(buf, 0, APPFS_RAM_USAGE_BYTES);
 
 	//first mark the RAM used by the OS using _data and _edata, etc
-	appfs_ram_setrange(buf, _mcu_mem_getsyspage(), stfy_board_config.sys_memory_size, APPFS_MEMPAGETYPE_SYS);
+	appfs_ram_setrange(buf, _mcu_mem_getsyspage(), stratify_board_config.sys_memory_size, APPFS_MEMPAGETYPE_SYS);
 
 	//now scan each flash page to see what RAM is used
 	dev->driver.ioctl(&(dev->cfg), I_MEM_GETATTR, &attr);

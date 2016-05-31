@@ -98,13 +98,13 @@ int task_init(int interval,
 	NVIC_SetPriority(SysTick_IRQn, DEV_MIDDLE_PRIORITY);
 	NVIC_SetPriority(PendSV_IRQn, DEV_MIDDLE_PRIORITY);
 	NVIC_SetPriority(SVCall_IRQn, DEV_MIDDLE_PRIORITY-1);  //elevate so serial hardware doesn't interrupt
-	NVIC_SetPriority(HardFault_IRQn, 0);
+	NVIC_SetPriority(HardFault_IRQn, 2);
 
 #if !defined __lpc82x
 	NVIC_SetPriority(DebugMonitor_IRQn, 0);
-	NVIC_SetPriority(MemoryManagement_IRQn, 2);
-	NVIC_SetPriority(BusFault_IRQn, 2);
-	NVIC_SetPriority(UsageFault_IRQn, 2);
+	NVIC_SetPriority(MemoryManagement_IRQn, 3);
+	NVIC_SetPriority(BusFault_IRQn, 3);
+	NVIC_SetPriority(UsageFault_IRQn, 3);
 #endif
 
 	//enable the FPU if it is in use

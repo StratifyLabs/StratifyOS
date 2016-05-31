@@ -143,7 +143,6 @@ typedef struct MCU_PACK {
 	u16 flags;
 	link_transport_driver_t * link_transport_driver;
 	u32 id;
-	void (*event)(int, void*);
 } bootloader_board_config_t;
 
 

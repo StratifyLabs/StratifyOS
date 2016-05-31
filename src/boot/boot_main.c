@@ -26,9 +26,9 @@ void exec_bootloader(void * args){
 	mcu_core_reset(0, 0);
 }
 
-void boot_api_event(int event, void * args){
-	if( boot_board_config.event != 0 ){
-		boot_board_config.event(event, args);
+void boot_event(int event, void * args){
+	if( mcu_board_config.event != 0 ){
+		mcu_board_config.event(event, args);
 	}
 }
 
@@ -38,7 +38,7 @@ const bootloader_api_t _mcu_core_bootloader_api = {
 		.code_size = (u32)&_etext,
 		.exec = exec_bootloader,
 		.usb_dev_priv_init = usb_dev_priv_init,
-		.event = boot_api_event
+		.event = boot_event
 };
 
 
@@ -105,13 +105,6 @@ int boot_main(){
 	while(1);
 	return 0;
 }
-
-void boot_event(int event, void * args){
-	if( boot_board_config.event != 0 ){
-		boot_board_config.event(event, args);
-	}
-}
-
 
 void run_bootloader(){
 	init_hw();

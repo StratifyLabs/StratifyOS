@@ -422,7 +422,7 @@ void powerdown(int seconds);
  * that are designed to auto-run.  It can be completely replaced so
  * that users can customize the startup sequence.
  */
-void * initial_thread(void * arg) MCU_WEAK;
+void * stratify_default_thread(void * arg);
 
 /*! \details Format the filesystem that is mounted at \a path.
  * \return Zero on success
@@ -593,27 +593,38 @@ typedef struct {
 	trace_id_t trace_id /*! Trace ID is PID is being traced (0 otherwise) */;
 } sched_task_t;
 
+/*! \brief Stratify Board Configuration Structure
+ * \details This structure holds the compiler-link time
+ * configuration data.
+ */
 typedef struct MCU_PACK {
-	u8 clk_usecond_tmr;
-	u8 task_total;
-	u16 resd;
+	u8 clk_usecond_tmr /*! tmr used for usecond counter */;
+	u8 task_total /*! Total number of supported tasks */;
+	u16 start_stack_size /*! Stack size of the first thread (when in doubt use STRATIFY_DEFAULT_START_STACK_SIZE) */;
 	u32 clk_usec_mult;
 	u32 clk_nsec_div;
-	const char * stdin_dev;
-	const char * stdout_dev;
-	const char * stderr_dev;
-	const char * sys_name;
-	const char * sys_version;
-	int sys_memory_size;
-	int sys_flags;
-	void * link_transport;
-} stfy_board_config_t;
+	const char * stdin_dev /*! Device used for standard input */;
+	const char * stdout_dev /*! Device used for standard output */;
+	const char * stderr_dev /*! Device used for standard error */;
+	const char * sys_name /*! System (or board) name */;
+	const char * sys_version /*! System (or board) version (distint from kernel version) */;
+	int sys_memory_size /*! Memory size reserved for the system */;
+	int sys_flags /*! System flags */;
+	void * (*start)(void*) /*! The start routine (when in doubt use stratify_default_thread()) */;
+	void * start_args /*! Arguments passed to the start routine (for  stratify_default_thread() use a pointer to the link transport driver) */;
+} stratify_board_config_t;
 
+#define STRATIFY_DEFAULT_START_STACK_SIZE 2048
 
 //must be provided by board support package
-extern volatile sched_task_t stfy_sched_table[];
-extern task_t stfy_task_table[];
-extern const stfy_board_config_t stfy_board_config;
+extern volatile sched_task_t stratify_sched_table[];
+extern task_t stratify_task_table[];
+extern const stratify_board_config_t stratify_board_config;
+
+void stratify_led_startup();
+void stratify_led_priv_on(void * args);
+void stratify_led_priv_off(void * args);
+void stratify_led_priv_error(void * args);
 
 #ifdef __cplusplus
 }

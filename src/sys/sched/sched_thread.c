@@ -94,8 +94,8 @@ void priv_activate_thread(priv_activate_thread_t * args){
 	id = args->id;
 	struct _reent * reent;
 
-	memset( (void*)&stfy_sched_table[id], 0, sizeof(sched_task_t));
-	memcpy( (void*)&(stfy_sched_table[id].attr), args->attr, sizeof(pthread_attr_t));
+	memset( (void*)&stratify_sched_table[id], 0, sizeof(sched_task_t));
+	memcpy( (void*)&(stratify_sched_table[id].attr), args->attr, sizeof(pthread_attr_t));
 
 	//Items inherited from parent thread
 	//Signal mask
@@ -103,21 +103,21 @@ void priv_activate_thread(priv_activate_thread_t * args){
 	reent = (struct _reent *)task_table[id].reent;
 	reent->sigmask = _REENT->sigmask;
 
-	stfy_sched_table[args->id].priority = args->attr->schedparam.sched_priority;
-	if ( PTHREAD_ATTR_GET_SCHED_POLICY( (&(stfy_sched_table[id].attr)) ) == SCHED_FIFO ){
+	stratify_sched_table[args->id].priority = args->attr->schedparam.sched_priority;
+	if ( PTHREAD_ATTR_GET_SCHED_POLICY( (&(stratify_sched_table[id].attr)) ) == SCHED_FIFO ){
 		task_assert_isfifo(id);
 	} else {
 		task_deassert_isfifo(id);
 	}
 
-	stfy_sched_table[id].wake.tv_sec = SCHED_TIMEVAL_SEC_INVALID;
-	stfy_sched_table[id].wake.tv_usec = 0;
+	stratify_sched_table[id].wake.tv_sec = SCHED_TIMEVAL_SEC_INVALID;
+	stratify_sched_table[id].wake.tv_usec = 0;
 	sched_priv_assert_active(id, 0);
 	sched_priv_assert_inuse(id);
 #if USE_MEMORY_PROTECTION > 0
 	task_priv_set_stackguard(id, args->stackguard, SCHED_DEFAULT_STACKGUARD_SIZE);
 #endif
-	sched_priv_update_on_wake(stfy_sched_table[id].priority);
+	sched_priv_update_on_wake(stratify_sched_table[id].priority);
 }
 
 void cleanup_thread(void * status){
@@ -153,7 +153,7 @@ void cleanup_thread(void * status){
 
 #endif
 
-	detach_state = PTHREAD_ATTR_GET_DETACH_STATE( (&(stfy_sched_table[task_get_current()].attr)) );
+	detach_state = PTHREAD_ATTR_GET_DETACH_STATE( (&(stratify_sched_table[task_get_current()].attr)) );
 	args.joined = 0;
 	if ( detach_state == PTHREAD_CREATE_JOINABLE ){
 		args.status = (int)status;
@@ -164,7 +164,7 @@ void cleanup_thread(void * status){
 
 	//Free all memory associated with this thread
 	malloc_free_task_r(_REENT, task_get_current() );
-	free( stfy_sched_table[task_get_current()].attr.stackaddr );
+	free( stratify_sched_table[task_get_current()].attr.stackaddr );
 	mcu_core_privcall(priv_cleanup, &args.joined);
 }
 
@@ -175,7 +175,7 @@ void priv_wait_joined(void * args){
 	//wait until the thread has been joined to free the resources
 	for(joined=1; joined < task_get_total(); joined++){
 		//check to see if any threads are blocked on this thread
-		if ( stfy_sched_table[joined].block_object == &stfy_sched_table[task_get_current()] ){
+		if ( stratify_sched_table[joined].block_object == &stratify_sched_table[task_get_current()] ){
 			//This thread is joined to the current thread
 			p->joined = joined;
 			//the thread can continue when one thread has been joined
@@ -184,10 +184,10 @@ void priv_wait_joined(void * args){
 	}
 
 	if ( p->joined == 0 ){
-		stfy_sched_table[task_get_current()].block_object = (void*)&stfy_sched_table[task_get_current()].block_object; //block on self
+		stratify_sched_table[task_get_current()].block_object = (void*)&stratify_sched_table[task_get_current()].block_object; //block on self
 		sched_priv_update_on_sleep();
 	} else {
-		stfy_sched_table[task_get_current()].exit_status = p->status;
+		stratify_sched_table[task_get_current()].exit_status = p->status;
 	}
 }
 
@@ -196,14 +196,14 @@ void priv_cleanup(void * args){
 	//notify all joined threads of termination
 	for(joined=1; joined < task_get_total(); joined++){
 		//check to see if any threads are blocked on this thread
-		if ( stfy_sched_table[joined].block_object == &stfy_sched_table[task_get_current()] ){
+		if ( stratify_sched_table[joined].block_object == &stratify_sched_table[task_get_current()] ){
 			//This thread is joined to the current thread
-			stfy_sched_table[joined].exit_status = stfy_sched_table[task_get_current()].exit_status;
+			stratify_sched_table[joined].exit_status = stratify_sched_table[task_get_current()].exit_status;
 			sched_priv_assert_active(joined, SCHED_UNBLOCK_PTHREAD_JOINED_THREAD_COMPLETE);
 		}
 	}
 
-	stfy_sched_table[task_get_current()].flags = 0;
+	stratify_sched_table[task_get_current()].flags = 0;
 	task_priv_del(task_get_current());
 	sched_priv_update_on_sleep();
 }

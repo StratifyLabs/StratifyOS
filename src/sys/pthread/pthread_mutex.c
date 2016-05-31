@@ -317,7 +317,7 @@ int pthread_mutex_force_unlock(pthread_mutex_t *mutex){
 
 void priv_mutex_block(priv_mutex_trylock_t *args){
 	//block the calling mutex
-	stfy_sched_table[ args->id ].block_object = args->mutex; //Elevate the priority of the task based on prio_ceiling
+	stratify_sched_table[ args->id ].block_object = args->mutex; //Elevate the priority of the task based on prio_ceiling
 	sched_priv_timedblock(args->mutex, &args->abs_timeout);
 }
 
@@ -343,8 +343,8 @@ void priv_mutex_trylock(priv_mutex_trylock_t *args){
 		//The mutex is free -- lock it up
 		args->mutex->pthread = args->id; //This is to hold the mutex in case another task tries to grab it
 		args->mutex->pid = task_get_pid(args->id);
-		if ( args->mutex->prio_ceiling > stfy_sched_table[ args->id ].priority ){
-			stfy_sched_table[ args->id ].priority = args->mutex->prio_ceiling; //Elevate the priority of the task based on prio_ceiling
+		if ( args->mutex->prio_ceiling > stratify_sched_table[ args->id ].priority ){
+			stratify_sched_table[ args->id ].priority = args->mutex->prio_ceiling; //Elevate the priority of the task based on prio_ceiling
 		}
 		args->mutex->lock = 1; //This is the lock count
 		args->ret = 0;
@@ -361,10 +361,10 @@ void priv_mutex_unlock(priv_mutex_unlock_t * args){
 	int new_thread;
 	int last_prio;
 	//Restore the priority to the task that is unlocking the mutex
-	stfy_sched_table[args->id].priority = stfy_sched_table[args->id].attr.schedparam.sched_priority;
+	stratify_sched_table[args->id].priority = stratify_sched_table[args->id].attr.schedparam.sched_priority;
 	last_prio = sched_current_priority;
-	sched_current_priority = stfy_sched_table[args->id].priority;
-	stfy_sched_table[args->id].block_object = NULL;
+	sched_current_priority = stratify_sched_table[args->id].priority;
+	stratify_sched_table[args->id].block_object = NULL;
 
 	//check to see if another task is waiting for the mutex
 	new_thread = sched_get_highest_priority_blocked(args->mutex);
@@ -373,14 +373,14 @@ void priv_mutex_unlock(priv_mutex_unlock_t * args){
 		args->mutex->pthread = new_thread;
 		args->mutex->pid = task_get_pid(new_thread);
 		args->mutex->lock = 1;
-		stfy_sched_table[new_thread].priority = args->mutex->prio_ceiling;
+		stratify_sched_table[new_thread].priority = args->mutex->prio_ceiling;
 		sched_priv_assert_active(new_thread, SCHED_UNBLOCK_MUTEX);
-		sched_priv_update_on_wake(stfy_sched_table[new_thread].priority);
+		sched_priv_update_on_wake(stratify_sched_table[new_thread].priority);
 	} else {
 		args->mutex->lock = 0;
 		args->mutex->pthread = -1; //The mutex is up for grabs
 		if ( last_prio > sched_current_priority ){
-			sched_priv_update_on_wake(stfy_sched_table[args->id].priority); //The priority was downgraded
+			sched_priv_update_on_wake(stratify_sched_table[args->id].priority); //The priority was downgraded
 		}
 	}
 }

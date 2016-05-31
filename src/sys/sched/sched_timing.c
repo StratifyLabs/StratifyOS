@@ -50,11 +50,11 @@ uint32_t sched_seconds_to_clocks(int seconds){
 }
 
 uint32_t sched_useconds_to_clocks(int useconds){
-	return (uint32_t)(stfy_board_config.clk_usec_mult * useconds);
+	return (uint32_t)(stratify_board_config.clk_usec_mult * useconds);
 }
 
 uint32_t sched_nanoseconds_to_clocks(int nanoseconds){
-	return (uint32_t)nanoseconds * 1024 / stfy_board_config.clk_nsec_div;
+	return (uint32_t)nanoseconds * 1024 / stratify_board_config.clk_nsec_div;
 }
 
 void sched_priv_timedblock(void * block_object, struct sched_timeval * abs_time){
@@ -66,33 +66,33 @@ void sched_priv_timedblock(void * block_object, struct sched_timeval * abs_time)
 
 	//Initialization
 	id = task_get_current();
-	stfy_sched_table[id].block_object = block_object;
+	stratify_sched_table[id].block_object = block_object;
 	time_sleep = false;
 
 	if (abs_time->tv_sec >= sched_usecond_counter){
 
-		stfy_sched_table[id].wake.tv_sec = abs_time->tv_sec;
-		stfy_sched_table[id].wake.tv_usec = abs_time->tv_usec;
+		stratify_sched_table[id].wake.tv_sec = abs_time->tv_sec;
+		stratify_sched_table[id].wake.tv_usec = abs_time->tv_usec;
 
 		if(abs_time->tv_sec == sched_usecond_counter){
 
-			mcu_tmr_off(stfy_board_config.clk_usecond_tmr, NULL); //stop the timer
+			mcu_tmr_off(stratify_board_config.clk_usecond_tmr, NULL); //stop the timer
 
 			//Read the current OC value to see if it needs to be updated
 			chan_req.channel = SCHED_USECOND_TMR_SLEEP_OC;
-			mcu_tmr_getoc(stfy_board_config.clk_usecond_tmr, &chan_req);
+			mcu_tmr_getoc(stratify_board_config.clk_usecond_tmr, &chan_req);
 			if ( abs_time->tv_usec < chan_req.value ){
 				chan_req.value = abs_time->tv_usec;
 			}
 
 			//See if abs_time is in the past
-			now = (uint32_t)mcu_tmr_get(stfy_board_config.clk_usecond_tmr, NULL);
+			now = (uint32_t)mcu_tmr_get(stratify_board_config.clk_usecond_tmr, NULL);
 			if( abs_time->tv_usec > (now+40) ){ //needs to be enough in the future to allow the OC to be set before the timer passes it
-				mcu_tmr_setoc(stfy_board_config.clk_usecond_tmr, &chan_req);
+				mcu_tmr_setoc(stratify_board_config.clk_usecond_tmr, &chan_req);
 				time_sleep = true;
 			}
 
-			mcu_tmr_on(stfy_board_config.clk_usecond_tmr, NULL); //start the timer
+			mcu_tmr_on(stratify_board_config.clk_usecond_tmr, NULL); //start the timer
 
 
 		} else {
@@ -131,7 +131,7 @@ void sched_convert_timeval(struct timeval * t, const struct sched_timeval * tv){
 
 void sched_priv_get_realtime(struct sched_timeval * tv){
 	tv->tv_sec = sched_usecond_counter;
-	tv->tv_usec = (uint32_t)mcu_tmr_get(stfy_board_config.clk_usecond_tmr, NULL);
+	tv->tv_usec = (uint32_t)mcu_tmr_get(stratify_board_config.clk_usecond_tmr, NULL);
 }
 
 int usecond_overflow_event(void * context, mcu_event_t data){
@@ -156,25 +156,25 @@ int priv_usecond_match_event(void * context, mcu_event_t data){
 	new_priority = SCHED_LOWEST_PRIORITY - 1;
 	next = overflow;
 
-	mcu_tmr_off(stfy_board_config.clk_usecond_tmr, NULL); //stop the timer
-	current_match = mcu_tmr_get(stfy_board_config.clk_usecond_tmr, NULL);
+	mcu_tmr_off(stratify_board_config.clk_usecond_tmr, NULL); //stop the timer
+	current_match = mcu_tmr_get(stratify_board_config.clk_usecond_tmr, NULL);
 
 	for(i=1; i < task_get_total(); i++){
 		if ( task_enabled(i) && !sched_active_asserted(i) ){ //enabled and inactive tasks only
-			tmp = stfy_sched_table[i].wake.tv_usec;
+			tmp = stratify_sched_table[i].wake.tv_usec;
 			//compare the current clock to the wake time
-			if ( (stfy_sched_table[i].wake.tv_sec < sched_usecond_counter) ||
-					( (stfy_sched_table[i].wake.tv_sec == sched_usecond_counter) && (tmp <= current_match) )
+			if ( (stratify_sched_table[i].wake.tv_sec < sched_usecond_counter) ||
+					( (stratify_sched_table[i].wake.tv_sec == sched_usecond_counter) && (tmp <= current_match) )
 			){
 				//wake this task
-				stfy_sched_table[i].wake.tv_sec = SCHED_TIMEVAL_SEC_INVALID;
+				stratify_sched_table[i].wake.tv_sec = SCHED_TIMEVAL_SEC_INVALID;
 				sched_priv_assert_active(i, SCHED_UNBLOCK_SLEEP);
 
 				if ( sched_get_priority(i) > new_priority ){
 					new_priority = sched_get_priority(i);
 				}
 
-			} else if ( (stfy_sched_table[i].wake.tv_sec == sched_usecond_counter) && (tmp < next) ) {
+			} else if ( (stratify_sched_table[i].wake.tv_sec == sched_usecond_counter) && (tmp < next) ) {
 				//see if this is the next event to wake up
 				next = tmp;
 			}
@@ -183,11 +183,11 @@ int priv_usecond_match_event(void * context, mcu_event_t data){
 	if ( next < overflow ){
 		chan_req.value = next;
 	}
-	mcu_tmr_setoc(stfy_board_config.clk_usecond_tmr, &chan_req);
+	mcu_tmr_setoc(stratify_board_config.clk_usecond_tmr, &chan_req);
 
 	sched_priv_update_on_wake(new_priority);
 
-	mcu_tmr_on(stfy_board_config.clk_usecond_tmr, NULL);
+	mcu_tmr_on(stratify_board_config.clk_usecond_tmr, NULL);
 #endif
 	return 1;
 }
@@ -200,7 +200,7 @@ int open_usecond_tmr(){
 	device_periph_t tmr;
 
 
-	tmr.port = stfy_board_config.clk_usecond_tmr;
+	tmr.port = stratify_board_config.clk_usecond_tmr;
 	//Open the microsecond timer
 	err = mcu_tmr_open((device_cfg_t*)&tmr);
 	if (err){
