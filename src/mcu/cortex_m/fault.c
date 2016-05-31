@@ -24,10 +24,11 @@
 extern int fault_dev_save(fault_t * fault);
 extern int fault_dev_load(fault_t * fault);
 
-void hardfault_handler(uint32_t fault_status, hw_stack_frame_t * handler_stack);
-void busfault_handler(uint32_t bus_status, hw_stack_frame_t * handler_stack);
-void memfault_handler(uint32_t mem_status, hw_stack_frame_t * handler_stack);
-void usagefault_handler(uint32_t usage_status, hw_stack_frame_t * handler_stack);
+void hardfault_handler(u32 fault_status, hw_stack_frame_t * handler_stack);
+void busfault_handler(u32 bus_status, hw_stack_frame_t * handler_stack);
+void memfault_handler(u32 mem_status, hw_stack_frame_t * handler_stack);
+void usagefault_handler(u32 usage_status, hw_stack_frame_t * handler_stack);
+void wdtfault_handler(hw_stack_frame_t * handler_stack);
 
 
 #define get_pc(stack_reg) (((hw_stack_frame_t*)(stack_reg))->pc)
@@ -55,7 +56,7 @@ void _mcu_core_hardfault_handler() MCU_WEAK;
 void _mcu_core_hardfault_handler(){
 	register hw_stack_frame_t * handler_stack;
 	asm volatile ("MRS %0, msp\n\t" : "=r" (handler_stack) );
-	register uint32_t fault_status;
+	register u32 fault_status;
 
 	fault_status = SCB->HFSR;
 	SCB->HFSR = fault_status; //Clear the hard fault
@@ -63,7 +64,7 @@ void _mcu_core_hardfault_handler(){
 	hardfault_handler(fault_status, handler_stack);
 }
 
-void hardfault_handler(uint32_t fault_status, hw_stack_frame_t * handler_stack){
+void hardfault_handler(u32 fault_status, hw_stack_frame_t * handler_stack){
 	hw_stack_frame_t * stack;
 	fault_t fault;
 	_mcu_core_priv_get_thread_stack_ptr( &stack );
@@ -71,7 +72,7 @@ void hardfault_handler(uint32_t fault_status, hw_stack_frame_t * handler_stack){
 	fault.addr = (void*)0xFFFFFFFF;
 	fault.num = MCU_FAULT_HARD_UNKNOWN;
 
-	if ( fault_status & (1<<30) ){
+	if ( (fault_status & (1<<30)) ){
 
 		fault_status = SCB->CFSR;
 		SCB->CFSR = fault_status;
@@ -101,33 +102,42 @@ void hardfault_handler(uint32_t fault_status, hw_stack_frame_t * handler_stack){
 
 
 
-/*
-void _mcu_core_default_isr(){
+
+void _mcu_core_wdt_isr(){
+	register void * handler_stack;
 	asm volatile ("MRS %0, msp\n\t" : "=r" (handler_stack) );
+
+	wdtfault_handler(handler_stack);
+}
+
+void wdtfault_handler(hw_stack_frame_t * handler_stack){
+	fault_t fault;
 	hw_stack_frame_t * stack;
 	_mcu_core_priv_get_thread_stack_ptr( &stack );
-	fault_t fault;
-	fault.num = MCU_FAULT_UNHANDLED_INTERRUPT;
+
+	fault.num = MCU_FAULT_WDT;
+	fault.addr = (void*)-1;
 	fault.pc = (void*)stack->pc;
 	fault.caller = (void*)stack->lr;
 	fault.handler_pc = (void*)handler_stack->pc;
 	fault.handler_caller = (void*)handler_stack->lr;
-	//! \todo The code should be the IRQ number that fired
+
 	mcu_fault_event_handler(&fault);
+
+	mcu_event(MCU_BOARD_CONFIG_EVENT_PRIV_FATAL, 0);
 }
-*/
 
 void _mcu_core_memfault_handler() MCU_WEAK;
 void _mcu_core_memfault_handler(){
 	register void * handler_stack;
 	asm volatile ("MRS %0, msp\n\t" : "=r" (handler_stack) );
-	register uint32_t status;
+	register u32 status;
 	status = SCB->CFSR;
 	SCB->CFSR = status;
 	memfault_handler(status, handler_stack);
 }
 
-void memfault_handler(uint32_t mem_status, hw_stack_frame_t * handler_stack){
+void memfault_handler(u32 mem_status, hw_stack_frame_t * handler_stack){
 	fault_t fault;
 	hw_stack_frame_t * stack;
 	_mcu_core_priv_get_thread_stack_ptr( &stack );
@@ -173,13 +183,13 @@ void _mcu_core_busfault_handler() MCU_WEAK;
 void _mcu_core_busfault_handler(){
 	register void * handler_stack;
 	asm volatile ("MRS %0, msp\n\t" : "=r" (handler_stack) );
-	register uint32_t status;
+	register u32 status;
 	status = SCB->CFSR;
 	SCB->CFSR = status; //clear the bits (by writing one)
 	busfault_handler(status >> 8, handler_stack);
 }
 
-void busfault_handler(uint32_t bus_status, hw_stack_frame_t * handler_stack){
+void busfault_handler(u32 bus_status, hw_stack_frame_t * handler_stack){
 	fault_t fault;
 	hw_stack_frame_t * stack;
 	_mcu_core_priv_get_thread_stack_ptr( &stack );	//Clear the fault
@@ -227,13 +237,13 @@ void _mcu_core_usagefault_handler() MCU_WEAK;
 void _mcu_core_usagefault_handler(){
 	register void * handler_stack;
 	asm volatile ("MRS %0, msp\n\t" : "=r" (handler_stack) );
-	register uint32_t status;
+	register u32 status;
 	status = SCB->CFSR;
 	SCB->CFSR = status;  //clear the bits by writing one
 	usagefault_handler(status >> 16, handler_stack);
 }
 
-void usagefault_handler(uint32_t usage_status, hw_stack_frame_t * handler_stack){
+void usagefault_handler(u32 usage_status, hw_stack_frame_t * handler_stack){
 	//Clear the fault
 	fault_t fault;
 	hw_stack_frame_t * stack;

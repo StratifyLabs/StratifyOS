@@ -64,7 +64,7 @@ link_transport_phy_t stratify_link_transport_usb_open(const char * name, int bau
 	}
 
 	//set USB attributes
-	mcu_debug("Set USB attr %d\n", fd);
+	mcu_debug("Set USB attr fd:%d\n", fd);
 
 	usb_attr.pin_assign = 0;
 	usb_attr.mode = USB_ATTR_MODE_DEVICE;

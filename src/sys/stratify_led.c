@@ -24,7 +24,7 @@
 void stratify_led_startup(){
 	int i;
 	int duty;
-	const int factor = 30;
+	const int factor = 10;
 	duty = 0;
 	for(i=0; i < 100; i++){
 		duty = i*factor;

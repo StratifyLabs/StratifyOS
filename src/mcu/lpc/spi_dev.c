@@ -23,11 +23,9 @@
 #include "spi_flags.h"
 #include "ssp_flags.h"
 #include "mcu/core.h"
-
 #include "mcu/debug.h"
 
 #if MCU_SPI_PORTS > 0
-
 
 typedef struct {
 	char * volatile rx_buf;
@@ -35,14 +33,12 @@ typedef struct {
 	volatile int size;
 	void * duplex_mem;
 	int ret;
-	uint8_t pin_assign;
-	uint8_t width;
-	uint8_t ref_count;
+	u8 pin_assign;
+	u8 width;
+	u8 ref_count;
 	mcu_callback_t callback;
 	void * context;
 } spi_local_t;
-
-
 
 static spi_local_t spi_local[MCU_SPI_PORTS] MCU_SYS_MEM;
 
@@ -51,19 +47,13 @@ static u8 const spi_irqs[MCU_SPI_PORTS] = MCU_SPI_IRQS;
 
 static void exec_callback(int port, void * data);
 
-
-
 static int spi_port_transfer(int port, int is_read, device_transfer_t * dop);
 static int byte_swap(int port, int byte);
 
 void _mcu_spi_dev_power_on(int port){
 	if ( spi_local[port].ref_count == 0 ){
-		switch(port){
-		case 2:
-			_mcu_lpc_core_enable_pwr(PCSPI);
-			_mcu_core_priv_enable_irq((void*)(u32)(spi_irqs[port]));
-			break;
-		}
+		_mcu_lpc_core_enable_pwr(PCSPI);
+		_mcu_core_priv_enable_irq((void*)(u32)(spi_irqs[port]));
 		spi_local[port].duplex_mem = NULL;
 		spi_local[port].callback = NULL;
 	}
@@ -118,7 +108,6 @@ int mcu_spi_getattr(int port, void * ctl){
 	} else {
 		ctlp->bitrate = mcu_board_config.core_periph_freq / (regs->CCR);
 	}
-
 
 	return 0;
 }

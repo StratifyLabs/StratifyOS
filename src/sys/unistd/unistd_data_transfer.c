@@ -58,7 +58,6 @@ static int get_mode(const sysfs_t* fs, void * handle);
 
 int priv_data_transfer_callback(void * context, mcu_event_t data){
 	//activate all tasks that are blocked on this signal
-#if SINGLE_TASK == 0
 	int i;
 	int new_priority;
 	priv_device_data_transfer_t * args = (priv_device_data_transfer_t*)context;
@@ -89,9 +88,6 @@ int priv_data_transfer_callback(void * context, mcu_event_t data){
 	args->read = ARGS_READ_DONE;
 	sched_priv_update_on_wake(new_priority);
 
-#else
-	waiting = false;
-#endif
 	return 0;
 }
 
@@ -103,14 +99,10 @@ void priv_check_op_complete(void * args){
 		if ( p->ret == 0 ){
 			if ( (p->op.nbyte >= 0) //wait for the operation to complete or for data to arrive
 			){
-#if SINGLE_TASK == 0
 				//Block waiting for the operation to complete or new data to be ready
 				stratify_sched_table[ task_get_current() ].block_object = (void*)p->handle + p->read;
 				//switch tasks until a signal becomes available
 				sched_priv_update_on_sleep();
-#else
-				waiting = true;
-#endif
 			}
 		} else {
 			p->read = ARGS_READ_DONE;
@@ -120,8 +112,6 @@ void priv_check_op_complete(void * args){
 
 void priv_device_data_transfer(void * args){
 	priv_device_data_transfer_t * p = (priv_device_data_transfer_t*)args;
-	//_mcu_core_priv_disable_interrupts(NULL); //no switching until the transfer is started
-
 
 	if ( p->read != 0 ){
 		//Read operation
@@ -132,9 +122,6 @@ void priv_device_data_transfer(void * args){
 
 
 	priv_check_op_complete(args);
-
-
-	//_mcu_core_priv_enable_interrupts(NULL);
 }
 
 void unistd_clr_action(open_file_t * open_file){
@@ -144,7 +131,7 @@ void unistd_clr_action(open_file_t * open_file){
 	args.handle = open_file->handle;
 	args.request = I_GLOBAL_SETACTION;
 	args.ctl = &action;
-	action.callback = 0;
+	memset(&action, 0, sizeof(mcu_action_t));
 	mcu_core_privcall(u_priv_ioctl, &args);
 }
 
@@ -179,31 +166,23 @@ int device_data_transfer(open_file_t * open_file, void * buf, int nbyte, int rea
 	args.op.buf = buf;
 	args.op.callback = priv_data_transfer_callback;
 	args.op.context = (void*)&args;
-#if SINGLE_TASK == 0
 	args.op.tid = task_get_current();
-#else
-	args.op.tid = 0;
-#endif
 
 	if ( (mode = get_mode(args.fs, args.handle)) < 0 ){
 		return -1;
 	}
-
 
 	tmp = 0;
 
 	//privilege call for the operation
 	do {
 
-#if SINGLE_TASK > 0
-		waiting = false;
-#endif
-
 		args.ret = -101010;
 		args.op.nbyte = nbyte;
 
 		//This transfers the data
 		mcu_core_privcall(priv_device_data_transfer, (void*)&args);
+
 		//We arrive here if the data is done transferring or there is no data to transfer and O_NONBLOCK is set
 		//or if there was an error
 		while( (sched_get_unblock_type(task_get_current()) == SCHED_UNBLOCK_SIGNAL)
@@ -222,11 +201,6 @@ int device_data_transfer(open_file_t * open_file, void * buf, int nbyte, int rea
 		}
 
 
-#if SINGLE_TASK != 0
-		while ( waiting == true ){
-			core_sleep(CORE_SLEEP);
-		}
-#endif
 		if ( args.ret > 0 ){
 			//The operation happened synchronously
 			tmp = args.ret;

@@ -87,12 +87,6 @@ int mcu_wdt_init( int mode /*! The WDT mode to use (see \ref wdt_mode_t) */,
 		int interval /*! The timeout value in ms */) MCU_PRIV_CODE;
 
 
-/*! \details This callback will be executed on a WDT interrupt.
- *
- * @param callback Function to be executed when
- */
-void mcu_wdt_set_callback(mcu_callback_t callback);
-
 /*! \details This function resets the watchdog timer
  * so that it won't trigger until the interval has expired.
  * This should be called more frequently than 1/interval to prevent

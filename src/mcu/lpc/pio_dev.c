@@ -224,7 +224,6 @@ int mcu_pio_setaction(int port, void * ctl){
 	//This is the interrupt for GPIO0 and GPIO2 (shared with EINT3)
 	_mcu_core_priv_enable_irq((void*)EINT3_IRQn);
 	_mcu_core_setirqprio(EINT3_IRQn, action->prio);
-
 #endif
 
 	return 0;
@@ -377,7 +376,7 @@ void exec_callback0(void * data){
 		ev.status = 0;
 		ev.rising = LPC_GPIOINT->IO0IntStatR;
 		ev.falling = LPC_GPIOINT->IO0IntStatF;
-		LPC_GPIOINT->IO2IntClr = ev.rising | ev.falling;
+		LPC_GPIOINT->IO0IntClr = ev.rising | ev.falling;
 	} else {
 		ev.status = (u32)data;
 	}

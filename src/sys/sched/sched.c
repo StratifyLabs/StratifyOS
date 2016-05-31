@@ -95,7 +95,7 @@ void scheduler(){
 	set_uart_priority();
 
 	//This interval needs to be long enough to allow for flash writes
-	//mcu_wdt_init(WDT_MODE_RESET|WDT_MODE_CLK_SRC_MAIN, SCHED_RR_DURATION * 10 * stratify_board_config.task_total + 5);
+	mcu_wdt_init(WDT_MODE_INTERRUPT|WDT_MODE_CLK_SRC_MAIN, SCHED_RR_DURATION * 10 * stratify_board_config.task_total + 5);
 
 	if ( sched_prepare() ){  //this starts memory protection
 		mcu_event(MCU_BOARD_CONFIG_EVENT_FATAL, (void*)"sprep");

@@ -45,7 +45,7 @@ extern int pthread_mutex_force_unlock(pthread_mutex_t *mutex);
 #define OPENDIR_HANDLE ((void*)0x1234567)
 
 
-#define DEBUG_LEVEL 10
+#define DEBUG_LEVEL 1
 
 #ifndef __SIM__
 static pthread_mutex_t __cl_lock_object;
@@ -121,7 +121,9 @@ int sffs_init(const void * cfg){
 
 	bad_files = 0;
 	clean_open_blocks = false;
+
 	while( (err = sffs_serialno_init(cfg, &bad_serialno)) == 1 ){
+
 		if( (tmp = sffs_file_clean(cfg, bad_serialno.serialno, bad_serialno.block, bad_serialno.status)) < 0 ){
 			sffs_error("failed to clean file\n");
 			return -1;
@@ -140,6 +142,10 @@ int sffs_init(const void * cfg){
 
 	if ( err == -1 ){
 		//failed to find initial serial numbers so no other access is allowed
+		mcu_debug("Failed to init SFFS\n");
+		sffs_mkfs(cfg);
+		mcu_debug("Format complete\n");
+
 		cfgp->open_file->fs = NULL;
 		return -1;
 	}

@@ -118,6 +118,7 @@ void continue_spi_write(const device_cfg_t * cfg, uint32_t ignore){
 	action.context = NULL;
 	action.event = TMR_ACTION_EVENT_NONE;
 	action.channel = sst_cfg->miso.pin;
+	action.prio = 0;
 	mcu_tmr_off(sst_cfg->miso.port, NULL);
 	mcu_tmr_setaction(sst_cfg->miso.port, &action);
 	mcu_tmr_on(sst_cfg->miso.port, NULL);
@@ -168,6 +169,7 @@ void complete_spi_write(const device_cfg_t * cfg, uint32_t ignore){
 	action.callback = (mcu_callback_t)continue_spi_write;
 	action.channel = sst_cfg->miso.pin;
 	action.event = TMR_ACTION_EVENT_INTERRUPT;
+	action.prio = 0;
 
 	attr.channel = sst_cfg->miso.pin;
 

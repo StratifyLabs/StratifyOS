@@ -70,6 +70,7 @@ void check_reset_source(void){
 void start_filesystem(void){
 	u32 started;
 	started = startup_fs();
+	mcu_debug("Started Filesystem Apps %ld\n", started);
 	mcu_event(MCU_BOARD_CONFIG_EVENT_START_FILESYSTEM, &started);
 }
 
@@ -78,9 +79,7 @@ void * stratify_default_thread(void * arg){
 	check_reset_source();
 
 	//Initialize the file systems
-	if ( init_fs() < 0 ){
-		mcu_event(MCU_BOARD_CONFIG_EVENT_CRITICAL, (void*)"init_fs");
-	}
+	if ( init_fs() < 0 ){ mcu_event(MCU_BOARD_CONFIG_EVENT_CRITICAL, (void*)"init_fs"); }
 
 	start_filesystem();
 

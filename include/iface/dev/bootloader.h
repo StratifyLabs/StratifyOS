@@ -122,6 +122,8 @@ typedef struct {
 } boot_event_crypt_t;
 
 enum {
+	BOOT_EVENT_FATAL,
+	BOOT_EVENT_CRITICAL,
 	BOOT_EVENT_INIT,
 	BOOT_EVENT_RESET,
 	BOOT_EVENT_RESET_BOOTLOADER,

@@ -175,11 +175,13 @@ int complete_spi_write(const device_cfg_t * cfg, uint32_t ignore){
 	sst25vf_cfg_t * sst_cfg = (sst25vf_cfg_t*)cfg->dcfg;
 	sst25vf_state_t * state = (sst25vf_state_t*)cfg->state;
 
+
 	//configure the GPIO to interrupt on a rising edge
 	action.context = (void*)cfg;
 	action.callback = (mcu_callback_t)continue_spi_write;
 	action.channel = sst_cfg->miso.pin;
 	action.event = PIO_ACTION_EVENT_RISING;
+	action.prio = 0;
 	mcu_pio_setaction(sst_cfg->miso.port, &action);
 
 	sst25vf_share_deassert_cs(cfg);
@@ -253,6 +255,7 @@ int sst25vf_write(const device_cfg_t * cfg, device_transfer_t * wop){
 	err = mcu_spi_write(cfg, &state->op);
 	state->buf = state->buf + tmp;
 	state->nbyte = state->nbyte - tmp;
+
 	return err;
 }
 

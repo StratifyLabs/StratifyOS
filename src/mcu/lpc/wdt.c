@@ -30,17 +30,7 @@
 
 #define WDLOCK (1<<31)
 
-static mcu_callback_t mcu_wdt_callback MCU_SYS_MEM;
-
-
-void mcu_wdt_set_callback(mcu_callback_t callback){
-	mcu_wdt_callback = callback;
-}
-
-
 int mcu_wdt_init(int mode, int interval){
-
-	mcu_wdt_callback = 0;
 
 	//Set the clock source
 #ifdef __lpc17xx
@@ -70,16 +60,15 @@ int mcu_wdt_init(int mode, int interval){
 	//Set Reset mode
 	if ( mode & WDT_MODE_RESET ){ LPC_WDT->MOD |= (WDRESET); }
 
-#if defined LPCXX7X_8X
 	if ( mode & WDT_MODE_INTERRUPT ){
+#if defined LPCXX7X_8X
 		LPC_WDT->WARNINT = 1000;
 		LPC_WDT->MOD |= WDINT;
+#endif
 
-		NVIC_SetPriority(WDT_IRQn, 1);
-
+		NVIC_SetPriority(WDT_IRQn, 2);
 		_mcu_core_priv_enable_irq((void*)WDT_IRQn);
 	}
-#endif
 
 	//Set the interval
 	mcu_wdt_setinterval(interval);
@@ -143,11 +132,4 @@ void mcu_wdt_reset(){
 }
 
 
-void _mcu_core_wdt_isr(){
-	LPC_WDT->MOD |= (WDINT);
-	if( mcu_wdt_callback != 0 ){
-		if( mcu_wdt_callback(0, 0) == 0 ){
-			mcu_wdt_callback = 0;
-		}
-	}
-}
+//ISR handler is in the cortex_m/fault.c source file

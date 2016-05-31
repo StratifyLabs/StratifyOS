@@ -42,10 +42,6 @@ void _mcu_core_memfault_handler() MCU_WEAK;
 void _mcu_core_busfault_handler() MCU_WEAK;
 void _mcu_core_usagefault_handler() MCU_WEAK;
 
-void dled_fault_flash() MCU_WEAK;
-void dled_nmi_flash() MCU_WEAK;
-void dled_isr_flash() MCU_WEAK;
-
 void _mcu_core_default_isr() MCU_WEAK;
 void _mcu_core_os_handler() MCU_WEAK;
 void _mcu_core_svcall_handler();
@@ -107,7 +103,7 @@ _DECLARE_ISR(sw5);
 _DECLARE_ISR(atmr0);
 _DECLARE_ISR(rtc0);
 _DECLARE_ISR(sw6);
-_DECLARE_ISR(wdt0);
+_DECLARE_ISR(wdt);
 _DECLARE_ISR(sw7);
 _DECLARE_ISR(can0);
 _DECLARE_ISR(qei);
@@ -281,7 +277,7 @@ void (* const _mcu_core_vector_table[])() __attribute__ ((section(".startup"))) 
 		_ISR(atmr0),
 		_ISR(rtc0),
 		_ISR(sw6),
-		_ISR(wdt0),
+		_ISR(wdt),
 		_ISR(sw7), //50
 		_ISR(can0),
 		_ISR(qei)
@@ -289,7 +285,7 @@ void (* const _mcu_core_vector_table[])() __attribute__ ((section(".startup"))) 
 
 #if defined LPCXX7X_8X
 
-		_ISR(wdt),  //0
+		_ISR(wdt), //0
 		_ISR(tmr0),
 		_ISR(tmr1),
 		_ISR(tmr2),
@@ -335,7 +331,7 @@ void (* const _mcu_core_vector_table[])() __attribute__ ((section(".startup"))) 
 #endif
 
 #if defined __lpc17xx
-		_ISR(wdt),  //0
+		_ISR(wdt), //0
 		_ISR(tmr0),
 		_ISR(tmr1),
 		_ISR(tmr2),
@@ -434,40 +430,24 @@ void _mcu_core_reset_handler(){
 	while(1);
 }
 
-/*! \details
- */
+
 void _mcu_core_nmi_isr(){
-	while(1){
-		dled_nmi_flash();
-	}
+	mcu_event(MCU_BOARD_CONFIG_EVENT_PRIV_FATAL, 0);
 }
 
-/*! \brief
- * \details
- */
+
 void _mcu_core_os_handler(){
 	return;
 }
 
-/*! \brief
- * \details
- */
 void _mcu_core_default_isr(){
-	while(1){
-		dled_isr_flash();
-	}
+	mcu_event(MCU_BOARD_CONFIG_EVENT_PRIV_FATAL, 0);
 }
 
 int pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *attr){
 	return 0;
 }
 
-void dled_fault_flash(){
-}
-void dled_nmi_flash(){
-}
-void dled_isr_flash(){
-}
 
 
 
