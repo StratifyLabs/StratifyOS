@@ -123,14 +123,14 @@ int pthread_join(pthread_t thread, void ** value_ptr){
 	if( (thread < task_get_total()) && (thread >= 0) ){
 		if ( task_enabled(thread) ){
 			//now see if the thread is joinable
-			if ( PTHREAD_ATTR_GET_DETACH_STATE( (&(stfy_sched_table[thread].attr))) != PTHREAD_CREATE_JOINABLE ){
+			if ( PTHREAD_ATTR_GET_DETACH_STATE( (&(stratify_sched_table[thread].attr))) != PTHREAD_CREATE_JOINABLE ){
 				errno = EINVAL;
 				return -1;
 			}
 
 
 			//See if the thread is joined to this thread
-			if ( (stfy_sched_table[thread].block_object == (void*)&stfy_sched_table[task_get_current()]) ||
+			if ( (stratify_sched_table[thread].block_object == (void*)&stratify_sched_table[task_get_current()]) ||
 					(thread == task_get_current()) ){
 				errno = EDEADLK;
 				return -1;
@@ -147,7 +147,7 @@ int pthread_join(pthread_t thread, void ** value_ptr){
 
 			if ( value_ptr != NULL ){
 				//When the thread terminates, it puts the exit value in this threads scheduler table entry
-				*value_ptr = (void*)(stfy_sched_table[ task_get_current() ].exit_status);
+				*value_ptr = (void*)(stratify_sched_table[ task_get_current() ].exit_status);
 			}
 
 			return 0;
@@ -162,9 +162,9 @@ void priv_join_thread(void * args){
 	int id = *p;
 
 	if ( task_enabled(id) ){
-		stfy_sched_table[task_get_current()].block_object = (void*)&stfy_sched_table[id]; //block on the thread to be joined
+		stratify_sched_table[task_get_current()].block_object = (void*)&stratify_sched_table[id]; //block on the thread to be joined
 		//If the thread is waiting to be joined, it needs to be activated
-		if ( stfy_sched_table[id].block_object == (void*)&stfy_sched_table[id].block_object ){
+		if ( stratify_sched_table[id].block_object == (void*)&stratify_sched_table[id].block_object ){
 			sched_priv_assert_active(id, SCHED_UNBLOCK_PTHREAD_JOINED);
 		}
 		sched_priv_update_on_sleep();

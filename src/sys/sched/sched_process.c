@@ -74,25 +74,25 @@ void priv_init_sched_task(init_sched_task_t * task){
 	uint32_t stackguard;
 	struct _reent * reent;
 	int id = task->tid;
-	memset((void*)&stfy_sched_table[id], 0, sizeof(sched_task_t));
+	memset((void*)&stratify_sched_table[id], 0, sizeof(sched_task_t));
 
-	PTHREAD_ATTR_SET_IS_INITIALIZED((&(stfy_sched_table[id].attr)), 1);
-	PTHREAD_ATTR_SET_SCHED_POLICY((&(stfy_sched_table[id].attr)), SCHED_OTHER);
-	PTHREAD_ATTR_SET_GUARDSIZE((&(stfy_sched_table[id].attr)), SCHED_DEFAULT_STACKGUARD_SIZE);
-	PTHREAD_ATTR_SET_CONTENTION_SCOPE((&(stfy_sched_table[id].attr)), PTHREAD_SCOPE_SYSTEM);
-	PTHREAD_ATTR_SET_INHERIT_SCHED((&(stfy_sched_table[id].attr)), PTHREAD_EXPLICIT_SCHED);
-	PTHREAD_ATTR_SET_DETACH_STATE((&(stfy_sched_table[id].attr)), PTHREAD_CREATE_DETACHED);
+	PTHREAD_ATTR_SET_IS_INITIALIZED((&(stratify_sched_table[id].attr)), 1);
+	PTHREAD_ATTR_SET_SCHED_POLICY((&(stratify_sched_table[id].attr)), SCHED_OTHER);
+	PTHREAD_ATTR_SET_GUARDSIZE((&(stratify_sched_table[id].attr)), SCHED_DEFAULT_STACKGUARD_SIZE);
+	PTHREAD_ATTR_SET_CONTENTION_SCOPE((&(stratify_sched_table[id].attr)), PTHREAD_SCOPE_SYSTEM);
+	PTHREAD_ATTR_SET_INHERIT_SCHED((&(stratify_sched_table[id].attr)), PTHREAD_EXPLICIT_SCHED);
+	PTHREAD_ATTR_SET_DETACH_STATE((&(stratify_sched_table[id].attr)), PTHREAD_CREATE_DETACHED);
 
-	stfy_sched_table[id].attr.stackaddr = task->mem->data.addr; //Beginning of process data memory
-	stfy_sched_table[id].attr.stacksize = task->mem->data.size; //Size of the memory (not just the stack)
-	stfy_sched_table[id].priority = 0; //This is the default starting priority priority
-	stfy_sched_table[id].attr.schedparam.sched_priority = 0; //This is the priority to revert to after being escalated
+	stratify_sched_table[id].attr.stackaddr = task->mem->data.addr; //Beginning of process data memory
+	stratify_sched_table[id].attr.stacksize = task->mem->data.size; //Size of the memory (not just the stack)
+	stratify_sched_table[id].priority = 0; //This is the default starting priority priority
+	stratify_sched_table[id].attr.schedparam.sched_priority = 0; //This is the priority to revert to after being escalated
 
-	stfy_sched_table[id].wake.tv_sec = SCHED_TIMEVAL_SEC_INVALID;
-	stfy_sched_table[id].wake.tv_usec = 0;
+	stratify_sched_table[id].wake.tv_sec = SCHED_TIMEVAL_SEC_INVALID;
+	stratify_sched_table[id].wake.tv_usec = 0;
 	sched_priv_assert_active(id, 0);
 	sched_priv_assert_inuse(id);
-	sched_priv_update_on_wake( stfy_sched_table[id].priority );
+	sched_priv_update_on_wake( stratify_sched_table[id].priority );
 	stackguard = (uint32_t)task->mem->data.addr + task->mem->data.size - 128;
 #if USE_MEMORY_PROTECTION > 0
 	task_priv_set_stackguard(id, (void*)stackguard, SCHED_DEFAULT_STACKGUARD_SIZE);

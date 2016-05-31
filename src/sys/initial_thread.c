@@ -36,6 +36,7 @@
 
 static int init_fs();
 static int startup_fs();
+static void start_filesystem(void);
 
 static void priv_check_reset_source(void * args) MCU_PRIV_EXEC_CODE;
 
@@ -72,7 +73,7 @@ void start_filesystem(void){
 	mcu_event(MCU_BOARD_CONFIG_EVENT_START_FILESYSTEM, &started);
 }
 
-void * initial_thread(void * arg){
+void * stratify_default_thread(void * arg){
 
 	check_reset_source();
 
@@ -87,7 +88,7 @@ void * initial_thread(void * arg){
 
 	mcu_event(MCU_BOARD_CONFIG_EVENT_START_LINK, 0);
 
-	link_update(stfy_board_config.link_transport); 	//Run the link update thread--never returns
+	link_update(arg); 	//Run the link update thread--never returns
 
 	return NULL;
 }
@@ -122,5 +123,6 @@ int startup_fs(){
 	//the number of processes that have been started
 	return started;
 }
+
 
 

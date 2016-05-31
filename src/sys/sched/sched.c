@@ -95,7 +95,7 @@ void scheduler(){
 	set_uart_priority();
 
 	//This interval needs to be long enough to allow for flash writes
-	//mcu_wdt_init(WDT_MODE_RESET|WDT_MODE_CLK_SRC_MAIN, SCHED_RR_DURATION * 10 * stfy_board_config.task_total + 5);
+	//mcu_wdt_init(WDT_MODE_RESET|WDT_MODE_CLK_SRC_MAIN, SCHED_RR_DURATION * 10 * stratify_board_config.task_total + 5);
 
 	if ( sched_prepare() ){  //this starts memory protection
 		mcu_event(MCU_BOARD_CONFIG_EVENT_ERROR, (void*)"sprep");
@@ -269,13 +269,13 @@ int sched_get_highest_priority_blocked(void * block_object){
 	new_thread = -1;
 	for(i=1; i < task_get_total(); i++){
 		if ( task_enabled(i) ){
-			if ( (stfy_sched_table[i].block_object == block_object) && ( !sched_active_asserted(i) ) ){
+			if ( (stratify_sched_table[i].block_object == block_object) && ( !sched_active_asserted(i) ) ){
 				//it's waiting for the block -- give the block to the highest priority and waiting longest
-				if ( stfy_sched_table[i].attr.schedparam.sched_priority > priority ){
+				if ( stratify_sched_table[i].attr.schedparam.sched_priority > priority ){
 
 					//! \todo Find the task that has been waiting the longest time
 					new_thread = i;
-					priority = stfy_sched_table[i].attr.schedparam.sched_priority;
+					priority = stratify_sched_table[i].attr.schedparam.sched_priority;
 				}
 			}
 		}
@@ -289,11 +289,11 @@ int sched_priv_unblock_all(void * block_object, int unblock_type){
 	priority = SCHED_LOWEST_PRIORITY - 1;
 	for(i=1; i < task_get_total(); i++){
 		if ( task_enabled(i) ){
-			if ( (stfy_sched_table[i].block_object == block_object) && ( !sched_active_asserted(i) ) ){
+			if ( (stratify_sched_table[i].block_object == block_object) && ( !sched_active_asserted(i) ) ){
 				//it's waiting for the semaphore -- give the semaphore to the highest priority and waiting longest
 				sched_priv_assert_active(i, unblock_type);
-				if ( stfy_sched_table[i].attr.schedparam.sched_priority > priority ){
-					priority = stfy_sched_table[i].attr.schedparam.sched_priority;
+				if ( stratify_sched_table[i].attr.schedparam.sched_priority > priority ){
+					priority = stratify_sched_table[i].attr.schedparam.sched_priority;
 				}
 			}
 		}
@@ -306,9 +306,9 @@ int start_first_thread(){
 	pthread_attr_t attr;
 	int err;
 
-	init = stfy_sched_table[0].init;
+	init = stratify_sched_table[0].init;
 
-	attr.stacksize = SCHED_FIRST_THREAD_STACK_SIZE;
+	attr.stacksize = stratify_board_config.start_stack_size;
 	attr.stackaddr = malloc(attr.stacksize);
 	if ( attr.stackaddr == NULL ){
 		errno = ENOMEM;
@@ -323,7 +323,7 @@ int start_first_thread(){
 	attr.schedparam.sched_priority = 21; //not the default priority
 
 	err = sched_new_thread(init,
-			NULL,
+			stratify_board_config.start_args,
 			attr.stackaddr,
 			attr.stacksize,
 			&attr);

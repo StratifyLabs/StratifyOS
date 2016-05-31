@@ -61,8 +61,8 @@ int pthread_getschedparam(pthread_t thread, int *policy,
 		return -1;
 	}
 
-	*policy = PTHREAD_ATTR_GET_SCHED_POLICY( (&(stfy_sched_table[thread].attr)) );
-	memcpy(param, (const void *)&(stfy_sched_table[thread].attr.schedparam), sizeof(struct sched_param));
+	*policy = PTHREAD_ATTR_GET_SCHED_POLICY( (&(stratify_sched_table[thread].attr)) );
+	memcpy(param, (const void *)&(stratify_sched_table[thread].attr.schedparam), sizeof(struct sched_param));
 	return 0;
 }
 
@@ -115,8 +115,8 @@ void priv_set_scheduling_param(void * args){
 	int id;
 	id = p->tid;
 
-	PTHREAD_ATTR_SET_SCHED_POLICY( (&(stfy_sched_table[id].attr)), p->policy);
-	memcpy((void*)&stfy_sched_table[id].attr.schedparam, p->param, sizeof(struct sched_param));
+	PTHREAD_ATTR_SET_SCHED_POLICY( (&(stratify_sched_table[id].attr)), p->policy);
+	memcpy((void*)&stratify_sched_table[id].attr.schedparam, p->param, sizeof(struct sched_param));
 
 	if ( p->policy == SCHED_FIFO ){
 		task_assert_isfifo(id);

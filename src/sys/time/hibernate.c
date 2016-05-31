@@ -70,7 +70,7 @@ void priv_hibernate(void * args){
 	mcu_wdt_priv_reset(NULL);
 
 	if( seconds ){
-		mcu_wdt_setinterval(SCHED_RR_DURATION * 10 * stfy_board_config.task_total + 5);
+		mcu_wdt_setinterval(SCHED_RR_DURATION * 10 * stratify_board_config.task_total + 5);
 	}
 
 }

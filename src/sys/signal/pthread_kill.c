@@ -183,7 +183,7 @@ int signal_send(int tid, int si_signo, int si_sigcode, int sig_value){
 
 	if ( si_signo != 0 ){
 
-		delay_mutex = stfy_sched_table[tid].signal_delay_mutex;
+		delay_mutex = stratify_sched_table[tid].signal_delay_mutex;
 		//check for the signal delay mutex
 		if( delay_mutex != NULL ){
 			//this means the target task is doing critical work (like modifying the filesystem)

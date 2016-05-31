@@ -27,31 +27,31 @@
 #include "sched_flags.h"
 
 void sched_priv_set_delaymutex(void * args){
-	stfy_sched_table[ task_get_current() ].signal_delay_mutex = args;
+	stratify_sched_table[ task_get_current() ].signal_delay_mutex = args;
 }
 
 void sched_priv_assert_sync(void * args){
 	//verify the calling PC is correct?
 
-	stfy_sched_table[task_get_current()].flags |= (1<< SCHED_TASK_FLAGS_PRIV_SYNC);
+	stratify_sched_table[task_get_current()].flags |= (1<< SCHED_TASK_FLAGS_PRIV_SYNC);
 }
 
 void sched_priv_set_trace_id(int tid, trace_id_t id){
-	stfy_sched_table[tid].trace_id = id;
+	stratify_sched_table[tid].trace_id = id;
 }
 
 void sched_priv_assert_active(int id, int unblock_type){
-	stfy_sched_table[id].flags |= (1<< SCHED_TASK_FLAGS_ACTIVE);
+	stratify_sched_table[id].flags |= (1<< SCHED_TASK_FLAGS_ACTIVE);
 	sched_priv_set_unblock_type(id, unblock_type);
 	sched_priv_deassert_aiosuspend(id);
 	//Remove all blocks (mutex, timing, etc)
-	stfy_sched_table[id].block_object = NULL;
-	stfy_sched_table[id].wake.tv_sec = SCHED_TIMEVAL_SEC_INVALID;
-	stfy_sched_table[id].wake.tv_usec = 0;
+	stratify_sched_table[id].block_object = NULL;
+	stratify_sched_table[id].wake.tv_sec = SCHED_TIMEVAL_SEC_INVALID;
+	stratify_sched_table[id].wake.tv_usec = 0;
 }
 
 void sched_priv_deassert_active(int id){
-	stfy_sched_table[id].flags &= ~(1<< SCHED_TASK_FLAGS_ACTIVE);
+	stratify_sched_table[id].flags &= ~(1<< SCHED_TASK_FLAGS_ACTIVE);
 	task_deassert_exec(id);  //stop executing the task
 	sched_priv_assert_status_change(); //notify the scheduler a task has changed status
 }
@@ -73,11 +73,11 @@ void sched_priv_start_task(int id){
 }
 
 void sched_priv_assert(int id, int flag){
-	stfy_sched_table[id].flags |= (1<<flag);
+	stratify_sched_table[id].flags |= (1<<flag);
 
 }
 void sched_priv_deassert(int id, int flag){
-	stfy_sched_table[id].flags &= ~(1<<flag);
+	stratify_sched_table[id].flags &= ~(1<<flag);
 }
 
 
