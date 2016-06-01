@@ -36,11 +36,9 @@
 #include <errno.h>
 #include <stdbool.h>
 
+
 #include "mcu/debug.h"
 #include "../sched/sched_flags.h"
-
-
-
 
 static int check_initialized(const pthread_mutex_t * mutex);
 static int mutex_trylock(pthread_mutex_t *mutex, bool trylock, const struct timespec * abs_timeout);
@@ -126,6 +124,8 @@ int pthread_mutex_lock(pthread_mutex_t * mutex){
 		return -1;
 	}
 
+	mcu_debug("%d lock 0x%lX\n", task_get_current(), (u32)mutex);
+
 	ret = mutex_trylock(mutex, false, NULL);
 	switch(ret){
 	case 1:
@@ -200,9 +200,12 @@ int pthread_mutex_unlock(pthread_mutex_t *mutex){
 		return -1;
 	}
 
+	mcu_debug("%d unlock 0x%lX\n", task_get_current(), (u32)mutex);
+
 	args.id = task_get_current();
 	if ( mutex->pthread == args.id ){ //Does this thread have a lock?
 		if ( mutex->flags & PTHREAD_MUTEX_FLAGS_RECURSIVE ){
+			mcu_debug("recursive 0x%X\n", mutex->lock);
 			mutex->lock--;
 			if( mutex->lock != 0 ){
 				return 0;
@@ -226,7 +229,8 @@ int pthread_mutex_unlock(pthread_mutex_t *mutex){
  *
  */
 int pthread_mutex_destroy(pthread_mutex_t *mutex){
-#if SINGLE_TASK == 0
+	mcu_debug("Destroy 0x%lX\n", (u32)mutex);
+
 	if ( check_initialized(mutex) ){
 		return -1;
 	}
@@ -236,7 +240,6 @@ int pthread_mutex_destroy(pthread_mutex_t *mutex){
 	mutex->pid = 0;
 	mutex->pthread = -1;
 	mutex->lock = 0;
-#endif
 	return 0;
 }
 
@@ -479,7 +482,7 @@ int pthread_mutex_setprioceiling(pthread_mutex_t *mutex, int prioceiling, int *o
 }
 
 int check_initialized(const pthread_mutex_t * mutex){
-	if ( mutex == NULL ){
+	if ( (mutex == NULL) || (((u32)mutex & 0x03) != 0) ){
 		errno = EINVAL;
 		return -1;
 	}

@@ -49,7 +49,6 @@ int exec_options();
  * \return This function never returns
  */
 void _exit(int __status){
-#if SINGLE_PROCESS == 0
 	int send_signal;
 	int tmp;
 	int i;
@@ -78,12 +77,8 @@ void _exit(int __status){
 		//This process will be a zombie process until it is disabled by the parent
 		mcu_core_privcall((core_privcall_t)priv_zombie_process, &send_signal);
 	}
-#else
-	while(1);
-#endif
 }
 
-#if SINGLE_PROCESS == 0
 
 void priv_stop_threads(int * send_signal){
 	int i;
@@ -186,8 +181,6 @@ void priv_zombie_process(int * signal_sent){
 
 	sched_priv_update_on_sleep();
 }
-
-#endif
 
 
 /*! @} */

@@ -120,8 +120,8 @@ void priv_device_data_transfer(void * args){
 		p->ret = p->fs->priv_write(p->fs->cfg, p->handle, &p->op);
 	}
 
-
 	priv_check_op_complete(args);
+
 }
 
 void unistd_clr_action(open_file_t * open_file){

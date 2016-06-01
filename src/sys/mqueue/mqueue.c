@@ -847,7 +847,6 @@ int mq_timedsend(mqd_t mqdes /*! see \ref mq_send() */,
 
 		do {
 
-			mcu_debug("Lock\n");
 			if( pthread_mutex_lock(&(mq->mutex)) < 0 ){
 				return -1;
 			}

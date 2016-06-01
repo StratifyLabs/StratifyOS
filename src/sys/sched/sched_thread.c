@@ -74,6 +74,12 @@ int sched_new_thread(void *(*p)(void*)  /*! The function to execute for the task
 		//Initialize the reent structure
 		reent = (struct _reent *)mem_addr; //The bottom of the stack
 		_REENT_INIT_PTR(reent);
+
+		reent->_stderr = _GLOBAL_REENT->_stderr;
+		reent->_stdout = _GLOBAL_REENT->_stdout;
+		reent->_stdin = _GLOBAL_REENT->_stdin;
+		reent->__sdidinit = 1;
+
 		reent->procmem_base = _GLOBAL_REENT->procmem_base; //malloc use the same base as the process
 
 		//Now activate the thread
@@ -85,10 +91,7 @@ int sched_new_thread(void *(*p)(void*)  /*! The function to execute for the task
 	return id;
 }
 
-/*! \details This function activates a thread.  It needs to be called
- * when a new thread is created.
- *
- */
+
 void priv_activate_thread(priv_activate_thread_t * args){
 	int id;
 	id = args->id;
@@ -124,34 +127,35 @@ void cleanup_thread(void * status){
 	int detach_state;
 	priv_wait_joined_t args;
 
-#if USE_STDIO != 0
-
-
+	/*
 	//Needs to free any buffers created for stdio
 	if ( (stdin != NULL) && (stdin != (FILE*)&__sf_fake_stdin) ){
 		//check for allocated buffers
-		stdin->_close = 0; //don't close because the FD is shared among threads
-		fclose(stdin);
+		//stdin->_close = 0; //don't close because the FD is shared among threads
+		//fclose(stdin);
 	}
 
 	if ( (stdout != NULL) && (stdout != (FILE*)&__sf_fake_stdout) ){
-		stdout->_close = 0;
-		fclose(stdout);
+		//stdout->_close = 0;
+		//fclose(stdout);
 	}
 
 	if ( (stderr != NULL) && (stderr != (FILE*)&__sf_fake_stderr) ){
-		stderr->_close = 0;
-		fclose(stderr);
+		//stderr->_close = 0;
+		//fclose(stderr);
 	}
+	*/
 
+	//stdio is shared with other threads -- return them to the fake status before closing anything
+
+	stdin = 0;
+	stdout = 0;
+	stderr = 0;
 
 	//This will close any other open files
 	if ( _REENT->__cleanup ){
 		_REENT->__cleanup(_REENT);
 	}
-
-
-#endif
 
 	detach_state = PTHREAD_ATTR_GET_DETACH_STATE( (&(stratify_sched_table[task_get_current()].attr)) );
 	args.joined = 0;
@@ -164,7 +168,7 @@ void cleanup_thread(void * status){
 
 	//Free all memory associated with this thread
 	malloc_free_task_r(_REENT, task_get_current() );
-	free( stratify_sched_table[task_get_current()].attr.stackaddr );
+	free( stratify_sched_table[task_get_current()].attr.stackaddr ); //free the stack address
 	mcu_core_privcall(priv_cleanup, &args.joined);
 }
 
