@@ -127,27 +127,6 @@ void cleanup_thread(void * status){
 	int detach_state;
 	priv_wait_joined_t args;
 
-	/*
-	//Needs to free any buffers created for stdio
-	if ( (stdin != NULL) && (stdin != (FILE*)&__sf_fake_stdin) ){
-		//check for allocated buffers
-		//stdin->_close = 0; //don't close because the FD is shared among threads
-		//fclose(stdin);
-	}
-
-	if ( (stdout != NULL) && (stdout != (FILE*)&__sf_fake_stdout) ){
-		//stdout->_close = 0;
-		//fclose(stdout);
-	}
-
-	if ( (stderr != NULL) && (stderr != (FILE*)&__sf_fake_stderr) ){
-		//stderr->_close = 0;
-		//fclose(stderr);
-	}
-	*/
-
-	//stdio is shared with other threads -- return them to the fake status before closing anything
-
 	stdin = 0;
 	stdout = 0;
 	stderr = 0;

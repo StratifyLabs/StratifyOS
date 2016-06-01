@@ -124,8 +124,6 @@ int pthread_mutex_lock(pthread_mutex_t * mutex){
 		return -1;
 	}
 
-	mcu_debug("%d lock 0x%lX\n", task_get_current(), (u32)mutex);
-
 	ret = mutex_trylock(mutex, false, NULL);
 	switch(ret){
 	case 1:
@@ -200,12 +198,9 @@ int pthread_mutex_unlock(pthread_mutex_t *mutex){
 		return -1;
 	}
 
-	mcu_debug("%d unlock 0x%lX\n", task_get_current(), (u32)mutex);
-
 	args.id = task_get_current();
 	if ( mutex->pthread == args.id ){ //Does this thread have a lock?
 		if ( mutex->flags & PTHREAD_MUTEX_FLAGS_RECURSIVE ){
-			mcu_debug("recursive 0x%X\n", mutex->lock);
 			mutex->lock--;
 			if( mutex->lock != 0 ){
 				return 0;
@@ -229,7 +224,6 @@ int pthread_mutex_unlock(pthread_mutex_t *mutex){
  *
  */
 int pthread_mutex_destroy(pthread_mutex_t *mutex){
-	mcu_debug("Destroy 0x%lX\n", (u32)mutex);
 
 	if ( check_initialized(mutex) ){
 		return -1;
