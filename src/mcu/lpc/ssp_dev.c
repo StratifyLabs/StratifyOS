@@ -41,8 +41,8 @@ typedef struct {
 static ssp_local_t ssp_local[MCU_SSP_PORTS] MCU_SYS_MEM;
 
 static int ssp_port_transfer(int port, int is_read, device_transfer_t * dop);
-static void ssp_fill_tx_fifo(int port);
-static void ssp_empty_rx_fifo(int port);
+static void ssp_fill_tx_fifo(int port, LPC_SSP_Type * regs);
+static void ssp_empty_rx_fifo(int port, LPC_SSP_Type * regs);
 static int byte_swap(int port, int byte);
 
 static LPC_SSP_Type * const ssp_regs_table[MCU_SSP_PORTS] = MCU_SSP_REGS;
@@ -359,9 +359,7 @@ int mcu_ssp_setduplex(int port, void * ctl){
 
 static void exec_callback(int port, LPC_SSP_Type * regs, void * data){
 	regs->IMSC &= ~(SSPIMSC_RXIM|SSPIMSC_RTIM); //Kill the interrupts
-	if ( ssp_local[port].size == 0 ){
-		_mcu_core_exec_event_handler(&(ssp_local[port].handler), (mcu_event_t)0);
-	}
+	_mcu_core_exec_event_handler(&(ssp_local[port].handler), (mcu_event_t)0);
 }
 
 
@@ -395,8 +393,14 @@ int mcu_ssp_setaction(int port, void * ctl){
 int byte_swap(int port, int byte){
 	LPC_SSP_Type * regs;
 	regs = ssp_regs_table[port];
+
+	//make sure the RX fifo is empty
+	while( regs->SR & SSPSR_RNE ){
+		byte = regs->DR;
+	}
+
 	regs->DR = byte;
-	while ( regs->SR & SSPSR_BSY ){
+	while ( (regs->SR & SSPSR_BSY) || !(regs->SR & SSPSR_RNE) ){
 		;
 	}
 	byte = regs->DR; //read the byte to empty the RX FIFO
@@ -414,30 +418,29 @@ int _mcu_ssp_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
 	return ssp_port_transfer(port, 1, rop);
 }
 
-void ssp_fill_tx_fifo(int port){
-	LPC_SSP_Type * regs;
-	regs = ssp_regs_table[port];
+void ssp_fill_tx_fifo(int port, LPC_SSP_Type * regs){
 	int size = 0;
-	while ( (regs->SR & SSPSR_TNF) && ssp_local[port].size && (size < 8) ){
+	u8 data;
+	while ( (regs->SR & SSPSR_TNF) && ssp_local[port].size && (size < 4) ){
 		if ( ssp_local[port].tx_buf != NULL ){
-			//! \todo This won't handle spi widths other than 8 bits -- need to read the transmit width
-			regs->DR = *ssp_local[port].tx_buf++;
+			data = *ssp_local[port].tx_buf++;
 		} else {
-			regs->DR = 0xFF;
+			//fill with dummy data
+			data = 0xFF;
 		}
+
+		regs->DR = data;
 		ssp_local[port].size--;
-		size++;
+		size++; //only send 4 bytes at a time so that the RX can keep up
 	}
 }
 
-void ssp_empty_rx_fifo(int port){
-	LPC_SSP_Type * regs;
-	regs = ssp_regs_table[port];
+void ssp_empty_rx_fifo(int port, LPC_SSP_Type * regs){
+	u8 data;
 	while ( regs->SR & SSPSR_RNE ){
+		data = regs->DR;
 		if ( ssp_local[port].rx_buf != NULL ){
-			*ssp_local[port].rx_buf++ = regs->DR;
-		} else {
-			regs->DR;
+			*ssp_local[port].rx_buf++ = data; //save the dat
 		}
 	}
 }
@@ -445,9 +448,10 @@ void ssp_empty_rx_fifo(int port){
 void _mcu_core_ssp_isr(int port){
 	LPC_SSP_Type * regs;
 	regs = ssp_regs_table[port];
-	ssp_empty_rx_fifo(port);
-	ssp_fill_tx_fifo(port);
-	if ( (regs->SR & (SSPSR_TFE)) && !(regs->SR & (SSPSR_RNE)) ){
+	regs->ICR |= (1<<SSPICR_RTIC);
+	ssp_empty_rx_fifo(port, regs);
+	ssp_fill_tx_fifo(port, regs);
+	if ( !(regs->SR & (SSPSR_RNE)) && !(regs->SR & SSPSR_BSY) && (ssp_local[port].size == 0) ){ //empty receive fifo and not busy transmitting
 		exec_callback(port, regs, 0);
 	}
 }
@@ -494,10 +498,20 @@ int ssp_port_transfer(int port, int is_read, device_transfer_t * dop){
 		return -1;
 	}
 
+	//empty RX fifo
+	u8 byte;
+	while( regs->SR & SSPSR_RNE ){
+		byte = regs->DR;
+	}
+
+	//this code suppress a warning we don't want but doesn't do anything
+	if( byte & 0 ){ byte = 0; }
+
 	ssp_local[port].handler.callback = dop->callback;
 	ssp_local[port].handler.context = dop->context;
 
-	ssp_fill_tx_fifo(port);
+	//fill the TX buffer
+	ssp_fill_tx_fifo(port, regs);
 
 	//! \todo Use DMA for SSP ssp_local??
 	regs->IMSC |= (SSPIMSC_RXIM|SSPIMSC_RTIM); //when RX is half full or a timeout, get the bytes
