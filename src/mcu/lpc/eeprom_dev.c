@@ -113,7 +113,7 @@ int mcu_eeprom_setaction(int port, void * ctl){
 	mcu_action_t * action = (mcu_action_t *)ctl;
 	if( action->callback == 0 ){
 		if( eeprom_local[port].buf != 0 ){
-			exec_callback(port, DEVICE_OP_CANCELLED);
+			exec_callback(port, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
 		}
 	}
 

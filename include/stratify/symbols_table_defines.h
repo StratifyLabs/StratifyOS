@@ -385,7 +385,7 @@
 #define posix_trace_event_addr 0
 #endif
 
-#if SYMBOLS_IGNORE_MG != 0
+#if SYMBOLS_IGNORE_SG != 0
 #define sg_set_data 0
 #define sg_data 0
 #define sg_set_size 0
