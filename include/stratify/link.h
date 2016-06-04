@@ -18,8 +18,8 @@
  */
 
 
-#ifndef LINK_H_
-#define LINK_H_
+#ifndef STRATIFY_LINK_H_
+#define STRATIFY_LINK_H_
 
 #include <stdint.h>
 #include "iface/device_config.h"
@@ -29,7 +29,7 @@
 void * link_update(void * arg);
 
 
-#endif /* LINK_H_ */
+#endif /* STRATIFY_LINK_H_ */
 
 
 /*! @} */

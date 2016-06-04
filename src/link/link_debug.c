@@ -24,13 +24,12 @@ void link_set_debug_callback(void (*write_callback)(link_debug_context_t*)){
 void link_write_debug_message(link_debug_context_t * context){
 	if( link_debug_write_callback != 0 ){
 		link_debug_write_callback(context);
-	} else {
-
-		if( context->type <= link_debug_level ){
-			printf("%s-%s\n", context->function, context->msg);
-			fflush(stdout);
-		}
-
 	}
+
+	if( context->type <= link_debug_level ){
+		printf("%s-%s\n", context->function, context->msg);
+		fflush(stdout);
+	}
+
 }
 

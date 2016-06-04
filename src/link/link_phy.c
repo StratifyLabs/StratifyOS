@@ -272,7 +272,6 @@ link_transport_phy_t link_phy_open(const char * name, int baudrate){
 	//make the buffer raw
 	cfmakeraw(&options); //raw with no buffering
 
-	//115200 baud
 	cfsetspeed(&options, BAUDRATE);
 	//even parity
 	//8 bit data
@@ -386,8 +385,15 @@ void link_phy_flush(link_transport_phy_t handle){
 	}
 }
 
-
 #endif
+
+int link_phy_lock(link_transport_phy_t phy){
+	return 0;
+}
+
+int link_phy_unlock(link_transport_phy_t phy){
+	return 0;;
+}
 
 
 

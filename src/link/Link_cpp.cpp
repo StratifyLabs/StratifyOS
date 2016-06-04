@@ -75,7 +75,7 @@ Link::Link(){
 	statusMessage = "";
 	errMsg = "";
 	lastsn = "";
-	d = &drvr;
+	d = &default_driver;
 	link_load_default_driver(d);
 }
 
@@ -83,11 +83,11 @@ Link::~Link(){}
 
 
 int Link::lockDevice(){
-	return 0;
+	return driver()->lock( driver()->dev.handle );
 }
 
 int Link::unlockDevice(){
-	return 0;
+	return driver()->unlock( driver()->dev.handle );
 }
 
 int Link::checkError(int err){
@@ -344,17 +344,23 @@ int Link::exit(){
 	lockDevice();
 	if ( d->dev.handle != LINK_PHY_OPEN_ERROR ){
 		link_disconnect(d);
-		d->dev.handle = LINK_PHY_OPEN_ERROR;
+
+		if ( d->dev.handle != LINK_PHY_OPEN_ERROR ){
+			unlockDevice(); //can't unlock the device because if it has been destroyed
+		}
 	}
-	unlockDevice();
+
+
 	return 0;
 
 }
 
 bool Link::connected(){
-
+	lockDevice();
 	if( d->status(d->dev.handle) == LINK_PHY_ERROR){
 		d->dev.handle = LINK_PHY_OPEN_ERROR;
+	} else {
+		unlockDevice();
 	}
 	return (d->dev.handle != LINK_PHY_OPEN_ERROR);
 }
@@ -406,10 +412,10 @@ int Link::readStdout(void * buf, int nbyte, volatile bool * abort){
 	if ( isBoot ){
 		return -1;
 	}
-	//lockDevice();
+	lockDevice();
 	link_errno = 0;
 	err = link_read_stdout(d, buf, nbyte);
-	//unlockDevice();
+	unlockDevice();
 	if ( err < 0 ){
 		if ( link_errno == 0 ){
 			if ( abort == false ){

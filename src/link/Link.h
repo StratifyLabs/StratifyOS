@@ -315,6 +315,7 @@ public:
     int updateOS(string path, bool verify, bool (*update)(void*,int,int) = 0, void * context = 0);
 
     link_transport_mdriver_t * driver(){ return d; }
+    void setDriver(link_transport_mdriver_t * driver){ d = driver; }
 
     void setProgress(int p){ progress = p; }
     void setProgressMax(int p){ progressMax = p; }
@@ -340,7 +341,7 @@ private:
     void resetProgress();
     bool isBoot;
 
-    link_transport_mdriver_t drvr;
+    link_transport_mdriver_t default_driver;
     link_transport_mdriver_t * d;
 };
 

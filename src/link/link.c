@@ -24,16 +24,6 @@
 
 #define MAX_TRIES 3
 
-int link_phy_lock(link_transport_phy_t phy){
-	link_transport_mdriver_t * d = (link_transport_mdriver_t*)phy;
-	return d->lock(d->dev.handle);
-}
-
-int link_phy_unlock(link_transport_phy_t phy){
-	link_transport_mdriver_t * d = (link_transport_mdriver_t*)phy;
-	return d->unlock(d->dev.handle);
-}
-
 const link_transport_mdriver_t link_default_driver = {
 		.getname = link_phy_getname,
 		.lock = link_phy_lock,
@@ -98,6 +88,11 @@ int link_connect(link_transport_mdriver_t * driver, const char * sn){
 				//check for NULL sn, zero length sn or matching sn
 				if( (sn == NULL) || (strlen(sn) == 0) || (strcmp(sn, serialno) == 0) ){
 					link_debug(LINK_DEBUG_MESSAGE, "Open Anon at 0x%llX", (uint64_t)driver->dev.handle);
+					return 0;
+				}
+
+				if( (strcmp(sn, serialno) == 0) ){
+					link_debug(LINK_DEBUG_MESSAGE, "Open %s at 0x%llX", sn, (uint64_t)driver->dev.handle);
 					return 0;
 				}
 
@@ -231,6 +226,9 @@ char * link_new_device_list(link_transport_mdriver_t * driver, int max){
 	if( sn_list == NULL ){
 		return NULL;
 	}
+
+
+	link_debug(LINK_DEBUG_MESSAGE, "Create Device List");
 
 	memset(sn_list, 0, max*LINK_MAX_SN_SIZE);
 
