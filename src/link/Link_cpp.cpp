@@ -48,7 +48,7 @@ static string genError(string msg, int err_number){
 	return s;
 }
 
-vector<string> Link::listDevices(link_transport_mdriver_t * d, int max){
+vector<string> Link::get_device_list(link_transport_mdriver_t * d, int max){
 	vector<string> devices;
 	char * snList;
 	int i;
@@ -68,92 +68,82 @@ vector<string> Link::listDevices(link_transport_mdriver_t * d, int max){
 
 Link::Link(){
 	//check to see if the device is connected -- if it is not connected, connect to it
-	stdoutFd = -1;
-	stdinFd = -1;
-	lock = 0;
-	isBoot = false;
-	statusMessage = "";
-	errMsg = "";
-	lastsn = "";
-	d = &default_driver;
-	link_load_default_driver(d);
+	m_stdout_fd = -1;
+	m_stdin_fd = -1;
+	m_lock = 0;
+	m_boot = false;
+	m_status_message = "";
+	m_error_message = "";
+	m_last_serialno = "";
+	m_driver = &m_default_driver;
+	link_load_default_driver(m_driver);
 }
 
 Link::~Link(){}
 
 
-int Link::lockDevice(){
+int Link::lock_device(){
 	return driver()->lock( driver()->dev.handle );
 }
 
-int Link::unlockDevice(){
+int Link::unlock_device(){
 	return driver()->unlock( driver()->dev.handle );
 }
 
-int Link::checkError(int err){
+int Link::check_error(int err){
 	switch(err){
 	case LINK_PHY_ERROR:
-		errMsg = "Physical Connection Error";
+		m_error_message = "Physical Connection Error";
 		this->exit();
 		return LINK_PHY_ERROR;
 	case LINK_PROT_ERROR:
-		errMsg = "Protocol Error";
+		m_error_message = "Protocol Error";
 		return LINK_PROT_ERROR;
 	}
 	return err;
 }
 
-int Link::getProgress(){
-	return progress;
+
+void Link::reset_progress(){
+	m_progress = 0;
+	m_progress_max = 0;
 }
 
-int Link::getProgessMax(){
-	return progressMax;
-}
-
-void Link::resetProgress(){
-	progress = 0;
-	progressMax = 0;
-}
-
-string Link::getStatusMessage(){
-	return statusMessage;
-}
 
 int Link::init(string sn){
 	int err;
 
-	resetProgress();
+	reset_progress();
 
-	if ( d->dev.handle == LINK_PHY_OPEN_ERROR ){
-		if( link_connect(d, sn.c_str()) < 0 ){
-			errMsg = "Failed to Connect to Device";
+	if ( m_driver->dev.handle == LINK_PHY_OPEN_ERROR ){
+		if( link_connect(m_driver, sn.c_str()) < 0 ){
+			m_error_message = "Failed to Connect to Device";
 			return -1;
 		}
 
-		lastsn = sn;
+		m_last_serialno = sn;
 
 	} else {
 		link_debug(LINK_DEBUG_MESSAGE, "Already connected");
-		errMsg = genError("Already Connected", 1);
+		m_error_message = genError("Already Connected", 1);
 		return -1;
 	}
 
-	link_debug(LINK_DEBUG_MESSAGE, "Check for bootloader on 0x%llX", (uint64_t)d->dev.handle);
+	link_debug(LINK_DEBUG_MESSAGE, "Check for bootloader on 0x%llX", (uint64_t)m_driver->dev.handle);
 
-	err = link_isbootloader(d);
+	err = link_isbootloader(m_driver);
 
 	if ( err > 0 ){
 		link_debug(LINK_DEBUG_MESSAGE, "Bootloader connected");
-		isBoot = true;
+		m_boot = true;
 	} else if ( err == 0){
-		isBoot = false;
+		m_boot = false;
 	} else {
-		errMsg = genError("Failed to check for Bootloader status", link_errno);
+		m_error_message = genError("Failed to check for Bootloader status", link_errno);
 		return -1;
 	}
 
-	link_debug(LINK_DEBUG_MESSAGE, "Init complete with 0x%llX", (uint64_t)d->dev.handle);
+	link_debug(LINK_DEBUG_MESSAGE, "Init complete with 0x%llX", (uint64_t)m_driver->dev.handle);
 
 
 	return 0;
@@ -161,104 +151,104 @@ int Link::init(string sn){
 
 int Link::open(string file, int flags, link_mode_t mode){
 	int err;
-	if ( isBoot ){
+	if ( m_boot ){
 		return -1;
 	}
-	lockDevice();
+	lock_device();
 	for(int tries = 0; tries < MAX_TRIES; tries++){
-		link_debug(LINK_DEBUG_MESSAGE, "Open file %s on 0x%llX", file.c_str(), (uint64_t)d->dev.handle);
+		link_debug(LINK_DEBUG_MESSAGE, "Open file %s on 0x%llX", file.c_str(), (uint64_t)m_driver->dev.handle);
 
-		err = link_open(d, file.c_str(), flags, mode);
+		err = link_open(m_driver, file.c_str(), flags, mode);
 		if(err != LINK_PROT_ERROR) break;
 	}
-	unlockDevice();
+	unlock_device();
 	if ( err < 0 ){
-		errMsg = genError("Failed to open file: " + file, link_errno);
+		m_error_message = genError("Failed to open file: " + file, link_errno);
 	}
-	return checkError(err);
+	return check_error(err);
 }
 
 int Link::close(int fd){
 	int err;
-	if ( isBoot ){
+	if ( m_boot ){
 		return -1;
 	}
-	lockDevice();
+	lock_device();
 	for(int tries = 0; tries < MAX_TRIES; tries++){
-		err = link_close(d, fd);
+		err = link_close(m_driver, fd);
 		if(err != LINK_PROT_ERROR) break;
 	}
-	unlockDevice();
+	unlock_device();
 	if ( err < 0 ){
-		errMsg = genError("Failed to close file", link_errno);
+		m_error_message = genError("Failed to close file", link_errno);
 	}
-	return checkError(err);
+	return check_error(err);
 }
 
 
 int Link::read(int fd, void * buf, int nbyte){
 	int err;
-	if ( isBoot ){
+	if ( m_boot ){
 		return -1;
 	}
-	lockDevice();
+	lock_device();
 	for(int tries = 0; tries < MAX_TRIES; tries++){
-		err =  link_read(d, fd, buf, nbyte);
+		err =  link_read(m_driver, fd, buf, nbyte);
 		if(err != LINK_PROT_ERROR) break;
 	}
-	unlockDevice();
+	unlock_device();
 	if ( err < 0 ){
-		errMsg = genError("Failed to read", link_errno);
+		m_error_message = genError("Failed to read", link_errno);
 	}
-	return checkError(err);
+	return check_error(err);
 }
 
 int Link::write(int fd, const void * buf, int nbyte){
 	int err;
-	if ( isBoot ){
+	if ( m_boot ){
 		return -1;
 	}
-	lockDevice();
+	lock_device();
 	for(int tries = 0; tries < MAX_TRIES; tries++){
-		err =  link_write(d, fd, buf, nbyte);
+		err =  link_write(m_driver, fd, buf, nbyte);
 		if(err != LINK_PROT_ERROR) break;
 	}
 	if ( err < 0 ){
-		errMsg = genError("Failed to write", link_errno);
+		m_error_message = genError("Failed to write", link_errno);
 	}
-	unlockDevice();
-	return checkError(err);
+	unlock_device();
+	return check_error(err);
 
 }
 
-int Link::readFlash(int addr, void * buf, int nbyte){
+int Link::read_flash(int addr, void * buf, int nbyte){
 	int err;
-	lockDevice();
+	lock_device();
 	for(int tries = 0; tries < MAX_TRIES; tries++){
-		err =  link_readflash(d, addr, buf, nbyte);
+		err =  link_readflash(m_driver, addr, buf, nbyte);
 		if(err != LINK_PROT_ERROR) break;
 	}
 	if ( err < 0 ){
-		errMsg = genError("Failed to read flash", link_errno);
+		m_error_message = genError("Failed to read flash", link_errno);
 	}
-	unlockDevice();
-	return checkError(err);
+	unlock_device();
+	return check_error(err);
 
 }
 
-int Link::isExecuting(string name){
+int Link::get_is_executing(string name){
 	sys_taskattr_t task;
 	int id;
 	int err;
 	int fd;
 
-	if ( this->connected() == false ){
+	if ( this->get_is_connected() == false ){
 		return -1;
 	}
 
 	fd = open("/dev/sys", LINK_O_RDWR);
 	if( fd < 0 ){
-		this->errMsg = "Failed to Open /dev/sys";
+		this->m_error_message = "Failed to Open /dev/sys";
 		return -1;
 	}
 
@@ -287,66 +277,66 @@ int Link::isExecuting(string name){
 
 }
 
-int Link::writeFlash(int addr, const void * buf, int nbyte){
+int Link::write_flash(int addr, const void * buf, int nbyte){
 	int err;
-	lockDevice();
+	lock_device();
 	for(int tries = 0; tries < MAX_TRIES; tries++){
-		err =  link_writeflash(d, addr, buf, nbyte);
+		err =  link_writeflash(m_driver, addr, buf, nbyte);
 		if(err != LINK_PROT_ERROR) break;
 	}
 	if ( err < 0 ){
-		errMsg = genError("Failed to write flash", link_errno);
+		m_error_message = genError("Failed to write flash", link_errno);
 	}
-	unlockDevice();
-	return checkError(err);
+	unlock_device();
+	return check_error(err);
 }
 
 
 int Link::lseek(int fd, int offset, int whence){
 	int err;
-	if ( isBoot ){
+	if ( m_boot ){
 		return -1;
 	}
 
-	lockDevice();
+	lock_device();
 	for(int tries = 0; tries < MAX_TRIES; tries++){
-		err = link_lseek(d, fd, offset, whence);
+		err = link_lseek(m_driver, fd, offset, whence);
 		if(err != LINK_PROT_ERROR) break;
 	}
 	if ( err < 0 ){
-		errMsg = genError("Failed to lseek", link_errno);
+		m_error_message = genError("Failed to lseek", link_errno);
 	}
-	unlockDevice();
-	return checkError(err);
+	unlock_device();
+	return check_error(err);
 
 }
 
 
 int Link::ioctl(int fd, int request, void * ctl){
 	int err;
-	if ( isBoot ){
+	if ( m_boot ){
 		return -1;
 	}
-	lockDevice();
+	lock_device();
 	for(int tries = 0; tries < MAX_TRIES; tries++){
-		err = link_ioctl(d, fd, request, ctl);
+		err = link_ioctl(m_driver, fd, request, ctl);
 		if(err != LINK_PROT_ERROR) break;
 	}
 	if ( err < 0 ){
-		errMsg = genError("Failed to ioctl", link_errno);
+		m_error_message = genError("Failed to ioctl", link_errno);
 	}
-	unlockDevice();
-	return checkError(err);
+	unlock_device();
+	return check_error(err);
 
 }
 
 int Link::exit(){
-	lockDevice();
-	if ( d->dev.handle != LINK_PHY_OPEN_ERROR ){
-		link_disconnect(d);
+	lock_device();
+	if ( m_driver->dev.handle != LINK_PHY_OPEN_ERROR ){
+		link_disconnect(m_driver);
 
-		if ( d->dev.handle != LINK_PHY_OPEN_ERROR ){
-			unlockDevice(); //can't unlock the device because if it has been destroyed
+		if ( m_driver->dev.handle != LINK_PHY_OPEN_ERROR ){
+			unlock_device(); //can't unlock the device because if it has been destroyed
 		}
 	}
 
@@ -355,76 +345,76 @@ int Link::exit(){
 
 }
 
-bool Link::connected(){
-	lockDevice();
-	if( d->status(d->dev.handle) == LINK_PHY_ERROR){
-		d->dev.handle = LINK_PHY_OPEN_ERROR;
+bool Link::get_is_connected(){
+	lock_device();
+	if( m_driver->status(m_driver->dev.handle) == LINK_PHY_ERROR){
+		m_driver->dev.handle = LINK_PHY_OPEN_ERROR;
 	} else {
-		unlockDevice();
+		unlock_device();
 	}
-	return (d->dev.handle != LINK_PHY_OPEN_ERROR);
+	return (m_driver->dev.handle != LINK_PHY_OPEN_ERROR);
 }
 
-int Link::openStdio(){
+int Link::open_stdio(){
 	int err;
-	if ( isBoot ){
+	if ( m_boot ){
 		return -1;
 	}
-	lockDevice();
-	err = link_open_stdio(d);
-	unlockDevice();
+	lock_device();
+	err = link_open_stdio(m_driver);
+	unlock_device();
 	if ( err < 0 ){
 		if ( err == LINK_TRANSFER_ERR ){
-			errMsg = "Connection Failed";
+			m_error_message = "Connection Failed";
 			this->exit();
 			return -2;
 		} else {
-			errMsg = "Failed to Open Stdio ";
+			m_error_message = "Failed to Open Stdio ";
 			return -1;
 		}
 	}
 	return err;
 }
 
-int Link::closeStdio(){
+int Link::close_stdio(){
 	int err;
-	if ( isBoot ){
+	if ( m_boot ){
 		return -1;
 	}
-	lockDevice();
-	err = link_close_stdio(d);
-	unlockDevice();
+	lock_device();
+	err = link_close_stdio(m_driver);
+	unlock_device();
 	if ( err < 0 ){
 		if ( err == LINK_TRANSFER_ERR ){
-			errMsg = "Connection Failed";
+			m_error_message = "Connection Failed";
 			this->exit();
 			return -2;
 		} else {
-			errMsg = genError("Failed to Close Stdio", link_errno);
+			m_error_message = genError("Failed to Close Stdio", link_errno);
 			return -1;
 		}
 	}
 	return err;
 }
 
-int Link::readStdout(void * buf, int nbyte, volatile bool * abort){
+int Link::read_stdout(void * buf, int nbyte, volatile bool * abort){
 	int err;
-	if ( isBoot ){
+	if ( m_boot ){
 		return -1;
 	}
-	lockDevice();
+	lock_device();
 	link_errno = 0;
-	err = link_read_stdout(d, buf, nbyte);
-	unlockDevice();
+	err = link_read_stdout(m_driver, buf, nbyte);
+	unlock_device();
 	if ( err < 0 ){
 		if ( link_errno == 0 ){
 			if ( abort == false ){
-				errMsg = "Connection Failed";
+				m_error_message = "Connection Failed";
 				this->exit();
 			}
 			return -2;
 		} else {
-			errMsg = genError("Failed to Read Stdout", link_errno);
+			m_error_message = genError("Failed to Read Stdout", link_errno);
 			return -1;
 		}
 	}
@@ -432,20 +422,20 @@ int Link::readStdout(void * buf, int nbyte, volatile bool * abort){
 
 }
 
-int Link::writeStdin(const void * buf, int nbyte){
+int Link::write_stdin(const void * buf, int nbyte){
 	int err;
-	if ( isBoot ){
+	if ( m_boot ){
 		return -1;
 	}
-	lockDevice();
-	err = link_write_stdin(d, buf, nbyte);
-	unlockDevice();
+	lock_device();
+	err = link_write_stdin(m_driver, buf, nbyte);
+	unlock_device();
 	if ( err < 0 ){
 		if ( err == LINK_TRANSFER_ERR ){
-			errMsg = "Connection Failed";
+			m_error_message = "Connection Failed";
 			return -1;
 		} else {
-			errMsg = genError("Failed to Write Stdin", link_errno);
+			m_error_message = genError("Failed to Write Stdin", link_errno);
 			return -1;
 		}
 	}
@@ -454,177 +444,177 @@ int Link::writeStdin(const void * buf, int nbyte){
 
 int Link::stat(string path, struct link_stat * st){
 	int err;
-	if ( isBoot ){
+	if ( m_boot ){
 		return -1;
 	}
-	lockDevice();
+	lock_device();
 	for(int tries = 0; tries < MAX_TRIES; tries++){
-		err = link_stat(d, path.c_str(), st);
+		err = link_stat(m_driver, path.c_str(), st);
 		if(err != LINK_PROT_ERROR) break;
 	}
-	unlockDevice();
+	unlock_device();
 	if( err < 0 ){
-		errMsg = genError("Failed to Get Stat", link_errno);
+		m_error_message = genError("Failed to Get Stat", link_errno);
 	}
-	return checkError(err);
+	return check_error(err);
 }
 
-int Link::getTime(struct tm * gt){
+int Link::get_time(struct tm * gt){
 	int err;
-	if ( isBoot ){
+	if ( m_boot ){
 		return -1;
 	}
-	lockDevice();
+	lock_device();
 	for(int tries = 0; tries < MAX_TRIES; tries++){
-		err = link_gettime(d, gt);
+		err = link_gettime(m_driver, gt);
 		if(err != LINK_PROT_ERROR) break;
 	}
-	unlockDevice();
+	unlock_device();
 	if ( err < 0 ){
-		errMsg = genError("Failed to Get Time", link_errno);
+		m_error_message = genError("Failed to Get Time", link_errno);
 	}
-	return checkError(err);
+	return check_error(err);
 }
 
-int Link::setTime(struct tm * gt){
+int Link::set_time(struct tm * gt){
 	int err;
-	if ( isBoot ){
+	if ( m_boot ){
 		return -1;
 	}
-	lockDevice();
+	lock_device();
 	for(int tries = 0; tries < MAX_TRIES; tries++){
-		err = link_settime(d, gt);
+		err = link_settime(m_driver, gt);
 		if(err != LINK_PROT_ERROR) break;
 	}
-	unlockDevice();
+	unlock_device();
 	if ( err < 0 ){
-		errMsg = genError("Failed to Set Time", link_errno);
+		m_error_message = genError("Failed to Set Time", link_errno);
 	}
-	return checkError(err);
+	return check_error(err);
 }
 
 //Operations on the device
 int Link::mkdir(string directory, link_mode_t mode){
 	int err;
-	if ( isBoot ){
+	if ( m_boot ){
 		return -1;
 	}
-	lockDevice();
+	lock_device();
 	for(int tries = 0; tries < MAX_TRIES; tries++){
-		err = link_mkdir(d, directory.c_str(), mode);
+		err = link_mkdir(m_driver, directory.c_str(), mode);
 		if(err != LINK_PROT_ERROR) break;
 	}
-	unlockDevice();
+	unlock_device();
 	if ( err < 0 ){
-		errMsg = genError("Failed to create " + directory, link_errno);
+		m_error_message = genError("Failed to create " + directory, link_errno);
 	}
-	return checkError(err);
+	return check_error(err);
 }
 
 int Link::rmdir(string directory){
 	int err;
-	if ( isBoot ){
+	if ( m_boot ){
 		return -1;
 	}
-	lockDevice();
+	lock_device();
 	for(int tries = 0; tries < MAX_TRIES; tries++){
-		err = link_rmdir(d, directory.c_str());
+		err = link_rmdir(m_driver, directory.c_str());
 		if(err != LINK_PROT_ERROR) break;
 	}
-	unlockDevice();
+	unlock_device();
 	if ( err < 0 ){
-		errMsg = genError("Failed to remove " + directory, link_errno);
+		m_error_message = genError("Failed to remove " + directory, link_errno);
 	}
-	return checkError(err);
+	return check_error(err);
 }
 
 int Link::opendir(string directory){
 	int err;
-	if ( isBoot ){
+	if ( m_boot ){
 		return -1;
 	}
-	lockDevice();
+	lock_device();
 	for(int tries = 0; tries < MAX_TRIES; tries++){
-		err = link_opendir(d, directory.c_str());
+		err = link_opendir(m_driver, directory.c_str());
 		if(err != LINK_PROT_ERROR) break;
 	}
-	unlockDevice();
+	unlock_device();
 	if ( err < 0 ){
-		errMsg = genError("Failed to open " + directory, link_errno);
+		m_error_message = genError("Failed to open " + directory, link_errno);
 	}
-	return checkError(err);
+	return check_error(err);
 }
 
 int Link::readdir_r(int dirp, struct link_dirent * entry, struct link_dirent ** result){
 	int err;
-	if ( isBoot ){
+	if ( m_boot ){
 		return -1;
 	}
-	lockDevice();
+	lock_device();
 	for(int tries = 0; tries < MAX_TRIES; tries++){
-		err = link_readdir_r(d, dirp, entry, result);
+		err = link_readdir_r(m_driver, dirp, entry, result);
 		if(err != LINK_PROT_ERROR) break;
 	}
-	unlockDevice();
+	unlock_device();
 	if ( err < 0 ){
-		errMsg = genError("Failed to read directory", link_errno);
+		m_error_message = genError("Failed to read directory", link_errno);
 		return -1;
 	}
-	return checkError(err);
+	return check_error(err);
 }
 
 int Link::closedir(int dirp){
 	int err;
-	if ( isBoot ){
+	if ( m_boot ){
 		return -1;
 	}
-	lockDevice();
+	lock_device();
 	for(int tries = 0; tries < MAX_TRIES; tries++){
-		err = link_closedir(d, dirp);
+		err = link_closedir(m_driver, dirp);
 		if(err != LINK_PROT_ERROR) break;
 	}
-	unlockDevice();
+	unlock_device();
 	if ( err < 0 ){
-		errMsg = genError("Failed to close directory", link_errno);
+		m_error_message = genError("Failed to close directory", link_errno);
 	}
-	return checkError(err);
+	return check_error(err);
 }
 
 int Link::symlink(string oldPath, string newPath){
 	int err;
-	if ( isBoot ){
+	if ( m_boot ){
 		return -1;
 	}
-	lockDevice();
+	lock_device();
 	for(int tries = 0; tries < MAX_TRIES; tries++){
-		err = link_symlink(d, oldPath.c_str(), newPath.c_str());
+		err = link_symlink(m_driver, oldPath.c_str(), newPath.c_str());
 		if(err != LINK_PROT_ERROR) break;
 	}
-	unlockDevice();
+	unlock_device();
 	if ( err < 0 ){
-		errMsg = genError("Failed to create symlink " + newPath, link_errno);
+		m_error_message = genError("Failed to create symlink " + newPath, link_errno);
 	}
-	return checkError(err);
+	return check_error(err);
 }
 
 int Link::unlink(string filename){
 	int err;
-	if ( isBoot ){
+	if ( m_boot ){
 		return -1;
 	}
-	lockDevice();
+	lock_device();
 	for(int tries = 0; tries < MAX_TRIES; tries++){
-		err = link_unlink(d, filename.c_str());
+		err = link_unlink(m_driver, filename.c_str());
 		if(err != LINK_PROT_ERROR) break;
 	}
-	unlockDevice();
+	unlock_device();
 	if ( err < 0 ){
-		errMsg = genError("Failed to remove " + filename, link_errno);
+		m_error_message = genError("Failed to remove " + filename, link_errno);
 	}
-	return checkError(err);
+	return check_error(err);
 }
 
-int Link::cp(string src, string dest, link_mode_t mode, bool toDevice, bool (*update)(void*, int, int), void * context){
+int Link::copy(string src, string dest, link_mode_t mode, bool toDevice, bool (*update)(void*, int, int), void * context){
 	FILE * hostFile;
 	int err;
 	int deviceFile;
@@ -634,7 +624,7 @@ int Link::cp(string src, string dest, link_mode_t mode, bool toDevice, bool (*up
 	char buffer[bufferSize];
 	struct link_stat st;
 
-	if ( isBoot ){
+	if ( m_boot ){
 		return -1;
 	}
 
@@ -642,39 +632,39 @@ int Link::cp(string src, string dest, link_mode_t mode, bool toDevice, bool (*up
 
 	if ( toDevice == true ){
 
-		progressMax = 0;
-		progress = 0;
+		m_progress_max = 0;
+		m_progress = 0;
 
 		//Open the host file
 		hostFile = fopen(src.c_str(), "rb");
 		if ( hostFile == NULL ){
-			errMsg = "Could not find file " + src + " on host.";
+			m_error_message = "Could not find file " + src + " on host.";
 			return -1;
 		}
 
 		//Create the device file
 		flags = LINK_O_TRUNC | LINK_O_CREAT | LINK_O_WRONLY; //The create new flag settings
-		lockDevice();
-		deviceFile = link_open(d, dest.c_str(), flags, mode);
+		lock_device();
+		deviceFile = link_open(m_driver, dest.c_str(), flags, mode);
 
 		fseek(hostFile, 0, SEEK_END);
-		progressMax = ftell(hostFile);
+		m_progress_max = ftell(hostFile);
 		rewind(hostFile);
 
-		errMsg = "";
+		m_error_message = "";
 
 		if ( deviceFile > 0 ){
 			while( (bytesRead = fread(buffer, 1, bufferSize, hostFile)) > 0 ){
-				if ( (err = link_write(d, deviceFile, buffer, bytesRead)) != bytesRead ){
-					errMsg = genError("Failed to write to Link device file", link_errno);
+				if ( (err = link_write(m_driver, deviceFile, buffer, bytesRead)) != bytesRead ){
+					m_error_message = genError("Failed to write to Link device file", link_errno);
 					if ( err > 0 ){
 						err = -1;
 					}
 					break;
 				} else {
-					progress += bytesRead;
+					m_progress += bytesRead;
 					if( update != 0 ){
-						if( update(context, progress, progressMax) == true ){
+						if( update(context, m_progress, m_progress_max) == true ){
 							//update progress and check for abort
 							break;
 						}
@@ -683,68 +673,68 @@ int Link::cp(string src, string dest, link_mode_t mode, bool toDevice, bool (*up
 				}
 			}
 		} else {
-			unlockDevice();
+			unlock_device();
 			fclose(hostFile);
 
 			if ( deviceFile == LINK_TRANSFER_ERR ){
-				errMsg = "Connection Failed";
+				m_error_message = "Connection Failed";
 				this->exit();
 				return -2;
 			}
 
-			errMsg = genError("Failed to create file " + dest + " on Link device", link_errno);
+			m_error_message = genError("Failed to create file " + dest + " on Link device", link_errno);
 			return -1;
 		}
 
 		fclose(hostFile);
 
 		if ( err == LINK_TRANSFER_ERR ){
-			unlockDevice();
-			errMsg = "Connection Failed";
+			unlock_device();
+			m_error_message = "Connection Failed";
 			this->exit();
 			return -2;
 		}
 
-		if ( link_close(d, deviceFile) ){
-			errMsg = genError("Failed to close Link device file", link_errno);
-			unlockDevice();
+		if ( link_close(m_driver, deviceFile) ){
+			m_error_message = genError("Failed to close Link device file", link_errno);
+			unlock_device();
 			return -1;
 		}
-		unlockDevice();
+		unlock_device();
 
 		return err;
 
 	} else {
 
 
-		if ( link_stat(d, src.c_str(), &st) < 0 ){
-			errMsg = "Failed to get target file size";
+		if ( link_stat(m_driver, src.c_str(), &st) < 0 ){
+			m_error_message = "Failed to get target file size";
 			return -1;
 		}
 
-		progress = 0;
-		progressMax = 0;
+		m_progress = 0;
+		m_progress_max = 0;
 		//Copy the source file from the device to the host
 		hostFile = fopen(dest.c_str(), "wb");
 		if ( hostFile == NULL ){
-			errMsg = "Failed to open file " + dest + " on host.";
+			m_error_message = "Failed to open file " + dest + " on host.";
 			return -1;
 		}
 
 
 		//Open the device file
 		flags = LINK_O_RDONLY; //Read the file only
-		lockDevice();
-		deviceFile = link_open(d, src.c_str(), flags, 0);
+		lock_device();
+		deviceFile = link_open(m_driver, src.c_str(), flags, 0);
 
 		if ( deviceFile > 0 ){
-			progressMax = st.st_size;
+			m_progress_max = st.st_size;
 
-			while( (bytesRead = link_read(d, deviceFile, buffer, bufferSize)) > 0 ){
+			while( (bytesRead = link_read(m_driver, deviceFile, buffer, bufferSize)) > 0 ){
 				fwrite(buffer, 1, bytesRead, hostFile);
-				progress += bytesRead;
+				m_progress += bytesRead;
 				if( update != 0 ){
-					if( update(context, progress, progressMax) == true ){
+					if( update(context, m_progress, m_progress_max) == true ){
 						//update progress and check for abort
 						break;
 					}
@@ -755,55 +745,55 @@ int Link::cp(string src, string dest, link_mode_t mode, bool toDevice, bool (*up
 			}
 		} else {
 			if ( deviceFile == LINK_TRANSFER_ERR ){
-				errMsg = "Connection Failed";
-				unlockDevice();
+				m_error_message = "Connection Failed";
+				unlock_device();
 				this->exit();
 				return -2;
 			} else {
-				errMsg = genError("Failed to open file " + src + " on Link device", link_errno);
+				m_error_message = genError("Failed to open file " + src + " on Link device", link_errno);
 				fclose(hostFile);
-				unlockDevice();
+				unlock_device();
 				return -1;
 			}
 		}
 
 		fclose(hostFile);
 
-		if ( (err = link_close(d, deviceFile)) ){
+		if ( (err = link_close(m_driver, deviceFile)) ){
 			if ( err == LINK_TRANSFER_ERR ){
-				errMsg = "Connection Failed";
-				unlockDevice();
+				m_error_message = "Connection Failed";
+				unlock_device();
 				this->exit();
 				return -2;
 			} else {
-				errMsg = genError("Failed to close Link file", link_errno);
-				unlockDevice();
+				m_error_message = genError("Failed to close Link file", link_errno);
+				unlock_device();
 				return -1;
 			}
 		}
-		unlockDevice();
+		unlock_device();
 	}
 	return 0;
 }
 
-int Link::runApp(string path){
+int Link::run_app(string path){
 	int err;
-	if ( isBoot ){
+	if ( m_boot ){
 		return -1;
 	}
-	lockDevice();
+	lock_device();
 	for(int tries = 0; tries < MAX_TRIES; tries++){
-		err = link_exec(d, path.c_str());
+		err = link_exec(m_driver, path.c_str());
 		if(err != LINK_PROT_ERROR) break;
 	}
-	unlockDevice();
+	unlock_device();
 	if ( err < 0 ){
 		if ( err == LINK_TRANSFER_ERR ){
-			errMsg = "Connection Failed";
+			m_error_message = "Connection Failed";
 			this->exit();
 			return -2;
 		} else {
-			errMsg = genError("Failed to run program: " + path, link_errno);
+			m_error_message = genError("Failed to run program: " + path, link_errno);
 			return -1;
 		}
 	}
@@ -812,153 +802,149 @@ int Link::runApp(string path){
 
 int Link::format(string path){
 	int err;
-	if ( isBoot ){
+	if ( m_boot ){
 		return -1;
 	}
-	errMsg = "";
+	m_error_message = "";
 	//Format the filesystem
-	lockDevice();
+	lock_device();
 	for(int tries = 0; tries < MAX_TRIES; tries++){
-		err = link_mkfs(d, path.c_str());
+		err = link_mkfs(m_driver, path.c_str());
 		if(err != LINK_PROT_ERROR) break;
 	}
-	unlockDevice();
+	unlock_device();
 	if ( err < 0 ){
-		errMsg = genError("Failed to Format Filesystem", link_errno);
+		m_error_message = genError("Failed to Format Filesystem", link_errno);
 	}
-	return checkError(err);
+	return check_error(err);
 }
 
-int Link::killPid(int pid, int signo){
+int Link::kill_pid(int pid, int signo){
 	int err;
 	stringstream ss;
-	if ( isBoot ){
+	if ( m_boot ){
 		return -1;
 	}
-	lockDevice();
+	lock_device();
 	for(int tries = 0; tries < MAX_TRIES; tries++){
-		err = link_kill_pid(d, pid, signo);
+		err = link_kill_pid(m_driver, pid, signo);
 		if(err != LINK_PROT_ERROR) break;
 	}
-	unlockDevice();
+	unlock_device();
 	if ( err < 0 ){
 		ss << "Failed to kill process " << pid;
-		errMsg = genError(ss.str(), link_errno);
+		m_error_message = genError(ss.str(), link_errno);
 	}
-	return checkError(err);
+	return check_error(err);
 }
 
 int Link::reset(){
-	lockDevice();
-	link_reset(d);
-	unlockDevice();
-	d->dev.handle = LINK_PHY_OPEN_ERROR;
+	lock_device();
+	link_reset(m_driver);
+	unlock_device();
+	m_driver->dev.handle = LINK_PHY_OPEN_ERROR;
 	return 0;
 }
 
-int Link::resetBootloader(){
-	lockDevice();
-	link_resetbootloader(d);
-	unlockDevice();
-	d->dev.handle = LINK_PHY_OPEN_ERROR;
+int Link::reset_bootloader(){
+	lock_device();
+	link_resetbootloader(m_driver);
+	unlock_device();
+	m_driver->dev.handle = LINK_PHY_OPEN_ERROR;
 	return 0;
 }
 
 int Link::trace_create(int pid, link_trace_id_t * id){
 	int err;
-	lockDevice();
-	err = link_posix_trace_create(d, pid, id);
+	lock_device();
+	err = link_posix_trace_create(m_driver, pid, id);
 	if ( err < 0 ){
-		errMsg = genError("Failed to create trace", link_errno);
+		m_error_message = genError("Failed to create trace", link_errno);
 	}
-	unlockDevice();
+	unlock_device();
 	return err;
 }
 
 int Link::trace_tryget_events(link_trace_id_t id, void * data, size_t num_bytes){
 	int err;
-	lockDevice();
-	err = link_posix_trace_tryget_events(d, id, data, num_bytes);
+	lock_device();
+	err = link_posix_trace_tryget_events(m_driver, id, data, num_bytes);
 	if ( err < 0 ){
-		errMsg = genError("Failed to get event", link_errno);
+		m_error_message = genError("Failed to get event", link_errno);
 	}
-	unlockDevice();
+	unlock_device();
 	return err;
 }
 
 int Link::trace_shutdown(link_trace_id_t id){
 	int err;
-	lockDevice();
-	err = link_posix_trace_shutdown(d, id);
+	lock_device();
+	err = link_posix_trace_shutdown(m_driver, id);
 	if ( err < 0 ){
-		errMsg = genError("Failed to shutdown trace", link_errno);
+		m_error_message = genError("Failed to shutdown trace", link_errno);
 	}
-	unlockDevice();
+	unlock_device();
 	return err;
 }
 
-bool Link::isBootloader(){
-	return isBoot;
-}
-
-int Link::getSecurityAddr(uint32_t * addr){
+int Link::get_security_addr(uint32_t * addr){
 	return -1;
 }
 
 int Link::rename(string old_path, string new_path){
 	int err;
-	if ( isBoot ){
+	if ( m_boot ){
 		return -1;
 	}
-	lockDevice();
+	lock_device();
 	for(int tries = 0; tries < MAX_TRIES; tries++){
-		err = link_rename(d, old_path.c_str(), new_path.c_str());
+		err = link_rename(m_driver, old_path.c_str(), new_path.c_str());
 		if(err != LINK_PROT_ERROR) break;
 	}
-	unlockDevice();
+	unlock_device();
 	if( err < 0 ){
-		errMsg = genError("Failed to rename file", link_errno);
+		m_error_message = genError("Failed to rename file", link_errno);
 	}
-	return checkError(err);
+	return check_error(err);
 }
 
 int Link::chown(string path, int owner, int group){
 	int err;
-	if ( isBoot ){
+	if ( m_boot ){
 		return -1;
 	}
-	lockDevice();
+	lock_device();
 	for(int tries = 0; tries < MAX_TRIES; tries++){
-		err = link_chown(d, path.c_str(), owner, group);
+		err = link_chown(m_driver, path.c_str(), owner, group);
 		if(err != LINK_PROT_ERROR) break;
 	}
-	unlockDevice();
+	unlock_device();
 	if ( err < 0 ){
-		errMsg = genError("Failed to chown file", link_errno);
+		m_error_message = genError("Failed to chown file", link_errno);
 	}
-	return checkError(err);
+	return check_error(err);
 }
 
 int Link::chmod(string path, int mode){
 	int err;
-	if ( isBoot ){
-		errMsg = "Target is a bootloader";
+	if ( m_boot ){
+		m_error_message = "Target is a bootloader";
 		return -1;
 	}
-	lockDevice();
+	lock_device();
 	for(int tries = 0; tries < MAX_TRIES; tries++){
-		err = link_chmod(d, path.c_str(), mode);
+		err = link_chmod(m_driver, path.c_str(), mode);
 		if(err != LINK_PROT_ERROR) break;
 	}
-	unlockDevice();
+	unlock_device();
 	if ( err < 0 ){
-		errMsg = genError("Failed to chmod file", link_errno);
+		m_error_message = genError("Failed to chmod file", link_errno);
 	}
-	return checkError(err);
+	return check_error(err);
 
 }
 
-int Link::updateOS(string path, bool verify, bool (*update)(void*,int,int), void * context){
+int Link::update_os(string path, bool verify, bool (*update)(void*,int,int), void * context){
 	int err;
 	uint32_t loc;
 	int bytesRead;
@@ -973,20 +959,20 @@ int Link::updateOS(string path, bool verify, bool (*update)(void*,int,int), void
 	uint32_t image_id;
 	char tmp[256];
 
-	if ( isBoot == false ){
-		errMsg = "Target is not a bootloader";
+	if ( m_boot == false ){
+		m_error_message = "Target is not a bootloader";
 		return -1;
 	}
 
 	//now write the OS to the device using link_writeflash()
-	progressMax = 0;
-	progress = 0;
+	m_progress_max = 0;
+	m_progress = 0;
 
 	//Open the host file
 	hostFile = fopen(path.c_str(), "rb");
 	if ( hostFile == NULL ){
-		errMsg = "Could not find file " + path + " on host.";
-		unlockDevice();
+		m_error_message = "Could not find file " + path + " on host.";
+		unlock_device();
 		return -1;
 	}
 
@@ -994,17 +980,17 @@ int Link::updateOS(string path, bool verify, bool (*update)(void*,int,int), void
 	fread(&image_id, 1, sizeof(uint32_t), hostFile);
 
 	fseek(hostFile, 0, SEEK_END);
-	progressMax = ftell(hostFile);
+	m_progress_max = ftell(hostFile);
 	rewind(hostFile);
 
 
-	err = link_bootloader_attr(d, &attr, image_id);
+	err = link_bootloader_attr(m_driver, &attr, image_id);
 	//err = link_ioctl(d, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_GETATTR, &attr);
 	if( err < 0 ){
-		unlockDevice();
-		errMsg = "Failed to read attributes";
+		unlock_device();
+		m_error_message = "Failed to read attributes";
 		fclose(hostFile);
-		return checkError(err);
+		return check_error(err);
 	}
 
 	startAddr = attr.startaddr;
@@ -1016,25 +1002,25 @@ int Link::updateOS(string path, bool verify, bool (*update)(void*,int,int), void
 				"Kernel Image ID (0x%X) does not match Bootloader ID (0x%X)",
 				image_id,
 				attr.hardware_id);
-		errMsg = genError(tmp, link_errno);
+		m_error_message = genError(tmp, link_errno);
 		fclose(hostFile);
-		return checkError(err);
+		return check_error(err);
 	}
 
-	lockDevice();
+	lock_device();
 	//first erase the flash
-	err = link_eraseflash(d);
-	unlockDevice();
+	err = link_eraseflash(m_driver);
+	unlock_device();
 
 	if ( err < 0 ){
 		fclose(hostFile);
-		errMsg = "Failed to erase flash";
-		unlockDevice();
-		return checkError(err);
+		m_error_message = "Failed to erase flash";
+		unlock_device();
+		return check_error(err);
 	}
 
-	errMsg = "";
-	statusMessage = "Writing OS to Target...";
+	m_error_message = "";
+	m_status_message = "Writing OS to Target...";
 
 
 	while( (bytesRead = fread(buffer, 1, bufferSize, hostFile)) > 0 ){
@@ -1044,8 +1030,8 @@ int Link::updateOS(string path, bool verify, bool (*update)(void*,int,int), void
 			memset(buffer, 0xFF, 256);
 		}
 
-		if ( (err = link_writeflash(d, loc, buffer, bytesRead)) != bytesRead ){
-			errMsg = genError("Failed to write to link flash", link_errno);
+		if ( (err = link_writeflash(m_driver, loc, buffer, bytesRead)) != bytesRead ){
+			m_error_message = genError("Failed to write to link flash", link_errno);
 			if ( err < 0 ){
 				err = -1;
 			}
@@ -1053,8 +1039,8 @@ int Link::updateOS(string path, bool verify, bool (*update)(void*,int,int), void
 		}
 
 		loc += bytesRead;
-		progress += bytesRead;
-		if( update(context, progress, progressMax) == true ){
+		m_progress += bytesRead;
+		if( update(context, m_progress, m_progress_max) == true ){
 			//update progress and check for abort
 			break;
 		}
@@ -1067,15 +1053,15 @@ int Link::updateOS(string path, bool verify, bool (*update)(void*,int,int), void
 
 			rewind(hostFile);
 			loc = startAddr;
-			progress = 0;
+			m_progress = 0;
 
-			statusMessage = "Verifying...";
+			m_status_message = "Verifying...";
 
 
 			while( (bytesRead = fread(buffer, 1, bufferSize, hostFile)) > 0 ){
 
-				if ( (err = link_readflash(d, loc, cmpBuffer, bytesRead)) != bytesRead ){
-					errMsg = genError("Failed to read flash memory", link_errno);
+				if ( (err = link_readflash(m_driver, loc, cmpBuffer, bytesRead)) != bytesRead ){
+					m_error_message = genError("Failed to read flash memory", link_errno);
 					if ( err > 0 ){
 						err = -1;
 					}
@@ -1092,7 +1078,7 @@ int Link::updateOS(string path, bool verify, bool (*update)(void*,int,int), void
 								//printf("0x%X targ:0x%02X actual:0x%02X", loc + i, buffer[i], cmpBuffer[i]);
 							}
 						}
-						errMsg = genError("Failed to verify program installation", link_errno);
+						m_error_message = genError("Failed to verify program installation", link_errno);
 						fclose(hostFile);
 
 						//erase the flash
@@ -1102,8 +1088,8 @@ int Link::updateOS(string path, bool verify, bool (*update)(void*,int,int), void
 					}
 
 					loc += bytesRead;
-					progress += bytesRead;
-					if( update(context, progress, progressMax) == true ){
+					m_progress += bytesRead;
+					if( update(context, m_progress, m_progress_max) == true ){
 						//update progress and check for abort
 						break;
 					}
@@ -1113,42 +1099,42 @@ int Link::updateOS(string path, bool verify, bool (*update)(void*,int,int), void
 		}
 
 		//write the stack address
-		if( (err = link_writeflash(d, startAddr, stackaddr, 256)) != 256 ){
-			errMsg = genError("Failed to write stack addr", err);
+		if( (err = link_writeflash(m_driver, startAddr, stackaddr, 256)) != 256 ){
+			m_error_message = genError("Failed to write stack addr", err);
 			return -1;
 		}
 
 
 		if( verify == true ){
 			//verify the stack address
-			if( (err = link_readflash(d, startAddr, buffer, 256)) != 256 ){
-				errMsg = genError("Failed to write stack addr", err);
+			if( (err = link_readflash(m_driver, startAddr, buffer, 256)) != 256 ){
+				m_error_message = genError("Failed to write stack addr", err);
 				fclose(hostFile);
 				return -1;
 			}
 
 			if( memcmp(buffer, stackaddr, 256) != 0 ){
-				link_eraseflash(d);
-				errMsg = "Failed to verify stack address";
+				link_eraseflash(m_driver);
+				m_error_message = "Failed to verify stack address";
 				fclose(hostFile);
 				return -1;
 			}
 		}
 
-		statusMessage = "Finalizing...";
+		m_status_message = "Finalizing...";
 
 	}
 
-	statusMessage = "Done";
+	m_status_message = "Done";
 
 	fclose(hostFile);
-	unlockDevice();
+	unlock_device();
 
 	if( err < 0 ){
-		link_eraseflash(d);
+		link_eraseflash(m_driver);
 	}
 
-	return checkError(err);
+	return check_error(err);
 }
 
 

@@ -53,34 +53,34 @@ public:
     /*! \details This function creates a list of serial numbers of
      * all the devices that are attached to the host.
      */
-    static vector<string> listDevices(link_transport_mdriver_t * d, int max = 64);
+    static vector<string> get_device_list(link_transport_mdriver_t * d, int max = 64);
 
     /*! \details This gets the error message if an
      * operation fails.
      */
-    string errorMessage(){ return errMsg; }
+    string error_message() const { return m_error_message; }
 
     /*! \details This gets the current progress of an operation.  This allows
      * multi-threaded applications to update a progress bar while copying files.
      */
-    int getProgress();
+    int progress() const { return m_progress; }
 
     /*! \details This gets the maximum progress value of the current operation.
      *
      */
-    int getProgessMax();
+    int progress_max() const { return m_progress_max; }
 
     /*! \details This gets the status of the current operation in progress.
      *
      */
-    string getStatusMessage();
+    string status_message() const { return m_status_message; }
 
     /*! \details This connects to the specified Stratify OS device.  After calling this,
      * other applications will not have access to the device.
      *
      */
     int init(string sn /*! The serial number or an empty string to ignore */);
-    int reinit(){ return init(lastsn); }
+    int reinit(){ return init(m_last_serialno); }
 
     /*! \details This disconnects from the device.  After calling this,
      * other applications can access the device.
@@ -90,7 +90,7 @@ public:
     /*! \details This checks to see if the device is connected.
      * \return true if connected
      */
-    bool connected();
+    bool get_is_connected();
 
     //These are all the file transfer options over Stratify OS Link
 
@@ -143,12 +143,20 @@ public:
      *
      * \return Zero on success
      */
-    int cp(string src /*! The path to the source file */,
+    int copy(string src /*! The path to the source file */,
     		string dest /*! The path to the destination file */,
     		link_mode_t mode /*! The access permissions if copying to the device */,
-    		bool toDevice = true /*! When true, copy is from host to device */,
+    		bool to_device = true /*! When true, copy is from host to device */,
     		bool (*update)(void *, int, int) = 0,
 			void * context = 0);
+
+    int copy_file_to_device(string src, string dest, link_mode_t mode, bool (*update)(void*,int,int) = 0, void * context = 0){
+    	return copy(src, dest, mode, true, update, context);
+    }
+
+    int copy_file_from_device(string src, string dest, link_mode_t mode, bool (*update)(void*,int,int) = 0, void * context = 0){
+    	return copy(src, dest, mode, false, update, context);
+    }
 
     /*! \details This formats the filesystem on the device.
      *
@@ -160,7 +168,7 @@ public:
      *
      * \return The PID of the new process or less than zero for an error
      */
-    int runApp(string path);
+    int run_app(string path);
 
 
     /*! \details This opens a file (or device such as /dev/adc0) on the target device.
@@ -186,18 +194,18 @@ public:
     /*! \details This checks to see if the target is in bootloader mode.
      * \return Non zero if bootloader mode is active.
      */
-    bool isBootloader();
+    bool is_bootloader() const { return m_boot; }
 
 
     /*! \details This reads the flash memory of the device.
      * \return Number of bytes read.
      */
-    int readFlash(int addr, void * buf, int nbyte);
+    int read_flash(int addr, void * buf, int nbyte);
 
     /*! \details This writes the flash memory of the device.
      * \return Number of bytes read.
      */
-    int writeFlash(int addr, const void * buf, int nbyte);
+    int write_flash(int addr, const void * buf, int nbyte);
 
     /*! \details This performs IO ctl on an open file descriptor.  \a fd
      * must refer to a device rather than a regular file.  \a ctl must
@@ -235,30 +243,30 @@ public:
     /*! \details This function opens the stdio on the device.
      * This is associated with /dev/link-stdio.
      */
-    int openStdio();
+    int open_stdio();
 
     /*! \details This function reads the stdout from the device.
      * This is associated with /dev/link-stdio.
      */
-    int readStdout(void * buf /*! the destination pointer */,
+    int read_stdout(void * buf /*! the destination pointer */,
     		int nbyte /*! max bytes to read */,
     		volatile bool * abort /*! if set to true, operation will be aborted */);
 
     /*! \details This function writes the stdin on the device.
      * This is associated with /dev/link-stdio.
      */
-    int writeStdin(const void * buf /*! the data to write */, int nbyte /*! the number of bytes to write */);
+    int write_stdin(const void * buf /*! the data to write */, int nbyte /*! the number of bytes to write */);
 
     /*! \details This function opens the stdio on the device.
      * This is associated with /dev/link-stdio.
      */
-    int closeStdio();
+    int close_stdio();
 
     /*! \details This function kills the process \a pid.
      *
      * \return Zero on success or less than zero on error
      */
-    int killPid(int pid, int signo);
+    int kill_pid(int pid, int signo);
 
     /*! \details This function resets the device (connection will be terminated)
      *
@@ -271,7 +279,7 @@ public:
      *
      * \return Zero on success or less than zero on error
      */
-    int resetBootloader();
+    int reset_bootloader();
 
     /*! \details This function reads the time from
      * the device.
@@ -279,18 +287,18 @@ public:
      * \return Zero on success
      *
      */
-    int getTime(struct tm * gt);
+    int get_time(struct tm * gt);
 
     /*! \details This function sets the time on the device.
      * \return Zero on success
      */
-    int setTime(struct tm * gt);
+    int set_time(struct tm * gt);
 
 
     /*! \details This gets the address of the security word on the device.
      * \return Zero on success.
      */
-    int getSecurityAddr(uint32_t * addr);
+    int get_security_addr(uint32_t * addr);
 
     /*! \details This renames a file.
      * \return Zero on success
@@ -310,15 +318,15 @@ public:
     /*! \details This method checks to see if a process called \a name is running.
      * \return The pid of the running process or -1 if no processes match the name
      */
-    int isExecuting(string name);
+    int get_is_executing(string name);
 
-    int updateOS(string path, bool verify, bool (*update)(void*,int,int) = 0, void * context = 0);
+    int update_os(string path, bool verify, bool (*update)(void*,int,int) = 0, void * context = 0);
 
-    link_transport_mdriver_t * driver(){ return d; }
-    void setDriver(link_transport_mdriver_t * driver){ d = driver; }
+    link_transport_mdriver_t * driver(){ return m_driver; }
+    void set_driver(link_transport_mdriver_t * driver){ m_driver = driver; }
 
-    void setProgress(int p){ progress = p; }
-    void setProgressMax(int p){ progressMax = p; }
+    void set_progress(int p){ m_progress = p; }
+    void set_progress_max(int p){ m_progress_max = p; }
 
 
     int trace_create(int pid, link_trace_id_t * id);
@@ -326,23 +334,23 @@ public:
     int trace_shutdown(link_trace_id_t id);
 
 private:
-    int checkError(int err);
+    int check_error(int err);
+    int lock_device();
+    int unlock_device();
+    void reset_progress();
 
-    string lastsn;
-    string errMsg;
-    string statusMessage;
-    int stdoutFd;
-    int stdinFd;
-    volatile int progress;
-    volatile int progressMax;
-    int lockDevice();
-    int unlockDevice();
-    volatile int lock;
-    void resetProgress();
-    bool isBoot;
+    string m_last_serialno;
+    string m_error_message;
+    string m_status_message;
+    int m_stdout_fd;
+    int m_stdin_fd;
+    volatile int m_progress;
+    volatile int m_progress_max;
+    volatile int m_lock;
+    bool m_boot;
 
-    link_transport_mdriver_t default_driver;
-    link_transport_mdriver_t * d;
+    link_transport_mdriver_t m_default_driver;
+    link_transport_mdriver_t * m_driver;
 };
 
 #endif // LINK_H
