@@ -528,6 +528,28 @@ int Link::rmdir(string directory){
 	return check_error(err);
 }
 
+vector<string> Link::get_dir_list(string directory){
+
+	vector<string> list;
+	int dirp;
+	struct link_dirent entry;
+	struct link_dirent * result;
+
+	dirp = opendir(directory);
+
+	if( dirp == 0 ){
+		return list;
+	}
+
+	while( readdir_r(dirp, &entry, &result) == 0 ){
+		list.push_back(entry.d_name);
+	}
+
+	closedir(dirp);
+
+	return list;
+}
+
 int Link::opendir(string directory){
 	int err;
 	if ( m_boot ){

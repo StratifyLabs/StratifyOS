@@ -120,6 +120,9 @@ public:
     int symlink(string oldPath /*! The existing path */,
     		string newPath /*! The path to the new link */);
 
+    /*! \details Load the entries of a directory. */
+    vector<string> get_dir_list(string directory);
+
     /*! \details This function opens a directory such that it's contents can be
      * read with readdir().
      */
