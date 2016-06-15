@@ -115,7 +115,7 @@ typedef struct MCU_PACK {
 	u32 core_cpu_freq;
 	u32 core_periph_freq;
 	u32 usb_max_packet_zero;
-	u32 flags;
+	u32 o_flags;
 	void (*event)(int, void*);
 	pio_t led;
 	u16 resd;

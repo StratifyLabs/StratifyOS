@@ -120,6 +120,7 @@ void * link_update(void * arg){
 	data.op.cmd = 0;
 	err = 0;
 
+	mcu_debug("Open link driver\n");
 	if( (driver->handle = driver->open(NULL, 0)) == LINK_PHY_ERROR){
 		mcu_debug("failed to init phy\n");
 		return 0;

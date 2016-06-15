@@ -23,6 +23,7 @@
 #include <cstdio>
 #include <sstream>
 #include <string>
+#include <iface/dev/sys.h>
 
 #define MAX_TRIES 3
 
@@ -1157,6 +1158,129 @@ int Link::update_os(string path, bool verify, bool (*update)(void*,int,int), voi
 	}
 
 	return check_error(err);
+}
+
+int Link::update_binary_install_options(string path, string name, bool startup, bool run_in_ram, int ram_size){
+    link_appfs_file_t appfsFile;
+	FILE * binary_file;
+
+	binary_file = fopen(path.c_str(), "r+");
+	if( binary_file ==  0 ){
+		m_error_message = "Failed to open " + path + "/" + name;
+		return -1;
+	}
+
+
+	if( fread((char*)&appfsFile, sizeof(appfsFile), 1, binary_file) <= 0 ){
+		fclose(binary_file);
+		m_error_message = "Failed to read app filesystem data";
+		return -1;
+	}
+
+	memset(appfsFile.hdr.name, 0, LINK_NAME_MAX);
+	strncpy(appfsFile.hdr.name, name.c_str(), LINK_NAME_MAX - 2);
+	//appfsFile.hdr.uid = 0;
+	//appfsFile.hdr.gid = 0;
+	appfsFile.hdr.mode = 0777;
+
+	if ( startup == true ){
+		appfsFile.exec.options |= LINK_APPFS_EXEC_OPTIONS_STARTUP;
+	} else {
+		appfsFile.exec.options &= ~LINK_APPFS_EXEC_OPTIONS_STARTUP;
+	}
+
+	if ( run_in_ram == true ){
+		appfsFile.exec.options &= ~(LINK_APPFS_EXEC_OPTIONS_FLASH);
+	} else {
+		appfsFile.exec.options |= (LINK_APPFS_EXEC_OPTIONS_FLASH);
+	}
+
+	appfsFile.exec.ram_size = ram_size;
+
+	fseek(binary_file, 0, SEEK_SET);
+
+	if( fwrite((char*)&appfsFile, sizeof(appfsFile), 1, binary_file) <= 0 ){
+		fclose(binary_file);
+		m_error_message = "Failed to write updated binary info";
+		return -1;
+	}
+
+	fclose(binary_file);
+	return 0;
+}
+
+int Link::install_app(string source, string dest, string name, bool (*update)(void*,int,int), void * context){
+	FILE * source_file;
+	ssize_t source_size;
+	int bytesRead;
+	int fd;
+	appfs_installattr_t attr;
+	int bytesCum;
+	int bytesTotal;
+
+	source_file = fopen(source.c_str(), "r");
+	if( source_file == 0 ){
+		m_status_message = "Failed to open file: " + source;
+		return -1;
+	}
+
+	fseek(source_file, 0, SEEK_END);
+	source_size = ftell(source_file);
+	fseek(source_file, 0, SEEK_SET);
+
+	if( dest.substr(0, strlen("/app")) == string("/app")){
+		fd = open("/app/.install", LINK_O_WRONLY);
+		if( fd < 0 ){
+			fclose(source_file);
+			m_error_message = "Failed to open destination: " + dest;
+			return -1;
+		}
+
+		attr.loc = 0;
+
+		bytesTotal = source_size;
+		bytesCum = 0;
+
+		do {
+			memset(attr.buffer, 0xFF, APPFS_PAGE_SIZE);
+			bytesRead = fread((char*)attr.buffer, 1, APPFS_PAGE_SIZE, source_file);
+			if( bytesRead > 0 ){
+				attr.nbyte = bytesRead;
+				bytesCum += attr.nbyte;
+				if( ioctl(fd, I_APPFS_INSTALL, &attr) < 0 ){
+					genError("Failed to install file on device", bytesRead);
+					close(fd);
+					fclose(source_file);
+					return -1;
+				}
+				if( update ){ update(context, bytesCum, bytesTotal); }
+
+				attr.loc += APPFS_PAGE_SIZE;
+			}
+		} while( bytesRead == APPFS_PAGE_SIZE );
+
+		fclose(source_file);
+
+		if( close(fd) < 0 ){
+			genError("Failed to close file on device", link_errno);
+			return -1;
+		}
+
+
+		if( update ){ update(context, 0, 0); }
+
+	} else {
+		//copy the file to the destination directory
+
+		if( copy_file_to_device(source, dest + "/" + name, 0666, update, context) < 0 ){
+			genError(string("Failed to copy " + source + " to " + dest), link_errno);
+			return -1;
+		}
+
+		if( update ){ update(context, 0, 0); }
+	}
+
+	return 0;
 }
 
 

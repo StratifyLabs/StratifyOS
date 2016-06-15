@@ -44,7 +44,7 @@ extern u32 _ahb_sram_size;
 #define START_OS ((int)&_text)
 #define END_OS ((int)&_etext + (int)&_edata - (int)&_data)
 
-#define FLASH_SIZE ((int)&_flash_size)
+#define FLASH_SIZE ((u32)&_flash_size)
 
 static int blank_check(int loc, int nbyte);
 static bool is_flash(int addr, int size);
@@ -72,7 +72,7 @@ int _mcu_mem_getsyspage(){
 int mcu_mem_getattr(int port, void * ctl){
 	mem_attr_t * attr = ctl;
 	attr->flash_pages = (u32)&_flash_pages;
-	attr->flash_size = (u32)&_flash_size;
+	attr->flash_size = FLASH_SIZE;
 	attr->ram_pages = (u32)&_flash_pages;
 	attr->ram_size = (u32)&_sram_size + (u32)&_ahb_sram_size;
 	return 0;
@@ -178,13 +178,13 @@ int mcu_mem_writepage(int port, void * ctl){
 		return -1;
 	}
 
-	if ( wattr->addr >= (u32)&_flash_size ){
+	if ( wattr->addr >= FLASH_SIZE ){
 		errno = EINVAL;
-		return -1;
+		return -11;
 	}
 
-	if ( wattr->addr + wattr->nbyte > (u32)&_flash_size ){
-		wattr->nbyte = (u32)&_flash_size - wattr->addr; //update the bytes read to not go past the end of the disk
+	if ( wattr->addr + wattr->nbyte > FLASH_SIZE ){
+		wattr->nbyte = FLASH_SIZE - wattr->addr; //update the bytes read to not go past the end of the disk
 	}
 
 	if ( wattr->nbyte <= 256 ){
@@ -260,7 +260,7 @@ int get_flash_page_addr(int page){
 }
 
 bool is_flash(int addr, int size){
-	if ( (addr + size) <= (int)&_flash_size ){
+	if ( (addr + size) <= FLASH_SIZE ){
 		return true;
 	}
 	return false;

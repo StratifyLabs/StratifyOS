@@ -50,7 +50,7 @@ typedef uint16_t adc_sample_t;
 #define MCU_EEPROM_API 0
 #define MCU_EEPROM_PORTS 1
 #define MCU_EEPROM_REGS { LPC_EEPROM }
-#define MCU_EEPROM_IRQS { 0xFF }
+#define MCU_EEPROM_IRQS { EEPROM_IRQn }
 #define MCU_EEPROM_SIZE (4*1024)
 #define MCU_EEPROM_PAGE_SIZE 64
 

@@ -358,6 +358,21 @@ int appfs_util_priv_reclaim_ram(const device_t * dev, appfs_handle_t * h){
 	return 0;
 }
 
+static int mem_write_page(const device_t * dev, appfs_handle_t * h, appfs_installattr_t * attr){
+	//now write the buffer
+	mem_writepage_t write_page;
+
+	if( (attr->loc + attr->nbyte) > (h->type.install.code_size + h->type.install.data_size) ){
+		errno = EINVAL;
+		return -1;
+	}
+
+	write_page.addr = h->type.install.code_start + attr->loc;
+	write_page.nbyte = attr->nbyte;
+	memcpy(write_page.buf, attr->buffer, 256);
+	return dev->driver.ioctl(&(dev->cfg), I_MEM_WRITEPAGE, &write_page);
+}
+
 int appfs_util_priv_create(const device_t * dev, appfs_handle_t * h, appfs_installattr_t * attr){
 	int code_start_addr;
 	int type;
@@ -382,7 +397,7 @@ int appfs_util_priv_create(const device_t * dev, appfs_handle_t * h, appfs_insta
 
 		if( dest->exec.signature != APPFS_CREATE_SIGNATURE ){
 			errno = EINVAL;
-			return -1;
+			return -3;
 		}
 
 		//make sure the name is valid
@@ -406,7 +421,7 @@ int appfs_util_priv_create(const device_t * dev, appfs_handle_t * h, appfs_insta
 		//find space for the code
 		code_start_addr = find_protectable_free(dev, type, dest->exec.code_size, &page);
 		if ( code_start_addr == -1 ){
-			errno = ENOMEM;
+			//errno is set to ENOSPC by find_protectable_free
 			return -1;
 		}
 
@@ -435,19 +450,12 @@ int appfs_util_priv_create(const device_t * dev, appfs_handle_t * h, appfs_insta
 		}
 	}
 
-	//now write the buffer
-	attr->loc += h->type.install.code_start;
-	if( (attr->loc + attr->nbyte) > (h->type.install.code_start + h->type.install.code_size) ){
-		errno = EINVAL;
-		return -1;
-	}
 
-	mem_writepage_t write_page;
-	write_page.addr = h->type.install.code_start + attr->loc;
-	write_page.nbyte = attr->nbyte;
-	memcpy(write_page.buf, attr->buffer, 256);
-	return dev->driver.ioctl(&(dev->cfg), I_MEM_WRITEPAGE, &write_page);
+	//now write the buffer
+	return mem_write_page(dev, h, attr);
 }
+
+
 
 int appfs_util_priv_writeinstall(const device_t * dev, appfs_handle_t * h, appfs_installattr_t * attr){
 	union {
@@ -605,16 +613,10 @@ int appfs_util_priv_writeinstall(const device_t * dev, appfs_handle_t * h, appfs
 		}
 	}
 
-	//now write buffer
-	attr->loc += h->type.install.code_start;
 	memcpy(attr->buffer, &dest, attr->nbyte);
 
-	if( (attr->loc + attr->nbyte) > (h->type.install.code_start + h->type.install.code_size + h->type.install.data_size) ){
-		errno = EINVAL;
-		return -1;
-	}
-
-	return dev->driver.ioctl(&(dev->cfg), I_MEM_WRITEPAGE, attr);
+	//now write buffer
+	return mem_write_page(dev, h, attr);
 }
 
 

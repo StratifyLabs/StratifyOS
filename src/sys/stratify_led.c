@@ -48,7 +48,7 @@ void stratify_led_priv_on(void * args){
 	attr.mask = (1<<mcu_board_config.led.pin);
 	attr.mode = PIO_MODE_OUTPUT | PIO_MODE_DIRONLY;
 	mcu_pio_setattr(mcu_board_config.led.port, &attr);
-	if( mcu_board_config.flags & MCU_BOARD_CONFIG_FLAG_LED_ACTIVE_HIGH ){
+	if( mcu_board_config.o_flags & MCU_BOARD_CONFIG_FLAG_LED_ACTIVE_HIGH ){
 		mcu_pio_setmask(mcu_board_config.led.port, (void*)(1<<mcu_board_config.led.pin));
 	} else {
 		mcu_pio_clrmask(mcu_board_config.led.port, (void*)(1<<mcu_board_config.led.pin));

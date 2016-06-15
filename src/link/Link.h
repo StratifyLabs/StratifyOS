@@ -50,6 +50,8 @@ public:
     Link();
     ~Link();
 
+    typedef bool (*update_callback_t)(void*, int, int);
+
     /*! \details This function creates a list of serial numbers of
      * all the devices that are attached to the host.
      */
@@ -271,6 +273,13 @@ public:
      */
     int kill_pid(int pid, int signo);
 
+    /*! \details Get the PID of the specified application name
+     *
+     * @param name The name of the application to find the pid
+     * @return The PID or -1 if the application is not currently running
+     */
+    int get_pid(string name){ return get_is_executing(name); }
+
     /*! \details This function resets the device (connection will be terminated)
      *
      * \return Zero on success or less than zero on error
@@ -335,6 +344,29 @@ public:
     int trace_create(int pid, link_trace_id_t * id);
     int trace_tryget_events(link_trace_id_t id, void * data, size_t num_bytes);
     int trace_shutdown(link_trace_id_t id);
+
+    //creating files in Flash/Ram
+
+    /*! details This method will update a binary app with the specified settings
+     *
+     * @param path Full path to the binary file
+     * @param name The name that should be assigned to the app
+     * @param startup True if app should run at startup
+     * @param run_in_ram True if app should run in ram
+     * @param ram_size Number of bytes the app needs for RAM (excluding code if run_in_ram is true)
+     * @return Zero on success or -1 with error() set to an appropriate message
+     */
+    int update_binary_install_options(string path, string name, bool startup, bool run_in_ram, int ram_size);
+
+    /*! \details This method will install a binary to the specified location
+     *
+     * @param source The source of the binary file
+     * @param dest The location to install the file (directory)
+     * @param update A callback to update the caller on the progress of the install
+     * @param context First argument passed to \a update
+     * @return Zero on success or -1 with error() set to an appropriate message
+     */
+    int install_app(string source, string dest, string name, bool (*update)(void*,int,int) = 0, void * context = 0);
 
 private:
     int check_error(int err);

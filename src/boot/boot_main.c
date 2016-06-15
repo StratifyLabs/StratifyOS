@@ -165,7 +165,7 @@ void init_hw(){
 	action.callback = 0;
 	action.context = 0;
 	action.channel = 0;
-	action.prio = 2;
+	action.prio = 128;
 	mcu_uart_setaction(0, &action);
 
 	action.prio = 1;
@@ -205,7 +205,7 @@ void gled_on(){
 	attr.mask = (1<<mcu_board_config.led.pin);
 	attr.mode = PIO_MODE_OUTPUT | PIO_MODE_DIRONLY;
 	mcu_pio_setattr(mcu_board_config.led.port, &attr);
-	if( mcu_board_config.flags & MCU_BOARD_CONFIG_FLAG_LED_ACTIVE_HIGH ){
+	if( mcu_board_config.o_flags & MCU_BOARD_CONFIG_FLAG_LED_ACTIVE_HIGH ){
 		//LED is active low
 		mcu_pio_setmask(mcu_board_config.led.port, (void*)attr.mask);
 	} else {

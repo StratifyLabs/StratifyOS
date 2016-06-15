@@ -389,7 +389,6 @@ int mcu_ssp_setaction(int port, void * ctl){
 	return 0;
 }
 
-
 int byte_swap(int port, int byte){
 	LPC_SSP_Type * regs;
 	regs = ssp_regs_table[port];
@@ -400,10 +399,13 @@ int byte_swap(int port, int byte){
 	}
 
 	regs->DR = byte;
-	while ( (regs->SR & SSPSR_BSY) || !(regs->SR & SSPSR_RNE) ){
+
+	while ( (regs->SR & SSPSR_BSY)  || !(regs->SR & SSPSR_RNE) ){
 		;
 	}
+
 	byte = regs->DR; //read the byte to empty the RX FIFO
+
 	return byte;
 
 }

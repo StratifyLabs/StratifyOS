@@ -1,6 +1,7 @@
 
 
 #include <errno.h>
+#include "mcu/debug.h"
 #include "iface/dev/ioctl.h"
 #include "device/sys.h"
 #include "iface/device_config.h"

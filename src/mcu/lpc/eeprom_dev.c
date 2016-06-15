@@ -61,7 +61,9 @@ void _mcu_eeprom_dev_power_on(int port){
 		regs->PWRDWN = 0;
 
 		//enable the interrupt
-		_mcu_core_priv_enable_irq((void*)(u32)(eeprom_irqs[port]));
+		if( eeprom_irqs[port] != 0xFF ){
+			_mcu_core_priv_enable_irq((void*)(u32)(eeprom_irqs[port]));
+		}
 
 		//initialize the EEPROM clock
 		regs->CLKDIV = (mcu_board_config.core_cpu_freq / 375000) - 1;

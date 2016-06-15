@@ -75,9 +75,8 @@ int mcu_check_spi_port(const device_cfg_t * cfgp){
 			return err;
 		}
 
-
-		if( mcu_spi_ioctl(cfgp, I_SPI_SETATTR, &spi_cfg) < 0 ){
-			return -1;
+		if( (err = mcu_spi_ioctl(cfgp, I_SPI_SETATTR, &spi_cfg)) < 0 ){
+			return err;
 		}
 		return 0;
 	}

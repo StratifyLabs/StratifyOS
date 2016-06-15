@@ -20,12 +20,15 @@
 #include "local.h"
 #include "mcu/spi.h"
 
+#if MCU_SPI_PORTS > 0
+
 //These functions are device specific
 extern void _mcu_spi_dev_power_on(int port);
 extern void _mcu_spi_dev_power_off(int port);
 extern int _mcu_spi_dev_powered_on(int port);
 extern int _mcu_spi_dev_read(const device_cfg_t * cfg, device_transfer_t * rop);
 extern int _mcu_spi_dev_write(const device_cfg_t * cfg, device_transfer_t * wop);
+
 
 int (* const spi_ioctl_func_table[I_GLOBAL_TOTAL + I_SPI_TOTAL])(int, void*) = {
 		mcu_spi_getattr,
@@ -74,5 +77,7 @@ int mcu_spi_write(const device_cfg_t * cfg, device_transfer_t * wop){
 int mcu_spi_close(const device_cfg_t * cfg){
 	return mcu_close(cfg, MCU_SPI_PORTS, _mcu_spi_dev_powered_on, _mcu_spi_dev_power_off);
 }
+
+#endif
 
 
