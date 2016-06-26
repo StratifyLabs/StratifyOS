@@ -347,7 +347,7 @@ int appfs_fstat(const void* cfg, void * handle, struct stat * st){
 
 	st->st_ino = args.pageinfo.num;
 	st->st_blksize = args.pageinfo.size;
-	if( args.fileinfo.hdr.mode == 0444 ){
+	if( args.fileinfo.hdr.mode == 0444 ){ //this is a read only data file -- peel off the header from the size
 		size -= sizeof(appfs_file_t);
 	}
 	st->st_size = size;
@@ -378,10 +378,10 @@ int appfs_stat(const void* cfg, const char * path, struct stat * st){
 		handle.is_install = true;
 		break;
 	case ANALYZE_PATH_FLASH_DIR:
-		st->st_mode = S_IFDIR | 0666;
+		st->st_mode = S_IFDIR | 0777;
 		return 0;
 	case ANALYZE_PATH_RAM_DIR:
-		st->st_mode = S_IFDIR | 0666;
+		st->st_mode = S_IFDIR | 0777;
 		return 0;
 
 	case ANALYZE_PATH_RAM:

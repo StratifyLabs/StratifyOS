@@ -125,6 +125,23 @@ public:
     /*! \details Load the entries of a directory. */
     vector<string> get_dir_list(string directory);
 
+    /*! \details This methods converts the permissions to a
+     * string of the format:
+     *
+     * -rwxrwxrwx
+     *
+     * The first character indicates:
+     * - - File
+     * - d Directory
+     * - c Character file
+     * - b Block file
+     *
+     * The order is other, group, user.  If the permission
+     * is not available, the character is replace by a "-".
+     *
+     */
+    static string convert_permissions(link_mode_t mode);
+
     /*! \details This function opens a directory such that it's contents can be
      * read with readdir().
      */

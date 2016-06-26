@@ -170,16 +170,17 @@ void boot_link_cmd_ioctl(link_transport_driver_t * driver, link_data_t * args){
 	case I_BOOTLOADER_ERASE:
 		//the erase takes awhile -- so send the reply a little early
 		link_transport_slavewrite(driver, &args->reply, sizeof(args->reply), NULL, NULL);
+		//set this to zero so caller doesn't execute the slavewrite again
 		args->op.cmd = 0;
 
 		erase_flash(driver);
 		is_erased = true;
-		dstr("erd\n");
 
 		event_args.abort = 0;
 		event_args.bytes = 0;
 		event_args.total = -1;
 
+		dstr("erd\n");
 		return;
 
 	case I_BOOTLOADER_GETATTR:
@@ -208,6 +209,8 @@ void boot_link_cmd_ioctl(link_transport_driver_t * driver, link_data_t * args){
 		}
 		break;
 	case I_BOOTLOADER_WRITEPAGE:
+
+		dstr("wp\n");
 
 		err = link_transport_slaveread(driver, &wattr, size, NULL, NULL);
 		if( err < 0 ){
@@ -254,6 +257,7 @@ void erase_flash(link_transport_driver_t * driver){
 	args.total = -1;
 	args.increment = -1;
 
+
 	while(mcu_flash_erasepage(FLASH_PORT, (void*)page++) != 0 ){
 		//these are the bootloader pages and won't be erased
 		gled_on();
@@ -261,8 +265,8 @@ void erase_flash(link_transport_driver_t * driver){
 		gled_off();
 		args.bytes = page;
 		boot_event(BOOT_EVENT_FLASH_ERASE, &args);
-
 	}
+
 
 	//erase the flash pages -- ends when an erase on an invalid page is attempted
 	while( mcu_flash_erasepage(FLASH_PORT, (void*)page++) == 0 ){
@@ -272,6 +276,7 @@ void erase_flash(link_transport_driver_t * driver){
 		args.bytes = page;
 		boot_event(BOOT_EVENT_FLASH_ERASE, &args);
 	}
+
 	gled_on();
 }
 
@@ -293,6 +298,7 @@ void boot_link_cmd_reset_bootloader(link_transport_driver_t * driver, link_data_
 	dfu_sw_req = (u32*)boot_board_config.sw_req_loc;
 	*dfu_sw_req = boot_board_config.sw_req_value;
 	_mcu_core_priv_reset(NULL);
+	//the program never arrives here
 }
 
 int read_flash_callback(void * context, void * buf, int nbyte){

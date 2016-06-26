@@ -148,6 +148,5 @@ void boot_stratify_link_transport_usb_wait(int msec){
 	}
 }
 
-void boot_stratify_link_transport_usb_flush(link_transport_phy_t handle){
-}
+void boot_stratify_link_transport_usb_flush(link_transport_phy_t handle){}
 

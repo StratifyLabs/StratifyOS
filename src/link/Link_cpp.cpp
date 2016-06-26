@@ -551,6 +551,90 @@ vector<string> Link::get_dir_list(string directory){
 	return list;
 }
 
+string Link::convert_permissions(link_mode_t mode){
+	string ret;
+
+	link_mode_t type;
+    type = mode & LINK_S_IFMT;
+    switch(type){
+    case LINK_S_IFDIR:
+        ret = 'd';
+        break;
+    case LINK_S_IFCHR:
+    	ret = 'c';
+        break;
+    case LINK_S_IFBLK:
+    	ret = 'b';
+        break;
+    case LINK_S_IFLNK:
+    	ret = 'l';
+        break;
+    case LINK_S_IFREG:
+    	ret = '-';
+        break;
+    default:
+    	ret = 'x';
+    }
+
+	if( mode & LINK_S_IROTH ){
+		ret += "r";
+	} else {
+		ret += "-";
+	}
+
+	if( mode & LINK_S_IWOTH ){
+		ret += "w";
+	} else {
+		ret += "-";
+	}
+
+	if( mode & LINK_S_IXOTH ){
+		ret += "x";
+	} else {
+		ret += "-";
+	}
+
+	if( mode & LINK_S_IRGRP ){
+		ret += "r";
+	} else {
+		ret += "-";
+	}
+
+	if( mode & LINK_S_IWGRP ){
+		ret += "w";
+	} else {
+		ret += "-";
+	}
+
+	if( mode & LINK_S_IXGRP ){
+		ret += "x";
+	} else {
+		ret += "-";
+	}
+
+	if( mode & LINK_S_IRUSR ){
+		ret += "r";
+	} else {
+		ret += "-";
+	}
+
+	if( mode & LINK_S_IWUSR ){
+		ret += "w";
+	} else {
+		ret += "-";
+	}
+
+	if( mode & LINK_S_IXUSR ){
+		ret += "x";
+	} else {
+		ret += "-";
+	}
+
+	return ret;
+
+}
+
+
 int Link::opendir(string directory){
 	int err;
 	if ( m_boot ){

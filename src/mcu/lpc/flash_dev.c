@@ -89,26 +89,26 @@ int mcu_flash_eraseaddr(int port, void * ctl){
 	return -1;
 }
 
+
 int mcu_flash_erasepage(int port, void * ctl){
 	int err;
+	int addr;
+	int page_size;
 	u32 page;
 	page = (u32)ctl;
-
 	int last_page = get_last_bootloader_page();
-
 
 	if ( page < last_page ){
 		//Never erase the bootloader
-		errno = EPERM;
+		errno = EROFS;
 		return -1;
 	}
 
-	int addr;
-	int page_size;
 	addr = get_page_addr(page);
 	page_size = get_page_size(page);
 
 	if ( (addr + page_size) > (u32)&_flash_size){
+		errno = EINVAL;
 		return -1; //this page does not exist on this part
 	}
 
@@ -135,7 +135,7 @@ int mcu_flash_getsize(int port, void * ctl){
 
 int blank_check(int loc, int nbyte){
 	int i;
-	const int8_t * locp;
+	const s8 * locp;
 	//Do a blank check
 	locp = (const int8_t*)loc;
 	for(i = 0; i < nbyte; i++){
