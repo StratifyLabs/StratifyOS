@@ -94,6 +94,8 @@ int boot_main(){
 	stack_ptr = (void*)(((uint32_t*)boot_board_config.program_start_addr)[0]);
 	app_reset = (void (*)())( (((uint32_t*)boot_board_config.program_start_addr)[1]) );
 
+	boot_event(BOOT_EVENT_START, 0);
+
 	if ( check_run_app() ){
 		app_reset();
 		while(1);
