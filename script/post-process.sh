@@ -20,6 +20,7 @@ fi
 if [ "$NAME" == "link" ]; then
 	cp -Rf ../src/link/Link.h $TOOLSPATH/$HOST/include
 	mkdir -p $TOOLSPATH/$HOST/include/posix
+	mkdir -p $TOOLSPATH/$HOST/lib/ldscripts
 	cp -Rf ../ldscript/*.sh $TOOLSPATH/$HOST/lib/ldscripts
 	cp -Rf ../include/posix/* $TOOLSPATH/$HOST/include/posix
 fi

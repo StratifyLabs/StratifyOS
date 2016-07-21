@@ -12,7 +12,9 @@
 #if __FPU_USED == 1
 #if 1
 /*
-sudo arm-none-eabi-objcopy \
+export PATH=$PATH:/Applications/StratifyLabs-SDK/Tools/gcc/bin
+cd /Applications/StratifyLabs-SDK/Tools/gcc/lib/gcc/arm-none-eabi/5.4.1/armv7e-m/fpu/fpv5-sp-d16
+arm-none-eabi-objcopy \
 	-W __aeabi_fmul \
 	-W __aeabi_dmul \
 	-W __aeabi_fdiv \

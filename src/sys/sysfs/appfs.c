@@ -466,10 +466,14 @@ int appfs_priv_ioctl(const void * cfg, void * handle, int request, void * ctl){
 
 	attr = ctl;
 	switch( request ){
+
+	//INSTALL and CREATE only with with the special .install file
 	case I_APPFS_INSTALL:
 		return appfs_util_priv_writeinstall(cfg, h, attr);
 	case I_APPFS_CREATE:
 		return appfs_util_priv_create(cfg, h, attr);
+
+	//These calls work with the specific file name
 	case I_APPFS_FREE_RAM:
 		return appfs_util_priv_free_ram(cfg, h);
 	case I_APPFS_RECLAIM_RAM:

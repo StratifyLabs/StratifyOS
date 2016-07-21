@@ -303,7 +303,7 @@ int appfs_util_priv_free_ram(const device_t * dev, appfs_handle_t * h){
 		return -1;
 	}
 
-	//the RAM info is store in flash
+	//the RAM info is stored in flash
 	f = (link_appfs_file_t *)h->type.reg.beg_addr;
 
 	args.pageinfo.addr = f->exec.ram_start;

@@ -409,7 +409,7 @@ int Link::read_stdout(void * buf, int nbyte, volatile bool * abort){
 	unlock_device();
 	if ( err < 0 ){
 		if ( link_errno == 0 ){
-			if ( abort == false ){
+			if ( *abort == false ){
 				m_error_message = "Connection Failed";
 				this->exit();
 			}
@@ -546,7 +546,9 @@ vector<string> Link::get_dir_list(string directory){
 		list.push_back(entry.d_name);
 	}
 
-	closedir(dirp);
+	if( closedir(dirp) < 0 ){
+		m_error_message = genError("Failed to close dir", link_errno);
+	}
 
 	return list;
 }
