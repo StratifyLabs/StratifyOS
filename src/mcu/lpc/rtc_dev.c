@@ -133,6 +133,10 @@ int mcu_rtc_setalarm(int port, void * ctl){
 	alarmp = (rtc_alarm_t *)ctl;
 	_mcu_core_priv_enable_irq((void*)RTC_IRQn);
 
+	//elevate prio to come out of hibernate
+	_mcu_core_setirqprio(RTC_IRQn, 3);
+
+
 	regs->ASEC = alarmp->time.time.tm_sec;
 	regs->AMIN = alarmp->time.time.tm_min;
 	regs->AHRS = alarmp->time.time.tm_hour;

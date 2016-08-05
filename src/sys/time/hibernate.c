@@ -50,11 +50,13 @@ void priv_hibernate(void * args){
 	int * seconds = (int*)args;
 
 	//set the WDT to reset in args seconds
-	if( seconds ){
-		mcu_wdt_setinterval((*seconds+1)*1000);
-	} else {
-		//kill WDT clock
-
+	if( (stratify_board_config.o_sys_flags & SYS_FLAGS_DISABLE_WDT) == 0 ){
+		if( *seconds != 0 ){
+			mcu_wdt_setinterval((*seconds+1)*2000);
+		} else {
+			//set WDT timer to one minute
+			mcu_wdt_setinterval((60)*1000);
+		}
 	}
 
 	//The WDT only runs in hibernate on certain clock sources
@@ -69,8 +71,10 @@ void priv_hibernate(void * args){
 	//Set WDT to previous value (it only runs in deep sleep with certain clock sources)
 	mcu_wdt_priv_reset(NULL);
 
-	if( seconds ){
-		mcu_wdt_setinterval(SCHED_RR_DURATION * 10 * stratify_board_config.task_total + 5);
+	if( (stratify_board_config.o_sys_flags & SYS_FLAGS_DISABLE_WDT) == 0 ){
+		if( *seconds != 0 ){
+			mcu_wdt_setinterval(SCHED_RR_DURATION * 10 * stratify_board_config.task_total + 5);
+		}
 	}
 
 }

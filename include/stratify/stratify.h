@@ -609,7 +609,7 @@ typedef struct MCU_PACK {
 	const char * sys_name /*! System (or board) name */;
 	const char * sys_version /*! System (or board) version (distint from kernel version) */;
 	int sys_memory_size /*! Memory size reserved for the system */;
-	int sys_flags /*! System flags */;
+	int o_sys_flags /*! System flags */;
 	void * (*start)(void*) /*! The start routine (when in doubt use stratify_default_thread()) */;
 	void * start_args /*! Arguments passed to the start routine (for  stratify_default_thread() use a pointer to the link transport driver) */;
 } stratify_board_config_t;

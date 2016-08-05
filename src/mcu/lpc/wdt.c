@@ -62,7 +62,7 @@ int mcu_wdt_init(int mode, int interval){
 
 	if ( mode & WDT_MODE_INTERRUPT ){
 #if defined LPCXX7X_8X
-		LPC_WDT->WARNINT = 1000;
+		LPC_WDT->WARNINT = 500;
 		LPC_WDT->MOD |= WDINT;
 #endif
 

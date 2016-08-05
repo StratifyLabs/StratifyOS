@@ -233,7 +233,7 @@ int u_init_stdio(int fildes){
 		_REENT->_stderr->_file = _GLOBAL_REENT->_stderr->_file;
 	} else {
 
-		if( stratify_board_config.sys_flags & SYS_FLAGS_STDIO_FIFO ){
+		if( stratify_board_config.o_sys_flags & SYS_FLAGS_STDIO_FIFO ){
 			//the main thread needs to open the STDIO directly
 			_REENT->_stdin->_file = _open(stratify_board_config.stdin_dev, O_RDWR);
 			_REENT->_stdout->_file = _open(stratify_board_config.stdout_dev, O_RDWR);

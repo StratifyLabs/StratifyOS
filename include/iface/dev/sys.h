@@ -152,7 +152,8 @@ extern "C" {
 
 enum {
 	SYS_FLAGS_STDIO_FIFO = (1<<0),
-	SYS_FLAGS_STDIO_VCP = (1<<1)
+	SYS_FLAGS_STDIO_VCP = (1<<1),
+	SYS_FLAGS_DISABLE_WDT = (1<<2),
 };
 
 #define SYS_IOC_CHAR 's'

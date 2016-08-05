@@ -58,7 +58,7 @@ int sys_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 		sys->signature = symbols_table[0];
 		sys->cpu_freq = _mcu_core_getclock();
 		sys->sys_mem_size = stratify_board_config.sys_memory_size;
-		sys->flags = stratify_board_config.sys_flags;
+		sys->flags = stratify_board_config.o_sys_flags;
 		strncpy(sys->stdin_name, stratify_board_config.stdin_dev, NAME_MAX-1);
 		strncpy(sys->stdout_name, stratify_board_config.stdout_dev, NAME_MAX-1);
 		strncpy(sys->name, stratify_board_config.sys_name, NAME_MAX-1);
