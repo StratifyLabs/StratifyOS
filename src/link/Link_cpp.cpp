@@ -41,7 +41,7 @@ static int atoh(string s){
  */
 
 
-static string genError(string msg, int err_number){
+static string gen_error(string msg, int err_number){
 	string s;
 	char buffer[32];
 	sprintf(buffer, " (%d)", err_number);
@@ -126,7 +126,7 @@ int Link::init(string sn){
 
 	} else {
 		link_debug(LINK_DEBUG_MESSAGE, "Already connected");
-		m_error_message = genError("Already Connected", 1);
+		m_error_message = gen_error("Already Connected", 1);
 		return -1;
 	}
 
@@ -140,7 +140,7 @@ int Link::init(string sn){
 	} else if ( err == 0){
 		m_boot = false;
 	} else {
-		m_error_message = genError("Failed to check for Bootloader status", link_errno);
+		m_error_message = gen_error("Failed to check for Bootloader status", link_errno);
 		return -1;
 	}
 
@@ -164,7 +164,7 @@ int Link::open(string file, int flags, link_mode_t mode){
 	}
 	unlock_device();
 	if ( err < 0 ){
-		m_error_message = genError("Failed to open file: " + file, link_errno);
+		m_error_message = gen_error("Failed to open file: " + file, link_errno);
 	}
 	return check_error(err);
 }
@@ -181,7 +181,7 @@ int Link::close(int fd){
 	}
 	unlock_device();
 	if ( err < 0 ){
-		m_error_message = genError("Failed to close file", link_errno);
+		m_error_message = gen_error("Failed to close file", link_errno);
 	}
 	return check_error(err);
 }
@@ -199,7 +199,7 @@ int Link::read(int fd, void * buf, int nbyte){
 	}
 	unlock_device();
 	if ( err < 0 ){
-		m_error_message = genError("Failed to read", link_errno);
+		m_error_message = gen_error("Failed to read", link_errno);
 	}
 	return check_error(err);
 }
@@ -215,7 +215,7 @@ int Link::write(int fd, const void * buf, int nbyte){
 		if(err != LINK_PROT_ERROR) break;
 	}
 	if ( err < 0 ){
-		m_error_message = genError("Failed to write", link_errno);
+		m_error_message = gen_error("Failed to write", link_errno);
 	}
 	unlock_device();
 	return check_error(err);
@@ -230,7 +230,7 @@ int Link::read_flash(int addr, void * buf, int nbyte){
 		if(err != LINK_PROT_ERROR) break;
 	}
 	if ( err < 0 ){
-		m_error_message = genError("Failed to read flash", link_errno);
+		m_error_message = gen_error("Failed to read flash", link_errno);
 	}
 	unlock_device();
 	return check_error(err);
@@ -286,7 +286,7 @@ int Link::write_flash(int addr, const void * buf, int nbyte){
 		if(err != LINK_PROT_ERROR) break;
 	}
 	if ( err < 0 ){
-		m_error_message = genError("Failed to write flash", link_errno);
+		m_error_message = gen_error("Failed to write flash", link_errno);
 	}
 	unlock_device();
 	return check_error(err);
@@ -305,7 +305,7 @@ int Link::lseek(int fd, int offset, int whence){
 		if(err != LINK_PROT_ERROR) break;
 	}
 	if ( err < 0 ){
-		m_error_message = genError("Failed to lseek", link_errno);
+		m_error_message = gen_error("Failed to lseek", link_errno);
 	}
 	unlock_device();
 	return check_error(err);
@@ -324,7 +324,7 @@ int Link::ioctl(int fd, int request, void * ctl){
 		if(err != LINK_PROT_ERROR) break;
 	}
 	if ( err < 0 ){
-		m_error_message = genError("Failed to ioctl", link_errno);
+		m_error_message = gen_error("Failed to ioctl", link_errno);
 	}
 	unlock_device();
 	return check_error(err);
@@ -391,7 +391,7 @@ int Link::close_stdio(){
 			this->exit();
 			return -2;
 		} else {
-			m_error_message = genError("Failed to Close Stdio", link_errno);
+			m_error_message = gen_error("Failed to Close Stdio", link_errno);
 			return -1;
 		}
 	}
@@ -415,7 +415,7 @@ int Link::read_stdout(void * buf, int nbyte, volatile bool * abort){
 			}
 			return -2;
 		} else {
-			m_error_message = genError("Failed to Read Stdout", link_errno);
+			m_error_message = gen_error("Failed to Read Stdout", link_errno);
 			return -1;
 		}
 	}
@@ -436,7 +436,7 @@ int Link::write_stdin(const void * buf, int nbyte){
 			m_error_message = "Connection Failed";
 			return -1;
 		} else {
-			m_error_message = genError("Failed to Write Stdin", link_errno);
+			m_error_message = gen_error("Failed to Write Stdin", link_errno);
 			return -1;
 		}
 	}
@@ -455,7 +455,7 @@ int Link::stat(string path, struct link_stat * st){
 	}
 	unlock_device();
 	if( err < 0 ){
-		m_error_message = genError("Failed to Get Stat", link_errno);
+		m_error_message = gen_error("Failed to Get Stat", link_errno);
 	}
 	return check_error(err);
 }
@@ -472,7 +472,7 @@ int Link::get_time(struct tm * gt){
 	}
 	unlock_device();
 	if ( err < 0 ){
-		m_error_message = genError("Failed to Get Time", link_errno);
+		m_error_message = gen_error("Failed to Get Time", link_errno);
 	}
 	return check_error(err);
 }
@@ -489,7 +489,7 @@ int Link::set_time(struct tm * gt){
 	}
 	unlock_device();
 	if ( err < 0 ){
-		m_error_message = genError("Failed to Set Time", link_errno);
+		m_error_message = gen_error("Failed to Set Time", link_errno);
 	}
 	return check_error(err);
 }
@@ -507,7 +507,7 @@ int Link::mkdir(string directory, link_mode_t mode){
 	}
 	unlock_device();
 	if ( err < 0 ){
-		m_error_message = genError("Failed to create " + directory, link_errno);
+		m_error_message = gen_error("Failed to create " + directory, link_errno);
 	}
 	return check_error(err);
 }
@@ -524,7 +524,7 @@ int Link::rmdir(string directory){
 	}
 	unlock_device();
 	if ( err < 0 ){
-		m_error_message = genError("Failed to remove " + directory, link_errno);
+		m_error_message = gen_error("Failed to remove " + directory, link_errno);
 	}
 	return check_error(err);
 }
@@ -547,7 +547,7 @@ vector<string> Link::get_dir_list(string directory){
 	}
 
 	if( closedir(dirp) < 0 ){
-		m_error_message = genError("Failed to close dir", link_errno);
+		m_error_message = gen_error("Failed to close dir", link_errno);
 	}
 
 	return list;
@@ -649,7 +649,7 @@ int Link::opendir(string directory){
 	}
 	unlock_device();
 	if ( err < 0 ){
-		m_error_message = genError("Failed to open " + directory, link_errno);
+		m_error_message = gen_error("Failed to open " + directory, link_errno);
 	}
 	return check_error(err);
 }
@@ -666,7 +666,7 @@ int Link::readdir_r(int dirp, struct link_dirent * entry, struct link_dirent ** 
 	}
 	unlock_device();
 	if ( err < 0 ){
-		m_error_message = genError("Failed to read directory", link_errno);
+		m_error_message = gen_error("Failed to read directory", link_errno);
 		return -1;
 	}
 	return check_error(err);
@@ -684,7 +684,7 @@ int Link::closedir(int dirp){
 	}
 	unlock_device();
 	if ( err < 0 ){
-		m_error_message = genError("Failed to close directory", link_errno);
+		m_error_message = gen_error("Failed to close directory", link_errno);
 	}
 	return check_error(err);
 }
@@ -701,7 +701,7 @@ int Link::symlink(string oldPath, string newPath){
 	}
 	unlock_device();
 	if ( err < 0 ){
-		m_error_message = genError("Failed to create symlink " + newPath, link_errno);
+		m_error_message = gen_error("Failed to create symlink " + newPath, link_errno);
 	}
 	return check_error(err);
 }
@@ -718,7 +718,7 @@ int Link::unlink(string filename){
 	}
 	unlock_device();
 	if ( err < 0 ){
-		m_error_message = genError("Failed to remove " + filename, link_errno);
+		m_error_message = gen_error("Failed to remove " + filename, link_errno);
 	}
 	return check_error(err);
 }
@@ -765,7 +765,7 @@ int Link::copy(string src, string dest, link_mode_t mode, bool toDevice, bool (*
 		if ( deviceFile > 0 ){
 			while( (bytesRead = fread(buffer, 1, bufferSize, hostFile)) > 0 ){
 				if ( (err = link_write(m_driver, deviceFile, buffer, bytesRead)) != bytesRead ){
-					m_error_message = genError("Failed to write to Link device file", link_errno);
+					m_error_message = gen_error("Failed to write to Link device file", link_errno);
 					if ( err > 0 ){
 						err = -1;
 					}
@@ -791,7 +791,7 @@ int Link::copy(string src, string dest, link_mode_t mode, bool toDevice, bool (*
 				return -2;
 			}
 
-			m_error_message = genError("Failed to create file " + dest + " on Link device", link_errno);
+			m_error_message = gen_error("Failed to create file " + dest + " on Link device", link_errno);
 			return -1;
 		}
 
@@ -805,7 +805,7 @@ int Link::copy(string src, string dest, link_mode_t mode, bool toDevice, bool (*
 		}
 
 		if ( link_close(m_driver, deviceFile) ){
-			m_error_message = genError("Failed to close Link device file", link_errno);
+			m_error_message = gen_error("Failed to close Link device file", link_errno);
 			unlock_device();
 			return -1;
 		}
@@ -859,7 +859,7 @@ int Link::copy(string src, string dest, link_mode_t mode, bool toDevice, bool (*
 				this->exit();
 				return -2;
 			} else {
-				m_error_message = genError("Failed to open file " + src + " on Link device", link_errno);
+				m_error_message = gen_error("Failed to open file " + src + " on Link device", link_errno);
 				fclose(hostFile);
 				unlock_device();
 				return -1;
@@ -875,7 +875,7 @@ int Link::copy(string src, string dest, link_mode_t mode, bool toDevice, bool (*
 				this->exit();
 				return -2;
 			} else {
-				m_error_message = genError("Failed to close Link file", link_errno);
+				m_error_message = gen_error("Failed to close Link file", link_errno);
 				unlock_device();
 				return -1;
 			}
@@ -902,7 +902,7 @@ int Link::run_app(string path){
 			this->exit();
 			return -2;
 		} else {
-			m_error_message = genError("Failed to run program: " + path, link_errno);
+			m_error_message = gen_error("Failed to run program: " + path, link_errno);
 			return -1;
 		}
 	}
@@ -923,7 +923,7 @@ int Link::format(string path){
 	}
 	unlock_device();
 	if ( err < 0 ){
-		m_error_message = genError("Failed to Format Filesystem", link_errno);
+		m_error_message = gen_error("Failed to Format Filesystem", link_errno);
 	}
 	return check_error(err);
 }
@@ -942,7 +942,7 @@ int Link::kill_pid(int pid, int signo){
 	unlock_device();
 	if ( err < 0 ){
 		ss << "Failed to kill process " << pid;
-		m_error_message = genError(ss.str(), link_errno);
+		m_error_message = gen_error(ss.str(), link_errno);
 	}
 	return check_error(err);
 }
@@ -968,7 +968,7 @@ int Link::trace_create(int pid, link_trace_id_t * id){
 	lock_device();
 	err = link_posix_trace_create(m_driver, pid, id);
 	if ( err < 0 ){
-		m_error_message = genError("Failed to create trace", link_errno);
+		m_error_message = gen_error("Failed to create trace", link_errno);
 	}
 	unlock_device();
 	return err;
@@ -979,7 +979,7 @@ int Link::trace_tryget_events(link_trace_id_t id, void * data, size_t num_bytes)
 	lock_device();
 	err = link_posix_trace_tryget_events(m_driver, id, data, num_bytes);
 	if ( err < 0 ){
-		m_error_message = genError("Failed to get event", link_errno);
+		m_error_message = gen_error("Failed to get event", link_errno);
 	}
 	unlock_device();
 	return err;
@@ -990,7 +990,7 @@ int Link::trace_shutdown(link_trace_id_t id){
 	lock_device();
 	err = link_posix_trace_shutdown(m_driver, id);
 	if ( err < 0 ){
-		m_error_message = genError("Failed to shutdown trace", link_errno);
+		m_error_message = gen_error("Failed to shutdown trace", link_errno);
 	}
 	unlock_device();
 	return err;
@@ -1012,7 +1012,7 @@ int Link::rename(string old_path, string new_path){
 	}
 	unlock_device();
 	if( err < 0 ){
-		m_error_message = genError("Failed to rename file", link_errno);
+		m_error_message = gen_error("Failed to rename file", link_errno);
 	}
 	return check_error(err);
 }
@@ -1029,7 +1029,7 @@ int Link::chown(string path, int owner, int group){
 	}
 	unlock_device();
 	if ( err < 0 ){
-		m_error_message = genError("Failed to chown file", link_errno);
+		m_error_message = gen_error("Failed to chown file", link_errno);
 	}
 	return check_error(err);
 }
@@ -1047,7 +1047,7 @@ int Link::chmod(string path, int mode){
 	}
 	unlock_device();
 	if ( err < 0 ){
-		m_error_message = genError("Failed to chmod file", link_errno);
+		m_error_message = gen_error("Failed to chmod file", link_errno);
 	}
 	return check_error(err);
 
@@ -1111,7 +1111,7 @@ int Link::update_os(string path, bool verify, bool (*update)(void*,int,int), voi
 				"Kernel Image ID (0x%X) does not match Bootloader ID (0x%X)",
 				image_id,
 				attr.hardware_id);
-		m_error_message = genError(tmp, link_errno);
+		m_error_message = gen_error(tmp, link_errno);
 		fclose(hostFile);
 		return check_error(err);
 	}
@@ -1140,7 +1140,7 @@ int Link::update_os(string path, bool verify, bool (*update)(void*,int,int), voi
 		}
 
 		if ( (err = link_writeflash(m_driver, loc, buffer, bytesRead)) != bytesRead ){
-			m_error_message = genError("Failed to write to link flash", link_errno);
+			m_error_message = gen_error("Failed to write to link flash", link_errno);
 			if ( err < 0 ){
 				err = -1;
 			}
@@ -1170,7 +1170,7 @@ int Link::update_os(string path, bool verify, bool (*update)(void*,int,int), voi
 			while( (bytesRead = fread(buffer, 1, bufferSize, hostFile)) > 0 ){
 
 				if ( (err = link_readflash(m_driver, loc, cmpBuffer, bytesRead)) != bytesRead ){
-					m_error_message = genError("Failed to read flash memory", link_errno);
+					m_error_message = gen_error("Failed to read flash memory", link_errno);
 					if ( err > 0 ){
 						err = -1;
 					}
@@ -1187,7 +1187,7 @@ int Link::update_os(string path, bool verify, bool (*update)(void*,int,int), voi
 								//printf("0x%X targ:0x%02X actual:0x%02X", loc + i, buffer[i], cmpBuffer[i]);
 							}
 						}
-						m_error_message = genError("Failed to verify program installation", link_errno);
+						m_error_message = gen_error("Failed to verify program installation", link_errno);
 						fclose(hostFile);
 
 						//erase the flash
@@ -1209,7 +1209,7 @@ int Link::update_os(string path, bool verify, bool (*update)(void*,int,int), voi
 
 		//write the stack address
 		if( (err = link_writeflash(m_driver, startAddr, stackaddr, 256)) != 256 ){
-			m_error_message = genError("Failed to write stack addr", err);
+			m_error_message = gen_error("Failed to write stack addr", err);
 			return -1;
 		}
 
@@ -1217,7 +1217,7 @@ int Link::update_os(string path, bool verify, bool (*update)(void*,int,int), voi
 		if( verify == true ){
 			//verify the stack address
 			if( (err = link_readflash(m_driver, startAddr, buffer, 256)) != 256 ){
-				m_error_message = genError("Failed to write stack addr", err);
+				m_error_message = gen_error("Failed to write stack addr", err);
 				fclose(hostFile);
 				return -1;
 			}
@@ -1247,7 +1247,7 @@ int Link::update_os(string path, bool verify, bool (*update)(void*,int,int), voi
 }
 
 int Link::update_binary_install_options(string path, string name, bool startup, bool run_in_ram, int ram_size){
-    link_appfs_file_t appfsFile;
+    link_appfs_file_t appfs_file;
 	FILE * binary_file;
 
 	binary_file = fopen(path.c_str(), "r+");
@@ -1257,35 +1257,35 @@ int Link::update_binary_install_options(string path, string name, bool startup, 
 	}
 
 
-	if( fread((char*)&appfsFile, sizeof(appfsFile), 1, binary_file) <= 0 ){
+	if( fread((char*)&appfs_file, sizeof(appfs_file), 1, binary_file) <= 0 ){
 		fclose(binary_file);
 		m_error_message = "Failed to read app filesystem data";
 		return -1;
 	}
 
-	memset(appfsFile.hdr.name, 0, LINK_NAME_MAX);
-	strncpy(appfsFile.hdr.name, name.c_str(), LINK_NAME_MAX - 2);
+	memset(appfs_file.hdr.name, 0, LINK_NAME_MAX);
+	strncpy(appfs_file.hdr.name, name.c_str(), LINK_NAME_MAX - 2);
 	//appfsFile.hdr.uid = 0;
 	//appfsFile.hdr.gid = 0;
-	appfsFile.hdr.mode = 0777;
+	appfs_file.hdr.mode = 0777;
 
 	if ( startup == true ){
-		appfsFile.exec.options |= LINK_APPFS_EXEC_OPTIONS_STARTUP;
+		appfs_file.exec.options |= LINK_APPFS_EXEC_OPTIONS_STARTUP;
 	} else {
-		appfsFile.exec.options &= ~LINK_APPFS_EXEC_OPTIONS_STARTUP;
+		appfs_file.exec.options &= ~LINK_APPFS_EXEC_OPTIONS_STARTUP;
 	}
 
 	if ( run_in_ram == true ){
-		appfsFile.exec.options &= ~(LINK_APPFS_EXEC_OPTIONS_FLASH);
+		appfs_file.exec.options &= ~(LINK_APPFS_EXEC_OPTIONS_FLASH);
 	} else {
-		appfsFile.exec.options |= (LINK_APPFS_EXEC_OPTIONS_FLASH);
+		appfs_file.exec.options |= (LINK_APPFS_EXEC_OPTIONS_FLASH);
 	}
 
-	appfsFile.exec.ram_size = ram_size;
+	appfs_file.exec.ram_size = ram_size;
 
 	fseek(binary_file, 0, SEEK_SET);
 
-	if( fwrite((char*)&appfsFile, sizeof(appfsFile), 1, binary_file) <= 0 ){
+	if( fwrite((char*)&appfs_file, sizeof(appfs_file), 1, binary_file) <= 0 ){
 		fclose(binary_file);
 		m_error_message = "Failed to write updated binary info";
 		return -1;
@@ -1298,11 +1298,14 @@ int Link::update_binary_install_options(string path, string name, bool startup, 
 int Link::install_app(string source, string dest, string name, bool (*update)(void*,int,int), void * context){
 	FILE * source_file;
 	ssize_t source_size;
-	int bytesRead;
+	int bytes_read;
 	int fd;
 	appfs_installattr_t attr;
-	int bytesCum;
-	int bytesTotal;
+	int bytes_cumm;
+	int bytes_total;
+	string tmp_error;
+
+	link_appfs_file_t * app_file;
 
 	source_file = fopen(source.c_str(), "r");
 	if( source_file == 0 ){
@@ -1324,31 +1327,42 @@ int Link::install_app(string source, string dest, string name, bool (*update)(vo
 
 		attr.loc = 0;
 
-		bytesTotal = source_size;
-		bytesCum = 0;
+		bytes_total = source_size;
+		bytes_cumm = 0;
 
 		do {
 			memset(attr.buffer, 0xFF, APPFS_PAGE_SIZE);
-			bytesRead = fread((char*)attr.buffer, 1, APPFS_PAGE_SIZE, source_file);
-			if( bytesRead > 0 ){
-				attr.nbyte = bytesRead;
-				bytesCum += attr.nbyte;
+			bytes_read = fread((char*)attr.buffer, 1, APPFS_PAGE_SIZE, source_file);
+
+			if( bytes_cumm == 0 ){
+				app_file = (link_appfs_file_t *)attr.buffer;
+				printf("Code size is %d\n", app_file->exec.code_size);
+				printf("Ram size is %d\n", app_file->exec.ram_size);
+				fflush(stdout);
+			}
+
+			if( bytes_read > 0 ){
+				attr.nbyte = bytes_read;
+				bytes_cumm += attr.nbyte;
 				if( ioctl(fd, I_APPFS_INSTALL, &attr) < 0 ){
-					genError("Failed to install file on device", bytesRead);
+					tmp_error = m_error_message;
+					m_error_message = "Failed to install file on device (";
+					m_error_message.append(tmp_error);
+					m_error_message.append(")");
 					close(fd);
 					fclose(source_file);
 					return -1;
 				}
-				if( update ){ update(context, bytesCum, bytesTotal); }
+				if( update ){ update(context, bytes_cumm, bytes_total); }
 
 				attr.loc += APPFS_PAGE_SIZE;
 			}
-		} while( bytesRead == APPFS_PAGE_SIZE );
+		} while( bytes_read == APPFS_PAGE_SIZE );
 
 		fclose(source_file);
 
 		if( close(fd) < 0 ){
-			genError("Failed to close file on device", link_errno);
+			m_error_message = gen_error("Failed to close file on device", link_errno);
 			return -1;
 		}
 
@@ -1359,7 +1373,7 @@ int Link::install_app(string source, string dest, string name, bool (*update)(vo
 		//copy the file to the destination directory
 
 		if( copy_file_to_device(source, dest + "/" + name, 0666, update, context) < 0 ){
-			genError(string("Failed to copy " + source + " to " + dest), link_errno);
+			m_error_message = gen_error(string("Failed to copy " + source + " to " + dest), link_errno);
 			return -1;
 		}
 

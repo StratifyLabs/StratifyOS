@@ -23,6 +23,7 @@
 
 #include <stdbool.h>
 #include "iface/dev/fifo.h"
+#include "iface/device_config.h"
 
 typedef struct {
 	int head;
