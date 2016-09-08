@@ -26,7 +26,7 @@
 #include "sys/ioctl.h"
 #include "mcu/usb.h"
 #include "mcu/debug.h"
-#include "device/sys.h"
+#include "dev/sys.h"
 
 static u32 usb_dev_std_req_setinterface(usb_dev_context_t * context);
 static u32 usb_dev_std_req_getinterface(usb_dev_context_t * context);

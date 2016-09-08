@@ -22,7 +22,7 @@
 #include "mcu/mpu.h"
 #include "mcu/debug.h"
 #include "mcu/core.h"
-#include "device/sys.h"
+#include "dev/sys.h"
 
 static int init_os_memory_protection(task_memories_t * os_mem);
 int task_mpu_calc_protection(task_memories_t * mem);

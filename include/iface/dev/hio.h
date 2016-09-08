@@ -28,8 +28,8 @@
  */
 
 /*! \file  */
-#ifndef DEV_HIO_H_
-#define DEV_HIO_H_
+#ifndef IFACE_DEV_HIO_H_
+#define IFACE_DEV_HIO_H_
 
 
 #include <stdint.h>
@@ -185,4 +185,4 @@ typedef struct MCU_PACK {
 #endif
 
 
-#endif /* DEV_HIO_H_ */
+#endif /* IFACE_DEV_HIO_H_ */

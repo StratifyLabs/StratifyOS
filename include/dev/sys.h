@@ -18,9 +18,10 @@
  */
 
 
-#ifndef DEVICE_SYS_H_
-#define DEVICE_SYS_H_
+#ifndef DEV_SYS_H_
+#define DEV_SYS_H_
 
+#include "iface/device_config.h"
 #include "iface/dev/sys.h"
 #include "mcu/task.h"
 #include "mcu/types.h"
@@ -104,5 +105,5 @@ extern uint8_t sys_euid;
 
 
 
-#endif /* DEVICE_SYS_H_ */
+#endif /* DEV_SYS_H_ */
 

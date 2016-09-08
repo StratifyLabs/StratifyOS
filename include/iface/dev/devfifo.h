@@ -34,8 +34,8 @@
 
 /*! \file  */
 
-#ifndef DEV_DEVFIFO_H_
-#define DEV_DEVFIFO_H_
+#ifndef IFACE_DEV_DEVFIFO_H_
+#define IFACE_DEV_DEVFIFO_H_
 
 #include <stdint.h>
 #include "iface/dev/ioctl.h"
@@ -123,7 +123,7 @@ typedef struct {
 } devfifo_cfg_t;
 
 
-#endif /* DEV_DEV_FIFO_H_ */
+#endif /* IFACE_DEV_DEV_FIFO_H_ */
 
 
 /*! @} */

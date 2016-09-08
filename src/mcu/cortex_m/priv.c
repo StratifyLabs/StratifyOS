@@ -1,6 +1,6 @@
 #include "mcu/mcu.h"
 #include "mcu/core.h"
-#include "device/sys.h"
+#include "dev/sys.h"
 #include "iface/dev/bootloader.h"
 
 

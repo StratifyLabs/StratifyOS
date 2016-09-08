@@ -13,14 +13,14 @@
 #include "iface/link.h"
 #include "mcu/mcu.h"
 #include "iface/dev/usb.h"
-#include "device/usbfifo.h"
+#include "dev/usbfifo.h"
 #include "stratify/usb_dev.h"
 #include "stratify/usb_dev_cdc.h"
 #include "mcu/core.h"
 #include "mcu/debug.h"
 #include "stratify/usb_dev_typedefs.h"
 #include "stratify/usb_dev_defs.h"
-#include "device/sys.h"
+#include "dev/sys.h"
 
 #include "iface/stratify_link_transport_usb.h"
 

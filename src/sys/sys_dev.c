@@ -31,7 +31,7 @@
 #include "mcu/debug.h"
 #include "sched/sched_flags.h"
 #include "signal/sig_local.h"
-#include "device/sys.h"
+#include "dev/sys.h"
 #include "symbols.h"
 
 static int read_task(sys_taskattr_t * task);
@@ -86,6 +86,11 @@ int sys_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 				killattr->si_signo,
 				killattr->si_sigcode,
 				killattr->si_sigvalue, 1);
+	case I_SYS_GETBOARDCONFIG:
+		memcpy(ctl, &stratify_board_config, sizeof(stratify_board_config));
+		return 0;
+	default:
+		break;
 	}
 	errno = EINVAL;
 	return -1;

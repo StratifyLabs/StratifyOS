@@ -32,8 +32,8 @@
 
 /*! \file  */
 
-#ifndef DEV_FIFO_H_
-#define DEV_FIFO_H_
+#ifndef IFACE_DEV_FIFO_H_
+#define IFACE_DEV_FIFO_H_
 
 #include <sys/types.h>
 #include <stdint.h>
@@ -157,7 +157,7 @@ typedef struct MCU_PACK {
 } fifo_cfg_t;
 
 
-#endif /* DEV_FIFO_H_ */
+#endif /* IFACE_DEV_FIFO_H_ */
 
 
 /*! @} */

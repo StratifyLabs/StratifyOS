@@ -31,8 +31,8 @@
 
 /*! \file  */
 
-#ifndef DEV_USBFIFO_H_
-#define DEV_USBFIFO_H_
+#ifndef IFACE_DEV_USBFIFO_H_
+#define IFACE_DEV_USBFIFO_H_
 
 #include <stdint.h>
 #include "iface/dev/ioctl.h"
@@ -93,7 +93,7 @@ typedef struct {
 } usbfifo_cfg_t;
 
 
-#endif /* DEV_USBFIFO_H_ */
+#endif /* IFACE_DEV_USBFIFO_H_ */
 
 
 /*! @} */

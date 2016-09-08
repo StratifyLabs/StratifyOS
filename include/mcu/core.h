@@ -203,6 +203,7 @@ int mcu_core_reset(int port, void * arg) MCU_PRIV_CODE;
 int mcu_core_invokebootloader(int port, void * arg) MCU_PRIV_CODE;
 int mcu_core_setclkout(int port, void * arg) MCU_PRIV_CODE;
 int mcu_core_setclkdivide(int port, void * arg) MCU_PRIV_CODE;
+int mcu_core_getmcuboardconfig(int port, void * arg) MCU_PRIV_CODE;
 
 
 

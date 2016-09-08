@@ -31,7 +31,7 @@
 #include <stdarg.h>
 #include "unistd_flags.h"
 #include "mcu/core.h"
-#include "device/sys.h"
+#include "dev/sys.h"
 
 
 /*! \details This function performs a control request on the device

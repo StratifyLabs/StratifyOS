@@ -17,33 +17,42 @@
  * 
  */
 
-/*! \addtogroup SYS_NULL Null Device
+/*! \addtogroup USB_FIFO
  * @{
- *
- *
  * \ingroup IFACE_DEV
- *
- * \details This device discards input and returns EOF when read.
- *
  *
  */
 
 /*! \file  */
 
-#ifndef DEVICE_ZERO_H_
-#define DEVICE_ZERO_H_
+#ifndef DEV_USBFIFO_H_
+#define DEV_USBFIFO_H_
 
-#include "iface/device_config.h"
-
-
-int zero_open(const device_cfg_t * cfg);
-int zero_ioctl(const device_cfg_t * cfg, int request, void * ctl);
-int zero_read(const device_cfg_t * cfg, device_transfer_t * rop);
-int zero_write(const device_cfg_t * cfg, device_transfer_t * wop);
-int zero_close(const device_cfg_t * cfg);
+#include <stdbool.h>
+#include "iface/dev/usbfifo.h"
+#include "mcu/circ_buf.h"
 
 
-#endif /* DEVICE_ZERO_H_ */
+
+/*! \details This stores the data for the state of the fifo buffer.
+ *
+ */
+typedef struct {
+	int head;
+	int tail;
+	bool overflow;
+	device_transfer_t * rop;
+	int len;
+} usbfifo_state_t;
+
+int usbfifo_open(const device_cfg_t * cfg);
+int usbfifo_ioctl(const device_cfg_t * cfg, int request, void * ctl);
+int usbfifo_read(const device_cfg_t * cfg, device_transfer_t * rop);
+int usbfifo_write(const device_cfg_t * cfg, device_transfer_t * wop);
+int usbfifo_close(const device_cfg_t * cfg);
+
+
+#endif /* DEV_USBFIFO_H_ */
 
 
 /*! @} */

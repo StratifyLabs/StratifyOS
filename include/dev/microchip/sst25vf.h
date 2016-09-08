@@ -23,8 +23,8 @@
  *
  */
 
-#ifndef DEVICE_MICROCHIP_SST25VF_H_
-#define DEVICE_MICROCHIP_SST25VF_H_
+#ifndef DEV_MICROCHIP_SST25VF_H_
+#define DEV_MICROCHIP_SST25VF_H_
 
 #include "mcu/mcu.h"
 #include "iface/dev/microchip/sst25vf.h"
@@ -52,6 +52,6 @@ int sst25vf_tmr_write(const device_cfg_t * cfg, device_transfer_t * wop);
 int sst25vf_tmr_close(const device_cfg_t * cfg);
 
 
-#endif /* DEVICE_MICROCHIP_SST25VF_H_ */
+#endif /* DEV_MICROCHIP_SST25VF_H_ */
 
 /*! @} */

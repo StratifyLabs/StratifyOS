@@ -30,8 +30,8 @@
  */
 
 /*! \file  */
-#ifndef DEV_TTY_H_
-#define DEV_TTY_H_
+#ifndef IFACE_DEV_TTY_H_
+#define IFACE_DEV_TTY_H_
 
 #include <stdint.h>
 
@@ -87,6 +87,6 @@ typedef struct {
 #endif
 
 
-#endif /* DEV_TTY_H_ */
+#endif /* IFACE_DEV_TTY_H_ */
 
 /*! @} */

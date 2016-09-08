@@ -18,12 +18,32 @@
  */
 
 
-#ifndef DEVICE_CFI_H_
-#define DEVICE_CFI_H_
+#ifndef DEV_DEVFIFO_H_
+#define DEV_DEVFIFO_H_
+
+#include <stdbool.h>
+#include "iface/dev/devfifo.h"
+#include "mcu/circ_buf.h"
 
 
 
+/*! \details This stores the data for the state of the fifo buffer.
+ *
+ */
+typedef struct {
+	int head;
+	int tail;
+	bool overflow;
+	device_transfer_t * rop;
+	int len;
+} devfifo_state_t;
+
+int devfifo_open(const device_cfg_t * cfg);
+int devfifo_ioctl(const device_cfg_t * cfg, int request, void * ctl);
+int devfifo_read(const device_cfg_t * cfg, device_transfer_t * rop);
+int devfifo_write(const device_cfg_t * cfg, device_transfer_t * wop);
+int devfifo_close(const device_cfg_t * cfg);
 
 
-#endif /* DEVICE_CFI_H_ */
+#endif /* DEV_DEVFIFO_H_ */
 

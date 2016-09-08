@@ -98,8 +98,8 @@
  *
  */
 
-#ifndef DEV_TMR_H_
-#define DEV_TMR_H_
+#ifndef IFACE_DEV_TMR_H_
+#define IFACE_DEV_TMR_H_
 
 #include <stdint.h>
 #include "ioctl.h"
@@ -347,7 +347,7 @@ typedef struct MCU_PACK {
 }
 #endif
 
-#endif // DEV_TMR_H_
+#endif // IFACE_DEV_TMR_H_
 
 /*! @} */
 

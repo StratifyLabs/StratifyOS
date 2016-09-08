@@ -31,11 +31,12 @@
  *
  */
 
-#ifndef DEV_CORE_H_
-#define DEV_CORE_H_
+#ifndef IFACE_DEV_CORE_H_
+#define IFACE_DEV_CORE_H_
 
 #include <stdint.h>
 #include "ioctl.h"
+#include "mcu/mcu.h"
 #include "mcu/arch.h"
 #include "mcu/types.h"
 #include "iface/dev/pio.h"
@@ -244,14 +245,25 @@ typedef struct MCU_PACK {
  */
 #define I_CORE_SETCLKDIVIDE _IOCTL(CORE_IOC_IDENT_CHAR, I_GLOBAL_TOTAL + 5)
 
-#define I_CORE_TOTAL 6
+/*! \brief See below for details.
+ * \details This copies the mcu_board_config_t data that is set by the
+ * board support package.
+ * \code
+ * mcu_board_config_t config;
+ * ioctl(core_fd, I_CORE_GETMCUBOARDCONFIG, &config);
+ * \endcode
+ *
+ */
+#define I_CORE_GETMCUBOARDCONFIG _IOCTLR(CORE_IOC_IDENT_CHAR, I_GLOBAL_TOTAL + 6, mcu_board_config_t)
+
+#define I_CORE_TOTAL 7
 
 #ifdef __cplusplus
 }
 #endif
 
 
-#endif // DEV_CORE_H_
+#endif // IFACE_DEV_CORE_H_
 
 /*! @} */
 

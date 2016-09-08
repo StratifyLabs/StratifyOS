@@ -19,7 +19,7 @@
 
 #include <errno.h>
 #include <stddef.h>
-#include "device/sys.h"
+#include "dev/sys.h"
 
 
 int null_open(const device_cfg_t * cfg){

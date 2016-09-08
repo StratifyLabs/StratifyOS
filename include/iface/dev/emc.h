@@ -39,8 +39,8 @@
  */
 
 
-#ifndef DEV_EMC_H_
-#define DEV_EMC_H_
+#ifndef IFACE_DEV_EMC_H_
+#define IFACE_DEV_EMC_H_
 
 #include <stdint.h>
 #include "ioctl.h"
@@ -101,6 +101,6 @@ typedef struct MCU_PACK {
 #define I_EMC_TOTAL 0
 
 
-#endif /* DEV_EMC_H_ */
+#endif /* IFACE_DEV_EMC_H_ */
 
 /*! @} */

@@ -17,8 +17,8 @@
  * 
  */
 
-#ifndef DEVICE_TTY_H_
-#define DEVICE_TTY_H_
+#ifndef DEV_TTY_H_
+#define DEV_TTY_H_
 
 #include "iface/device_config.h"
 
@@ -35,4 +35,4 @@ int tty_uart_read(const device_cfg_t * cfg, device_transfer_t * rop);
 int tty_uart_close(const device_cfg_t * cfg);
 
 
-#endif /* DEVICE_TTY_H_ */
+#endif /* DEV_TTY_H_ */

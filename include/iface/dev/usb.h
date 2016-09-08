@@ -36,8 +36,8 @@
  *
  */
 
-#ifndef DEV_USB_H_
-#define DEV_USB_H_
+#ifndef IFACE_DEV_USB_H_
+#define IFACE_DEV_USB_H_
 
 
 #include <stdint.h>
@@ -303,6 +303,6 @@ typedef void (*usb_event_handler_t)(usb_spec_event_t);
 }
 #endif
 
-#endif /* DEV_USB_H_ */
+#endif /* IFACE_DEV_USB_H_ */
 
 /*! @} */

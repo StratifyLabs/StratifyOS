@@ -5,8 +5,8 @@
  *      Author: tgil
  */
 
-#ifndef MCU_EEPROM_H_
-#define MCU_EEPROM_H_
+#ifndef IFACE_DEV_EEPROM_H_
+#define IFACE_DEV_EEPROM_H_
 
 #include <stdint.h>
 #include "ioctl.h"
@@ -33,4 +33,4 @@ typedef struct MCU_PACK {
 
 
 
-#endif /* EEPROM_H_ */
+#endif /* IFACE_DEV_EEPROM_H_ */

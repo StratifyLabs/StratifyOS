@@ -20,7 +20,7 @@
 #include <errno.h>
 #include <stddef.h>
 #include <string.h>
-#include "device/sys.h"
+#include "dev/sys.h"
 
 
 int zero_open(const device_cfg_t * cfg){

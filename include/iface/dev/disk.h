@@ -31,8 +31,8 @@
 
 /*! \file  */
 
-#ifndef DEV_DISK_H_
-#define DEV_DISK_H_
+#ifndef IFACE_DEV_DISK_H_
+#define IFACE_DEV_DISK_H_
 
 
 #include <stdint.h>
@@ -205,6 +205,6 @@ typedef struct MCU_PACK {
 
 #define I_DISK_TOTAL 14
 
-#endif /* DEV_DISK_H_ */
+#endif /* IFACE_DEV_DISK_H_ */
 
 /*! @} */

@@ -25,7 +25,6 @@ extern void _mcu_core_dev_power_on(int port) MCU_PRIV_CODE;
 extern void _mcu_core_dev_power_off(int port) MCU_PRIV_CODE;
 extern int _mcu_core_dev_powered_on(int port) MCU_PRIV_CODE;
 
-
 int (* const _mcu_core_ioctl_func_table[I_GLOBAL_TOTAL + I_CORE_TOTAL])(int, void*) = {
 		mcu_core_getattr,
 		mcu_core_setattr,
@@ -35,7 +34,8 @@ int (* const _mcu_core_ioctl_func_table[I_GLOBAL_TOTAL + I_CORE_TOTAL])(int, voi
 		mcu_core_reset,
 		mcu_core_invokebootloader,
 		mcu_core_setclkout,
-		mcu_core_setclkdivide
+		mcu_core_setclkdivide,
+		mcu_core_getmcuboardconfig
 };
 
 

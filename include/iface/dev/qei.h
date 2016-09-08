@@ -33,8 +33,8 @@
  *
  */
 
-#ifndef DEV_QEI_H_
-#define DEV_QEI_H_
+#ifndef IFACE_DEV_QEI_H_
+#define IFACE_DEV_QEI_H_
 
 #include <stdint.h>
 #include "ioctl.h"
@@ -176,6 +176,6 @@ typedef mcu_action_t qei_action_t;
 #endif
 
 
-#endif /* DEV_QEI_H_ */
+#endif /* IFACE_DEV_QEI_H_ */
 
 /*! @} */

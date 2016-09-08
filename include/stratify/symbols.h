@@ -158,7 +158,7 @@ extern u32 __gnu_h2f_ieee();
 #include "aio.h"
 #include "../stratify/stratify.h"
 #include "mcu/sys.h"
-#include <device/sys.h>
+#include <dev/sys.h>
 #include "mcu/core.h"
 #include "mcu/adc.h"
 #include "mcu/dac.h"

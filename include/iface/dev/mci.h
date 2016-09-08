@@ -30,8 +30,8 @@
  *
  */
 
-#ifndef DEV_MCI_H_
-#define DEV_MCI_H_
+#ifndef IFACE_DEV_MCI_H_
+#define IFACE_DEV_MCI_H_
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -88,6 +88,6 @@ typedef struct MCU_PACK {
 }
 #endif
 
-#endif /* DEV_MCI_H_ */
+#endif /* IFACE_DEV_MCI_H_ */
 
 /*! @} */

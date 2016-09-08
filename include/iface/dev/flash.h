@@ -37,8 +37,8 @@
  *
  */
 
-#ifndef DEV_FLASH_H_
-#define DEV_FLASH_H_
+#ifndef IFACE_DEV_FLASH_H_
+#define IFACE_DEV_FLASH_H_
 
 #include <stdint.h>
 #include "ioctl.h"
@@ -188,7 +188,7 @@ typedef struct MCU_PACK {
 #endif
 
 
-#endif // DEV_FLASH_H_
+#endif // IFACE_DEV_FLASH_H_
 
 /*! @} */
 

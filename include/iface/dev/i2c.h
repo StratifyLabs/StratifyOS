@@ -74,8 +74,8 @@
  *
  */
 
-#ifndef DEV_I2C_H_
-#define DEV_I2C_H_
+#ifndef IFACE_DEV_I2C_H_
+#define IFACE_DEV_I2C_H_
 
 #include <stdint.h>
 #include "ioctl.h"
@@ -225,7 +225,7 @@ typedef mcu_action_t i2c_action_t;
 }
 #endif
 
-#endif // DEV_I2C_H_
+#endif // IFACE_DEV_I2C_H_
 
 /*! @} */
 

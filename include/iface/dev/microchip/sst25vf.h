@@ -47,8 +47,8 @@
  * \endcode
  */
 
-#ifndef DEV_SST25VF_H_
-#define DEV_SST25VF_H_
+#ifndef IFACE_DEV_MICROCHIP_SST25VF_H_
+#define IFACE_DEV_MICROCHIP_SST25VF_H_
 
 #include "../disk.h"
 
@@ -156,6 +156,6 @@ typedef struct {
 }
 
 
-#endif /* DEV_SST25VF_H_ */
+#endif /* IFACE_DEV_MICROCHIP_SST25VF_H_ */
 
 /*! @} */

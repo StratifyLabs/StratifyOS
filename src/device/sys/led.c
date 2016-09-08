@@ -20,7 +20,8 @@
 #include <errno.h>
 #include <stddef.h>
 #include "mcu/pio.h"
-#include "device/sys.h"
+#include "dev/sys.h"
+#include "iface/dev/sys.h"
 
 #include "mcu/debug.h"
 

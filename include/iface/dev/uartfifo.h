@@ -31,8 +31,8 @@
 
 /*! \file  */
 
-#ifndef DEV_UARTFIFO_H_
-#define DEV_UARTFIFO_H_
+#ifndef IFACE_DEV_UARTFIFO_H_
+#define IFACE_DEV_UARTFIFO_H_
 
 #include <stdint.h>
 #include "iface/dev/ioctl.h"
@@ -90,7 +90,7 @@ typedef struct {
 } uartfifo_cfg_t;
 
 
-#endif /* DEV_UARTFIFO_H_ */
+#endif /* IFACE_DEV_UARTFIFO_H_ */
 
 
 /*! @} */

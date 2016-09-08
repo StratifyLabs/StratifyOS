@@ -56,8 +56,8 @@
 
 
 
-#ifndef ETH_H_
-#define ETH_H_
+#ifndef IFACE_DEV_ETH_H_
+#define IFACE_DEV_ETH_H_
 
 #include <stdint.h>
 #include "ioctl.h"
@@ -159,7 +159,7 @@ typedef struct MCU_PACK {
 #define I_ETH_TOTAL (I_GLOBAL_TOTAL + 5)
 
 
-#endif // ETH_H_
+#endif // IFACE_DEV_ETH_H_
 
 
 /*! @} */

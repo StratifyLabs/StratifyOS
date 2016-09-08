@@ -27,7 +27,7 @@
 #include "mcu/wdt.h"
 #include "iface/device_config.h"
 
-#include "device/sys.h"
+#include "dev/sys.h"
 #include "mcu/core.h"
 #include "iface/dev/disk.h"
 #include "sdspi_local.h"

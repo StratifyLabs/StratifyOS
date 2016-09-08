@@ -32,8 +32,8 @@
  *
  */
 
-#ifndef DEV_RTC_H_
-#define DEV_RTC_H_
+#ifndef IFACE_DEV_RTC_H_
+#define IFACE_DEV_RTC_H_
 
 #include <time.h>
 #include <stdint.h>
@@ -259,6 +259,6 @@ typedef struct MCU_PACK {
 }
 #endif
 
-#endif /* DEV_RTC_H_ */
+#endif /* IFACE_DEV_RTC_H_ */
 
 /*! @} */

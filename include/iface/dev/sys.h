@@ -30,8 +30,8 @@
 
 /*! \file  */
 
-#ifndef DEV_SYS_H_
-#define DEV_SYS_H_
+#ifndef IFACE_DEV_SYS_H_
+#define IFACE_DEV_SYS_H_
 
 #include <stdint.h>
 #include "iface/link.h"
@@ -301,6 +301,16 @@ typedef struct MCU_PACK {
  */
 #define I_SYS_SUDO _IOCTLW(SYS_IOC_CHAR, 5, sys_sudo_t)
 
+/*! \brief See below for details.
+ * \details This copies the stratify_board_config_t data that is set by the
+ * board support package.
+ * \code
+ * stratify_board_config_t config;
+ * ioctl(core_fd, I_SYS_GETBOARDCONFIG, &config);
+ * \endcode
+ *
+ */
+#define I_SYS_GETBOARDCONFIG _IOCTLR(SYS_IOC_CHAR, 6, stratify_board_config_t)
 
 #define I_SYS_TOTAL 6
 
@@ -381,6 +391,6 @@ typedef struct MCU_PACK {
 }
 #endif
 
-#endif /* DEV_SYS_H_ */
+#endif /* IFACE_DEV_SYS_H_ */
 
 /*! @} */

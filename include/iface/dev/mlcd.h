@@ -44,8 +44,8 @@
  */
 
 /*! \file  */
-#ifndef DEV_MLCD_H_
-#define DEV_MLCD_H_
+#ifndef IFACE_DEV_MLCD_H_
+#define IFACE_DEV_MLCD_H_
 
 
 #include <stdint.h>
@@ -199,4 +199,4 @@ typedef struct MCU_PACK {
 #endif
 
 
-#endif /* DEV_MLCD_H_ */
+#endif /* IFACE_DEV_MLCD_H_ */

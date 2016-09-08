@@ -33,8 +33,8 @@
  *
  */
 
-#ifndef DEV_BOOTLOADER_H_
-#define DEV_BOOTLOADER_H_
+#ifndef IFACE_DEV_BOOTLOADER_H_
+#define IFACE_DEV_BOOTLOADER_H_
 
 #include <stdint.h>
 #include "iface/link_transport.h"
@@ -200,7 +200,7 @@ typedef struct MCU_PACK {
 #endif
 
 
-#endif // DEV_BOOTLOADER_H_
+#endif // IFACE_DEV_BOOTLOADER_H_
 
 /*! @} */
 

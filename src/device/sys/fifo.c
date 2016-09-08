@@ -22,7 +22,7 @@
 #include <stddef.h>
 #include "mcu/debug.h"
 #include "iface/dev/fifo.h"
-#include "device/fifo.h"
+#include "dev/fifo.h"
 
 
 

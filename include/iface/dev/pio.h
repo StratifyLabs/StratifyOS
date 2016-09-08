@@ -80,8 +80,8 @@
  *
  */
 
-#ifndef DEV_PIO_H_
-#define DEV_PIO_H_
+#ifndef IFACE_DEV_PIO_H_
+#define IFACE_DEV_PIO_H_
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -263,6 +263,6 @@ typedef struct {
 }
 #endif
 
-#endif /* DEV_PIO_H_ */
+#endif /* IFACE_DEV_PIO_H_ */
 
 /*! @} */

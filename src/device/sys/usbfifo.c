@@ -21,7 +21,7 @@
 #include <errno.h>
 #include <stddef.h>
 #include "iface/dev/usbfifo.h"
-#include "device/usbfifo.h"
+#include "dev/usbfifo.h"
 #include "mcu/usb.h"
 #include "mcu/debug.h"
 

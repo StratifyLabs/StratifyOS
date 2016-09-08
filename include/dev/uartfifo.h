@@ -17,8 +17,8 @@
  * 
  */
 
-#ifndef DEVICE_UARTFIFO_H_
-#define DEVICE_UARTFIFO_H_
+#ifndef DEV_UARTFIFO_H_
+#define DEV_UARTFIFO_H_
 
 #include <stdbool.h>
 #include "iface/dev/uartfifo.h"
@@ -51,5 +51,5 @@ int uartfifo_close(const device_cfg_t * cfg);
 #endif
 
 
-#endif /* DEVICE_UARTFIFO_H_ */
+#endif /* DEV_UARTFIFO_H_ */
 

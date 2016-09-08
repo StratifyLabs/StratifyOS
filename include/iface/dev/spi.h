@@ -103,8 +103,8 @@
  *
  */
 
-#ifndef DEV_SPI_H_
-#define DEV_SPI_H_
+#ifndef IFACE_DEV_SPI_H_
+#define IFACE_DEV_SPI_H_
 
 #include <stdint.h>
 #include "ioctl.h"
@@ -212,6 +212,6 @@ typedef mcu_action_t spi_action_t;
 #endif
 
 
-#endif /* DEV_SPI_H_ */
+#endif /* IFACE_DEV_SPI_H_ */
 
 /*! @} */

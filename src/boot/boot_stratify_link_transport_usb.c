@@ -8,7 +8,7 @@
 #include "iface/link.h"
 #include "mcu/mcu.h"
 #include "iface/dev/usb.h"
-#include "device/usbfifo.h"
+#include "dev/usbfifo.h"
 #include "stratify/usb_dev.h"
 #include "stratify/usb_dev_cdc.h"
 #include "mcu/core.h"

@@ -76,8 +76,8 @@
  *
  */
 
-#ifndef DEV_ADC_H_
-#define DEV_ADC_H_
+#ifndef IFACE_DEV_ADC_H_
+#define IFACE_DEV_ADC_H_
 
 #include <stdint.h>
 #include "ioctl.h"
@@ -177,7 +177,7 @@ typedef struct MCU_PACK {
 #endif
 
 
-#endif // DEV_ADC_H_
+#endif // IFACE_DEV_ADC_H_
 
 /*! @} */
 

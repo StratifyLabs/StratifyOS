@@ -70,8 +70,8 @@
  * \brief DAC Header File
  */
 
-#ifndef DEV_DAC_H_
-#define DEV_DAC_H_
+#ifndef IFACE_DEV_DAC_H_
+#define IFACE_DEV_DAC_H_
 
 #include <stdint.h>
 #include "ioctl.h"
@@ -190,7 +190,7 @@ typedef struct MCU_PACK {
 }
 #endif
 
-#endif // DEV_DAC_H_
+#endif // IFACE_DEV_DAC_H_
 
 /*! @} */
 

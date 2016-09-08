@@ -18,8 +18,8 @@
  */
 
 
-#ifndef DEVICE_FIFO_H_
-#define DEVICE_FIFO_H_
+#ifndef DEV_FIFO_H_
+#define DEV_FIFO_H_
 
 #include <stdbool.h>
 #include "iface/dev/fifo.h"
@@ -42,5 +42,5 @@ int fifo_write(const device_cfg_t * cfg, device_transfer_t * wop);
 int fifo_close(const device_cfg_t * cfg);
 
 
-#endif /* DEVICE_FIFO_H_ */
+#endif /* DEV_FIFO_H_ */
 

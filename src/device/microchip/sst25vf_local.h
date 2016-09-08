@@ -14,7 +14,7 @@
 #include "mcu/spi.h"
 #include "mcu/debug.h"
 #include "iface/dev/microchip/sst25vf.h"
-#include "device/microchip/sst25vf.h"
+#include "dev/microchip/sst25vf.h"
 
 #define SST25VF_CHIP_ERASE_TIME (75*1000)
 #define SST25VF_BLOCK_ERASE_TIME (30*1000)

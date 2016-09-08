@@ -130,6 +130,11 @@ int mcu_core_setclkdivide(int port, void * arg){
 	return 0;
 }
 
+int mcu_core_getmcuboardconfig(int port, void * arg){
+	memcpy(arg, &mcu_board_config, sizeof(mcu_board_config));
+	return 0;
+}
+
 
 void _mcu_set_sleep_mode(int * level){
 	SCB->SCR &= ~(1<<SCB_SCR_SLEEPDEEP_Pos);
