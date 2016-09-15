@@ -88,11 +88,21 @@ typedef struct {
 	uint32_t size /*! \brief The size of the memory on the device */;
 } sdspi_cfg_t;
 
+
+
 int sdspi_open(const device_cfg_t * cfg);
 int sdspi_ioctl(const device_cfg_t * cfg, int request, void * ctl);
 int sdspi_read(const device_cfg_t * cfg, device_transfer_t * rop);
 int sdspi_write(const device_cfg_t * cfg, device_transfer_t * wop);
 int sdspi_close(const device_cfg_t * cfg);
+
+int sdssp_open(const device_cfg_t * cfg);
+int sdssp_ioctl(const device_cfg_t * cfg, int request, void * ctl);
+int sdssp_read(const device_cfg_t * cfg, device_transfer_t * rop);
+int sdssp_write(const device_cfg_t * cfg, device_transfer_t * wop);
+int sdssp_close(const device_cfg_t * cfg);
+
+
 
 extern uint8_t sys_euid;
 

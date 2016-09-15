@@ -36,19 +36,6 @@ extern "C" {
 #endif
 
 
-#if MCU_SPI_PORTS == 0
-#define mcu_spi_open mcu_ssp_open
-#define mcu_spi_close mcu_ssp_close
-#define mcu_spi_setaction mcu_ssp_setaction
-#define mcu_spi_setduplex mcu_ssp_setduplex
-#define mcu_spi_swap mcu_ssp_swap
-#define mcu_spi_getattr mcu_ssp_getattr
-#define mcu_spi_setattr mcu_ssp_setattr
-#define mcu_spi_write mcu_ssp_write
-#define mcu_spi_read mcu_ssp_read
-#define mcu_spi_ioctl mcu_ssp_ioctl
-#else
-
 /*! \details
  * \sa periph_open()
  *
@@ -78,8 +65,6 @@ int mcu_spi_setattr(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_spi_setaction(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_spi_swap(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_spi_setduplex(int port, void * ctl) MCU_PRIV_CODE;
-
-#endif
 
 
 int mcu_ssp_open(const device_cfg_t * cfg) MCU_PRIV_CODE;

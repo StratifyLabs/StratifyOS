@@ -21,7 +21,6 @@
 #include "mcu/spi.h"
 #include "mcu/pio.h"
 #include "spi_flags.h"
-#include "ssp_flags.h"
 #include "mcu/core.h"
 #include "mcu/debug.h"
 

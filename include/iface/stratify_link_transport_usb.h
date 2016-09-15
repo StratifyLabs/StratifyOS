@@ -21,7 +21,7 @@ limitations under the License.
 //#define __STDIO_VCP
 
 
-#include "dev/usbfifo.h"
+#include "../dev/usbfifo.h"
 #include "link_transport.h"
 #include "stratify/usb_dev.h"
 #include "stratify/usb_dev_typedefs.h"

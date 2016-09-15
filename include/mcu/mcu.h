@@ -78,6 +78,7 @@ extern u32 _esys;
 
 int mcu_check_adc_port(const device_cfg_t * cfgp);
 int mcu_check_spi_port(const device_cfg_t * cfgp);
+int mcu_check_ssp_port(const device_cfg_t * cfgp);
 int mcu_check_i2c_port(const device_cfg_t * cfgp);
 int mcu_check_pwm_port(const device_cfg_t * cfgp);
 int mcu_check_uart_port(const device_cfg_t * cfgp);

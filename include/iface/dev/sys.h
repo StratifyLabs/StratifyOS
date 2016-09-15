@@ -379,6 +379,23 @@ typedef struct MCU_PACK {
 		.cfg.dcfg = cfg_ptr \
 }
 
+#define SDSSP_DEVICE(device_name, port_number, pin_assign_value, cs_port_value, cs_pin_value, bitrate_value, cfg_ptr, state_ptr, mode_value, uid_value, gid_value) { \
+		.name = device_name, \
+		DEVICE_MODE(mode_value, uid_value, gid_value, S_IFBLK), \
+		DEVICE_DRIVER(sdssp), \
+		.cfg.periph.port = port_number, \
+		.cfg.pin_assign = pin_assign_value, \
+		.cfg.pcfg.spi.mode = SPI_ATTR_MODE0, \
+		.cfg.pcfg.spi.cs.port = cs_port_value, \
+		.cfg.pcfg.spi.cs.pin = cs_pin_value, \
+		.cfg.pcfg.spi.width = 8, \
+		.cfg.pcfg.spi.format = SPI_ATTR_FORMAT_SPI, \
+		.cfg.bitrate = bitrate_value, \
+		.cfg.state = state_ptr, \
+		.cfg.dcfg = cfg_ptr \
+}
+
+
 
 typedef struct MCU_PACK {
 	uint16_t r2;
