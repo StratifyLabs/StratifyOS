@@ -102,9 +102,7 @@ int sdssp_read(const device_cfg_t * cfg, device_transfer_t * rop);
 int sdssp_write(const device_cfg_t * cfg, device_transfer_t * wop);
 int sdssp_close(const device_cfg_t * cfg);
 
-
-
-extern uint8_t sys_euid;
+extern u8 sys_euid;
 
 #define SYS_USER 0
 #define SYS_ROOT 1

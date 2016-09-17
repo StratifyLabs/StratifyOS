@@ -36,7 +36,7 @@
 
 static int read_task(sys_taskattr_t * task);
 
-uint8_t sys_euid MCU_SYS_MEM;
+u8 sys_euid MCU_SYS_MEM;
 
 int sys_open(const device_cfg_t * cfg){
 	return 0;

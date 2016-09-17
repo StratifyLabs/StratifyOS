@@ -41,36 +41,6 @@ static int set_read_action(const device_cfg_t * cfg, mcu_callback_t callback){
 	return 0;
 }
 
-static void inc_head(usbfifo_state_t * state, int size){
-	state->head++;
-	if ( state->head == size ){
-		state->head = 0;
-	}
-
-	if ( state->head == state->tail ){
-		state->tail++;
-		if ( state->tail == size ){
-			state->tail = 0;
-		}
-		state->overflow = true;
-	}
-}
-
-static int read_buffer(const usbfifo_cfg_t * cfgp, usbfifo_state_t * state, device_transfer_t * rop){
-	int i;
-	for(i=0; i < rop->nbyte; i++){
-		if ( state->head == state->tail ){ //check for data in the fifo buffer
-			break;
-		} else {
-			rop->chbuf[i] = cfgp->buffer[state->tail];
-			state->tail++;
-			if ( state->tail == cfgp->size ){
-				state->tail = 0;
-			}
-		}
-	}
-	return i; //number of bytes read
-}
 
 static int data_received(void * context, mcu_event_t data){
 	int i;
@@ -92,17 +62,18 @@ static int data_received(void * context, mcu_event_t data){
 	//read the endpoint directly
 	bytes_read = mcu_usb_rd_ep(cfgp->port, cfgp->endpoint, buffer);
 
+	//drop the bytes into the FIFO
 	for(i=0; i < bytes_read; i++){
-		cfgp->buffer[ state->head ] = buffer[i];
-		inc_head(state, cfgp->size);
+		cfgp->fifo.buffer[ state->fifo.head ] = buffer[i];
+		fifo_inc_head(&(state->fifo), cfgp->fifo.size);
 	}
 
-	if( state->rop != NULL ){
-		state->rop->nbyte = state->len;
-		if( (bytes_read = read_buffer(cfgp, state, state->rop)) > 0 ){
-			state->rop->nbyte = bytes_read;
-			if ( state->rop->callback(state->rop->context, (mcu_event_t)NULL) == 0 ){
-				state->rop = NULL;
+	if( state->fifo.rop != NULL ){
+		state->fifo.rop->nbyte = state->fifo.rop_len;
+		if( (bytes_read = fifo_read_buffer(cfgp, state, state->fifo.rop)) > 0 ){
+			state->fifo.rop->nbyte = bytes_read;
+			if ( state->fifo.rop->callback(state->fifo.rop->context, (mcu_event_t)NULL) == 0 ){
+				state->fifo.rop = NULL;
 			}
 		}
 	}
@@ -122,22 +93,14 @@ int usbfifo_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 	usbfifo_state_t * state = cfg->state;
 	switch(request){
 	case I_FIFO_GETATTR:
-		attr->size = cfgp->size;
-		if( state->head >= state->tail ){
-			attr->used = state->head - state->tail;
-		} else {
-			attr->used = cfgp->size - state->tail + state->head;
-		}
-		attr->overflow = state->overflow;
-		state->overflow = false; //clear the overflow flag now that it has been read
-		break;
+		return fifo_getattr(attr, &(state->fifo), &(cfgp->fifo));
 	case I_USB_SETACTION:
 	case I_GLOBAL_SETACTION:
 		if( action->callback == 0 ){
-			if ( state->rop != NULL ){
-				state->rop->nbyte = -1;
-				if ( state->rop->callback(state->rop->context, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED)) == 0 ){
-					state->rop = NULL;
+			if ( state->fifo.rop != NULL ){
+				state->fifo.rop->nbyte = -1;
+				if ( state->fifo.rop->callback(state->fifo.rop->context, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED)) == 0 ){
+					state->fifo.rop = NULL;
 				}
 			}
 		} else {
@@ -145,32 +108,25 @@ int usbfifo_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 		}
 		return 0;
 	case I_FIFO_FLUSH:
-		state->head = 0;
-		state->tail = 0;
-		if ( state->rop != NULL ){
-			state->rop->nbyte = -1;
-			if ( state->rop->callback(state->rop->context, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED)) == 0 ){
-				state->rop = NULL;
-			}
-		}
-		state->rop = NULL;
-		state->overflow = false;
+
+		fifo_flush(&(state->fifo));
 		break;
 	case I_USB_SETATTR:
-		state->head = 0;
-		state->tail = 0;
-		state->rop = NULL;
-		state->overflow = false;
-		//setup the device to write to the fifo when data arrives
+		state->fifo.head = 0;
+		state->fifo.tail = 0;
+		state->fifo.rop = NULL;
+		state->fifo.o_flags &= ~FIFO_FLAGS_OVERFLOW;
 
 		if(  mcu_usb_setattr(cfgp->port, ctl) < 0 ){
 			return -1;
 		}
 		/* no break */
 	case I_FIFO_INIT:
-		state->head = 0;
-		state->tail = 0;
-		state->overflow = 0;
+		state->fifo.head = 0;
+		state->fifo.tail = 0;
+		state->fifo.o_flags = 0;
+
+		//setup the device to write to the fifo when data arrives
 		if ( set_read_action(cfg, data_received) < 0 ){
 			return -1;
 		}
@@ -193,16 +149,16 @@ int usbfifo_read(const device_cfg_t * cfg, device_transfer_t * rop){
 	usbfifo_state_t * state = cfg->state;
 	int bytes_read;
 
-	if ( state->rop != NULL ){
+	if ( state->fifo.rop != NULL ){
 		errno = EAGAIN; //the device is temporarily unavailable
 		return -1;
 	}
 
-	bytes_read = read_buffer(cfgp, state, rop); //see if there are bytes in the buffer
+	bytes_read = fifo_read_buffer(&(cfgp->fifo), &(state->fifo), rop); //see if there are bytes in the buffer
 	if ( bytes_read == 0 ){
 		if ( !(rop->flags & O_NONBLOCK) ){ //check for a blocking operation
-			state->rop = rop;
-			state->len = rop->nbyte;
+			state->fifo.rop = rop;
+			state->fifo.rop_len = rop->nbyte;
 			rop->nbyte = 0;
 		} else {
 			errno = EAGAIN;

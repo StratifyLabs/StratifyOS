@@ -96,11 +96,11 @@ typedef struct MCU_PACK {
  *
  * Example:
  * \code
- * ioctl(fildes, I_RADIO_SETATTR);
+ * ioctl(fildes, I_RADIO_SETFREQUENCY, 915000000);
  * \endcode
  * \hideinitializer
  */
-#define I_RADIO_SETFREQUENCY _IOCTLW(RADIO_IOC_CHAR, 2)
+#define I_RADIO_SETFREQUENCY _IOCTL(RADIO_IOC_CHAR, 2)
 
 /*! \details This request sets the radio mode
  *

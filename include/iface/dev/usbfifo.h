@@ -81,18 +81,6 @@
 }
 
 
-/*! \details This is used for the configuration of the device.
- *
- */
-typedef struct {
-	int port /*! The USB port associated with the device */;
-	int endpoint /*! The USB endpoint number to read */;
-	int endpoint_size /*! The USB endpoint number to read */;
-	char * buffer /*! \brief The buffer for the fifo */;
-	int size /*! \brief The size of the fifo */;
-} usbfifo_cfg_t;
-
-
 #endif /* IFACE_DEV_USBFIFO_H_ */
 
 

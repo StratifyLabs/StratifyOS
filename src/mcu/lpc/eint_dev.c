@@ -29,6 +29,7 @@ typedef struct {
 	mcu_event_handler_t handler;
 	uint8_t ref_count;
 } eint_local_t;
+
 static eint_local_t eint_local[4] MCU_SYS_MEM;
 
 
