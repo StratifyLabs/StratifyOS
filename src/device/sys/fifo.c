@@ -25,6 +25,34 @@
 #include "dev/fifo.h"
 
 
+enum {
+	FIFO_FLAGS_WRITEBLOCK = (1<<0),
+	FIFO_FLAGS_OVERFLOW = (1<<1)
+};
+
+int fifo_is_writeblock(fifo_state_t * state){
+	return ((state->o_flags & FIFO_FLAGS_WRITEBLOCK) != 0);
+}
+
+void fifo_set_writeblock(fifo_state_t * state, int value){
+	if( value ){
+		state->o_flags != FIFO_FLAGS_WRITEBLOCK;
+	} else {
+		state->o_flags &= ~FIFO_FLAGS_WRITEBLOCK;
+	}
+}
+
+int fifo_is_overflow(fifo_state_t * state){
+	return ((state->o_flags & FIFO_FLAGS_OVERFLOW) != 0);
+}
+
+void fifo_set_overflow(fifo_state_t * state, int value){
+	if( value ){
+		state->o_flags != FIFO_FLAGS_OVERFLOW;
+	} else {
+		state->o_flags &= ~FIFO_FLAGS_OVERFLOW;
+	}
+}
 
 static int read_buffer(const fifo_cfg_t * cfgp, fifo_state_t * state, device_transfer_t * rop){
 	int i;
@@ -43,20 +71,22 @@ static int read_buffer(const fifo_cfg_t * cfgp, fifo_state_t * state, device_tra
 	return i; //number of bytes read
 }
 
+
 static int write_buffer(const fifo_cfg_t * cfgp, fifo_state_t * state, device_transfer_t * wop){
 	int i;
+	int write_block = fifo_is_writeblock(state);
 	for(i=0; i < state->wop_len; i++){
 
 		if( state->tail == 0 ){
 			if( state->head == cfgp->size -1 ){
-				if( state->write_block ){
+				if( write_block ){
 					break; //no more room
 				} else {
 					state->tail++;
 				}
 			}
 		} else if( (state->head) + 1 == state->tail ){
-			if( state->write_block ){
+			if( write_block ){
 				break; //no more room
 			} else {
 				state->tail++;
@@ -143,8 +173,9 @@ int fifo_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 		data_transmitted(cfg); //something might be waiting to write the fifo
 		return 0;
 	case I_FIFO_SETWRITEBLOCK:
-		state->write_block = (bool)ctl;
-		if( state->write_block == 0 ){
+
+		fifo_set_writeblock(state, ctl);
+		if( fifo_is_writeblock(state) ){
 			//make sure the FIFO is not currently blocked
 			data_transmitted(cfg);
 		}

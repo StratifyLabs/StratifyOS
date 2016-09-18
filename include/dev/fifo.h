@@ -22,17 +22,18 @@
 #define DEV_FIFO_H_
 
 #include <stdbool.h>
+#include "mcu/types.h"
 #include "iface/dev/fifo.h"
 #include "iface/device_config.h"
 
-typedef struct {
-	int head;
-	int tail;
+typedef struct MCU_PACK {
+	u16 head;
+	u16 tail;
+	u16 rop_len;
+	u16 wop_len;
 	device_transfer_t * rop;
-	int rop_len;
 	device_transfer_t * wop;
-	int wop_len;
-	int write_block;
+	u32 o_flags;
 } fifo_state_t;
 
 int fifo_open(const device_cfg_t * cfg);
@@ -40,6 +41,12 @@ int fifo_ioctl(const device_cfg_t * cfg, int request, void * ctl);
 int fifo_read(const device_cfg_t * cfg, device_transfer_t * rop);
 int fifo_write(const device_cfg_t * cfg, device_transfer_t * wop);
 int fifo_close(const device_cfg_t * cfg);
+
+int fifo_is_writeblock(fifo_state_t * state);
+void fifo_set_writeblock(fifo_state_t * state, int value);
+
+int fifo_is_overflow(fifo_state_t * state);
+void fifo_set_overflow(fifo_state_t * state, int value);
 
 
 #endif /* DEV_FIFO_H_ */
