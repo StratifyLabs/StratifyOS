@@ -28,32 +28,18 @@
 typedef struct {
 	int head;
 	int tail;
-	int rop_len;
-	int wop_len;
-	int o_flags;
 	device_transfer_t * rop;
+	int rop_len;
 	device_transfer_t * wop;
+	int wop_len;
+	int write_block;
 } fifo_state_t;
-
-typedef struct {
-	char * buffer;
-	int size;
-} fifo_cfg_t;
 
 int fifo_open(const device_cfg_t * cfg);
 int fifo_ioctl(const device_cfg_t * cfg, int request, void * ctl);
 int fifo_read(const device_cfg_t * cfg, device_transfer_t * rop);
 int fifo_write(const device_cfg_t * cfg, device_transfer_t * wop);
 int fifo_close(const device_cfg_t * cfg);
-
-
-
-//helper functions for implementing FIFO's on other devices
-void fifo_inc_head(fifo_state_t * state, int size);
-int fifo_read_buffer(const fifo_cfg_t * cfgp, fifo_state_t * state, device_transfer_t * rop);
-int fifo_write_buffer(const fifo_cfg_t * cfgp, fifo_state_t * state, device_transfer_t * wop);
-
-int fifo_getattr(fifo_attr_t * attr, fifo_state_t * state, const fifo_cfg_t * cfg);
 
 
 #endif /* DEV_FIFO_H_ */
