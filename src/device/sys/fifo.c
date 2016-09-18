@@ -130,12 +130,11 @@ void fifo_init(fifo_state_t * state){
 	state->wop = NULL;
 }
 
-static void data_received(const device_cfg_t * cfg){
+void fifo_data_received(const fifo_cfg_t * cfgp, fifo_state_t * state){
 	int bytes_read;
-	const fifo_cfg_t * cfgp = cfg->dcfg;
-	fifo_state_t * state = cfg->state;
 
 	if( state->rop != NULL ){
+		state->rop->nbyte = state->rop_len;
 		if( (bytes_read = fifo_read_buffer(cfgp, state, state->rop)) > 0 ){
 			state->rop->nbyte = bytes_read;
 			if ( state->rop->callback(state->rop->context, NULL) == 0 ){
@@ -145,10 +144,8 @@ static void data_received(const device_cfg_t * cfg){
 	}
 }
 
-static int data_transmitted(const device_cfg_t * cfg){
+void fifo_data_transmitted(const fifo_cfg_t * cfgp, fifo_state_t * state){
 	int bytes_written;
-	const fifo_cfg_t * cfgp = cfg->dcfg;
-	fifo_state_t * state = cfg->state;
 
 	if( state->wop != NULL ){
 		if( (bytes_written = fifo_write_buffer(cfgp, state, state->wop)) > 0 ){
@@ -158,8 +155,6 @@ static int data_transmitted(const device_cfg_t * cfg){
 			}
 		}
 	}
-
-	return 1; //leave the callback in place
 }
 
 
@@ -187,7 +182,7 @@ int fifo_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 	case I_FIFO_FLUSH:
 		state->head = 0;
 		state->tail = 0;
-		data_transmitted(cfg); //something might be waiting to write the fifo
+		fifo_data_transmitted(cfgp, state); //something might be waiting to write the fifo
 		return 0;
 	case I_FIFO_SETWRITEBLOCK:
 		if( ctl != 0 ){
@@ -195,7 +190,7 @@ int fifo_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 		}
 		if( (state->o_flags & FIFO_FLAGS_WRITE_BLOCK) == 0 ){
 			//make sure the FIFO is not currently blocked
-			data_transmitted(cfg);
+			fifo_data_transmitted(cfgp, state);
 		}
 		return 0;
 	}
@@ -203,15 +198,13 @@ int fifo_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 	return -1;
 }
 
-
-int fifo_read(const device_cfg_t * cfg, device_transfer_t * rop){
-	const fifo_cfg_t * cfgp = cfg->dcfg;
-	fifo_state_t * state = cfg->state;
+int fifo_read_local(const fifo_cfg_t * cfgp, fifo_state_t * state, device_transfer_t * rop){
 	int bytes_read;
 
 	if ( state->rop != NULL ){
-		rop->nbyte = 0;
-		return 0;
+		//Another thread is currently waiting for data on the FIFO
+		errno = EAGAIN;
+		return -1;
 	}
 
 	state->rop_len = rop->nbyte;
@@ -225,22 +218,30 @@ int fifo_read(const device_cfg_t * cfg, device_transfer_t * rop){
 			state->rop_len = rop->nbyte;
 			rop->nbyte = 0;
 		}
-	} else {
-		//see if anything needs to write the FIFO
-		data_transmitted(cfg);
 	}
 
 	return bytes_read;
 }
 
-int fifo_write(const device_cfg_t * cfg, device_transfer_t * wop){
+int fifo_read(const device_cfg_t * cfg, device_transfer_t * rop){
 	const fifo_cfg_t * cfgp = cfg->dcfg;
 	fifo_state_t * state = cfg->state;
+	int bytes_read;
+
+	bytes_read = fifo_read_local(cfgp, state, rop);
+	if( bytes_read > 0 ){
+		fifo_data_transmitted(cfgp, state);
+	}
+
+	return bytes_read;
+}
+
+int fifo_write_local(const fifo_cfg_t * cfgp, fifo_state_t * state, device_transfer_t * wop){
 	int bytes_written;
 
 	if ( state->wop != NULL ){
-		wop->nbyte = 0;
-		return 0;
+		errno = EAGAIN;
+		return -1;
 	}
 
 	state->wop_len = wop->nbyte;
@@ -254,11 +255,29 @@ int fifo_write(const device_cfg_t * cfg, device_transfer_t * wop){
 			state->wop_len = wop->nbyte;
 			wop->nbyte = 0;
 		}
-	} else {
-		data_received(cfg);
 	}
 
 	return bytes_written;
+}
+
+
+int fifo_write(const device_cfg_t * cfg, device_transfer_t * wop){
+	const fifo_cfg_t * cfgp = cfg->dcfg;
+	fifo_state_t * state = cfg->state;
+	int bytes_written;
+
+	bytes_written = fifo_write_local(cfgp, state, wop);
+	if( bytes_written > 0 ){
+		fifo_data_received(cfgp, state);
+	}
+
+	return bytes_written;
+
+	if ( state->wop != NULL ){
+		wop->nbyte = 0;
+		return 0;
+	}
+
 }
 
 int fifo_close(const device_cfg_t * cfg){

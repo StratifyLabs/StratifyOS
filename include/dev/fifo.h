@@ -54,7 +54,9 @@ int fifo_read_buffer(const fifo_cfg_t * cfgp, fifo_state_t * state, device_trans
 int fifo_write_buffer(const fifo_cfg_t * cfgp, fifo_state_t * state, device_transfer_t * wop);
 
 int fifo_getattr(fifo_attr_t * attr, fifo_state_t * state, const fifo_cfg_t * cfg);
-
+void fifo_data_transmitted(const fifo_cfg_t * cfgp, fifo_state_t * state);
+void fifo_data_received(const fifo_cfg_t * cfgp, fifo_state_t * state);
+void fifo_flush(fifo_state_t * state);
 
 #endif /* DEV_FIFO_H_ */
 
