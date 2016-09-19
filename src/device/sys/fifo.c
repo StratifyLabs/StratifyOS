@@ -157,6 +157,15 @@ void fifo_data_received(const fifo_cfg_t * cfgp, fifo_state_t * state){
 	}
 }
 
+void fifo_cancel_rop(fifo_state_t * state){
+	if( state->rop != NULL ){
+		state->rop->nbyte = -1;
+		if ( state->rop->callback(state->rop->context, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED)) == 0 ){
+			state->rop = NULL;
+		}
+	}
+}
+
 static int data_transmitted(const device_cfg_t * cfg){
 	int bytes_written;
 	const fifo_cfg_t * cfgp = cfg->dcfg;

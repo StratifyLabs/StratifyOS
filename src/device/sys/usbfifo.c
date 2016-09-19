@@ -89,12 +89,7 @@ int usbfifo_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 	case I_USB_SETACTION:
 	case I_GLOBAL_SETACTION:
 		if( action->callback == 0 ){
-			if ( state->fifo.rop != NULL ){
-				state->fifo.rop->nbyte = -1;
-				if ( state->fifo.rop->callback(state->fifo.rop->context, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED)) == 0 ){
-					state->fifo.rop = NULL;
-				}
-			}
+			fifo_cancel_rop(&(state->fifo));
 		} else {
 			return mcu_usb_setaction(cfgp->port, ctl);
 		}

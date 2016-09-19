@@ -73,6 +73,8 @@ void fifo_data_received(const fifo_cfg_t * cfgp, fifo_state_t * state);
 int fifo_write_local(const fifo_cfg_t * cfgp, fifo_state_t * state, device_transfer_t * wop);
 int fifo_read_local(const fifo_cfg_t * cfgp, fifo_state_t * state, device_transfer_t * rop);
 
+void fifo_cancel_rop(fifo_state_t * state);
+
 
 #endif /* DEV_FIFO_H_ */
 
