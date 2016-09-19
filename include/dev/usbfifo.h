@@ -29,6 +29,7 @@
 #define DEV_USBFIFO_H_
 
 #include <stdbool.h>
+#include "fifo.h"
 #include "iface/dev/usbfifo.h"
 #include "mcu/circ_buf.h"
 
@@ -38,12 +39,18 @@
  *
  */
 typedef struct {
-	int head;
-	int tail;
-	bool overflow;
-	device_transfer_t * rop;
-	int len;
+	fifo_state_t fifo;
 } usbfifo_state_t;
+
+/*! \details This is used for the configuration of the device.
+ *
+ */
+typedef struct {
+	int port /*! The USB port associated with the device */;
+	int endpoint /*! The USB endpoint number to read */;
+	int endpoint_size /*! The USB endpoint number to read */;
+	fifo_cfg_t fifo;
+} usbfifo_cfg_t;
 
 int usbfifo_open(const device_cfg_t * cfg);
 int usbfifo_ioctl(const device_cfg_t * cfg, int request, void * ctl);

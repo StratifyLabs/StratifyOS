@@ -36,17 +36,42 @@ typedef struct MCU_PACK {
 	u32 o_flags;
 } fifo_state_t;
 
+/*! \brief FIFO Configuration
+ * \details This structure defines the static FIFO configuration.
+ *
+ */
+typedef struct MCU_PACK {
+	uint32_t size /*! \brief The size of the buffer (only size-1 is usable) */;
+	char * buffer /*! \brief A pointer to the buffer */;
+} fifo_cfg_t;
+
 int fifo_open(const device_cfg_t * cfg);
 int fifo_ioctl(const device_cfg_t * cfg, int request, void * ctl);
 int fifo_read(const device_cfg_t * cfg, device_transfer_t * rop);
 int fifo_write(const device_cfg_t * cfg, device_transfer_t * wop);
 int fifo_close(const device_cfg_t * cfg);
 
+
+//helper functions for implementing FIFOs
+void fifo_flush(fifo_state_t * state);
+void fifo_getattr(fifo_attr_t * attr, const fifo_cfg_t * cfgp, fifo_state_t * state);
+
+void fifo_inc_head(fifo_state_t * state, int size);
+void fifo_inc_tail(fifo_state_t * state, int size);
+int fifo_is_write_ok(fifo_state_t * state, u16 size, int writeblock);
+
 int fifo_is_writeblock(fifo_state_t * state);
 void fifo_set_writeblock(fifo_state_t * state, int value);
 
 int fifo_is_overflow(fifo_state_t * state);
 void fifo_set_overflow(fifo_state_t * state, int value);
+
+int fifo_read_buffer(const fifo_cfg_t * cfgp, fifo_state_t * state, device_transfer_t * rop);
+int fifo_write_buffer(const fifo_cfg_t * cfgp, fifo_state_t * state, device_transfer_t * wop);
+
+void fifo_data_received(const fifo_cfg_t * cfgp, fifo_state_t * state);
+int fifo_write_local(const fifo_cfg_t * cfgp, fifo_state_t * state, device_transfer_t * wop);
+int fifo_read_local(const fifo_cfg_t * cfgp, fifo_state_t * state, device_transfer_t * rop);
 
 
 #endif /* DEV_FIFO_H_ */

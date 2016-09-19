@@ -147,15 +147,6 @@ typedef struct MCU_PACK {
 
 #define I_FIFO_TOTAL 6
 
-/*! \brief FIFO Configuration
- * \details This structure defines the static FIFO configuration.
- *
- */
-typedef struct MCU_PACK {
-	uint32_t size /*! \brief The size of the buffer (only size-1 is usable) */;
-	char * buffer /*! \brief A pointer to the buffer */;
-} fifo_cfg_t;
-
 
 #endif /* IFACE_DEV_FIFO_H_ */
 
