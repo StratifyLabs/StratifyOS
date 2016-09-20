@@ -54,20 +54,18 @@ static int data_received(void * context, mcu_event_t data){
 	char buffer[cfgp->endpoint_size];
 
 	//check to see if USB was disconnected
-	if( mcu_usb_isconnected(cfgp->port, NULL) == 0 ){
-		//leave the callback in place
-		return 1;
+	if( mcu_usb_isconnected(cfgp->port, NULL) ){
+
+		//read the endpoint directly
+		bytes_read = mcu_usb_rd_ep(cfgp->port, cfgp->endpoint, buffer);
+
+		for(i=0; i < bytes_read; i++){
+			cfgp->fifo.buffer[ state->fifo.head ] = buffer[i];
+			fifo_inc_head(&(state->fifo), size);
+		}
+
+		fifo_data_received(&(cfgp->fifo), &(state->fifo));
 	}
-
-	//read the endpoint directly
-	bytes_read = mcu_usb_rd_ep(cfgp->port, cfgp->endpoint, buffer);
-
-	for(i=0; i < bytes_read; i++){
-		cfgp->fifo.buffer[ state->fifo.head ] = buffer[i];
-		fifo_inc_head(&(state->fifo), size);
-	}
-
-	fifo_data_received(&(cfgp->fifo), &(state->fifo));
 
 	return 1; //leave the callback in place
 }

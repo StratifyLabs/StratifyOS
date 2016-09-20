@@ -66,8 +66,8 @@ void fifo_set_writeblock(fifo_state_t * state, int value);
 int fifo_is_overflow(fifo_state_t * state);
 void fifo_set_overflow(fifo_state_t * state, int value);
 
-int fifo_read_buffer(const fifo_cfg_t * cfgp, fifo_state_t * state, device_transfer_t * rop);
-int fifo_write_buffer(const fifo_cfg_t * cfgp, fifo_state_t * state, device_transfer_t * wop);
+int fifo_read_buffer(const fifo_cfg_t * cfgp, fifo_state_t * state, char * buf);
+int fifo_write_buffer(const fifo_cfg_t * cfgp, fifo_state_t * state, const char * buf);
 
 void fifo_data_received(const fifo_cfg_t * cfgp, fifo_state_t * state);
 int fifo_write_local(const fifo_cfg_t * cfgp, fifo_state_t * state, device_transfer_t * wop);
