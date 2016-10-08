@@ -81,7 +81,7 @@ link_transport_phy_t boot_stratify_link_transport_usb_open(const char * name, in
 
 int boot_stratify_link_transport_usb_write(link_transport_phy_t handle, const void * buf, int nbyte){
 	int ret;
-	ret = mcu_sync_io(&usb_dev, mcu_usb_write, USB_BULKIN, buf, nbyte, O_RDWR);
+	ret = mcu_sync_io(&usb_dev, mcu_usb_write, STRATIFY_LINK_TRANSPORT_USB_BULKIN, buf, nbyte, O_RDWR);
 	return ret;
 }
 
@@ -122,14 +122,14 @@ static int write_buffer(const char * src, int nbyte){
 int boot_stratify_link_transport_usb_read(link_transport_phy_t handle, void * buf, int nbyte){
 	int ret;
 	int bytes_read;
-	char buffer[ENDPOINT_SIZE];
+	char buffer[STRATIFY_LINK_TRANSPORT_ENDPOINT_SIZE];
 	bytes_read = 0;
 	ret = read_buffer(buf, nbyte);
 	bytes_read += ret;
 
 	while( bytes_read < nbyte ){
 		//need more data to service request
-		ret = mcu_sync_io(&usb_dev, mcu_usb_read, USB_BULKOUT, buffer, ENDPOINT_SIZE, O_RDWR | MCU_SYNC_IO_FLAG_READ);
+		ret = mcu_sync_io(&usb_dev, mcu_usb_read, STRATIFY_LINK_TRANSPORT_USB_BULKOUT, buffer, STRATIFY_LINK_TRANSPORT_ENDPOINT_SIZE, O_RDWR | MCU_SYNC_IO_FLAG_READ);
 		write_buffer(buffer, ret);
 		ret = read_buffer(buf + bytes_read, nbyte - bytes_read);
 		bytes_read += ret;

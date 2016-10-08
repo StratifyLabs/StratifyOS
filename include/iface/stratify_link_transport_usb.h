@@ -40,18 +40,30 @@ typedef struct MCU_PACK {
 } stratify_link_transport_usb_cfg_desc_t;
 
 
-#define LINK_USB_DESC_MANUFACTURER_SIZE 13
-#define LINK_USB_DESC_PRODUCT_SIZE 10
-#define LINK_USB_DESC_SERIAL_SIZE 16
-#define LINK_USB_DESC_MANUFACTUER_STRING 'S','t','r','a','t','i','f','y',' ','L','a','b','s'
-#define LINK_USB_DESC_PRODUCT_STRING 'S','t','r','a','t','i','f','y','O','S'
-#define LINK_USB_DESC_SERIAL_STRING '0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0'
+#define STRATIFY_LINK_TRANSPORT_USB_DESC_MANUFACTURER_SIZE 13
+#define STRATIFY_LINK_TRANSPORT_USB_DESC_PRODUCT_SIZE 10
+#define STRATIFY_LINK_TRANSPORT_USB_DESC_SERIAL_SIZE 16
+#define STRATIFY_LINK_TRANSPORT_USB_DESC_MANUFACTUER_STRING 'S','t','r','a','t','i','f','y',' ','L','a','b','s'
+#define STRATIFY_LINK_TRANSPORT_USB_DESC_PRODUCT_STRING 'S','t','r','a','t','i','f','y','O','S'
+#define STRATIFY_LINK_TRANSPORT_USB_DESC_SERIAL_STRING '0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0'
 
-#define LINK_USB_DESC_VCP_0_SIZE 20
-#define LINK_USB_DESC_VCP_1_SIZE 21
-#define LINK_USB_DESC_VCP_0 'S','t','r','a','t','i','f','y','O','S',' ','L','i','n','k',' ','P','o','r','t'
-#define LINK_USB_DESC_VCP_1 'S','t','r','a','t','i','f','y','O','S',' ','S','t','d','i','o',' ','P','o','r','t'
+#define STRATIFY_LINK_TRANSPORT_USB_DESC_VCP_0_SIZE 20
+#define STRATIFY_LINK_TRANSPORT_USB_DESC_VCP_1_SIZE 22
+#define STRATIFY_LINK_TRANSPORT_USB_DESC_VCP_0 'S','t','r','a','t','i','f','y','O','S',' ','L','i','n','k',' ','P','o','r','t'
+#define STRATIFY_LINK_TRANSPORT_USB_DESC_VCP_1 'S','t','r','a','t','i','f','y','O','S',' ','N','o','t','i','f','y',' ','P','o','r','t'
 
+
+#define STRATIFY_LINK_TRANSPORT_USB_BULK_ENDPOINT (0x2)
+#define STRATIFY_LINK_TRANSPORT_USB_BULK_ENDPOINT_ALT (0x5)
+#define STRATIFY_LINK_TRANSPORT_USB_BULK_ENDPOINT_SIZE (64)
+#define STRATIFY_LINK_TRANSPORT_USB_PORT 0
+#define STRATIFY_LINK_TRANSPORT_USB_INTIN 0x81
+#define STRATIFY_LINK_TRANSPORT_USB_INTIN_ALT 0x84
+#define STRATIFY_LINK_TRANSPORT_USB_BULKIN (0x80|STRATIFY_LINK_TRANSPORT_USB_BULK_ENDPOINT)
+#define STRATIFY_LINK_TRANSPORT_USB_BULKOUT (STRATIFY_LINK_TRANSPORT_USB_BULK_ENDPOINT)
+#define STRATIFY_LINK_TRANSPORT_USB_BULKIN_ALT (0x80|STRATIFY_LINK_TRANSPORT_USB_BULK_ENDPOINT_ALT)
+#define STRATIFY_LINK_TRANSPORT_USB_BULKOUT_ALT (STRATIFY_LINK_TRANSPORT_USB_BULK_ENDPOINT_ALT)
+#define STRATIFY_LINK_TRANSPORT_ENDPOINT_SIZE STRATIFY_LINK_TRANSPORT_USB_BULK_ENDPOINT_SIZE
 
 /*! \brief USB Link String Data
  * \details This structure defines the USB strings structure which includes
@@ -61,12 +73,12 @@ struct MCU_PACK stratify_link_transport_usb_string_t {
 	u8 bLength;
 	u8 bDescriptorType;
 	u16 wLANGID;
-	usb_declare_string(LINK_USB_DESC_MANUFACTURER_SIZE) manufacturer;
-	usb_declare_string(LINK_USB_DESC_PRODUCT_SIZE) product;
-	usb_declare_string(LINK_USB_DESC_SERIAL_SIZE) serial;
-	usb_declare_string(LINK_USB_DESC_VCP_0_SIZE) vcp0;
+	usb_declare_string(STRATIFY_LINK_TRANSPORT_USB_DESC_MANUFACTURER_SIZE) manufacturer;
+	usb_declare_string(STRATIFY_LINK_TRANSPORT_USB_DESC_PRODUCT_SIZE) product;
+	usb_declare_string(STRATIFY_LINK_TRANSPORT_USB_DESC_SERIAL_SIZE) serial;
+	usb_declare_string(STRATIFY_LINK_TRANSPORT_USB_DESC_VCP_0_SIZE) vcp0;
 #ifdef __STDIO_VCP
-	usb_declare_string(LINK_USB_DESC_VCP_1_SIZE) vcp1;
+	usb_declare_string(STRATIFY_LINK_TRANSPORT_USB_DESC_VCP_1_SIZE) vcp1;
 #endif
 };
 
@@ -83,6 +95,7 @@ int stratify_link_transport_usb_write(link_transport_phy_t, const void * buf, in
 int stratify_link_transport_usb_close(link_transport_phy_t handle);
 void stratify_link_transport_usb_wait(int msec);
 void stratify_link_transport_usb_flush(link_transport_phy_t handle);
+void stratify_link_transport_usb_notify(void * args);
 int stratify_link_transport_usb_cdc_if_req(void * context, int event);
 
 link_transport_phy_t boot_stratify_link_transport_usb_open(const char * name, int);

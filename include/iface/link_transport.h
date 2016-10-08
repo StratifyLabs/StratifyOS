@@ -40,7 +40,15 @@ typedef void * link_transport_phy_t;
 #else
 typedef int link_transport_phy_t;
 #define LINK_PHY_OPEN_ERROR (-1)
+
+typedef struct {
+	const void * buf;
+	int nbyte;
+} link_transport_notify_t;
+
 #endif
+
+
 
 typedef struct {
 	link_transport_phy_t handle;
@@ -50,6 +58,9 @@ typedef struct {
 	int (*close)(link_transport_phy_t);
 	void (*wait)(int);
 	void (*flush)(link_transport_phy_t);
+#if !defined __link
+	void (*notify)(void*);
+#endif
 	int timeout;
 } link_transport_driver_t;
 

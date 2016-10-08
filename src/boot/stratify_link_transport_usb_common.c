@@ -14,6 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>. */
 
+#define __STDIO_VCP
+
+
 #include <errno.h>
 #include <string.h>
 #include <stdbool.h>
@@ -53,8 +56,8 @@
 #define USB0_DEVFIFO_BUFFER_SIZE 64
 char usb0_fifo_buffer[USB0_DEVFIFO_BUFFER_SIZE] MCU_SYS_MEM;
 const usbfifo_cfg_t stratify_link_transport_usb_fifo_cfg = USBFIFO_DEVICE_CFG(0,
-		LINK_USBPHY_BULK_ENDPOINT,
-		LINK_USBPHY_BULK_ENDPOINT_SIZE,
+		STRATIFY_LINK_TRANSPORT_USB_BULK_ENDPOINT,
+		STRATIFY_LINK_TRANSPORT_USB_BULK_ENDPOINT_SIZE,
 		usb0_fifo_buffer,
 		USB0_DEVFIFO_BUFFER_SIZE);
 usbfifo_state_t stratify_link_transport_usb_fifo_state MCU_SYS_MEM;
@@ -170,7 +173,7 @@ const stratify_link_transport_usb_cfg_desc_t stratify_link_transport_usb_cfg_des
 				.control = {
 						.bLength= sizeof(usb_ep_desc_t),
 						.bDescriptorType=USB_ENDPOINT_DESCRIPTOR_TYPE,
-						.bEndpointAddress=USB_INTIN,
+						.bEndpointAddress=STRATIFY_LINK_TRANSPORT_USB_INTIN,
 						.bmAttributes=USB_ENDPOINT_TYPE_INTERRUPT,
 						.wMaxPacketSize=16,
 						.bInterval=2
@@ -191,7 +194,7 @@ const stratify_link_transport_usb_cfg_desc_t stratify_link_transport_usb_cfg_des
 				.data_out = {
 						.bLength= sizeof(usb_ep_desc_t),
 						.bDescriptorType=USB_ENDPOINT_DESCRIPTOR_TYPE,
-						.bEndpointAddress=USB_BULKOUT,
+						.bEndpointAddress=STRATIFY_LINK_TRANSPORT_USB_BULKOUT,
 						.bmAttributes=USB_ENDPOINT_TYPE_BULK,
 						.wMaxPacketSize=LINK_BULK_ENDPOINT_SIZE,
 						.bInterval=1
@@ -200,7 +203,7 @@ const stratify_link_transport_usb_cfg_desc_t stratify_link_transport_usb_cfg_des
 				.data_in = {
 						.bLength= sizeof(usb_ep_desc_t),
 						.bDescriptorType=USB_ENDPOINT_DESCRIPTOR_TYPE,
-						.bEndpointAddress=USB_BULKIN,
+						.bEndpointAddress=STRATIFY_LINK_TRANSPORT_USB_BULKIN,
 						.bmAttributes=USB_ENDPOINT_TYPE_BULK,
 						.wMaxPacketSize=LINK_BULK_ENDPOINT_SIZE,
 						.bInterval=1
@@ -257,7 +260,7 @@ const stratify_link_transport_usb_cfg_desc_t stratify_link_transport_usb_cfg_des
 				.control = {
 						.bLength= sizeof(usb_ep_desc_t),
 						.bDescriptorType=USB_ENDPOINT_DESCRIPTOR_TYPE,
-						.bEndpointAddress=USB_INTIN_ALT,
+						.bEndpointAddress=STRATIFY_LINK_TRANSPORT_USB_INTIN_ALT,
 						.bmAttributes=USB_ENDPOINT_TYPE_INTERRUPT,
 						.wMaxPacketSize=16,
 						.bInterval=1
@@ -278,7 +281,7 @@ const stratify_link_transport_usb_cfg_desc_t stratify_link_transport_usb_cfg_des
 				.data_out = {
 						.bLength= sizeof(usb_ep_desc_t),
 						.bDescriptorType=USB_ENDPOINT_DESCRIPTOR_TYPE,
-						.bEndpointAddress=USB_BULKOUT_ALT,
+						.bEndpointAddress=STRATIFY_LINK_TRANSPORT_USB_BULKOUT_ALT,
 						.bmAttributes=USB_ENDPOINT_TYPE_BULK,
 						.wMaxPacketSize=LINK_BULK_ENDPOINT_SIZE,
 						.bInterval=1
@@ -287,7 +290,7 @@ const stratify_link_transport_usb_cfg_desc_t stratify_link_transport_usb_cfg_des
 				.data_in = {
 						.bLength= sizeof(usb_ep_desc_t),
 						.bDescriptorType=USB_ENDPOINT_DESCRIPTOR_TYPE,
-						.bEndpointAddress=USB_BULKIN_ALT,
+						.bEndpointAddress=STRATIFY_LINK_TRANSPORT_USB_BULKIN_ALT,
 						.bmAttributes=USB_ENDPOINT_TYPE_BULK,
 						.wMaxPacketSize=LINK_BULK_ENDPOINT_SIZE,
 						.bInterval=1
@@ -313,13 +316,13 @@ const struct stratify_link_transport_usb_string_t stratify_link_transport_usb_st
 		.bLength = 4,
 		.bDescriptorType = USB_STRING_DESCRIPTOR_TYPE,
 		.wLANGID = 0x0409, //English
-		.manufacturer = usb_assign_string(LINK_USB_DESC_MANUFACTURER_SIZE, LINK_USB_DESC_MANUFACTUER_STRING),
-		.product = usb_assign_string(LINK_USB_DESC_PRODUCT_SIZE, LINK_USB_DESC_PRODUCT_STRING),
-		.serial = usb_assign_string(LINK_USB_DESC_SERIAL_SIZE, 0)
+		.manufacturer = usb_assign_string(STRATIFY_LINK_TRANSPORT_USB_DESC_MANUFACTURER_SIZE, STRATIFY_LINK_TRANSPORT_USB_DESC_MANUFACTUER_STRING),
+		.product = usb_assign_string(STRATIFY_LINK_TRANSPORT_USB_DESC_PRODUCT_SIZE, STRATIFY_LINK_TRANSPORT_USB_DESC_PRODUCT_STRING),
+		.serial = usb_assign_string(STRATIFY_LINK_TRANSPORT_USB_DESC_SERIAL_SIZE, 0)
 		, //dynamically load SN based on silicon
-		.vcp0 = usb_assign_string(LINK_USB_DESC_VCP_0_SIZE, LINK_USB_DESC_VCP_0),
+		.vcp0 = usb_assign_string(STRATIFY_LINK_TRANSPORT_USB_DESC_VCP_0_SIZE, STRATIFY_LINK_TRANSPORT_USB_DESC_VCP_0),
 #ifdef __STDIO_VCP
-		.vcp1 = usb_assign_string(LINK_USB_DESC_VCP_1_SIZE, LINK_USB_DESC_VCP_1)
+		.vcp1 = usb_assign_string(STRATIFY_LINK_TRANSPORT_USB_DESC_VCP_1_SIZE, STRATIFY_LINK_TRANSPORT_USB_DESC_VCP_1)
 #endif
 
 };

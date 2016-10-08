@@ -41,8 +41,10 @@ typedef struct MCU_PACK {
  *
  */
 typedef struct MCU_PACK {
-	uint32_t size /*! \brief The size of the buffer (only size-1 is usable) */;
+	u32 size /*! \brief The size of the buffer (only size-1 is usable) */;
 	char * buffer /*! \brief A pointer to the buffer */;
+	void (*notify_on_read)(int nbyte) /*! Callback for when fifo is read */;
+	void (*notify_on_write)(int nbyte) /*! Callback for when fifo is written */;
 } fifo_cfg_t;
 
 int fifo_open(const device_cfg_t * cfg);
@@ -62,6 +64,12 @@ int fifo_is_write_ok(fifo_state_t * state, u16 size, int writeblock);
 
 int fifo_is_writeblock(fifo_state_t * state);
 void fifo_set_writeblock(fifo_state_t * state, int value);
+
+int fifo_is_notify_read(fifo_state_t * state);
+void fifo_set_notify_read(fifo_state_t * state, int value);
+
+int fifo_is_notify_write(fifo_state_t * state);
+void fifo_set_notify_write(fifo_state_t * state, int value);
 
 int fifo_is_overflow(fifo_state_t * state);
 void fifo_set_overflow(fifo_state_t * state, int value);

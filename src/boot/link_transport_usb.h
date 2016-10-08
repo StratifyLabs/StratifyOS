@@ -8,9 +8,7 @@
 #ifndef LINK_TRANSPORT_USB_H_
 #define LINK_TRANSPORT_USB_H_
 
-//#define __STDIO_VCP
-
-#include <iface/link_transport.h>
+#include "iface/link_transport.h"
 
 link_transport_phy_t boot_stratify_link_transport_usb_open(const char * name, int);
 int boot_stratify_link_transport_usb_read(link_transport_phy_t, void * buf, int nbyte);

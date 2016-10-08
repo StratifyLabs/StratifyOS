@@ -25,11 +25,6 @@
 #include "dev/fifo.h"
 
 
-enum {
-	FIFO_FLAGS_WRITEBLOCK = (1<<0),
-	FIFO_FLAGS_OVERFLOW = (1<<1)
-};
-
 void fifo_inc_tail(fifo_state_t * state, int size){
 	state->tail++;
 	if ( state->tail == size ){
@@ -262,6 +257,10 @@ int fifo_read(const device_cfg_t * cfg, device_transfer_t * rop){
 		data_transmitted(cfg);
 	}
 
+	if( cfgp->notify_on_read ){
+		cfgp->notify_on_read(bytes_read);
+	}
+
 	return bytes_read;
 }
 
@@ -284,6 +283,10 @@ int fifo_write_local(const fifo_cfg_t * cfgp, fifo_state_t * state, device_trans
 			state->wop_len = wop->nbyte;
 			wop->nbyte = 0;
 		}
+	}
+
+	if( cfgp->notify_on_write ){
+		cfgp->notify_on_write(bytes_written);
 	}
 
 	return bytes_written;

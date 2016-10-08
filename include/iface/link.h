@@ -564,6 +564,30 @@ struct link_stat {
 	u32 st_blocks;
 };
 
+#define LINK_NOTIFY_ID_DEVICE_WRITE 0x101
+#define LINK_NOTIFY_ID_DEVICE_READ 0x100
+#define LINK_NOTIFY_ID_FILE_WRITE 0x201
+#define LINK_NOTIFY_ID_FILE_READ 0x200
+#define LINK_NOTIFY_ID_POSIX_TRACE_EVENT 0x300
+
+typedef struct MCU_PACK {
+	u32 id;
+	char name[LINK_NAME_MAX];
+	u32 nbyte;
+} link_notify_dev_t;
+
+typedef struct MCU_PACK {
+	u32 id;
+	char name[LINK_PATH_MAX];
+	u32 nbyte;
+} link_notify_file_write_t;
+
+
+typedef struct MCU_PACK {
+	u32 id;
+	u32 nbyte;
+} link_notify_posix_trace_event_t;
+
 #define LINK_INTERRUPT_ENDPOINT_SIZE 32
 #define LINK_BULK_ENDPOINT_SIZE 64
 

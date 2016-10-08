@@ -77,8 +77,14 @@
 		.cfg.dcfg = cfg_ptr \
 }
 
+#define FIFO_DEVICE_CFG(buf, buf_size, read_notify, write_notify) { .buffer = buf, .size = buf_size, .notify_on_read = read_notify, .notify_on_write = write_notify }
 
-#define FIFO_DEVICE_CFG(buf, buf_size) { .buffer = buf, .size = buf_size }
+enum {
+	FIFO_FLAGS_WRITEBLOCK = (1<<0) /*! Write block flag */,
+	FIFO_FLAGS_OVERFLOW = (1<<1) /*! Overflow flag */,
+	FIFO_FLAGS_NOTIFY_WRITE = (1<<2) /*! Notify on write */,
+	FIFO_FLAGS_NOTIFY_READ = (1<<3) /*! Notify on read */,
+};
 
 /*! \brief FIFO Attributes
  * \details This structure defines the attributes of a FIFO.

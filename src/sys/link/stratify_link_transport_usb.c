@@ -34,22 +34,8 @@ limitations under the License.
 #include "iface/stratify_link_transport_usb.h"
 
 
-#ifdef __STDIO_VCP
-void init_stdio_vcp(){
-	int fd;
-	fd = open("/dev/stdio", O_RDWR);
-	if( fd < 0 ){
-		return;
-	}
-
-	ioctl(fd, I_FIFO_INIT);
-	close(fd);
-	return;
-}
-#endif
-
-
 static usb_dev_context_t usb_context;
+static device_transfer_t notify_op;
 
 
 link_transport_phy_t stratify_link_transport_usb_open(const char * name, int baudrate){
@@ -79,12 +65,6 @@ link_transport_phy_t stratify_link_transport_usb_open(const char * name, int bau
 	usb_context.constants = &stratify_link_transport_usb_constants;
 	mcu_core_privcall(usb_dev_priv_init, &usb_context);
 
-
-#ifdef __STDIO_VCP
-	init_stdio_vcp();
-#endif
-
-
 	return fd;
 }
 
@@ -92,6 +72,22 @@ int stratify_link_transport_usb_write(link_transport_phy_t handle, const void * 
 	int ret;
 	ret = write(handle, buf, nbyte);
 	return ret;
+}
+
+void stratify_link_transport_usb_notify(void * args){
+	link_transport_notify_t * notify = args;
+	device_cfg_t usb;
+	usb.periph.port = STRATIFY_LINK_TRANSPORT_USB_PORT;
+
+	notify_op.loc = STRATIFY_LINK_TRANSPORT_USB_BULKIN_ALT;
+	notify_op.cbuf = notify->buf;
+	notify_op.nbyte = notify->nbyte;
+	notify_op.tid = task_get_current();
+	notify_op.callback = 0;
+	notify_op.context = 0;
+	notify_op.flags = O_NONBLOCK | O_RDWR;
+
+	mcu_usb_write(&usb, &notify_op);
 }
 
 int stratify_link_transport_usb_read(link_transport_phy_t handle, void * buf, int nbyte){
