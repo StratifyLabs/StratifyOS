@@ -182,7 +182,7 @@ typedef struct {
 
 //This is the mac osx prefix -- this needs to be in a list so it can also check bluetooth
 #ifdef __macosx
-#define TTY_DEV_PREFIX "cu.usbmodem"
+#define TTY_DEV_PREFIX "tty.usbmodem"
 #endif
 
 #ifdef __linux
@@ -345,8 +345,21 @@ int link_phy_read(link_transport_phy_t handle, void * buf, int nbyte){
 
 	tmp = errno;
 
+
+	static int last_status = 0;
+
 	if( tcgetattr(phy->fd, &options) < 0 ){
 		return LINK_PHY_ERROR;
+	}
+
+	int status;
+	if( ioctl(phy->fd, TIOCMGET, &status) < 0 ){
+		printf("Failed to TIOCMGET\n");
+	}
+	if( status != last_status ){
+		last_status = status;
+		printf("STATUS is 0%O\n", status);
+		fflush(stdout);
 	}
 
 	ret = read(phy->fd, buf, nbyte);

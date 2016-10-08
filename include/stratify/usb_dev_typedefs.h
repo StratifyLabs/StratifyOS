@@ -179,6 +179,23 @@ typedef struct MCU_PACK {
 } usb_cdc_acm_interface_alt_t;
 
 typedef struct MCU_PACK {
+	u8 bmRequestType;
+	u8 bNotification;
+	u16 wValue;
+	u16 wIndex;
+	u16 wLength;
+} usb_cdc_acm_notification_t;
+
+typedef struct MCU_PACK {
+	u8 bmRequestType;
+	u8 bRequest;
+	u16 wValue;
+	u16 wIndex;
+	u16 wLength;
+	u16 serial_state;
+} usb_cdc_acm_notification_serialstate_t;
+
+typedef struct MCU_PACK {
 	u8 bLength;
 	u8 bDescriptorType;
 	u8 bFirstInterface;

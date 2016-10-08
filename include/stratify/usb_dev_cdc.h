@@ -96,6 +96,16 @@
 #define SET_ATM_DEFAULT_VC 0x52
 #define GET_ATM_VC_STATISTICS 0x53
 
+#define RING_DETECT 0x09
+#define SERIAL_STATE 0x20
+
+#define SERIAL_STATE_OVERRUN (1<<6)
+#define SERIAL_STATE_PARITY (1<<5)
+#define SERIAL_STATE_FRAMING (1<<4)
+#define SERIAL_STATE_RING (1<<3)
+#define SERIAL_STATE_BREAK (1<<2)
+#define SERIAL_STATE_TX_CARRIER (1<<1)
+#define SERIAL_STATE_RX_CARRIER (1<<0)
 
 typedef struct {
 	uint8_t bFunctionLength;

@@ -1281,7 +1281,13 @@ int Link::update_binary_install_options(string path, string name, bool startup, 
 		appfs_file.exec.options |= (LINK_APPFS_EXEC_OPTIONS_FLASH);
 	}
 
-	appfs_file.exec.ram_size = ram_size;
+	if( ram_size >= 4096 ){
+		appfs_file.exec.ram_size = ram_size;
+	}
+
+	if( appfs_file.exec.ram_size < 4096 ){
+		appfs_file.exec.ram_size = 4096;
+	}
 
 	fseek(binary_file, 0, SEEK_SET);
 
@@ -1336,9 +1342,6 @@ int Link::install_app(string source, string dest, string name, bool (*update)(vo
 
 			if( bytes_cumm == 0 ){
 				app_file = (link_appfs_file_t *)attr.buffer;
-				printf("Code size is %d\n", app_file->exec.code_size);
-				printf("Ram size is %d\n", app_file->exec.ram_size);
-				fflush(stdout);
 			}
 
 			if( bytes_read > 0 ){

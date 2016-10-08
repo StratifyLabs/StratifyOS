@@ -1,12 +1,21 @@
-/*
- * stratify_link_transport_usb_common.c
+/* Copyright 2011-2016 Tyler Gilbert;
+ * This file is part of Stratify OS.
  *
- *  Created on: May 23, 2016
- *      Author: tgil
- */
-
+ * Stratify OS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Stratify OS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include <errno.h>
+#include <string.h>
 #include <stdbool.h>
 #include <sys/fcntl.h>
 #include <unistd.h>
@@ -77,18 +86,18 @@ const usb_dev_desc_t stratify_link_transport_usb_dev_desc MCU_WEAK = {
 		.bDescriptorType = USB_DEVICE_DESCRIPTOR_TYPE,
 		.bcdUSB = 0x0200,
 #ifdef __STDIO_VCP
-		.bDeviceClass = USB_DEVICE_CLASS_MISCELLANEOUS,
-		.bDeviceSubClass = 2,
-		.bDeviceProtocol = 1,
-#else
 		.bDeviceClass = USB_DEVICE_CLASS_COMMUNICATIONS,
+		.bDeviceSubClass = USB_INTERFACE_SUBCLASS_ACM,
+		.bDeviceProtocol = USB_INTERFACE_PROTOCOL_V25TER,
+#else
+		.bDeviceClass = 0,
 		.bDeviceSubClass = 0,
 		.bDeviceProtocol = 0,
 #endif
 		.bMaxPacketSize = MCU_CORE_USB_MAX_PACKET_ZERO_VALUE,
 		.idVendor = LINK_USB_VID,
 		.idProduct = LINK_USB_PID,
-		.bcdDevice = 0x170,
+		.bcdDevice = 0x200,
 		.iManufacturer = 1,
 		.iProduct = 2,
 		.iSerialNumber = 3,
@@ -144,18 +153,18 @@ const stratify_link_transport_usb_cfg_desc_t stratify_link_transport_usb_cfg_des
 						.header.bcdCDC = 0x0110,
 						.acm.bFunctionLength = sizeof(usb_dev_cdc_acm_t),
 						.acm.bDescriptorType = 0x24,
-						.acm.bDescriptorSubType = 0x02,
-						.acm.bmCapabilities = 0x00,
+						.acm.bDescriptorSubType = 0x02, //ACM descriptor subtype
+						.acm.bmCapabilities = 0x06, //support for SERIAL_STATE
 						.union_descriptor.bFunctionLength = sizeof(usb_dev_cdc_uniondescriptor_t),
 						.union_descriptor.bDescriptorType = 0x24,
-						.union_descriptor.bDescriptorSubType = 0x06,
-						.union_descriptor.bMasterInterface = 0x00,
-						.union_descriptor.bSlaveInterface = 0x01,
+						.union_descriptor.bDescriptorSubType = 0x06, //union descriptor subtype
+						.union_descriptor.bMasterInterface = 0x00, //control interface
+						.union_descriptor.bSlaveInterface = 0x01, //data interface
 						.call_management.bFunctionLength = sizeof(usb_dev_cdc_callmanagement_t),
 						.call_management.bDescriptorType = 0x24,
-						.call_management.bDescriptorSubType = 0x01,
-						.call_management.bmCapabilities = 0x00,
-						.call_management.bDataInterface = 0x01
+						.call_management.bDescriptorSubType = 0x01, //call management subtype
+						.call_management.bmCapabilities = 0x03, //call management handled
+						.call_management.bDataInterface = 0x01 //data interface
 				},
 
 				.control = {
@@ -163,8 +172,8 @@ const stratify_link_transport_usb_cfg_desc_t stratify_link_transport_usb_cfg_des
 						.bDescriptorType=USB_ENDPOINT_DESCRIPTOR_TYPE,
 						.bEndpointAddress=USB_INTIN,
 						.bmAttributes=USB_ENDPOINT_TYPE_INTERRUPT,
-						.wMaxPacketSize=LINK_INTERRUPT_ENDPOINT_SIZE,
-						.bInterval=1
+						.wMaxPacketSize=16,
+						.bInterval=2
 				},
 
 				.ifdata = {
@@ -174,8 +183,8 @@ const stratify_link_transport_usb_cfg_desc_t stratify_link_transport_usb_cfg_des
 						.bAlternateSetting = 0x00,
 						.bNumEndpoints = 0x02,
 						.bInterfaceClass = USB_INTERFACE_CLASS_COMMUNICATIONS_DATA,
-						.bInterfaceSubClass = 0x00,
-						.bInterfaceProtocol = 0x00,
+						.bInterfaceSubClass = USB_INTERFACE_SUBCLASS_ACM,
+						.bInterfaceProtocol = USB_INTERFACE_PROTOCOL_V25TER,
 						.iInterface = 0x04
 				},
 
@@ -231,18 +240,18 @@ const stratify_link_transport_usb_cfg_desc_t stratify_link_transport_usb_cfg_des
 						.header.bcdCDC = 0x0110,
 						.acm.bFunctionLength = sizeof(usb_dev_cdc_acm_t),
 						.acm.bDescriptorType = 0x24,
-						.acm.bDescriptorSubType = 0x02,
-						.acm.bmCapabilities = 0x00,
+						.acm.bDescriptorSubType = 0x02, //ACM descriptor subtype
+						.acm.bmCapabilities = 0x06, //support for SERIAL_STATE
 						.union_descriptor.bFunctionLength = sizeof(usb_dev_cdc_uniondescriptor_t),
 						.union_descriptor.bDescriptorType = 0x24,
-						.union_descriptor.bDescriptorSubType = 0x06,
-						.union_descriptor.bMasterInterface = 0x02,
-						.union_descriptor.bSlaveInterface = 0x03,
+						.union_descriptor.bDescriptorSubType = 0x06, //union descriptor subtype
+						.union_descriptor.bMasterInterface = 0x02, //control interface
+						.union_descriptor.bSlaveInterface = 0x03, //data interface
 						.call_management.bFunctionLength = sizeof(usb_dev_cdc_callmanagement_t),
 						.call_management.bDescriptorType = 0x24,
-						.call_management.bDescriptorSubType = 0x01,
-						.call_management.bmCapabilities = 0x00,
-						.call_management.bDataInterface = 0x03
+						.call_management.bDescriptorSubType = 0x01, //call management subtype
+						.call_management.bmCapabilities = 0x03, //call management handled
+						.call_management.bDataInterface = 0x03 //data interface
 				},
 
 				.control = {
@@ -250,7 +259,7 @@ const stratify_link_transport_usb_cfg_desc_t stratify_link_transport_usb_cfg_des
 						.bDescriptorType=USB_ENDPOINT_DESCRIPTOR_TYPE,
 						.bEndpointAddress=USB_INTIN_ALT,
 						.bmAttributes=USB_ENDPOINT_TYPE_INTERRUPT,
-						.wMaxPacketSize=LINK_INTERRUPT_ENDPOINT_SIZE,
+						.wMaxPacketSize=16,
 						.bInterval=1
 				},
 

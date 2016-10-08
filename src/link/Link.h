@@ -385,6 +385,12 @@ public:
      */
     int install_app(string source, string dest, string name, bool (*update)(void*,int,int) = 0, void * context = 0);
 
+    /*! \details Return the serial number of the last device
+     * that was connected (including the currently connected device)
+     * @return A string containing the serial number of the last connected (or currently connected) device
+     */
+    string last_serial_no(){ return m_last_serialno; }
+
 private:
     int check_error(int err);
     int lock_device();

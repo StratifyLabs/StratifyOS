@@ -56,10 +56,6 @@ static void exec_writecallback(int ep, void * data);
 typedef struct {
 	mcu_event_handler_t write[USB_LOGIC_EP_NUM];
 	mcu_event_handler_t read[USB_LOGIC_EP_NUM];
-	//mcu_callback_t write_callback[USB_LOGIC_EP_NUM];
-	//mcu_callback_t read_callback[USB_LOGIC_EP_NUM];
-	//void * write_context[USB_LOGIC_EP_NUM];
-	//void * read_context[USB_LOGIC_EP_NUM];
 	volatile u32 write_pending;
 	volatile u32 read_ready;
 	void (*event_handler)(usb_spec_event_t,int);
@@ -129,7 +125,6 @@ void _mcu_usb_dev_power_on(int port){
 		_mcu_lpc_core_enable_pwr(PCUSB);
 		LPC_USB->USBClkCtrl = 0x12; //turn on dev clk en and AHB clk en
 		while( LPC_USB->USBClkCtrl != 0x12 ){}  //wait for clocks
-
 	}
 	usb_local.ref_count++;
 }
@@ -254,7 +249,7 @@ int mcu_usb_setaction(int port, void * ctl){
 	log_ep = action->channel & ~0x80;
 	if ( (log_ep < USB_LOGIC_EP_NUM)  ){
 		if( action->event == USB_EVENT_DATA_READY ){
-			_mcu_core_priv_enable_interrupts(NULL);
+			//_mcu_core_priv_enable_interrupts(NULL);
 			if( _mcu_core_priv_validate_callback(action->callback) < 0 ){
 				return -1;
 			}

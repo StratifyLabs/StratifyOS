@@ -111,8 +111,10 @@ void _sdspi_state_callback(const device_cfg_t * cfg, int err, int nbyte){
 
 static int continue_spi_read(void * cfg, mcu_event_t ignore){
 	//data has been read -- complete the operation
+	int err = 0;
 	sdspi_state_t * state = ((device_cfg_t *)cfg)->state;
-	uint16_t checksum;
+	u16 checksum;
+	u16 checksum_calc;
 
 	if( state->count < 0 ){
 
@@ -133,12 +135,14 @@ static int continue_spi_read(void * cfg, mcu_event_t ignore){
 
 		_sdspi_transfer(cfg, 0, state->cmd, CMD_FRAME_SIZE); //gobble up the CRC
 		checksum = (state->cmd[0] << 8) + state->cmd[1];
-		if( checksum != crc16(0x0000, (const uint8_t *)state->buf, (size_t)*(state->nbyte)) ){
+		checksum_calc = crc16(0x0000, (const uint8_t *)state->buf, (size_t)*(state->nbyte));
+		if( checksum != checksum_calc ){
 			*(state->nbyte) = -1;
+			err = EINVAL;
 		}
 
 		//execute the callback
-		_sdspi_state_callback(cfg, 0, *(state->nbyte));
+		_sdspi_state_callback(cfg, err, *(state->nbyte));
 	}
 
 	return 0;
@@ -198,7 +202,6 @@ int sdspi_read(const device_cfg_t * cfg, device_transfer_t * rop){
 	} else {
 		loc = rop->loc;
 	}
-
 
 	r1 = _sdspi_cmd_r1(cfg, SDSPI_CMD17_READ_SINGLE_BLOCK, loc, state->cmd);
 	if( r1.u8 != 0x00 ){

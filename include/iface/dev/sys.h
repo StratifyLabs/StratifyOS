@@ -154,6 +154,7 @@ enum {
 	SYS_FLAGS_STDIO_FIFO = (1<<0),
 	SYS_FLAGS_STDIO_VCP = (1<<1),
 	SYS_FLAGS_DISABLE_WDT = (1<<2),
+	SYS_FLAGS_STDIO_FIFO_RI = (1<<3)
 };
 
 #define SYS_IOC_CHAR 's'

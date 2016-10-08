@@ -93,7 +93,7 @@ typedef enum {
  */
 typedef enum {
 	USB_ATTR_MODE_UNCONFIGURED /*! unconfigured mode */,
-	USB_ATTR_MODE_DEVICE /* device mode */,
+	USB_ATTR_MODE_DEVICE /*! device mode */,
 	USB_ATTR_MODE_HOST /*! host mode */,
 	USB_ATTR_MODE_OTG /*! on-the-go mode */
 } usb_attr_mode_t;

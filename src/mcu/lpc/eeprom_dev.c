@@ -155,7 +155,6 @@ int _mcu_eeprom_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
 	eeprom_local[port].page = calc_page(wop->loc);
 	eeprom_local[port].offset = calc_offset(wop->loc);
 
-	//Check the local buffer for bytes that are immediately available
 	if( _mcu_core_priv_validate_callback(wop->callback) < 0 ){
 		return -1;
 	}
@@ -178,7 +177,6 @@ int _mcu_eeprom_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
 		eeprom_local[port].offset++;
 		eeprom_local[port].buf++;
 	} while( (eeprom_local[port].offset < MCU_EEPROM_PAGE_SIZE) && (eeprom_local[port].len > 0) );
-
 
 
 	regs->ADDR = eeprom_local[port].page << 6;
