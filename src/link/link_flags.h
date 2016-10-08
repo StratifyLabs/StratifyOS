@@ -30,7 +30,7 @@ extern "C" {
 
 
 
-#define LINK_PHY_NAME_MAX 1024
+#define LINK_PHY_NAME_MAX 64
 
 #define LINK_MAX_SN_SIZE 512
 

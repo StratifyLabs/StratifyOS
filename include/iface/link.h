@@ -767,6 +767,12 @@ void link_exit();
 
 int link_connect(link_transport_mdriver_t * driver, const char * sn);
 
+/*! \details Connect to the notification port */
+int link_connect_notify(link_transport_mdriver_t * driver);
+
+
+int link_read_notify(link_transport_mdriver_t * driver, void * buf, int nbyte);
+
 /*! \details This closes the specified USB Link device.
  *
  */

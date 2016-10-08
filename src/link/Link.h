@@ -391,6 +391,11 @@ public:
      */
     string last_serial_no(){ return m_last_serialno; }
 
+
+    bool is_notify() const { return m_is_notify; }
+
+    int read_notify(void * buf, int nbyte);
+
 private:
     int check_error(int err);
     int lock_device();
@@ -406,6 +411,7 @@ private:
     volatile int m_progress_max;
     volatile int m_lock;
     bool m_boot;
+    bool m_is_notify;
 
     link_transport_mdriver_t m_default_driver;
     link_transport_mdriver_t * m_driver;

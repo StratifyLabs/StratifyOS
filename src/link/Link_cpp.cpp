@@ -115,6 +115,7 @@ int Link::init(string sn){
 	int err;
 
 	reset_progress();
+	m_is_notify = false;
 
 	if ( m_driver->dev.handle == LINK_PHY_OPEN_ERROR ){
 		if( link_connect(m_driver, sn.c_str()) < 0 ){
@@ -146,9 +147,39 @@ int Link::init(string sn){
 
 	link_debug(LINK_DEBUG_MESSAGE, "Init complete with 0x%llX", (uint64_t)m_driver->dev.handle);
 
+	//load Sys flags to see if NOTIFY VCP is supported
+
+	int fd;
+	sys_attr_t attr;
+
+	fd = open("/dev/sys", LINK_O_RDWR);
+	if( fd < 0 ){
+		return 0;
+	}
+
+	if( ioctl(fd, I_SYS_GETATTR, &attr) < 0 ){
+		return 0;
+	}
+
+	if( attr.flags & SYS_FLAGS_NOTIFY ){
+		printf("NOTIFY FLAG PRESENT\n");
+		fflush(stdout);
+		if( link_connect_notify(m_driver) < 0 ){
+			//printf("FAILED TO CONNECT TO NOTIFY\n");
+			//fflush(stdout);
+		} else {
+			m_is_notify = true;
+		}
+	}
+
 
 	return 0;
 }
+
+int Link::read_notify(void * buf, int nbyte){
+	return link_read_notify(m_driver, buf, nbyte);
+}
+
 
 int Link::open(string file, int flags, link_mode_t mode){
 	int err;

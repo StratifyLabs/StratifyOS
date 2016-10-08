@@ -59,7 +59,7 @@ typedef struct {
 	void (*wait)(int);
 	void (*flush)(link_transport_phy_t);
 #if !defined __link
-	void (*notify)(void*);
+	void (*notify_handle)(void*);
 #endif
 	int timeout;
 } link_transport_driver_t;
@@ -70,6 +70,9 @@ typedef struct {
 	int (*unlock)(link_transport_phy_t handle);
 	int (*status)(link_transport_phy_t handle);
 	link_transport_driver_t dev;
+	link_transport_phy_t notify_handle;
+	char dev_name[64];
+	char notify_name[64];
 } link_transport_mdriver_t;
 
 #if defined __cplusplus

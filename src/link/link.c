@@ -58,6 +58,14 @@ int link_disconnect(link_transport_mdriver_t * driver){
 	int ret;
 	ret = driver->dev.close(driver->dev.handle);
 	driver->dev.handle = LINK_PHY_OPEN_ERROR;
+
+
+	if( driver->notify_handle != LINK_PHY_OPEN_ERROR ){
+		driver->dev.close(driver->notify_handle);
+		driver->notify_handle = LINK_PHY_OPEN_ERROR;
+	}
+
+
 	return ret;
 }
 
@@ -78,6 +86,7 @@ int link_connect(link_transport_mdriver_t * driver, const char * sn){
 
 	link_debug(LINK_DEBUG_MESSAGE, "Connect to %s", serialno);
 
+	driver->notify_handle = LINK_PHY_OPEN_ERROR;
 
 	while( (err = driver->getname(name, last, LINK_PHY_NAME_MAX)) == 0 ){
 		//success in getting new name
@@ -86,6 +95,10 @@ int link_connect(link_transport_mdriver_t * driver, const char * sn){
 			link_debug(LINK_DEBUG_MESSAGE, "Read serial number for %s", name);
 			if( link_readserialno(driver, serialno, 256) == 0 ){
 				//check for NULL sn, zero length sn or matching sn
+
+				memset(driver->dev_name, 0, 64);
+				strncpy(driver->dev_name, name, 63);
+
 				if( (sn == NULL) || (strlen(sn) == 0) || (strcmp(sn, serialno) == 0) ){
 					link_debug(LINK_DEBUG_MESSAGE, "Open Anon at 0x%llX", (uint64_t)driver->dev.handle);
 					return 0;
@@ -121,9 +134,43 @@ int link_connect(link_transport_mdriver_t * driver, const char * sn){
 
 
 	//no device was found
+	memset(driver->dev_name, 0, 64);
 	link_error("Device not found");
 	return -1;
 }
+
+/*! \details Connect to the notification port */
+int link_connect_notify(link_transport_mdriver_t * driver){
+
+	char name[LINK_PHY_NAME_MAX];
+	memset(driver->notify_name, 0, 64);
+
+	if( driver->dev.handle == LINK_PHY_OPEN_ERROR ){
+		return -1;
+	}
+
+	if( strlen(driver->dev_name) ==  0 ){
+		return -1;
+	}
+
+	if( driver->getname(name, driver->dev_name, LINK_PHY_NAME_MAX) < 0 ){
+		return -1;
+	}
+
+	if( (driver->notify_handle = driver->dev.open(name, 0)) == LINK_PHY_OPEN_ERROR ){
+		return -1;
+	}
+
+	strncpy(driver->notify_name, name, 63);
+
+	return 0;
+
+}
+
+int link_read_notify(link_transport_mdriver_t * driver, void * buf, int nbyte){
+	return driver->dev.read(driver->notify_handle, buf, nbyte);
+}
+
 
 int link_readserialno(link_transport_mdriver_t * driver, char * serialno, int len){
 	link_op_t op;

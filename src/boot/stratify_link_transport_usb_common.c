@@ -14,9 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>. */
 
-#define __STDIO_VCP
-
-
 #include <errno.h>
 #include <string.h>
 #include <stdbool.h>
@@ -38,7 +35,7 @@
 
 #define LINK_USB_VID 0x20A0
 
-#ifdef __STDIO_VCP
+#ifdef STRATIFY_LINK_DUAL_VCP
 #define LINK_USB_PID 0x413B
 #else
 #define LINK_USB_PID 0x41D5
@@ -88,7 +85,7 @@ const usb_dev_desc_t stratify_link_transport_usb_dev_desc MCU_WEAK = {
 		.bLength = sizeof(usb_dev_desc_t),
 		.bDescriptorType = USB_DEVICE_DESCRIPTOR_TYPE,
 		.bcdUSB = 0x0200,
-#ifdef __STDIO_VCP
+#ifdef STRATIFY_LINK_DUAL_VCP
 		.bDeviceClass = USB_DEVICE_CLASS_COMMUNICATIONS,
 		.bDeviceSubClass = USB_INTERFACE_SUBCLASS_ACM,
 		.bDeviceProtocol = USB_INTERFACE_PROTOCOL_V25TER,
@@ -114,7 +111,7 @@ const stratify_link_transport_usb_cfg_desc_t stratify_link_transport_usb_cfg_des
 				.bDescriptorType = USB_CONFIGURATION_DESCRIPTOR_TYPE,
 
 				.wTotalLength = sizeof(stratify_link_transport_usb_cfg_desc_t)-1, //exclude the zero terminator
-#ifdef __STDIO_VCP
+#ifdef STRATIFY_LINK_DUAL_VCP
 				.bNumInterfaces = 0x04,
 #else
 				.bNumInterfaces = 0x02,
@@ -210,7 +207,7 @@ const stratify_link_transport_usb_cfg_desc_t stratify_link_transport_usb_cfg_des
 				}
 		},
 
-#ifdef __STDIO_VCP
+#ifdef STRATIFY_LINK_DUAL_VCP
 
 		.vcp1 = {
 				.if_asso = {
@@ -321,7 +318,7 @@ const struct stratify_link_transport_usb_string_t stratify_link_transport_usb_st
 		.serial = usb_assign_string(STRATIFY_LINK_TRANSPORT_USB_DESC_SERIAL_SIZE, 0)
 		, //dynamically load SN based on silicon
 		.vcp0 = usb_assign_string(STRATIFY_LINK_TRANSPORT_USB_DESC_VCP_0_SIZE, STRATIFY_LINK_TRANSPORT_USB_DESC_VCP_0),
-#ifdef __STDIO_VCP
+#ifdef STRATIFY_LINK_DUAL_VCP
 		.vcp1 = usb_assign_string(STRATIFY_LINK_TRANSPORT_USB_DESC_VCP_1_SIZE, STRATIFY_LINK_TRANSPORT_USB_DESC_VCP_1)
 #endif
 
