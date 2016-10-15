@@ -247,7 +247,7 @@ link_transport_phy_t link_phy_open(const char * name, int baudrate){
 	strcat(path, name);
 
 	//open serial port
-	fd = open(path, O_RDWR | O_NOCTTY | O_NONBLOCK);
+	fd = open(name, O_RDWR | O_NOCTTY | O_NONBLOCK);
 	if( fd < 0 ){
 		link_error("Failed to open %s %d", name, errno);
 		perror("Failed to open");
@@ -293,8 +293,6 @@ link_transport_phy_t link_phy_open(const char * name, int baudrate){
 	if( tcsetattr(fd, TCSANOW, &options) < 0 ){
 		return LINK_PHY_OPEN_ERROR;
 	}
-
-	usleep(100*1000); //The MBED outputs some data when first connecting
 
 	phy = malloc(sizeof(link_phy_container_t));
 	((link_phy_container_t*)phy)->fd = fd;

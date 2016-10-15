@@ -76,6 +76,7 @@ Link::Link(){
 	m_status_message = "";
 	m_error_message = "";
 	m_last_serialno = "";
+	m_is_notify = false;
 	m_driver = &m_default_driver;
 	link_load_default_driver(m_driver);
 }
@@ -111,19 +112,21 @@ void Link::reset_progress(){
 }
 
 
-int Link::init(string sn){
+int Link::init(string path, string sn){
 	int err;
 
 	reset_progress();
 	m_is_notify = false;
 
 	if ( m_driver->dev.handle == LINK_PHY_OPEN_ERROR ){
-		if( link_connect(m_driver, sn.c_str()) < 0 ){
+
+		m_driver->dev.handle = m_driver->dev.open(path.c_str(), 0);
+		if( m_driver->dev.handle == LINK_PHY_OPEN_ERROR ){
 			m_error_message = "Failed to Connect to Device";
 			return -1;
 		}
-
 		m_last_serialno = sn;
+		m_last_path = path;
 
 	} else {
 		link_debug(LINK_DEBUG_MESSAGE, "Already connected");

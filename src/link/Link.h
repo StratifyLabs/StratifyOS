@@ -81,8 +81,8 @@ public:
      * other applications will not have access to the device.
      *
      */
-    int init(string sn /*! The serial number or an empty string to ignore */);
-    int reinit(){ return init(m_last_serialno); }
+    int init(string path /*! The serial number or an empty string to ignore */, string sn);
+    int reinit(){ return init(m_last_path, m_last_serialno); }
 
     /*! \details This disconnects from the device.  After calling this,
      * other applications can access the device.
@@ -390,6 +390,7 @@ public:
      * @return A string containing the serial number of the last connected (or currently connected) device
      */
     string last_serial_no(){ return m_last_serialno; }
+    string last_path(){ return m_last_path; }
 
 
     bool is_notify() const { return m_is_notify; }
@@ -403,6 +404,7 @@ private:
     void reset_progress();
 
     string m_last_serialno;
+    string m_last_path;
     string m_error_message;
     string m_status_message;
     int m_stdout_fd;

@@ -18,7 +18,7 @@ limitations under the License.
 #ifndef STRATIFY_LINK_TRANSPORT_USB_H_
 #define STRATIFY_LINK_TRANSPORT_USB_H_
 
-//#define __STDIO_VCP
+#define STRATIFY_LINK_DUAL_VCP
 
 
 #include "../dev/usbfifo.h"
@@ -33,7 +33,7 @@ limitations under the License.
 typedef struct MCU_PACK {
 	usb_cfg_desc_t cfg /* The configuration descriptor */;
 	usb_desc_vcp_t vcp0;
-#ifdef __STDIO_VCP
+#ifdef STRATIFY_LINK_DUAL_VCP
 	usb_desc_vcp_t vcp1;
 #endif
 	u8 terminator  /* A null terminator used by the driver (required) */;
@@ -77,7 +77,7 @@ struct MCU_PACK stratify_link_transport_usb_string_t {
 	usb_declare_string(STRATIFY_LINK_TRANSPORT_USB_DESC_PRODUCT_SIZE) product;
 	usb_declare_string(STRATIFY_LINK_TRANSPORT_USB_DESC_SERIAL_SIZE) serial;
 	usb_declare_string(STRATIFY_LINK_TRANSPORT_USB_DESC_VCP_0_SIZE) vcp0;
-#ifdef __STDIO_VCP
+#ifdef STRATIFY_LINK_DUAL_VCP
 	usb_declare_string(STRATIFY_LINK_TRANSPORT_USB_DESC_VCP_1_SIZE) vcp1;
 #endif
 };
