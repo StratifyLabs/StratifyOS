@@ -570,6 +570,7 @@ typedef struct {
  */
 int signal_callback(void * context, mcu_event_t data);
 
+void stratify_trace_event(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len);
 
 #define STFY_SCHED_TIMEVAL_SECONDS 2048
 #define STFY_USECOND_PERIOD (1000000UL * STFY_SCHED_TIMEVAL_SECONDS)
@@ -607,11 +608,12 @@ typedef struct MCU_PACK {
 	const char * stdout_dev /*! Device used for standard output */;
 	const char * stderr_dev /*! Device used for standard error */;
 	const char * sys_name /*! System (or board) name */;
-	const char * sys_version /*! System (or board) version (distint from kernel version) */;
+	const char * sys_version /*! System (or board) version (distinct from kernel version) */;
 	int sys_memory_size /*! Memory size reserved for the system */;
 	int o_sys_flags /*! System flags */;
 	void * (*start)(void*) /*! The start routine (when in doubt use stratify_default_thread()) */;
 	void * start_args /*! Arguments passed to the start routine (for  stratify_default_thread() use a pointer to the link transport driver) */;
+	void (*trace_write)(void*) /*! Function used for trace */;
 } stratify_board_config_t;
 
 #define STRATIFY_DEFAULT_START_STACK_SIZE 2048

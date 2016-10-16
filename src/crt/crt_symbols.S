@@ -631,4 +631,5 @@
 .global son_read_float; son_read_float = LINK_ADDR;
 .global son_read_data; son_read_data = LINK_ADDR;
 .global kernel_request; kernel_request = LINK_ADDR;
+.global stratify_trace_event; stratify_trace_event = LINK_ADDR;
 

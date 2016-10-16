@@ -331,10 +331,11 @@ typedef struct MCU_PACK {
 	link_trace_event_id_t posix_event_id;
 	u32 posix_pid;
 	u32 posix_prog_address;
-	int32_t posix_truncation_status;
+	s32 posix_truncation_status;
 	u32 posix_timestamp_tv_sec;
 	u32 posix_timestamp_tv_nsec;
 	u32 posix_thread_id;
+	u8 data[32];
 } link_posix_trace_event_info_t;
 
 #ifdef __link
@@ -585,7 +586,7 @@ typedef struct MCU_PACK {
 
 typedef struct MCU_PACK {
 	u32 id;
-	u32 nbyte;
+	link_posix_trace_event_info_t info;
 } link_notify_posix_trace_event_t;
 
 #define LINK_INTERRUPT_ENDPOINT_SIZE 32

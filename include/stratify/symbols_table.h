@@ -17,7 +17,8 @@
 #define STRATIFY_SYMBOLS_TABLE_H_
 #include "mcu/types.h"
 
-#include "../stratify/symbols_table_defines.h"
+#include "stratify.h"
+#include "symbols_table_defines.h"
 
 #if !defined SYMBOLS_TABLE
 #define SYMBOLS_TABLE_WEAK MCU_WEAK
@@ -646,6 +647,7 @@ u32 const symbols_table[] = {
 		(u32)son_read_float,
 		(u32)son_read_data,
 		(u32)kernel_request,
+		(u32)stratify_trace_event,
 		1
 };
 
