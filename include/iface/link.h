@@ -327,6 +327,8 @@ typedef struct MCU_PACK {
 	u32 checksum; //checksum to ensure trace is valid
 } link_trace_id_handle_t;
 
+#define LINK_POSIX_TRACE_DATA_SIZE 24
+
 typedef struct MCU_PACK {
 	link_trace_event_id_t posix_event_id;
 	u32 posix_pid;
@@ -335,7 +337,7 @@ typedef struct MCU_PACK {
 	u32 posix_timestamp_tv_sec;
 	u32 posix_timestamp_tv_nsec;
 	u32 posix_thread_id;
-	u8 data[32];
+	u8 data[LINK_POSIX_TRACE_DATA_SIZE];
 } link_posix_trace_event_info_t;
 
 #ifdef __link
@@ -581,7 +583,7 @@ typedef struct MCU_PACK {
 	u32 id;
 	char name[LINK_PATH_MAX];
 	u32 nbyte;
-} link_notify_file_write_t;
+} link_notify_file_t;
 
 
 typedef struct MCU_PACK {

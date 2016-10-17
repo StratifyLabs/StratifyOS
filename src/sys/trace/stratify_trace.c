@@ -30,15 +30,11 @@
 void stratify_trace_event_addr(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len, u32 addr);
 void stratify_trace_event_addr_tid(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len, u32 addr, int tid);
 
-
 static void stratify_priv_trace_event(void * info){
-	link_transport_notify_t args;
 	link_notify_posix_trace_event_t notify;
-	notify.id = LINK_NOTIFY_ID_DEVICE_WRITE;
 	memcpy(&(notify.info), info, sizeof(link_posix_trace_event_info_t));
-	args.buf = &notify;
-	args.nbyte = sizeof(link_notify_posix_trace_event_t);
-	stratify_board_config.trace_write(&args);
+	notify.id = LINK_NOTIFY_ID_POSIX_TRACE_EVENT;
+	stratify_board_config.notify_write(&notify, sizeof(link_notify_posix_trace_event_t));
 }
 
 void stratify_trace_event(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len){
@@ -47,7 +43,7 @@ void stratify_trace_event(link_trace_event_id_t event_id, const void * data_ptr,
 }
 
 void stratify_trace_event_addr(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len, u32 addr){
-	if( stratify_board_config.trace_write != 0 ){
+	if( stratify_board_config.notify_write != 0 ){
 		stratify_trace_event_addr_tid(event_id, data_ptr, data_len, addr, task_get_current());
 	}
 }
@@ -72,10 +68,10 @@ void stratify_trace_event_addr_tid(link_trace_event_id_t event_id, const void * 
 	event_info.posix_prog_address = addr; //grab the value of the caller
 	event_info.posix_thread_id = tid;
 
-
-	if( data_len > 32  ){
-		data_len = 32;
+	if( data_len > LINK_POSIX_TRACE_DATA_SIZE-1  ){
+		data_len = LINK_POSIX_TRACE_DATA_SIZE;
 	}
+	memset(event_info.data, 0, LINK_POSIX_TRACE_DATA_SIZE);
 	memcpy(event_info.data, data_ptr, data_len);
 	clock_gettime(CLOCK_REALTIME, &spec);
 	event_info.posix_timestamp_tv_sec = spec.tv_sec;

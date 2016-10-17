@@ -95,7 +95,7 @@ int stratify_link_transport_usb_write(link_transport_phy_t, const void * buf, in
 int stratify_link_transport_usb_close(link_transport_phy_t handle);
 void stratify_link_transport_usb_wait(int msec);
 void stratify_link_transport_usb_flush(link_transport_phy_t handle);
-void stratify_link_transport_usb_notify(void * args);
+void stratify_link_transport_usb_notify(const void * buf, int nbyte);
 int stratify_link_transport_usb_cdc_if_req(void * context, int event);
 
 link_transport_phy_t boot_stratify_link_transport_usb_open(const char * name, int);

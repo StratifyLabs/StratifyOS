@@ -74,14 +74,13 @@ int stratify_link_transport_usb_write(link_transport_phy_t handle, const void * 
 	return ret;
 }
 
-void stratify_link_transport_usb_notify(void * args){
-	link_transport_notify_t * notify = args;
+void stratify_link_transport_usb_notify(const void * buf, int nbyte){
 	device_cfg_t usb;
 	usb.periph.port = STRATIFY_LINK_TRANSPORT_USB_PORT;
 
 	notify_op.loc = STRATIFY_LINK_TRANSPORT_USB_BULKIN_ALT;
-	notify_op.cbuf = notify->buf;
-	notify_op.nbyte = notify->nbyte;
+	notify_op.cbuf = buf;
+	notify_op.nbyte = nbyte;
 	notify_op.tid = task_get_current();
 	notify_op.callback = 0;
 	notify_op.context = 0;

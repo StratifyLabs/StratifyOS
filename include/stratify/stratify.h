@@ -613,7 +613,7 @@ typedef struct MCU_PACK {
 	int o_sys_flags /*! System flags */;
 	void * (*start)(void*) /*! The start routine (when in doubt use stratify_default_thread()) */;
 	void * start_args /*! Arguments passed to the start routine (for  stratify_default_thread() use a pointer to the link transport driver) */;
-	void (*trace_write)(void*) /*! Function used for trace */;
+	void (*notify_write)(const void * buf, int nbyte) /*! Function used for trace */;
 } stratify_board_config_t;
 
 #define STRATIFY_DEFAULT_START_STACK_SIZE 2048

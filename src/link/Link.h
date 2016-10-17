@@ -36,6 +36,7 @@
 #include <mcu/mcu.h>
 #include <string>
 #include <vector>
+#include "iface/dev/sys.h"
 #include "iface/link.h"
 
 using namespace std;
@@ -81,8 +82,10 @@ public:
      * other applications will not have access to the device.
      *
      */
-    int init(string path /*! The serial number or an empty string to ignore */, string sn);
-    int reinit(){ return init(m_last_path, m_last_serialno); }
+    int init(string path /*! The path to the serial device */,
+    		string sn /*! The serial number or an empty string to ignore */,
+			string notify_path /*! The path to the notify device */);
+    int reinit(){ return init(path(), serial_no(), notify_path()); }
 
     /*! \details This disconnects from the device.  After calling this,
      * other applications can access the device.
@@ -389,9 +392,15 @@ public:
      * that was connected (including the currently connected device)
      * @return A string containing the serial number of the last connected (or currently connected) device
      */
-    string last_serial_no(){ return m_last_serialno; }
-    string last_path(){ return m_last_path; }
+    string serial_no(){ return m_serialno; }
 
+    /*! \details The path of the currently connected (or last connected) device */
+    string path(){ return m_path; }
+
+    /*! \details The path of the currently connected (or last connected) notify device */
+    string notify_path(){ return m_notify_path; }
+
+    sys_attr_t sys_attr() const { return m_sys_attr; }
 
     bool is_notify() const { return m_is_notify; }
 
@@ -403,8 +412,9 @@ private:
     int unlock_device();
     void reset_progress();
 
-    string m_last_serialno;
-    string m_last_path;
+    string m_serialno;
+    string m_path;
+    string m_notify_path;
     string m_error_message;
     string m_status_message;
     int m_stdout_fd;
@@ -414,6 +424,8 @@ private:
     volatile int m_lock;
     bool m_boot;
     bool m_is_notify;
+
+    sys_attr_t m_sys_attr;
 
     link_transport_mdriver_t m_default_driver;
     link_transport_mdriver_t * m_driver;

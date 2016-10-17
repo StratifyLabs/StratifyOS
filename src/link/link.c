@@ -59,12 +59,10 @@ int link_disconnect(link_transport_mdriver_t * driver){
 	ret = driver->dev.close(driver->dev.handle);
 	driver->dev.handle = LINK_PHY_OPEN_ERROR;
 
-
-	if( driver->notify_handle != LINK_PHY_OPEN_ERROR ){
-		driver->dev.close(driver->notify_handle);
-		driver->notify_handle = LINK_PHY_OPEN_ERROR;
+	if( driver->dev.notify_handle != LINK_PHY_OPEN_ERROR ){
+		driver->dev.close(driver->dev.notify_handle);
+		driver->dev.notify_handle = LINK_PHY_OPEN_ERROR;
 	}
-
 
 	return ret;
 }
@@ -86,7 +84,7 @@ int link_connect(link_transport_mdriver_t * driver, const char * sn){
 
 	link_debug(LINK_DEBUG_MESSAGE, "Connect to %s", serialno);
 
-	driver->notify_handle = LINK_PHY_OPEN_ERROR;
+	driver->dev.notify_handle = LINK_PHY_OPEN_ERROR;
 
 	while( (err = driver->getname(name, last, LINK_PHY_NAME_MAX)) == 0 ){
 		//success in getting new name
@@ -157,7 +155,7 @@ int link_connect_notify(link_transport_mdriver_t * driver){
 		return -1;
 	}
 
-	if( (driver->notify_handle = driver->dev.open(name, 0)) == LINK_PHY_OPEN_ERROR ){
+	if( (driver->dev.notify_handle = driver->dev.open(name, 0)) == LINK_PHY_OPEN_ERROR ){
 		return -1;
 	}
 
@@ -168,7 +166,7 @@ int link_connect_notify(link_transport_mdriver_t * driver){
 }
 
 int link_read_notify(link_transport_mdriver_t * driver, void * buf, int nbyte){
-	return driver->dev.read(driver->notify_handle, buf, nbyte);
+	return driver->dev.read(driver->dev.notify_handle, buf, nbyte);
 }
 
 

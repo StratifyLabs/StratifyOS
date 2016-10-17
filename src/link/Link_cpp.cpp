@@ -75,7 +75,7 @@ Link::Link(){
 	m_boot = false;
 	m_status_message = "";
 	m_error_message = "";
-	m_last_serialno = "";
+	m_serialno = "";
 	m_is_notify = false;
 	m_driver = &m_default_driver;
 	link_load_default_driver(m_driver);
@@ -112,7 +112,7 @@ void Link::reset_progress(){
 }
 
 
-int Link::init(string path, string sn){
+int Link::init(string path, string sn, string notify_path){
 	int err;
 
 	reset_progress();
@@ -125,8 +125,8 @@ int Link::init(string path, string sn){
 			m_error_message = "Failed to Connect to Device";
 			return -1;
 		}
-		m_last_serialno = sn;
-		m_last_path = path;
+		m_serialno = sn;
+		m_path = path;
 
 	} else {
 		link_debug(LINK_DEBUG_MESSAGE, "Already connected");
@@ -150,30 +150,29 @@ int Link::init(string path, string sn){
 
 	link_debug(LINK_DEBUG_MESSAGE, "Init complete with 0x%llX", (uint64_t)m_driver->dev.handle);
 
-	//load Sys flags to see if NOTIFY VCP is supported
-
+	//load Sys flags to see if NOTIFY port is supported
 	int fd;
-	sys_attr_t attr;
 
 	fd = open("/dev/sys", LINK_O_RDWR);
 	if( fd < 0 ){
 		return 0;
 	}
 
-	if( ioctl(fd, I_SYS_GETATTR, &attr) < 0 ){
+	if( ioctl(fd, I_SYS_GETATTR, &m_sys_attr) < 0 ){
 		return 0;
 	}
 
-	if( attr.flags & SYS_FLAGS_NOTIFY ){
+	close(fd);
+
+	if( m_sys_attr.flags & SYS_FLAGS_NOTIFY ){
 		printf("NOTIFY FLAG PRESENT\n");
 		fflush(stdout);
-		if( link_connect_notify(m_driver) < 0 ){
-			//printf("FAILED TO CONNECT TO NOTIFY\n");
-			//fflush(stdout);
-		} else {
+		m_driver->dev.notify_handle = m_driver->dev.open(notify_path.c_str(), 0);
+		if( m_driver->dev.notify_handle != LINK_PHY_OPEN_ERROR ){
 			m_is_notify = true;
 		}
 	}
+
 
 
 	return 0;
@@ -591,26 +590,26 @@ string Link::convert_permissions(link_mode_t mode){
 	string ret;
 
 	link_mode_t type;
-    type = mode & LINK_S_IFMT;
-    switch(type){
-    case LINK_S_IFDIR:
-        ret = 'd';
-        break;
-    case LINK_S_IFCHR:
-    	ret = 'c';
-        break;
-    case LINK_S_IFBLK:
-    	ret = 'b';
-        break;
-    case LINK_S_IFLNK:
-    	ret = 'l';
-        break;
-    case LINK_S_IFREG:
-    	ret = '-';
-        break;
-    default:
-    	ret = 'x';
-    }
+	type = mode & LINK_S_IFMT;
+	switch(type){
+	case LINK_S_IFDIR:
+		ret = 'd';
+		break;
+	case LINK_S_IFCHR:
+		ret = 'c';
+		break;
+	case LINK_S_IFBLK:
+		ret = 'b';
+		break;
+	case LINK_S_IFLNK:
+		ret = 'l';
+		break;
+	case LINK_S_IFREG:
+		ret = '-';
+		break;
+	default:
+		ret = 'x';
+	}
 
 	if( mode & LINK_S_IROTH ){
 		ret += "r";
@@ -1281,7 +1280,7 @@ int Link::update_os(string path, bool verify, bool (*update)(void*,int,int), voi
 }
 
 int Link::update_binary_install_options(string path, string name, bool startup, bool run_in_ram, int ram_size){
-    link_appfs_file_t appfs_file;
+	link_appfs_file_t appfs_file;
 	FILE * binary_file;
 
 	binary_file = fopen(path.c_str(), "r+");
