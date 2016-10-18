@@ -9,3 +9,5 @@
 /build_debug_sys_arm7em_fpu/
 /build_debug_sys_armv7m/
 /build_release_link/
+/build_release_mcu_lpc43xx/
+/build_release_mcu_lpc82x/

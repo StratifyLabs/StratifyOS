@@ -34,7 +34,6 @@
 #define IFACE_LINK_H_
 
 
-#include <sys/stat.h>
 #include <time.h>
 
 #define LINK_OPEN_MAX 32

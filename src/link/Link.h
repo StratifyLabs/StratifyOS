@@ -34,10 +34,9 @@
 #define LINK_H
 
 #include <mcu/mcu.h>
+#include "iface/dev/sys.h"
 #include <string>
 #include <vector>
-#include "iface/dev/sys.h"
-#include "iface/link.h"
 
 using namespace std;
 

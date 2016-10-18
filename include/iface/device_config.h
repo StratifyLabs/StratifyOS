@@ -29,8 +29,6 @@
 #ifndef _DEVICE_H_
 #define _DEVICE_H_
 
-#include <sys/stat.h>
-#include <stdbool.h>
 
 #include "mcu/types.h"
 #include "iface/dev/pio.h"

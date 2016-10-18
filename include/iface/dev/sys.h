@@ -34,7 +34,7 @@
 #define IFACE_DEV_SYS_H_
 
 #include <stdint.h>
-#include "iface/link.h"
+#include "../link.h"
 #include "ioctl.h"
 
 #include "mcu/types.h"

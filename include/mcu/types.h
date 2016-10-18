@@ -20,6 +20,9 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#if !defined __link
+#include <sys/stat.h>
+#endif
 
 #include "iface/dev/ioctl.h"
 
