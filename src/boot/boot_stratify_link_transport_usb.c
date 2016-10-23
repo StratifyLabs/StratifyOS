@@ -1,5 +1,4 @@
 
-#include "link_transport_usb.h"
 
 #include <errno.h>
 #include <stdbool.h>
@@ -18,7 +17,6 @@
 #include "mcu/boot_debug.h"
 
 #include "iface/stratify_link_transport_usb.h"
-#include "stratify_link_transport_usb_common.h"
 
 #define USBDEV_PORT 0
 
@@ -44,9 +42,7 @@ void init_stdio_vcp(){
 }
 #endif
 
-static usb_dev_context_t usb_context;
-
-link_transport_phy_t boot_stratify_link_transport_usb_open(const char * name, int baudrate){
+link_transport_phy_t stratify_link_boot_transport_usb_open(const char * name, usb_dev_context_t * context){
 	usb_attr_t usb_attr;
 
 	dstr("OPEN USB\n");
@@ -67,10 +63,7 @@ link_transport_phy_t boot_stratify_link_transport_usb_open(const char * name, in
 
 	dstr("USB ATTR SET\n");
 	//initialize USB device
-	memset(&usb_context, 0, sizeof(usb_context));
-
-	usb_context.constants = &stratify_link_transport_usb_constants;
-	usb_dev_priv_init(&usb_context);
+	usb_dev_priv_init(context);
 	dstr("USB CONNECT\n");
 
 
@@ -79,7 +72,7 @@ link_transport_phy_t boot_stratify_link_transport_usb_open(const char * name, in
 	return 0;
 }
 
-int boot_stratify_link_transport_usb_write(link_transport_phy_t handle, const void * buf, int nbyte){
+int stratify_link_boot_transport_usb_write(link_transport_phy_t handle, const void * buf, int nbyte){
 	int ret;
 	ret = mcu_sync_io(&usb_dev, mcu_usb_write, STRATIFY_LINK_TRANSPORT_USB_BULKIN, buf, nbyte, O_RDWR);
 	return ret;
@@ -119,7 +112,7 @@ static int write_buffer(const char * src, int nbyte){
 	return i; //number of bytes written
 }
 
-int boot_stratify_link_transport_usb_read(link_transport_phy_t handle, void * buf, int nbyte){
+int stratify_link_boot_transport_usb_read(link_transport_phy_t handle, void * buf, int nbyte){
 	int ret;
 	int bytes_read;
 	char buffer[STRATIFY_LINK_TRANSPORT_ENDPOINT_SIZE];
@@ -137,16 +130,16 @@ int boot_stratify_link_transport_usb_read(link_transport_phy_t handle, void * bu
 	return nbyte;
 }
 
-int boot_stratify_link_transport_usb_close(link_transport_phy_t handle){
+int stratify_link_boot_transport_usb_close(link_transport_phy_t handle){
 	return mcu_usb_close(&usb_dev);
 }
 
-void boot_stratify_link_transport_usb_wait(int msec){
+void stratify_link_boot_transport_usb_wait(int msec){
 	int i;
 	for(i = 0; i < msec; i++){
 		_mcu_core_delay_us(1000);
 	}
 }
 
-void boot_stratify_link_transport_usb_flush(link_transport_phy_t handle){}
+void stratify_link_boot_transport_usb_flush(link_transport_phy_t handle){}
 

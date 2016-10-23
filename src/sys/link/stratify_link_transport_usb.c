@@ -34,11 +34,10 @@ limitations under the License.
 #include "iface/stratify_link_transport_usb.h"
 
 
-static usb_dev_context_t usb_context;
 static device_transfer_t notify_op;
 
 
-link_transport_phy_t stratify_link_transport_usb_open(const char * name, int baudrate){
+link_transport_phy_t stratify_link_transport_usb_open(const char * name, usb_dev_context_t * context){
 	link_transport_phy_t fd;
 	usb_attr_t usb_attr;
 
@@ -61,9 +60,7 @@ link_transport_phy_t stratify_link_transport_usb_open(const char * name, int bau
 
 	mcu_debug("USB Dev Init\n");
 	//initialize USB device
-	memset(&usb_context, 0, sizeof(usb_context));
-	usb_context.constants = &stratify_link_transport_usb_constants;
-	mcu_core_privcall(usb_dev_priv_init, &usb_context);
+	mcu_core_privcall(usb_dev_priv_init, context);
 
 	return fd;
 }

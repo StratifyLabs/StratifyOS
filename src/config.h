@@ -11,9 +11,9 @@
 
 /*! \brief Version \showinitializer */
 #if MCU_DEBUG
-#define VERSION "2.0.0d"
+#define VERSION "2.1.0d"
 #else
-#define VERSION "2.0.0"
+#define VERSION "2.1.0"
 #endif
 
 /*! @} */
