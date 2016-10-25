@@ -29,6 +29,7 @@
 #include <signal.h>
 #include "mcu/mcu.h"
 #include "mcu/core.h"
+#include "stratify/stratify.h"
 
 #include "sched_flags.h"
 #include "../unistd/unistd_flags.h"
@@ -36,6 +37,7 @@
 
 #include "mcu/debug.h"
 
+extern void stratify_priv_trace_event(void * info);
 
 void mcu_fault_event_handler(fault_t * fault){
 #if SINGLE_TASK == 0
@@ -60,8 +62,18 @@ void mcu_fault_event_handler(fault_t * fault){
 		_mcu_core_delay_ms(200);
 #endif
 
-		mcu_board_event(MCU_BOARD_CONFIG_EVENT_PRIV_FATAL, 0);
+		if( stratify_board_config.notify_write != 0 ){
+			link_posix_trace_event_info_t info;
+			info.posix_event_id = 0;
+			info.posix_pid = pid;
+			info.posix_thread_id = task_get_current();
+			info.posix_timestamp_tv_sec = 0;
+			info.posix_timestamp_tv_nsec = 0;
+			sched_fault_build_trace_string((char*)info.data);
+			stratify_priv_trace_event(&info);
+		}
 
+		mcu_board_event(MCU_BOARD_CONFIG_EVENT_PRIV_FATAL, 0);
 
 	} else {
 

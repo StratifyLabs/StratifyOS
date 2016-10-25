@@ -21,6 +21,24 @@
 #include <string.h>
 #include "sched_flags.h"
 
+void sched_fault_build_trace_string(char * dest){
+	sprintf(dest, "F%X:0x%lX",
+			sched_fault.fault.num,
+			(u32)sched_fault.fault.addr
+	);
+	return;
+	char hex_buffer[9];
+	strcpy(dest, "F");
+	htoa(hex_buffer, sched_fault.fault.num);
+	strcat(dest, hex_buffer);
+	strcat(dest, ":A");
+	htoa(hex_buffer, (u32)sched_fault.fault.handler_pc);
+	strcat(dest, hex_buffer);
+	strcat(dest, ":C");
+	htoa(hex_buffer, (u32)sched_fault.fault.caller);
+	strcat(dest, "\n");
+}
+
 void sched_fault_build_string(char * dest){
 	sprintf(dest, "F%X:A%lX:PC%lX:C%lX:HA%lX:HC%lX\n",
 			sched_fault.fault.num,

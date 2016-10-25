@@ -571,6 +571,7 @@ typedef struct {
 int signal_callback(void * context, mcu_event_t data);
 
 void stratify_trace_event(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len);
+void stratify_trace_event_addr_tid(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len, u32 addr, int tid);
 
 #define STFY_SCHED_TIMEVAL_SECONDS 2048
 #define STFY_USECOND_PERIOD (1000000UL * STFY_SCHED_TIMEVAL_SECONDS)

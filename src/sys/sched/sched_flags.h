@@ -244,6 +244,7 @@ uint32_t sched_nanoseconds_to_clocks(int nanoseconds);
 void sched_convert_timespec(struct sched_timeval * tv, const struct timespec * ts);
 void sched_priv_get_realtime(struct sched_timeval * tv) MCU_PRIV_EXEC_CODE;
 void sched_fault_build_string(char * dest);
+void sched_fault_build_trace_string(char * dest);
 
 int sched_prepare();
 void scheduler();

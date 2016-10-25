@@ -132,55 +132,58 @@ int check_faults(){
 	char buffer[256];
 
 	if ( sched_fault.fault.num != 0 ){
-		//Trace the fault
-
-		//log the fault in a new thread
-
-		sched_fault_build_string(buffer);
-		posix_trace_event_addr_tid(
+		//Trace the fault -- and output on debug
+		sched_fault_build_trace_string(buffer);
+		stratify_trace_event_addr_tid(
 				POSIX_TRACE_FATAL,
 				buffer, strlen(buffer),
 				(uint32_t)sched_fault.fault.pc + 1,
 				sched_fault.tid);
+
+		usleep(2000);
 		mcu_debug("%s\n", buffer);
 
 		char hex_buffer[9];
 		strcpy(buffer, "ADDR 0x");
 		htoa(hex_buffer, (uint32_t)sched_fault.fault.addr);
 		strcat(buffer, hex_buffer);
-		posix_trace_event_addr_tid(
+		stratify_trace_event_addr_tid(
 				POSIX_TRACE_MESSAGE,
 				buffer, strlen(buffer),
 				(uint32_t)sched_fault.fault.pc + 1,
 				sched_fault.tid);
 		mcu_debug("ADDR 0x%lX %ld\n", (u32)sched_fault.fault.pc + 1, sched_fault.tid);
+		usleep(2000);
 
 
 		strcpy(buffer, "Caller");
-		posix_trace_event_addr_tid(
+		stratify_trace_event_addr_tid(
 				POSIX_TRACE_MESSAGE,
 				buffer, strlen(buffer),
 				(uint32_t)sched_fault.fault.caller,
 				sched_fault.tid);
 		mcu_debug("Caller 0x%lX %ld\n", (u32)sched_fault.fault.caller, sched_fault.tid);
+		usleep(2000);
 
 
 		strcpy(buffer, "ISR PC");
-		posix_trace_event_addr_tid(
+		stratify_trace_event_addr_tid(
 				POSIX_TRACE_MESSAGE,
 				buffer, strlen(buffer),
 				(u32)sched_fault.fault.handler_pc + 1,
 				sched_fault.tid);
 		mcu_debug("ISR PC 0x%lX %ld\n", (u32)sched_fault.fault.handler_pc+1, sched_fault.tid);
+		usleep(2000);
 
 
 		strcpy(buffer, "ISR Caller");
-		posix_trace_event_addr_tid(
+		stratify_trace_event_addr_tid(
 				POSIX_TRACE_MESSAGE,
 				buffer, strlen(buffer),
 				(uint32_t)sched_fault.fault.handler_caller,
 				sched_fault.tid);
 		mcu_debug("ISR Caller 0x%lX %ld\n", (u32)sched_fault.fault.handler_caller, sched_fault.tid);
+		usleep(2000);
 
 		mcu_core_privcall(priv_fault_logged, NULL);
 

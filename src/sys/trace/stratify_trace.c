@@ -27,10 +27,9 @@
 #include "iface/link.h"
 #include "mcu/mpu.h"
 
-void stratify_trace_event_addr(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len, u32 addr);
-void stratify_trace_event_addr_tid(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len, u32 addr, int tid);
+static void stratify_trace_event_addr(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len, u32 addr);
 
-static void stratify_priv_trace_event(void * info){
+void stratify_priv_trace_event(void * info){
 	link_notify_posix_trace_event_t notify;
 	memcpy(&(notify.info), info, sizeof(link_posix_trace_event_info_t));
 	notify.id = LINK_NOTIFY_ID_POSIX_TRACE_EVENT;
