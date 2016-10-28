@@ -65,7 +65,7 @@ link_transport_phy_t link_phy_open(const char * name, int baudrate);
 int link_phy_status(link_transport_phy_t handle);
 int link_phy_write(link_transport_phy_t handle, const void * buf, int nbyte);
 int link_phy_read(link_transport_phy_t handle, void * buf, int nbyte);
-int link_phy_close(link_transport_phy_t handle);
+int link_phy_close(link_transport_phy_t * handle);
 void link_phy_flush(link_transport_phy_t handle);
 int link_phy_lock(link_transport_phy_t phy);
 int link_phy_unlock(link_transport_phy_t phy);

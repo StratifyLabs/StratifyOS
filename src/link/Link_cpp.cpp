@@ -120,6 +120,7 @@ int Link::init(string path, string sn, string notify_path){
 
 	if ( m_driver->dev.handle == LINK_PHY_OPEN_ERROR ){
 
+		m_driver->dev.notify_handle = LINK_PHY_OPEN_ERROR;
 		m_driver->dev.handle = m_driver->dev.open(path.c_str(), 0);
 		if( m_driver->dev.handle == LINK_PHY_OPEN_ERROR ){
 			m_error_message = "Failed to Connect to Device";
@@ -380,9 +381,24 @@ int Link::exit(){
 }
 
 bool Link::get_is_connected(){
+	if( m_driver->dev.handle == LINK_PHY_OPEN_ERROR ){
+		return false;
+	}
+
 	lock_device();
+
 	if( m_driver->status(m_driver->dev.handle) == LINK_PHY_ERROR){
-		m_driver->dev.handle = LINK_PHY_OPEN_ERROR;
+
+		if( m_driver->dev.handle != LINK_PHY_OPEN_ERROR ){
+			m_driver->dev.close(&(m_driver->dev.handle));
+			m_driver->dev.handle = LINK_PHY_OPEN_ERROR;
+		}
+
+		if( m_driver->dev.notify_handle != LINK_PHY_OPEN_ERROR ){
+			m_driver->dev.close(&(m_driver->dev.notify_handle));
+			m_driver->dev.notify_handle = LINK_PHY_OPEN_ERROR;
+		}
+
 	} else {
 		unlock_device();
 	}

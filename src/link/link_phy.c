@@ -359,11 +359,12 @@ int link_phy_read(link_transport_phy_t handle, void * buf, int nbyte){
 	return ret;
 }
 
-int link_phy_close(link_transport_phy_t handle){
-	link_phy_container_t * phy = handle;
-	if( handle == LINK_PHY_OPEN_ERROR ){
+int link_phy_close(link_transport_phy_t * handle){
+	link_phy_container_t * phy = (link_phy_container_t *)*handle;
+	if( *handle == LINK_PHY_OPEN_ERROR ){
 		return LINK_PHY_ERROR;
 	}
+	*handle = LINK_PHY_OPEN_ERROR;
 	int fd = phy->fd;
 	free(phy);
 	if( close(fd) < 0 ){

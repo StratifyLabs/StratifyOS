@@ -30,6 +30,7 @@ const link_transport_mdriver_t link_default_driver = {
 		.unlock = link_phy_unlock,
 		.status = link_phy_status,
 		.dev.handle = LINK_PHY_OPEN_ERROR,
+		.dev.notify_handle = LINK_PHY_OPEN_ERROR,
 		.dev.open = link_phy_open,
 		.dev.write = link_phy_write,
 		.dev.read = link_phy_read,
@@ -56,11 +57,11 @@ void link_exit(){}
 
 int link_disconnect(link_transport_mdriver_t * driver){
 	int ret;
-	ret = driver->dev.close(driver->dev.handle);
+	ret = driver->dev.close(&(driver->dev.handle));
 	driver->dev.handle = LINK_PHY_OPEN_ERROR;
 
 	if( driver->dev.notify_handle != LINK_PHY_OPEN_ERROR ){
-		driver->dev.close(driver->dev.notify_handle);
+		driver->dev.close(&(driver->dev.notify_handle));
 		driver->dev.notify_handle = LINK_PHY_OPEN_ERROR;
 	}
 
@@ -121,7 +122,7 @@ int link_connect(link_transport_mdriver_t * driver, const char * sn){
 				}
 			}
 			link_debug(LINK_DEBUG_MESSAGE, "Close Handle");
-			driver->dev.close(driver->dev.handle);
+			driver->dev.close(&(driver->dev.handle));
 			driver->dev.handle = LINK_PHY_OPEN_ERROR;
 
 		} else {
@@ -318,7 +319,7 @@ char * link_new_device_list(link_transport_mdriver_t * driver, int max){
 					return sn_list;
 				}
 			}
-			driver->dev.close(driver->dev.handle);
+			driver->dev.close(&(driver->dev.handle));
 			driver->dev.handle = LINK_PHY_OPEN_ERROR;
 		}
 		strcpy(last, name);

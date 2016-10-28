@@ -65,7 +65,7 @@ typedef struct {
 	link_transport_phy_t (*open)(const char *, int);
 	int (*write)(link_transport_phy_t, const void*, int);
 	int (*read)(link_transport_phy_t, void*, int);
-	int (*close)(link_transport_phy_t);
+	int (*close)(link_transport_phy_t*);
 	void (*wait)(int);
 	void (*flush)(link_transport_phy_t);
 	int timeout;

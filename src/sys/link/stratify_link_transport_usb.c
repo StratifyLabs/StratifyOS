@@ -93,8 +93,10 @@ int stratify_link_transport_usb_read(link_transport_phy_t handle, void * buf, in
 	return ret;
 }
 
-int stratify_link_transport_usb_close(link_transport_phy_t handle){
-	return close(handle);
+int stratify_link_transport_usb_close(link_transport_phy_t * handle){
+	link_transport_phy_t fd = *handle;
+	*handle = -1;
+	return close(fd);
 }
 
 void stratify_link_transport_usb_wait(int msec){
