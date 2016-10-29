@@ -130,7 +130,7 @@ int stratify_link_boot_transport_usb_read(link_transport_phy_t handle, void * bu
 	return nbyte;
 }
 
-int stratify_link_boot_transport_usb_close(link_transport_phy_t handle){
+int stratify_link_boot_transport_usb_close(link_transport_phy_t * handle){
 	return mcu_usb_close(&usb_dev);
 }
 

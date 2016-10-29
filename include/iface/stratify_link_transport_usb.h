@@ -115,7 +115,7 @@ extern const usb_dev_const_t stratify_link_boot_transport_usb_constants;
 link_transport_phy_t stratify_link_boot_transport_usb_open(const char * name, usb_dev_context_t * context);
 int stratify_link_boot_transport_usb_read(link_transport_phy_t, void * buf, int nbyte);
 int stratify_link_boot_transport_usb_write(link_transport_phy_t, const void * buf, int nbyte);
-int stratify_link_boot_transport_usb_close(link_transport_phy_t handle);
+int stratify_link_boot_transport_usb_close(link_transport_phy_t * handle);
 void stratify_link_boot_transport_usb_wait(int msec);
 void stratify_link_boot_transport_usb_flush(link_transport_phy_t handle);
 
