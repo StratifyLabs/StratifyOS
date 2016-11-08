@@ -108,6 +108,7 @@ enum {
 	I2C_STATE_RD_16_OP /*! Internal Use only */,
 	I2C_STATE_WR_16_OP /*! Internal Use only */,
 	I2C_STATE_WR_PTR_ONLY /*! Internal use only */,
+	I2C_STATE_WR_ONLY /*! Internal use only */,
 	I2C_ERROR_TOTAL
 };
 
@@ -142,7 +143,10 @@ typedef enum {
 	   * The write() function is not available in this mode.
 	   *
 	   */,
-	   I2C_TRANSFER_WRITE_PTR /*! \brief This will write the ptr value only without writing or reading any data. */
+	   I2C_TRANSFER_WRITE_PTR /*! \brief This will write the ptr value only without writing or reading any data. */,
+	   I2C_TRANSFER_WRITE_ONLY /*! \brief This will write data without first writing the pointer information */,
+	   I2C_TRANSFER_DATA_ONLY /*! \brief This will write data without first writing the pointer information */,
+
 } i2c_transfer_t;
 
 
@@ -157,13 +161,20 @@ typedef struct MCU_PACK {
 
 typedef i2c_setup_t i2c_reqattr_t; //legacy support
 
+enum {
+	I2C_ATTR_FLAG_MASTER = (0<<0),
+	I2C_ATTR_FLAG_SLAVE = (1<<0),
+	I2C_ATTR_FLAG_SLAVE_ACK_GENERAL_CALL = (1<<1)
+};
+
 /*! \brief I2C IO Attributes
  *  \details This structure defines how the control structure
  * for configuring the I2C port.
  */
 typedef struct MCU_PACK {
 	u8 pin_assign /*! \brief The GPIO configuration to use (see \ref LPC17XXDEV) */;
-	u8 resd[3];
+	u8 resd[1];
+	u16 o_flags /*! \brief Attribute flags */;
 	u32 bitrate /*! \brief The I2C bitrate */;
 } i2c_attr_t;
 

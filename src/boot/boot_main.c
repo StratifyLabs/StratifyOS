@@ -203,15 +203,17 @@ void init_hw(){
 }
 
 void gled_on(){
-	pio_attr_t attr;
-	attr.mask = (1<<mcu_board_config.led.pin);
-	attr.mode = PIO_MODE_OUTPUT | PIO_MODE_DIRONLY;
-	mcu_pio_setattr(mcu_board_config.led.port, &attr);
-	if( mcu_board_config.o_flags & MCU_BOARD_CONFIG_FLAG_LED_ACTIVE_HIGH ){
-		//LED is active low
-		mcu_pio_setmask(mcu_board_config.led.port, (void*)attr.mask);
-	} else {
-		mcu_pio_clrmask(mcu_board_config.led.port, (void*)attr.mask);
+	if( mcu_board_config.led.port != 255 ){
+		pio_attr_t attr;
+		attr.mask = (1<<mcu_board_config.led.pin);
+		attr.mode = PIO_MODE_OUTPUT | PIO_MODE_DIRONLY;
+		mcu_pio_setattr(mcu_board_config.led.port, &attr);
+		if( mcu_board_config.o_flags & MCU_BOARD_CONFIG_FLAG_LED_ACTIVE_HIGH ){
+			//LED is active low
+			mcu_pio_setmask(mcu_board_config.led.port, (void*)attr.mask);
+		} else {
+			mcu_pio_clrmask(mcu_board_config.led.port, (void*)attr.mask);
+		}
 	}
 }
 
@@ -219,10 +221,12 @@ void gled_on(){
  *
  */
 void gled_off(){
-	pio_attr_t attr;
-	attr.mask = (1<<mcu_board_config.led.pin);
-	attr.mode = PIO_MODE_INPUT | PIO_MODE_DIRONLY;
-	mcu_pio_setattr(mcu_board_config.led.port, &attr);
+	if( mcu_board_config.led.port != 255 ){
+		pio_attr_t attr;
+		attr.mask = (1<<mcu_board_config.led.pin);
+		attr.mode = PIO_MODE_INPUT | PIO_MODE_DIRONLY;
+		mcu_pio_setattr(mcu_board_config.led.port, &attr);
+	}
 }
 
 void _mcu_core_fault_handler(){}

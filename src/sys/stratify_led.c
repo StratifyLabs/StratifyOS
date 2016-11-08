@@ -26,40 +26,46 @@ void stratify_led_startup(){
 	int duty;
 	const int factor = 10;
 	duty = 0;
-	for(i=0; i < 100; i++){
-		duty = i*factor;
-		mcu_core_privcall(stratify_led_priv_on, 0);
-		usleep(duty);
-		mcu_core_privcall(stratify_led_priv_off, 0);
-		usleep(100*factor - duty);
-	}
+	if( mcu_board_config.led.port != 255 ){
+		for(i=0; i < 100; i++){
+			duty = i*factor;
+			mcu_core_privcall(stratify_led_priv_on, 0);
+			usleep(duty);
+			mcu_core_privcall(stratify_led_priv_off, 0);
+			usleep(100*factor - duty);
+		}
 
-	for(i=0; i < 100; i++){
-		duty = i*factor;
-		mcu_core_privcall(stratify_led_priv_on, 0);
-		usleep(100*factor - duty);
-		mcu_core_privcall(stratify_led_priv_off, 0);
-		usleep(duty);
+		for(i=0; i < 100; i++){
+			duty = i*factor;
+			mcu_core_privcall(stratify_led_priv_on, 0);
+			usleep(100*factor - duty);
+			mcu_core_privcall(stratify_led_priv_off, 0);
+			usleep(duty);
+		}
 	}
 }
 
 void stratify_led_priv_on(void * args){
-	pio_attr_t attr;
-	attr.mask = (1<<mcu_board_config.led.pin);
-	attr.mode = PIO_MODE_OUTPUT | PIO_MODE_DIRONLY;
-	mcu_pio_setattr(mcu_board_config.led.port, &attr);
-	if( mcu_board_config.o_flags & MCU_BOARD_CONFIG_FLAG_LED_ACTIVE_HIGH ){
-		mcu_pio_setmask(mcu_board_config.led.port, (void*)(1<<mcu_board_config.led.pin));
-	} else {
-		mcu_pio_clrmask(mcu_board_config.led.port, (void*)(1<<mcu_board_config.led.pin));
+	if( mcu_board_config.led.port != 255 ){
+		pio_attr_t attr;
+		attr.mask = (1<<mcu_board_config.led.pin);
+		attr.mode = PIO_MODE_OUTPUT | PIO_MODE_DIRONLY;
+		mcu_pio_setattr(mcu_board_config.led.port, &attr);
+		if( mcu_board_config.o_flags & MCU_BOARD_CONFIG_FLAG_LED_ACTIVE_HIGH ){
+			mcu_pio_setmask(mcu_board_config.led.port, (void*)(1<<mcu_board_config.led.pin));
+		} else {
+			mcu_pio_clrmask(mcu_board_config.led.port, (void*)(1<<mcu_board_config.led.pin));
+		}
 	}
 }
 
 void stratify_led_priv_off(void * args){
-	pio_attr_t attr;
-	attr.mode = PIO_MODE_INPUT | PIO_MODE_DIRONLY;
-	attr.mask = (1<<mcu_board_config.led.pin);
-	mcu_pio_setattr(mcu_board_config.led.port, &attr);
+	if( mcu_board_config.led.port != 255 ){
+		pio_attr_t attr;
+		attr.mode = PIO_MODE_INPUT | PIO_MODE_DIRONLY;
+		attr.mask = (1<<mcu_board_config.led.pin);
+		mcu_pio_setattr(mcu_board_config.led.port, &attr);
+	}
 }
 
 void stratify_led_priv_error(void * args){

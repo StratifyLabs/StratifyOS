@@ -249,12 +249,12 @@ int mcu_pio_setattr(int port, void * ctl){
 	LPC_GPIO_Type * gpio_regs = (LPC_GPIO_Type *)LPC_GPIO0_BASE + port;
 
 	if( attr->mode & PIO_MODE_INPUT ){
-		gpio_regs->DIR&=(~attr->mask);
+		gpio_regs->DIR &= ~(attr->mask);
 	}
 
 	if( attr->mode & (PIO_MODE_OUTPUT) ){
 		//set output pins as output
-		gpio_regs->DIR|=attr->mask;
+		gpio_regs->DIR |= attr->mask;
 	}
 
 	if( attr->mode & PIO_MODE_DIRONLY ){

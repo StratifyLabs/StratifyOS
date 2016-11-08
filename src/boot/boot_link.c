@@ -284,7 +284,7 @@ void boot_link_cmd_reset(link_transport_driver_t * driver, link_data_t * args){
 	gled_off();
 	u32 * dfu_sw_req;
 	driver->wait(500);
-	driver->close(driver->handle);
+	driver->close(&(driver->handle));
 	dfu_sw_req = (u32*)boot_board_config.sw_req_loc;
 	*dfu_sw_req = 0;
 	_mcu_core_priv_reset(NULL);
@@ -294,7 +294,7 @@ void boot_link_cmd_reset(link_transport_driver_t * driver, link_data_t * args){
 void boot_link_cmd_reset_bootloader(link_transport_driver_t * driver, link_data_t * args){
 	u32 * dfu_sw_req;
 	driver->wait(500);
-	driver->close(driver->handle);
+	driver->close(&(driver->handle));
 	dfu_sw_req = (u32*)boot_board_config.sw_req_loc;
 	*dfu_sw_req = boot_board_config.sw_req_value;
 	_mcu_core_priv_reset(NULL);
