@@ -1363,7 +1363,7 @@ int Link::install_app(string source, string dest, string name, bool (*update)(vo
 	int bytes_total;
 	string tmp_error;
 
-	link_appfs_file_t * app_file;
+	//link_appfs_file_t * app_file;
 
 	source_file = fopen(source.c_str(), "r");
 	if( source_file == 0 ){
@@ -1393,7 +1393,7 @@ int Link::install_app(string source, string dest, string name, bool (*update)(vo
 			bytes_read = fread((char*)attr.buffer, 1, APPFS_PAGE_SIZE, source_file);
 
 			if( bytes_cumm == 0 ){
-				app_file = (link_appfs_file_t *)attr.buffer;
+				//app_file = (link_appfs_file_t *)attr.buffer;
 			}
 
 			if( bytes_read > 0 ){

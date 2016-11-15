@@ -147,12 +147,13 @@ int link_phy_read(link_transport_phy_t handle, void * buf, int nbyte){
 	return bytes_read;
 }
 
-int link_phy_close(link_transport_phy_t handle){
-
-	if( CloseHandle(((link_phy_container_t*)handle)->handle) == 0 ){
+int link_phy_close(link_transport_phy_t * handle){
+	link_phy_container_t * phy = (link_phy_container_t *)*handle;
+	*handle = LINK_PHY_OPEN_ERROR;
+	if( CloseHandle(phy->handle) == 0 ){
 		link_error("Failed to close handle\n");
 	}
-	free(handle);
+	free(phy);
 	return 0;
 }
 
