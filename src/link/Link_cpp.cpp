@@ -151,7 +151,7 @@ int Link::init(string path, string sn, string notify_path){
 
 	link_debug(LINK_DEBUG_MESSAGE, "Init complete with 0x%llX", (uint64_t)m_driver->dev.handle);
 
-	if( m_boot == false ){
+	if( (m_boot == false) && (notify_path.empty() == false) ){
 
 		//load Sys flags to see if NOTIFY port is supported
 		int fd;
