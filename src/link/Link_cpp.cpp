@@ -1302,7 +1302,7 @@ int Link::update_binary_install_options(string path, string name, bool startup, 
 	link_appfs_file_t appfs_file;
 	FILE * binary_file;
 
-	binary_file = fopen(path.c_str(), "r+");
+	binary_file = fopen(path.c_str(), "rb+");
 	if( binary_file ==  0 ){
 		m_error_message = "Failed to open " + path + "/" + name;
 		return -1;
@@ -1365,7 +1365,7 @@ int Link::install_app(string source, string dest, string name, bool (*update)(vo
 
 	//link_appfs_file_t * app_file;
 
-	source_file = fopen(source.c_str(), "r");
+	source_file = fopen(source.c_str(), "rb");
 	if( source_file == 0 ){
 		m_status_message = "Failed to open file: " + source;
 		return -1;
