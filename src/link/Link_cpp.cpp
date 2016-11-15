@@ -151,26 +151,29 @@ int Link::init(string path, string sn, string notify_path){
 
 	link_debug(LINK_DEBUG_MESSAGE, "Init complete with 0x%llX", (uint64_t)m_driver->dev.handle);
 
-	//load Sys flags to see if NOTIFY port is supported
-	int fd;
+	if( m_boot == false ){
 
-	fd = open("/dev/sys", LINK_O_RDWR);
-	if( fd < 0 ){
-		return 0;
-	}
+		//load Sys flags to see if NOTIFY port is supported
+		int fd;
 
-	if( ioctl(fd, I_SYS_GETATTR, &m_sys_attr) < 0 ){
-		return 0;
-	}
+		fd = open("/dev/sys", LINK_O_RDWR);
+		if( fd < 0 ){
+			return 0;
+		}
 
-	close(fd);
+		if( ioctl(fd, I_SYS_GETATTR, &m_sys_attr) < 0 ){
+			return 0;
+		}
 
-	if( m_sys_attr.flags & SYS_FLAGS_NOTIFY ){
-		printf("NOTIFY FLAG PRESENT\n");
-		fflush(stdout);
-		m_driver->dev.notify_handle = m_driver->dev.open(notify_path.c_str(), 0);
-		if( m_driver->dev.notify_handle != LINK_PHY_OPEN_ERROR ){
-			m_is_notify = true;
+		close(fd);
+
+		if( m_sys_attr.flags & SYS_FLAGS_NOTIFY ){
+			printf("NOTIFY FLAG PRESENT\n");
+			fflush(stdout);
+			m_driver->dev.notify_handle = m_driver->dev.open(notify_path.c_str(), 0);
+			if( m_driver->dev.notify_handle != LINK_PHY_OPEN_ERROR ){
+				m_is_notify = true;
+			}
 		}
 	}
 
