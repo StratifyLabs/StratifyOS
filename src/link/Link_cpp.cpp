@@ -374,7 +374,7 @@ int Link::exit(){
 		link_disconnect(m_driver);
 
 		if ( m_driver->dev.handle != LINK_PHY_OPEN_ERROR ){
-			unlock_device(); //can't unlock the device because if it has been destroyed
+			unlock_device(); //can't unlock the device if it has been destroyed
 		}
 	}
 
