@@ -527,8 +527,8 @@ void link_cmd_chmod(link_transport_driver_t * driver, link_data_t * args){
 
 
 void link_cmd_exec(link_transport_driver_t * driver, link_data_t * args){
-	char path[PATH_MAX];
-	memset(path, 0, PATH_MAX);
+	char path[LINK_PATH_ARG_MAX];
+	memset(path, 0, LINK_PATH_ARG_MAX);
 	args->reply.err = link_transport_slaveread(driver, path, args->op.exec.path_size, NULL, NULL);
 	args->reply.err = process_start(path, NULL);
 	if ( args->reply.err < 0 ){

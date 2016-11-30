@@ -454,12 +454,11 @@ int mcu_uart_setaction(int port, void * ctl){
 
 	} else {
 
+		if( _mcu_core_priv_validate_callback(action->callback) < 0 ){
+			return -1;
+		}
 
 		if( action->event == UART_EVENT_DATA_READY ){
-
-			if( _mcu_core_priv_validate_callback(action->callback) < 0 ){
-				return -1;
-			}
 
 			uart_local[port].read.callback = action->callback;
 			uart_local[port].read.context = action->context;
@@ -467,9 +466,6 @@ int mcu_uart_setaction(int port, void * ctl){
 			uart_regs->IER |= (UIER_RBRIE);  //enable the receiver interrupt
 			uart_local[port].rx_bufp = NULL;
 		} else if ( action->event == UART_EVENT_WRITE_COMPLETE ){
-			if( _mcu_core_priv_validate_callback(action->callback) < 0 ){
-				return -1;
-			}
 
 			uart_local[port].write.callback = action->callback;
 			uart_local[port].write.context = action->context;

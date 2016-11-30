@@ -939,7 +939,9 @@ void priv_wake_blocked(void * args){
 	int * task = (int*)args;
 	int id = *task;
 	sched_priv_assert_active(id, SCHED_UNBLOCK_MQ);
-	sched_priv_update_on_wake(stratify_sched_table[id].priority);
+	if( !sched_stopped_asserted(id) ){
+		sched_priv_update_on_wake(stratify_sched_table[id].priority);
+	}
 }
 
 void check_for_blocked_task(void * block){

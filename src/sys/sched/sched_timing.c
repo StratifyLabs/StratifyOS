@@ -169,8 +169,7 @@ int priv_usecond_match_event(void * context, mcu_event_t data){
 				//wake this task
 				stratify_sched_table[i].wake.tv_sec = SCHED_TIMEVAL_SEC_INVALID;
 				sched_priv_assert_active(i, SCHED_UNBLOCK_SLEEP);
-
-				if ( sched_get_priority(i) > new_priority ){
+				if( !sched_stopped_asserted(i) && (sched_get_priority(i) > new_priority) ){
 					new_priority = sched_get_priority(i);
 				}
 

@@ -159,10 +159,9 @@ typedef struct MCU_PACK {
 	union {
 		const void * cbuf /*! \brief Pointer to const void buffer */;
 		void * buf /*! \brief Pointer to void buffer */;
-		const char * cchbuf /*! \brief Pointer to const char buffer */;
-		char * chbuf /*! \brief Pointer to char buffer */;
 	};
 	int nbyte /*! \brief The number of bytes to transfer */;
+	//mcu_event_handler_t handler /*! \brief MCU Event handler */;
 	mcu_callback_t callback /*! \brief The function to call when the operation completes */;
 	void * context /*! \brief The first argument to \a callback */;
 } device_transfer_t;

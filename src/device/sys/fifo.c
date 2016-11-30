@@ -142,8 +142,8 @@ void fifo_data_received(const fifo_cfg_t * cfgp, fifo_state_t * state){
 	int bytes_read;
 
 	if( state->rop != NULL ){
-		state->rop->nbyte = state->rop_len;
-		if( (bytes_read = fifo_read_buffer(cfgp, state, state->rop->chbuf)) > 0 ){
+		state->rop->nbyte = state->rop_len; //update the number of bytes read??
+		if( (bytes_read = fifo_read_buffer(cfgp, state, state->rop->buf)) > 0 ){
 			state->rop->nbyte = bytes_read;
 			if ( state->rop->callback(state->rop->context, (mcu_event_t)NULL) == 0 ){
 				state->rop = NULL;
@@ -167,7 +167,7 @@ static int data_transmitted(const device_cfg_t * cfg){
 	fifo_state_t * state = cfg->state;
 
 	if( state->wop != NULL ){
-		if( (bytes_written = fifo_write_buffer(cfgp, state, state->wop->cchbuf)) > 0 ){
+		if( (bytes_written = fifo_write_buffer(cfgp, state, state->wop->cbuf)) > 0 ){
 			state->wop->nbyte = bytes_written;
 			if ( state->wop->callback(state->wop->context, NULL) == 0 ){
 				state->wop = NULL;
@@ -226,15 +226,15 @@ int fifo_read_local(const fifo_cfg_t * cfgp, fifo_state_t * state, device_transf
 	}
 
 	state->rop_len = rop->nbyte;
-	bytes_read = fifo_read_buffer(cfgp, state, rop->chbuf); //see if there are bytes in the buffer
+	bytes_read = fifo_read_buffer(cfgp, state, rop->buf); //see if there are bytes in the buffer
 	if ( bytes_read == 0 ){
 		if( (rop->flags & O_NONBLOCK) ){
 			errno = EAGAIN;
 			bytes_read = -1;
 		} else {
 			state->rop = rop;
-			state->rop_len = rop->nbyte;
-			rop->nbyte = 0;
+			state->rop_len = rop->nbyte; //total number of bytes to read
+			rop->nbyte = 0; //number of bytes read so far
 		}
 	}
 
@@ -273,7 +273,7 @@ int fifo_write_local(const fifo_cfg_t * cfgp, fifo_state_t * state, device_trans
 	}
 
 	state->wop_len = wop->nbyte;
-	bytes_written = fifo_write_buffer(cfgp, state, wop->cchbuf); //see if there are bytes in the buffer
+	bytes_written = fifo_write_buffer(cfgp, state, wop->cbuf); //see if there are bytes in the buffer
 	if ( bytes_written == 0 ){
 		if( wop->flags & O_NONBLOCK ){
 			errno = EAGAIN;

@@ -372,7 +372,9 @@ void priv_mutex_unlock(priv_mutex_unlock_t * args){
 		args->mutex->lock = 1;
 		stratify_sched_table[new_thread].priority = args->mutex->prio_ceiling;
 		sched_priv_assert_active(new_thread, SCHED_UNBLOCK_MUTEX);
-		sched_priv_update_on_wake(stratify_sched_table[new_thread].priority);
+		if( !sched_stopped_asserted(new_thread) ){
+			sched_priv_update_on_wake(stratify_sched_table[new_thread].priority);
+		}
 	} else {
 		args->mutex->lock = 0;
 		args->mutex->pthread = -1; //The mutex is up for grabs

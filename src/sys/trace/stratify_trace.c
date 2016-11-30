@@ -42,15 +42,17 @@ void stratify_trace_event(link_trace_event_id_t event_id, const void * data_ptr,
 }
 
 void stratify_trace_event_addr(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len, u32 addr){
-	if( stratify_board_config.notify_write != 0 ){
-		stratify_trace_event_addr_tid(event_id, data_ptr, data_len, addr, task_get_current());
-	}
+	stratify_trace_event_addr_tid(event_id, data_ptr, data_len, addr, task_get_current());
 }
 
 void stratify_trace_event_addr_tid(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len, u32 addr, int tid){
 	//record event id and in-calling processes trace stream
 	struct timespec spec;
 	link_posix_trace_event_info_t event_info;
+
+	if( stratify_board_config.notify_write == 0 ){
+		return;
+	}
 
 	//convert the address using the task memory location
 	//check if addr is part of kernel or app
@@ -68,7 +70,7 @@ void stratify_trace_event_addr_tid(link_trace_event_id_t event_id, const void * 
 	event_info.posix_thread_id = tid;
 
 	if( data_len > LINK_POSIX_TRACE_DATA_SIZE-1  ){
-		data_len = LINK_POSIX_TRACE_DATA_SIZE;
+		data_len = LINK_POSIX_TRACE_DATA_SIZE-1;
 	}
 	memset(event_info.data, 0, LINK_POSIX_TRACE_DATA_SIZE);
 	memcpy(event_info.data, data_ptr, data_len);

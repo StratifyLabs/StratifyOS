@@ -72,7 +72,7 @@ int vcp_stdout_write(const device_cfg_t * cfg, device_transfer_t * wop){
 			cfgp->usb_interrupt_endpoint,
 			cfgp->usb_interface);
 
-	wop->cchbuf = buffer;
+	wop->cbuf = buffer;
 	wop->nbyte = strlen(buffer);
 
 	return fifo_write(cfg, wop);

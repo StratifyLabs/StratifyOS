@@ -91,9 +91,9 @@ enum {
  *  The attributes are read-only using \ref I_FIFO_ATTR.
  */
 typedef struct MCU_PACK {
-	uint32_t size /*! \brief The total number of bytes in the FIFO */;
-	uint32_t used /*! \brief The number of bytes ready to be read from the FIFO */;
-	uint32_t overflow /*! \brief If non-zero, indicates data received in the buffer was discarded */;
+	u32 size /*! \brief The total number of bytes in the FIFO */;
+	u32 used /*! \brief The number of bytes ready to be read from the FIFO */;
+	u32 overflow /*! \brief If non-zero, indicates data received in the buffer was discarded */;
 } fifo_attr_t;
 
 /*! \brief FIFO Peek data */

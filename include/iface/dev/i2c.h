@@ -146,8 +146,13 @@ typedef enum {
 	   I2C_TRANSFER_WRITE_PTR /*! \brief This will write the ptr value only without writing or reading any data. */,
 	   I2C_TRANSFER_WRITE_ONLY /*! \brief This will write data without first writing the pointer information */,
 	   I2C_TRANSFER_DATA_ONLY /*! \brief This will write data without first writing the pointer information */,
-
 } i2c_transfer_t;
+
+enum {
+	I2C_EVENT_NONE /*! No Event (used to adjust priority only) */,
+	I2C_EVENT_DATA_READY /*! Data is ready to be read */,
+	I2C_EVENT_WRITE_COMPLETE /*! A write has completed */
+};
 
 
 /*! \brief Data used to setup I2C transfers.
@@ -162,9 +167,10 @@ typedef struct MCU_PACK {
 typedef i2c_setup_t i2c_reqattr_t; //legacy support
 
 enum {
-	I2C_ATTR_FLAG_MASTER = (0<<0),
-	I2C_ATTR_FLAG_SLAVE = (1<<0),
-	I2C_ATTR_FLAG_SLAVE_ACK_GENERAL_CALL = (1<<1)
+	I2C_ATTR_FLAG_MASTER /*! \brief Operate as a master I2C bus */ = (0<<0),
+	I2C_ATTR_FLAG_SLAVE/*! \brief Operate as a slave (ignored if master is set) */ = (1<<0),
+	I2C_ATTR_FLAG_SLAVE_ACK_GENERAL_CALL /*! If slave operation, ack general call */ = (1<<1),
+	I2C_ATTR_FLAG_PULLUP /*! \brief Enable internal pullups if available (ignore otherwise) */ = (1<<2)
 };
 
 /*! \brief I2C IO Attributes
@@ -172,8 +178,8 @@ enum {
  * for configuring the I2C port.
  */
 typedef struct MCU_PACK {
-	u8 pin_assign /*! \brief The GPIO configuration to use (see \ref LPC17XXDEV) */;
-	u8 resd[1];
+	u8 pin_assign /*! \brief The GPIO configuration to use */;
+	u8 slave_addr /*! \brief The slave address to listen on (ignored if master) */;
 	u16 o_flags /*! \brief Attribute flags */;
 	u32 bitrate /*! \brief The I2C bitrate */;
 } i2c_attr_t;
@@ -204,11 +210,11 @@ typedef mcu_action_t i2c_action_t;
  * The third argument is a pointer to an \ref i2c_reqattr_t data structure.
  *
  * \code
- * i2c_reqattr_t req;
+ * i2c_setup_t setup;
  * char buf[32];
- * req.transfer = I2C_TRANSFER_NORMAL;
- * req.slave_addr = 0x4C;
- * ioctl(i2c_fd, I_I2C_SETUP, &req);
+ * setup.transfer = I2C_TRANSFER_NORMAL;
+ * setup.slave_addr = 0x4C;
+ * ioctl(i2c_fd, I_I2C_SETUP, &setup);
  * lseek(i2c_fd, loc, SEEK_SET); //loc is the location in the register map to read
  * read(i2c_fd, buf, 32);
  * \endcode

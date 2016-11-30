@@ -61,7 +61,7 @@ static int read_buffer(const devfifo_cfg_t * cfgp, devfifo_state_t * state, devi
 		if ( state->head == state->tail ){ //check for data in the fifo buffer
 			break;
 		} else {
-			rop->chbuf[i] = cfgp->buffer[state->tail];
+			((char*)(rop->buf))[i] = cfgp->buffer[state->tail];
 			state->tail++;
 			if ( state->tail == cfgp->size ){
 				state->tail = 0;

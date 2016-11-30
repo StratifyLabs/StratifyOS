@@ -276,8 +276,7 @@ int sched_get_highest_priority_blocked(void * block_object){
 		if ( task_enabled(i) ){
 			if ( (stratify_sched_table[i].block_object == block_object) && ( !sched_active_asserted(i) ) ){
 				//it's waiting for the block -- give the block to the highest priority and waiting longest
-				if ( stratify_sched_table[i].attr.schedparam.sched_priority > priority ){
-
+				if( !sched_stopped_asserted(i) && (stratify_sched_table[i].attr.schedparam.sched_priority > priority) ){
 					//! \todo Find the task that has been waiting the longest time
 					new_thread = i;
 					priority = stratify_sched_table[i].attr.schedparam.sched_priority;
@@ -297,7 +296,7 @@ int sched_priv_unblock_all(void * block_object, int unblock_type){
 			if ( (stratify_sched_table[i].block_object == block_object) && ( !sched_active_asserted(i) ) ){
 				//it's waiting for the semaphore -- give the semaphore to the highest priority and waiting longest
 				sched_priv_assert_active(i, unblock_type);
-				if ( stratify_sched_table[i].attr.schedparam.sched_priority > priority ){
+				if( !sched_stopped_asserted(i) && (stratify_sched_table[i].attr.schedparam.sched_priority > priority)  ){
 					priority = stratify_sched_table[i].attr.schedparam.sched_priority;
 				}
 			}

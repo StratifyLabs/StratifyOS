@@ -35,23 +35,31 @@ typedef union {
 } i2c_ptr_t;
 
 typedef struct MCU_PACK {
-	volatile char * data;
-	volatile u16 size;
-	volatile i2c_ptr_t ptr;
-	char addr;
+	mcu_event_handler_t handler;
+	char * volatile buffer;
+	u16 buffer_size;
+} i2c_local_slave_t;
+
+typedef struct MCU_PACK {
 	u8 ref_count;
 	volatile u8 state;
 	volatile u8 err;
-	int * ret;
-	i2c_reqattr_t transfer;
+	u8 resd[1];
 	mcu_event_handler_t handler;
+	volatile u16 size;
+	volatile i2c_ptr_t ptr;
+	char * volatile data;
+	int * ret;
+	i2c_setup_t transfer;
+	i2c_local_slave_t slave_read;
+	i2c_local_slave_t slave_write;
 } i2c_local_t;
 
-static void enable_opendrain_pin(int pio_port, int pio_pin) MCU_PRIV_CODE;
-void enable_opendrain_pin(int pio_port, int pio_pin){
+static void enable_opendrain_pin(int pio_port, int pio_pin, int internal_pullup) MCU_PRIV_CODE;
+void enable_opendrain_pin(int pio_port, int pio_pin, int internal_pullup){
 	pio_attr_t pattr;
 	pattr.mask = (1<<pio_pin);
-	pattr.mode = PIO_MODE_OUTPUT | PIO_MODE_OPENDRAIN;
+	pattr.mode = PIO_MODE_OUTPUT | PIO_MODE_OPENDRAIN | internal_pullup;
 	mcu_pio_setattr(pio_port, &pattr);
 }
 
@@ -62,7 +70,7 @@ static u8 const i2c_irqs[MCU_I2C_PORTS] = MCU_I2C_IRQS;
 static void set_done(int port, int error);
 static void receive_byte(LPC_I2C_Type * regs, int port);
 static void transmit_byte(LPC_I2C_Type * regs, int port);
-static void set_ack(LPC_I2C_Type * regs, int port);
+static void set_ack(LPC_I2C_Type * regs, int port, u16 size);
 
 static inline LPC_I2C_Type * i2c_get_regs(int port) MCU_ALWAYS_INLINE;
 LPC_I2C_Type * i2c_get_regs(int port){
@@ -90,7 +98,7 @@ char i2c_tst_done(int port){
 
 static inline void i2c_clr_done(int port) MCU_ALWAYS_INLINE;
 void i2c_clr_done(int port){
-	i2c_local[port].state  &= ~(I2C_DONE_FLAG);
+	i2c_local[port].state &= ~(I2C_DONE_FLAG);
 }
 
 static int i2c_transfer(int port, int op, device_transfer_t * dop);
@@ -120,10 +128,7 @@ void _mcu_i2c_dev_power_on(int port){
 			break;
 #endif
 		}
-		i2c_local[port].handler.callback = NULL;
-		i2c_local[port].state = 0;
-		i2c_local[port].size = 0;
-		i2c_local[port].data = 0;
+		memset(&(i2c_local[port].handler), 0, sizeof(mcu_event_handler_t));
 		_mcu_core_priv_enable_irq((void*)(u32)(i2c_irqs[port]));
 	}
 	i2c_local[port].ref_count++;
@@ -169,6 +174,7 @@ int mcu_i2c_setattr(int port, void * ctl){
 	LPC_I2C_Type * i2c_regs;
 	i2c_attr_t * ctl_ptr;
 	int count;
+	int internal_pullup;
 #if defined __lpc13uxx || defined __lpc13xx
 	pio_attr_t pattr;
 	__IO uint32_t * regs_iocon;
@@ -182,6 +188,12 @@ int mcu_i2c_setattr(int port, void * ctl){
 	if ( ctl_ptr->bitrate == 0 ){
 		errno = EINVAL;
 		return -1 - offsetof(i2c_attr_t, bitrate);
+	}
+
+	if ( ctl_ptr->o_flags & I2C_ATTR_FLAG_PULLUP ){
+		internal_pullup = PIO_MODE_PULLUP;
+	} else {
+		internal_pullup = 0;
 	}
 
 	if ( ctl_ptr->pin_assign != MCU_GPIO_CFG_USER ){
@@ -202,8 +214,8 @@ int mcu_i2c_setattr(int port, void * ctl){
 					regs_iocon = _mcu_get_iocon_regs(0, 5);
 					*regs_iocon = 0;
 #else
-					enable_opendrain_pin(MCU_I2C_PORT0_PINASSIGN0,MCU_I2C_SCLPIN0_PINASSIGN0);
-					enable_opendrain_pin(MCU_I2C_PORT0_PINASSIGN0,MCU_I2C_SDAPIN0_PINASSIGN0);
+					enable_opendrain_pin(MCU_I2C_PORT0_PINASSIGN0,MCU_I2C_SCLPIN0_PINASSIGN0,internal_pullup);
+					enable_opendrain_pin(MCU_I2C_PORT0_PINASSIGN0,MCU_I2C_SDAPIN0_PINASSIGN0,internal_pullup);
 #endif
 
 
@@ -226,8 +238,8 @@ int mcu_i2c_setattr(int port, void * ctl){
 				switch(ctl_ptr->pin_assign){
 				case 0:
 					//configure pins as open drain
-					enable_opendrain_pin(0,0);
-					enable_opendrain_pin(0,1);
+					enable_opendrain_pin(0,0,internal_pullup);
+					enable_opendrain_pin(0,1,internal_pullup);
 
 					if( _mcu_i2c_cfg_pio(1, 0, 1, 0) < 0 ){
 						errno = EINVAL;
@@ -235,8 +247,8 @@ int mcu_i2c_setattr(int port, void * ctl){
 					}
 					break;
 				case 1:
-					enable_opendrain_pin(0,19);
-					enable_opendrain_pin(0,20);
+					enable_opendrain_pin(0,19,internal_pullup);
+					enable_opendrain_pin(0,20,internal_pullup);
 					if ( _mcu_i2c_cfg_pio(1, 0, 20, 19) < 0 ){
 						errno = EINVAL;
 						return -1;
@@ -254,8 +266,8 @@ int mcu_i2c_setattr(int port, void * ctl){
 			if (1){
 				switch(ctl_ptr->pin_assign){
 				case 0:
-					enable_opendrain_pin(0,10);
-					enable_opendrain_pin(0,11);
+					enable_opendrain_pin(0,10,internal_pullup);
+					enable_opendrain_pin(0,11,internal_pullup);
 					_mcu_i2c_cfg_pio(2, 0, 11, 10);
 					break;
 				default:
@@ -292,7 +304,7 @@ int mcu_i2c_setattr(int port, void * ctl){
 }
 
 int mcu_i2c_setup(int port, void * ctl){
-	i2c_reqattr_t * ctl_ptr;
+	i2c_setup_t * ctl_ptr;
 	ctl_ptr = ctl;
 	i2c_local[port].transfer.slave_addr = ctl_ptr->slave_addr;
 	i2c_local[port].transfer.transfer = ctl_ptr->transfer;
@@ -306,20 +318,37 @@ int mcu_i2c_geterr(int port, void * ctl){
 int mcu_i2c_setaction(int port, void * ctl){
 	mcu_action_t * action = (mcu_action_t*)ctl;
 	if( action->callback == 0 ){
-		if ( !(i2c_local[port].state & I2C_DONE_FLAG) ){
-			exec_callback(port, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
+		if( action->event == I2C_EVENT_DATA_READY ){
+			if ( !(i2c_local[port].state & I2C_DONE_FLAG) ){
+				//exec_read_callback(port, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
+			}
+			i2c_local[port].slave_read.handler.callback = 0;
+			i2c_local[port].slave_read.handler.context = 0;
+
+		} else if( action->event == I2C_EVENT_WRITE_COMPLETE ){
+			if ( !(i2c_local[port].state & I2C_DONE_FLAG) ){
+				//exec_write_callback(port, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
+			}
+			i2c_local[port].slave_write.handler.callback = 0;
+			i2c_local[port].slave_write.handler.context = 0;
 		}
+
+		return 0;
 	}
 
 	if( _mcu_core_priv_validate_callback(action->callback) < 0 ){
 		return -1;
 	}
 
-	i2c_local[port].handler.callback = action->callback;
-	i2c_local[port].handler.context = action->context;
+	if( action->event == I2C_EVENT_DATA_READY ){
+		i2c_local[port].slave_read.handler.callback = action->callback;
+		i2c_local[port].slave_read.handler.context = action->context;
+	} else if ( action->event == I2C_EVENT_WRITE_COMPLETE ){
+		i2c_local[port].slave_write.handler.callback = action->callback;
+		i2c_local[port].slave_write.handler.context = action->context;
+	}
 
 	_mcu_core_setirqprio(i2c_irqs[port], action->prio);
-
 
 	return 0;
 }
@@ -344,8 +373,8 @@ void set_done(int port, int error){
 	i2c_local[port].data = 0;
 }
 
-void set_ack(LPC_I2C_Type * regs, int port){
-	if( i2c_local[port].size > 1 ){
+void set_ack(LPC_I2C_Type * regs, int port, u16 size){
+	if( size > 1 ){
 		regs->CONSET = AA;
 	} else {
 		regs->CONCLR = AA;
@@ -353,12 +382,12 @@ void set_ack(LPC_I2C_Type * regs, int port){
 }
 
 void receive_byte(LPC_I2C_Type * regs, int port){
-	if( i2c_local[port].data && i2c_local[port].size ){
-		i2c_local[port].size--;
+	if( (i2c_local[port].data) && (i2c_local[port].size) ){
 		*(i2c_local[port].data) = regs->DAT;
 		i2c_local[port].data++;
+		i2c_local[port].size--;
 	}
-	set_ack(regs, port);
+	set_ack(regs, port, i2c_local[port].size);
 }
 
 void transmit_byte(LPC_I2C_Type * regs, int port){
@@ -368,7 +397,7 @@ void transmit_byte(LPC_I2C_Type * regs, int port){
 		i2c_local[port].size--;
 	}
 
-	set_ack(regs, port);
+	set_ack(regs, port, i2c_local[port].size);
 }
 
 static void _mcu_i2c_isr(int port) {
@@ -383,9 +412,9 @@ static void _mcu_i2c_isr(int port) {
 	case 0x10: //Repeated Start condition
 		i2c_local[port].err = 0;
 		if ( i2c_local[port].state == I2C_STATE_NONE ){
-			i2c_regs->DAT = i2c_local[port].addr | 0x01; //Set the Read bit -- repeated start after write ptr
+			i2c_regs->DAT = (i2c_local[port].transfer.slave_addr << 1) | 0x01; //Set the Read bit -- repeated start after write ptr
 		} else {
-			i2c_regs->DAT = i2c_local[port].addr; //send the address -- in write mode
+			i2c_regs->DAT = (i2c_local[port].transfer.slave_addr << 1); //send the address -- in write mode
 		}
 
 		i2c_regs->CONSET = AA;
@@ -455,7 +484,7 @@ static void _mcu_i2c_isr(int port) {
 		//i2c_local[port].data = 0;
 		break;
 	case 0x40: //SLA+R transmitted -- Ack received
-		set_ack(i2c_regs, port);
+		set_ack(i2c_regs, port, i2c_local[port].size);
 		break;
 	case 0x50: //Data Byte received -- Ack returned
 		//Receive Data
@@ -479,7 +508,6 @@ static void _mcu_i2c_isr(int port) {
 		//i2c_local[port].data = 0;
 		break;
 	case 0x00:
-
 		i2c_regs->CONSET = STO;
 		set_done(port, I2C_ERROR_START);
 		//i2c_local[port].err = I2C_ERROR_START;
@@ -487,14 +515,15 @@ static void _mcu_i2c_isr(int port) {
 		//i2c_local[port].data = 0;
 		break;
 
+		//SLAVE OPERATION STARTS HERE
 	case 0x68: //Arbitration lost in SLA+R/W as master; Own SLA+W has been received, ACK returned
 	case 0x60: //Slave mode SLA+W has been received -- Ack returned
-		set_ack(i2c_regs, port);
+		set_ack(i2c_regs, port, 1);
 		break;
 	case 0x78: //Arbitration lost and general ack received
-	case 0x70: //General call has been recieved -- ack returned
+	case 0x70: //General call has been received -- ack returned
 		//check attr flag to see if General calls are ack'd
-		set_ack(i2c_regs, port);
+		set_ack(i2c_regs, port, 1);
 		break;
 
 	case 0x90: //data has been received and ack returned on general call
@@ -502,18 +531,28 @@ static void _mcu_i2c_isr(int port) {
 		receive_byte(i2c_regs, port);
 		break;
 
-	case 0x88: //data has been received and not ack has been returned
-	case 0x98: //data has been received and not ack has been returned on general call address
+	case 0x88: //data has been received and NOT ack has been returned
+	case 0x98: //data has been received and NOT ack has been returned on general call address
 		receive_byte(i2c_regs, port);
 		set_done(port, 0);
+		break;
+
+	case 0xA8: //Own SLA+R has been received and ack returned
+	case 0xB0: //Arbitration lost in SLA+R/W as master; Own SLA+R has been received, ACK has been returned.
+	case 0xB8: //Data byte in I2DAT has been transmitted; ACK has been received.
+		//load byte and send ack
+		transmit_byte(i2c_regs, port);
+		break;
+
+	case 0xC0: //Data byte in I2DAT has been transmitted; NOT ACK has been received.
+	case 0xC8: //Last data byte in I2DAT has been transmitted (AA = 0); ACK has been received.
+		//set ack to stay in slave mode
+
 		break;
 
 	case 0xA0: //stop or restart has been received while addressed
 		set_done(port, 0);
 		break;
-
-
-
 	}
 
 	i2c_regs->CONCLR = SI; //clear the interrupt flag
@@ -529,8 +568,9 @@ void exec_callback(int port, void * data){
 		*(i2c_local[port].ret) = -1;
 	}
 
-	_mcu_core_exec_event_handler(&(i2c_local[port].handler), data);
+	_mcu_core_exec_event_handler(&(i2c_local[port].handler), &(i2c_local[port].transfer));
 }
+
 
 int i2c_transfer(int port, int op, device_transfer_t * dop){
 	LPC_I2C_Type * i2c_regs;
@@ -538,7 +578,8 @@ int i2c_transfer(int port, int op, device_transfer_t * dop){
 	i2c_regs = i2c_get_regs(port);
 
 
-	if( i2c_local[port].transfer.transfer == I2C_TRANSFER_READ_ONLY){ //writes will always write the loc value -- so no need to abort here
+	//writes will always write the loc value -- so only abort on read only
+	if( i2c_local[port].transfer.transfer == I2C_TRANSFER_READ_ONLY){
 		if ( dop->nbyte == 0 ){
 			return 0;
 		}
@@ -557,8 +598,7 @@ int i2c_transfer(int port, int op, device_transfer_t * dop){
 	i2c_local[port].handler.context = dop->context;
 
 	i2c_clr_done(port); //clear the done flag
-	i2c_local[port].addr = (i2c_local[port].transfer.slave_addr << 1); //set the addr -- 7-bit addr is passed and shifted left 1 bit
-	i2c_local[port].data = (volatile void*)dop->buf;
+	i2c_local[port].data = (void * volatile)dop->buf;
 	i2c_local[port].ret = &(dop->nbyte);
 
 	switch(i2c_local[port].transfer.transfer){

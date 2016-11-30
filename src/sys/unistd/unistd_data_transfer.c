@@ -68,7 +68,7 @@ int priv_data_transfer_callback(void * context, mcu_event_t data){
 
 	new_priority = -1;
 	if ( (uint32_t)args->op.tid < task_get_total() ){
-		if ( sched_inuse_asserted(args->op.tid) ){ //check to see if the process terminated before arriving here
+		if ( sched_inuse_asserted(args->op.tid) && !sched_stopped_asserted(args->op.tid) ){ //check to see if the process terminated or stopped
 			new_priority = stratify_sched_table[args->op.tid].priority;
 		}
 	}
@@ -78,7 +78,7 @@ int priv_data_transfer_callback(void * context, mcu_event_t data){
 		if ( task_enabled(i) && sched_inuse_asserted(i) ){
 			if ( stratify_sched_table[i].block_object == (args->handle + args->read) ){
 				sched_priv_assert_active(i, SCHED_UNBLOCK_TRANSFER);
-				if ( stratify_sched_table[i].priority > new_priority ){
+				if( !sched_stopped_asserted(i) && (stratify_sched_table[i].priority > new_priority) ){
 					new_priority = stratify_sched_table[i].priority;
 				}
 			}

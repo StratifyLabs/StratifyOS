@@ -219,7 +219,7 @@ int appfs_open(const void * cfg, void ** handle, const char * path, int flags, i
 	case ANALYZE_PATH_RAM:
 	case ANALYZE_PATH_FLASH:
 		h->is_install = 0;
-		if( flags != O_RDONLY ){
+		if( (flags & O_ACCMODE) != O_RDONLY ){
 			errno = EROFS;
 			ret = -1;
 		}

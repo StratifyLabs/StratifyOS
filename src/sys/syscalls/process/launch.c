@@ -16,6 +16,7 @@
 
 #include "config.h"
 
+#include "iface/link.h"
 #include "iface/device_config.h"
 #include "mcu/task.h"
 #include "mcu/debug.h"
@@ -29,7 +30,7 @@
 #include "../../sched/sched_flags.h"
 #include "../../sysfs/appfs.h"
 
-#define PATH_ARG_MAX 256
+#define PATH_ARG_MAX LINK_PATH_ARG_MAX
 
 int launch(const char * path,
 		char * exec_dest,

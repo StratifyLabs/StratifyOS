@@ -220,7 +220,7 @@ void priv_contpid(void * args){
 
 void stop_action(int signo, int flags){
 	//stop all threads in the process
-	if( task_get_pid(task_get_current()) == 0 ){
+	if( task_get_current() == 0 ){ //can't stop the scheduler
 		return;
 	}
 

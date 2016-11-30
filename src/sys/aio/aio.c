@@ -280,7 +280,9 @@ static int aio_data_transfer_callback(struct aiocb * aiocbp, const void * ignore
 				for(i=0; i < p->nent; i++){
 					if ( aiocbp == p->list[i] ){ //If this is true the thread is blocked on the operation that is currently completing
 						sched_priv_assert_active(tid, SCHED_UNBLOCK_AIO);
-						sched_priv_update_on_wake(stratify_sched_table[tid].priority);
+						if( !sched_stopped_asserted(tid) ){
+							sched_priv_update_on_wake(stratify_sched_table[tid].priority);
+						}
 						break;
 					}
 				}
@@ -295,7 +297,9 @@ static int aio_data_transfer_callback(struct aiocb * aiocbp, const void * ignore
 
 				if( wakeup == true ){
 					sched_priv_assert_active(tid, SCHED_UNBLOCK_AIO);
-					sched_priv_update_on_wake(stratify_sched_table[tid].priority);
+					if( !sched_stopped_asserted(tid) ){
+						sched_priv_update_on_wake(stratify_sched_table[tid].priority);
+					}
 				}
 			}
 		}

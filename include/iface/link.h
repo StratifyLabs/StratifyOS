@@ -476,6 +476,8 @@ typedef struct MCU_PACK {
 	mcu_target_ptr_t ptr;
 } link_free_t;
 
+#define LINK_PATH_ARG_MAX 256
+
 typedef struct MCU_PACK {
 	link_cmd_t cmd;
 	u32 path_size;

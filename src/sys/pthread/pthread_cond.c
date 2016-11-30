@@ -118,7 +118,9 @@ int pthread_cond_broadcast(pthread_cond_t *cond){
 void priv_cond_signal(void * args){
 	int id = *((int*)args);
 	sched_priv_assert_active(id, SCHED_UNBLOCK_COND);
-	sched_priv_update_on_wake( stratify_sched_table[id].priority );
+	if( !sched_stopped_asserted(id) ){
+		sched_priv_update_on_wake( stratify_sched_table[id].priority );
+	}
 }
 
 /*! \details This function wakes the highest priority thread

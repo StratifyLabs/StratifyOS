@@ -285,7 +285,9 @@ void priv_sem_post(void * args){
 	int id = *((int*)args);
 	stratify_sched_table[id].block_object = NULL;
 	sched_priv_assert_active(id, SCHED_UNBLOCK_SEMAPHORE);
-	sched_priv_update_on_wake( stratify_sched_table[id].priority );
+	if( !sched_stopped_asserted(id) ){
+		sched_priv_update_on_wake( stratify_sched_table[id].priority );
+	}
 }
 
 /*! \details This function unlocks (increments) the value of
