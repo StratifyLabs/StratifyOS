@@ -51,6 +51,12 @@ int sst25vf_tmr_read(const device_cfg_t * cfg, device_transfer_t * rop);
 int sst25vf_tmr_write(const device_cfg_t * cfg, device_transfer_t * wop);
 int sst25vf_tmr_close(const device_cfg_t * cfg);
 
+int sst25vf_ssp_open(const device_cfg_t * cfg);
+int sst25vf_ssp_ioctl(const device_cfg_t * cfg, int request, void * ctl);
+int sst25vf_ssp_read(const device_cfg_t * cfg, device_transfer_t * rop);
+int sst25vf_ssp_write(const device_cfg_t * cfg, device_transfer_t * wop);
+int sst25vf_ssp_close(const device_cfg_t * cfg);
+
 
 #endif /* DEV_MICROCHIP_SST25VF_H_ */
 
