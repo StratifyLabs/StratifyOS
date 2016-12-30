@@ -482,6 +482,7 @@ u32 usb_dev_std_req_setcfg (usb_dev_context_t * context) {
 	u32 i;
 	u32 j;
 	usb_common_desc_t *dptr;
+	u8 alt_setting = 0;
 
 	if(context->setup_pkt.bmRequestType.bitmap_t.recipient == USB_DEV_REQUEST_TO_DEVICE){
 
@@ -520,15 +521,21 @@ u32 usb_dev_std_req_setcfg (usb_dev_context_t * context) {
 					}
 					break;
 
+				case USB_INTERFACE_DESCRIPTOR_TYPE:
+					alt_setting = ((usb_interface_desc_t *)dptr)->bAlternateSetting;
+					break;
+
 
 					//enable all the endpoints in the configuration
 				case USB_ENDPOINT_DESCRIPTOR_TYPE:
-					i = ((usb_ep_desc_t *)dptr)->bEndpointAddress & USB_DEV_EP_MASK;
-					j = usb_dev_decode_ep(context, i);
-					context->ep_mask |= j;
-					mcu_usb_cfgep(context->constants->port, dptr);
-					mcu_usb_enableep(context->constants->port, (void*)i);
-					mcu_usb_resetep(context->constants->port, (void*)i);
+					if( alt_setting == 0 ){ //when setting the config, use default alt setting of 0
+						i = ((usb_ep_desc_t *)dptr)->bEndpointAddress & USB_DEV_EP_MASK;
+						j = usb_dev_decode_ep(context, i);
+						context->ep_mask |= j;
+						mcu_usb_cfgep(context->constants->port, dptr);
+						mcu_usb_enableep(context->constants->port, (void*)i);
+						mcu_usb_resetep(context->constants->port, (void*)i);
+					}
 					break;
 
 				}
@@ -561,19 +568,14 @@ u32 usb_dev_std_req_setcfg (usb_dev_context_t * context) {
 
 u32 usb_dev_std_req_getinterface(usb_dev_context_t * context) {
 
-	switch (context->setup_pkt.bmRequestType.bitmap_t.recipient) {
-
-	case USB_DEV_REQUEST_TO_INTERFACE:
+	if( context->setup_pkt.bmRequestType.bitmap_t.recipient == USB_DEV_REQUEST_TO_INTERFACE) {
 		if ((context->cfg != 0) && (context->setup_pkt.wIndex.b[0] < context->num_interfaces)) {
 			context->ep0_data.dptr = context->alt_setting + context->setup_pkt.wIndex.b[0];
 		} else {
 			return false;
 		}
-		break;
-
-	default:
+	} else {
 		return false;
-
 	}
 	return (true);
 }
