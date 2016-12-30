@@ -34,12 +34,7 @@
 #include "iface/stratify_link_transport_usb.h"
 
 #define LINK_USB_VID 0x20A0
-
-#ifdef STRATIFY_LINK_DUAL_VCP
 #define LINK_USB_PID 0x413B
-#else
-#define LINK_USB_PID 0x41D5
-#endif
 
 #ifndef LINK_USB_DEV_PORT
 #define LINK_USB_DEV_PORT 0
@@ -57,9 +52,8 @@ const usbfifo_cfg_t stratify_link_transport_usb_fifo_cfg = USBFIFO_DEVICE_CFG(0,
 		USB0_DEVFIFO_BUFFER_SIZE);
 usbfifo_state_t stratify_link_transport_usb_fifo_state MCU_SYS_MEM;
 
-
 const usb_dev_const_t stratify_link_transport_usb_constants = {
-		.port = 0,
+		.port = STRATIFY_LINK_TRANSPORT_USB_PORT,
 		.device =  &stratify_link_transport_usb_dev_desc,
 		.config = &stratify_link_transport_usb_cfg_desc,
 		.string = &stratify_link_transport_usb_string_desc,
@@ -83,15 +77,9 @@ const usb_dev_desc_t stratify_link_transport_usb_dev_desc MCU_WEAK = {
 		.bLength = sizeof(usb_dev_desc_t),
 		.bDescriptorType = USB_DEVICE_DESCRIPTOR_TYPE,
 		.bcdUSB = 0x0200,
-#ifdef STRATIFY_LINK_DUAL_VCP
 		.bDeviceClass = 0,
 		.bDeviceSubClass = 0,
 		.bDeviceProtocol = 0,
-#else
-		.bDeviceClass = 0,
-		.bDeviceSubClass = 0,
-		.bDeviceProtocol = 0,
-#endif
 		.bMaxPacketSize = MCU_CORE_USB_MAX_PACKET_ZERO_VALUE,
 		.idVendor = LINK_USB_VID,
 		.idProduct = LINK_USB_PID,
@@ -109,11 +97,7 @@ const stratify_link_transport_usb_cfg_desc_t stratify_link_transport_usb_cfg_des
 				.bDescriptorType = USB_CONFIGURATION_DESCRIPTOR_TYPE,
 
 				.wTotalLength = sizeof(stratify_link_transport_usb_cfg_desc_t)-1, //exclude the zero terminator
-#ifdef STRATIFY_LINK_DUAL_VCP
 				.bNumInterfaces = 0x04,
-#else
-				.bNumInterfaces = 0x02,
-#endif
 				.bConfigurationValue = 0x01,
 				.iConfiguration = 0x03,
 				.bmAttributes = USB_CONFIG_BUS_POWERED,
@@ -190,23 +174,21 @@ const stratify_link_transport_usb_cfg_desc_t stratify_link_transport_usb_cfg_des
 				.data_out = {
 						.bLength= sizeof(usb_ep_desc_t),
 						.bDescriptorType=USB_ENDPOINT_DESCRIPTOR_TYPE,
-						.bEndpointAddress=STRATIFY_LINK_TRANSPORT_USB_BULKOUT,
+						.bEndpointAddress=STRATIFY_LINK_TRANSPORT_USB_BULK_ENDPOINT_OUT,
 						.bmAttributes=USB_ENDPOINT_TYPE_BULK,
-						.wMaxPacketSize=LINK_BULK_ENDPOINT_SIZE,
+						.wMaxPacketSize=STRATIFY_LINK_TRANSPORT_USB_BULK_ENDPOINT_SIZE,
 						.bInterval=1
 				},
 
 				.data_in = {
 						.bLength= sizeof(usb_ep_desc_t),
 						.bDescriptorType=USB_ENDPOINT_DESCRIPTOR_TYPE,
-						.bEndpointAddress=STRATIFY_LINK_TRANSPORT_USB_BULKIN,
+						.bEndpointAddress=STRATIFY_LINK_TRANSPORT_USB_BULK_ENDPOINT_IN,
 						.bmAttributes=USB_ENDPOINT_TYPE_BULK,
-						.wMaxPacketSize=LINK_BULK_ENDPOINT_SIZE,
+						.wMaxPacketSize=STRATIFY_LINK_TRANSPORT_USB_BULK_ENDPOINT_SIZE,
 						.bInterval=1
 				}
 		},
-
-#ifdef STRATIFY_LINK_DUAL_VCP
 
 		.vcp1 = {
 				.if_asso = {
@@ -286,15 +268,12 @@ const stratify_link_transport_usb_cfg_desc_t stratify_link_transport_usb_cfg_des
 				.data_in = {
 						.bLength= sizeof(usb_ep_desc_t),
 						.bDescriptorType=USB_ENDPOINT_DESCRIPTOR_TYPE,
-						.bEndpointAddress=STRATIFY_LINK_TRANSPORT_USB_BULKIN_ALT,
+						.bEndpointAddress=STRATIFY_LINK_TRANSPORT_USB_BULK_ENDPOINT_IN_ALT,
 						.bmAttributes=USB_ENDPOINT_TYPE_BULK,
 						.wMaxPacketSize=LINK_BULK_ENDPOINT_SIZE,
 						.bInterval=1
 				}
 		},
-#endif
-
-
 
 		.terminator = 0
 };
@@ -312,15 +291,12 @@ const struct stratify_link_transport_usb_string_t stratify_link_transport_usb_st
 		.bLength = 4,
 		.bDescriptorType = USB_STRING_DESCRIPTOR_TYPE,
 		.wLANGID = 0x0409, //English
-		.manufacturer = usb_assign_string(STRATIFY_LINK_TRANSPORT_USB_DESC_MANUFACTURER_SIZE, STRATIFY_LINK_TRANSPORT_USB_DESC_MANUFACTUER_STRING),
+		.manufacturer = usb_assign_string(STRATIFY_LINK_TRANSPORT_USB_DESC_MANUFACTURER_SIZE, STRATIFY_LINK_TRANSPORT_USB_DESC_MANUFACTURER_STRING),
 		.product = usb_assign_string(STRATIFY_LINK_TRANSPORT_USB_DESC_PRODUCT_SIZE, STRATIFY_LINK_TRANSPORT_USB_DESC_PRODUCT_STRING),
 		.serial = usb_assign_string(STRATIFY_LINK_TRANSPORT_USB_DESC_SERIAL_SIZE, 0)
 		, //dynamically load SN based on silicon
 		.vcp0 = usb_assign_string(STRATIFY_LINK_TRANSPORT_USB_DESC_VCP_0_SIZE, STRATIFY_LINK_TRANSPORT_USB_DESC_VCP_0),
-#ifdef STRATIFY_LINK_DUAL_VCP
 		.vcp1 = usb_assign_string(STRATIFY_LINK_TRANSPORT_USB_DESC_VCP_1_SIZE, STRATIFY_LINK_TRANSPORT_USB_DESC_VCP_1)
-#endif
-
 };
 
 
@@ -328,8 +304,8 @@ int stratify_link_transport_usb_cdc_if_req(void * object, int event){
 	u32 rate = 12000000;
 	usb_dev_context_t * context = object;
 
-	if ( (context->setup_pkt.wIndex.u8[0] == 0) || (context->setup_pkt.wIndex.u8[0] == 1) ||
-			(context->setup_pkt.wIndex.u8[0] == 2) || (context->setup_pkt.wIndex.u8[0] == 3) ) { //! \todo The wIndex should equal the CDC interface number
+	if ( (context->setup_pkt.wIndex.b[0] == 0) || (context->setup_pkt.wIndex.b[0] == 1) ||
+			(context->setup_pkt.wIndex.b[0] == 2) || (context->setup_pkt.wIndex.b[0] == 3) ) { //! \todo The wIndex should equal the CDC interface number
 
 		if ( (event == USB_SETUP_EVENT) ){
 			switch(context->setup_pkt.bRequest){

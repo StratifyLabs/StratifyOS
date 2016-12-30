@@ -29,140 +29,142 @@
 #ifndef USB_TYPEDEFS_H_
 #define USB_TYPEDEFS_H_
 
+#include "mcu/types.h"
+
 typedef union MCU_PACK {
-	uint16_t u16;
-	uint8_t u8[2];
-} uint16_union_t;
+	u16 w;
+	u8 b[2];
+} u16_union_t;
 
 typedef union MCU_PACK {
 	struct MCU_PACK {
-		uint8_t recipient:5;
-		uint8_t type:2;
-		uint8_t dir:1;
+		u8 recipient:5;
+		u8 type:2;
+		u8 dir:1;
 	} bitmap_t;
-	uint8_t u8;
+	u8 b;
 } usb_req_t;
 
 typedef struct MCU_PACK {
 	usb_req_t bmRequestType;
-	uint8_t bRequest;
-	uint16_union_t wValue;
-	uint16_union_t wIndex;
-	uint16_t wLength;
+	u8 bRequest;
+	u16_union_t wValue;
+	u16_union_t wIndex;
+	u16 wLength;
 } usb_setup_pkt_t;
 
 typedef struct MCU_PACK {
-	uint8_t bLength;
-	uint8_t bDescriptorType;
-	uint8_t bEndpointAddress;
-	uint8_t bmAttributes;
-	uint16_t wMaxPacketSize;
-	uint8_t bInterval;
+	u8 bLength;
+	u8 bDescriptorType;
+	u8 bEndpointAddress;
+	u8 bmAttributes;
+	u16 wMaxPacketSize;
+	u8 bInterval;
 } usb_ep_desc_t;
 
 typedef struct MCU_PACK {
-	uint8_t bLength;
-	uint8_t bDescriptorType;
-	uint8_t bInterfaceNumber;
-	uint8_t bAlternateSetting;
-	uint8_t bNumEndpoints;
-	uint8_t bInterfaceClass;
-	uint8_t bInterfaceSubClass;
-	uint8_t bInterfaceProtocol;
-	uint8_t iInterface;
+	u8 bLength;
+	u8 bDescriptorType;
+	u8 bInterfaceNumber;
+	u8 bAlternateSetting;
+	u8 bNumEndpoints;
+	u8 bInterfaceClass;
+	u8 bInterfaceSubClass;
+	u8 bInterfaceProtocol;
+	u8 iInterface;
 } usb_interface_desc_t;
 
 typedef struct MCU_PACK {
-	uint8_t bLength;
-	uint8_t bDescriptorType;
-	uint16_t bcdUSB;
-	uint8_t bDeviceClass;
-	uint8_t bDeviceSubClass;
-	uint8_t bDeviceProtocol;
-	uint8_t bMaxPacketSize;
-	uint16_t idVendor;
-	uint16_t idProduct;
-	uint16_t bcdDevice;
-	uint8_t iManufacturer;
-	uint8_t iProduct;
-	uint8_t iSerialNumber;
-	uint8_t bNumConfigurations;
+	u8 bLength;
+	u8 bDescriptorType;
+	u16 bcdUSB;
+	u8 bDeviceClass;
+	u8 bDeviceSubClass;
+	u8 bDeviceProtocol;
+	u8 bMaxPacketSize;
+	u16 idVendor;
+	u16 idProduct;
+	u16 bcdDevice;
+	u8 iManufacturer;
+	u8 iProduct;
+	u8 iSerialNumber;
+	u8 bNumConfigurations;
 } usb_dev_desc_t;
 
 typedef struct MCU_PACK {
-	uint8_t bLength;
-	uint8_t bDescriptorType;
-	uint16_t bcdUSB;
-	uint8_t bDeviceClass;
-	uint8_t bDeviceSubClass;
-	uint8_t bDeviceProtocol;
-	uint8_t bMaxPacketSize;
-	uint8_t bNumConfigurations;
-	uint8_t bReserved;
+	u8 bLength;
+	u8 bDescriptorType;
+	u16 bcdUSB;
+	u8 bDeviceClass;
+	u8 bDeviceSubClass;
+	u8 bDeviceProtocol;
+	u8 bMaxPacketSize;
+	u8 bNumConfigurations;
+	u8 bReserved;
 } usb_dev_qual_desc_t;
 
 typedef struct MCU_PACK {
-	uint8_t bLength;
-	uint8_t bDescriptorType;
-	uint16_t wTotalLength;
-	uint8_t bNumInterfaces;
-	uint8_t bConfigurationValue;
-	uint8_t iConfiguration;
-	uint8_t bmAttributes;
-	uint8_t bMaxPower;
+	u8 bLength;
+	u8 bDescriptorType;
+	u16 wTotalLength;
+	u8 bNumInterfaces;
+	u8 bConfigurationValue;
+	u8 iConfiguration;
+	u8 bmAttributes;
+	u8 bMaxPower;
 } usb_cfg_desc_t;
 
 typedef struct MCU_PACK {
-	uint8_t bLength;
-	uint8_t bDescriptorType;
-	uint16_t * bString;
+	u8 bLength;
+	u8 bDescriptorType;
+	u16 * bString;
 	void * next;
 } usb_string_desc_t;
 
 typedef struct MCU_PACK {
-	uint8_t bLength;
-	uint8_t bDescriptorType;
+	u8 bLength;
+	u8 bDescriptorType;
 }usb_common_desc_t;
 
 typedef struct MCU_PACK {
-	uint8_t bLength;
-	uint8_t bDescriptorType;
-	uint8_t bDescriptorSubType;
-	uint16_t bcdCDC;
+	u8 bLength;
+	u8 bDescriptorType;
+	u8 bDescriptorSubType;
+	u16 bcdCDC;
 } usb_dev_cdc_header_t;
 
 typedef struct MCU_PACK {
-	uint8_t bFunctionLength;
-	uint8_t bDescriptorType;
-	uint8_t bDescriptorSubType;
-	uint8_t bmCapabilities;
+	u8 bFunctionLength;
+	u8 bDescriptorType;
+	u8 bDescriptorSubType;
+	u8 bmCapabilities;
 } usb_dev_cdc_acm_t;
 
 typedef struct MCU_PACK {
-	uint8_t bFunctionLength;
-	uint8_t bDescriptorType;
-	uint8_t bDescriptorSubType;
-	uint8_t bMasterInterface;
-	uint8_t bSlaveInterface;
+	u8 bFunctionLength;
+	u8 bDescriptorType;
+	u8 bDescriptorSubType;
+	u8 bMasterInterface;
+	u8 bSlaveInterface;
 } usb_dev_cdc_uniondescriptor_t;
 
 typedef struct MCU_PACK {
-	uint8_t bFunctionLength;
-	uint8_t bDescriptorType;
-	uint8_t bDescriptorSubType;
-	uint8_t bmCapabilities;
-	uint8_t bDataInterface;
+	u8 bFunctionLength;
+	u8 bDescriptorType;
+	u8 bDescriptorSubType;
+	u8 bmCapabilities;
+	u8 bDataInterface;
 } usb_dev_cdc_callmanagement_t;
 
 
 typedef struct MCU_PACK {
-	uint8_t bFunctionLength;
-	uint8_t bDescriptorType;
-	uint8_t bDescriptorSubType;
-	uint8_t bEntityId;
-	uint8_t bExtensionCode;
-	uint8_t iName;
-	uint8_t bChildId[];
+	u8 bFunctionLength;
+	u8 bDescriptorType;
+	u8 bDescriptorSubType;
+	u8 bEntityId;
+	u8 bExtensionCode;
+	u8 iName;
+	u8 bChildId[];
 } usb_dev_cdc_extensionunit_t;
 
 typedef struct MCU_PACK {
@@ -217,39 +219,41 @@ typedef struct MCU_PACK {
 } usb_desc_vcp_t;
 
 typedef struct MCU_PACK {
-	uint16_t bcdDevice;
-	uint16_t idProduct;
-	uint16_t idVendor;
-	uint16_t bcdDFU;
+	u16 bcdDevice;
+	u16 idProduct;
+	u16 idVendor;
+	u16 bcdDFU;
 	char ucDfuSignature[3];
-	uint8_t bLength;
+	u8 bLength;
 	uint32_t dwCRC;
 } usb_dev_dfu_file_suffix_t;
 
 typedef struct MCU_PACK {
-	uint8_t bLength;
-	uint8_t bDescriptorType;
-	uint8_t bmAttributes;
-	uint16_t wDetachTimeOut;
-	uint16_t wTransferSize;
-	uint16_t bcdDFUVersion;
+	u8 bLength;
+	u8 bDescriptorType;
+	u8 bmAttributes;
+	u16 wDetachTimeOut;
+	u16 wTransferSize;
+	u16 bcdDFUVersion;
 } usb_dev_dfu_func_desc_t;
 
 typedef struct MCU_PACK {
-	uint8_t bStatus;
-	uint8_t bwPollTimeout[3];
-	uint8_t bState;
-	uint8_t iString;
+	u8 bStatus;
+	u8 bwPollTimeout[3];
+	u8 bState;
+	u8 iString;
 } usb_dev_dfu_status_t;
+
+
 
 /*! \details This macro function allows the user to declare a USB string
  * data structure.
  */
 #define usb_declare_string(len) struct \
 		MCU_PACK { \
-	uint8_t bLength; \
-	uint8_t bDescriptorType; \
-	uint16_t string[len]; \
+	u8 bLength; \
+	u8 bDescriptorType; \
+	u16 string[len]; \
 }
 
 /*! \details This macro function allows the user to assign values to a USB

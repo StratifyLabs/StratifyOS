@@ -11,6 +11,7 @@
 #include "stratify/usb_dev.h"
 #include "stratify/usb_dev_cdc.h"
 #include "mcu/core.h"
+#include "mcu/usb.h"
 #include "mcu/debug.h"
 #include "stratify/usb_dev_typedefs.h"
 #include "stratify/usb_dev_defs.h"
@@ -74,7 +75,7 @@ link_transport_phy_t stratify_link_boot_transport_usb_open(const char * name, us
 
 int stratify_link_boot_transport_usb_write(link_transport_phy_t handle, const void * buf, int nbyte){
 	int ret;
-	ret = mcu_sync_io(&usb_dev, mcu_usb_write, STRATIFY_LINK_TRANSPORT_USB_BULKIN, buf, nbyte, O_RDWR);
+	ret = mcu_sync_io(&usb_dev, mcu_usb_write, STRATIFY_LINK_TRANSPORT_USB_BULK_ENDPOINT_IN, buf, nbyte, O_RDWR);
 	return ret;
 }
 
@@ -122,7 +123,7 @@ int stratify_link_boot_transport_usb_read(link_transport_phy_t handle, void * bu
 
 	while( bytes_read < nbyte ){
 		//need more data to service request
-		ret = mcu_sync_io(&usb_dev, mcu_usb_read, STRATIFY_LINK_TRANSPORT_USB_BULKOUT, buffer, STRATIFY_LINK_TRANSPORT_ENDPOINT_SIZE, O_RDWR | MCU_SYNC_IO_FLAG_READ);
+		ret = mcu_sync_io(&usb_dev, mcu_usb_read, STRATIFY_LINK_TRANSPORT_USB_BULK_ENDPOINT_OUT, buffer, STRATIFY_LINK_TRANSPORT_ENDPOINT_SIZE, O_RDWR | MCU_SYNC_IO_FLAG_READ);
 		write_buffer(buffer, ret);
 		ret = read_buffer(buf + bytes_read, nbyte - bytes_read);
 		bytes_read += ret;

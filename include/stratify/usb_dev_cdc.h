@@ -34,7 +34,7 @@
 #define USB_DEV_CDC_H_
 
 #include <stdint.h>
-#include "mcu/usb.h"
+#include "mcu/types.h"
 
 //bDescriptorType field
 #define CDC_CS_INTERFACE 0x24
@@ -108,154 +108,154 @@
 #define SERIAL_STATE_RX_CARRIER (1<<0)
 
 typedef struct {
-	uint8_t bFunctionLength;
-	uint8_t bDescriptorType;
-	uint8_t bDescriptorSubType;
-	uint8_t functionSpecificData[];
+	u8 bFunctionLength;
+	u8 bDescriptorType;
+	u8 bDescriptorSubType;
+	u8 functionSpecificData[];
 } cdc_func_desc_t;
 
 typedef struct {
-	uint8_t bFunctionLength;
-	uint8_t bDescriptorType;
-	uint8_t bDescriptorSubType;
-	uint16_t bcdCDC;
+	u8 bFunctionLength;
+	u8 bDescriptorType;
+	u8 bDescriptorSubType;
+	u16 bcdCDC;
 } cdc_header_func_desc_t;
 
 typedef struct {
-	uint8_t bFunctionLength;
-	uint8_t bDescriptorType;
-	uint8_t bDescriptorSubType;
-	uint8_t bmCapabilities;
-	uint8_t bDataInterface;
+	u8 bFunctionLength;
+	u8 bDescriptorType;
+	u8 bDescriptorSubType;
+	u8 bmCapabilities;
+	u8 bDataInterface;
 } cdc_call_mgt_func_desc_t;
 
 typedef struct {
-	uint8_t bFunctionLength;
-	uint8_t bDescriptorType;
-	uint8_t bDescriptorSubType;
-	uint8_t bmCapabilities;
+	u8 bFunctionLength;
+	u8 bDescriptorType;
+	u8 bDescriptorSubType;
+	u8 bmCapabilities;
 } cdc_abstract_contorl_mgt_func_desc_t;
 
 typedef struct {
-	uint8_t bFunctionLength;
-	uint8_t bDescriptorType;
-	uint8_t bDescriptorSubType;
-	uint8_t bmCapabilities;
+	u8 bFunctionLength;
+	u8 bDescriptorType;
+	u8 bDescriptorSubType;
+	u8 bmCapabilities;
 } cdc_direct_line_mgt_func_desc_t;
 
 typedef struct {
-	uint8_t bFunctionLength;
-	uint8_t bDescriptorType;
-	uint8_t bDescriptorSubType;
-	uint8_t bRingerVolSteps;
-	uint8_t bNumRingerPatterns;
+	u8 bFunctionLength;
+	u8 bDescriptorType;
+	u8 bDescriptorSubType;
+	u8 bRingerVolSteps;
+	u8 bNumRingerPatterns;
 } cdc_telephone_ringer_func_desc_t;
 
 typedef struct {
-	uint8_t bFunctionLength;
-	uint8_t bDescriptorType;
-	uint8_t bDescriptorSubType;
-	uint8_t bmCapabilities;
+	u8 bFunctionLength;
+	u8 bDescriptorType;
+	u8 bDescriptorSubType;
+	u8 bmCapabilities;
 } cdc_telephone_operational_modes_func_desc_t;
 
 typedef struct {
-	uint8_t bFunctionLength;
-	uint8_t bDescriptorType;
-	uint8_t bDescriptorSubType;
-	uint8_t bmCapabilities;
+	u8 bFunctionLength;
+	u8 bDescriptorType;
+	u8 bDescriptorSubType;
+	u8 bmCapabilities;
 } cdc_telephone_call_and_line_reporting_capabilities_func_desc_t;
 
 typedef struct {
-	uint8_t bFunctionLength;
-	uint8_t bDescriptorType;
-	uint8_t bDescriptorSubType;
-	uint8_t bMasterInterface;
-	uint8_t bSlaveInterface[];
+	u8 bFunctionLength;
+	u8 bDescriptorType;
+	u8 bDescriptorSubType;
+	u8 bMasterInterface;
+	u8 bSlaveInterface[];
 } cdc_union_func_desc_t;
 
 typedef struct {
-	uint8_t bFunctionLength;
-	uint8_t bDescriptorType;
-	uint8_t bDescriptorSubType;
-	uint8_t iCountryCodeRelDate;
-	uint16_t wCountryCode[];
+	u8 bFunctionLength;
+	u8 bDescriptorType;
+	u8 bDescriptorSubType;
+	u8 iCountryCodeRelDate;
+	u16 wCountryCode[];
 } cdc_country_selection_func_desc_t;
 
 typedef struct {
-	uint8_t bFunctionLength;
-	uint8_t bDescriptorType;
-	uint8_t bDescriptorSubType;
-	uint8_t bEntityId;
-	uint8_t bInInterfaceNo;
-	uint8_t bOutInterfaceNo;
-	uint8_t bmOptions;
-	uint8_t bChildId[];
+	u8 bFunctionLength;
+	u8 bDescriptorType;
+	u8 bDescriptorSubType;
+	u8 bEntityId;
+	u8 bInInterfaceNo;
+	u8 bOutInterfaceNo;
+	u8 bmOptions;
+	u8 bChildId[];
 } cdc_usb_terminal_func_desc_t;
 
 typedef struct {
-	uint8_t bFunctionLength;
-	uint8_t bDescriptorType;
-	uint8_t bDescriptorSubType;
-	uint8_t bEntityId;
-	uint8_t iName;
-	uint8_t bChannelIndex;
-	uint8_t bPhysicalInterface;
+	u8 bFunctionLength;
+	u8 bDescriptorType;
+	u8 bDescriptorSubType;
+	u8 bEntityId;
+	u8 iName;
+	u8 bChannelIndex;
+	u8 bPhysicalInterface;
 } cdc_network_channel_terminal_func_desc_t;
 
 typedef struct {
-	uint8_t bFunctionLength;
-	uint8_t bDescriptorType;
-	uint8_t bDescriptorSubType;
-	uint8_t bEntityId;
-	uint8_t bProtocol;
-	uint8_t bChildId[];
+	u8 bFunctionLength;
+	u8 bDescriptorType;
+	u8 bDescriptorSubType;
+	u8 bEntityId;
+	u8 bProtocol;
+	u8 bChildId[];
 } cdc_protocol_unit_func_desc_t;
 
 typedef struct {
-	uint8_t bFunctionLength;
-	uint8_t bDescriptorType;
-	uint8_t bDescriptorSubType;
-	uint8_t bEntityId;
-	uint8_t bExtensionCode;
-	uint8_t iName;
-	uint8_t bChildId[];
+	u8 bFunctionLength;
+	u8 bDescriptorType;
+	u8 bDescriptorSubType;
+	u8 bEntityId;
+	u8 bExtensionCode;
+	u8 iName;
+	u8 bChildId[];
 } cdc_extension_unit_func_desc_t;
 
 typedef struct {
-	uint8_t bFunctionLength;
-	uint8_t bDescriptorType;
-	uint8_t bDescriptorSubType;
-	uint8_t bmCapabilities;
+	u8 bFunctionLength;
+	u8 bDescriptorType;
+	u8 bDescriptorSubType;
+	u8 bmCapabilities;
 } cdc_multi_channel_mgt_func_desc_t;
 
 typedef struct {
-	uint8_t bFunctionLength;
-	uint8_t bDescriptorType;
-	uint8_t bDescriptorSubType;
-	uint8_t bmCapabilities;
+	u8 bFunctionLength;
+	u8 bDescriptorType;
+	u8 bDescriptorSubType;
+	u8 bmCapabilities;
 } cdc_capi_control_mgt_func_desc_t;
 
 typedef struct {
-	uint8_t bFunctionLength;
-	uint8_t bDescriptorType;
-	uint8_t bDescriptorSubType;
-	uint8_t iMACAddress;
-	uint32_t bmEthernetStatistics;
-	uint16_t wMaxSegmentSize;
-	uint16_t wNumberMCFilters;
-	uint8_t bNumberPowerFilters;
+	u8 bFunctionLength;
+	u8 bDescriptorType;
+	u8 bDescriptorSubType;
+	u8 iMACAddress;
+	u32 bmEthernetStatistics;
+	u16 wMaxSegmentSize;
+	u16 wNumberMCFilters;
+	u8 bNumberPowerFilters;
 } cdc_ethernet_netorking_func_desc_t;
 
 typedef struct {
-	uint8_t bFunctionLength;
-	uint8_t bDescriptorType;
-	uint8_t bDescriptorSubType;
-	uint8_t iEndSystemIdentifier;
-	uint8_t bmDataCapabilities;
-	uint8_t bmATMDeviceStatistics;
-	uint16_t wType2MaxSegmentSize;
-	uint16_t wType3MaxSegmentSize;
-	uint16_t wMaxVC;
+	u8 bFunctionLength;
+	u8 bDescriptorType;
+	u8 bDescriptorSubType;
+	u8 iEndSystemIdentifier;
+	u8 bmDataCapabilities;
+	u8 bmATMDeviceStatistics;
+	u16 wType2MaxSegmentSize;
+	u16 wType3MaxSegmentSize;
+	u16 wMaxVC;
 } cdc_atm_netorking_func_desc_t;
 
 int usb_dev_cdc_if_req(int event);

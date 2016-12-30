@@ -35,10 +35,10 @@
 #include "../stratify/usb_dev_typedefs.h"
 
 //#define USB_DEV_PORT 0
-#define USB_DEV_ALT_SETTING_SIZE 4
+#define USB_DEV_ALT_SETTING_SIZE 16
 
 typedef struct {
-  u8  *dptr;
+  u8 * dptr;
   u16 cnt;
 } usb_ep_data_t;
 

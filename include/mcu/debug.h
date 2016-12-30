@@ -73,7 +73,7 @@ extern char mcu_debug_buffer[MCU_DEBUG_BUFFER_SIZE];
 	op.buf = mcu_debug_buffer; \
 	op.nbyte = bytes; \
 	op.callback = NULL; \
-	mcu_uart_write(&periph, &op); \
+	mcu_uart_write((const device_cfg_t *)&periph, &op); \
 } while(0)
 
 extern volatile int usbdev_stat;

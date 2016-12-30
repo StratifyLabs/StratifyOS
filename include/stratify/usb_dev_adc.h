@@ -398,166 +398,135 @@
 #define AUDIO_TERMINAL_SYNTHESIZER              0x0713
 
 
-typedef struct
-__attribute__ ((packed))
-{
-  uint8_t  bLength;
-  uint8_t  bDescriptorType;
-  uint8_t  bEndpointAddress;
-  uint8_t  bmAttributes;
-  uint16_t wMaxPacketSize;
-  uint8_t  bInterval;
-  uint8_t bRefresh;
-  uint8_t bSynchAddress;
+
+typedef struct MCU_PACK {
+  u8  bLength;
+  u8  bDescriptorType;
+  u8  bEndpointAddress;
+  u8  bmAttributes;
+  u16 wMaxPacketSize;
+  u8  bInterval;
+  u8 bRefresh;
+  u8 bSynchAddress;
 } usb_audio_ep_desc_t;
 
-typedef struct
-MCU_PACK
-{
-	uint8_t bLength;
-	uint8_t bDescriptorType;
-	uint8_t bDescriptorSubtype;
-	uint16_t bcdADC;
-	uint16_t wTotalLength;
-	uint8_t bInCollection;
-	uint8_t baInterfaceNr;
+typedef struct MCU_PACK {
+	u8 bLength;
+	u8 bDescriptorType;
+	u8 bDescriptorSubtype;
+	u16 bcdADC;
+	u16 wTotalLength;
+	u8 bInCollection;
+	u8 baInterfaceNr;
 } usb_audio_interface_desc_t;
 
 
-typedef struct
-MCU_PACK
-{
-	uint8_t bNrChannels;
-	uint32_t bmChannelConfig;
-	uint8_t iChannelNames;
+typedef struct MCU_PACK {
+	u8 bNrChannels;
+	u32 bmChannelConfig;
+	u8 iChannelNames;
 } usb_audio_channel_cluster_desc_t;
 
 
-typedef struct
-MCU_PACK
-{
-	uint8_t bLength;
-	uint8_t bDescriptorType;
-	uint8_t bDescriptorSubtype;
-	uint8_t bTerminalID;
-	uint16_t wTerminalType;
-	uint8_t bAssocTerminal;
-	uint8_t bNrChannels;
-	uint16_t wChannelConfig;
-	uint8_t iChannelNames;
-	uint8_t iTerminal;
+typedef struct MCU_PACK {
+	u8 bLength;
+	u8 bDescriptorType;
+	u8 bDescriptorSubtype;
+	u8 bTerminalID;
+	u16 wTerminalType;
+	u8 bAssocTerminal;
+	u8 bNrChannels;
+	u16 wChannelConfig;
+	u8 iChannelNames;
+	u8 iTerminal;
 } usb_audio_input_terminal_desc_t;
 
-typedef struct
-MCU_PACK
-{
-	uint8_t bLength;
-	uint8_t bDescriptorType;
-	uint8_t bDescriptorSubtype;
-	uint8_t bTerminalID;
-	uint16_t wTerminalType;
-	uint8_t bAssocTerminal;
-	uint8_t bSourceID;
-	uint8_t iTerminal;
+typedef struct MCU_PACK {
+	u8 bLength;
+	u8 bDescriptorType;
+	u8 bDescriptorSubtype;
+	u8 bTerminalID;
+	u16 wTerminalType;
+	u8 bAssocTerminal;
+	u8 bSourceID;
+	u8 iTerminal;
 } usb_audio_output_terminal_desc_t;
 
-typedef struct
-MCU_PACK
-{
-	uint8_t bLength;
-	uint8_t bDescriptorType;
-	uint8_t bDescriptorSubtype;
-	uint8_t bUnitID;
-	uint8_t bSourceID;
-	uint8_t bControlSize;
-	uint8_t bmaControls[USB_AUDIO_FEATURE_UNIT_BMA_CONTROLS_SIZE];
-	uint8_t iFeature;
+typedef struct MCU_PACK {
+	u8 bLength;
+	u8 bDescriptorType;
+	u8 bDescriptorSubtype;
+	u8 bUnitID;
+	u8 bSourceID;
+	u8 bControlSize;
+	u8 bmaControls[USB_AUDIO_FEATURE_UNIT_BMA_CONTROLS_SIZE];
+	u8 iFeature;
 } usb_audio_feature_unit_desc_t;
 
-typedef struct
-MCU_PACK
-{
-	uint8_t bLength;
-	uint8_t bDescriptorType;
-	uint8_t bDescriptorSubtype;
-	uint8_t bTerminalLink;
-	uint8_t bDelay;
-	uint16_t wFormatTag;
+typedef struct MCU_PACK {
+	u8 bLength;
+	u8 bDescriptorType;
+	u8 bDescriptorSubtype;
+	u8 bTerminalLink;
+	u8 bDelay;
+	u16 wFormatTag;
 } usb_audio_streaming_interface_desc_t;
 
-typedef struct
-MCU_PACK
-{
-	uint8_t bLength;
-	uint8_t bDescriptorType;
-	uint8_t bEndpointAddress;
-	uint8_t bmAttributes;
-	uint8_t bLockDelayUnits;
-	uint16_t wLockDelay;
+typedef struct MCU_PACK {
+	u8 bLength;
+	u8 bDescriptorType;
+	u8 bDescriptorSubType;
+	u8 bmAttributes;
+	u8 bLockDelayUnits;
+	u16 wLockDelay;
 } usb_audio_streaming_ep_desc_t;
-
-typedef struct
-MCU_PACK
-{
-	uint8_t bLength;
-	uint8_t bDescriptorType;
-	uint8_t bDescriptorSubType;
-	uint8_t bFormatType;
-	uint8_t bNrChannels;
-	uint8_t bSubFrameSize;
-	uint8_t bBitResolution;
-	uint8_t bSamFreqType;
-	uint8_t tSamFreq[3];
-} usb_audio_type_I_format_desc_t;
-
-typedef struct
-MCU_PACK
-{
-	uint8_t bLength;
-	uint8_t bDescriptorType;
-	uint8_t bDescriptorSubType;
-	uint16_t wFormatTag;
-	uint32_t bmBSID;
-	uint8_t bmAC3Features;
-} usb_audio_ac3_format_desc_t;
-
-typedef struct
-MCU_PACK
-{
-	uint8_t bLength;
-	uint8_t bDescriptorType;
-	uint8_t bDescriptorSubType;
-	uint8_t bFormatType;
-	uint16_t wMaxBitRate;
-	uint16_t wSamplesPerFrame;
-	uint8_t bSamFreqType;
-	uint8_t tLowerSamFreq[3];
-	uint8_t tUpperSamFreq[3];
-} usb_audio_type_II_format_desc_t;
-
-
-//typedef uint8_t usb_audio_tSamFreq_t[3];
 
 typedef struct MCU_PACK
 {
-	uint8_t bLength;
-	uint8_t bDescriptorType;
-	uint8_t bDescriptorSubType;
-	uint8_t bFormatType;
-	uint16_t wMaxBitRate;
-	uint16_t wSamplesPerFrame;
-	uint8_t bSamFreqType;
-	uint8_t tSamFreq[3];  //just one frequency -- others are added manually after
+	u8 bLength;
+	u8 bDescriptorType;
+	u8 bDescriptorSubType;
+	u8 bFormatType;
+	u8 bNrChannels;
+	u8 bSubFrameSize;
+	u8 bBitResolution;
+	u8 bSamFreqType;
+	u8 tSamFreq[3];
+} usb_audio_type_I_format_desc_t;
+
+typedef struct MCU_PACK {
+	u8 bLength;
+	u8 bDescriptorType;
+	u8 bDescriptorSubType;
+	u16 wFormatTag;
+	u32 bmBSID;
+	u8 bmAC3Features;
+} usb_audio_ac3_format_desc_t;
+
+typedef struct MCU_PACK {
+	u8 bLength;
+	u8 bDescriptorType;
+	u8 bDescriptorSubType;
+	u8 bFormatType;
+	u16 wMaxBitRate;
+	u16 wSamplesPerFrame;
+	u8 bSamFreqType;
+	u8 tLowerSamFreq[3];
+	u8 tUpperSamFreq[3];
+} usb_audio_type_II_format_desc_t;
+
+
+typedef struct MCU_PACK {
+	u8 bLength;
+	u8 bDescriptorType;
+	u8 bDescriptorSubType;
+	u8 bFormatType;
+	u16 wMaxBitRate;
+	u16 wSamplesPerFrame;
+	u8 bSamFreqType;
+	u8 tSamFreq[3];  //just one frequency -- others are added manually after
 } usb_audio_type_II_format_discrete_desc_t;
 
-
-int usbadc_if_get_request ();
-int usb_dev_adc_if_set_request ();
-int usbadc_ep_get_request ();
-int usbadc_ep_set_request ();
-
-extern uint8_t usbadc_mute;
-extern uint16_t usbadc_current_vol;
 
 
 
