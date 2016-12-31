@@ -62,7 +62,7 @@ int fifo_is_write_ok(fifo_state_t * state, u16 size, int writeblock){
 		}
 	}
 
-	//return OK or not to write 1 = OK, 0 = write is blocked
+	//return OK or not to write: 1 = OK, 0 = write is blocked
 	return ret;
 }
 
@@ -126,6 +126,7 @@ void fifo_flush(fifo_state_t * state){
 	state->tail = 0;
 	fifo_set_overflow(state, 0);
 }
+
 
 void fifo_getattr(fifo_attr_t * attr, const fifo_cfg_t * cfgp, fifo_state_t * state){
 	attr->size = cfgp->size - 1;
@@ -246,20 +247,16 @@ int fifo_read(const device_cfg_t * cfg, device_transfer_t * rop){
 	fifo_state_t * state = cfg->state;
 	int bytes_read;
 
-	if ( state->rop != NULL ){
-		rop->nbyte = 0;
-		return 0; //caller will block until data is read
-	}
-
 	bytes_read = fifo_read_local(cfgp, state, rop);
 	if( bytes_read > 0 ){
 		//see if anything needs to write the FIFO
 		data_transmitted(cfg);
+		if( cfgp->notify_on_read ){
+			cfgp->notify_on_read(bytes_read);
+		}
 	}
 
-	if( cfgp->notify_on_read ){
-		cfgp->notify_on_read(bytes_read);
-	}
+
 
 	return bytes_read;
 }
@@ -268,8 +265,8 @@ int fifo_write_local(const fifo_cfg_t * cfgp, fifo_state_t * state, device_trans
 	int bytes_written;
 
 	if ( state->wop != NULL ){
-		wop->nbyte = 0;
-		return 0; //caller will block until FIFO is ready to write
+		wop->nbyte = EBUSY;
+		return -1; //caller will block until FIFO is ready to write
 	}
 
 	state->wop_len = wop->nbyte;
@@ -283,9 +280,7 @@ int fifo_write_local(const fifo_cfg_t * cfgp, fifo_state_t * state, device_trans
 			state->wop_len = wop->nbyte;
 			wop->nbyte = 0;
 		}
-	}
-
-	if( cfgp->notify_on_write ){
+	} else if( (bytes_written > 0) && (cfgp->notify_on_write != 0) ){
 		cfgp->notify_on_write(bytes_written);
 	}
 

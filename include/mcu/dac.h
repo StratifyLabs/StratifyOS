@@ -32,36 +32,27 @@
 extern "C" {
 #endif
 
-/*! \details
- * \sa periph_open()
- *
- */
 int mcu_dac_open(const device_cfg_t * cfg) MCU_PRIV_CODE;
-/*! \details
- * \sa periph_read()
- *
- */
 int mcu_dac_read(const device_cfg_t * cfg, device_transfer_t * rop) MCU_PRIV_CODE;
-/*! \details
- * \sa periph_write()
- */
 int mcu_dac_write(const device_cfg_t * cfg, device_transfer_t * wop) MCU_PRIV_CODE;
-/*! \details
- * \sa periph_ioctl()
- *
- */
 int mcu_dac_ioctl(const device_cfg_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
-/*! \details
- * \sa periph_close()
- */
 int mcu_dac_close(const device_cfg_t * cfg) MCU_PRIV_CODE;
-
 
 int mcu_dac_getattr(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_dac_setattr(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_dac_setaction(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_dac_get(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_dac_set(int port, void * ctl) MCU_PRIV_CODE;
+
+//DMA version of the driver
+int mcu_dac_dma_open(const device_cfg_t * cfg) MCU_PRIV_CODE;
+int mcu_dac_dma_read(const device_cfg_t * cfg, device_transfer_t * rop) MCU_PRIV_CODE;
+int mcu_dac_dma_write(const device_cfg_t * cfg, device_transfer_t * wop) MCU_PRIV_CODE;
+int mcu_dac_dma_ioctl(const device_cfg_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
+int mcu_dac_dma_close(const device_cfg_t * cfg) MCU_PRIV_CODE;
+
+int mcu_dac_dma_setattr(int port, void * ctl) MCU_PRIV_CODE;
+int mcu_dac_dma_setaction(int port, void * ctl) MCU_PRIV_CODE;
 
 
 #ifdef __cplusplus

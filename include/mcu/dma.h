@@ -43,6 +43,8 @@
 extern "C" {
 #endif
 
+#include "types.h"
+
 #ifndef dma_no_sleep_ram
 /* \details This attribute can be applied to RAM so
  * that it is stored in RAM that is not shut off
@@ -61,7 +63,7 @@ typedef struct dma_lli_t{
 	const void * src;
 	void * dest;
 	struct dma_lli_t * next;
-	uint32_t ctrl;
+	u32 ctrl;
 } dma_lli_t;
 
 
@@ -94,8 +96,8 @@ int _mcu_dma_transferlist(int operation,
 		dma_lli_t * linked_list,
 		mcu_callback_t callback,
 		void * context,
-		uint32_t dest_periph,
-		uint32_t src_periph
+		u32 dest_periph,
+		u32 src_periph
 		) MCU_PRIV_CODE;
 
 int _mcu_dma_transfer(int operation,
@@ -105,8 +107,8 @@ int _mcu_dma_transfer(int operation,
 		int ctrl,
 		mcu_callback_t cb,
 		void * context,
-		uint32_t dest_periph,
-		uint32_t src_periph) MCU_PRIV_CODE;
+		u32 dest_periph,
+		u32 src_periph) MCU_PRIV_CODE;
 
 
 #ifdef __cplusplus

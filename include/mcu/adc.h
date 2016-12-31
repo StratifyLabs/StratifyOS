@@ -30,34 +30,28 @@
 extern "C" {
 #endif
 
-/*! \details
- * \sa periph_open()
- *
- */
+
 int mcu_adc_open(const device_cfg_t * cfg) MCU_PRIV_CODE;
-/*! \details
- * \sa periph_read()
- *
- */
 int mcu_adc_read(const device_cfg_t * cfg, device_transfer_t * rop) MCU_PRIV_CODE;
-/*! \details
- * \sa periph_write()
- */
 int mcu_adc_write(const device_cfg_t * cfg, device_transfer_t * wop) MCU_PRIV_CODE;
-/*! \details
- * \sa periph_ioctl()
- *
- */
 int mcu_adc_ioctl(const device_cfg_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
-/*! \details
- * \sa periph_close()
- */
 int mcu_adc_close(const device_cfg_t * cfg) MCU_PRIV_CODE;
 
 
 int mcu_adc_getattr(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_adc_setattr(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_adc_setaction(int port, void * ctl) MCU_PRIV_CODE;
+
+int mcu_adc_dma_open(const device_cfg_t * cfg) MCU_PRIV_CODE;
+int mcu_adc_dma_read(const device_cfg_t * cfg, device_transfer_t * rop) MCU_PRIV_CODE;
+int mcu_adc_dma_write(const device_cfg_t * cfg, device_transfer_t * wop) MCU_PRIV_CODE;
+int mcu_adc_dma_ioctl(const device_cfg_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
+int mcu_adc_dma_close(const device_cfg_t * cfg) MCU_PRIV_CODE;
+
+
+int mcu_adc_dma_setattr(int port, void * ctl) MCU_PRIV_CODE;
+int mcu_adc_dma_setaction(int port, void * ctl) MCU_PRIV_CODE;
+
 
 #ifdef __cplusplus
 }

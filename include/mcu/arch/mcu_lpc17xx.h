@@ -196,18 +196,18 @@ typedef uint16_t adc_sample_t;
 #define GPIO_SAMPLE_T
 /*! \brief This defines the type of a GPIO sample for reading/writing the GPIO (see gpio_read() and gpio_write()).
  */
-typedef uint32_t gpio_sample_t;
+typedef u32 gpio_sample_t;
 
 #define PIO_SAMPLE_T
 /*! \brief This defines the type of a PIO sample for
  * reading/writing the PIO.
  */
-typedef uint32_t pio_sample_t;
+typedef u32 pio_sample_t;
 
 #define PWM_DUTY_T
 /*! \brief This defines the type for the PWM duty cycle for reading/writing the PWM.
  */
-typedef uint32_t pwm_duty_t;
+typedef u32 pwm_duty_t;
 
 
 /*! \brief This is the minimum flash write size. */
