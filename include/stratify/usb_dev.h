@@ -47,6 +47,7 @@ typedef struct {
 	const void * const device;
 	const void * const config;
 	const void * const string;
+	int (* const setup_event)(void * context, int event);
 	void (*const feature_event)(void * context);
 	void (*const configure_event)(void * context);
 	void (*const interface_event)(void * context);

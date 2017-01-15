@@ -68,9 +68,20 @@ void usb_dev_priv_init(void * args){
 int usb_dev_std_setup(void * context_object, mcu_event_t usb_event /*! Callback data */){
 	u32 event = MCU_EVENT_CODE(usb_event);
 	usb_dev_context_t * context = context_object;
+
 	if ( event == USB_SETUP_EVENT ){
 		usb_dev_std_setup_stage(context);
 		context->ep0_data.cnt = context->setup_pkt.wLength;
+	}
+
+	if( context->constants->setup_event != 0 ){
+		if( context->constants->setup_event(context_object, event) != 0 ){
+			return 1;
+		}
+	}
+
+
+	if ( event == USB_SETUP_EVENT ){
 		if ( context->setup_pkt.bmRequestType.bitmap_t.type == USB_DEV_REQUEST_STANDARD){
 			switch (context->setup_pkt.bRequest) {
 
@@ -220,7 +231,7 @@ int usb_dev_std_setup(void * context_object, mcu_event_t usb_event /*! Callback 
 			usb_dev_std_statusout_stage(context);
 		}
 
-	} else if ( event == USB_IN_EVENT){
+	} else if ( event == USB_IN_EVENT ){
 		if (context->setup_pkt.bmRequestType.bitmap_t.dir == USB_DEV_REQUEST_DEVICE_TO_HOST) {
 			usb_dev_std_datain_stage(context);
 		} else {
@@ -229,7 +240,7 @@ int usb_dev_std_setup(void * context_object, mcu_event_t usb_event /*! Callback 
 				mcu_usb_setaddr(context->constants->port, (void*)((int)context->addr));
 			}
 		}
-	} else if ( event == USB_OUT_EVENT_STALL){
+	} else if ( event == USB_OUT_EVENT_STALL ){
 		mcu_usb_unstallep(context->constants->port, (void*)0x00);
 	} else if ( event == USB_IN_EVENT_STALL ){
 		mcu_usb_unstallep(context->constants->port, (void*)(USB_ENDPOINT_IN|0x00));

@@ -30,29 +30,34 @@
 #define READ_OP 1
 
 typedef union {
-	uint16_t ptr16;
-	uint8_t ptr8[2];
+	u16 ptr16;
+	u8 ptr8[2];
 } i2c_ptr_t;
 
 typedef struct MCU_PACK {
 	mcu_event_handler_t handler;
-	char * volatile buffer;
-	u16 buffer_size;
+	char * volatile data;
+	int * ret;
+	volatile u16 size;
+	u16 resd;
+} i2c_local_transfer_t;
+
+typedef struct MCU_PACK {
+	i2c_slave_setup_t setup;
+	mcu_event_handler_t handler;
+	i2c_ptr_t ptr;
 } i2c_local_slave_t;
+
 
 typedef struct MCU_PACK {
 	u8 ref_count;
 	volatile u8 state;
 	volatile u8 err;
 	u8 resd[1];
-	mcu_event_handler_t handler;
-	volatile u16 size;
 	volatile i2c_ptr_t ptr;
-	char * volatile data;
-	int * ret;
 	i2c_setup_t transfer;
-	i2c_local_slave_t slave_read;
-	i2c_local_slave_t slave_write;
+	i2c_local_transfer_t master;
+	i2c_local_slave_t slave;
 } i2c_local_t;
 
 static void enable_opendrain_pin(int pio_port, int pio_pin, int internal_pullup) MCU_PRIV_CODE;
@@ -67,17 +72,21 @@ static LPC_I2C_Type * const i2c_regs_table[MCU_I2C_PORTS] = MCU_I2C_REGS;
 
 static u8 const i2c_irqs[MCU_I2C_PORTS] = MCU_I2C_IRQS;
 
-static void set_done(int port, int error);
-static void receive_byte(LPC_I2C_Type * regs, int port);
-static void transmit_byte(LPC_I2C_Type * regs, int port);
-static void set_ack(LPC_I2C_Type * regs, int port, u16 size);
+static void set_master_done(int port, int error);
+
+static void receive_byte(LPC_I2C_Type * regs, i2c_local_transfer_t * op);
+static void transmit_byte(LPC_I2C_Type * regs, i2c_local_transfer_t * op);
+
+static int receive_slave_byte(LPC_I2C_Type * regs, i2c_local_slave_t * op);
+static int transmit_slave_byte(LPC_I2C_Type * regs, i2c_local_slave_t * op);
+
+
+static void set_ack(LPC_I2C_Type * regs, u16 size);
 
 static inline LPC_I2C_Type * i2c_get_regs(int port) MCU_ALWAYS_INLINE;
 LPC_I2C_Type * i2c_get_regs(int port){
 	return i2c_regs_table[port];
 }
-
-static void exec_callback(int port, void * data);
 
 i2c_attr_t i2c_local_attr[MCU_I2C_PORTS] MCU_SYS_MEM;
 i2c_local_t i2c_local[MCU_I2C_PORTS] MCU_SYS_MEM;
@@ -88,18 +97,6 @@ i2c_local_t i2c_local[MCU_I2C_PORTS] MCU_SYS_MEM;
 #define STA (1<<5) //start condition
 #define I2EN (1<<6) //interface enable
 
-#define I2C_DONE_FLAG (1<<7)
-
-
-static inline char i2c_tst_done(int port) MCU_ALWAYS_INLINE;
-char i2c_tst_done(int port){
-	return i2c_local[port].state & I2C_DONE_FLAG;
-}
-
-static inline void i2c_clr_done(int port) MCU_ALWAYS_INLINE;
-void i2c_clr_done(int port){
-	i2c_local[port].state &= ~(I2C_DONE_FLAG);
-}
 
 static int i2c_transfer(int port, int op, device_transfer_t * dop);
 
@@ -128,7 +125,8 @@ void _mcu_i2c_dev_power_on(int port){
 			break;
 #endif
 		}
-		memset(&(i2c_local[port].handler), 0, sizeof(mcu_event_handler_t));
+		memset(&(i2c_local[port].master), 0, sizeof(i2c_local_transfer_t));
+		memset(&(i2c_local[port].slave), 0, sizeof(i2c_local_slave_t));
 		_mcu_core_priv_enable_irq((void*)(u32)(i2c_irqs[port]));
 	}
 	i2c_local[port].ref_count++;
@@ -285,9 +283,9 @@ int mcu_i2c_setattr(int port, void * ctl){
 
 	i2c_regs->CONCLR = 0xFF;
 
-	i2c_local[port].state = I2C_DONE_FLAG; //Set the done flag (not busy)
-	i2c_local[port].size = 0; //no bytes
-	i2c_local[port].data = 0; //no data pointer
+	i2c_local[port].state = I2C_STATE_NONE;
+	i2c_local[port].master.size = 0; //no bytes
+	i2c_local[port].master.data = 0; //no data pointer
 
 	count = ((mcu_board_config.core_periph_freq) / (ctl_ptr->bitrate * 2));
 	if ( count > 0xFFFF ){
@@ -311,28 +309,55 @@ int mcu_i2c_setup(int port, void * ctl){
 	return 0;
 }
 
+int mcu_i2c_slave_setup(int port, void * ctl){
+	i2c_slave_setup_t * ctlp = ctl;
+	LPC_I2C_Type * i2c_regs;
+	int gen_call = 0;
+
+
+	memcpy( &(i2c_local[port].slave.setup), ctl, sizeof(i2c_slave_setup_t));
+
+	if( ctlp->size > 255 ){
+		i2c_local[port].slave.setup.o_flags |= I2C_SLAVE_SETUP_FLAG_16_BIT_PTR;
+	}
+
+	i2c_regs = i2c_regs_table[port];
+
+	if( ctlp->o_flags & I2C_SLAVE_SETUP_FLAG_ENABLE_GENERAL_CALL ){
+		gen_call = 1;
+	}
+
+	if( i2c_local[port].slave.setup.o_flags & I2C_SLAVE_SETUP_FLAG_ALT_ADDR1 ){
+		i2c_regs->ADR1 = (ctlp->addr << 1) | gen_call;
+		i2c_regs->MASK1 = 0x00;
+	} else if( i2c_local[port].slave.setup.o_flags & I2C_SLAVE_SETUP_FLAG_ALT_ADDR2 ){
+		i2c_regs->ADR2 = (ctlp->addr << 1) | gen_call;
+		i2c_regs->MASK2 = 0x00;
+	} else if( i2c_local[port].slave.setup.o_flags & I2C_SLAVE_SETUP_FLAG_ALT_ADDR3 ){
+		i2c_regs->ADR3 = (ctlp->addr << 1) | gen_call;
+		i2c_regs->MASK3 = 0x00;
+	} else {
+		i2c_regs->ADR0 = (ctlp->addr << 1) | gen_call;
+		i2c_regs->MASK0 = 0x00;
+	}
+
+	i2c_regs->CONSET = (AA);
+
+	return 0;
+}
+
 int mcu_i2c_geterr(int port, void * ctl){
 	return i2c_local[port].err;
 }
 
 int mcu_i2c_setaction(int port, void * ctl){
 	mcu_action_t * action = (mcu_action_t*)ctl;
+
+	_mcu_core_setirqprio(i2c_irqs[port], action->prio);
+
 	if( action->callback == 0 ){
-		if( action->event == I2C_EVENT_DATA_READY ){
-			if ( !(i2c_local[port].state & I2C_DONE_FLAG) ){
-				//exec_read_callback(port, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
-			}
-			i2c_local[port].slave_read.handler.callback = 0;
-			i2c_local[port].slave_read.handler.context = 0;
-
-		} else if( action->event == I2C_EVENT_WRITE_COMPLETE ){
-			if ( !(i2c_local[port].state & I2C_DONE_FLAG) ){
-				//exec_write_callback(port, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
-			}
-			i2c_local[port].slave_write.handler.callback = 0;
-			i2c_local[port].slave_write.handler.context = 0;
-		}
-
+		i2c_local[port].slave.handler.callback = 0;
+		i2c_local[port].slave.handler.context = 0;
 		return 0;
 	}
 
@@ -340,15 +365,8 @@ int mcu_i2c_setaction(int port, void * ctl){
 		return -1;
 	}
 
-	if( action->event == I2C_EVENT_DATA_READY ){
-		i2c_local[port].slave_read.handler.callback = action->callback;
-		i2c_local[port].slave_read.handler.context = action->context;
-	} else if ( action->event == I2C_EVENT_WRITE_COMPLETE ){
-		i2c_local[port].slave_write.handler.callback = action->callback;
-		i2c_local[port].slave_write.handler.context = action->context;
-	}
-
-	_mcu_core_setirqprio(i2c_irqs[port], action->prio);
+	i2c_local[port].slave.handler.callback = action->callback;
+	i2c_local[port].slave.handler.context = action->context;
 
 	return 0;
 }
@@ -363,17 +381,18 @@ int _mcu_i2c_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
 	return i2c_transfer(port, READ_OP, rop);
 }
 
-void set_done(int port, int error){
+void set_master_done(int port, int error){
 	if( error != 0 ){
-		*(i2c_local[port].ret) -= i2c_local[port].size; //adjust the nbyte based on bytes not yet sent
+		*(i2c_local[port].master.ret) = -1;
 	}
-	i2c_local[port].size = 0;
+	i2c_local[port].master.size = 0;
 	i2c_local[port].err = error;
-	i2c_local[port].state = I2C_STATE_NONE | I2C_DONE_FLAG;
-	i2c_local[port].data = 0;
+	i2c_local[port].state = I2C_STATE_MASTER_COMPLETE;
+	i2c_local[port].master.data = 0;
 }
 
-void set_ack(LPC_I2C_Type * regs, int port, u16 size){
+
+void set_ack(LPC_I2C_Type * regs, u16 size){
 	if( size > 1 ){
 		regs->CONSET = AA;
 	} else {
@@ -381,37 +400,68 @@ void set_ack(LPC_I2C_Type * regs, int port, u16 size){
 	}
 }
 
-void receive_byte(LPC_I2C_Type * regs, int port){
-	if( (i2c_local[port].data) && (i2c_local[port].size) ){
-		*(i2c_local[port].data) = regs->DAT;
-		i2c_local[port].data++;
-		i2c_local[port].size--;
+void receive_byte(LPC_I2C_Type * regs, i2c_local_transfer_t * op){
+	if( op->size && op->data ){
+		*(op->data) = regs->DAT;
+		op->data++;
+		op->size--;
+	} else {
+		regs->DAT;
 	}
-	set_ack(regs, port, i2c_local[port].size);
+
+	set_ack(regs, op->size);
 }
 
-void transmit_byte(LPC_I2C_Type * regs, int port){
-	if( i2c_local[port].size && i2c_local[port].data ){
-		regs->DAT = *(i2c_local[port].data);
-		i2c_local[port].data++;
-		i2c_local[port].size--;
+void transmit_byte(LPC_I2C_Type * regs, i2c_local_transfer_t * op){
+	if( op->size && op->data ){
+		regs->DAT = *(op->data);
+		op->data++;
+		op->size--;
+	} else {
+		regs->DAT = 0xFF;
 	}
 
-	set_ack(regs, port, i2c_local[port].size);
+	set_ack(regs, op->size);
+}
+
+int receive_slave_byte(LPC_I2C_Type * regs, i2c_local_slave_t * op){
+	if( op->ptr.ptr16 < op->setup.size ){
+		op->setup.data[ op->ptr.ptr16 ] = regs->DAT;
+		op->ptr.ptr16++;
+	} else {
+		regs->DAT;
+		return 0;
+	}
+
+	return op->ptr.ptr16 < op->setup.size;
+}
+
+int transmit_slave_byte(LPC_I2C_Type * regs, i2c_local_slave_t * op){
+	if( op->ptr.ptr16 < op->setup.size ){
+		regs->DAT = op->setup.data[ op->ptr.ptr16 ];
+		op->ptr.ptr16++;
+	} else {
+		regs->DAT = 0xFF;
+		return 0;
+	}
+	return op->ptr.ptr16 < op->setup.size;
 }
 
 static void _mcu_i2c_isr(int port) {
-	uint8_t stat_value;
+	u8 stat_value;
+	u32 event;
 	LPC_I2C_Type * i2c_regs;
 	// this handler deals with master read and master write only
 	i2c_regs = i2c_get_regs(port);
 
 	stat_value = i2c_regs->STAT;
+	mcu_priv_debug("I2C:%d:0x%X\n", port, stat_value);
+
 	switch ( stat_value ){
 	case 0x08: //Start Condition has been sent
 	case 0x10: //Repeated Start condition
 		i2c_local[port].err = 0;
-		if ( i2c_local[port].state == I2C_STATE_NONE ){
+		if ( i2c_local[port].state == I2C_STATE_START ){
 			i2c_regs->DAT = (i2c_local[port].transfer.slave_addr << 1) | 0x01; //Set the Read bit -- repeated start after write ptr
 		} else {
 			i2c_regs->DAT = (i2c_local[port].transfer.slave_addr << 1); //send the address -- in write mode
@@ -422,8 +472,8 @@ static void _mcu_i2c_isr(int port) {
 		break;
 	case 0x18: //SLA+W transmitted -- Ack Received
 		if( i2c_local[port].state == I2C_STATE_WR_ONLY ){
-			transmit_byte(i2c_regs, port);
-
+			//this is write only mode -- don't send the ptr
+			transmit_byte(i2c_regs, &(i2c_local[port].master));
 		} else {
 			i2c_regs->DAT = i2c_local[port].ptr.ptr8[1]; //Send the offset pointer (MSB of 16 or 8 bit)
 			i2c_regs->CONSET = AA;
@@ -431,37 +481,34 @@ static void _mcu_i2c_isr(int port) {
 		break;
 	case 0x28: //Data byte transmitted -- Ack Received
 		if( i2c_local[port].state == I2C_STATE_WR_PTR_ONLY ){
-			i2c_local[port].state = I2C_STATE_NONE | I2C_DONE_FLAG;
+			i2c_local[port].state = I2C_STATE_MASTER_COMPLETE;
 			i2c_regs->CONSET = STO|AA;
 			break;
-		}
-
-		if (( i2c_local[port].state == I2C_STATE_RD_16_OP )|| ( i2c_local[port].state == I2C_STATE_WR_16_OP )){
+		} else if (( i2c_local[port].state == I2C_STATE_RD_16_OP ) || ( i2c_local[port].state == I2C_STATE_WR_16_OP )){
 			i2c_regs->DAT = i2c_local[port].ptr.ptr8[0]; //Send the offset pointer (LSB)
 			i2c_regs->CONSET = AA;
-			if ( i2c_local[port].state == I2C_STATE_RD_16_OP ){
-				i2c_local[port].state = I2C_STATE_RD_OP;
-			}
+			if ( i2c_local[port].state == I2C_STATE_RD_16_OP ){ i2c_local[port].state = I2C_STATE_RD_OP; }
+			if ( i2c_local[port].state == I2C_STATE_WR_16_OP ){ i2c_local[port].state = I2C_STATE_WR_OP; }
 			break;
 		}
 
-		if ( i2c_local[port].size ){
+		if ( i2c_local[port].master.size ){
 
 			if ( i2c_local[port].state == I2C_STATE_RD_OP ){
 				i2c_regs->CONSET = STA; //Restart (then send read command)
-				i2c_local[port].state = I2C_STATE_NONE;
+				i2c_local[port].state = I2C_STATE_START;
 				break;
 			}
 
 			//Transmit data
-			transmit_byte(i2c_regs, port);
+			transmit_byte(i2c_regs, &(i2c_local[port].master));
 
 			//i2c_regs->DAT = *(i2c_local[port].data);
 			//i2c_local[port].data++;
 			//i2c_local[port].size--;
 		} else {
 			i2c_regs->CONSET = STO;
-			set_done(port, 0);
+			set_master_done(port, 0);
 		}
 		break;
 	case 0x20:
@@ -469,7 +516,7 @@ static void _mcu_i2c_isr(int port) {
 	case 0x48:
 		//Receiver nack'd
 		i2c_regs->CONSET = STO;
-		set_done(port, I2C_ERROR_ACK);
+		set_master_done(port, I2C_ERROR_ACK);
 		//i2c_local[port].size = 0;
 		//i2c_local[port].err = I2C_ERROR_ACK;
 		//i2c_local[port].state = I2C_DONE_FLAG;
@@ -477,18 +524,18 @@ static void _mcu_i2c_isr(int port) {
 		break;
 	case 0x38:
 		i2c_regs->CONSET = STO;
-		set_done(port, I2C_ERROR_ARBITRATION_LOST);
+		set_master_done(port, I2C_ERROR_ARBITRATION_LOST);
 		//i2c_local[port].size = 0;
 		//i2c_local[port].err = I2C_ERROR_ARBITRATION_LOST;
 		//i2c_local[port].state = I2C_DONE_FLAG;
 		//i2c_local[port].data = 0;
 		break;
 	case 0x40: //SLA+R transmitted -- Ack received
-		set_ack(i2c_regs, port, i2c_local[port].size);
+		set_ack(i2c_regs, i2c_local[port].master.size);
 		break;
 	case 0x50: //Data Byte received -- Ack returned
 		//Receive Data
-		receive_byte(i2c_regs, port);
+		receive_byte(i2c_regs, &(i2c_local[port].master));
 
 		//if ( i2c_local[port].size ) i2c_local[port].size--;
 		//*(i2c_local[port].data) = (char)i2c_regs->DAT;
@@ -496,79 +543,121 @@ static void _mcu_i2c_isr(int port) {
 		break;
 	case 0x58: //Data byte received -- Not Ack returned
 
-		receive_byte(i2c_regs, port);
+		receive_byte(i2c_regs, &(i2c_local[port].master));
 
 		//if ( i2c_local[port].size ) i2c_local[port].size--;
 		//*(i2c_local[port].data) = (char)i2c_regs->DAT;
 		//i2c_local[port].data++;
 
 		i2c_regs->CONSET = STO;
-		set_done(port, 0);
+		set_master_done(port, 0);
 		//i2c_local[port].state = I2C_DONE_FLAG;
 		//i2c_local[port].data = 0;
 		break;
 	case 0x00:
 		i2c_regs->CONSET = STO;
-		set_done(port, I2C_ERROR_START);
+		set_master_done(port, I2C_ERROR_START);
 		//i2c_local[port].err = I2C_ERROR_START;
 		//i2c_local[port].state = I2C_DONE_FLAG;
 		//i2c_local[port].data = 0;
 		break;
 
-		//SLAVE OPERATION STARTS HERE
+		//SLAVE OPERATION STARTS HERE ---------------------------------------------------------------
 	case 0x68: //Arbitration lost in SLA+R/W as master; Own SLA+W has been received, ACK returned
 	case 0x60: //Slave mode SLA+W has been received -- Ack returned
-		set_ack(i2c_regs, port, 1);
-		break;
 	case 0x78: //Arbitration lost and general ack received
 	case 0x70: //General call has been received -- ack returned
-		//check attr flag to see if General calls are ack'd
-		set_ack(i2c_regs, port, 1);
+		i2c_local[port].state = I2C_STATE_SLAVE_READ_PTR;
+		i2c_local[port].slave.ptr.ptr16 = 0;
+		i2c_regs->CONSET = AA;
 		break;
 
 	case 0x90: //data has been received and ack returned on general call
 	case 0x80: //data has been received and ack has been returned
-		receive_byte(i2c_regs, port);
+		if( i2c_local[port].state == I2C_STATE_SLAVE_READ_PTR ){
+			if( i2c_local[port].slave.setup.o_flags & I2C_SLAVE_SETUP_FLAG_16_BIT_PTR ){
+				i2c_local[port].slave.ptr.ptr8[1] = i2c_regs->DAT; //MSB is first
+				i2c_local[port].state = I2C_STATE_SLAVE_READ_PTR_16;
+				i2c_regs->CONSET = AA;
+				break;
+			} else {
+				i2c_local[port].slave.ptr.ptr8[0] = i2c_regs->DAT;
+				i2c_local[port].state = I2C_STATE_SLAVE_READ;
+			}
+		} else if( i2c_local[port].state == I2C_STATE_SLAVE_READ_PTR_16 ){
+			i2c_local[port].slave.ptr.ptr8[0] = i2c_regs->DAT; //LSB is second
+			i2c_local[port].state = I2C_STATE_SLAVE_READ;
+
+			if( i2c_local[port].slave.setup.size > 1 ){
+				i2c_regs->CONSET = AA;
+			} else {
+				i2c_regs->CONCLR = AA;
+			}
+			break;
+		} else {
+
+			if( receive_slave_byte(i2c_regs, &(i2c_local[port].slave)) ){
+				i2c_regs->CONSET = AA;
+			} else {
+				i2c_regs->CONCLR = AA;
+			}
+		}
+
 		break;
 
 	case 0x88: //data has been received and NOT ack has been returned
 	case 0x98: //data has been received and NOT ack has been returned on general call address
-		receive_byte(i2c_regs, port);
-		set_done(port, 0);
+		receive_slave_byte(i2c_regs, &(i2c_local[port].slave));
+
+		//keep slave address active
+		i2c_regs->CONSET = AA;
+		i2c_local[port].state = I2C_STATE_SLAVE_READ_COMPLETE;
 		break;
 
 	case 0xA8: //Own SLA+R has been received and ack returned
 	case 0xB0: //Arbitration lost in SLA+R/W as master; Own SLA+R has been received, ACK has been returned.
 	case 0xB8: //Data byte in I2DAT has been transmitted; ACK has been received.
 		//load byte and send ack
-		transmit_byte(i2c_regs, port);
+		i2c_local[port].state = I2C_STATE_SLAVE_WRITE; //Slave is being read (host will write the data)
+		if( transmit_slave_byte(i2c_regs, &(i2c_local[port].slave)) ){
+			i2c_regs->CONSET = AA;
+		} else {
+			i2c_regs->CONCLR = AA;
+		}
+
 		break;
 
 	case 0xC0: //Data byte in I2DAT has been transmitted; NOT ACK has been received.
 	case 0xC8: //Last data byte in I2DAT has been transmitted (AA = 0); ACK has been received.
 		//set ack to stay in slave mode
-
+		i2c_local[port].state = I2C_STATE_SLAVE_WRITE_COMPLETE;
 		break;
 
 	case 0xA0: //stop or restart has been received while addressed
-		set_done(port, 0);
+
+		//execute read and write callbacks
+		event = 0;
+		if( i2c_local[port].state == I2C_STATE_SLAVE_WRITE_COMPLETE ){
+			event = I2C_EVENT_WRITE_COMPLETE;
+		} else if( i2c_local[port].state == I2C_STATE_SLAVE_READ_COMPLETE ){
+			event = I2C_EVENT_DATA_READY;
+		} else {
+			event = I2C_EVENT_WRITE_POINTER_COMPLETE;
+		}
+
+		i2c_regs->CONSET = AA;
+
+		_mcu_core_exec_event_handler(&(i2c_local[port].slave.handler), MCU_EVENT_SET_CODE(event));
+
 		break;
 	}
 
 	i2c_regs->CONCLR = SI; //clear the interrupt flag
 
-	if ( i2c_local[port].state & I2C_DONE_FLAG ){
-		exec_callback(port, 0);
+	if ( i2c_local[port].state == I2C_STATE_MASTER_COMPLETE ){
+		i2c_local[port].state = I2C_STATE_NONE;
+		_mcu_core_exec_event_handler(&(i2c_local[port].master.handler), &(i2c_local[port].transfer));
 	}
-}
-
-void exec_callback(int port, void * data){
-	i2c_local[port].state |= I2C_DONE_FLAG;
-	if ( i2c_local[port].err != 0 ){
-		*(i2c_local[port].ret) = -1;
-	}
-
-	_mcu_core_exec_event_handler(&(i2c_local[port].handler), &(i2c_local[port].transfer));
 }
 
 
@@ -577,7 +666,6 @@ int i2c_transfer(int port, int op, device_transfer_t * dop){
 	int size = dop->nbyte;
 	i2c_regs = i2c_get_regs(port);
 
-
 	//writes will always write the loc value -- so only abort on read only
 	if( i2c_local[port].transfer.transfer == I2C_TRANSFER_READ_ONLY){
 		if ( dop->nbyte == 0 ){
@@ -585,26 +673,30 @@ int i2c_transfer(int port, int op, device_transfer_t * dop){
 		}
 	}
 
-	if ( (i2c_local[port].state & I2C_DONE_FLAG) == 0 ){
+	if ( i2c_local[port].state != I2C_STATE_NONE ){
 		errno = EAGAIN;
 		return -1;
 	}
+	i2c_local[port].state = I2C_STATE_START;
+
 
 	if( _mcu_core_priv_validate_callback(dop->callback) < 0 ){
+		errno = EPERM;
 		return -1;
 	}
 
-	i2c_local[port].handler.callback = dop->callback;
-	i2c_local[port].handler.context = dop->context;
+	mcu_priv_debug("i2c\n");
 
-	i2c_clr_done(port); //clear the done flag
-	i2c_local[port].data = (void * volatile)dop->buf;
-	i2c_local[port].ret = &(dop->nbyte);
+
+	i2c_local[port].master.handler.callback = dop->callback;
+	i2c_local[port].master.handler.context = dop->context;
+	i2c_local[port].master.data = (void * volatile)dop->buf;
+	i2c_local[port].master.ret = &(dop->nbyte);
 
 	switch(i2c_local[port].transfer.transfer){
 	case I2C_TRANSFER_NORMAL:
 		i2c_local[port].ptr.ptr8[1] = dop->loc; //8-bit ptr
-		i2c_local[port].size = size;
+		i2c_local[port].master.size = size;
 		if ( op == WRITE_OP ){
 			i2c_local[port].state = I2C_STATE_WR_OP;
 		} else {
@@ -613,12 +705,12 @@ int i2c_transfer(int port, int op, device_transfer_t * dop){
 		break;
 	case I2C_TRANSFER_WRITE_PTR:
 		i2c_local[port].ptr.ptr8[1] = dop->loc; //8-bit ptr
-		i2c_local[port].size = 0;
+		i2c_local[port].master.size = 0;
 		i2c_local[port].state = I2C_STATE_WR_PTR_ONLY;
 		break;
 	case I2C_TRANSFER_NORMAL_16:
 		i2c_local[port].ptr.ptr16 = dop->loc;  //16-bit ptr
-		i2c_local[port].size = size;
+		i2c_local[port].master.size = size;
 		if ( op == WRITE_OP ){
 			i2c_local[port].state = I2C_STATE_WR_16_OP;
 		} else {
@@ -628,17 +720,19 @@ int i2c_transfer(int port, int op, device_transfer_t * dop){
 	case I2C_TRANSFER_DATA_ONLY:
 	case I2C_TRANSFER_WRITE_ONLY:
 	case I2C_TRANSFER_READ_ONLY:
-		i2c_local[port].size = size;
+		i2c_local[port].master.size = size;
 		if ( op == WRITE_OP ){
 			i2c_local[port].state = I2C_STATE_WR_ONLY;
 		} else {
-			i2c_local[port].state = I2C_STATE_NONE;
+			i2c_local[port].state = I2C_STATE_START;
 		}
 		break;
 	default:
 		errno = EINVAL;
 		return -1;
 	}
+
+	mcu_priv_debug("start %d\n", i2c_local[port].state);
 
 	//Master transmitter mode
 	i2c_regs->CONSET = STA; //exec start condition

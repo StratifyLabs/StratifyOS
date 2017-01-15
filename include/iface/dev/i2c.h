@@ -103,12 +103,22 @@ enum {
 	I2C_ERROR_BUS_BUSY /*! The Bus is busy (happens with multi-masters on bus) */,
 	I2C_ERROR_LONG_SLEW,
 	I2C_ERROR_ARBITRATION_LOST /*! Arbitration lost on multi-master bus */,
+	I2C_STATE_START /*! Internal Use only */,
 	I2C_STATE_RD_OP /*! Internal Use only */,
 	I2C_STATE_WR_OP /*! Internal Use only */,
 	I2C_STATE_RD_16_OP /*! Internal Use only */,
 	I2C_STATE_WR_16_OP /*! Internal Use only */,
 	I2C_STATE_WR_PTR_ONLY /*! Internal use only */,
 	I2C_STATE_WR_ONLY /*! Internal use only */,
+	I2C_STATE_MASTER_COMPLETE /*! Internal use only */,
+	I2C_STATE_SLAVE_READ /*! Internal use only */,
+	I2C_STATE_SLAVE_READ_PTR /*! Internal use only */,
+	I2C_STATE_SLAVE_READ_PTR_16 /*! Internal use only */,
+	I2C_STATE_SLAVE_READ_COMPLETE /*! Internal use only */,
+	I2C_STATE_SLAVE_WRITE /*! Internal use only */,
+	I2C_STATE_SLAVE_WRITE_COMPLETE /*! Internal use only */,
+	I2C_STATE_GENERAL_READ /*! Internal use only */,
+	I2C_STATE_GENERAL_WRITE /*! Internal use only */,
 	I2C_ERROR_TOTAL
 };
 
@@ -151,7 +161,8 @@ typedef enum {
 enum {
 	I2C_EVENT_NONE /*! No Event (used to adjust priority only) */,
 	I2C_EVENT_DATA_READY /*! Data is ready to be read */,
-	I2C_EVENT_WRITE_COMPLETE /*! A write has completed */
+	I2C_EVENT_WRITE_COMPLETE /*! A write has completed */,
+	I2C_EVENT_WRITE_POINTER_COMPLETE /*! A write has completed */
 };
 
 
@@ -163,6 +174,28 @@ typedef struct MCU_PACK {
 	u16 transfer /*! \brief The I2C transfer type (\sa i2c_transfer_t) */;
 	u16 slave_addr /*! \brief The slave address */;
 } i2c_setup_t;
+
+enum {
+	I2C_SLAVE_SETUP_FLAG_ALT_ADDR0 /*! If hardware supports multiple slave addrs, use the first slot (default) */ = 0,
+	I2C_SLAVE_SETUP_FLAG_ALT_ADDR1 /*! If hardware supports multiple slave addrs, use the second slot */ = (1<<0),
+	I2C_SLAVE_SETUP_FLAG_ALT_ADDR2 /*! If hardware supports multiple slave addrs, use the third slot */ = (1<<1),
+	I2C_SLAVE_SETUP_FLAG_ALT_ADDR3 /*! If hardware supports multiple slave addrs, use the fourth slot */ = (1<<2),
+	I2C_SLAVE_SETUP_FLAG_8_BIT_PTR /*! Use a 8-bit address pointer when accessing data (default) */ = 0,
+	I2C_SLAVE_SETUP_FLAG_16_BIT_PTR /*! Use a 16-bit address pointer when accessing data (set automatically is size > 255) */ = (1<<3),
+	I2C_SLAVE_SETUP_FLAG_ENABLE_GENERAL_CALL /*! Accept writes from general calls */ = (1<<4),
+};
+
+/*! \brief Data used to setup I2C slave transfers.
+ * \details Data structure for setting up shared
+ * memory registers access via an I2C slave interface.
+ *
+ */
+typedef struct MCU_PACK {
+	u8 addr /*! Slave address */;
+	u8 o_flags /*! Slave flag attributes */;
+	u16 size /*! Size of the data (if more than 255 set the I2C_SLAVE_SETUP_FLAG_16_BIT_PTR flag) */;
+	char * data /*! Pointer to the data */;
+} i2c_slave_setup_t;
 
 typedef i2c_setup_t i2c_reqattr_t; //legacy support
 
@@ -179,7 +212,7 @@ enum {
  */
 typedef struct MCU_PACK {
 	u8 pin_assign /*! \brief The GPIO configuration to use */;
-	u8 slave_addr /*! \brief The slave address to listen on (ignored if master) */;
+	u8 slave_addr /*! \brief Not used */;
 	u16 o_flags /*! \brief Attribute flags */;
 	u32 bitrate /*! \brief The I2C bitrate */;
 } i2c_attr_t;
@@ -207,7 +240,7 @@ typedef mcu_action_t i2c_action_t;
 
 /*! \brief See details below.
  * \details This ioctl request sets up an I2C transfer.
- * The third argument is a pointer to an \ref i2c_reqattr_t data structure.
+ * The third argument is a pointer to an \ref i2c_setup_t data structure.
  *
  * \code
  * i2c_setup_t setup;
@@ -220,7 +253,7 @@ typedef mcu_action_t i2c_action_t;
  * \endcode
  * \hideinitializer
  */
-#define I_I2C_SETUP _IOCTLW(I2C_IOC_IDENT_CHAR, I_GLOBAL_TOTAL + 0, i2c_reqattr_t)
+#define I_I2C_SETUP _IOCTLW(I2C_IOC_IDENT_CHAR, I_GLOBAL_TOTAL + 0, i2c_setup_t)
 
 /*! \brief See details below.
  * \details This request can be used in non-blocking mode
@@ -235,7 +268,25 @@ typedef mcu_action_t i2c_action_t;
  */
 #define I_I2C_GETERR _IOCTL(I2C_IOC_IDENT_CHAR, I_GLOBAL_TOTAL + 1)
 
-#define I_I2C_TOTAL 2
+/*! \brief See details below.
+ * \details This ioctl request sets up an I2C slave memory area.
+ * The third argument is a pointer to an \ref i2c_slave_setup_t data structure.
+ *
+ * \code
+ * i2c_slave_setup_t setup;
+ * char buf[32];
+ * setup.data = buf;
+ * setup.size = 32;
+ * setup.addr = 0x4C;
+ * setup.o_flags = I2C_SLAVE_SETUP_FLAG_ALT_ADDR0 | I2C_SLAVE_SETUP_FLAG_8_BIT_PTR;
+ * ioctl(i2c_fd, I_I2C_SLAVE_SETUP, &setup);
+ *
+ * \endcode
+ * \hideinitializer
+ */
+#define I_I2C_SLAVE_SETUP _IOCTLW(I2C_IOC_IDENT_CHAR, I_GLOBAL_TOTAL + 2, i2c_slave_setup_t)
+
+#define I_I2C_TOTAL 3
 
 
 #ifdef __cplusplus
