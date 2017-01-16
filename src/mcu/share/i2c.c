@@ -33,7 +33,8 @@ int (* const i2c_ioctl_func_table[I_GLOBAL_TOTAL + I_I2C_TOTAL])(int, void*) = {
 		mcu_i2c_setaction,
 		mcu_i2c_setup,
 		mcu_i2c_geterr,
-		mcu_i2c_slave_setup
+		mcu_i2c_slave_setup,
+		mcu_i2c_reset
 };
 
 int mcu_i2c_open(const device_cfg_t * cfg){

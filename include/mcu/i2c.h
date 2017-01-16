@@ -66,6 +66,7 @@ int mcu_i2c_setaction(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_i2c_setup(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_i2c_geterr(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_i2c_slave_setup(int port, void * ctl) MCU_PRIV_CODE;
+int mcu_i2c_reset(int port, void * ctl) MCU_PRIV_CODE;
 
 
 #ifdef __cplusplus

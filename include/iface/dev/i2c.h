@@ -286,7 +286,16 @@ typedef mcu_action_t i2c_action_t;
  */
 #define I_I2C_SLAVE_SETUP _IOCTLW(I2C_IOC_IDENT_CHAR, I_GLOBAL_TOTAL + 2, i2c_slave_setup_t)
 
-#define I_I2C_TOTAL 3
+
+/*! \brief See details below.
+ * \details This ioctl request resets the state of the I2C controller. The controller
+ * will not be listening in slave mode (use I_I2C_SLAVE_SETUP to start listening).
+ *
+ * \hideinitializer
+ */
+#define I_I2C_RESET _IOCTL(I2C_IOC_IDENT_CHAR, I_GLOBAL_TOTAL + 3)
+
+#define I_I2C_TOTAL 4
 
 
 #ifdef __cplusplus
