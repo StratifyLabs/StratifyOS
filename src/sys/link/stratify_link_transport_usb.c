@@ -52,7 +52,7 @@ link_transport_phy_t stratify_link_transport_usb_open(const char * name, usb_dev
 	//set USB attributes
 	mcu_debug("Set USB attr fd:%d\n", fd);
 
-	usb_attr.pin_assign = 0;
+	usb_attr.pin_assign = mcu_board_config.usb_pin_assign;
 	usb_attr.mode = USB_ATTR_MODE_DEVICE;
 	usb_attr.crystal_freq = mcu_board_config.core_osc_freq;
 	if( ioctl(fd, I_USB_SETATTR, &usb_attr) < 0 ){

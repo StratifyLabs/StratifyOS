@@ -119,7 +119,8 @@ typedef struct MCU_PACK {
 	u32 o_flags;
 	void (*event)(int, void*);
 	pio_t led;
-	u16 resd;
+	u8 usb_pin_assign;
+	u8 resd;
 } mcu_board_config_t;
 
 extern const mcu_board_config_t mcu_board_config;

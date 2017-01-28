@@ -54,7 +54,7 @@ link_transport_phy_t stratify_link_boot_transport_usb_open(const char * name, us
 	dstr("USB OPEN\n");
 
 	//set USB attributes
-	usb_attr.pin_assign = 0;
+	usb_attr.pin_assign = mcu_board_config.usb_pin_assign;
 	usb_attr.mode = USB_ATTR_MODE_DEVICE;
 	usb_attr.crystal_freq = mcu_board_config.core_osc_freq;
 	dstr("SET USB ATTR\n");
