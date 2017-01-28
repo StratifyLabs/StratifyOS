@@ -177,7 +177,6 @@ int link_ioctl_delay(link_transport_mdriver_t * driver, int fildes, int request,
 	link_debug(LINK_DEBUG_MESSAGE, "Replied with %d (%d)", reply.err, link_errno);
 	if ( reply.err < 0 ){
 		link_debug(LINK_DEBUG_WARNING, "Failed to ioctl file (%d)", link_errno);
-		return LINK_DEV_ERROR;
 	}
 	return reply.err;
 }

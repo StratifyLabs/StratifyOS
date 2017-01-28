@@ -89,23 +89,24 @@ int appfs_util_getpageinfo(const device_t * dev, mem_pageinfo_t * pageinfo){
 
 
 
-static u32 translate_value(u32 addr, u32 mask, u32 code_start, u32 data_start, u32 total){
+static u32 translate_value(u32 addr, u32 mask, u32 code_start, u32 data_start, u32 total, s32 * loc){
 	//check if the value is an address
 	u32 ret;
 	ret = addr;
+	*loc = 0;
 	if ( (addr & APPFS_REWRITE_MASK) == mask ){ //matches Text or Data
 		ret = addr & ~(APPFS_REWRITE_MASK|APPFS_REWRITE_RAM_MASK);
 		if( (addr & APPFS_REWRITE_KERNEL_ADDR) == APPFS_REWRITE_KERNEL_ADDR ){
 			//This is a kernel value
-			ret = (addr & APPFS_REWRITE_KERNEL_ADDR_MASK)>>2;
+			ret = (addr & APPFS_REWRITE_KERNEL_ADDR_MASK)>>2; //convert the address to a table index value
 			if( ret < total ){
 				//get the symbol location from the symbols table
 				if( symbols_table[ret] == 0 ){
-					errno = ENOEXEC;
+					*loc = ret; //this symbol isn't available -- it was removed to save space in the MCU flash
 				}
 				return symbols_table[ret];
 			} else {
-				errno = ENOEXEC;
+				*loc = 0;
 				return 0;
 			}
 		} else if (addr & APPFS_REWRITE_RAM_MASK ){
@@ -471,6 +472,7 @@ int appfs_util_priv_writeinstall(const device_t * dev, appfs_handle_t * h, appfs
 	int len;
 	int code_page;
 	int ram_page;
+	s32 loc_err = 0;
 
 	if ( h->is_install == false ){
 		errno = EBADF;
@@ -578,7 +580,8 @@ int appfs_util_priv_writeinstall(const device_t * dev, appfs_handle_t * h, appfs
 				h->type.install.rewrite_mask,
 				h->type.install.code_start,
 				h->type.install.data_start,
-				h->type.install.kernel_symbols_total);
+				h->type.install.kernel_symbols_total,
+				&loc_err);
 
 
 		errno = 0;
@@ -587,9 +590,11 @@ int appfs_util_priv_writeinstall(const device_t * dev, appfs_handle_t * h, appfs
 					h->type.install.rewrite_mask,
 					h->type.install.code_start,
 					h->type.install.data_start,
-					h->type.install.kernel_symbols_total);
-			if( (dest.buf[i] == 0) && (errno == ENOEXEC) ){
-				return -1;
+					h->type.install.kernel_symbols_total,
+					&loc_err);
+			if( dest.buf[i] == 0 ){
+				errno = ENOEXEC;
+				return -1 - loc_err;
 			}
 		}
 
@@ -606,9 +611,11 @@ int appfs_util_priv_writeinstall(const device_t * dev, appfs_handle_t * h, appfs
 					h->type.install.rewrite_mask,
 					h->type.install.code_start,
 					h->type.install.data_start,
-					h->type.install.kernel_symbols_total);
-			if( (dest.buf[i] == 0) && (errno == ENOEXEC) ){
-				return -1;
+					h->type.install.kernel_symbols_total,
+					&loc_err);
+			if( dest.buf[i] == 0 ){
+				errno = ENOEXEC;
+				return -1 - loc_err;
 			}
 		}
 	}
