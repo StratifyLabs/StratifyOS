@@ -43,7 +43,6 @@ static void appfs_util_privloadfileinfo(void * args) MCU_PRIV_EXEC_CODE;
 static int get_hdrinfo(appfs_file_t * file, int page, int type);
 static int get_filesize(const device_t * dev, priv_load_fileinfo_t * args, int filetype);
 
-
 static void priv_op_erase_pages(void * args) MCU_PRIV_EXEC_CODE;
 
 static u8 calc_checksum(const char * name){
@@ -106,7 +105,7 @@ static u32 translate_value(u32 addr, u32 mask, u32 code_start, u32 data_start, u
 				}
 				return symbols_table[ret];
 			} else {
-				*loc = 0;
+				*loc = total;
 				return 0;
 			}
 		} else if (addr & APPFS_REWRITE_RAM_MASK ){
@@ -548,6 +547,7 @@ int appfs_util_priv_writeinstall(const device_t * dev, appfs_handle_t * h, appfs
 					APPFS_MEMPAGETYPE_USER);
 		}
 
+		ram_page = 0;
 		data_start_addr = find_protectable_free(dev, MEM_PAGEINFO_TYPE_RAM, ram_size, &ram_page);
 		if( data_start_addr == -1 ){
 			if ( !((src.file->exec.options) & APPFS_EXEC_OPTIONS_FLASH) ){ //for RAM app's mark the RAM usage
@@ -583,7 +583,6 @@ int appfs_util_priv_writeinstall(const device_t * dev, appfs_handle_t * h, appfs
 				h->type.install.kernel_symbols_total,
 				&loc_err);
 
-
 		errno = 0;
 		for(i=sizeof(appfs_file_t) >> 2; i < attr->nbyte >> 2; i++){
 			dest.buf[i] = translate_value(src.ptr[i],
@@ -592,14 +591,13 @@ int appfs_util_priv_writeinstall(const device_t * dev, appfs_handle_t * h, appfs
 					h->type.install.data_start,
 					h->type.install.kernel_symbols_total,
 					&loc_err);
-			if( dest.buf[i] == 0 ){
-				errno = ENOEXEC;
+			if( loc_err != 0 ){
+				errno = EIO;
 				return -1 - loc_err;
 			}
 		}
 
 	} else {
-
 
 		if ( (attr->loc & 0x03) ){
 			//this is not a word aligned write
@@ -613,8 +611,8 @@ int appfs_util_priv_writeinstall(const device_t * dev, appfs_handle_t * h, appfs
 					h->type.install.data_start,
 					h->type.install.kernel_symbols_total,
 					&loc_err);
-			if( dest.buf[i] == 0 ){
-				errno = ENOEXEC;
+			if( loc_err != 0 ){
+				errno = EIO;
 				return -1 - loc_err;
 			}
 		}
