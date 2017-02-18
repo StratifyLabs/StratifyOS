@@ -79,8 +79,8 @@ const usb_dev_desc_t stratify_link_boot_transport_usb_dev_desc MCU_WEAK = {
 		.bDescriptorType = USB_DEVICE_DESCRIPTOR_TYPE,
 		.bcdUSB = 0x0200,
 		.bDeviceClass = USB_DEVICE_CLASS_COMMUNICATIONS,
-		.bDeviceSubClass = USB_INTERFACE_SUBCLASS_ACM,
-		.bDeviceProtocol = USB_INTERFACE_PROTOCOL_V25TER,
+		.bDeviceSubClass = 0,
+		.bDeviceProtocol = 0,
 		.bMaxPacketSize = MCU_CORE_USB_MAX_PACKET_ZERO_VALUE,
 		.idVendor = LINK_USB_VID,
 		.idProduct = LINK_USB_PID,
@@ -98,7 +98,7 @@ const stratify_link_boot_transport_usb_cfg_desc_t stratify_link_boot_transport_u
 				.bDescriptorType = USB_CONFIGURATION_DESCRIPTOR_TYPE,
 
 				.wTotalLength = sizeof(stratify_link_boot_transport_usb_cfg_desc_t)-1, //exclude the zero terminator
-				.bNumInterfaces = 0x01,
+				.bNumInterfaces = 0x02,
 				.bConfigurationValue = 0x01,
 				.iConfiguration = 0x03,
 				.bmAttributes = USB_CONFIG_BUS_POWERED,
