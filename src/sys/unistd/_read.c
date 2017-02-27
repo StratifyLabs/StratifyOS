@@ -63,8 +63,13 @@ int _read(int fildes, void *buf, size_t nbyte){
 	//because reading is done in ISR (privileged mode) it will override the MPU
 	if ( nbyte > 0 ){
 		bufp = (char*)buf;
+		//write the memory location to see if a fault happens
 		loc = bufp[0];
+		bufp[0] = 0;
+		bufp[0] = loc;
 		loc = bufp[nbyte-1];
+		bufp[nbyte-1] = 0;
+		bufp[nbyte-1] = loc;
 	}
 
 
