@@ -315,6 +315,7 @@ int mcu_i2c_slave_setup(int port, void * ctl){
 	LPC_I2C_Type * i2c_regs;
 	int gen_call = 0;
 
+	// \todo To fix Issue #30, we need to check the dest mem and make sure it is writable by the caller
 
 	memcpy( &(i2c_local[port].slave.setup), ctl, sizeof(i2c_slave_setup_t));
 
@@ -461,7 +462,6 @@ int transmit_slave_byte(LPC_I2C_Type * regs, i2c_local_slave_t * op){
 		}
 	} else {
 		regs->DAT = 0xFF;
-		return 0;
 	}
 	return 0;
 }
@@ -505,6 +505,9 @@ static void _mcu_i2c_isr(int port) {
 			i2c_regs->CONSET = AA;
 		}
 		break;
+	case 0x20: //SLA+W has been transmitted; NOT ACK has been received
+		set_master_done(i2c_regs, port, I2C_ERROR_ACK);
+		break;
 	case 0x28: //Data byte transmitted -- Ack Received
 		if( i2c_local[port].state == I2C_STATE_WR_PTR_ONLY ){
 			i2c_local[port].state = I2C_STATE_MASTER_COMPLETE;
@@ -533,13 +536,9 @@ static void _mcu_i2c_isr(int port) {
 			set_master_done(i2c_regs, port, 0);
 		}
 		break;
-	case 0x20: //SLA+W has been transmitted; NOT ACK has been received
-		set_master_done(i2c_regs, port, I2C_ERROR_ACK);
-		break;
 	case 0x48: //SLA+R has been transmitted; NOT ACK has been received.
 		set_master_done(i2c_regs, port, I2C_ERROR_ACK);
 		break;
-
 	case 0x30: //Data byte in I2DAT has been transmitted; NOT ACK has been received.
 		set_master_done(i2c_regs, port, 0);
 		break;
@@ -557,8 +556,16 @@ static void _mcu_i2c_isr(int port) {
 		receive_byte(i2c_regs, &(i2c_local[port].master));
 		set_master_done(i2c_regs, port, 0);
 		break;
-	case 0x00:
-		set_master_done(i2c_regs, port, I2C_ERROR_START);
+
+	case 0x00: //Bus error in Master or selected slave mode -- illegal start or stop
+		if( (i2c_local[port].state >= I2C_STATE_START) &&
+				(i2c_local[port].state <= I2C_STATE_MASTER_COMPLETE)){
+			set_master_done(i2c_regs, port, I2C_ERROR_BUS_BUSY);
+		} else if( (i2c_local[port].state >= I2C_STATE_SLAVE_READ) &&
+				(i2c_local[port].state <= I2C_STATE_SLAVE_WRITE_COMPLETE)){
+			i2c_regs->CONSET = STO;
+		}
+
 		break;
 
 		//SLAVE OPERATION STARTS HERE ---------------------------------------------------------------
