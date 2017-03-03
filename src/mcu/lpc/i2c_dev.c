@@ -632,9 +632,11 @@ static void _mcu_i2c_isr(int port) {
 
 		//execute read and write callbacks
 		event = 0;
-		if( i2c_local[port].state == I2C_STATE_SLAVE_WRITE_COMPLETE ){
+		if( (i2c_local[port].state == I2C_STATE_SLAVE_WRITE_COMPLETE) ||
+				(i2c_local[port].state == I2C_STATE_SLAVE_WRITE) ){
 			event = I2C_EVENT_WRITE_COMPLETE;
-		} else if( i2c_local[port].state == I2C_STATE_SLAVE_READ_COMPLETE ){
+		} else if( (i2c_local[port].state == I2C_STATE_SLAVE_READ_COMPLETE) ||
+				(i2c_local[port].state == I2C_STATE_SLAVE_READ) ){
 			event = I2C_EVENT_DATA_READY;
 		} else {
 			event = I2C_EVENT_WRITE_POINTER_COMPLETE;
