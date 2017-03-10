@@ -136,11 +136,11 @@ void unistd_clr_action(open_file_t * open_file){
 }
 
 
-int u_device_read(open_file_t * open_file, void * buf, int nbyte){
+int u_read(open_file_t * open_file, void * buf, int nbyte){
 	return device_data_transfer(open_file, buf, nbyte, 1);
 }
 
-int u_device_write(open_file_t * open_file, const void * buf, int nbyte){
+int u_write(open_file_t * open_file, const void * buf, int nbyte){
 	return device_data_transfer(open_file, (void*)buf, nbyte, 0);
 }
 

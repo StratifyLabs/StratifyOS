@@ -134,8 +134,15 @@ void _mcu_i2c_dev_power_on(int port){
 }
 
 void _mcu_i2c_dev_power_off(int port){
+	LPC_I2C_Type * i2c_regs;
 	if ( i2c_local[port].ref_count > 0 ){
 		if ( i2c_local[port].ref_count == 1 ){
+			i2c_regs = i2c_regs_table[port];
+			i2c_regs->CONCLR = (AA);
+			i2c_regs->ADR0 = 0;
+			i2c_regs->ADR1 = 0;
+			i2c_regs->ADR2 = 0;
+			i2c_regs->ADR3 = 0;
 			_mcu_core_priv_disable_irq((void*)(u32)(i2c_irqs[port]));
 			switch(port){
 			case 0:
@@ -589,8 +596,9 @@ static void _mcu_i2c_isr(int port) {
 			i2c_local[port].state = I2C_STATE_SLAVE_READ_PTR;
 		} else if( i2c_local[port].state == I2C_STATE_SLAVE_READ_PTR ){
 			i2c_local[port].slave.ptr.ptr8[0] = i2c_regs->DAT; //LSB is second
-			i2c_local[port].state = I2C_STATE_SLAVE_READ;
+			i2c_local[port].state = I2C_STATE_SLAVE_READ_PTR_COMPLETE;
 		} else {
+			i2c_local[port].state = I2C_STATE_SLAVE_READ;
 
 			if( receive_slave_byte(i2c_regs, &(i2c_local[port].slave)) ){
 				i2c_regs->CONSET = AA;

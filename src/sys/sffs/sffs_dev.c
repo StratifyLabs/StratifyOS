@@ -76,7 +76,7 @@ int sffs_dev_open(const void * cfg){
 				return -1;
 			}
 
-	return u_device_ioctl(cfgp->open_file, I_DISK_GETATTR, &(cfgp->state->dattr));
+	return u_ioctl(cfgp->open_file, I_DISK_GETATTR, &(cfgp->state->dattr));
 }
 
 int sffs_dev_write(const void * cfg, int loc, const void * buf, int nbyte){
@@ -89,14 +89,14 @@ int sffs_dev_write(const void * cfg, int loc, const void * buf, int nbyte){
 		return -1;
 	}
 	cfgp->open_file->loc = loc;
-	ret = u_device_write(cfgp->open_file, buf, nbyte);
+	ret = u_write(cfgp->open_file, buf, nbyte);
 	if( ret != nbyte ){
 		//mcu_debug("Only wrote %d bytes\n", ret);
 		return -1;
 	}
 	memset(buffer, 0, nbyte);
 	cfgp->open_file->loc = loc;
-	u_device_read(cfgp->open_file, buffer, nbyte);
+	u_read(cfgp->open_file, buffer, nbyte);
 	if ( memcmp(buffer, buf, nbyte) != 0 ){
 		return -1;
 	}
@@ -111,7 +111,7 @@ int sffs_dev_read(const void * cfg, int loc, void * buf, int nbyte){
 		return -1;
 	}
 	cfgp->open_file->loc = loc;
-	return u_device_read(cfgp->open_file, buf, nbyte);
+	return u_read(cfgp->open_file, buf, nbyte);
 }
 
 
@@ -122,7 +122,7 @@ int sffs_dev_erase(const void * cfg){
 		return -1;
 	}
 	int usec;
-	if( u_device_ioctl(cfgp->open_file, I_DISK_ERASEDEVICE, NULL) < 0 ){
+	if( u_ioctl(cfgp->open_file, I_DISK_ERASEDEVICE, NULL) < 0 ){
 		return -1;
 	}
 
@@ -141,7 +141,7 @@ int sffs_dev_erasesection(const void * cfg, int loc){
 		return -1;
 	}
 
-	if( u_device_ioctl(cfgp->open_file, I_DISK_ERASEBLOCK, (void*)loc) < 0 ){
+	if( u_ioctl(cfgp->open_file, I_DISK_ERASEBLOCK, (void*)loc) < 0 ){
 		return -1;
 	}
 

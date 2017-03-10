@@ -41,7 +41,6 @@ static void exec_callback(int port, void * data);
 void _mcu_eint_dev_power_on(int port){
 	if ( eint_local[port].ref_count == 0 ){
 		eint_local[port].ref_count++;
-		mcu_eint_setaction(port, NULL);
 		reset_eint_port(port);
 	}
 	eint_local[port].ref_count++;
@@ -50,7 +49,6 @@ void _mcu_eint_dev_power_on(int port){
 void _mcu_eint_dev_power_off(int port){
 	if ( eint_local[port].ref_count > 0 ){
 		if ( eint_local[port].ref_count == 1 ){
-			mcu_eint_setaction(port, NULL);
 			reset_eint_port(port);
 		}
 		eint_local[port].ref_count--;
@@ -215,6 +213,10 @@ int set_event(int port, eint_action_event_t event){
 		LPC_SC->EXTPOLAR |= (1<<port);
 		break;
 	case EINT_ACTION_EVENT_LOW:
+		break;
+	case EINT_ACTION_EVENT_UNCONFIGURED:
+		LPC_SC->EXTINT |= (1<<port); //Clear the interrupt flag
+		return 0;
 		break;
 	case EINT_ACTION_EVENT_BOTH:
 	default:

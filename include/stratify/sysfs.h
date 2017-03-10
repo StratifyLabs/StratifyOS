@@ -27,6 +27,7 @@
 #include <stddef.h>
 #include <sys/stat.h>
 #include <dirent.h>
+#include <sys/lock.h>
 
 #ifdef __SIM__
 #include "sim_device.h"
@@ -242,6 +243,12 @@ void sysfs_unlock();
 
 extern const char sysfs_validset[];
 extern const char sysfs_whitespace[];
+
+int u_open(open_file_t * open_file, const char * name);
+int u_ioctl(open_file_t * open_file, int request, void * ctl);
+int u_read(open_file_t * open_file, void * buf, int nbyte);
+int u_write(open_file_t * open_file, const void * buf, int nbyte);
+int u_close(open_file_t * open_file);
 
 
 #endif /* SYSFS_H_ */

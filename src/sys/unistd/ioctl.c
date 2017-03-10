@@ -65,7 +65,7 @@ int ioctl(int fildes, int request, ...) {
 		va_end(ap);
 
 		//Character and device drivers both have the same interface to ioctl
-		return u_device_ioctl(get_open_file(fildes), request, ctl);
+		return u_ioctl(get_open_file(fildes), request, ctl);
 	}
 
 	errno = ENOTSUP;
@@ -73,7 +73,7 @@ int ioctl(int fildes, int request, ...) {
 }
 
 
-int u_device_ioctl(open_file_t * open_file, int request, void * ctl){
+int u_ioctl(open_file_t * open_file, int request, void * ctl){
 	u_priv_attr_t args;
 	args.fs = open_file->fs;
 	args.handle = open_file->handle;

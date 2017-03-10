@@ -74,7 +74,7 @@ int _write(int fildes, const void *buf, size_t nbyte) {
 
 	fs = get_fs(fildes);
 	if ( fs->priv_write != NULL ){  //This means the handle is not a regular file -- must be a device
-		return u_device_write(get_open_file(fildes), buf, nbyte);
+		return u_write(get_open_file(fildes), buf, nbyte);
 	} else {
 		//initialize the file offset location
 		loc = get_loc(fildes);

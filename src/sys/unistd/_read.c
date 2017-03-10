@@ -80,7 +80,7 @@ int _read(int fildes, void *buf, size_t nbyte){
 
 	fs = get_fs(fildes);
 	if ( fs->priv_read != NULL ){  //This means the handle is not a regular file -- must be a device
-		return u_device_read(get_open_file(fildes), buf, nbyte);
+		return u_read(get_open_file(fildes), buf, nbyte);
 	}
 
 

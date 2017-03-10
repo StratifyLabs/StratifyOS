@@ -41,19 +41,22 @@ int close(int fildes);
 int _close(int fildes) {
 	//Close the file if it's open
 	int ret;
-	void ** handle_ptr;
-	const sysfs_t * fs;
 
 	fildes = u_fildes_is_bad(fildes);
 	if ( fildes < 0 ){
 		return -1;
 	}
 
-	handle_ptr = get_handle_ptr(fildes);
-	fs = get_fs(fildes);
-	ret = fs->close(fs->cfg, handle_ptr);
+	ret = u_close(get_open_file(fildes));
+
 	u_reset_fildes(fildes);
 	return ret;
+}
+
+int u_close(open_file_t * open_file){
+	const sysfs_t * fs;
+	fs = open_file->fs;
+	return fs->close(fs->cfg, &open_file->handle);
 }
 
 

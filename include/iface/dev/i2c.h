@@ -114,6 +114,7 @@ enum {
 	I2C_STATE_SLAVE_READ /*! Internal use only */,
 	I2C_STATE_SLAVE_READ_PTR /*! Internal use only */,
 	I2C_STATE_SLAVE_READ_PTR_16 /*! Internal use only */,
+	I2C_STATE_SLAVE_READ_PTR_COMPLETE /*! Internal use only */,
 	I2C_STATE_SLAVE_READ_COMPLETE /*! Internal use only */,
 	I2C_STATE_SLAVE_WRITE /*! Internal use only */,
 	I2C_STATE_SLAVE_WRITE_COMPLETE /*! Internal use only */,

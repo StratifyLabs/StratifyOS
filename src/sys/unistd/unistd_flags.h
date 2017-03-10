@@ -31,10 +31,7 @@
 
 
 int u_new_open_file(int start);
-void * u_device_open(const char * name, int flags);
-int u_device_ioctl(open_file_t * open_file, int request, void * ctl);
-int u_device_read(open_file_t * open_file, void * buf, int nbyte);
-int u_device_write(open_file_t * open_file, const void * buf, int nbyte);
+
 
 int u_init_stdio(int fildes);
 int u_get_open_file(int fildes);

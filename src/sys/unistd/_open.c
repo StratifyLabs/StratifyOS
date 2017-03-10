@@ -171,6 +171,16 @@ int _open(const char * name, int flags, ...) {
 	return fildes;
 }
 
+int u_open(open_file_t * open_file, const char * name){
+	const sysfs_t * fs = open_file->fs;
+	return fs->open(
+			fs->cfg,
+			&(open_file->handle),
+			name,
+			open_file->flags,
+			0);
+}
+
 int u_fildes_is_bad(int fildes){
 	if ( fildes < 0 ){
 		errno = EBADF;
