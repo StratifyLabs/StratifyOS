@@ -571,6 +571,7 @@ static void _mcu_i2c_isr(int port) {
 		} else if( (i2c_local[port].state >= I2C_STATE_SLAVE_READ) &&
 				(i2c_local[port].state <= I2C_STATE_SLAVE_WRITE_COMPLETE)){
 			i2c_regs->CONSET = STO;
+			_mcu_core_exec_event_handler(&(i2c_local[port].slave.handler), MCU_EVENT_SET_CODE(I2C_EVENT_SLAVE_BUS_ERROR));
 		}
 
 		break;
@@ -599,12 +600,7 @@ static void _mcu_i2c_isr(int port) {
 			i2c_local[port].state = I2C_STATE_SLAVE_READ_PTR_COMPLETE;
 		} else {
 			i2c_local[port].state = I2C_STATE_SLAVE_READ;
-
-			if( receive_slave_byte(i2c_regs, &(i2c_local[port].slave)) ){
-				i2c_regs->CONSET = AA;
-			} else {
-				i2c_regs->CONCLR = AA;
-			}
+			receive_slave_byte(i2c_regs, &(i2c_local[port].slave));
 		}
 		set_slave_ack(i2c_regs, &(i2c_local[port].slave));
 
@@ -617,6 +613,8 @@ static void _mcu_i2c_isr(int port) {
 		//keep slave address active
 		i2c_regs->CONSET = AA;
 		i2c_local[port].state = I2C_STATE_SLAVE_READ_COMPLETE;
+		//the device is no longer addressed and won't interrupt when the stop condition occurs
+		_mcu_core_exec_event_handler(&(i2c_local[port].slave.handler), MCU_EVENT_SET_CODE(I2C_EVENT_DATA_READY));
 		break;
 
 	case 0xA8: //Own SLA+R has been received and ack returned
@@ -634,6 +632,9 @@ static void _mcu_i2c_isr(int port) {
 		//set ack to stay in slave mode
 		i2c_local[port].state = I2C_STATE_SLAVE_WRITE_COMPLETE;
 		i2c_regs->CONSET = AA;
+
+		//the device is no longer addressed and won't interrupt when the stop condition occurs
+		_mcu_core_exec_event_handler(&(i2c_local[port].slave.handler), MCU_EVENT_SET_CODE(I2C_EVENT_WRITE_COMPLETE));
 		break;
 
 	case 0xA0: //stop or restart has been received while addressed
@@ -647,7 +648,7 @@ static void _mcu_i2c_isr(int port) {
 				(i2c_local[port].state == I2C_STATE_SLAVE_READ) ){
 			event = I2C_EVENT_DATA_READY;
 		} else {
-			event = I2C_EVENT_WRITE_POINTER_COMPLETE;
+			event = I2C_EVENT_UPDATE_POINTER_COMPLETE;
 		}
 
 		i2c_regs->CONSET = AA;

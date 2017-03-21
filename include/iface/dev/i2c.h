@@ -161,9 +161,10 @@ typedef enum {
 
 enum {
 	I2C_EVENT_NONE /*! No Event (used to adjust priority only) */,
-	I2C_EVENT_DATA_READY /*! Data is ready to be read */,
-	I2C_EVENT_WRITE_COMPLETE /*! A write has completed */,
-	I2C_EVENT_WRITE_POINTER_COMPLETE /*! A write has completed */
+	I2C_EVENT_DATA_READY /*! Data is ready to be read (has been written to slave) */,
+	I2C_EVENT_WRITE_COMPLETE /*! A write has completed (master has read data) */,
+	I2C_EVENT_UPDATE_POINTER_COMPLETE /*! Master has written the slave data pointer */,
+	I2C_EVENT_SLAVE_BUS_ERROR /*! An error occurred while addressed in slave mode */
 };
 
 

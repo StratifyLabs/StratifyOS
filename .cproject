@@ -1272,6 +1272,47 @@
 	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
 		<project id="CoActionOS.null.1908724010" name="CoActionOS"/>
 	</storageModule>
+	<storageModule moduleId="refreshScope" versionNumber="2">
+		<configuration configurationName="build_release_mcu_lpc43xx">
+			<resource resourceType="PROJECT" workspacePath="/StratifyOS"/>
+		</configuration>
+		<configuration configurationName="build_debug_sys_armv7m">
+			<resource resourceType="PROJECT" workspacePath="/StratifyOS"/>
+		</configuration>
+		<configuration configurationName="build_release_crt_armv7em_fpu">
+			<resource resourceType="PROJECT" workspacePath="/StratifyOS"/>
+		</configuration>
+		<configuration configurationName="build_release_crt_armv7m">
+			<resource resourceType="PROJECT" workspacePath="/StratifyOS"/>
+		</configuration>
+		<configuration configurationName="build_release_mcu_lpc407x_8x">
+			<resource resourceType="PROJECT" workspacePath="/StratifyOS"/>
+		</configuration>
+		<configuration configurationName="build_release_mcu_lpc17xx">
+			<resource resourceType="PROJECT" workspacePath="/StratifyOS"/>
+		</configuration>
+		<configuration configurationName="build_debug_mcu_lpc407x_8x">
+			<resource resourceType="PROJECT" workspacePath="/StratifyOS"/>
+		</configuration>
+		<configuration configurationName="build_debug_mcu_lpc17xx">
+			<resource resourceType="PROJECT" workspacePath="/StratifyOS"/>
+		</configuration>
+		<configuration configurationName="build_release_mcu_lpc82x">
+			<resource resourceType="PROJECT" workspacePath="/StratifyOS"/>
+		</configuration>
+		<configuration configurationName="build_release_sys_armv7m">
+			<resource resourceType="PROJECT" workspacePath="/StratifyOS"/>
+		</configuration>
+		<configuration configurationName="build_release_link">
+			<resource resourceType="PROJECT" workspacePath="/StratifyOS"/>
+		</configuration>
+		<configuration configurationName="build_release_sys_armv7em_fpu">
+			<resource resourceType="PROJECT" workspacePath="/StratifyOS"/>
+		</configuration>
+		<configuration configurationName="build_debug_sys_arm7em_fpu">
+			<resource resourceType="PROJECT" workspacePath="/StratifyOS"/>
+		</configuration>
+	</storageModule>
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.cross.lib.release.388924090.1536021794.652448319.1015827963;cdt.managedbuild.config.gnu.cross.lib.release.388924090.1536021794.652448319.1015827963.;cdt.managedbuild.tool.gnu.cross.cpp.compiler.750330852;cdt.managedbuild.tool.gnu.cpp.compiler.input.1034577173">
@@ -1321,6 +1362,9 @@
 		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.cross.lib.release.388924090.1536021794.2143011122.2087154548;cdt.managedbuild.config.gnu.cross.lib.release.388924090.1536021794.2143011122.2087154548.;cdt.managedbuild.tool.gnu.cross.cpp.compiler.759110638;cdt.managedbuild.tool.gnu.cpp.compiler.input.214018036">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileCPP"/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.cross.lib.release.388924090.1536021794.652448319.1226112525.315707540;cdt.managedbuild.config.gnu.cross.lib.release.388924090.1536021794.652448319.1226112525.315707540.;cdt.managedbuild.tool.gnu.cross.cpp.compiler.900456107;cdt.managedbuild.tool.gnu.cpp.compiler.input.348774500">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.cross.lib.release.388924090.1536021794.652448319.421258237.1948720291.1553194226;cdt.managedbuild.config.gnu.cross.lib.release.388924090.1536021794.652448319.421258237.1948720291.1553194226.;cdt.managedbuild.tool.gnu.cross.cpp.compiler.30501791;cdt.managedbuild.tool.gnu.cpp.compiler.input.568085135">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
@@ -1448,46 +1492,5 @@
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.cross.lib.release.388924090.1536021794.652448319.421258237;cdt.managedbuild.config.gnu.cross.lib.release.388924090.1536021794.652448319.421258237.;cdt.managedbuild.tool.gnu.cross.cpp.compiler.1828423164;cdt.managedbuild.tool.gnu.cpp.compiler.input.1888236564">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
-	</storageModule>
-	<storageModule moduleId="refreshScope" versionNumber="2">
-		<configuration configurationName="build_release_mcu_lpc43xx">
-			<resource resourceType="PROJECT" workspacePath="/StratifyOS"/>
-		</configuration>
-		<configuration configurationName="build_debug_sys_armv7m">
-			<resource resourceType="PROJECT" workspacePath="/StratifyOS"/>
-		</configuration>
-		<configuration configurationName="build_release_crt_armv7em_fpu">
-			<resource resourceType="PROJECT" workspacePath="/StratifyOS"/>
-		</configuration>
-		<configuration configurationName="build_release_crt_armv7m">
-			<resource resourceType="PROJECT" workspacePath="/StratifyOS"/>
-		</configuration>
-		<configuration configurationName="build_release_mcu_lpc407x_8x">
-			<resource resourceType="PROJECT" workspacePath="/StratifyOS"/>
-		</configuration>
-		<configuration configurationName="build_release_mcu_lpc17xx">
-			<resource resourceType="PROJECT" workspacePath="/StratifyOS"/>
-		</configuration>
-		<configuration configurationName="build_debug_mcu_lpc407x_8x">
-			<resource resourceType="PROJECT" workspacePath="/StratifyOS"/>
-		</configuration>
-		<configuration configurationName="build_debug_mcu_lpc17xx">
-			<resource resourceType="PROJECT" workspacePath="/StratifyOS"/>
-		</configuration>
-		<configuration configurationName="build_release_mcu_lpc82x">
-			<resource resourceType="PROJECT" workspacePath="/StratifyOS"/>
-		</configuration>
-		<configuration configurationName="build_release_sys_armv7m">
-			<resource resourceType="PROJECT" workspacePath="/StratifyOS"/>
-		</configuration>
-		<configuration configurationName="build_release_link">
-			<resource resourceType="PROJECT" workspacePath="/StratifyOS"/>
-		</configuration>
-		<configuration configurationName="build_release_sys_armv7em_fpu">
-			<resource resourceType="PROJECT" workspacePath="/StratifyOS"/>
-		</configuration>
-		<configuration configurationName="build_debug_sys_arm7em_fpu">
-			<resource resourceType="PROJECT" workspacePath="/StratifyOS"/>
-		</configuration>
 	</storageModule>
 </cproject>
