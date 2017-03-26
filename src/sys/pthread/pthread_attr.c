@@ -304,6 +304,10 @@ int pthread_attr_setstacksize(pthread_attr_t *attr /*! a pointer to the attribut
 		return -1;
 	}
 
+	if( attr->stacksize == stacksize ){
+		return 0;
+	}
+
 	if ( stacksize >= PTHREAD_STACK_MIN ){
 		free( attr->stackaddr );
 		guardsize = PTHREAD_ATTR_GET_GUARDSIZE(attr);

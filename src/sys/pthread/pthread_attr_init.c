@@ -38,13 +38,17 @@
  *  - ENOMEM:  Could not allocate memory for the thread attribute
  */
 int pthread_attr_init(pthread_attr_t * attr /*! a pointer to the attributes structure */){
+	int mem_size;
 	attr->stacksize = PTHREAD_DEFAULT_STACK_SIZE;
-	attr->stackaddr = malloc(attr->stacksize + sizeof(struct _reent) + SCHED_DEFAULT_STACKGUARD_SIZE);
+	mem_size = attr->stacksize + sizeof(struct _reent) + SCHED_DEFAULT_STACKGUARD_SIZE;
+	attr->stackaddr = malloc(mem_size);
 	if ( attr->stackaddr == NULL ){
 		errno = ENOMEM;
 		return -1;
 	}
 
+	//for good measure zero out stack
+	memset(attr->stackaddr, 0, mem_size);
 	PTHREAD_ATTR_SET_IS_INITIALIZED((attr), 1);
 	PTHREAD_ATTR_SET_CONTENTION_SCOPE((attr), PTHREAD_SCOPE_SYSTEM);
 	PTHREAD_ATTR_SET_GUARDSIZE((attr), SCHED_DEFAULT_STACKGUARD_SIZE);
