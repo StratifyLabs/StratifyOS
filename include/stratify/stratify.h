@@ -368,6 +368,10 @@
 #ifndef STRATIFY_H_
 #define STRATIFY_H_
 
+#define STRATIFY_VERSION_2_1_0 (0x00020100)
+#define STRATIFY_VERSION_2_2_0 (0x00020200)
+#define STRATIFY_VERSION (STRATIFY_VERSION_2_2_0)
+
 //Standard libraries
 #include <stdio.h>
 #include <string.h>
@@ -610,6 +614,7 @@ typedef struct MCU_PACK {
 	const char * stderr_dev /*! Device used for standard error */;
 	const char * sys_name /*! System (or board) name */;
 	const char * sys_version /*! System (or board) version (distinct from kernel version) */;
+	const char * sys_id /*! System ID (globally unique cloud identifier for board) */;
 	int sys_memory_size /*! Memory size reserved for the system */;
 	int o_sys_flags /*! System flags */;
 	void * (*start)(void*) /*! The start routine (when in doubt use stratify_default_thread()) */;

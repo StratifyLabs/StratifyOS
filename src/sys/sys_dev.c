@@ -43,6 +43,7 @@ int sys_open(const device_cfg_t * cfg){
 }
 
 int sys_ioctl(const device_cfg_t * cfg, int request, void * ctl){
+	sys_id_t * id = ctl;
 	sys_attr_t * sys = ctl;
 	sys_killattr_t * killattr = ctl;
 
@@ -66,6 +67,10 @@ int sys_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 		return 0;
 	case I_SYS_GETTASK:
 		return read_task(ctl);
+
+	case I_SYS_GETID:
+		memcpy(id->id, stratify_board_config.sys_id, PATH_MAX-1);
+		return 0;
 	case I_SYS_KILL:
 		for(i = 1; i < task_get_total(); i++){
 			if( (task_get_pid(i) == killattr->id) &&

@@ -177,6 +177,10 @@ typedef struct MCU_PACK {
 	u32 flags /*! \brief System flags */;
 } sys_attr_t;
 
+typedef struct MCU_PACK {
+	char id[LINK_PATH_MAX] /*! \brief Globally unique Cloud Kernel ID value */;
+} sys_id_t;
+
 /*! \brief Task Attributes
  * \details This structure contains the task attributes
  * used with I_SYS_GETTASK.
@@ -270,6 +274,12 @@ typedef struct MCU_PACK {
  * \details This request sends a signal to a single task (thread)
  */
 #define I_SYS_PTHREADKILL _IOCTLW(SYS_IOC_CHAR, 3, sys_killattr_t)
+
+/*! \brief See below for details
+ * \details Read the system ID's globally unique cloud identifier
+ */
+#define I_SYS_GETID _IOCTLR(SYS_IOC_CHAR, 4, sys_id_t)
+
 
 /*! \brief See below for details
  * \details This requests checks to see if the named process is currently
