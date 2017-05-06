@@ -19,21 +19,21 @@
 
 
 
-#ifndef CAFS_FILELIST_H_
-#define CAFS_FILELIST_H_
+#ifndef SFFS_FILELIST_H_
+#define SFFS_FILELIST_H_
 
 #include "../sffs/sffs_block.h"
 #include "sffs_list.h"
 
-#define CAFS_FILELIST_BLOCK_ISFREE 0xFFFF
-#define CAFS_FILELIST_BLOCK_ISDIRTY 0x0000
+#define SFFS_FILELIST_BLOCK_ISFREE 0xFFFF
+#define SFFS_FILELIST_BLOCK_ISDIRTY 0x0000
 
 
 enum {
-	CAFS_FILELIST_STATUS_FREE = 0xFF,
-	CAFS_FILELIST_STATUS_CURRENT = 0xFE,
-	CAFS_FILELIST_STATUS_OBSOLETE = 0xFC,
-	CAFS_FILELIST_STATUS_DIRTY = 0x00
+	SFFS_FILELIST_STATUS_FREE = 0xFF,
+	SFFS_FILELIST_STATUS_CURRENT = 0xFE,
+	SFFS_FILELIST_STATUS_OBSOLETE = 0xFC,
+	SFFS_FILELIST_STATUS_DIRTY = 0x00
 };
 
 /*! \details This structure defines an entry in the file list.  The file
@@ -65,4 +65,4 @@ static inline int sffs_filelist_getnext(const void * cfg, sffs_list_t * list,  s
 }
 
 
-#endif /* CAFS_FILELIST_H_ */
+#endif /* SFFS_FILELIST_H_ */

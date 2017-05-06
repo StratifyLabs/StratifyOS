@@ -187,7 +187,7 @@ int sffs_scratch_capacity(const void * cfg){
 			return -1;
 		}
 
-		if ( entry.status == CAFS_SCRATCH_STATUS_UNUSED ){
+		if ( entry.status == SFFS_SCRATCH_STATUS_UNUSED ){
 			break;
 		}
 	}
@@ -208,7 +208,7 @@ int sffs_scratch_saveblock(const void * cfg, block_t sffs_block_num){
 			return -1;
 		}
 
-		if ( entry.status == CAFS_SCRATCH_STATUS_UNUSED ){
+		if ( entry.status == SFFS_SCRATCH_STATUS_UNUSED ){
 			break;
 		}
 	}
@@ -239,7 +239,7 @@ int sffs_scratch_saveblock(const void * cfg, block_t sffs_block_num){
 
 	//update the table with the entry
 	entry.original_block = sffs_block_num;
-	entry.status = CAFS_SCRATCH_STATUS_COPIED;
+	entry.status = SFFS_SCRATCH_STATUS_COPIED;
 	set_checksum(&entry);
 	if ( save_scratch_entry(cfg, i, &entry) < 0 ){
 		return -1;
@@ -260,11 +260,11 @@ int sffs_scratch_restore(const void * cfg){
 			return -1;
 		}
 
-		if ( entry.status == CAFS_SCRATCH_STATUS_UNUSED ){
+		if ( entry.status == SFFS_SCRATCH_STATUS_UNUSED ){
 			break;
 		}
 
-		if ( entry.status == CAFS_SCRATCH_STATUS_COPIED ){
+		if ( entry.status == SFFS_SCRATCH_STATUS_COPIED ){
 
 			if( validate_checksum(&entry) == 0 ){ //only restore blocks with valid checksums
 				if ( restore_block(cfg, entry.original_block, i) < 0 ){

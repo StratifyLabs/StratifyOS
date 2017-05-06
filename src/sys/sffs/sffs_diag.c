@@ -139,7 +139,7 @@ int sffs_diag_scan(const void * cfg){
 	sffs_debug(1, "go through serialno list\n");
 	while( cl_snlist_getnext(cfg, &sn_list, &item) == 0 ){
 
-		if ( item.status != CAFS_SNLIST_ITEM_STATUS_CLOSED ){
+		if ( item.status != SFFS_SNLIST_ITEM_STATUS_CLOSED ){
 			//has been deleted
 			continue;
 		}
@@ -186,7 +186,7 @@ int sffs_diag_scanfile(const void * cfg, serial_t serialno){
 
 	//first lookup the file's block number
 
-	hdr_block = sffs_serialno_get(cfg, serialno, CAFS_SNLIST_ITEM_STATUS_CLOSED, NULL);
+	hdr_block = sffs_serialno_get(cfg, serialno, SFFS_SNLIST_ITEM_STATUS_CLOSED, NULL);
 
 	if ( sffs_block_load(cfg, hdr_block, &hdr_sffs_block_data) < 0 ){
 		printf("failed to load block %d\n", hdr_block);
@@ -221,7 +221,7 @@ int sffs_diag_scanfile(const void * cfg, serial_t serialno){
 
 	while( sffs_filelist_getnext(cfg, &file_data_list, &list_item) == 0 ){
 
-		if ( list_item.status == CAFS_FILELIST_STATUS_CURRENT ){ //if status is 0, the entry has been discarded
+		if ( list_item.status == SFFS_FILELIST_STATUS_CURRENT ){ //if status is 0, the entry has been discarded
 
 			if ( sffs_block_load(cfg, list_item.block, &sffs_block_data) < 0 ){
 				printf("failed to load block %d\n", list_item.block);
@@ -350,7 +350,7 @@ int sffs_diag_getfile(const void * cfg, const char * path, sffs_diag_file_t * de
 		return -1;
 	}
 
-	if ( err != CAFS_DIR_PATH_EXISTS ){
+	if ( err != SFFS_DIR_PATH_EXISTS ){
 		return -1;
 	}
 

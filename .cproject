@@ -59,7 +59,7 @@
 					<stringMacro name="C_FLAGS_ARMV7EM_FPU" type="VALUE_TEXT" value="-mfloat-abi=hard -mfpu=fpv4-sp-d16 -U__SOFTFP__ -D__FPU_USED=1"/>
 					<stringMacro name="LIBTOOL_OPTIONS_linux" type="VALUE_TEXT" value="${LIBTOOL_OPTIONS_macosx}"/>
 					<stringMacro name="TOOLSPATH_macosx" type="VALUE_TEXT" value="/Applications/StratifyLabs-SDK/Tools/gcc"/>
-					<stringMacro name="CCFLAGS_macosx" type="VALUE_TEXT" value="-m64 -arch x86_64 -mmacosx-version-min=10.7"/>
+					<stringMacro name="CCFLAGS_macosx" type="VALUE_TEXT" value="-m64 -arch x86_64 -mmacosx-version-min=10.9"/>
 					<stringMacro name="BUILD_FLOAT" type="VALUE_TEXT" value="."/>
 					<stringMacro name="BUILD_NAME" type="VALUE_TEXT" value="link"/>
 					<stringMacro name="INSTALLPATH_linux" type="VALUE_TEXT" value="${INSTALLPATH_macosx}"/>

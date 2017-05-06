@@ -26,6 +26,8 @@
 #include  "unistd_fs.h"
 #include  "unistd_flags.h"
 #include "mcu/debug.h"
+#include "stratify/stratify.h"
+
 
 /*! \details This function writes \a nbyte bytes \a fildes  from the memory
  * location pointed to by \a buf.
@@ -56,11 +58,8 @@ int _write(int fildes, const void *buf, size_t nbyte) {
 
 	fildes = u_fildes_is_bad(fildes);
 	if ( fildes < 0 ){
-		return -1;
-	}
-
-	if ( (get_flags(fildes) & O_ACCMODE) == O_RDONLY ){
-		errno = EACCES;
+		//check to see if fildes is a socket
+		errno = EBADF;
 		return -1;
 	}
 
@@ -69,6 +68,19 @@ int _write(int fildes, const void *buf, size_t nbyte) {
 		bufp = (char*)buf;
 		loc = bufp[0];
 		loc = bufp[nbyte-1];
+	}
+
+	if( fildes & FILDES_SOCKET_FLAG ){
+		if( stratify_board_config.socket_api != 0 ){
+			return stratify_board_config.socket_api->write(fildes, buf, nbyte);
+		}
+		errno = EBADF;
+		return -1;
+	}
+
+	if ( (get_flags(fildes) & O_ACCMODE) == O_RDONLY ){
+		errno = EACCES;
+		return -1;
 	}
 
 

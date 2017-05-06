@@ -333,7 +333,7 @@ block_t sffs_list_consolidate(const void * cfg,
 	new_sffs_block_data.hdr.serialno = serialno;
 	new_sffs_block_data.hdr.type = type;
 	new_sffs_block_data.hdr.status = 0xFF;
-	memset(new_sffs_block_data.data, 0xFF, CAFS_LIST_DATA_SIZE);
+	memset(new_sffs_block_data.data, 0xFF, SFFS_LIST_DATA_SIZE);
 	new_current_block = new_block;
 	new_list->hdr.prev = BLOCK_INVALID;
 	old_prev_block = BLOCK_INVALID;
@@ -380,7 +380,7 @@ block_t sffs_list_consolidate(const void * cfg,
 					}
 					prev_block = new_current_block;
 					new_current_block = new_list->hdr.next;
-					memset(new_sffs_block_data.data, 0xFF, CAFS_LIST_DATA_SIZE);
+					memset(new_sffs_block_data.data, 0xFF, SFFS_LIST_DATA_SIZE);
 					new_list->hdr.prev = prev_block;
 					j = 0;
 				}

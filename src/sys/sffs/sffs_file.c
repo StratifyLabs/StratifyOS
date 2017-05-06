@@ -24,6 +24,7 @@
 #include <string.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <errno.h>
 #ifndef __SIM__
 #include "mcu/core.h"
 #endif
@@ -220,19 +221,19 @@ int sffs_file_remove(const void * cfg, serial_t serialno){
 	int addr;
 	block_t sffs_block_num;
 	//lookup the block number
-	sffs_block_num = sffs_serialno_get(cfg, serialno, CAFS_SNLIST_ITEM_STATUS_CLOSED, &addr);
+	sffs_block_num = sffs_serialno_get(cfg, serialno, SFFS_SNLIST_ITEM_STATUS_CLOSED, &addr);
 	sffs_debug(DEBUG_LEVEL, "remove serialno:%d at block:%d\n", serialno, sffs_block_num);
 	if ( sffs_block_num == BLOCK_INVALID ){
 		return -1;
 	}
 
 	//set serial number status to discarding header and list
-	if ( sffs_serialno_setstatus(cfg, addr, CAFS_SNLIST_ITEM_STATUS_DISCARDING) < 0 ){
+	if ( sffs_serialno_setstatus(cfg, addr, SFFS_SNLIST_ITEM_STATUS_DISCARDING) < 0 ){
 		sffs_error("failed to set status at addr 0x%X\n", addr);
 		return -1;
 	}
 
-	return cleanup_file(cfg, sffs_block_num, addr, CAFS_SNLIST_ITEM_STATUS_DISCARDING);
+	return cleanup_file(cfg, sffs_block_num, addr, SFFS_SNLIST_ITEM_STATUS_DISCARDING);
 }
 
 
@@ -274,7 +275,7 @@ int sffs_file_savesegment(const void * cfg, cl_handle_t * handle){
 int sffs_file_loadsegment(const void * cfg, cl_handle_t * handle, int segment){
 	block_t block;
 	//save this to a new block in the file
-	block = sffs_filelist_get(cfg, handle->segment_list_block, segment, CAFS_FILELIST_STATUS_CURRENT, NULL);
+	block = sffs_filelist_get(cfg, handle->segment_list_block, segment, SFFS_FILELIST_STATUS_CURRENT, NULL);
 	if ( block == BLOCK_INVALID ){ //the segment doesn't exist in the file; create it
 		sffs_debug(DEBUG_LEVEL + 2, "segment %d doesn't exist %d\n", segment, handle->segment_list_block);
 		memset(handle->segment_data.data, 0, BLOCK_DATA_SIZE);
@@ -306,7 +307,7 @@ int sffs_file_swapsegment(const void * cfg, cl_handle_t * handle, int new_segmen
 
 	//now load the new segment -- mark it as allocated
 	handle->segment = new_segment;
-	block = sffs_filelist_get(cfg, handle->segment_list_block, new_segment, CAFS_FILELIST_STATUS_CURRENT, NULL);
+	block = sffs_filelist_get(cfg, handle->segment_list_block, new_segment, SFFS_FILELIST_STATUS_CURRENT, NULL);
 
 	if ( block == BLOCK_INVALID ){ //the segment doesn't exist in the file; create it
 		memset(handle->segment_data.data, 0, BLOCK_DATA_SIZE);
@@ -364,7 +365,7 @@ int sffs_file_open(const void * cfg, cl_handle_t * handle, serial_t serialno, in
 	block_t block;
 	cl_hdr_t * hdr;
 
-	block = sffs_serialno_get(cfg, serialno, CAFS_SNLIST_ITEM_STATUS_CLOSED, &(handle->serialno_addr));
+	block = sffs_serialno_get(cfg, serialno, SFFS_SNLIST_ITEM_STATUS_CLOSED, &(handle->serialno_addr));
 	if ( block == BLOCK_INVALID ){
 		sffs_error("serialno does not exist\n");
 		return -1;
@@ -390,7 +391,7 @@ int sffs_file_open(const void * cfg, cl_handle_t * handle, serial_t serialno, in
 			}
 
 			//add an entry in the serial number list -- this entry will be marked as open
-			if ( sffs_serialno_append(cfg, serialno, block, &(handle->serialno_addr), CAFS_SNLIST_ITEM_STATUS_OPEN) < 0 ){
+			if ( sffs_serialno_append(cfg, serialno, block, &(handle->serialno_addr), SFFS_SNLIST_ITEM_STATUS_OPEN) < 0 ){
 				sffs_error("failed to append new serialno %d %d\n", serialno, block);
 				return -1;
 			}
@@ -461,7 +462,7 @@ int sffs_file_new(const void * cfg, cl_handle_t * handle, const char * name, int
 
 	sffs_debug(DEBUG_LEVEL, "new file serialno %d block %d\n", entry->serialno, block);
 	//mark the serial number as "open" in the serial number list
-	if ( sffs_serialno_append(cfg, entry->serialno, block, &(handle->serialno_addr), CAFS_SNLIST_ITEM_STATUS_OPEN) < 0 ){
+	if ( sffs_serialno_append(cfg, entry->serialno, block, &(handle->serialno_addr), SFFS_SNLIST_ITEM_STATUS_OPEN) < 0 ){
 		sffs_error("failed to append serialno\n");
 		return -1;
 	}
@@ -516,7 +517,7 @@ static int finish_close(const void * cfg,
 		//update the status of the old and new serial number entries
 		//Mark the new entry as closing
 		sffs_debug(DEBUG_LEVEL, "writing CLOSING to 0x%X\n", new_addr);
-		if ( sffs_serialno_setstatus(cfg, new_addr, CAFS_SNLIST_ITEM_STATUS_CLOSING) < 0 ){
+		if ( sffs_serialno_setstatus(cfg, new_addr, SFFS_SNLIST_ITEM_STATUS_CLOSING) < 0 ){
 			return -1;
 		}
 
@@ -538,7 +539,7 @@ static int finish_close(const void * cfg,
 
 
 			//Mark the new entry as closing
-			if ( sffs_serialno_setstatus(cfg, new_addr, CAFS_SNLIST_ITEM_STATUS_CLOSED) < 0 ){
+			if ( sffs_serialno_setstatus(cfg, new_addr, SFFS_SNLIST_ITEM_STATUS_CLOSED) < 0 ){
 				return -1;
 			}
 		}
@@ -599,13 +600,13 @@ int mark_file_closed(const void * cfg, block_t hdr_block){
 
 	while( sffs_list_getnext(cfg, &list, &file_item, &filelist_addr) == 0 ){
 
-		if ( (file_item.status == CAFS_FILELIST_STATUS_CURRENT) ){
+		if ( (file_item.status == SFFS_FILELIST_STATUS_CURRENT) ){
 			sffs_debug(DEBUG_LEVEL + 2, "closing current block %d\n", file_item.block);
 			if ( sffs_block_close(cfg, file_item.block) < 0 ){
 				sffs_error("failed to discard block\n");
 				return -1;
 			}
-		} else if ( file_item.status == CAFS_FILELIST_STATUS_OBSOLETE ){
+		} else if ( file_item.status == SFFS_FILELIST_STATUS_OBSOLETE ){
 			//discard the associated data block
 			sffs_debug(DEBUG_LEVEL + 4, "discard this block %d 0x%X\n", file_item.block, file_item.status);
 			if ( sffs_block_discard(cfg, file_item.block) < 0 ){
@@ -614,7 +615,7 @@ int mark_file_closed(const void * cfg, block_t hdr_block){
 			}
 
 			//mark it dirty in the list
-			if ( sffs_filelist_setstatus(cfg, CAFS_FILELIST_STATUS_DIRTY, filelist_addr) < 0 ){
+			if ( sffs_filelist_setstatus(cfg, SFFS_FILELIST_STATUS_DIRTY, filelist_addr) < 0 ){
 				sffs_error("failed to set status to dirty\n");
 				return -1;
 			}
@@ -675,13 +676,13 @@ int sffs_file_close(const void * cfg, cl_handle_t * handle){
 			&hdr.close,
 			sizeof(cl_hdr_close_t)) != sizeof(cl_hdr_close_t) ){
 		sffs_error("failed to write close data\n");
-		return -1;
+		return -2;
 	}
 
 	//this should be handled the same every time
 
 	//get the address of the old serial number
-	block = sffs_serialno_get(cfg, handle->segment_data.hdr.serialno, CAFS_SNLIST_ITEM_STATUS_CLOSED, &old_addr);
+	block = sffs_serialno_get(cfg, handle->segment_data.hdr.serialno, SFFS_SNLIST_ITEM_STATUS_CLOSED, &old_addr);
 	sffs_debug(DEBUG_LEVEL, "Old block is %d\n", block);
 
 	if ( block != BLOCK_INVALID ){
@@ -689,18 +690,18 @@ int sffs_file_close(const void * cfg, cl_handle_t * handle){
 		CL_TP_DESC(CL_PROB_COMMON, "modifying but still open");
 
 		//The old entry needs to be updated
-		discard_status = CAFS_SNLIST_ITEM_STATUS_DISCARDING_HDR_LIST;
+		discard_status = SFFS_SNLIST_ITEM_STATUS_DISCARDING_HDR_LIST;
 
 		sffs_debug(DEBUG_LEVEL, "finish close status 0x%X hdr %d old hdr %d serialno %d\n",
 				discard_status, handle->hdr_block, block, handle->segment_data.hdr.serialno);
 		if ( finish_close(cfg, discard_status, handle->hdr_block, block, handle->serialno_addr, old_addr, false) < 0 ){
-			return -1;
+			return -3;
 		}
 
 	} else {
 
 		sffs_debug(DEBUG_LEVEL, "closing new file (file did not previously exist)\n");
-		if ( sffs_serialno_setstatus(cfg, handle->serialno_addr, CAFS_SNLIST_ITEM_STATUS_CLOSING) < 0 ){
+		if ( sffs_serialno_setstatus(cfg, handle->serialno_addr, SFFS_SNLIST_ITEM_STATUS_CLOSING) < 0 ){
 			sffs_error("failed to close out new serialno\n");
 			return -1;
 		}
@@ -717,9 +718,9 @@ int sffs_file_close(const void * cfg, cl_handle_t * handle){
 		CL_TP_DESC(CL_PROB_COMMON, "cleaned but not CLOSED");
 
 
-		if ( sffs_serialno_setstatus(cfg, handle->serialno_addr, CAFS_SNLIST_ITEM_STATUS_CLOSED) < 0 ){
+		if ( sffs_serialno_setstatus(cfg, handle->serialno_addr, SFFS_SNLIST_ITEM_STATUS_CLOSED) < 0 ){
 			sffs_error("failed to close out new serialno\n");
-			return -1;
+			return -4;
 		}
 
 	}
@@ -746,18 +747,18 @@ int sffs_file_clean(const void * cfg, serial_t serialno, block_t hdr_block, uint
 	}
 
 	switch(status){
-	case CAFS_SNLIST_ITEM_STATUS_DISCARDING:
+	case SFFS_SNLIST_ITEM_STATUS_DISCARDING:
 		if ( cleanup_file(cfg, old_block, old_addr, status) < 0 ){
 			sffs_error("failed to complete discard\n");
 			return -1;
 		}
 		break;
-	case CAFS_SNLIST_ITEM_STATUS_DISCARDING_HDR_LIST:
-	case CAFS_SNLIST_ITEM_STATUS_DISCARDING_HDR:
+	case SFFS_SNLIST_ITEM_STATUS_DISCARDING_HDR_LIST:
+	case SFFS_SNLIST_ITEM_STATUS_DISCARDING_HDR:
 		//look for the new file
-		if ( (new_block = sffs_serialno_get(cfg, serialno, CAFS_SNLIST_ITEM_STATUS_CLOSING, &new_addr)) == BLOCK_INVALID ){
+		if ( (new_block = sffs_serialno_get(cfg, serialno, SFFS_SNLIST_ITEM_STATUS_CLOSING, &new_addr)) == BLOCK_INVALID ){
 			//no "CLOSING" files exist -- check for "CLOSED"
-			if ( (new_block = sffs_serialno_get(cfg, serialno, CAFS_SNLIST_ITEM_STATUS_CLOSED, &new_addr)) == BLOCK_INVALID ){
+			if ( (new_block = sffs_serialno_get(cfg, serialno, SFFS_SNLIST_ITEM_STATUS_CLOSED, &new_addr)) == BLOCK_INVALID ){
 				sffs_error("new file is not found anywhere\n");
 				return -1;
 			} else {
@@ -779,11 +780,11 @@ int sffs_file_clean(const void * cfg, serial_t serialno, block_t hdr_block, uint
 		}
 		break;
 
-	case CAFS_SNLIST_ITEM_STATUS_CLOSING:
+	case SFFS_SNLIST_ITEM_STATUS_CLOSING:
 
 		//need to see if another file is "CLOSED"
 		sffs_debug(DEBUG_LEVEL, "cleaning CLOSING file\n");
-		if ( (new_block = sffs_serialno_get(cfg, serialno, CAFS_SNLIST_ITEM_STATUS_CLOSED, &new_addr)) == BLOCK_INVALID ){
+		if ( (new_block = sffs_serialno_get(cfg, serialno, SFFS_SNLIST_ITEM_STATUS_CLOSED, &new_addr)) == BLOCK_INVALID ){
 
 			//the CLOSING file is the only one that exists -- it just needs to be clean and closed
 			sffs_debug(DEBUG_LEVEL, "clean CLOSING file (no other files)\n");
@@ -802,7 +803,7 @@ int sffs_file_clean(const void * cfg, serial_t serialno, block_t hdr_block, uint
 
 			CL_TP_DESC(CL_PROB_COMMON, "cleaned but not CLOSED");
 
-			if ( sffs_serialno_setstatus(cfg, old_addr, CAFS_SNLIST_ITEM_STATUS_CLOSED) < 0 ){
+			if ( sffs_serialno_setstatus(cfg, old_addr, SFFS_SNLIST_ITEM_STATUS_CLOSED) < 0 ){
 				sffs_error("failed to close file\n");
 				return -1;
 			}
@@ -813,7 +814,7 @@ int sffs_file_clean(const void * cfg, serial_t serialno, block_t hdr_block, uint
 
 			//the file already exists as "CLOSED"
 			sffs_debug(DEBUG_LEVEL, "cleaning CLOSING file but original is still CLOSED\n");
-			if ( cleanup_file(cfg, old_block, old_addr, CAFS_SNLIST_ITEM_STATUS_DISCARDING_HDR) < 0 ){
+			if ( cleanup_file(cfg, old_block, old_addr, SFFS_SNLIST_ITEM_STATUS_DISCARDING_HDR) < 0 ){
 				sffs_error("failed to complete discard\n");
 				return -1;
 			}
@@ -821,10 +822,10 @@ int sffs_file_clean(const void * cfg, serial_t serialno, block_t hdr_block, uint
 			return 1;
 		}
 		break;
-	case CAFS_SNLIST_ITEM_STATUS_OPEN:
+	case SFFS_SNLIST_ITEM_STATUS_OPEN:
 
 		sffs_debug(DEBUG_LEVEL, "cleaning open file\n");
-		if ( sffs_serialno_setstatus(cfg, old_addr, CAFS_SNLIST_ITEM_STATUS_DIRTY) < 0 ){
+		if ( sffs_serialno_setstatus(cfg, old_addr, SFFS_SNLIST_ITEM_STATUS_DIRTY) < 0 ){
 			sffs_error("failed to close file\n");
 			return -1;
 		}
@@ -865,7 +866,7 @@ int cleanup_file(const void * cfg, block_t hdr_block, int addr, uint8_t status){
 
 
 	switch(status){
-	case CAFS_SNLIST_ITEM_STATUS_DISCARDING:
+	case SFFS_SNLIST_ITEM_STATUS_DISCARDING:
 		sffs_debug(DEBUG_LEVEL, "discarding file data serialno: %d hdr %d list %d\n",
 				tmp.hdr.serialno,
 				hdr_block,
@@ -879,7 +880,7 @@ int cleanup_file(const void * cfg, block_t hdr_block, int addr, uint8_t status){
 		while( sffs_list_getnext(cfg, &list, &file_item, &filelist_addr) == 0 ){
 
 			sffs_debug(DEBUG_LEVEL + 2, "discard this block 0x%X\n", file_item.status);
-			if ( (file_item.status == CAFS_FILELIST_STATUS_CURRENT) || (file_item.status == CAFS_FILELIST_STATUS_OBSOLETE) ){
+			if ( (file_item.status == SFFS_FILELIST_STATUS_CURRENT) || (file_item.status == SFFS_FILELIST_STATUS_OBSOLETE) ){
 				//if the whole file is discarded, discard all blocks
 				sffs_debug(DEBUG_LEVEL + 2, "Discarding obsolete block %d\n", file_item.block);
 				if ( sffs_block_discard(cfg, file_item.block) < 0 ){
@@ -888,21 +889,21 @@ int cleanup_file(const void * cfg, block_t hdr_block, int addr, uint8_t status){
 				}
 
 				//mark it dirty in the list
-				if ( sffs_filelist_setstatus(cfg, CAFS_FILELIST_STATUS_DIRTY, filelist_addr) < 0 ){
+				if ( sffs_filelist_setstatus(cfg, SFFS_FILELIST_STATUS_DIRTY, filelist_addr) < 0 ){
 					sffs_error("failed to set status to dirty\n");
 					return -1;
 				}
 			}
 		}
 
-	case CAFS_SNLIST_ITEM_STATUS_DISCARDING_HDR_LIST:
+	case SFFS_SNLIST_ITEM_STATUS_DISCARDING_HDR_LIST:
 		//Discard the list of file segments
 		if ( sffs_list_discard(cfg, hdr->open.content_block) ){
 			sffs_error("failed to discard list\n");
 			return -1;
 		}
 
-	case CAFS_SNLIST_ITEM_STATUS_DISCARDING_HDR:
+	case SFFS_SNLIST_ITEM_STATUS_DISCARDING_HDR:
 		//Discard the header
 		if ( sffs_block_discard(cfg, hdr_block) < 0 ){
 			sffs_error("failed to discard header\n");
@@ -913,7 +914,7 @@ int cleanup_file(const void * cfg, block_t hdr_block, int addr, uint8_t status){
 
 	sffs_debug(DEBUG_LEVEL, "Marking file dirty at 0x%X\n", addr);
 	//the old entry has been deleted
-	if ( sffs_serialno_setstatus(cfg, addr, CAFS_SNLIST_ITEM_STATUS_DIRTY) < 0 ){
+	if ( sffs_serialno_setstatus(cfg, addr, SFFS_SNLIST_ITEM_STATUS_DIRTY) < 0 ){
 		return -1;
 	}
 

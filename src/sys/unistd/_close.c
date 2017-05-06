@@ -29,6 +29,7 @@
 #include "unistd_fs.h"
 #include "unistd_flags.h"
 #include "mcu/debug.h"
+#include "stratify/stratify.h"
 
 /*! \details This function closes the file associated
  * with the specified descriptor.
@@ -44,6 +45,16 @@ int _close(int fildes) {
 
 	fildes = u_fildes_is_bad(fildes);
 	if ( fildes < 0 ){
+		//check to see if fildes is a socket
+		errno = EBADF;
+		return -1;
+	}
+
+	if( fildes & FILDES_SOCKET_FLAG ){
+		if( stratify_board_config.socket_api != 0 ){
+			return stratify_board_config.socket_api->close(fildes);
+		}
+		errno = EBADF;
 		return -1;
 	}
 
@@ -56,6 +67,9 @@ int _close(int fildes) {
 int u_close(open_file_t * open_file){
 	const sysfs_t * fs;
 	fs = open_file->fs;
+	//if( getpid() > 0 ){
+	//	printf("close file---\n");
+	//}
 	return fs->close(fs->cfg, &open_file->handle);
 }
 

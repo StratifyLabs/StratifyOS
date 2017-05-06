@@ -589,6 +589,7 @@ int _mcu_uart_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
 	//Check the local buffer for bytes that are immediately available
 	uart_regs->TER = 0; //disable the transmitter
 	write_tx_data(port);
+
 	if( _mcu_core_priv_validate_callback(wop->callback) < 0 ){
 		return -1;
 	}

@@ -18,8 +18,8 @@
  */
 
 
-#ifndef CAFS_DEV_H_
-#define CAFS_DEV_H_
+#ifndef SFFS_DEV_H_
+#define SFFS_DEV_H_
 
 #include <pthread.h>
 
@@ -60,4 +60,4 @@ void sffs_dev_setserialno(const void * cfg, int serialno);
 
 void sffs_dev_setdelay_mutex(pthread_mutex_t * mutex);
 
-#endif /* CAFS_DEV_H_ */
+#endif /* SFFS_DEV_H_ */

@@ -19,8 +19,8 @@
 
 
 
-#ifndef CAFS_LIST_H_
-#define CAFS_LIST_H_
+#ifndef SFFS_LIST_H_
+#define SFFS_LIST_H_
 
 #include <stdint.h>
 
@@ -43,19 +43,19 @@ typedef struct MCU_PACK {
 } sffs_list_hdr_t;
 
 
-#define CAFS_LIST_STATUS_FREE (0xFFFF)
-#define CAFS_LIST_STATUS_DIRTY (0x0000)
-#define CAFS_LIST_NEXT_INVALID (0xFFFF)
+#define SFFS_LIST_STATUS_FREE (0xFFFF)
+#define SFFS_LIST_STATUS_DIRTY (0x0000)
+#define SFFS_LIST_NEXT_INVALID (0xFFFF)
 
-#define CAFS_LIST_DATA_SIZE (BLOCK_DATA_SIZE - sizeof(sffs_list_hdr_t))
+#define SFFS_LIST_DATA_SIZE (BLOCK_DATA_SIZE - sizeof(sffs_list_hdr_t))
 
 typedef struct {
 	sffs_list_hdr_t hdr;
-	char data[CAFS_LIST_DATA_SIZE];
+	char data[SFFS_LIST_DATA_SIZE];
 } sffs_list_block_t;
 
-#define CAFS_LIST_NO_ANALYSIS 0
-#define CAFS_LIST_DO_ANALYSIS 1
+#define SFFS_LIST_NO_ANALYSIS 0
+#define SFFS_LIST_DO_ANALYSIS 1
 
 int sffs_list_init(const void * cfg, sffs_list_t * list, block_t list_block, int item_size, int (*is_free)(void*));
 int sffs_list_getnext(const void * cfg, sffs_list_t * list,  void * item, int * addr);
@@ -71,4 +71,4 @@ block_t sffs_list_consolidate(const void * cfg,
 		int (*is_free)(void*));
 
 
-#endif /* CAFS_LIST_H_ */
+#endif /* SFFS_LIST_H_ */

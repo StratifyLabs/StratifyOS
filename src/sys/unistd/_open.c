@@ -187,8 +187,8 @@ int u_fildes_is_bad(int fildes){
 		return -1;
 	}
 
-	if ( (fildes) < OPEN_MAX ){
-		//since _open() assigns handle to 1, and handle of 0 or 1 is invalid
+	if ( fildes < OPEN_MAX ){
+		//since u_new_open_file() assigns handle to 1 temporarily, a handle of 0 or 1 is invalid
 		if ( ((int)get_handle(fildes) & ~(0x01)) != 0 ){
 			return fildes;
 		} else {
@@ -200,7 +200,6 @@ int u_fildes_is_bad(int fildes){
 	if ( fildes & FILDES_STDIO_FLAG ){
 		fildes = u_init_stdio(fildes);
 	} else {
-		errno = EBADF;
 		return -1;
 	}
 

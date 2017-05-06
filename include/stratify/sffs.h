@@ -15,8 +15,8 @@
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>. */
 
 
-#ifndef CAFS_LITE_H_
-#define CAFS_LITE_H_
+#ifndef SFFS_LITE_H_
+#define SFFS_LITE_H_
 
 
 #include <dirent.h>
@@ -99,4 +99,4 @@ int sffs_ismounted(const void * cfg);
 }
 
 
-#endif /* CAFS_LITE_H_ */
+#endif /* SFFS_LITE_H_ */

@@ -961,13 +961,13 @@ int link_write_stdin(link_transport_mdriver_t * driver, const void * buf, int nb
  * specified struct tm.
  * \return Zero on success or an error code
  */
-int link_settime(link_transport_mdriver_t * driver, struct tm * t);
+int link_settime(link_transport_mdriver_t * driver, struct link_tm * t);
 
 /*! \details This function gets the time on the target device according and
  * stores it in t.
  * \return Zero on success or an error code
  */
-int link_gettime(link_transport_mdriver_t * driver, struct tm * t);
+int link_gettime(link_transport_mdriver_t * driver, struct link_tm * t);
 
 /*! \details This function sends the specified signal to the specified pid.
  */

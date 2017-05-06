@@ -27,6 +27,7 @@
 #include <stdarg.h>
 #include "unistd_fs.h"
 #include "unistd_flags.h"
+#include "stratify/stratify.h"
 
 #include "mcu/debug.h"
 
@@ -51,16 +52,25 @@ int _fcntl(int fildes, int cmd, ...){
 	int flags;
 	va_list ap;
 
+	va_start(ap, cmd);
+	tmp = va_arg(ap, int);
+	va_end(ap);
+
 	fildes = u_fildes_is_bad(fildes);
 	if ( fildes < 0 ){
+		errno = EBADF;
+		return -1;
+	}
+
+	if( fildes & FILDES_SOCKET_FLAG ){
+		if( stratify_board_config.socket_api != 0 ){
+			return stratify_board_config.socket_api->fcntl(fildes, cmd, tmp);
+		}
+		errno = EBADF;
 		return -1;
 	}
 
 	flags = get_flags(fildes);
-
-	va_start(ap, cmd);
-	tmp = va_arg(ap, int);
-	va_end(ap);
 
 	switch(cmd){
 	/*
@@ -74,8 +84,6 @@ int _fcntl(int fildes, int cmd, ...){
 		dup_open_file(new_fildes, fildes);
 		return new_fildes;
 		*/
-
-
 
 	case F_GETFL:
 		return flags;

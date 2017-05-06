@@ -34,12 +34,12 @@
 #define SERIALNO_DEL_NOT_AVAILABLE (0)
 
 enum {
-	CAFS_INDEX_STATUS_FREE = 0xFF,
-	CAFS_INDEX_STATUS_OPEN = 0xFE,
-	CAFS_INDEX_STATUS_CLOSING = 0xFC,
-	CAFS_INDEX_STATUS_CLOSED = 0xF8,
-	CAFS_INDEX_STATUS_DISCARDING = 0xF0,
-	CAFS_INDEX_STATUS_DIRTY = 0x00
+	SFFS_INDEX_STATUS_FREE = 0xFF,
+	SFFS_INDEX_STATUS_OPEN = 0xFE,
+	SFFS_INDEX_STATUS_CLOSING = 0xFC,
+	SFFS_INDEX_STATUS_CLOSED = 0xF8,
+	SFFS_INDEX_STATUS_DISCARDING = 0xF0,
+	SFFS_INDEX_STATUS_DIRTY = 0x00
 };
 
 static void set_checksum(cl_snlist_item_t * entry);
@@ -88,7 +88,7 @@ block_t find_list_block(const void * cfg){
 				(sffs_block_hdr.type == BLOCK_TYPE_SERIALNO_LIST) ){
 			sffs_dev_setlist_block(cfg, list_block);
 			sffs_debug(DEBUG_LEVEL, "list block status is 0x%X\n", sffs_block_hdr.status);
-			check_block = sffs_serialno_get(cfg, CL_SERIALNO_LIST, CAFS_SNLIST_ITEM_STATUS_CLOSED, NULL);
+			check_block = sffs_serialno_get(cfg, CL_SERIALNO_LIST, SFFS_SNLIST_ITEM_STATUS_CLOSED, NULL);
 			sffs_debug(DEBUG_LEVEL, "check block CLOSED is %d\n", check_block);
 			if ( check_block == CL_BLOCK_LIST ){
 
@@ -102,7 +102,7 @@ block_t find_list_block(const void * cfg){
 				return list_block;
 			} else {
 
-				check_block = sffs_serialno_get(cfg, CL_SERIALNO_LIST, CAFS_SNLIST_ITEM_STATUS_DISCARDING, &addr);
+				check_block = sffs_serialno_get(cfg, CL_SERIALNO_LIST, SFFS_SNLIST_ITEM_STATUS_DISCARDING, &addr);
 				sffs_debug(DEBUG_LEVEL, "check block DISCARDING is %d\n", check_block);
 				if ( check_block == CL_BLOCK_LIST ){
 					if ( sffs_list_discard(cfg, list_block) < 0 ){
@@ -111,7 +111,7 @@ block_t find_list_block(const void * cfg){
 						return BLOCK_INVALID;
 					}
 
-					if ( sffs_serialno_setstatus(cfg, addr, CAFS_SNLIST_ITEM_STATUS_DIRTY) < 0 ){
+					if ( sffs_serialno_setstatus(cfg, addr, SFFS_SNLIST_ITEM_STATUS_DIRTY) < 0 ){
 						sffs_error("failed to mark the list as discarded\n");
 						return BLOCK_INVALID;
 					}
@@ -129,7 +129,7 @@ int sffs_serialno_isfree(void * data){
 	cl_snlist_item_t * item;
 	item = (cl_snlist_item_t*)data;
 
-	if ( item->status == CAFS_SNLIST_ITEM_STATUS_FREE ){
+	if ( item->status == SFFS_SNLIST_ITEM_STATUS_FREE ){
 		return 1;
 	} else {
 		return 0;
@@ -139,7 +139,7 @@ int sffs_serialno_isfree(void * data){
 int is_dirty(void * data){
 	cl_snlist_item_t * item;
 	item = (cl_snlist_item_t*)data;
-	if ( item->status == CAFS_SNLIST_ITEM_STATUS_DIRTY ){
+	if ( item->status == SFFS_SNLIST_ITEM_STATUS_DIRTY ){
 		return 1;
 	} else {
 		return 0;
@@ -190,11 +190,11 @@ int sffs_serialno_init(const void * cfg, cl_snlist_item_t * bad_serialno_item){
 	sffs_debug(DEBUG_LEVEL, "looking for max\n");
 	while( sffs_list_getnext(cfg, &list, &item, &addr) == 0 ){
 
-		if ( item.status == CAFS_SNLIST_ITEM_STATUS_CLOSED ){
+		if ( item.status == SFFS_SNLIST_ITEM_STATUS_CLOSED ){
 			if (item.serialno > max){
 				max = item.serialno;
 			}
-		} else if ( (item.status != CAFS_SNLIST_ITEM_STATUS_FREE) && (item.status != CAFS_SNLIST_ITEM_STATUS_DIRTY) ){
+		} else if ( (item.status != SFFS_SNLIST_ITEM_STATUS_FREE) && (item.status != SFFS_SNLIST_ITEM_STATUS_DIRTY) ){
 			memcpy(bad_serialno_item, &item, sizeof(item));
 			sffs_debug(DEBUG_LEVEL, "Bad serialno %d at %d status:0x%X\n", item.serialno, item.block, item.status);
 			return 1;
@@ -235,7 +235,7 @@ int sffs_serialno_mkfs(const void * cfg){
 
 	sffs_dev_setlist_block(cfg, sn_list_block);
 
-	if ( sffs_serialno_append(cfg, CL_SERIALNO_LIST, CL_BLOCK_LIST, NULL, CAFS_SNLIST_ITEM_STATUS_CLOSED) < 0 ){
+	if ( sffs_serialno_append(cfg, CL_SERIALNO_LIST, CL_BLOCK_LIST, NULL, SFFS_SNLIST_ITEM_STATUS_CLOSED) < 0 ){
 		sffs_error("failed to append zero entry\n");
 		return -1;
 	}
@@ -266,13 +266,13 @@ int consolidate_list(const void * cfg, int (*is_free)(void*), int (*is_dirty)(vo
 	CL_TP_DESC(CL_PROB_COMMON, "after consolidate but before close");
 
 	sffs_debug(DEBUG_LEVEL, "get addr to close old list\n");
-	if( sffs_serialno_get(cfg, CL_SERIALNO_LIST, CAFS_SNLIST_ITEM_STATUS_CLOSED, &dev_addr) == BLOCK_INVALID ){
+	if( sffs_serialno_get(cfg, CL_SERIALNO_LIST, SFFS_SNLIST_ITEM_STATUS_CLOSED, &dev_addr) == BLOCK_INVALID ){
 		sffs_error("failed to get zero entry\n");
 		return -1;
 	}
 
 	sffs_debug(DEBUG_LEVEL, "mark old list as discarding\n");
-	if ( sffs_serialno_setstatus(cfg, dev_addr, CAFS_SNLIST_ITEM_STATUS_DISCARDING) < 0 ){
+	if ( sffs_serialno_setstatus(cfg, dev_addr, SFFS_SNLIST_ITEM_STATUS_DISCARDING) < 0 ){
 		sffs_error("failed to set status to DISCARDING\n");
 		return -1;
 	}
@@ -295,7 +295,7 @@ int consolidate_list(const void * cfg, int (*is_free)(void*), int (*is_dirty)(vo
 		return -1;
 	}
 
-	if ( sffs_serialno_setstatus(cfg, dev_addr, CAFS_SNLIST_ITEM_STATUS_DIRTY) < 0 ){
+	if ( sffs_serialno_setstatus(cfg, dev_addr, SFFS_SNLIST_ITEM_STATUS_DIRTY) < 0 ){
 		sffs_error("failed to mark the list as discarded\n");
 		return BLOCK_INVALID;
 	}
@@ -354,7 +354,7 @@ serial_t sffs_serialno_new(const void * cfg){
 	ret = 1;
 	while( sffs_list_getnext(cfg, &list, &item, &dev_addr) == 0 ){
 
-		if ( (item.status != CAFS_SNLIST_ITEM_STATUS_DIRTY) && (item.serialno == sn) ){
+		if ( (item.status != SFFS_SNLIST_ITEM_STATUS_DIRTY) && (item.serialno == sn) ){
 			continue;
 		} else {
 			ret = sn;
@@ -410,8 +410,8 @@ block_t sffs_serialno_get(const void * cfg, serial_t serialno, uint8_t status, i
 				}
 				return item.block;
 			}
-		} else if ( item.status != CAFS_SNLIST_ITEM_STATUS_DIRTY ){
-			if ( sffs_serialno_setstatus(cfg, dev_addr, CAFS_SNLIST_ITEM_STATUS_DIRTY) < 0 ){
+		} else if ( item.status != SFFS_SNLIST_ITEM_STATUS_DIRTY ){
+			if ( sffs_serialno_setstatus(cfg, dev_addr, SFFS_SNLIST_ITEM_STATUS_DIRTY) < 0 ){
 				sffs_error("failed to discard invalid checksum entry\n");
 				return -1;
 			}

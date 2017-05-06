@@ -112,15 +112,15 @@ typedef void * mcu_target_ptr_t;
 #endif
 
 struct link_tm {
-	i32	tm_sec;
-	i32	tm_min;
-	i32	tm_hour;
-	i32	tm_mday;
-	i32	tm_mon;
-	i32	tm_year;
-	i32	tm_wday;
-	i32	tm_yday;
-	i32	tm_isdst;
+	s32	tm_sec;
+	s32	tm_min;
+	s32	tm_hour;
+	s32	tm_mday;
+	s32	tm_mon;
+	s32	tm_year;
+	s32	tm_wday;
+	s32	tm_yday;
+	s32	tm_isdst;
 };
 
 #endif /* ARCH_H_ */

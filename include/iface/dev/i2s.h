@@ -17,12 +17,11 @@
  * 
  */
 
-/*! \addtogroup I2S Inter-Integrated Circuit (I2S) Master
+/*! \addtogroup I2S Inter-Integrated Sound (I2S) Master
  * @{
  *
  * \ingroup IFACE_DEV
- * \details This module implements an I2S multi-master using two GPIO pins and a pin change interrupt.  More information
- * about accessing peripheral IO is in the \ref IFACE_DEV section.
+ * \details This module implements an I2S master.
  *
  */
 
@@ -53,7 +52,9 @@ enum {
 	I2S_MODE_STEREO = (1<<4),
 	I2S_MODE_MASTER = (1<<5),
 	I2S_MODE_OUTPUT = (1<<6) /*! \brief Configure I2S output */,
-	I2S_MODE_INPUT = (1<<7) /*! \brief Configure I2S input (independent from output) */
+	I2S_MODE_INPUT = (1<<7) /*! \brief Configure I2S input (independent from output) */,
+	I2S_MODE_MCLK_ENABLE = (1<<8) /*! Set this bit to enable the mclk output */,
+	I2S_MODE_DUPLEX = (1<<9) /*! Set this bit to both read and write audio data at the same time */
 };
 
 enum {
@@ -70,9 +71,8 @@ enum {
 typedef struct MCU_PACK {
 	u8 pin_assign /*! \brief The GPIO configuration to use (see \ref LPC17XXDEV) */;
 	u8 resd[3];
-	u32 mode /*! \brief Word width e.g. I2S_WORDWIDTH_16 */;
+	u32 o_mode  /*! \brief Mode flags (see I2S_MODE_*) */;
 	u32 frequency /*! \brief The I2S audio frequency */;
-	u32 ws_half_period;
 } i2s_attr_t;
 
 

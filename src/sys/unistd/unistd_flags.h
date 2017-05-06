@@ -28,6 +28,8 @@
 #include "../../../include/stratify/sysfs.h"
 
 #define FILDES_STDIO_FLAG 0x0200
+#define FILDES_SOCKET_FLAG 0x0400
+
 
 
 int u_new_open_file(int start);

@@ -19,8 +19,8 @@
 
 
 
-#ifndef CAFS_LOCAL_H_
-#define CAFS_LOCAL_H_
+#ifndef SFFS_LOCAL_H_
+#define SFFS_LOCAL_H_
 
 #include <dirent.h>
 #include <sys/stat.h>
@@ -156,4 +156,4 @@ typedef struct MCU_PACK {
 #include "sffs_tp.h"
 
 
-#endif /* CAFS_LOCAL_H_ */
+#endif /* SFFS_LOCAL_H_ */

@@ -187,6 +187,7 @@ extern char ** const crt_import_argv(int argc, char * const argv[]);
 
 #include <stfy/son.h>
 #include <sgfx/sg.h>
+#include "sys/socket.h"
 
 #ifndef USE_FLOAT
 #define USE_FLOAT 1

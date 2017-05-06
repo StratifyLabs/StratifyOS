@@ -386,111 +386,34 @@
 #endif
 
 #if SYMBOLS_IGNORE_SG != 0
-#define sg_set_data 0
-#define sg_data 0
-#define sg_set_size 0
-#define sg_calc_size 0
-#define sg_size 0
-#define sg_byte_width 0
-#define sg_word_width 0
-#define sg_calc_byte_width 0
-#define sg_calc_word_width 0
-#define sg_x_max 0
-#define sg_y_max 0
-#define sg_bound 0
-#define sg_bound_x 0
-#define sg_bound_y 0
-#define sg_flip_x 0
-#define sg_flip_y 0
-#define sg_flip_xy 0
-#define sg_shift_right 0
-#define sg_shift_left 0
-#define sg_shift_up 0
-#define sg_shift_down 0
-#define sg_op_set 0
-#define sg_op_clr 0
-#define sg_op_inv 0
-#define sg_set_bitmap 0
-#define sg_clr_bitmap 0
-#define sg_inv_bitmap 0
-#define sg_set_bitmap_column 0
-#define sg_setbitmap_row 0
-#define sg_tst_hline 0
-#define sg_tst_hedge 0
-#define sg_set_vline 0
-#define sg_set_hline 0
-#define sg_clr_vline 0
-#define sg_clr_hline 0
-#define sg_set_line 0
-#define sg_clr_line 0
-#define sg_set_rect 0
-#define sg_tst_pixel 0
-#define sg_tst_bounded_pixel 0
-#define sg_set_pixel 0
-#define sg_set_bounded_pixel 0
-#define sg_inv_pixel 0
-#define sg_inv_bounded_pixel 0
-#define sg_clr_pixel 0
-#define sg_clr_bounded_pixel 0
-#define sg_clr 0
-#define sg_set 0
-#define sg_inv 0
-#define sg_inv_rows 0
-#define sg_fill 0
-#define sg_fill_rows 0
-#define sg_fill_area 0
-#define sg_pour 0
-#define sg_show 0
-#define sg_draw 0
-#define sg_draw_list 0
-#define sg_point_set 0
-#define sg_point_map 0
-#define sg_point_map_pixel_size 0
-#define sg_point_add 0
-#define sg_point_subtract 0
-#define sg_point_rotate 0
-#define sg_point_scale 0
-#define sg_point_shift 0
-#define sg_point_shift_x 0
-#define sg_point_shift_y 0
-#define sg_set_bitmap_area 0
-#define sg_clr_bitmap_area 0
-#define sg_inv_bitmap_area 0
-#define sg_set_area 0
-#define sg_clr_area 0
-#define sg_inv_area 0
-#define sg_draw_icon 0
-#define sg_animate 0
-#define sg_animate_init 0
+#define sg_api 0
 #endif
 
 #if SYMBOLS_IGNORE_SON != 0
-#define son_create 0
-#define son_append 0
-#define son_open 0
-#define son_close 0
-#define son_seek 0
-#define son_to_json 0
-#define son_open_obj 0
-#define son_close_obj 0
-#define son_open_array 0
-#define son_close_array 0
-#define son_open_data 0
-#define son_close_data 0
-#define son_write_str 0
-#define son_write_num 0
-#define son_write_unum 0
-#define son_write_float 0
-#define son_write_true 0
-#define son_write_false 0
-#define son_write_null 0
-#define son_write_data 0
-#define son_write_open_data 0
-#define son_read_str 0
-#define son_read_num 0
-#define son_read_unum 0
-#define son_read_float 0
-#define son_read_data 0
+#define son_api 0
+#endif
+
+#if SYMBOLS_IGNORE_LWIP != 0
+#define lwip_api 0
+#endif
+
+#if SYMBOLS_IGNORE_SOCKET != 0
+#define accept 0
+#define bind 0
+#define shutdown 0
+#define getpeername 0
+#define getsockname 0
+#define getsockopt 0
+#define setsockopt 0
+#define connect 0
+#define listen 0
+#define recv 0
+#define recvfrom 0
+#define send 0
+#define sendmsg 0
+#define sendto 0
+#define socket 0
+#define select 0
 #endif
 
 

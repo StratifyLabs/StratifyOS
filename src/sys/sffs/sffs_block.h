@@ -18,8 +18,8 @@
  */
 
 
-#ifndef CAFS_BLOCK_H_
-#define CAFS_BLOCK_H_
+#ifndef SFFS_BLOCK_H_
+#define SFFS_BLOCK_H_
 
 #include "../sffs/sffs_local.h"
 
@@ -52,4 +52,4 @@ int sffs_block_close(const void * cfg, block_t sffs_block_num){
 	return sffs_block_setstatus(cfg, sffs_block_num, BLOCK_STATUS_CLOSED);
 }
 
-#endif /* CAFS_BLOCK_H_ */
+#endif /* SFFS_BLOCK_H_ */

@@ -26,8 +26,6 @@
 #include "mcu/pio.h"
 #include "mcu/dma.h"
 
-
-
 #if MCU_I2S_PORTS > 0
 
 #define WRITE_OP 0
@@ -46,8 +44,6 @@ LPC_I2S_Type * i2s_get_regs(int port){
 static u8 read_rx_data(int port);
 static u8 write_tx_data(int port);
 
-
-
 typedef struct {
 	mcu_event_handler_t handler;
 	int * nbyte;
@@ -57,6 +53,8 @@ typedef struct {
 
 typedef struct {
 	u8 ref_count;
+	u8 resd;
+	u16 o_mode;
 	i2s_transfer_t rx;
 	i2s_transfer_t tx;
 } i2s_local_t;
@@ -115,17 +113,17 @@ int mcu_i2s_setattr(int port, void * ctl){
 	u32 half_period;
 
 	bits = 8;
-	if( p->mode & I2S_MODE_WORDWIDTH_16 ){
+	if( p->o_mode & I2S_MODE_WORDWIDTH_16 ){
 		audio_reg |= 1;
 		bits = 16;
-	} else if( p->mode & I2S_MODE_WORDWIDTH_32 ){
+	} else if( p->o_mode & I2S_MODE_WORDWIDTH_32 ){
 		audio_reg |= 3;
 		bits = 32;
 	}
 
 	bitrate = bits * p->frequency;
 
-	if( p->mode & I2S_MODE_MONO ){
+	if( p->o_mode & I2S_MODE_MONO ){
 		audio_reg |= (1<<2);
 		half_period = bits/2 - 1;
 	} else {
@@ -135,45 +133,62 @@ int mcu_i2s_setattr(int port, void * ctl){
 
 	audio_reg |= (half_period << 6);
 
-	if( (p->mode & I2S_MODE_MASTER) == 0 ){
-		//set slave mode
+	if( (p->o_mode & I2S_MODE_MASTER) == 0 ){
+		//set slave mode because I2S_MODE_MASTER is zero
 		audio_reg |= (1<<5);
 	}
 
-	//
-	if( p->mode & I2S_MODE_OUTPUT ){
+	//enable the transmitter
+	if( p->o_mode & I2S_MODE_OUTPUT ){
 		i2s_regs->DAO = audio_reg;
-	} else if( p->mode & I2S_MODE_INPUT ){
+	} else {
+		i2s_regs->DAO = (1<<3);
+	}
+
+	//enable the receiver
+	if( p->o_mode & I2S_MODE_INPUT ){
 		i2s_regs->DAI = audio_reg;
+	} else {
+		i2s_regs->DAI = (1<<3);
 	}
 
 	//pin assignment
-	if( p->pin_assign == 0 ){
+	if( p->pin_assign == 0 ){ //pin assign 0 uses TX WS and TX bit clock and TX mclk
 
 		//4 pin mode
 		i2s_regs->TXMODE = 0; //transmitter is typical with no MCLK
 		i2s_regs->RXMODE = (1<<2); //share WS and bit clock with TX block
 
 		//enable the pins
-		if ( _mcu_core_set_pinsel_func(0, 6, CORE_PERIPH_I2S, port) ) return -1;
 		if ( _mcu_core_set_pinsel_func(0, 7, CORE_PERIPH_I2S, port) ) return -1;
 		if ( _mcu_core_set_pinsel_func(0, 8, CORE_PERIPH_I2S, port) ) return -1;
-		if ( _mcu_core_set_pinsel_func(0, 9, CORE_PERIPH_I2S, port) ) return -1;
 
-	} else if ( p->pin_assign == 1 ){
+		//transmitter pin
+		if( p->o_mode & I2S_MODE_OUTPUT ){
+			if ( _mcu_core_set_pinsel_func(0, 9, CORE_PERIPH_I2S, port) ) return -1;
+		}
 
-		//4 pin mode
-		i2s_regs->TXMODE = (0x08); //transmitter is typical with no MCLK
-		i2s_regs->RXMODE = (1<<2); //share WS and bit clock with TX block
+		//receiver pin
+		if( p->o_mode & I2S_MODE_INPUT ){
+			if ( _mcu_core_set_pinsel_func(0, 6, CORE_PERIPH_I2S, port) ) return -1;
+		}
 
-		//enable the pins
-		if ( _mcu_core_set_pinsel_func(0, 6, CORE_PERIPH_I2S, port) ) return -1;
-		if ( _mcu_core_set_pinsel_func(0, 7, CORE_PERIPH_I2S, port) ) return -1;
-		if ( _mcu_core_set_pinsel_func(0, 8, CORE_PERIPH_I2S, port) ) return -1;
-		if ( _mcu_core_set_pinsel_func(0, 9, CORE_PERIPH_I2S, port) ) return -1;
-		if ( _mcu_core_set_pinsel_func(4, 29, CORE_PERIPH_I2S, port) ) return -1;
+
+		if( p->o_mode & I2S_MODE_MCLK_ENABLE ){
+#if defined __lpc17xx
+			//4.29 is only on lpc17xx -- TX MCLK
+			if ( _mcu_core_set_pinsel_func(4, 29, CORE_PERIPH_I2S, port) ) return -1;
+#elif defined __lpc407x_8x
+			//not available on 80 pin parts -- TX MCLK
+			if ( _mcu_core_set_pinsel_func(1, 16, CORE_PERIPH_I2S, port) ) return -1;
+#endif
+			i2s_regs->TXMODE |= (1<<3);
+		}
+
 
 	}
+
+	// \todo Add pin assign 1 that uses RX WS and RX CLK -- RX WS can be 0.5 or 0.24
 
 
 	//set the bit rate using TXRATE * 256
@@ -214,6 +229,8 @@ int mcu_i2s_setattr(int port, void * ctl){
 
 	i2s_regs->IRQ = (5<<8)|(3<<16); //set RX and TX depth triggers
 
+
+	i2s_local[port].o_mode = p->o_mode;
 
 	//later add support for DMA
 	//_mcu_dma_init(0);
@@ -295,10 +312,23 @@ u8 write_tx_data(int port){
 	if( level > i2s_local[port].tx.len ){
 		level = i2s_local[port].tx.len;
 	}
+
+	if( i2s_local[port].o_mode & (I2S_MODE_DUPLEX) ){
+		i2s_local[port].rx.bufp = i2s_local[port].tx.bufp;
+		i2s_local[port].rx.len = i2s_local[port].tx.len;
+	}
+
 	for(i=0; i < level; i++){
-		i2s_regs->TXFIFO = *(i2s_local[port].tx.bufp)++ ;
+		i2s_regs->TXFIFO = *(i2s_local[port].tx.bufp);
+
+		i2s_local[port].tx.bufp++;
 		i2s_local[port].tx.len--;
 	}
+
+	if( i2s_local[port].o_mode & (I2S_MODE_DUPLEX) ){
+		read_rx_data(port);
+	}
+
 	return level;
 }
 
@@ -307,6 +337,12 @@ int _mcu_i2s_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
 
 	//Grab the registers
 	LPC_I2S_Type * i2s_regs = i2s_get_regs(port);
+
+	if( i2s_regs->DAO & (1<<3) ){
+		//output is not enabled
+		errno = EIO;
+		return -1;
+	}
 
 	if ( i2s_regs->IRQ & (1<<1) ){ //is tx interrupt already enabled
 		errno = EAGAIN;
@@ -330,7 +366,7 @@ int _mcu_i2s_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
 	i2s_local[port].tx.handler.context = wop->context;
 
 	write_tx_data(port);
-	i2s_regs->IRQ |= (1<<1); //enable TX interrupt
+	i2s_regs->IRQ |= (1<<1); //enable TX interrupt -- interrupt fires when FIFO is ready for more data
 	return 0;
 }
 
@@ -338,12 +374,18 @@ int _mcu_i2s_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
 int _mcu_i2s_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
 	int port = DEVICE_GET_PORT(cfg);
 	int nsamples;
+	int len;
 
 	LPC_I2S_Type * i2s_regs = i2s_get_regs(port);
 
 	//read from the RXFIFO
+	if( i2s_regs->DAI & (1<<3) ){
+		//input is not enabled
+		errno = EIO;
+		return -1;
+	}
 
-	if ( i2s_regs->IRQ & (1<<0) ){ //is receive interrupt already enabled
+	if ( i2s_regs->IRQ & (1<<0) ){ //is receive interrupt already enabled - another context is using the IRQ
 		errno = EAGAIN;
 		return -1;
 	}
@@ -359,16 +401,28 @@ int _mcu_i2s_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
 	i2s_local[port].rx.nbyte = &rop->nbyte;
 
 	//Check the local buffer for bytes that are immediately available
-	if( _mcu_core_priv_validate_callback(rop->callback) < 0 ){
-		return -1;
-	}
-
-	i2s_local[port].rx.handler.callback = rop->callback;
-	i2s_local[port].rx.handler.context = rop->context;
-
 	read_rx_data(port);
-	i2s_regs->IRQ |= (1<<0);  //enable the receiver interrupt
-	return 0;
+	len = nsamples - i2s_local[port].rx.len;
+	if ( len == 0 ){  //nothing available to read right now
+		if ( rop->flags & O_NONBLOCK ){
+			i2s_local[port].rx.handler.callback = NULL;
+			i2s_local[port].rx.bufp = NULL;
+			rop->nbyte = 0;
+			errno = EAGAIN;
+			len = -1;
+		} else {
+			//there is no data currently ready -- the call should block until data is ready
+			if( _mcu_core_priv_validate_callback(rop->callback) < 0 ){
+				return -1;
+			}
+
+			i2s_local[port].rx.handler.callback = rop->callback;
+			i2s_local[port].rx.handler.context = rop->context;
+
+			i2s_regs->IRQ |= (1<<0);  //enable the receiver interrupt
+		}
+	}
+	return len;
 }
 
 

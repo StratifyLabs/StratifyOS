@@ -17,12 +17,11 @@
  * 
  */
 
-/*! \addtogroup I2C Inter-Integrated Circuit (I2C) Master
+/*! \addtogroup I2C Inter-Integrated Circuit (I2C) Master or Slave
  * @{
  *
  * \ingroup IFACE_DEV
- * \details This module implements an I2C multi-master using two GPIO pins and a pin change interrupt.  More information
- * about accessing peripheral IO is in the \ref IFACE_DEV section.
+ * \details This module implements an I2C multi-master or slave bus.
  *
  * The following is an example of how to write the I2C in an OS environment:
  * \code

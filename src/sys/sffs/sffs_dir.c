@@ -56,7 +56,7 @@ int sffs_dir_lookup(const void * cfg, const char * path, sffs_dir_lookup_t * des
 			continue;
 		}
 
-		if ( item.status == CAFS_SNLIST_ITEM_STATUS_CLOSED ){
+		if ( item.status == SFFS_SNLIST_ITEM_STATUS_CLOSED ){
 
 			if ( sffs_block_load(cfg, item.block, &hdr_sffs_block_data) ){
 				sffs_error("failed to load block %d for serialno:%d\n", item.block, item.serialno);
@@ -94,10 +94,10 @@ int sffs_dir_exists(const void * cfg, const char * path, sffs_dir_lookup_t * des
 
 	if ( dest->serialno != SERIALNO_INVALID ){
 		//parent and target exist
-		return CAFS_DIR_PATH_EXISTS;
+		return SFFS_DIR_PATH_EXISTS;
 	}
 
-	return CAFS_DIR_PARENT_EXISTS; //parent only exists
+	return SFFS_DIR_PARENT_EXISTS; //parent only exists
 }
 
 

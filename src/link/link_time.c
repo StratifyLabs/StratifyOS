@@ -22,20 +22,12 @@
 #include "link_flags.h"
 
 
-int link_settime(link_transport_mdriver_t * driver, struct tm * t){
+int link_settime(link_transport_mdriver_t * driver, struct link_tm * t){
 	int fd;
 	int ret;
 	struct link_tm ltm;
 
-	ltm.tm_hour = t->tm_hour;
-	ltm.tm_isdst = t->tm_isdst;
-	ltm.tm_mday = t->tm_mday;
-	ltm.tm_min = t->tm_min;
-	ltm.tm_mon = t->tm_mon;
-	ltm.tm_sec = t->tm_sec;
-	ltm.tm_wday = t->tm_wday;
-	ltm.tm_yday = t->tm_yday;
-	ltm.tm_year = t->tm_year;
+	memcpy(&ltm, t, sizeof(struct link_tm));
 
 	link_debug(LINK_DEBUG_MESSAGE, "open rtc device");
 	fd = link_open(driver, "/dev/rtc", LINK_O_RDWR);
@@ -58,10 +50,9 @@ int link_settime(link_transport_mdriver_t * driver, struct tm * t){
 }
 
 
-int link_gettime(link_transport_mdriver_t * driver, struct tm * t){
+int link_gettime(link_transport_mdriver_t * driver, struct link_tm * t){
 	int fd;
 	int ret;
-	struct link_tm ltm;
 
 	link_debug(LINK_DEBUG_MESSAGE, "Open RTC fildes");
 	fd = link_open(driver, "/dev/rtc", LINK_O_RDWR);
@@ -72,7 +63,7 @@ int link_gettime(link_transport_mdriver_t * driver, struct tm * t){
 	ret = link_ioctl(driver,
 			fd,
 			I_RTC_GET,
-			&ltm);
+			t);
 	if( ret < 0 ){
 		link_error("Failed to I_RTC_GET");
 		return -1;
@@ -82,19 +73,6 @@ int link_gettime(link_transport_mdriver_t * driver, struct tm * t){
 	if( link_close(driver, fd) < 0 ){
 		link_error("failed to close");
 		return -1;
-	}
-
-	link_debug(LINK_DEBUG_MESSAGE, "Translate time");
-	if( ret == 0 ){
-		t->tm_hour = ltm.tm_hour;
-		t->tm_isdst = ltm.tm_isdst;
-		t->tm_mday = ltm.tm_mday;
-		t->tm_min = ltm.tm_min;
-		t->tm_mon = ltm.tm_mon;
-		t->tm_sec = ltm.tm_sec;
-		t->tm_wday = ltm.tm_wday;
-		t->tm_yday = ltm.tm_yday;
-		t->tm_year = ltm.tm_year;
 	}
 
 	return ret;

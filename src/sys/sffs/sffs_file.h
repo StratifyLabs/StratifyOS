@@ -19,8 +19,8 @@
 
 
 
-#ifndef CAFS_LITE_FILE_H_
-#define CAFS_LITE_FILE_H_
+#ifndef SFFS_LITE_FILE_H_
+#define SFFS_LITE_FILE_H_
 
 #include <stdbool.h>
 
@@ -61,4 +61,4 @@ int sffs_file_clean(const void * cfg, serial_t serialno, block_t hdr_block, uint
 
 
 
-#endif /* CAFS_LITE_FILE_H_ */
+#endif /* SFFS_LITE_FILE_H_ */

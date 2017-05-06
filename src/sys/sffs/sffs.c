@@ -230,7 +230,7 @@ int sffs_stat(const void * cfg, const char * path, struct stat * stat){
 	ret = sffs_dir_exists(cfg, path, &entry, R_OK);
 	if ( ret < 0 ){
 		sffs_error("failed to check existence\n");
-	} else if ( ret != CAFS_DIR_PATH_EXISTS ){
+	} else if ( ret != SFFS_DIR_PATH_EXISTS ){
 		//path does not exist
 		sffs_error("path does not exist\n");
 		errno = ENOENT;
@@ -268,7 +268,7 @@ int sffs_unlink(const void * cfg, const char * path){
 		goto sffs_unlink_unlock;
 	}
 
-	if ( ret != CAFS_DIR_PATH_EXISTS ){
+	if ( ret != SFFS_DIR_PATH_EXISTS ){
 		//path does not exist
 		errno = ENOENT;
 		ret = -1;
@@ -279,7 +279,7 @@ int sffs_unlink(const void * cfg, const char * path){
 
 	sffs_debug(DEBUG_LEVEL, "unlink serialno %d\n", entry.serialno);
 
-	if ( sffs_serialno_get(cfg, entry.serialno, CAFS_SNLIST_ITEM_STATUS_OPEN, NULL) != BLOCK_INVALID ){
+	if ( sffs_serialno_get(cfg, entry.serialno, SFFS_SNLIST_ITEM_STATUS_OPEN, NULL) != BLOCK_INVALID ){
 		//the file is open -- cannot delete
 		errno = EACCES;
 		ret = -1;
@@ -335,7 +335,7 @@ int sffs_open(const void * cfg, void ** handle, const char * path, int flags, in
 
 	ret = 0;
 	name = sysfs_getfilename(path, NULL);
-	if ( err == CAFS_DIR_PATH_EXISTS ){
+	if ( err == SFFS_DIR_PATH_EXISTS ){
 		//The file already exists
 		if ( (flags & O_EXCL) && (flags & O_CREAT) ){
 			//it is an error to try to exclusively create a file that already exists
@@ -361,7 +361,7 @@ int sffs_open(const void * cfg, void ** handle, const char * path, int flags, in
 				ret = -1;
 			}
 		}
-	} else if ( err == CAFS_DIR_PARENT_EXISTS ){ //does the path exist?
+	} else if ( err == SFFS_DIR_PARENT_EXISTS ){ //does the path exist?
 		if ( flags & (O_CREAT) ){
 			//create a new file
 			//printf("Create brand new file\n");
@@ -487,6 +487,9 @@ int sffs_close(const void * cfg, void ** handle){
 	*handle = NULL;
 	free(h);
 	unlock_sffs();
+	if( ret < 0 ){
+		errno = EIO;
+	}
 	return ret;
 }
 
@@ -526,7 +529,7 @@ int sffs_readdir_r(const void * cfg, void * handle, int loc, struct dirent * ent
 	hdr = (cl_hdr_t *)hdr_sffs_block_data.data;
 	ret = -1;
 	while( cl_snlist_getnext(cfg, &sn_list, &item) == 0 ){
-		if( (item.status == CAFS_SNLIST_ITEM_STATUS_CLOSED) && (item.serialno != CL_SERIALNO_LIST) ){
+		if( (item.status == SFFS_SNLIST_ITEM_STATUS_CLOSED) && (item.serialno != CL_SERIALNO_LIST) ){
 			if ( count == loc ){
 				if ( sffs_block_load(cfg, item.block, &hdr_sffs_block_data) ){
 					sffs_error("failed to load block %d for serialno:%d\n", item.block, item.serialno);

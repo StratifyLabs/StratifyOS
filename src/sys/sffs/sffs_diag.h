@@ -19,8 +19,8 @@
 
 
 
-#ifndef CAFS_DIAG_H_
-#define CAFS_DIAG_H_
+#ifndef SFFS_DIAG_H_
+#define SFFS_DIAG_H_
 
 
 #include "sffs_local.h"
@@ -64,4 +64,4 @@ int sffs_diag_scanfile(const void * cfg, serial_t serialno);
 
 
 
-#endif /* CAFS_DIAG_H_ */
+#endif /* SFFS_DIAG_H_ */

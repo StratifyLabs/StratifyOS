@@ -387,6 +387,7 @@
 #else
 #include <sys/lock.h>
 #include "trace.h"
+#include "sys/socket.h"
 #endif
 #include "iface/device_config.h"
 
@@ -599,6 +600,8 @@ typedef struct {
 	trace_id_t trace_id /*! Trace ID is PID is being traced (0 otherwise) */;
 } sched_task_t;
 
+#if !defined __link
+
 /*! \brief Stratify Board Configuration Structure
  * \details This structure holds the compiler-link time
  * configuration data.
@@ -620,6 +623,7 @@ typedef struct MCU_PACK {
 	void * (*start)(void*) /*! The start routine (when in doubt use stratify_default_thread()) */;
 	void * start_args /*! Arguments passed to the start routine (for  stratify_default_thread() use a pointer to the link transport driver) */;
 	void (*notify_write)(const void * buf, int nbyte) /*! Function used for trace */;
+	const stratify_socket_api_t * socket_api /*! Socket API (zero if sockets are not supported) */;
 } stratify_board_config_t;
 
 #define STRATIFY_DEFAULT_START_STACK_SIZE 2048
@@ -633,6 +637,8 @@ void stratify_led_startup();
 void stratify_led_priv_on(void * args);
 void stratify_led_priv_off(void * args);
 void stratify_led_priv_error(void * args);
+
+#endif
 
 #ifdef __cplusplus
 }

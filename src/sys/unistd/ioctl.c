@@ -30,6 +30,7 @@
 #include <errno.h>
 #include <stdarg.h>
 #include "unistd_flags.h"
+#include "stratify/stratify.h"
 #include "mcu/core.h"
 #include "dev/sys.h"
 
@@ -50,20 +51,29 @@
  */
 int ioctl(int fildes, int request, ...) {
 	const sysfs_t * fs;
+	void * ctl;
+	va_list ap;
+	va_start(ap, request);
+	ctl = va_arg(ap, void*);
+	va_end(ap);
+
 	fildes = u_fildes_is_bad(fildes);
 	if ( fildes < 0 ){
+		//check to see if fildes is a socket
+		errno = EBADF;
+		return -1;
+	}
+
+	if( fildes & FILDES_SOCKET_FLAG ){
+		if( stratify_board_config.socket_api != 0 ){
+			return stratify_board_config.socket_api->ioctl(fildes, request, ctl);
+		}
+		errno = EBADF;
 		return -1;
 	}
 
 	fs = get_fs(fildes);
 	if ( fs->priv_ioctl != NULL ){
-		void * ctl;
-		va_list ap;
-
-		va_start(ap, request);
-		ctl = va_arg(ap, void*);
-		va_end(ap);
-
 		//Character and device drivers both have the same interface to ioctl
 		return u_ioctl(get_open_file(fildes), request, ctl);
 	}
