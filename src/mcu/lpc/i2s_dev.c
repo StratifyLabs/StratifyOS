@@ -197,11 +197,11 @@ int mcu_i2s_setattr(int port, void * ctl){
 	u8 x;
 	u8 y;
 	u8 min_x, min_y;
-	i32 err;
-	i32 tmp;
+	s32 err;
+	s32 tmp;
 
-	mclk = bitrate*16;
-	core_clk = _mcu_core_getclock();
+	mclk = bitrate*p->mclk_bitrate_mult;
+	core_clk = mcu_board_config.core_periph_freq;
 
 	min_x = 1;
 	min_y = 1;
@@ -224,7 +224,7 @@ int mcu_i2s_setattr(int port, void * ctl){
 	i2s_regs->TXRATE = min_y | (min_x<<8);
 
 	//now set bit clock which is TXRATE / (TX_BITRATE+1) up to 64
-	i2s_regs->TXBITRATE = 15;
+	i2s_regs->TXBITRATE = p->mclk_bitrate_mult-1;
 
 
 	i2s_regs->IRQ = (5<<8)|(3<<16); //set RX and TX depth triggers
