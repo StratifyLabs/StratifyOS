@@ -57,10 +57,11 @@ enum {
 	I2S_MODE_DUPLEX = (1<<9) /*! Set this bit to both read and write audio data at the same time */
 };
 
-enum {
-	I2S_ACTION_EVENT_READ = (1<<0),
-	I2S_ACTION_EVENT_WRITE = (1<<1)
-};
+typedef enum {
+	I2S_EVENT_NONE = 0,
+	I2S_EVENT_DATA_READY = (1<<0),
+	I2S_EVENT_WRITE_COMPLETE = (1<<1)
+} i2s_action_event_t;
 
 
 

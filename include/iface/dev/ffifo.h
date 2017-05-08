@@ -43,43 +43,6 @@
 
 #define FFIFO_IOC_CHAR 'F'
 
-/*! \brief See below.
- * \details This defines the configuration values for a FIFO device.
- *
- * \param device_name The name of the device (e.g "fifo0")
- * \param cfg_ptr A pointer to the const \ref fifo_cfg_t data structure
- * \param state_ptr A pointer to the state structure (see \ref fifo_state_t)
- * \param mode_value The access mode (usually 0666)
- * \param uid_value The User ID
- * \param gid_value The Group ID
- *
- * \hideinitializer
- *
- * Example:
- * \code
- * #include <iface/dev/ffifo.h>
- * const ffifo_cfg_t ffifo_cfg0 = { .buffer = fifo_buf0, .size = FFIFO_BUF_SIZE };
- * ffifo_state_t ffifo_state0;
- * const device_t devices[DEVICES_TOTAL+1] = {
- * 	...
- * 	FFIFO_DEVICE("ffifo0", &ffifo_cfg0, &ffifo_state0, 0666, USER_ROOT, GROUP_ROOT),
- * 	...
- * 	DEVICE_TERMINATOR
- * }
- * \endcode
- *
- */
-#define FFIFO_DEVICE(device_name, cfg_ptr, state_ptr, mode_value, uid_value, gid_value) { \
-		.name = device_name, \
-		DEVICE_MODE(mode_value, uid_value, gid_value, S_IFCHR), \
-		DEVICE_DRIVER(ffifo), \
-		.cfg.state = state_ptr, \
-		.cfg.dcfg = cfg_ptr \
-}
-
-#define FFIFO_DEVICE_CFG(buf, fcount, fsize, read_notify, write_notify) { .buffer = buf, .count = fcount, .frame_size = fsize, .notify_on_read = read_notify, .notify_on_write = write_notify }
-
-
 enum {
 	FFIFO_FLAGS_WRITEBLOCK = FIFO_FLAGS_WRITEBLOCK /*! Write block flag */,
 	FFIFO_FLAGS_OVERFLOW = FIFO_FLAGS_OVERFLOW /*! Overflow flag */,

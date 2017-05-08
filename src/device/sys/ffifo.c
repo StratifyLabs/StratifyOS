@@ -104,10 +104,11 @@ int ffifo_read_buffer(const ffifo_cfg_t * cfgp, ffifo_state_t * state, char * bu
 			break;
 		} else {
 			memcpy(buf, ffifo_get_frame(cfgp, state->tail), frame_size);
+			buf += frame_size;
 			ffifo_inc_tail(state, count);
 		}
 	}
-	return i; //number of frames read
+	return i; //number of bytes read
 }
 
 
@@ -119,6 +120,7 @@ int ffifo_write_buffer(const ffifo_cfg_t * cfgp, ffifo_state_t * state, const ch
 	for(i=0; i < state->wop_len; i+=frame_size){
 		if( ffifo_is_write_ok(state, count, writeblock) ){
 			memcpy( ffifo_get_frame(cfgp, state->head), buf, cfgp->frame_size);
+			buf += frame_size;
 			ffifo_inc_head(state, count);
 		} else {
 			break;

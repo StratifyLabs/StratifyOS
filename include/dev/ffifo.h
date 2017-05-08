@@ -90,5 +90,7 @@ int ffifo_read_local(const ffifo_cfg_t * cfgp, ffifo_state_t * state, device_tra
 void ffifo_cancel_rop(ffifo_state_t * state);
 
 
+
+
 #endif /* DEV_FFIFO_H_ */
 
