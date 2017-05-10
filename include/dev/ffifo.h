@@ -83,11 +83,22 @@ void ffifo_set_overflow(ffifo_state_t * state, int value);
 int ffifo_read_buffer(const ffifo_cfg_t * cfgp, ffifo_state_t * state, char * buf);
 int ffifo_write_buffer(const ffifo_cfg_t * cfgp, ffifo_state_t * state, const char * buf);
 
+void ffifo_data_transmitted(const ffifo_cfg_t * cfgp, ffifo_state_t * state);
 void ffifo_data_received(const ffifo_cfg_t * cfgp, ffifo_state_t * state);
 int ffifo_write_local(const ffifo_cfg_t * cfgp, ffifo_state_t * state, device_transfer_t * wop);
 int ffifo_read_local(const ffifo_cfg_t * cfgp, ffifo_state_t * state, device_transfer_t * rop);
 
 void ffifo_cancel_rop(ffifo_state_t * state);
+
+#define FFIFO_DEVICE(device_name, cfg_ptr, state_ptr, mode_value, uid_value, gid_value) { \
+		.name = device_name, \
+		DEVICE_MODE(mode_value, uid_value, gid_value, S_IFCHR), \
+		DEVICE_DRIVER(ffifo), \
+		.cfg.state = state_ptr, \
+		.cfg.dcfg = cfg_ptr \
+}
+
+#define FFIFO_DEVICE_CFG(buf, fcount, fsize, read_notify, write_notify) { .buffer = buf, .count = fcount, .frame_size = fsize, .notify_on_read = read_notify, .notify_on_write = write_notify }
 
 
 

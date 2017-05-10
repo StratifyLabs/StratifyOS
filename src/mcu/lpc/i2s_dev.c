@@ -227,7 +227,7 @@ int mcu_i2s_setattr(int port, void * ctl){
 	i2s_regs->TXBITRATE = p->mclk_bitrate_mult-1;
 
 
-	i2s_regs->IRQ = (5<<8)|(3<<16); //set RX and TX depth triggers
+	i2s_regs->IRQ = (4<<8)|(4<<16); //set RX and TX depth triggers
 
 
 	i2s_local[port].o_mode = p->o_mode;
@@ -313,20 +313,11 @@ u8 write_tx_data(int port){
 		level = i2s_local[port].tx.len;
 	}
 
-	if( i2s_local[port].o_mode & (I2S_MODE_DUPLEX) ){
-		i2s_local[port].rx.bufp = i2s_local[port].tx.bufp;
-		i2s_local[port].rx.len = i2s_local[port].tx.len;
-	}
-
 	for(i=0; i < level; i++){
 		i2s_regs->TXFIFO = *(i2s_local[port].tx.bufp);
 
 		i2s_local[port].tx.bufp++;
 		i2s_local[port].tx.len--;
-	}
-
-	if( i2s_local[port].o_mode & (I2S_MODE_DUPLEX) ){
-		read_rx_data(port);
 	}
 
 	return level;

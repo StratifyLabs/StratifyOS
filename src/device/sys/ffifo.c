@@ -119,7 +119,7 @@ int ffifo_write_buffer(const ffifo_cfg_t * cfgp, ffifo_state_t * state, const ch
 	int writeblock = ffifo_is_writeblock(state);
 	for(i=0; i < state->wop_len; i+=frame_size){
 		if( ffifo_is_write_ok(state, count, writeblock) ){
-			memcpy( ffifo_get_frame(cfgp, state->head), buf, cfgp->frame_size);
+			memcpy( ffifo_get_frame(cfgp, state->head), buf, frame_size);
 			buf += frame_size;
 			ffifo_inc_head(state, count);
 		} else {
@@ -137,14 +137,16 @@ void ffifo_flush(ffifo_state_t * state){
 
 void ffifo_getattr(ffifo_attr_t * attr, const ffifo_cfg_t * cfgp, ffifo_state_t * state){
 	attr->count = cfgp->count;
+	attr->frame_size = cfgp->frame_size;
+
 	if( state->head >= state->tail ){
 		attr->used = state->head - state->tail;
 	} else {
-		attr->used = cfgp->count - state->tail + state->head;
+		attr->used = attr->count - state->tail + state->head;
 	}
 
-	attr->frame_size = cfgp->frame_size;
 	attr->o_flags = state->o_flags;
+	//clear the overflow flags after it is read
 	ffifo_set_overflow(state, 0);
 }
 
@@ -173,11 +175,8 @@ void ffifo_cancel_rop(ffifo_state_t * state){
 }
 
 
-static int data_transmitted(const device_cfg_t * cfg){
+void ffifo_data_transmitted(const ffifo_cfg_t * cfgp, ffifo_state_t * state){
 	int bytes_written;
-	const ffifo_cfg_t * cfgp = cfg->dcfg;
-	ffifo_state_t * state = cfg->state;
-
 	if( state->wop != NULL ){
 		if( (bytes_written = ffifo_write_buffer(cfgp, state, state->wop->cbuf)) > 0 ){
 			state->wop->nbyte = bytes_written;
@@ -186,8 +185,6 @@ static int data_transmitted(const device_cfg_t * cfg){
 			}
 		}
 	}
-
-	return 1; //leave the callback in place
 }
 
 
@@ -213,13 +210,13 @@ int ffifo_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 		/* no break */
 	case I_FFIFO_FLUSH:
 		ffifo_flush(state);
-		data_transmitted(cfg); //something might be waiting to write the fifo
+		ffifo_data_transmitted(cfgp, state); //something might be waiting to write the fifo
 		return 0;
 	case I_FFIFO_SETWRITEBLOCK:
 		ffifo_set_writeblock(state, (int)ctl);
 		if( ffifo_is_writeblock(state) ){
 			//make sure the FIFO is not currently blocked
-			data_transmitted(cfg);
+			ffifo_data_transmitted(cfgp, state);
 		}
 		return 0;
 	}
@@ -268,7 +265,7 @@ int ffifo_read(const device_cfg_t * cfg, device_transfer_t * rop){
 
 	if( bytes_read > 0 ){
 		//see if anything needs to write the FIFO
-		data_transmitted(cfg);
+		ffifo_data_transmitted(cfgp, state);
 
 		if( cfgp->notify_on_read ){
 			cfgp->notify_on_read(bytes_read);

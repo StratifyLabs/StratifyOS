@@ -54,7 +54,6 @@ enum {
 	I2S_MODE_OUTPUT = (1<<6) /*! \brief Configure I2S output */,
 	I2S_MODE_INPUT = (1<<7) /*! \brief Configure I2S input (independent from output) */,
 	I2S_MODE_MCLK_ENABLE = (1<<8) /*! Set this bit to enable the mclk output */,
-	I2S_MODE_DUPLEX = (1<<9) /*! Set this bit to both read and write audio data at the same time */
 };
 
 typedef enum {
