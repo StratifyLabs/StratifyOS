@@ -94,11 +94,11 @@ void ffifo_set_overflow(ffifo_state_t * state, int value){
 	}
 }
 
-int ffifo_read_buffer(const ffifo_cfg_t * cfgp, ffifo_state_t * state, char * buf){
+int ffifo_read_buffer(const ffifo_cfg_t * cfgp, ffifo_state_t * state, char * buf, int len){
 	int i;
 	u16 count = cfgp->count;
 	u16 frame_size = cfgp->frame_size;
-	for(i=0; i < state->rop_len; i += frame_size){
+	for(i=0; i < len; i += frame_size){
 		if ( state->head == state->tail ){
 			//there is no more data in the buffer to read
 			break;
@@ -112,12 +112,12 @@ int ffifo_read_buffer(const ffifo_cfg_t * cfgp, ffifo_state_t * state, char * bu
 }
 
 
-int ffifo_write_buffer(const ffifo_cfg_t * cfgp, ffifo_state_t * state, const char * buf){
+int ffifo_write_buffer(const ffifo_cfg_t * cfgp, ffifo_state_t * state, const char * buf, int len){
 	int i;
 	u16 count = cfgp->count;
 	u16 frame_size = cfgp->frame_size;
 	int writeblock = ffifo_is_writeblock(state);
-	for(i=0; i < state->wop_len; i+=frame_size){
+	for(i=0; i < len; i+=frame_size){
 		if( ffifo_is_write_ok(state, count, writeblock) ){
 			memcpy( ffifo_get_frame(cfgp, state->head), buf, frame_size);
 			buf += frame_size;
@@ -155,8 +155,7 @@ void ffifo_data_received(const ffifo_cfg_t * cfgp, ffifo_state_t * state){
 	int bytes_read;
 
 	if( state->rop != NULL ){
-		state->rop->nbyte = state->rop_len; //update the number of bytes read??
-		if( (bytes_read = ffifo_read_buffer(cfgp, state, state->rop->buf)) > 0 ){
+		if( (bytes_read = ffifo_read_buffer(cfgp, state, state->rop->buf, state->rop_len)) > 0 ){
 			state->rop->nbyte = bytes_read;
 			if ( state->rop->callback(state->rop->context, (mcu_event_t)NULL) == 0 ){
 				state->rop = NULL;
@@ -178,7 +177,7 @@ void ffifo_cancel_rop(ffifo_state_t * state){
 void ffifo_data_transmitted(const ffifo_cfg_t * cfgp, ffifo_state_t * state){
 	int bytes_written;
 	if( state->wop != NULL ){
-		if( (bytes_written = ffifo_write_buffer(cfgp, state, state->wop->cbuf)) > 0 ){
+		if( (bytes_written = ffifo_write_buffer(cfgp, state, state->wop->cbuf, state->wop_len)) > 0 ){
 			state->wop->nbyte = bytes_written;
 			if ( state->wop->callback(state->wop->context, NULL) == 0 ){
 				state->wop = NULL;
@@ -240,8 +239,7 @@ int ffifo_read_local(const ffifo_cfg_t * cfgp, ffifo_state_t * state, device_tra
 		return -1;
 	}
 
-	state->rop_len = rop->nbyte;
-	bytes_read = ffifo_read_buffer(cfgp, state, rop->buf); //see if there are bytes in the buffer
+	bytes_read = ffifo_read_buffer(cfgp, state, rop->buf, rop->nbyte); //see if there are bytes in the buffer
 	if ( bytes_read == 0 ){
 		if( (rop->flags & O_NONBLOCK) ){
 			errno = EAGAIN;
@@ -289,8 +287,7 @@ int ffifo_write_local(const ffifo_cfg_t * cfgp, ffifo_state_t * state, device_tr
 		return -1;
 	}
 
-	state->wop_len = wop->nbyte;
-	bytes_written = ffifo_write_buffer(cfgp, state, wop->cbuf); //see if there are bytes in the buffer
+	bytes_written = ffifo_write_buffer(cfgp, state, wop->cbuf, wop->nbyte); //see if there are bytes in the buffer
 	if ( bytes_written == 0 ){
 		if( wop->flags & O_NONBLOCK ){
 			errno = EAGAIN;

@@ -46,7 +46,7 @@ static u8 write_tx_data(int port);
 
 typedef struct {
 	mcu_event_handler_t handler;
-	int * nbyte;
+	//int * nbyte;
 	int len;
 	u32 * bufp;
 } i2s_transfer_t;
@@ -107,7 +107,7 @@ int mcu_i2s_getattr(int port, void * ctl){
 int mcu_i2s_setattr(int port, void * ctl){
 	LPC_I2S_Type * i2s_regs = i2s_get_regs(port);
 	i2s_attr_t * p = ctl;
-	u32 audio_reg = 0;
+	u32 audio_reg = (1<<4); //start by holding the i2s in reset
 	u32 bits;
 	u32 bitrate;
 	u32 half_period;
@@ -232,6 +232,10 @@ int mcu_i2s_setattr(int port, void * ctl){
 
 	i2s_local[port].o_mode = p->o_mode;
 
+	i2s_regs->DAO &= ~(1<<4);
+	i2s_regs->DAI &= ~(1<<4);
+
+
 	//later add support for DMA
 	//_mcu_dma_init(0);
 
@@ -285,6 +289,7 @@ int mcu_i2s_mute(int port, void * ctl){
 	return 0;
 
 }
+
 int mcu_i2s_unmute(int port, void * ctl){
 	LPC_I2S_Type * i2s_regs = i2s_get_regs(port);
 	i2s_regs->DAO &= ~(1<<15);
@@ -389,30 +394,38 @@ int _mcu_i2s_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
 	nsamples = rop->nbyte/4;
 	i2s_local[port].rx.bufp = rop->buf;
 	i2s_local[port].rx.len = nsamples;
-	i2s_local[port].rx.nbyte = &rop->nbyte;
 
 	//Check the local buffer for bytes that are immediately available
 	read_rx_data(port);
 	len = nsamples - i2s_local[port].rx.len;
-	if ( len == 0 ){  //nothing available to read right now
-		if ( rop->flags & O_NONBLOCK ){
+
+	//for non-blocking operations, return number of bytes read or -1 if nothing is available
+	if( rop->flags & O_NONBLOCK ){
+
+		if( len == 0 ){
+			//if no bytes were read, return a try again error
 			i2s_local[port].rx.handler.callback = NULL;
 			i2s_local[port].rx.bufp = NULL;
-			rop->nbyte = 0;
+			rop->nbyte = 0; //no samples were read
 			errno = EAGAIN;
 			len = -1;
 		} else {
-			//there is no data currently ready -- the call should block until data is ready
-			if( _mcu_core_priv_validate_callback(rop->callback) < 0 ){
-				return -1;
-			}
-
-			i2s_local[port].rx.handler.callback = rop->callback;
-			i2s_local[port].rx.handler.context = rop->context;
-
-			i2s_regs->IRQ |= (1<<0);  //enable the receiver interrupt
+			len = len*4; //the number of bytes is the samples * 4
 		}
+
+	} else if( len != nsamples ){
+		//for blocking operations wait until the entire buffer is read then call the callback
+		if( _mcu_core_priv_validate_callback(rop->callback) < 0 ){
+			return -1;
+		}
+
+		i2s_local[port].rx.handler.callback = rop->callback;
+		i2s_local[port].rx.handler.context = rop->context;
+
+		i2s_regs->IRQ |= (1<<0);  //enable the receiver interrupt
+		len = 0;
 	}
+
 	return len;
 }
 

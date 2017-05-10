@@ -80,8 +80,8 @@ void ffifo_set_notify_write(ffifo_state_t * state, int value);
 int ffifo_is_overflow(ffifo_state_t * state);
 void ffifo_set_overflow(ffifo_state_t * state, int value);
 
-int ffifo_read_buffer(const ffifo_cfg_t * cfgp, ffifo_state_t * state, char * buf);
-int ffifo_write_buffer(const ffifo_cfg_t * cfgp, ffifo_state_t * state, const char * buf);
+int ffifo_read_buffer(const ffifo_cfg_t * cfgp, ffifo_state_t * state, char * buf, int len);
+int ffifo_write_buffer(const ffifo_cfg_t * cfgp, ffifo_state_t * state, const char * buf, int len);
 
 void ffifo_data_transmitted(const ffifo_cfg_t * cfgp, ffifo_state_t * state);
 void ffifo_data_received(const ffifo_cfg_t * cfgp, ffifo_state_t * state);
