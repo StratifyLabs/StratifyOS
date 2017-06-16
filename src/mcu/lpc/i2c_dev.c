@@ -338,16 +338,24 @@ int mcu_i2c_slave_setup(int port, void * ctl){
 
 	if( i2c_local[port].slave.setup.o_flags & I2C_SLAVE_SETUP_FLAG_ALT_ADDR1 ){
 		i2c_regs->ADR1 = (ctlp->addr << 1) | gen_call;
+#if MCU_I2C_API == 0
 		i2c_regs->MASK1 = 0x00;
+#endif
 	} else if( i2c_local[port].slave.setup.o_flags & I2C_SLAVE_SETUP_FLAG_ALT_ADDR2 ){
 		i2c_regs->ADR2 = (ctlp->addr << 1) | gen_call;
+#if MCU_I2C_API == 0
 		i2c_regs->MASK2 = 0x00;
+#endif
 	} else if( i2c_local[port].slave.setup.o_flags & I2C_SLAVE_SETUP_FLAG_ALT_ADDR3 ){
 		i2c_regs->ADR3 = (ctlp->addr << 1) | gen_call;
+#if MCU_I2C_API == 0
 		i2c_regs->MASK3 = 0x00;
+#endif
 	} else {
 		i2c_regs->ADR0 = (ctlp->addr << 1) | gen_call;
+#if MCU_I2C_API == 0
 		i2c_regs->MASK0 = 0x00;
+#endif
 	}
 
 	i2c_regs->CONSET = (AA);

@@ -263,12 +263,6 @@ link_transport_phy_t link_phy_open(const char * name, int baudrate){
 
 	memset(&options, 0, sizeof(options));
 
-	/*
-	if( tcgetattr(fd, &options) < 0 ){
-		link_error("failed to get options);
-		return LINK_PHY_ERROR;
-	}
-	 */
 
 	//make the buffer raw
 	cfmakeraw(&options); //raw with no buffering
@@ -368,9 +362,11 @@ int link_phy_close(link_transport_phy_t * handle){
 	*handle = LINK_PHY_OPEN_ERROR;
 	int fd = phy->fd;
 	free(phy);
+	fflush(stdout);
 	if( close(fd) < 0 ){
 		return LINK_PHY_ERROR;
 	}
+	fflush(stdout);
 	return 0;
 }
 

@@ -44,21 +44,12 @@ void _mcu_core_priv_setvectortableaddr(void * addr){
 	SCB->VTOR = (uint32_t)addr;
 }
 
-
-
 int core_set_interrupt_priority(int periph, int port, uint8_t priority);
 
 #define TASK_MAIN_RETURN 0xFFFFFFF9
 #define TASK_THREAD_RETURN 0xFFFFFFFD
 
 #define SYSTICK_CTRL_TICKINT (1<<1)
-
-/*
-#if defined __FPU_USED
-#undef __FPU_USED
-#define __FPU_USED 0
-#endif
-*/
 
 
 int core_fault_init(void (*handler)(int) );

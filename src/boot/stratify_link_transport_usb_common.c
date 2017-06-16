@@ -251,8 +251,8 @@ const stratify_link_transport_usb_cfg_desc_t stratify_link_transport_usb_cfg_des
 						.bAlternateSetting = 0x00,
 						.bNumEndpoints = 0x02,
 						.bInterfaceClass = USB_INTERFACE_CLASS_COMMUNICATIONS_DATA,
-						.bInterfaceSubClass = 0x00,
-						.bInterfaceProtocol = 0x00,
+						.bInterfaceSubClass = USB_INTERFACE_SUBCLASS_ACM,
+						.bInterfaceProtocol = USB_INTERFACE_PROTOCOL_V25TER,
 						.iInterface = 0x05
 				},
 
@@ -315,6 +315,7 @@ int stratify_link_transport_usb_cdc_if_req(void * object, int event){
 			case SEND_ENCAPSULATED_COMMAND:
 				//need to receive information from the host
 				context->ep0_data.dptr = context->ep0_buf;
+				usb_dev_std_statusin_stage(context);
 				return 1;
 			case SET_CONTROL_LINE_STATE:
 				usb_dev_std_statusin_stage(context);

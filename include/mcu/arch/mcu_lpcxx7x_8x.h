@@ -66,6 +66,7 @@ typedef uint16_t adc_sample_t;
 #define MCU_PIO_PORTS 6
 #define MCU_PIO_REGS { LPC_GPIO0, LPC_GPIO1, LPC_GPIO2, LPC_GPIO3, LPC_GPIO4, LPC_GPIO5 }
 
+#define MCU_I2C_API 0
 #define MCU_I2C_PORTS 3
 #define MCU_I2C_REGS { LPC_I2C0, LPC_I2C1, LPC_I2C2 }
 #define MCU_I2C_IRQS { I2C0_IRQn, I2C1_IRQn, I2C2_IRQn }
@@ -119,6 +120,8 @@ typedef uint16_t adc_sample_t;
 #define MCU_ENET_PORTS 1
 #define MCU_ENET_REGS { LPC_EMAC }
 #define MCU_ENET_IRQS { ENET_IRQn }
+
+#define MCU_WDT_API 0
 
 typedef struct MCU_PACK {
 	  __IO uint32_t StaticConfig;

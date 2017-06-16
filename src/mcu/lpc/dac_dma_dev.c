@@ -330,7 +330,7 @@ int write_complete(void * context, mcu_event_t data){
 //when not using DMA -- use dedicated interrupt
 void _mcu_core_dac0_isr(){
 	mcu_event_t data = 0;
-	write_complete(dac_local[0].context, data);
+	write_complete(dac_local[0].handler.context, data);
 }
 
 

@@ -98,7 +98,7 @@ int _mcu_pio_set_event(int port, int event, int pin){
 				(pin == 13) ||
 				(pin == 14) ){
 			errno = EINVAL;
-			return -1;
+			return -1 - offsetof(mcu_action_t, channel);
 		}
 #endif
 
@@ -121,7 +121,7 @@ int _mcu_pio_set_event(int port, int event, int pin){
 			break;
 		default:
 			errno = EINVAL;
-			return -1;
+			return -1 - offsetof(mcu_action_t, event);
 		}
 
 	} else if ( port == 2 ){
@@ -129,7 +129,7 @@ int _mcu_pio_set_event(int port, int event, int pin){
 #ifdef __lpc17xx
 		if ( (pin > 13) ){
 			errno = EINVAL;
-			return -1;
+			return -1 - offsetof(mcu_action_t, channel);
 		}
 #endif
 
@@ -152,7 +152,7 @@ int _mcu_pio_set_event(int port, int event, int pin){
 			break;
 		default:
 			errno = EINVAL;
-			return -1;
+			return -1 - offsetof(mcu_action_t, event);
 		}
 	}
 	return 0;

@@ -57,6 +57,10 @@ void link_exit(){}
 
 int link_disconnect(link_transport_mdriver_t * driver){
 	int ret;
+	if( driver->dev.handle == LINK_PHY_OPEN_ERROR ){
+		return 0;
+	}
+
 	ret = driver->dev.close(&(driver->dev.handle));
 	driver->dev.handle = LINK_PHY_OPEN_ERROR;
 

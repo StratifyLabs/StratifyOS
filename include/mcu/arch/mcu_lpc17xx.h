@@ -289,6 +289,7 @@ int _mcu_lpc_flash_get_serialno(uint32_t * dest);
 #define MCU_GPIO_PORTS 5
 #define MCU_PIO_PORTS 5
 
+#define MCU_I2C_API 0
 #define MCU_I2C_PORTS 3
 #define MCU_I2C_REGS { LPC_I2C0, LPC_I2C1, LPC_I2C2 }
 #define MCU_I2C_IRQS { I2C0_IRQn, I2C1_IRQn , I2C2_IRQn }
@@ -344,6 +345,7 @@ int _mcu_lpc_flash_get_serialno(uint32_t * dest);
 #define MCU_ENET_REGS { LPC_EMAC }
 #define MCU_ENET_IRQS { ENET_IRQn }
 
+#define MCU_WDT_API 0
 
 #define MCU_START_OF_SRAM 0x10000000
 #define MCU_START_OF_AHB_SRAM 0x2007C000

@@ -100,6 +100,7 @@ typedef LPC_SSPn_Type LPC_SSP_Type;
 #define MCU_PIO_PORTS 1
 #define MCU_PIO_REGS { LPC_GPIO_PORT }
 
+#define MCU_I2C_API 1
 #define MCU_I2C_PORTS 2
 typedef LPC_I2Cn_Type LPC_I2C_Type;
 #define MCU_I2C_REGS { LPC_I2C0, LPC_I2C1 }
@@ -160,6 +161,9 @@ typedef LPC_ADCn_Type LPC_ADC_Type;
 #define MCU_ENET_PORTS 1
 #define MCU_ENET_REGS { LPC_ETHERNET }
 #define MCU_ENET_IRQS { ETHERNET_IRQn }
+
+#define MCU_WDT_API 0
+#define WDT_IRQn WWDT_IRQn
 
 /*
 typedef struct MCU_PACK {

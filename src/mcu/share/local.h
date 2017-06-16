@@ -48,12 +48,12 @@ int mcu_ioctl(const device_cfg_t * cfg,
 	//Check to see if the port is value
 	if ( DEVICE_GET_PORT(cfg) >= num_ports ){
 		errno = EINVAL;
-		return -1;
+		return -100;
 	}
 
 	if ( !powered_on(DEVICE_GET_PORT(cfg)) ){
 		errno = EIO;
-		return -1;
+		return -200;
 	}
 
 	periph_request = _IOCTL_NUM(request);
@@ -63,7 +63,7 @@ int mcu_ioctl(const device_cfg_t * cfg,
 	}
 
 	errno = EINVAL;
-	return -200;
+	return -300;
 }
 
 static inline int mcu_read(const device_cfg_t * cfg,
