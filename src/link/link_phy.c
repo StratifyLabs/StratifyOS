@@ -118,7 +118,7 @@ link_transport_phy_t link_phy_open(const char * name, int baudrate){
 
 	COMMTIMEOUTS timeouts={0};
 	timeouts.ReadIntervalTimeout=MAXDWORD;
-	timeouts.ReadTotalTimeoutConstant=1;
+	timeouts.ReadTotalTimeoutConstant=0;
 	timeouts.ReadTotalTimeoutMultiplier=0;
 	timeouts.WriteTotalTimeoutConstant=0;
 	timeouts.WriteTotalTimeoutMultiplier=0;
