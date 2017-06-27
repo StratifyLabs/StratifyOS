@@ -34,7 +34,7 @@
 #define IFACE_DEV_SYS_H_
 
 #include <stdint.h>
-#include "../link.h"
+#include "../link_types.h"
 #include "ioctl.h"
 
 #include "mcu/types.h"
@@ -52,6 +52,13 @@ extern "C" {
 		.name = "sys", \
 		DEVICE_MODE(0666, 0, 0, S_IFCHR), \
 		DEVICE_DRIVER(sys), \
+		.cfg.periph.port = 0 \
+}
+
+#define SYS_23_DEVICE { \
+		.name = "sys", \
+		DEVICE_MODE(0666, 0, 0, S_IFCHR), \
+		DEVICE_DRIVER(sys_23), \
 		.cfg.periph.port = 0 \
 }
 
@@ -163,22 +170,41 @@ enum {
  *
  */
 typedef struct MCU_PACK {
-	char version[8] /*! \brief The OS (kernel) Version */;
-	char sys_version[8] /*! \brief The System (board) Version */;
-	char arch[8] /*! \brief The target architecture (lpc17xx, lpc13xx, etc) */;
-	u32 signature /*! \brief Ths OS library signature used to ensure proper build system is used for applications */;
-	u32 security /*! \brief Security flags (see \ref sys_security_flags_t)*/;
-	u32 cpu_freq /*! \brief The CPU clock frequency */;
-	u32 sys_mem_size /*! \brief The number of bytes in RAM shared across OS and other processes */;
-	char stdout_name[LINK_NAME_MAX] /*! \brief Default value for the standard output */;
-	char stdin_name[LINK_NAME_MAX] /*! \brief Default value for the standard output */;
-	char name[LINK_NAME_MAX] /*! \brief Device Name */;
-	sn_t serial /*! \brief Device Serial number */;
-	u32 flags /*! \brief System flags */;
-} sys_attr_t;
+	char kernel_version[8] /*!  The OS (kernel) Version */;
+	char sys_version[8] /*!  The System (board) Version */;
+	char arch[16] /*!  The target architecture (lpc17xx, lpc13xx, etc) */;
+	u32 signature /*!  Ths OS library signature used to ensure proper build system is used for applications */;
+	u32 security /*!  Security flags (see \ref sys_security_flags_t)*/;
+	u32 cpu_freq /*!  The CPU clock frequency */;
+	u32 sys_mem_size /*!  The number of bytes in RAM shared across OS and other processes */;
+	char stdout_name[LINK_NAME_MAX] /*!  Default value for the standard output */;
+	char stdin_name[LINK_NAME_MAX] /*!  Default value for the standard output */;
+	char name[LINK_NAME_MAX] /*!  Device Name */;
+	char id[LINK_PATH_MAX] /*!  Globally unique Cloud Kernel ID value */;
+	sn_t serial /*!  Device Serial number */;
+	u32 flags /*!  System flags */;
+	u32 hardware_id /*! Hardware ID of the board */;
+} sys_26_attr_t;
 
 typedef struct MCU_PACK {
-	char id[LINK_PATH_MAX] /*! \brief Globally unique Cloud Kernel ID value */;
+	char version[8] /*!  The OS (kernel) Version */;
+	char sys_version[8] /*!  The System (board) Version */;
+	char arch[8] /*!  The target architecture (lpc17xx, lpc13xx, etc) */;
+	u32 signature /*!  Ths OS library signature used to ensure proper build system is used for applications */;
+	u32 security /*!  Security flags (see \ref sys_security_flags_t)*/;
+	u32 cpu_freq /*!  The CPU clock frequency */;
+	u32 sys_mem_size /*!  The number of bytes in RAM shared across OS and other processes */;
+	char stdout_name[LINK_NAME_MAX] /*!  Default value for the standard output */;
+	char stdin_name[LINK_NAME_MAX] /*!  Default value for the standard output */;
+	char name[LINK_NAME_MAX] /*!  Device Name */;
+	sn_t serial /*!  Device Serial number */;
+	u32 flags /*!  System flags */;
+} sys_23_attr_t;
+
+typedef sys_26_attr_t sys_attr_t;
+
+typedef struct MCU_PACK {
+	char id[LINK_PATH_MAX] /*!  Globally unique Cloud Kernel ID value */;
 } sys_id_t;
 
 /*! \brief Task Attributes
@@ -251,8 +277,10 @@ typedef struct MCU_PACK {
  * \hideinitializer
  *
  */
-#define I_SYS_ATTR _IOCTLR(SYS_IOC_CHAR, 0, sys_attr_t)
-#define I_SYS_GETATTR I_SYS_ATTR
+#define I_SYS_GETATTR _IOCTLR(SYS_IOC_CHAR, 0, sys_attr_t)
+#define I_SYS_26_GETATTR _IOCTLR(SYS_IOC_CHAR, 0, sys_26_attr_t)
+#define I_SYS_23_GETATTR _IOCTLR(SYS_IOC_CHAR, 0, sys_23_attr_t)
+#define I_SYS_ATTR I_SYS_GETATTR
 
 /*! \brief See below for details.
  * \details This request gets the information about the specified task.

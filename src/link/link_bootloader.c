@@ -27,18 +27,6 @@ static int reset_device(link_transport_mdriver_t * driver, bool invoke_bootloade
 
 int link_bootloader_attr(link_transport_mdriver_t * driver, bootloader_attr_t * attr, uint32_t id){
 	if( link_ioctl(driver, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_GETATTR, attr) < 0 ){
-		//try again with the older version
-		attr->version = 0;
-		//link_ioctl(driver, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_GETATTR_14X, attr);
-		if( (attr->version == 0x150) ||
-				(attr->version == 0x140) ||
-				(attr->version == 0x132) ||
-				(attr->version == 0x131) ||
-				(attr->version == 0x130) ){
-			attr->hardware_id = id;
-			return 0;
-		}
-
 		return -1;
 	}
 

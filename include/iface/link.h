@@ -36,10 +36,6 @@
 
 #include <time.h>
 
-#define LINK_OPEN_MAX 32
-#define LINK_NAME_MAX 24
-#define LINK_PATH_MAX 64
-
 
 #include "../mcu/types.h"
 #include "dev/adc.h"
@@ -974,10 +970,10 @@ int link_gettime(link_transport_mdriver_t * driver, struct link_tm * t);
 int link_kill_pid(link_transport_mdriver_t * driver, int pid, int signo);
 
 
-/*! \details This function reads the address of the security word.
+/*! \details This function reads the systems attributes.
  *
  */
-int link_get_security_addr(u32 * addr);
+int link_get_sys_attr(link_transport_mdriver_t * driver, sys_attr_t * sys_attr);
 
 /*! \details This renames a file on the filesystem.
  *

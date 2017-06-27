@@ -308,10 +308,10 @@ char * link_new_device_list(link_transport_mdriver_t * driver, int max){
 						if( link_ioctl(driver, sys_fd, I_SYS_GETATTR, &sys_attr) == 0 ){
 							//now add the sys_attr to the string list
 							sys_attr.name[NAME_MAX-1] = 0;  //make sure these are zero terminated
-							sys_attr.version[7] = 0;
+							sys_attr.kernel_version[7] = 0;
 							sprintf(entry, "%s:%s:%s",
 									sys_attr.name,
-									sys_attr.version,
+									sys_attr.kernel_version,
 									serialno);
 						}
 						link_close(driver, sys_fd);

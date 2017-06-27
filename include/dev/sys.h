@@ -69,6 +69,12 @@ int sys_read(const device_cfg_t * cfg, device_transfer_t * rop);
 int sys_write(const device_cfg_t * cfg, device_transfer_t * wop);
 int sys_close(const device_cfg_t * cfg);
 
+int sys_23_open(const device_cfg_t * cfg);
+int sys_23_ioctl(const device_cfg_t * cfg, int request, void * ctl);
+int sys_23_read(const device_cfg_t * cfg, device_transfer_t * rop);
+int sys_23_write(const device_cfg_t * cfg, device_transfer_t * wop);
+int sys_23_close(const device_cfg_t * cfg);
+
 typedef struct {
 	const char * buf;
 	int * nbyte;
