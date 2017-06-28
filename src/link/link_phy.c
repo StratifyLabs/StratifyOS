@@ -70,7 +70,9 @@ int link_phy_getname(char * dest, const char * last, int len){
 
 int link_phy_status(link_transport_phy_t handle){
 
-	//TODO This needs to check to see if the port still exists
+	//ping the device to see if link is attached
+
+
 	return 0;
 }
 
@@ -110,6 +112,7 @@ link_transport_phy_t link_phy_open(const char * name, int baudrate){
 
 	if ( !SetCommState(handle->handle, &params)){
 		CloseHandle(handle->handle);
+		free(handle);
 		link_error("Failed set COMM state\n");
 		return LINK_PHY_OPEN_ERROR;
 	}
@@ -124,6 +127,10 @@ link_transport_phy_t link_phy_open(const char * name, int baudrate){
 	timeouts.WriteTotalTimeoutMultiplier=0;
 	if(!SetCommTimeouts(handle->handle, &timeouts)){
 		//error occurred. Inform user
+		link_error("Failed to set Timeouts\n");
+		CloseHandle(handle->handle);
+		free(handle);
+		return LINK_PHY_OPEN_ERROR;
 	}
 
 	return handle;

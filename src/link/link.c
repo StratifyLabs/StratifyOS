@@ -216,6 +216,38 @@ int link_readserialno(link_transport_mdriver_t * driver, char * serialno, int le
 	return 0;
 }
 
+int link_ping(link_transport_mdriver_t * driver, const char * name){
+
+	//write a command none packet
+	link_op_t op;
+	link_reply_t reply;
+	int err = -1;
+
+
+	driver->dev.handle = driver->dev.open(name, 0);
+	if( driver->dev.handle != LINK_PHY_OPEN_ERROR ){
+		op.cmd = LINK_CMD_NONE;
+		link_debug(LINK_DEBUG_MESSAGE, "Send command none %s", name);
+
+		link_transport_mastersettimeout(5);
+
+		err = link_transport_masterwrite(driver, &op, sizeof(link_cmd_t));
+		if ( err >= 0 ){
+
+			link_debug(LINK_DEBUG_MESSAGE, "Wait for Master read");
+			err = link_transport_masterread(driver, &reply, sizeof(reply));
+		}
+
+		driver->dev.close(&(driver->dev.handle));
+	}
+
+	link_transport_mastersettimeout(0);
+
+	link_debug(LINK_DEBUG_MESSAGE, "Done");
+
+	return err;
+}
+
 
 int link_mkfs(link_transport_mdriver_t * driver, const char * path){
 	link_op_t op;

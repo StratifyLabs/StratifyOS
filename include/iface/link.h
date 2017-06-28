@@ -771,6 +771,12 @@ int link_connect(link_transport_mdriver_t * driver, const char * sn);
 int link_connect_notify(link_transport_mdriver_t * driver);
 
 
+/*! \details Pings the device to see if it is running the link protocol.
+ * This function will return less than zero if the proper response is not returned.
+ */
+int link_ping(link_transport_mdriver_t * driver, const char * name);
+
+
 int link_read_notify(link_transport_mdriver_t * driver, void * buf, int nbyte);
 
 /*! \details This closes the specified USB Link device.
