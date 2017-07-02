@@ -71,9 +71,9 @@ void stratify_led_priv_off(void * args){
 void stratify_led_priv_error(void * args){
 	while(1){
 		stratify_led_priv_on(0);
-		_mcu_core_delay_ms(50);
+		_mcu_cortexm_delay_ms(50);
 		stratify_led_priv_off(0);
-		_mcu_core_delay_ms(50);
+		_mcu_cortexm_delay_ms(50);
 	}
 }
 

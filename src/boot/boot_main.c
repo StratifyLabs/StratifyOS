@@ -5,6 +5,7 @@
 #include "mcu/mcu.h"
 #include "iface/dev/usb.h"
 #include "iface/device_config.h"
+#include "mcu/cortexm.h"
 #include "mcu/core.h"
 #include "mcu/uart.h"
 #include "mcu/usb.h"
@@ -57,7 +58,7 @@ void run_bootloader();
 void delay_ms(int ms){
 	int i;
 	for(i=0; i < ms; i++){
-		_mcu_core_delay_us(1000);
+		_mcu_cortexm_delay_us(1000);
 	}
 }
 
@@ -131,7 +132,7 @@ int check_run_app(){
 		return 0;
 	}
 
-	_mcu_core_delay_us(500);
+	_mcu_cortexm_delay_us(500);
 
 	if ( !(mcu_pio_get(boot_board_config.hw_req.port, 0) & (1<<boot_board_config.hw_req.pin)) ){
 		*bootloader_start = 0;
@@ -159,7 +160,7 @@ static int debug_write_func(const void * buf, int nbyte){
 void init_hw(){
 	mcu_action_t action;
 	_mcu_core_initclock(1);
-	_mcu_core_priv_enable_interrupts(NULL); //Enable the interrupts
+	_mcu_cortexm_priv_enable_interrupts(NULL); //Enable the interrupts
 
 	delay_ms(50);
 

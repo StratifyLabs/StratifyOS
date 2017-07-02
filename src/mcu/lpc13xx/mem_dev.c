@@ -146,9 +146,9 @@ int mcu_mem_erasepage(int port, void * ctl){
 		return -1;
 	}
 
-	_mcu_core_priv_disable_interrupts(NULL);
+	_mcu_cortexm_priv_disable_interrupts(NULL);
 	err = _mcu_lpc_flash_erase_page((uint32_t)ctl);
-	_mcu_core_priv_enable_interrupts(NULL);
+	_mcu_cortexm_priv_enable_interrupts(NULL);
 	if ( err < 0 ){
 		errno = EIO;
 		return -1;

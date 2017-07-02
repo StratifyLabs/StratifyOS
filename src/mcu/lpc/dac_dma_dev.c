@@ -19,6 +19,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include "mcu/cortexm.h"
 #include "mcu/dac.h"
 #include "mcu/debug.h"
 #include "mcu/core.h"
@@ -148,7 +149,7 @@ int mcu_dac_setaction(int port, void * ctl){
 		}
 	}
 
-	if( _mcu_core_priv_validate_callback(action->callback) < 0 ){
+	if( _mcu_cortexm_priv_validate_callback(action->callback) < 0 ){
 		return -1;
 	}
 
@@ -167,7 +168,7 @@ int mcu_dac_dma_setaction(int port, void * ctl){
 		}
 	}
 
-	if( _mcu_core_priv_validate_callback(action->callback) < 0 ){
+	if( _mcu_cortexm_priv_validate_callback(action->callback) < 0 ){
 		return -1;
 	}
 
@@ -213,7 +214,7 @@ int _mcu_dac_dma_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
 	LPC_DAC->CTRL = DAC_CTRL_DMA_ENA|DAC_CTRL_CNT_ENA|DAC_CTRL_DBUF_ENA;
 	wop->nbyte = (wop->nbyte) & ~0x3;
 
-	if( _mcu_core_priv_validate_callback(wop->callback) < 0 ){
+	if( _mcu_cortexm_priv_validate_callback(wop->callback) < 0 ){
 		return -1;
 	}
 
@@ -244,7 +245,7 @@ int _mcu_dac_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
 	//LPC_DAC->CTRL = DAC_CTRL_DMA_ENA|DAC_CTRL_CNT_ENA|DAC_CTRL_DBUF_ENA;
 	wop->nbyte = (wop->nbyte) & ~0x3;
 
-	if( _mcu_core_priv_validate_callback(wop->callback) < 0 ){
+	if( _mcu_cortexm_priv_validate_callback(wop->callback) < 0 ){
 		return -1;
 	}
 
@@ -297,7 +298,7 @@ void exec_callback(int port, mcu_event_t data){
 	dac_local[port].bufp = NULL;
 	//call the signal callback
 	LPC_DAC->CTRL = 0;
-	_mcu_core_exec_event_handler(&(dac_local[port].handler), data);
+	_mcu_cortexm_execute_event_handler(&(dac_local[port].handler), data);
 }
 
 int dma_write_complete(void * context, mcu_event_t data){

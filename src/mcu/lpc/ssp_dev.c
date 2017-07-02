@@ -17,6 +17,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include "mcu/cortexm.h"
 #include "mcu/spi.h"
 #include "mcu/pio.h"
 #include "ssp_flags.h"
@@ -61,7 +62,7 @@ void enable_pin(int pio_port, int pio_pin){
 void _mcu_ssp_dev_power_on(int port){
 	if ( ssp_local[port].ref_count == 0 ){
 
-		_mcu_core_priv_enable_irq((void*)(u32)(ssp_irqs[port]));
+		_mcu_cortexm_priv_enable_irq((void*)(u32)(ssp_irqs[port]));
 
 		switch(port){
 		case 0:
@@ -97,7 +98,7 @@ void _mcu_ssp_dev_power_off(int port){
 	if ( ssp_local[port].ref_count > 0 ){
 		if ( ssp_local[port].ref_count == 1 ){
 
-			_mcu_core_priv_disable_irq((void*)(u32)(ssp_irqs[port]));
+			_mcu_cortexm_priv_disable_irq((void*)(u32)(ssp_irqs[port]));
 
 			switch(port){
 			case 0:
@@ -359,7 +360,7 @@ int mcu_ssp_setduplex(int port, void * ctl){
 
 static void exec_callback(int port, LPC_SSP_Type * regs, void * data){
 	regs->IMSC &= ~(SSPIMSC_RXIM|SSPIMSC_RTIM); //Kill the interrupts
-	_mcu_core_exec_event_handler(&(ssp_local[port].handler), (mcu_event_t)0);
+	_mcu_cortexm_execute_event_handler(&(ssp_local[port].handler), (mcu_event_t)0);
 }
 
 
@@ -376,14 +377,14 @@ int mcu_ssp_setaction(int port, void * ctl){
 		return 0;
 	}
 
-	if( _mcu_core_priv_validate_callback(action->callback) < 0 ){
+	if( _mcu_cortexm_priv_validate_callback(action->callback) < 0 ){
 		return -1;
 	}
 
 	ssp_local[port].handler.callback = action->callback;
 	ssp_local[port].handler.context = action->context;
 
-	_mcu_core_setirqprio(ssp_irqs[port], action->prio);
+	_mcu_cortexm_set_irq_prio(ssp_irqs[port], action->prio);
 
 
 	return 0;
@@ -496,7 +497,7 @@ int ssp_port_transfer(int port, int is_read, device_transfer_t * dop){
 	}
 	ssp_local[port].size = size;
 
-	if( _mcu_core_priv_validate_callback(dop->callback) < 0 ){
+	if( _mcu_cortexm_priv_validate_callback(dop->callback) < 0 ){
 		return -1;
 	}
 

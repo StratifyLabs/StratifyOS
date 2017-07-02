@@ -168,7 +168,7 @@ int mcu_pio_setaction(int port, void * ctl){
 	_mcu_pio_local[port].context = action->context;
 
 	//set the interrupt on the EINT pins
-	_mcu_core_priv_enable_irq((void*)(EINT3_IRQn + (3-port)));
+	_mcu_cortexm_priv_enable_irq((void*)(EINT3_IRQn + (3-port)));
 
 	return 0;
 }

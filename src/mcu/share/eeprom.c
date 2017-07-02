@@ -37,7 +37,6 @@ int (* const eeprom_ioctl_func_table[I_GLOBAL_TOTAL + I_EEPROM_TOTAL])(int, void
 
 int mcu_eeprom_open(const device_cfg_t * cfg){
 	return mcu_open(cfg,
-			MCU_EEPROM_PORTS,
 			_mcu_eeprom_dev_powered_on,
 			_mcu_eeprom_dev_power_on);
 }
@@ -46,7 +45,6 @@ int mcu_eeprom_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 	return mcu_ioctl(cfg,
 			request,
 			ctl,
-			MCU_EEPROM_PORTS,
 			_mcu_eeprom_dev_powered_on,
 			eeprom_ioctl_func_table,
 			I_GLOBAL_TOTAL + I_EEPROM_TOTAL);
@@ -57,7 +55,6 @@ int mcu_eeprom_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 
 int mcu_eeprom_read(const device_cfg_t * cfg, device_transfer_t * rop){
 	return mcu_read(cfg, rop,
-			MCU_EEPROM_PORTS,
 			_mcu_eeprom_dev_powered_on,
 			_mcu_eeprom_dev_read);
 }
@@ -65,13 +62,12 @@ int mcu_eeprom_read(const device_cfg_t * cfg, device_transfer_t * rop){
 
 int mcu_eeprom_write(const device_cfg_t * cfg, device_transfer_t * wop){
 	return mcu_write(cfg, wop,
-			MCU_EEPROM_PORTS,
 			_mcu_eeprom_dev_powered_on,
 			_mcu_eeprom_dev_write);
 }
 
 int mcu_eeprom_close(const device_cfg_t * cfg){
-	return mcu_close(cfg, MCU_EEPROM_PORTS, _mcu_eeprom_dev_powered_on, _mcu_eeprom_dev_power_off);
+	return mcu_close(cfg, _mcu_eeprom_dev_powered_on, _mcu_eeprom_dev_power_off);
 }
 
 

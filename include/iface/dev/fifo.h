@@ -56,7 +56,7 @@
  *
  * Example:
  * \code
- * #include <hwdl/fifo.h>
+ * #include <iface/dev/fifo.h>
  * const fifo_cfg_t fifo_cfg0 = { .buffer = fifo_buf0, .size = FIFO_BUF_SIZE };
  * fifo_state_t fifo_state0;
  * const device_t devices[DEVICES_TOTAL+1] = {

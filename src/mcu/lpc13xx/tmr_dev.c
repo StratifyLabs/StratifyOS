@@ -83,13 +83,13 @@ void _mcu_tmr_dev_power_on(int port){
 		break;
 	}
 
-	_mcu_core_priv_enable_irq((void*)TIMER_16_0_IRQn + port);
+	_mcu_cortexm_priv_enable_irq((void*)TIMER_16_0_IRQn + port);
 }
 
 
 void _mcu_tmr_dev_power_off(int port){
 
-	_mcu_core_priv_disable_irq((void*)TIMER_16_0_IRQn + port);
+	_mcu_cortexm_priv_disable_irq((void*)TIMER_16_0_IRQn + port);
 
 	switch(port){
 	case 0:

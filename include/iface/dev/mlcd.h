@@ -51,7 +51,6 @@
 #include <stdint.h>
 #include "iface/dev/ioctl.h"
 #include "mcu/types.h"
-#include "mcu/arch.h"
 
 #ifdef __cplusplus
 extern "C" {

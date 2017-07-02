@@ -37,7 +37,6 @@ int (* const pwm_ioctl_func_table[I_GLOBAL_TOTAL + I_PWM_TOTAL])(int, void*) = {
 
 int mcu_pwm_open(const device_cfg_t * cfg){
 	return mcu_open(cfg,
-			MCU_PWM_PORTS,
 			_mcu_pwm_dev_powered_on,
 			_mcu_pwm_dev_power_on);
 }
@@ -46,7 +45,6 @@ int mcu_pwm_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 	return mcu_ioctl(cfg,
 			request,
 			ctl,
-			MCU_PWM_PORTS,
 			_mcu_pwm_dev_powered_on,
 			pwm_ioctl_func_table,
 			I_GLOBAL_TOTAL + I_PWM_TOTAL);
@@ -60,14 +58,13 @@ int mcu_pwm_read(const device_cfg_t * cfg, device_transfer_t * rop){
 
 int mcu_pwm_write(const device_cfg_t * cfg, device_transfer_t * wop){
 	return mcu_write(cfg, wop,
-			MCU_PWM_PORTS,
 			_mcu_pwm_dev_powered_on,
 			_mcu_pwm_dev_write);
 
 }
 
 int mcu_pwm_close(const device_cfg_t * cfg){
-	return mcu_close(cfg, MCU_PWM_PORTS, _mcu_pwm_dev_powered_on, _mcu_pwm_dev_power_off);
+	return mcu_close(cfg, _mcu_pwm_dev_powered_on, _mcu_pwm_dev_power_off);
 }
 
 

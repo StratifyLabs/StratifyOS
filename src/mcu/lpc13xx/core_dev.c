@@ -39,7 +39,6 @@ int mcu_core_getattr(int port, void * arg){
 	core_attr_t * attrp = arg;
 	attrp->clock = mcu_board_config.core_cpu_freq;
 	attrp->reset_type = _mcu_core_get_reset_src();
-	//attrp->signature = _mcu_core_getsignature(port, arg);
 	attrp->signature = 0;
 	return _mcu_lpc_flash_get_serialno(attrp->serial_number);
 }
@@ -73,7 +72,7 @@ int mcu_core_sleep(int port, void * arg){
 int mcu_core_reset(int port, void * arg){
 	//delay first
 	_delay_us(20*1000);
-	_mcu_core_priv_reset(NULL);
+	_mcu_cortexm_priv_reset(NULL);
 	//doesn't arrive here
 	return 0;
 }

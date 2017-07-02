@@ -17,6 +17,7 @@
  * 
  */
 
+#include "mcu/cortexm.h"
 #include "mcu/mcu.h"
 #include "mcu/debug.h"
 #include "iface/dev/bootloader.h"
@@ -218,7 +219,7 @@ void (* const _mcu_core_vector_table[])() __attribute__ ((section(".startup"))) 
 		_mcu_core_usagefault_handler,				// The usage fault handler
 		_mcu_core_hardware_id,					// Reserved -- this is the checksum addr for ISP programming 0x1C
 		0,										// Reserved -- this is the hwpl security word 0x20
-		(void*)&_mcu_core_bootloader_api,										// Reserved -- this is the kernel signature checksum value 0x24
+		(void*)&_mcu_core_bootloader_api,		// Reserved -- this is the kernel signature checksum value 0x24
 		0,										// Reserved
 		_mcu_core_svcall_handler,					// SVCall handler
 		_mcu_core_debugmon_handler,					// Debug monitor handler
@@ -376,12 +377,6 @@ void (* const _mcu_core_vector_table[])() __attribute__ ((section(".startup"))) 
 
 };
 
-int _mcu_core_getsignature(int port, void * arg){
-	const uint32_t ** ptr;
-	ptr = (const uint32_t**)_mcu_core_vector_table;
-	return (uint32_t)(ptr[9]);
-}
-
 void _mcu_core_getserialno(sn_t * serial_number){
 	_mcu_lpc_flash_get_serialno(serial_number->sn);
 }
@@ -425,7 +420,7 @@ void core_init(){
 
 void _mcu_core_reset_handler(){
 	core_init();
-	_mcu_core_priv_setvectortableaddr((void*)_mcu_core_vector_table);
+	_mcu_cortexm_priv_set_vector_table_addr((void*)_mcu_core_vector_table);
 	_main(); //This function should never return
 	while(1);
 }

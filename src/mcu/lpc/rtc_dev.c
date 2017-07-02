@@ -17,6 +17,7 @@
  * 
  */
 #include <errno.h>
+#include "mcu/cortexm.h"
 #include "mcu/rtc.h"
 #include "mcu/debug.h"
 #include "mcu/core.h"
@@ -107,14 +108,14 @@ int mcu_rtc_setattr(int port, void * ctl){
 int mcu_rtc_setaction(int port, void * ctl){
 	mcu_action_t * action = (mcu_action_t*)ctl;
 
-	if( _mcu_core_priv_validate_callback(action->callback) < 0 ){
+	if( _mcu_cortexm_priv_validate_callback(action->callback) < 0 ){
 		return -1;
 	}
 
 	rtc_local.handler.callback = action->callback;
 	rtc_local.handler.context = action->context;
 
-	_mcu_core_setirqprio(rtc_irqs[port], action->prio);
+	_mcu_cortexm_set_irq_prio(rtc_irqs[port], action->prio);
 
 
 	//Set the event
@@ -131,10 +132,10 @@ int mcu_rtc_setalarm(int port, void * ctl){
 	rtc_alarm_t * alarmp;
 
 	alarmp = (rtc_alarm_t *)ctl;
-	_mcu_core_priv_enable_irq((void*)RTC_IRQn);
+	_mcu_cortexm_priv_enable_irq((void*)RTC_IRQn);
 
 	//elevate prio to come out of hibernate
-	_mcu_core_setirqprio(RTC_IRQn, 3);
+	_mcu_cortexm_set_irq_prio(RTC_IRQn, 3);
 
 
 	regs->ASEC = alarmp->time.time.tm_sec;
@@ -239,7 +240,7 @@ int mcu_rtc_setcountevent(int port, void * ctl){
 	LPC_RTC_Type * regs = rtc_regs[port];
 
 	rtc_event_count_t event = (rtc_event_count_t)ctl;
-	_mcu_core_priv_enable_irq((void*)RTC_IRQn);
+	_mcu_cortexm_priv_enable_irq((void*)RTC_IRQn);
 	switch(event){
 	case RTC_EVENT_COUNT_NONE:
 		regs->CIIR = 0;
@@ -287,7 +288,7 @@ void _mcu_core_rtc0_isr(){
 		event |= (1<<RTC_EVENT_COUNT);
 	}
 
-	_mcu_core_exec_event_handler(&(rtc_local.handler), (mcu_event_t)event);
+	_mcu_cortexm_execute_event_handler(&(rtc_local.handler), (mcu_event_t)event);
 }
 
 #endif

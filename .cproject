@@ -56,7 +56,7 @@
 					<stringMacro name="CC_win64" type="VALUE_TEXT" value="${CC_win32}"/>
 					<stringMacro name="RM_macosx" type="VALUE_TEXT" value="rm -rf"/>
 					<stringMacro name="SL_macosx" type="VALUE_TEXT" value="/"/>
-					<stringMacro name="C_FLAGS_ARMV7EM_FPU" type="VALUE_TEXT" value="-mfloat-abi=hard -mfpu=fpv4-sp-d16 -U__SOFTFP__ -D__FPU_USED=1"/>
+					<stringMacro name="C_FLAGS_ARMV7EM_FPU" type="VALUE_TEXT" value="-mfloat-abi=hard -mfpu=fpv4-sp-d16 -U__SOFTFP__"/>
 					<stringMacro name="LIBTOOL_OPTIONS_linux" type="VALUE_TEXT" value="${LIBTOOL_OPTIONS_macosx}"/>
 					<stringMacro name="TOOLSPATH_macosx" type="VALUE_TEXT" value="/Applications/StratifyLabs-SDK/Tools/gcc"/>
 					<stringMacro name="CCFLAGS_macosx" type="VALUE_TEXT" value="-m64 -arch x86_64 -mmacosx-version-min=10.9"/>
@@ -162,7 +162,7 @@
 					<stringMacro name="POSTPROCESS_win32" type="VALUE_TEXT" value="../script/post-process.bat"/>
 					<stringMacro name="RM_macosx" type="VALUE_TEXT" value="rm -rf"/>
 					<stringMacro name="SL_macosx" type="VALUE_TEXT" value="/"/>
-					<stringMacro name="C_FLAGS_ARMV7EM_FPU" type="VALUE_TEXT" value="-mfloat-abi=hard -mfpu=fpv4-sp-d16 -U__SOFTFP__ -D__FPU_USED=1"/>
+					<stringMacro name="C_FLAGS_ARMV7EM_FPU" type="VALUE_TEXT" value="-mfloat-abi=hard -mfpu=fpv4-sp-d16 -U__SOFTFP__"/>
 					<stringMacro name="TOOLSPATH_macosx" type="VALUE_TEXT" value="/Applications/StratifyLabs-SDK/Tools/gcc"/>
 					<stringMacro name="RM" type="VALUE_TEXT" value="${RM_${OsType}}"/>
 					<stringMacro name="BUILD_FLOAT" type="VALUE_TEXT" value="."/>
@@ -237,6 +237,11 @@
 					</folderInfo>
 					<sourceEntries>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="include"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/boot"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/device"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/link_common"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/mcu/cortex_m"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/mcu/share"/>
 						<entry excluding="sffs/tests.c|sffs/test_file.c|sffs/tests.h|sffs/main.c|sffs/sffs_diag.h|sffs/sffs_diag.c|sffs/sysfs.c|sffs/configure.ac|sffs/sim_dev.c|sffs/Makefile.am|sffs/sim_device.h|sffs/test_dir.c" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/sys"/>
 					</sourceEntries>
 				</configuration>
@@ -270,7 +275,7 @@
 					<stringMacro name="POSTPROCESS_win32" type="VALUE_TEXT" value="../script/post-process.bat"/>
 					<stringMacro name="RM_macosx" type="VALUE_TEXT" value="rm -rf"/>
 					<stringMacro name="SL_macosx" type="VALUE_TEXT" value="/"/>
-					<stringMacro name="C_FLAGS_ARMV7EM_FPU" type="VALUE_TEXT" value="-mfloat-abi=hard -mfpu=fpv4-sp-d16 -U__SOFTFP__ -D__FPU_USED=1"/>
+					<stringMacro name="C_FLAGS_ARMV7EM_FPU" type="VALUE_TEXT" value="-mfloat-abi=hard -mfpu=fpv4-sp-d16 -U__SOFTFP__"/>
 					<stringMacro name="TOOLSPATH_macosx" type="VALUE_TEXT" value="/Applications/StratifyLabs-SDK/Tools/gcc"/>
 					<stringMacro name="RM" type="VALUE_TEXT" value="${RM_${OsType}}"/>
 					<stringMacro name="BUILD_FLOAT" type="VALUE_TEXT" value="."/>
@@ -375,7 +380,7 @@
 					<stringMacro name="POSTPROCESS_win32" type="VALUE_TEXT" value="../script/post-process.bat"/>
 					<stringMacro name="RM_macosx" type="VALUE_TEXT" value="rm -rf"/>
 					<stringMacro name="SL_macosx" type="VALUE_TEXT" value="/"/>
-					<stringMacro name="C_FLAGS_ARMV7EM_FPU" type="VALUE_TEXT" value="-mfloat-abi=hard -mfpu=fpv4-sp-d16 -U__SOFTFP__ -D__FPU_USED=1"/>
+					<stringMacro name="C_FLAGS_ARMV7EM_FPU" type="VALUE_TEXT" value="-mfloat-abi=hard -mfpu=fpv4-sp-d16 -U__SOFTFP__"/>
 					<stringMacro name="TOOLSPATH_macosx" type="VALUE_TEXT" value="/Applications/StratifyLabs-SDK/Tools/gcc"/>
 					<stringMacro name="RM" type="VALUE_TEXT" value="${RM_${OsType}}"/>
 					<stringMacro name="BUILD_FLOAT" type="VALUE_TEXT" value="fpu${SL}fpv5-sp-d16"/>
@@ -481,7 +486,7 @@
 					<stringMacro name="POSTPROCESS_win32" type="VALUE_TEXT" value="../script/post-process.bat"/>
 					<stringMacro name="RM_macosx" type="VALUE_TEXT" value="rm -rf"/>
 					<stringMacro name="SL_macosx" type="VALUE_TEXT" value="/"/>
-					<stringMacro name="C_FLAGS_ARMV7EM_FPU" type="VALUE_TEXT" value="-mfloat-abi=hard -mfpu=fpv4-sp-d16 -U__SOFTFP__ -D__FPU_USED=1"/>
+					<stringMacro name="C_FLAGS_ARMV7EM_FPU" type="VALUE_TEXT" value="-mfloat-abi=hard -mfpu=fpv4-sp-d16 -U__SOFTFP__"/>
 					<stringMacro name="TOOLSPATH_macosx" type="VALUE_TEXT" value="/Applications/StratifyLabs-SDK/Tools/gcc"/>
 					<stringMacro name="RM" type="VALUE_TEXT" value="${RM_${OsType}}"/>
 					<stringMacro name="BUILD_FLOAT" type="VALUE_TEXT" value="."/>
@@ -508,8 +513,8 @@
 				<configuration artifactExtension="a" artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.staticLib" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.staticLib,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" cleanCommand="${RM}" description="Release MCU lpc17xx" errorParsers="org.eclipse.cdt.core.GCCErrorParser;org.eclipse.cdt.core.GASErrorParser" id="cdt.managedbuild.config.gnu.cross.lib.release.388924090.1536021794.652448319.1226112525" name="build_release_mcu_lpc17xx" parent="cdt.managedbuild.config.gnu.cross.lib.release" postannouncebuildStep="" postbuildStep="${POSTPROCESS} ${TOOLSPATH} ${HOST} stratify ${BUILD_NAME} ${BUILD_ARCH} ${BUILD_FLOAT} ${BUILD_TYPE}" preannouncebuildStep="" prebuildStep="">
 					<folderInfo id="cdt.managedbuild.config.gnu.cross.lib.release.388924090.1536021794.652448319.1226112525." name="/" resourcePath="">
 						<toolChain errorParsers="" id="cdt.managedbuild.toolchain.gnu.cross.lib.release.118124086" name="Cross GCC" nonInternalBuilderId="cdt.managedbuild.builder.gnu.cross" superClass="cdt.managedbuild.toolchain.gnu.cross.lib.release">
-							<option id="cdt.managedbuild.option.gnu.cross.prefix.895736431" name="Prefix" superClass="cdt.managedbuild.option.gnu.cross.prefix" value="${HOST}-" valueType="string"/>
-							<option id="cdt.managedbuild.option.gnu.cross.path.1211534716" name="Path" superClass="cdt.managedbuild.option.gnu.cross.path" value=" ${PathDelimiter}${TOOLSPATH}/bin" valueType="string"/>
+							<option id="cdt.managedbuild.option.gnu.cross.prefix.895736431" name="Prefix" superClass="cdt.managedbuild.option.gnu.cross.prefix" useByScannerDiscovery="false" value="${HOST}-" valueType="string"/>
+							<option id="cdt.managedbuild.option.gnu.cross.path.1211534716" name="Path" superClass="cdt.managedbuild.option.gnu.cross.path" useByScannerDiscovery="false" value=" ${PathDelimiter}${TOOLSPATH}/bin" valueType="string"/>
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="cdt.managedbuild.targetPlatform.gnu.cross.854915511" isAbstract="false" osList="all" superClass="cdt.managedbuild.targetPlatform.gnu.cross"/>
 							<builder autoBuildTarget="all" buildPath="${workspace_loc:/StratifyOS}/build_release_mcu_lpc17xx" cleanBuildTarget="clean" id="org.eclipse.cdt.build.core.internal.builder.1412931203" incrementalBuildTarget="all" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="CDT Internal Builder" superClass="org.eclipse.cdt.build.core.internal.builder"/>
 							<tool command="gcc" commandLinePattern="${COMMAND} ${FLAGS} ${OUTPUT_FLAG} ${OUTPUT_PREFIX}${OUTPUT} ${INPUTS}" errorParsers="org.eclipse.cdt.core.GCCErrorParser" id="cdt.managedbuild.tool.gnu.cross.c.compiler.1072261449" name="Cross GCC Compiler" superClass="cdt.managedbuild.tool.gnu.cross.c.compiler">
@@ -519,6 +524,7 @@
 								<option id="gnu.c.compiler.option.include.paths.286523917" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/include/posix}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/include/mcu/arch/cmsis}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src}&quot;"/>
 								</option>
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.1040974509" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
@@ -543,12 +549,7 @@
 					</folderInfo>
 					<sourceEntries>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="include"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/boot"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/device"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/link_common"/>
-						<entry excluding="task_single.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/mcu/cortex_m"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/mcu/lpc"/>
-						<entry excluding="emc.c" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/mcu/share"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -578,10 +579,10 @@
 					<stringMacro name="C_FLAGS" type="VALUE_TEXT" value="-ffunction-sections -fomit-frame-pointer -march=${BUILD_ARCH} -mthumb ${C_FLAGS_ARMV7EM_FPU}"/>
 					<stringMacro name="POSTPROCESS_win32" type="VALUE_TEXT" value="../script/post-process.bat"/>
 					<stringMacro name="RM_macosx" type="VALUE_TEXT" value="rm -rf"/>
-					<stringMacro name="C_FLAGS_ARMV7EM_FPU" type="VALUE_TEXT" value="-mfloat-abi=hard -mfpu=fpv4-sp-d16 -U__SOFTFP__ -D__FPU_USED=1"/>
+					<stringMacro name="C_FLAGS_ARMV7EM_FPU" type="VALUE_TEXT" value="-mfloat-abi=hard -mfpu=fpv4-sp-d16 -U__SOFTFP__"/>
 					<stringMacro name="TOOLSPATH_macosx" type="VALUE_TEXT" value="/Applications/StratifyLabs-SDK/Tools/gcc"/>
 					<stringMacro name="RM" type="VALUE_TEXT" value="${RM_${OsType}}"/>
-					<stringMacro name="BUILD_FLOAT" type="VALUE_TEXT" value="fpu${SL}fpv5-sp-d16"/>
+					<stringMacro name="BUILD_FLOAT" type="VALUE_TEXT" value="fpu/fpv5-sp-d16"/>
 					<stringMacro name="BUILD_NAME" type="VALUE_TEXT" value="mcu_${BUILD_DEVICE}"/>
 					<stringMacro name="BUILD_ARCH" type="VALUE_TEXT" value="armv7e-m"/>
 				</macros>
@@ -612,6 +613,7 @@
 								<option id="gnu.c.compiler.option.misc.other.809664162" name="Other flags" superClass="gnu.c.compiler.option.misc.other" useByScannerDiscovery="false" value="-c ${C_FLAGS}" valueType="string"/>
 								<option id="gnu.c.compiler.option.include.paths.1393582609" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/include/posix}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/include/mcu/arch/cmsis}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${TOOLSPATH}/${HOST}/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/include}&quot;"/>
@@ -638,12 +640,7 @@
 					</folderInfo>
 					<sourceEntries>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="include"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/boot"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/device"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/link_common"/>
-						<entry excluding="task_single.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/mcu/cortex_m"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/mcu/lpc"/>
-						<entry excluding="spi.c|emc.c" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/mcu/share"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -676,7 +673,7 @@
 					<stringMacro name="POSTPROCESS_win32" type="VALUE_TEXT" value="../script/post-process.bat"/>
 					<stringMacro name="RM_macosx" type="VALUE_TEXT" value="rm -rf"/>
 					<stringMacro name="SL_macosx" type="VALUE_TEXT" value="/"/>
-					<stringMacro name="C_FLAGS_ARMV7EM_FPU" type="VALUE_TEXT" value="-mfloat-abi=hard -mfpu=fpv4-sp-d16 -U__SOFTFP__ -D__FPU_USED=1"/>
+					<stringMacro name="C_FLAGS_ARMV7EM_FPU" type="VALUE_TEXT" value="-mfloat-abi=hard -mfpu=fpv4-sp-d16 -U__SOFTFP__"/>
 					<stringMacro name="TOOLSPATH_macosx" type="VALUE_TEXT" value="/Applications/StratifyLabs-SDK/Tools/gcc"/>
 					<stringMacro name="RM" type="VALUE_TEXT" value="${RM_${OsType}}"/>
 					<stringMacro name="BUILD_FLOAT" type="VALUE_TEXT" value="fpu${SL}fpv5-sp-d16"/>
@@ -750,7 +747,12 @@
 					</folderInfo>
 					<sourceEntries>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="include"/>
-						<entry excluding="sffs/configure.ac|sffs/main.c|sffs/Makefile.am|sffs/sim_dev.c|sffs/sim_device.h|sffs/sysfs.c|sffs/test_dir.c|sffs/test_file.c|sffs/tests.c|sffs/tests.h|sffs/sffs_diag.c|sffs/sffs_diag.h" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/sys"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/boot"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/device"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/link_common"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/mcu/cortex_m"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/mcu/share"/>
+						<entry excluding="sffs/test_file.c|sffs/tests.c|sffs/tests.h|sffs/main.c|sffs/configure.ac|sffs/sysfs.c|sffs/sffs_diag.c|sffs/sffs_diag.h|sffs/Makefile.am|sffs/sim_dev.c|sffs/sim_device.h|sffs/test_dir.c" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/sys"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -784,7 +786,7 @@
 					<stringMacro name="POSTPROCESS_win32" type="VALUE_TEXT" value="../script/post-process.bat"/>
 					<stringMacro name="RM_macosx" type="VALUE_TEXT" value="rm -rf"/>
 					<stringMacro name="SL_macosx" type="VALUE_TEXT" value="/"/>
-					<stringMacro name="C_FLAGS_ARMV7EM_FPU" type="VALUE_TEXT" value="-mfloat-abi=hard -mfpu=fpv4-sp-d16 -U__SOFTFP__ -D__FPU_USED=1"/>
+					<stringMacro name="C_FLAGS_ARMV7EM_FPU" type="VALUE_TEXT" value="-mfloat-abi=hard -mfpu=fpv4-sp-d16 -U__SOFTFP__"/>
 					<stringMacro name="TOOLSPATH_macosx" type="VALUE_TEXT" value="/Applications/StratifyLabs-SDK/Tools/gcc"/>
 					<stringMacro name="RM" type="VALUE_TEXT" value="${RM_${OsType}}"/>
 					<stringMacro name="BUILD_FLOAT" type="VALUE_TEXT" value="."/>
@@ -818,6 +820,7 @@
 								<option id="gnu.c.compiler.option.misc.other.2042755423" name="Other flags" superClass="gnu.c.compiler.option.misc.other" useByScannerDiscovery="false" value="-c ${C_FLAGS}" valueType="string"/>
 								<option id="gnu.c.compiler.option.include.paths.849385337" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/include/mcu/arch/cmsis}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/include/posix}&quot;"/>
 								</option>
@@ -843,12 +846,7 @@
 					</folderInfo>
 					<sourceEntries>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="include"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/boot"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/device"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/link_common"/>
-						<entry excluding="task_single.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/mcu/cortex_m"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/mcu/lpc"/>
-						<entry excluding="emc.c" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/mcu/share"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -881,7 +879,7 @@
 					<stringMacro name="POSTPROCESS_win32" type="VALUE_TEXT" value="../script/post-process.bat"/>
 					<stringMacro name="RM_macosx" type="VALUE_TEXT" value="rm -rf"/>
 					<stringMacro name="SL_macosx" type="VALUE_TEXT" value="/"/>
-					<stringMacro name="C_FLAGS_ARMV7EM_FPU" type="VALUE_TEXT" value="-mfloat-abi=hard -mfpu=fpv4-sp-d16 -U__SOFTFP__ -D__FPU_USED=1"/>
+					<stringMacro name="C_FLAGS_ARMV7EM_FPU" type="VALUE_TEXT" value="-mfloat-abi=hard -mfpu=fpv4-sp-d16 -U__SOFTFP__"/>
 					<stringMacro name="TOOLSPATH_macosx" type="VALUE_TEXT" value="/Applications/StratifyLabs-SDK/Tools/gcc"/>
 					<stringMacro name="RM" type="VALUE_TEXT" value="${RM_${OsType}}"/>
 					<stringMacro name="BUILD_FLOAT" type="VALUE_TEXT" value="."/>
@@ -954,7 +952,11 @@
 					</folderInfo>
 					<sourceEntries>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="include"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/boot"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/device"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/link_common"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/mcu/cortex_m"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/mcu/share"/>
 						<entry excluding="sffs/tests.c|sffs/test_file.c|sffs/tests.h|sffs/main.c|sffs/sffs_diag.h|sffs/sffs_diag.c|sffs/sysfs.c|sffs/configure.ac|sffs/sim_dev.c|sffs/Makefile.am|sffs/sim_device.h|sffs/test_dir.c" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/sys"/>
 					</sourceEntries>
 				</configuration>
@@ -989,7 +991,7 @@
 					<stringMacro name="POSTPROCESS_win32" type="VALUE_TEXT" value="../script/post-process.bat"/>
 					<stringMacro name="RM_macosx" type="VALUE_TEXT" value="rm -rf"/>
 					<stringMacro name="SL_macosx" type="VALUE_TEXT" value="/"/>
-					<stringMacro name="C_FLAGS_ARMV7EM_FPU" type="VALUE_TEXT" value="-mfloat-abi=hard -mfpu=fpv4-sp-d16 -U__SOFTFP__ -D__FPU_USED=1"/>
+					<stringMacro name="C_FLAGS_ARMV7EM_FPU" type="VALUE_TEXT" value="-mfloat-abi=hard -mfpu=fpv4-sp-d16 -U__SOFTFP__"/>
 					<stringMacro name="TOOLSPATH_macosx" type="VALUE_TEXT" value="/Applications/StratifyLabs-SDK/Tools/gcc"/>
 					<stringMacro name="RM" type="VALUE_TEXT" value="${RM_${OsType}}"/>
 					<stringMacro name="BUILD_FLOAT" type="VALUE_TEXT" value="fpu${SL}fpv5-sp-d16"/>
@@ -1023,6 +1025,7 @@
 								<option id="gnu.c.compiler.option.misc.other.411415465" name="Other flags" superClass="gnu.c.compiler.option.misc.other" useByScannerDiscovery="false" value="-c ${C_FLAGS}" valueType="string"/>
 								<option id="gnu.c.compiler.option.include.paths.804107108" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/include/posix}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/include/mcu/arch/cmsis}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${TOOLSPATH}/${HOST}/include&quot;"/>
@@ -1050,12 +1053,7 @@
 					</folderInfo>
 					<sourceEntries>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="include"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/boot"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/device"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/link_common"/>
-						<entry excluding="task_single.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/mcu/cortex_m"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/mcu/lpc"/>
-						<entry excluding="emc.c" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/mcu/share"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -1088,7 +1086,7 @@
 					<stringMacro name="POSTPROCESS_win32" type="VALUE_TEXT" value="../script/post-process.bat"/>
 					<stringMacro name="RM_macosx" type="VALUE_TEXT" value="rm -rf"/>
 					<stringMacro name="SL_macosx" type="VALUE_TEXT" value="/"/>
-					<stringMacro name="C_FLAGS_ARMV7EM_FPU" type="VALUE_TEXT" value="-mfloat-abi=hard -mfpu=fpv4-sp-d16 -U__SOFTFP__ -D__FPU_USED=1"/>
+					<stringMacro name="C_FLAGS_ARMV7EM_FPU" type="VALUE_TEXT" value="-mfloat-abi=hard -mfpu=fpv4-sp-d16 -U__SOFTFP__"/>
 					<stringMacro name="TOOLSPATH_macosx" type="VALUE_TEXT" value="/Applications/StratifyLabs-SDK/Tools/gcc"/>
 					<stringMacro name="RM" type="VALUE_TEXT" value="${RM_${OsType}}"/>
 					<stringMacro name="BUILD_FLOAT" type="VALUE_TEXT" value="fpu${SL}fpv5-sp-d16"/>
@@ -1099,6 +1097,7 @@
 					<externalSetting>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="includePath" name="/StratifyOS"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="libraryPath" name="/StratifyOS/build_debug_sys_arm7em_fpu"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="libraryPath" name="/StratifyOS/build_debug_sys_armv7em_fpu"/>
 						<entry flags="RESOLVED" kind="libraryFile" name="StratifyOS" srcPrefixMapping="" srcRootPath=""/>
 					</externalSetting>
 				</externalSettings>
@@ -1161,7 +1160,12 @@
 					</folderInfo>
 					<sourceEntries>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="include"/>
-						<entry excluding="sffs/configure.ac|sffs/main.c|sffs/Makefile.am|sffs/sffs_diag.c|sffs/sffs_diag.h|sffs/sim_dev.c|sffs/sim_device.h|sffs/sysfs.c|sffs/test_dir.c|sffs/test_file.c|sffs/tests.c|sffs/tests.h" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/sys"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/boot"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/device"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/link_common"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/mcu/cortex_m"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/mcu/share"/>
+						<entry excluding="sffs/test_file.c|sffs/tests.c|sffs/tests.h|sffs/main.c|sffs/configure.ac|sffs/sffs_diag.c|sffs/sffs_diag.h|sffs/sysfs.c|sffs/Makefile.am|sffs/sim_dev.c|sffs/sim_device.h|sffs/test_dir.c" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/sys"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -1195,7 +1199,7 @@
 					<stringMacro name="POSTPROCESS_win32" type="VALUE_TEXT" value="../script/post-process.bat"/>
 					<stringMacro name="RM_macosx" type="VALUE_TEXT" value="rm -rf"/>
 					<stringMacro name="SL_macosx" type="VALUE_TEXT" value="/"/>
-					<stringMacro name="C_FLAGS_ARMV7EM_FPU" type="VALUE_TEXT" value="-mfloat-abi=hard -mfpu=fpv4-sp-d16 -U__SOFTFP__ -D__FPU_USED=1"/>
+					<stringMacro name="C_FLAGS_ARMV7EM_FPU" type="VALUE_TEXT" value="-mfloat-abi=hard -mfpu=fpv4-sp-d16 -U__SOFTFP__"/>
 					<stringMacro name="TOOLSPATH_macosx" type="VALUE_TEXT" value="/Applications/StratifyLabs-SDK/Tools/gcc"/>
 					<stringMacro name="RM" type="VALUE_TEXT" value="${RM_${OsType}}"/>
 					<stringMacro name="BUILD_FLOAT" type="VALUE_TEXT" value="fpu${SL}fpv5-sp-d16"/>
@@ -1229,6 +1233,7 @@
 								<option id="gnu.c.compiler.option.misc.other.96769178" name="Other flags" superClass="gnu.c.compiler.option.misc.other" useByScannerDiscovery="false" value="-c ${C_FLAGS}" valueType="string"/>
 								<option id="gnu.c.compiler.option.include.paths.458301459" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/include/posix}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/include/mcu/arch/cmsis}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${TOOLSPATH}/${HOST}/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/include}&quot;"/>
@@ -1255,12 +1260,7 @@
 					</folderInfo>
 					<sourceEntries>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="include"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/boot"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/device"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/link_common"/>
-						<entry excluding="task_single.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/mcu/cortex_m"/>
 						<entry excluding="core_sleep.c|mci_dev.c|core_set_pinsel_func.c|core_dev.c|core_initclock.c|eint_dev.c|lcd_dev.c|eeprom_dev.c|fault_dev.c|pio_dev.c|emc_dev.c|core_setusbclock.c|enet_local.h|usb_dev.c" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/mcu/lpc"/>
-						<entry excluding="spi.c|emc.c" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/mcu/share"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -1426,6 +1426,9 @@
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.cross.lib.release.388924090.1536021794.2143011122.2087154548;cdt.managedbuild.config.gnu.cross.lib.release.388924090.1536021794.2143011122.2087154548.;cdt.managedbuild.tool.gnu.cross.c.compiler.1404434251;cdt.managedbuild.tool.gnu.c.compiler.input.274904783">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileC"/>
 		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.cross.lib.release.388924090.1536021794.652448319.1226112525.1155335286.1509898672;cdt.managedbuild.config.gnu.cross.lib.release.388924090.1536021794.652448319.1226112525.1155335286.1509898672.;cdt.managedbuild.tool.gnu.cross.cpp.compiler.2020218975;cdt.managedbuild.tool.gnu.cpp.compiler.input.1532801528">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.cross.lib.release.388924090.1536021794.652448319.1015827963;cdt.managedbuild.config.gnu.cross.lib.release.388924090.1536021794.652448319.1015827963.;cdt.managedbuild.tool.gnu.cross.c.compiler.826564882;cdt.managedbuild.tool.gnu.c.compiler.input.425843352">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
@@ -1447,10 +1450,16 @@
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.cross.lib.release.388924090.1536021794.652448319.1226112525.315707540.5888558;cdt.managedbuild.config.gnu.cross.lib.release.388924090.1536021794.652448319.1226112525.315707540.5888558.;cdt.managedbuild.tool.gnu.cross.c.compiler.1253838129;cdt.managedbuild.tool.gnu.c.compiler.input.1729569416">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.cross.lib.release.388924090.1536021794.652448319.1226112525;cdt.managedbuild.config.gnu.cross.lib.release.388924090.1536021794.652448319.1226112525.;cdt.managedbuild.tool.gnu.cross.cpp.compiler.1450723829;cdt.managedbuild.tool.gnu.cpp.compiler.input.1827895462">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.cross.lib.release.388924090.1536021794.652448319.1226112525;cdt.managedbuild.config.gnu.cross.lib.release.388924090.1536021794.652448319.1226112525.;cdt.managedbuild.tool.gnu.cross.cpp.compiler.152693453;cdt.managedbuild.tool.gnu.cpp.compiler.input.1234845684">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.cross.lib.release.388924090.1536021794.652448319.1226112525.315707540.5888558;cdt.managedbuild.config.gnu.cross.lib.release.388924090.1536021794.652448319.1226112525.315707540.5888558.;cdt.managedbuild.tool.gnu.cross.cpp.compiler.121869048;cdt.managedbuild.tool.gnu.cpp.compiler.input.643281349">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.cross.lib.release.388924090.1536021794.652448319.1226112525.1155335286.1509898672;cdt.managedbuild.config.gnu.cross.lib.release.388924090.1536021794.652448319.1226112525.1155335286.1509898672.;cdt.managedbuild.tool.gnu.cross.c.compiler.1296954668;cdt.managedbuild.tool.gnu.c.compiler.input.1866991607">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.cross.lib.release.388924090.1536021794.652448319.421258237.1318251622;cdt.managedbuild.config.gnu.cross.lib.release.388924090.1536021794.652448319.421258237.1318251622.;cdt.managedbuild.tool.gnu.cross.cpp.compiler.1946243245;cdt.managedbuild.tool.gnu.cpp.compiler.input.663407188">

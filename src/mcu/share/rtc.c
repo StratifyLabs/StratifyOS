@@ -39,7 +39,6 @@ int (* const rtc_ioctl_func_table[I_GLOBAL_TOTAL + I_RTC_TOTAL])(int, void*) = {
 
 int mcu_rtc_open(const device_cfg_t * cfg){
 	return mcu_open(cfg,
-			MCU_RTC_PORTS,
 			_mcu_rtc_dev_powered_on,
 			_mcu_rtc_dev_power_on);
 }
@@ -48,7 +47,6 @@ int mcu_rtc_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 	return mcu_ioctl(cfg,
 			request,
 			ctl,
-			MCU_RTC_PORTS,
 			_mcu_rtc_dev_powered_on,
 			rtc_ioctl_func_table,
 			I_GLOBAL_TOTAL + I_RTC_TOTAL);
@@ -65,7 +63,7 @@ int mcu_rtc_write(const device_cfg_t * cfg, device_transfer_t * wop){
 }
 
 int mcu_rtc_close(const device_cfg_t * cfg){
-	return mcu_close(cfg, MCU_RTC_PORTS, _mcu_rtc_dev_powered_on, _mcu_rtc_dev_power_off);
+	return mcu_close(cfg, _mcu_rtc_dev_powered_on, _mcu_rtc_dev_power_off);
 }
 
 

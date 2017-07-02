@@ -41,7 +41,6 @@ int (* const _mcu_core_ioctl_func_table[I_GLOBAL_TOTAL + I_CORE_TOTAL])(int, voi
 
 int mcu_core_open(const device_cfg_t * cfg){
 	return mcu_open(cfg,
-			MCU_CORE_PORTS,
 			_mcu_core_dev_powered_on,
 			_mcu_core_dev_power_on);
 }
@@ -50,7 +49,6 @@ int mcu_core_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 	return mcu_ioctl(cfg,
 			request,
 			ctl,
-			MCU_CORE_PORTS,
 			_mcu_core_dev_powered_on,
 			_mcu_core_ioctl_func_table,
 			I_GLOBAL_TOTAL + I_CORE_TOTAL);
@@ -70,7 +68,7 @@ int mcu_core_write(const device_cfg_t * cfg, device_transfer_t * wop){
 }
 
 int mcu_core_close(const device_cfg_t * cfg){
-	return mcu_close(cfg, 1, _mcu_core_dev_powered_on, _mcu_core_dev_power_off);
+	return mcu_close(cfg, _mcu_core_dev_powered_on, _mcu_core_dev_power_off);
 }
 
 

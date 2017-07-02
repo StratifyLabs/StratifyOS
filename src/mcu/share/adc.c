@@ -31,7 +31,6 @@ int (* const adc_ioctl_func_table[I_GLOBAL_TOTAL])(int, void*) = {
 
 int mcu_adc_open(const device_cfg_t * cfg){
 	return mcu_open(cfg,
-			MCU_ADC_PORTS,
 			_mcu_adc_dev_powered_on,
 			_mcu_adc_dev_power_on);
 }
@@ -40,7 +39,6 @@ int mcu_adc_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 	return mcu_ioctl(cfg,
 			request,
 			ctl,
-			MCU_ADC_PORTS,
 			_mcu_adc_dev_powered_on,
 			adc_ioctl_func_table,
 			I_GLOBAL_TOTAL);
@@ -49,7 +47,6 @@ int mcu_adc_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 int mcu_adc_read(const device_cfg_t * cfg, device_transfer_t * rop){
 	return mcu_read(cfg,
 			rop,
-			MCU_ADC_PORTS,
 			_mcu_adc_dev_powered_on,
 			_mcu_adc_dev_read);
 }
@@ -60,7 +57,7 @@ int mcu_adc_write(const device_cfg_t * cfg, device_transfer_t * wop){
 }
 
 int mcu_adc_close(const device_cfg_t * cfg){
-	return mcu_close(cfg, MCU_ADC_PORTS, _mcu_adc_dev_powered_on, _mcu_adc_dev_power_off);
+	return mcu_close(cfg, _mcu_adc_dev_powered_on, _mcu_adc_dev_power_off);
 }
 
 

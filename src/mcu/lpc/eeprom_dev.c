@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include <errno.h>
+#include "mcu/cortexm.h"
 #include "mcu/eeprom.h"
 #include "mcu/debug.h"
 #include "mcu/core.h"
@@ -62,7 +63,7 @@ void _mcu_eeprom_dev_power_on(int port){
 
 		//enable the interrupt
 		if( eeprom_irqs[port] != 0xFF ){
-			_mcu_core_priv_enable_irq((void*)(u32)(eeprom_irqs[port]));
+			_mcu_cortexm_priv_enable_irq((void*)(u32)(eeprom_irqs[port]));
 		}
 
 		//initialize the EEPROM clock
@@ -86,7 +87,7 @@ void _mcu_eeprom_dev_power_off(int port){
 	if ( eeprom_local[port].ref_count > 0 ){
 		if ( eeprom_local[port].ref_count == 1 ){
 			//disable the interrupt
-			_mcu_core_priv_disable_irq((void*)(u32)(eeprom_irqs[port]));
+			_mcu_cortexm_priv_disable_irq((void*)(u32)(eeprom_irqs[port]));
 
 			//power down
 			regs->PWRDWN = 1;
@@ -119,7 +120,7 @@ int mcu_eeprom_setaction(int port, void * ctl){
 		}
 	}
 
-	if( _mcu_core_priv_validate_callback(action->callback) < 0 ){
+	if( _mcu_cortexm_priv_validate_callback(action->callback) < 0 ){
 		return -1;
 	}
 
@@ -155,7 +156,7 @@ int _mcu_eeprom_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
 	eeprom_local[port].page = calc_page(wop->loc);
 	eeprom_local[port].offset = calc_offset(wop->loc);
 
-	if( _mcu_core_priv_validate_callback(wop->callback) < 0 ){
+	if( _mcu_cortexm_priv_validate_callback(wop->callback) < 0 ){
 		return -1;
 	}
 
@@ -251,7 +252,7 @@ void exec_callback(int port, void * data){
 	LPC_EEPROM_Type * regs = eeprom_regs[port];
 	eeprom_local[port].buf = 0;
 	regs->INTENCLR = (1<<26)|(1<<28); //disable the interrupts
-	_mcu_core_exec_event_handler(&(eeprom_local[port].handler), 0);
+	_mcu_cortexm_execute_event_handler(&(eeprom_local[port].handler), 0);
 }
 
 void _mcu_core_eeprom0_isr(){

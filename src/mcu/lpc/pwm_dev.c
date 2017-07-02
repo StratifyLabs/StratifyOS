@@ -19,7 +19,9 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include "mcu/cortexm.h"
 #include "mcu/pwm.h"
+#include "mcu/cortexm.h"
 #include "mcu/core.h"
 #include "mcu/debug.h"
 
@@ -53,12 +55,12 @@ void _mcu_pwm_dev_power_on(int port){
 #ifdef LPCXX7X_8X
 		case 0:
 			_mcu_lpc_core_enable_pwr(PCPWM0);
-			_mcu_core_priv_enable_irq((void*)PWM0_IRQn);
+			_mcu_cortexm_priv_enable_irq((void*)PWM0_IRQn);
 			break;
 #endif
 		case 1:
 			_mcu_lpc_core_enable_pwr(PCPWM1);
-			_mcu_core_priv_enable_irq((void*)(u32)(pwm_irqs[port]));
+			_mcu_cortexm_priv_enable_irq((void*)(u32)(pwm_irqs[port]));
 			break;
 		}
 
@@ -72,12 +74,12 @@ void _mcu_pwm_dev_power_off(int port){
 			switch(port){
 #ifdef LPCXX7X_8X
 			case 0:
-				_mcu_core_priv_disable_irq((void*)(PWM0_IRQn));
+				_mcu_cortexm_priv_disable_irq((void*)(PWM0_IRQn));
 				_mcu_lpc_core_disable_pwr(PCPWM0);
 				break;
 #endif
 			case 1:
-				_mcu_core_priv_disable_irq((void*)(u32)(pwm_irqs[port]));
+				_mcu_cortexm_priv_disable_irq((void*)(u32)(pwm_irqs[port]));
 				_mcu_lpc_core_disable_pwr(PCPWM1);
 				break;
 
@@ -302,14 +304,14 @@ int mcu_pwm_setaction(int port, void * ctl){
 	}
 
 
-	if( _mcu_core_priv_validate_callback(action->callback) < 0 ){
+	if( _mcu_cortexm_priv_validate_callback(action->callback) < 0 ){
 		return -1;
 	}
 
 	pwm_local[port].handler.callback = action->callback;
 	pwm_local[port].handler.context = action->context;
 
-	_mcu_core_setirqprio(pwm_irqs[port], action->prio);
+	_mcu_cortexm_set_irq_prio(pwm_irqs[port], action->prio);
 
 	//need to decode the event
 	return 0;
@@ -358,7 +360,7 @@ int _mcu_pwm_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
 	regs->MCR |= (1<<0); //enable the interrupt
 	pwm_local[port].chan = wop->loc;
 
-	if( _mcu_core_priv_validate_callback(wop->callback) < 0 ){
+	if( _mcu_cortexm_priv_validate_callback(wop->callback) < 0 ){
 		return -1;
 	}
 
@@ -403,7 +405,7 @@ void exec_callback(int port, LPC_PWM_Type * regs, void * data){
 	regs->MCR = (1<<1); //leave the reset on, but disable the interrupt
 
 	//call the event handler
-	_mcu_core_exec_event_handler(&(pwm_local[port].handler), data);
+	_mcu_cortexm_execute_event_handler(&(pwm_local[port].handler), data);
 }
 
 

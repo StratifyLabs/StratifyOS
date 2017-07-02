@@ -36,7 +36,7 @@
 
 
 #include <stdint.h>
-#include "mcu/mcu.h"
+#include "mcu/types.h"
 #include "iface/dev/ioctl.h"
 
 #define NETIF_IOC_CHAR 'N'

@@ -61,7 +61,6 @@
 
 #include <stdint.h>
 #include "ioctl.h"
-#include "mcu/arch.h"
 #include "mcu/types.h"
 
 #define ETH_IOC_IDENT_CHAR 'e'
@@ -71,6 +70,11 @@ enum {
 	ETH_MODE_HALFDUPLEX = (1<<1),
 };
 
+typedef enum {
+	ETH_FLAG_FULLDUPLEX = (1<<0),
+	ETH_FLAG_HALFDUPLEX = (1<<1),
+} eth_flags_t;
+
 /*! \brief ETH IO Attributes
  * \details This structure defines the attributes structure
  * for configuring the ethernet port.
@@ -79,6 +83,12 @@ typedef struct MCU_PACK {
 	uint8_t mac_addr[8] /*! \brief the MAC address */;
 	uint32_t mode /*! \brief Full duplex mode setting */;
 } eth_attr_t;
+
+typedef struct MCU_PACK {
+	u32 pin_assignment;
+	u32 o_flags;
+	u8 mac_addr[8];
+} eth_3_attr_t;
 
 /*! \details This is the enc28j60 tx status attribute.
  *

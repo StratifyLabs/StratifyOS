@@ -83,7 +83,6 @@
 
 #include <stdint.h>
 #include "ioctl.h"
-#include "mcu/arch.h"
 #include "mcu/pio.h"
 
 #ifdef __cplusplus
@@ -107,13 +106,15 @@ typedef enum {
 	EINT_ACTION_EVENT_HIGH /*! Trigger while high */
 } eint_action_event_t;
 
-/*! \brief See below for details.
- * \details This defines a EINT action.
- *
- * See \ref eint_action_event_t for events.  There
- * are no channel specific definitions for the EINT.
- *
- */
+typedef enum {
+	EINT_EVENT_UNCONFIGURED /*! The trigger has not been set */,
+	EINT_EVENT_RISING /*! Trigger on the rising edge */,
+	EINT_FALLING /*! Trigger on the falling edge */,
+	EINT_EVENT_BOTH /*! Trigger on both edges */,
+	EINT_EVENT_LOW /*! Trigger while low */,
+	EINT_EVENT_HIGH /*! Trigger while high */
+} eint_event_t;
+
 typedef mcu_action_t eint_action_t;
 
 /*! \brief External Interrupt Attribute Data Structure
@@ -126,6 +127,15 @@ typedef struct MCU_PACK {
 	u8 mode /*! \brief Pin mode for pulling up/down/float */;
 	u8 resd;
 } eint_attr_t;
+
+typedef struct MCU_PACK {
+	u32 o_flags;
+} eint_info_t;
+
+typedef struct MCU_PACK {
+	u32 o_flags /*! Pin mode for pulling up/down/float */;
+	u8 pin_assignment[0] /*! \brief The Pin assignment to use (see \ref LPC17XXDEV) */;
+} eint_3_attr_t;
 
 /*! \brief IOCTL request to get attributes.
  */

@@ -23,6 +23,7 @@
 #include "arch.h"
 #include <stdio.h>
 #include <string.h>
+#include "mcu/cortexm.h"
 #include "mcu/core.h"
 
 #include "iface/device_config.h"

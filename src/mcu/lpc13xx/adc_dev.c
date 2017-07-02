@@ -49,7 +49,7 @@ int _mcu_adc_dev_port_is_invalid(int port){
 void _mcu_adc_dev_power_on(int port){
 	if ( adc_local.ref_count == 0 ){
 		_mcu_lpc_core_enable_pwr(PCADC);
-		_mcu_core_priv_enable_irq((void*)ADC_IRQn);
+		_mcu_cortexm_priv_enable_irq((void*)ADC_IRQn);
 		LPC_ADC->INTEN = 0;
 		LPC_SYSCON->PDRUNCFG &= ~(1 << 4);  //Power up the ADC
 		LPC_SYSCON->SYSAHBCLKCTRL |= (SYSAHBCLKCTRL_ADC);
@@ -63,7 +63,7 @@ void _mcu_adc_dev_power_off(int port){
 		adc_local.ref_count--;
 		if ( adc_local.ref_count == 0 ){
 			LPC_ADC->CR = 0;
-			_mcu_core_priv_disable_irq((void*)ADC_IRQn);
+			_mcu_cortexm_priv_disable_irq((void*)ADC_IRQn);
 			_mcu_lpc_core_disable_pwr(PCADC);
 			LPC_SYSCON->SYSAHBCLKCTRL &= ~(SYSAHBCLKCTRL_ADC);
 			LPC_SYSCON->PDRUNCFG |= (1 << 4);  //Power down the ADC

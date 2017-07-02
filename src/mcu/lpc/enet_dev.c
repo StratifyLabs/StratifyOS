@@ -19,6 +19,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include "mcu/cortexm.h"
 #include "mcu/enet.h"
 #include "mcu/debug.h"
 #include "mcu/core.h"
@@ -56,7 +57,7 @@ u8 const enet_irqs[MCU_ENET_PORTS] = MCU_ENET_IRQS;
 void _mcu_enet_dev_power_on(int port){
 	if ( enet_local[port].ref_count == 0 ){
 		_mcu_lpc_core_enable_pwr(PCENET);
-		_mcu_core_priv_enable_irq((void*)(u32)(enet_irqs[port]));
+		_mcu_cortexm_priv_enable_irq((void*)(u32)(enet_irqs[port]));
 		enet_local[port].tx_desc.buf = NULL;
 		enet_local[port].rx_desc.buf = NULL;
 	}
@@ -68,7 +69,7 @@ void _mcu_enet_dev_power_on(int port){
 void _mcu_enet_dev_power_off(int port){
 	if ( enet_local[port].ref_count > 0 ){
 		if ( enet_local[port].ref_count == 1 ){
-			_mcu_core_priv_disable_irq((void*)(u32)(enet_irqs[port]));
+			_mcu_cortexm_priv_disable_irq((void*)(u32)(enet_irqs[port]));
 			_mcu_lpc_core_disable_pwr(PCENET);
 			enet_local[port].tx_desc.buf = NULL;
 			enet_local[port].rx_desc.buf = NULL;
@@ -184,7 +185,7 @@ int _mcu_enet_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
 	//setup the tx descriptor to transfer the packet
 	enet_local[port].rx_desc.buf = rop->buf;
 	enet_local[port].rx_desc.ctrl = ENET_RCTRL_SIZE(rop->nbyte) | ENET_RCTRL_INT;
-	if( _mcu_core_priv_validate_callback(rop->callback) < 0 ){
+	if( _mcu_cortexm_priv_validate_callback(rop->callback) < 0 ){
 		return -1;
 	}
 
@@ -226,7 +227,7 @@ int _mcu_enet_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
 	enet_local[port].tx_desc.buf = wop->buf;
 	enet_local[port].tx_desc.ctrl = ENET_TCTRL_SIZE(wop->nbyte) | ENET_TCTRL_LAST | ENET_TCTRL_INT;
 
-	if( _mcu_core_priv_validate_callback(wop->callback) < 0 ){
+	if( _mcu_cortexm_priv_validate_callback(wop->callback) < 0 ){
 		return -1;
 	}
 
@@ -260,10 +261,10 @@ void _mcu_core_enet0_isr(int port){
 	//check for a tx or an rx interrupt
 	if( 1 ){ //tx interrupt
 		enet_local[port].tx_desc.buf = 0;
-		_mcu_core_exec_event_handler(&(enet_local[port].write), 0);
+		_mcu_cortexm_execute_event_handler(&(enet_local[port].write), 0);
 	} else {
 		enet_local[port].tx_desc.buf = 0;
-		_mcu_core_exec_event_handler(&(enet_local[port].read), 0);
+		_mcu_cortexm_execute_event_handler(&(enet_local[port].read), 0);
 	}
 }
 

@@ -31,43 +31,75 @@
 
 #define USB_CTRL_MAX_PACKET_SIZE 64
 
-
-#ifdef __lpc82x
-#define CORE_M0PLUS 1
-#define ARM_MATH_CM0
-#include "arch/mcu_lpc82x.h"
-#endif
-
-#ifdef __lpc13xx
-#define ARM_MATH_CM3
-#include "arch/mcu_lpc13xx.h"
-#endif
-
-#ifdef __lpc13uxx
-#define ARM_MATH_CM3
-#include "arch/mcu_lpc13uxx.h"
-#endif
-
 #ifdef __lpc17xx
 #define ARM_MATH_CM3
-#include "arch/mcu_lpc17xx.h"
+#include "arch/lpc/mcu_lpc17xx.h"
 #endif
 
 #ifdef __lpc177x_8x
 #define ARM_MATH_CM3
-#include "arch/mcu_lpc177x_8x.h"
+#include "arch/lpc/mcu_lpc177x_8x.h"
 #endif
 
 #ifdef __lpc407x_8x
 #define CORE_M4 1
 #define ARM_MATH_CM4 1
-#include "arch/mcu_lpc407x_8x.h"
+#include "arch/lpc/mcu_lpc407x_8x.h"
 #endif
 
 #ifdef __lpc43xx
 #define CORE_M4 1
 #define ARM_MATH_CM4 1
-#include "arch/mcu_lpc43xx.h"
+#include "arch/lpc/mcu_lpc43xx.h"
+#endif
+
+#ifdef __stm32f446xx
+#define CORE_M4 1
+#define ARM_MATH_CM4 1
+#define STM32F446xx 1
+#include "arch/stm32/mcu_stm32f446xx.h"
+#endif
+
+#ifdef __armv7em
+#define __CHECK_DEVICE_DEFINES
+#define __FPU_PRESENT 1
+#undef __FPU_USED
+typedef enum IRQn
+{
+/******  Cortex-M4 Processor Exceptions Numbers ***************************************************/
+  NonMaskableInt_IRQn           = -14,      /*!< 2 Non Maskable Interrupt                         */
+  HardFault_IRQn                = -13,              /*!<   3  Hard Fault, all classes of Fault                                 */
+  MemoryManagement_IRQn         = -12,      /*!< 4 Cortex-M3 Memory Management Interrupt          */
+  BusFault_IRQn                 = -11,      /*!< 5 Cortex-M3 Bus Fault Interrupt                  */
+  UsageFault_IRQn               = -10,      /*!< 6 Cortex-M3 Usage Fault Interrupt                */
+  SVCall_IRQn                   = -5,       /*!< 11 Cortex-M3 SV Call Interrupt                   */
+  DebugMonitor_IRQn             = -4,       /*!< 12 Cortex-M3 Debug Monitor Interrupt             */
+  PendSV_IRQn                   = -2,       /*!< 14 Cortex-M3 Pend SV Interrupt                   */
+  SysTick_IRQn                  = -1,       /*!< 15 Cortex-M3 System Tick Interrupt               */
+} IRQn_Type;
+#define __MPU_PRESENT 1
+#include "arch/cmsis/core_cm4.h"
+#endif
+
+#ifdef __armv7m
+#define __CHECK_DEVICE_DEFINES
+#define __FPU_PRESENT 0
+#undef __FPU_USED
+typedef enum IRQn
+{
+/******  Cortex-M3 Processor Exceptions Numbers ***************************************************/
+  NonMaskableInt_IRQn           = -14,      /*!< 2 Non Maskable Interrupt                         */
+  HardFault_IRQn                = -13,              /*!<   3  Hard Fault, all classes of Fault                                 */
+  MemoryManagement_IRQn         = -12,      /*!< 4 Cortex-M3 Memory Management Interrupt          */
+  BusFault_IRQn                 = -11,      /*!< 5 Cortex-M3 Bus Fault Interrupt                  */
+  UsageFault_IRQn               = -10,      /*!< 6 Cortex-M3 Usage Fault Interrupt                */
+  SVCall_IRQn                   = -5,       /*!< 11 Cortex-M3 SV Call Interrupt                   */
+  DebugMonitor_IRQn             = -4,       /*!< 12 Cortex-M3 Debug Monitor Interrupt             */
+  PendSV_IRQn                   = -2,       /*!< 14 Cortex-M3 Pend SV Interrupt                   */
+  SysTick_IRQn                  = -1,       /*!< 15 Cortex-M3 System Tick Interrupt               */
+} IRQn_Type;
+#define __MPU_PRESENT 1
+#include "arch/cmsis/core_cm3.h"
 #endif
 
 #ifdef __link
@@ -110,18 +142,6 @@ typedef void * mcu_target_ptr_t;
 #ifdef __stm32f
 #include "arch/stm32f.h"
 #endif
-
-struct link_tm {
-	s32	tm_sec;
-	s32	tm_min;
-	s32	tm_hour;
-	s32	tm_mday;
-	s32	tm_mon;
-	s32	tm_year;
-	s32	tm_wday;
-	s32	tm_yday;
-	s32	tm_isdst;
-};
 
 #endif /* ARCH_H_ */
 

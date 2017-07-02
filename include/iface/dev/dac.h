@@ -75,7 +75,6 @@
 
 #include <stdint.h>
 #include "ioctl.h"
-#include "mcu/arch.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -114,6 +113,12 @@ typedef struct MCU_PACK {
 	u16 resd;
 	u32 freq /*! \brief The output frequency */;
 } dac_attr_t;
+
+typedef struct MCU_PACK {
+	u8 pin_assignment[4];
+	u32 o_flags;
+	u32 freq;
+} dac_3_attr_t;
 
 typedef struct MCU_PACK {
 	dac_sample_t value;

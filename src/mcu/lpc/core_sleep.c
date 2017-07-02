@@ -19,6 +19,7 @@
 
 #include "mcu/mcu.h"
 #include "core_flags.h"
+#include "mcu/cortexm.h"
 #include "mcu/core.h"
 
 

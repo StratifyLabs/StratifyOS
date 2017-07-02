@@ -20,6 +20,7 @@
 #include <stddef.h>
 #include <errno.h>
 #include <fcntl.h>
+#include "mcu/cortexm.h"
 #include "mcu/adc.h"
 #include "mcu/core.h"
 #include "mcu/pio.h"
@@ -59,7 +60,7 @@ void _mcu_adc_dev_power_on(int port){
 	LPC_ADC_Type * regs = adc_regs[port];
 	if ( adc_local[port].ref_count == 0 ){
 		_mcu_lpc_core_enable_pwr(PCADC);
-		_mcu_core_priv_enable_irq((void*)(u32)(adc_irqs[port]));
+		_mcu_cortexm_priv_enable_irq((void*)(u32)(adc_irqs[port]));
 		regs->INTEN = 0;
 		memset(&adc_local, 0, sizeof(adc_local_t));
 #if defined __lpc13xx || defined __lpc13uxx
@@ -78,7 +79,7 @@ void _mcu_adc_dev_power_off(int port){
 	if ( adc_local[port].ref_count > 0 ){
 		if ( adc_local[port].ref_count == 1 ){
 			regs->CR = 0; //reset the control -- clear the PDN bit
-			_mcu_core_priv_disable_irq((void*)(u32)(adc_irqs[port]));
+			_mcu_cortexm_priv_disable_irq((void*)(u32)(adc_irqs[port]));
 			_mcu_lpc_core_disable_pwr(PCADC);
 		}
 		adc_local[port].ref_count--;
@@ -104,7 +105,7 @@ int _mcu_adc_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
 		return -1;
 	}
 
-	if( _mcu_core_priv_validate_callback(rop->callback) < 0 ){
+	if( _mcu_cortexm_priv_validate_callback(rop->callback) < 0 ){
 		return -1;
 	}
 
@@ -126,7 +127,7 @@ void exec_callback(int port, void * data){
 	//Disable the interrupt
 	regs->INTEN = 0;
 	regs->CR &= ((1<<ADC_PDN)|(0xFF00)); //leave the clock div bits in place and PDN
-	_mcu_core_exec_event_handler(&(adc_local[port].handler), data);
+	_mcu_cortexm_execute_event_handler(&(adc_local[port].handler), data);
 }
 
 //! \todo Should this use DMA instead of this interrupt?
@@ -251,14 +252,14 @@ int mcu_adc_setaction(int port, void * ctl){
 		}
 	}
 
-	if( _mcu_core_priv_validate_callback(action->callback) < 0 ){
+	if( _mcu_cortexm_priv_validate_callback(action->callback) < 0 ){
 		return -1;
 	}
 
 	adc_local[port].handler.callback = action->callback;
 	adc_local[port].handler.context = action->context;
 
-	_mcu_core_setirqprio(adc_irqs[port], action->prio);
+	_mcu_cortexm_set_irq_prio(adc_irqs[port], action->prio);
 
 	return 0;
 }

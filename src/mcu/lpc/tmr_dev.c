@@ -19,6 +19,7 @@
 
 #include <errno.h>
 #include <stdbool.h>
+#include "mcu/cortexm.h"
 #include "mcu/tmr.h"
 #include "mcu/core.h"
 
@@ -78,7 +79,7 @@ void _mcu_tmr_dev_power_on(int port){
 			_mcu_lpc_core_enable_pwr(PCTIM3);
 			break;
 		}
-		_mcu_core_priv_enable_irq((void*)(u32)(tmr_irqs[port]));
+		_mcu_cortexm_priv_enable_irq((void*)(u32)(tmr_irqs[port]));
 	}
 	_mcu_tmr_local[port].ref_count++;
 }
@@ -88,7 +89,7 @@ void _mcu_tmr_dev_power_off(int port){
 	if ( _mcu_tmr_local[port].ref_count > 0 ){
 		if ( _mcu_tmr_local[port].ref_count == 1 ){
 			_mcu_tmr_clear_actions(port);
-			_mcu_core_priv_disable_irq((void*)(u32)(tmr_irqs[port]));
+			_mcu_cortexm_priv_disable_irq((void*)(u32)(tmr_irqs[port]));
 			switch(port){
 			case 0:
 				_mcu_lpc_core_disable_pwr(PCTIM0);
@@ -476,7 +477,7 @@ int _mcu_tmr_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
 	action->callback = wop->callback;
 	action->context = wop->context;
 
-	_mcu_core_setirqprio(tmr_irqs[port], action->prio);
+	_mcu_cortexm_set_irq_prio(tmr_irqs[port], action->prio);
 
 	return mcu_tmr_setaction(port, action);
 }
@@ -543,7 +544,7 @@ int _mcu_tmr_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
 	int port = DEVICE_GET_PORT(cfg);
 	int chan = rop->loc;
 
-	if( _mcu_core_priv_validate_callback(rop->callback) < 0 ){
+	if( _mcu_cortexm_priv_validate_callback(rop->callback) < 0 ){
 		return -1;
 	}
 
@@ -578,41 +579,41 @@ void tmr_isr(int port){
 	//execute the callbacks
 #if MCU_TMR_API == 1
 	if( flags & MR0_FLAG ){
-		_mcu_core_exec_event_handler(&(_mcu_tmr_local[port].handler[0]), (mcu_event_t)regs->MR[0]);
+		_mcu_cortexm_execute_event_handler(&(_mcu_tmr_local[port].handler[0]), (mcu_event_t)regs->MR[0]);
 	}
 	if( flags & MR1_FLAG ){
-		_mcu_core_exec_event_handler(&(_mcu_tmr_local[port].handler[1]), (mcu_event_t)regs->MR[1]);
+		_mcu_cortexm_execute_event_handler(&(_mcu_tmr_local[port].handler[1]), (mcu_event_t)regs->MR[1]);
 	}
 	if( flags & MR2_FLAG ){
-		_mcu_core_exec_event_handler(&(_mcu_tmr_local[port].handler[2]), (mcu_event_t)regs->MR[2]);
+		_mcu_cortexm_execute_event_handler(&(_mcu_tmr_local[port].handler[2]), (mcu_event_t)regs->MR[2]);
 	}
 	if( flags & MR3_FLAG ){
-		_mcu_core_exec_event_handler(&(_mcu_tmr_local[port].handler[3]), (mcu_event_t)regs->MR[3]);
+		_mcu_cortexm_execute_event_handler(&(_mcu_tmr_local[port].handler[3]), (mcu_event_t)regs->MR[3]);
 	}
 	if( flags & CR0_FLAG ){
-		_mcu_core_exec_event_handler(&(_mcu_tmr_local[port].handler[4]), (mcu_event_t)regs->CR[0]);
+		_mcu_cortexm_execute_event_handler(&(_mcu_tmr_local[port].handler[4]), (mcu_event_t)regs->CR[0]);
 	}
 	if( flags & CR1_FLAG ){
-		_mcu_core_exec_event_handler(&(_mcu_tmr_local[port].handler[5]), (mcu_event_t)regs->CR[1]);
+		_mcu_cortexm_execute_event_handler(&(_mcu_tmr_local[port].handler[5]), (mcu_event_t)regs->CR[1]);
 	}
 #else
 	if( flags & MR0_FLAG ){
-		_mcu_core_exec_event_handler(&(_mcu_tmr_local[port].handler[0]), (mcu_event_t)regs->MR0);
+		_mcu_cortexm_execute_event_handler(&(_mcu_tmr_local[port].handler[0]), (mcu_event_t)regs->MR0);
 	}
 	if( flags & MR1_FLAG ){
-		_mcu_core_exec_event_handler(&(_mcu_tmr_local[port].handler[1]), (mcu_event_t)regs->MR1);
+		_mcu_cortexm_execute_event_handler(&(_mcu_tmr_local[port].handler[1]), (mcu_event_t)regs->MR1);
 	}
 	if( flags & MR2_FLAG ){
-		_mcu_core_exec_event_handler(&(_mcu_tmr_local[port].handler[2]), (mcu_event_t)regs->MR2);
+		_mcu_cortexm_execute_event_handler(&(_mcu_tmr_local[port].handler[2]), (mcu_event_t)regs->MR2);
 	}
 	if( flags & MR3_FLAG ){
-		_mcu_core_exec_event_handler(&(_mcu_tmr_local[port].handler[3]), (mcu_event_t)regs->MR3);
+		_mcu_cortexm_execute_event_handler(&(_mcu_tmr_local[port].handler[3]), (mcu_event_t)regs->MR3);
 	}
 	if( flags & CR0_FLAG ){
-		_mcu_core_exec_event_handler(&(_mcu_tmr_local[port].handler[4]), (mcu_event_t)regs->CR0);
+		_mcu_cortexm_execute_event_handler(&(_mcu_tmr_local[port].handler[4]), (mcu_event_t)regs->CR0);
 	}
 	if( flags & CR1_FLAG ){
-		_mcu_core_exec_event_handler(&(_mcu_tmr_local[port].handler[5]), (mcu_event_t)regs->CR1);
+		_mcu_cortexm_execute_event_handler(&(_mcu_tmr_local[port].handler[5]), (mcu_event_t)regs->CR1);
 	}
 #endif
 }

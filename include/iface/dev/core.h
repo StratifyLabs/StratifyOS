@@ -37,7 +37,6 @@
 #include <stdint.h>
 #include "ioctl.h"
 #include "mcu/mcu.h"
-#include "mcu/arch.h"
 #include "mcu/types.h"
 #include "iface/dev/pio.h"
 

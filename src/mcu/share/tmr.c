@@ -43,7 +43,6 @@ int (* const tmr_ioctl_func_table[I_GLOBAL_TOTAL + I_TMR_TOTAL])(int, void*) = {
 
 int mcu_tmr_open(const device_cfg_t * cfg){
 	return mcu_open(cfg,
-			MCU_TMR_PORTS,
 			_mcu_tmr_dev_powered_on,
 			_mcu_tmr_dev_power_on);
 }
@@ -52,7 +51,6 @@ int mcu_tmr_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 	return mcu_ioctl(cfg,
 			request,
 			ctl,
-			MCU_TMR_PORTS,
 			_mcu_tmr_dev_powered_on,
 			tmr_ioctl_func_table,
 			I_GLOBAL_TOTAL + I_TMR_TOTAL);
@@ -66,13 +64,12 @@ int mcu_tmr_read(const device_cfg_t * cfg, device_transfer_t * rop){
 int mcu_tmr_write(const device_cfg_t * cfg, device_transfer_t * wop){
 	return mcu_write(cfg,
 			wop,
-			MCU_TMR_PORTS,
 			_mcu_tmr_dev_powered_on,
 			_mcu_tmr_dev_write);
 }
 
 int mcu_tmr_close(const device_cfg_t * cfg){
-	return mcu_close(cfg, MCU_TMR_PORTS, _mcu_tmr_dev_powered_on, _mcu_tmr_dev_power_off);
+	return mcu_close(cfg, _mcu_tmr_dev_powered_on, _mcu_tmr_dev_power_off);
 }
 
 

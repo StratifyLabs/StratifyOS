@@ -18,6 +18,7 @@
  */
 
 #include <errno.h>
+#include "mcu/cortexm.h"
 #include "mcu/debug.h"
 #include "mcu/pio.h"
 #include "mcu/core.h"
@@ -181,9 +182,9 @@ int mcu_pio_setaction(int port, void * ctl){
 
 	if( action->callback == 0 ){
 		if( port == 0 ){
-			_mcu_core_exec_event_handler(&(_mcu_pio0_local.handler), MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
+			_mcu_cortexm_execute_event_handler(&(_mcu_pio0_local.handler), MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
 		} else if ( port == 2 ){
-			_mcu_core_exec_event_handler(&(_mcu_pio2_local.handler), MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
+			_mcu_cortexm_execute_event_handler(&(_mcu_pio2_local.handler), MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
 		}
 	}
 
@@ -193,7 +194,7 @@ int mcu_pio_setaction(int port, void * ctl){
 	}
 
 	if ( port == 0 ){
-		if( _mcu_core_priv_validate_callback(action->callback) < 0 ){
+		if( _mcu_cortexm_priv_validate_callback(action->callback) < 0 ){
 			return -1;
 		}
 
@@ -201,7 +202,7 @@ int mcu_pio_setaction(int port, void * ctl){
 		_mcu_pio0_local.handler.context = action->context;
 		LPC_GPIOINT->IO0IntClr = -1; //clear pending interrupts
 	} else if ( port == 2 ){
-		if( _mcu_core_priv_validate_callback(action->callback) < 0 ){
+		if( _mcu_cortexm_priv_validate_callback(action->callback) < 0 ){
 			return -1;
 		}
 
@@ -216,12 +217,12 @@ int mcu_pio_setaction(int port, void * ctl){
 
 #ifdef LPCXX7X_8X
 	//This is the interrupt for GPIO0 and GPIO2
-	_mcu_core_priv_enable_irq((void*)GPIO_IRQn);
-	_mcu_core_setirqprio(GPIO_IRQn, action->prio);
+	_mcu_cortexm_priv_enable_irq((void*)GPIO_IRQn);
+	_mcu_cortexm_set_irq_prio(GPIO_IRQn, action->prio);
 #else
 	//This is the interrupt for GPIO0 and GPIO2 (shared with EINT3)
-	_mcu_core_priv_enable_irq((void*)EINT3_IRQn);
-	_mcu_core_setirqprio(EINT3_IRQn, action->prio);
+	_mcu_cortexm_priv_enable_irq((void*)EINT3_IRQn);
+	_mcu_cortexm_set_irq_prio(EINT3_IRQn, action->prio);
 #endif
 
 	return 0;
@@ -369,11 +370,11 @@ int mcu_pio_set(int port, void * ctl){
 }
 
 void exec_cancelled0(){
-	_mcu_core_exec_event_handler(&(_mcu_pio0_local.handler), MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
+	_mcu_cortexm_execute_event_handler(&(_mcu_pio0_local.handler), MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
 }
 
 void exec_cancelled2(){
-	_mcu_core_exec_event_handler(&(_mcu_pio2_local.handler), MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
+	_mcu_cortexm_execute_event_handler(&(_mcu_pio2_local.handler), MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
 }
 
 //On __lpc17xx The pio interrupts use the eint3 interrupt service routine -- this function should be called from there
@@ -385,7 +386,7 @@ void _mcu_core_pio0_isr(){
 		ev.rising = LPC_GPIOINT->IO0IntStatR;
 		ev.falling = LPC_GPIOINT->IO0IntStatF;
 		LPC_GPIOINT->IO0IntClr = ev.rising | ev.falling;
-		_mcu_core_exec_event_handler(&(_mcu_pio0_local.handler), &ev);
+		_mcu_cortexm_execute_event_handler(&(_mcu_pio0_local.handler), &ev);
 	}
 
 	if ( LPC_GPIOINT->IntStatus & (1<<2) ){
@@ -393,7 +394,7 @@ void _mcu_core_pio0_isr(){
 		ev.rising = LPC_GPIOINT->IO2IntStatR;
 		ev.falling = LPC_GPIOINT->IO2IntStatF;
 		LPC_GPIOINT->IO2IntClr = ev.rising | ev.falling;
-		_mcu_core_exec_event_handler(&(_mcu_pio2_local.handler), &ev);
+		_mcu_cortexm_execute_event_handler(&(_mcu_pio2_local.handler), &ev);
 	}
 }
 

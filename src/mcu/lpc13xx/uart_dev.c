@@ -141,7 +141,7 @@ void _mcu_uart_dev_power_off(int port){
 	if( uart_local[port].ref_count > 0 ){
 		uart_local[port].ref_count--;
 		if( uart_local[port].ref_count == 0 ){
-			_mcu_core_priv_disable_irq((void*)UART_IRQn);
+			_mcu_cortexm_priv_disable_irq((void*)UART_IRQn);
 			_mcu_lpc_core_disable_pwr(PCUART);
 		}
 	}
@@ -219,7 +219,7 @@ int mcu_uart_setattr(int port, void * ctl){
 	LPC_SYSCON->SYSAHBCLKCTRL |= (SYSAHBCLKCTRL_UART);
 	LPC_SYSCON->UARTCLKDIV = 1;
 
-	_mcu_core_priv_disable_irq((void*)(UART_IRQn));
+	_mcu_cortexm_priv_disable_irq((void*)(UART_IRQn));
 
 	uart_regs->RBR;
 	uart_regs->IIR;
@@ -254,7 +254,7 @@ int mcu_uart_setattr(int port, void * ctl){
 	memcpy(&(uart_local[port].attr), ctl, sizeof(uart_attr_t));
 	//! \todo need to store actual baud rate not target baud rate
 
-	_mcu_core_priv_enable_irq((void*)UART_IRQn);
+	_mcu_cortexm_priv_enable_irq((void*)UART_IRQn);
 
 	return 0;
 }

@@ -20,6 +20,7 @@
 
 #include <errno.h>
 #include <unistd.h>
+#include "mcu/cortexm.h"
 #include "mcu/pio.h"
 #include "mcu/spi.h"
 #include "mcu/core.h"
@@ -80,9 +81,20 @@ int sdspi_open(const device_cfg_t * cfg){
 	int err;
 	pio_attr_t attr;
 	//sdspi_state_t * state = (sdspi_state_t*)cfg->state;
+	spi_attr_t spi_cfg;
 
-	err = mcu_check_spi_port(cfg);
+	spi_cfg.pin_assign = cfg->pin_assign;
+	spi_cfg.width = cfg->pcfg.spi.width;
+	spi_cfg.mode = cfg->pcfg.spi.mode;
+	spi_cfg.format = cfg->pcfg.spi.format;
+	spi_cfg.bitrate = cfg->bitrate;
+	spi_cfg.master = SPI_ATTR_MASTER;
+	err = mcu_spi_open(cfg);
 	if ( err < 0 ){
+		return err;
+	}
+
+	if( (err = mcu_spi_ioctl(cfg, I_SPI_SETATTR, &spi_cfg)) < 0 ){
 		return err;
 	}
 
@@ -235,7 +247,7 @@ int sdspi_read(const device_cfg_t * cfg, device_transfer_t * rop){
 	}
 
 	_sdspi_assert_cs(cfg);
-	_mcu_core_delay_us(LONG_DELAY);
+	_mcu_cortexm_delay_us(LONG_DELAY);
 
 	return _sdspi_try_read(cfg, 1);
 }
@@ -315,7 +327,7 @@ int sdspi_write(const device_cfg_t * cfg, device_transfer_t * wop){
 	state->cmd[1] = SDSPI_START_BLOCK_TOKEN;
 
 	_sdspi_assert_cs(cfg);
-	_mcu_core_delay_us(LONG_DELAY);
+	_mcu_cortexm_delay_us(LONG_DELAY);
 	_sdspi_transfer(cfg, state->cmd, 0, 2);
 
 	state->op.nbyte = wop->nbyte;
@@ -387,17 +399,17 @@ int sdspi_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 		}
 
 
-		_mcu_core_delay_us(500);
+		_mcu_cortexm_delay_us(500);
 
 		//init sequence
 		//apply at least 74 init clocks with DI and CS high
 		_sdspi_deassert_cs(cfg);
-		_mcu_core_delay_us(LONG_DELAY);
+		_mcu_cortexm_delay_us(LONG_DELAY);
 		_sdspi_transfer(cfg, 0, 0, CMD_FRAME_SIZE*6);
-		_mcu_core_delay_us(LONG_DELAY);
+		_mcu_cortexm_delay_us(LONG_DELAY);
 
 
-		_mcu_core_delay_us(500);
+		_mcu_cortexm_delay_us(500);
 
 		resp.r1 = _sdspi_cmd_r1(cfg, SDSPI_CMD0_GO_IDLE_STATE, 0, 0);
 		if( resp.r1.start == 1 ){
@@ -478,7 +490,7 @@ int sdspi_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 		}
 
 		_sdspi_assert_cs(cfg);
-		_mcu_core_delay_us(LONG_DELAY);
+		_mcu_cortexm_delay_us(LONG_DELAY);
 		_sdspi_transfer(cfg, 0, 0, CMD_FRAME_SIZE);
 		_sdspi_deassert_cs(cfg);
 
@@ -510,7 +522,7 @@ int sdspi_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 		}
 
 		_sdspi_assert_cs(cfg);
-		_mcu_core_delay_us(LONG_DELAY);
+		_mcu_cortexm_delay_us(LONG_DELAY);
 		_sdspi_transfer(cfg, 0, 0, CMD_FRAME_SIZE);
 		_sdspi_deassert_cs(cfg);
 
@@ -606,7 +618,7 @@ int _sdspi_erase_blocks(const device_cfg_t * cfg, uint32_t block_num, uint32_t e
 int _sdspi_busy(const device_cfg_t * cfg){
 	uint8_t c;
 	_sdspi_assert_cs(cfg);
-	_mcu_core_delay_us(LONG_DELAY);
+	_mcu_cortexm_delay_us(LONG_DELAY);
 	c = mcu_spi_swap(cfg->periph.port, (void*)0xFF);
 	_sdspi_deassert_cs(cfg);
 	return (c == 0x00);
@@ -676,9 +688,9 @@ int _sdspi_send_cmd(const device_cfg_t * cfg, uint8_t cmd, uint32_t arg, uint8_t
 	do {
 		//read the response
 		_sdspi_assert_cs(cfg);
-		_mcu_core_delay_us(LONG_DELAY);
+		_mcu_cortexm_delay_us(LONG_DELAY);
 		_sdspi_transfer(cfg, buffer, response, CMD_FRAME_SIZE);
-		_mcu_core_delay_us(LONG_DELAY);
+		_mcu_cortexm_delay_us(LONG_DELAY);
 		_sdspi_deassert_cs(cfg);
 
 		ret = 0;
@@ -728,7 +740,7 @@ int _sdspi_read_data(const device_cfg_t * cfg, void * data, int nbyte, uint8_t t
 	timeout = 0;
 	while( count < nbyte ){
 		_sdspi_assert_cs(cfg);
-		_mcu_core_delay_us(LONG_DELAY);
+		_mcu_cortexm_delay_us(LONG_DELAY);
 		if( count >= 0 ){
 			_sdspi_transfer(cfg, 0, (uint8_t*)data + count, nbyte - count);
 			count = nbyte;
@@ -746,7 +758,7 @@ int _sdspi_read_data(const device_cfg_t * cfg, void * data, int nbyte, uint8_t t
 	}
 
 	_sdspi_assert_cs(cfg);
-	_mcu_core_delay_us(LONG_DELAY);
+	_mcu_cortexm_delay_us(LONG_DELAY);
 	_sdspi_transfer(cfg, 0, response, CMD_FRAME_SIZE); //gobble up any checksum
 	_sdspi_deassert_cs(cfg);
 

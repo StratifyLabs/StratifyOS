@@ -36,7 +36,6 @@
 #include <stdint.h>
 #include "../link_types.h"
 #include "ioctl.h"
-
 #include "mcu/types.h"
 
 

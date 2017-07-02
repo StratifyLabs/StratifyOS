@@ -24,40 +24,15 @@
 extern "C" {
 #endif
 
-#define CORE_MAIN_RETURN 0xFFFFFFF9
 #define CORE_THREAD_RETURN 0xFFFFFFFD
 
-#define SYSTICK_CTRL_TICKINT (1<<1)
 
-static inline void core_tick_enable_irq() MCU_ALWAYS_INLINE;
-void core_tick_enable_irq(){
-	SysTick->CTRL |= SYSTICK_CTRL_TICKINT;
-}
 
-static inline void core_tick_disable_irq() MCU_ALWAYS_INLINE;
-void core_tick_disable_irq(){
-	SysTick->CTRL &= ~SYSTICK_CTRL_TICKINT;
-}
-
-static inline void _mcu_core_priv_setvectortableaddr(void * addr) MCU_ALWAYS_INLINE;
-void _mcu_core_priv_setvectortableaddr(void * addr){
-	SCB->VTOR = (uint32_t)addr;
-}
-
-int core_set_interrupt_priority(int periph, int port, uint8_t priority);
 
 #define TASK_MAIN_RETURN 0xFFFFFFF9
-#define TASK_THREAD_RETURN 0xFFFFFFFD
-
-#define SYSTICK_CTRL_TICKINT (1<<1)
 
 
-int core_fault_init(void (*handler)(int) );
-void core_fault_reset_status();
-int core_fault_debug();
 
-
-#define r(x) register long x asm("lr")
 
 
 #ifdef __cplusplus

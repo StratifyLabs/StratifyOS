@@ -35,9 +35,20 @@
 
 
 #include <time.h>
-
-
 #include "../mcu/types.h"
+
+struct link_tm {
+	s32	tm_sec;
+	s32	tm_min;
+	s32	tm_hour;
+	s32	tm_mday;
+	s32	tm_mon;
+	s32	tm_year;
+	s32	tm_wday;
+	s32	tm_yday;
+	s32	tm_isdst;
+};
+
 #include "dev/adc.h"
 #include "dev/bootloader.h"
 #include "dev/core.h"

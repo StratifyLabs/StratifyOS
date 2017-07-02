@@ -86,7 +86,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "ioctl.h"
-#include "mcu/arch.h"
+#include "mcu/types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -130,10 +130,11 @@ typedef enum {
 	PIO_MODE_PULLDOWN /*! Use the built-in pull-down */ = (1<<3),
 	PIO_MODE_REPEATER /*! Use the built-in repeater function */ = (1<<4),
 	PIO_MODE_FLOAT /*! Leave the pin floating */ = (1<<5),
-	PIO_MODE_OUTPUT_2MHZ /*! Max speed 2Mhz (stm32f only) */ = (1<<6),
-	PIO_MODE_FAST_MODE /*! Add fast mode slew rate */ = (1<<6),
-	PIO_MODE_OUTPUT_10MHZ /*! Max speed 10Mhz (stm32f only) */ = (1<<7),
-	PIO_MODE_OUTPUT_50MHZ /*! Max speed 50Mhz (stm32f only) */ = (1<<8),
+	PIO_MODE_SPEED_LOW /*! Max speed 2Mhz (stm32f only) */ = (1<<6),
+	PIO_MODE_SPEED_MEDIUM /*! Add fast mode slew rate */ = (1<<6),
+	PIO_MODE_FAST_MODE = (1<<6),
+	PIO_MODE_SPEED_HIGH /*! Max speed 10Mhz (stm32f only) */ = (1<<7),
+	PIO_MODE_SPEED_BLAZING /*! Max speed 50Mhz (stm32f only) */ = (1<<8),
 	PIO_MODE_OPENDRAIN /*! Configure as open drain */ = (1<<9),
 	PIO_MODE_HYSTERESIS /*! Enable hysteresis on pin */ = (1<<10),
 	PIO_MODE_DIRONLY /*! Only set input/output (ignore other settings) */ = (1<<11),
@@ -141,6 +142,25 @@ typedef enum {
 	PIO_MODE_INVERT /*! Invert the logic on the pin */ = (1<<13),
 	PIO_MODE_FILTER /*! Filter noise on pin */ = (1<<14),
 } pio_mode_t;
+
+typedef enum {
+	PIO_FLAG_INPUT /*! Input flag*/ = (1<<0),
+	PIO_FLAG_OUTPUT /*! Output flag */ = (1<<1),
+	PIO_FLAG_PULLUP /*! Use the built-in pullup */ = (1<<2),
+	PIO_FLAG_PULLDOWN /*! Use the built-in pull-down */ = (1<<3),
+	PIO_FLAG_REPEATER /*! Use the built-in repeater function */ = (1<<4),
+	PIO_FLAG_FLOAT /*! Leave the pin floating */ = (1<<5),
+	PIO_FLAG_SPEED_LOW /*! Max speed 2Mhz (stm32f only) */ = (1<<6),
+	PIO_FLAG_SPEED_MEDIUM /*! Add fast mode slew rate */ = (1<<6),
+	PIO_FLAG_SPEED_HIGH /*! Max speed 10Mhz (stm32f only) */ = (1<<7),
+	PIO_FLAG_SPEED_BLAZING /*! Max speed 50Mhz (stm32f only) */ = (1<<8),
+	PIO_FLAG_OPENDRAIN /*! Configure as open drain */ = (1<<9),
+	PIO_FLAG_HYSTERESIS /*! Enable hysteresis on pin */ = (1<<10),
+	PIO_FLAG_DIRONLY /*! Only set input/output (ignore other settings) */ = (1<<11),
+	PIO_FLAG_ANALOG /*! Use an analog rather than digital input */ = (1<<12),
+	PIO_FLAG_INVERT /*! Invert the logic on the pin */ = (1<<13),
+	PIO_FLAG_FILTER /*! Filter noise on pin */ = (1<<14),
+} pio_flag_t;
 
 /*! \brief PIO Attribute Data Structure
  * \details This structure defines how the control structure
@@ -151,6 +171,12 @@ typedef struct MCU_PACK {
 	u16 mode /*! \brief OR the pio_mode_t */;
 	u16 resd;
 } pio_attr_t;
+
+typedef struct MCU_PACK {
+	u32 o_flags;
+	u32 o_pinmask;
+} pio_3_attr_t;
+
 
 typedef struct MCU_PACK {
 	u32 status;

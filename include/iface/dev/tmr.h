@@ -103,7 +103,7 @@
 
 #include <stdint.h>
 #include "ioctl.h"
-#include "mcu/arch.h"
+#include "mcu/types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -150,6 +150,20 @@ typedef enum {
 	TMR_ACTION_EVENT_TOGGLEOC /*! toggle the OC channel pin */ = (1<<5),
 	TMR_ACTION_EVENT_PWMMODE /*! Execute OC channel in PWM Mode */ = (1<<6),
 } tmr_action_event_t;
+
+/*! \details This defines no action
+ * for an OC/IC event.
+ */
+typedef enum {
+	TMR_EVENT_NONE /*! no action */ = 0,
+	TMR_EVENT_INTERRUPT /*! enable interrupt on IC/OC event */ = (1<<0),
+	TMR_EVENT_RESET /*! reset the timer on IC/OC event */ = (1<<1),
+	TMR_EVENT_STOP /*! stop the timer on OC/IC event */ = (1<<2),
+	TMR_EVENT_SETOC /*! set the OC channel pin to logic 1 */ = (1<<3),
+	TMR_EVENT_CLROC /*! clear the OC channel pin to logic 0 */ = (1<<4),
+	TMR_EVENT_TOGGLEOC /*! toggle the OC channel pin */ = (1<<5),
+	TMR_EVENT_PWMMODE /*! Execute OC channel in PWM Mode */ = (1<<6),
+} tmr_event_t;
 
 
 /*! \details This defines the timer action structure.
@@ -213,6 +227,33 @@ typedef struct MCU_PACK {
 
 } tmr_attr_t;
 
+
+enum {
+	TMR_FLAG_CLKSRC_CPU /*! Use the CPU as the source for the clock (timer mode) */ = (1<<0),
+	TMR_FLAG_CLKSRC_IC0 /*! Use input capture channel 0 for the clock source (counter mode) */ = (1<<1),
+	TMR_FLAG_CLKSRC_IC1 /*! Use input capture channel 1 for the clock source (counter mode) */ = (1<<2),
+	TMR_FLAG_CLKSRC_IC2 /*! Use input capture channel 2 for the clock source (counter mode) */ = (1<<3),
+	TMR_FLAG_CLKSRC_IC3 /*! Use input capture channel 3 for the clock source (counter mode) */ = (1<<4),
+	TMR_FLAG_CLKSRC_EDGERISING /*! Count rising edges */ = (1<<5),
+	TMR_FLAG_CLKSRC_EDGEFALLING /*! Count falling edges */ = (1<<6),
+	TMR_FLAG_CLKSRC_EDGEBOTH /*! Count both edges */ = (1<<7),
+	TMR_FLAG_CLKSRC_COUNTDOWN /*! Count down (not up) */ = (1<<8),
+	TMR_FLAG_AUTO_RELOAD /*! Auto reload the time */ = (1<<9)
+};
+
+typedef struct MCU_PACK {
+	u32 o_flags;
+	u32 freq;
+} tmr_3_attr_t;
+
+typedef struct MCU_PACK {
+	u8 pin_assignment;
+	u32 o_flags;
+	u32 freq;
+	u8 enabled_oc_channels;
+	u8 enabled_ic_channels;
+} tmr_30_attr_t;
+
 /*! \brief This request gets the timer attributes.
  * \hideinitializer
  *
@@ -223,6 +264,7 @@ typedef struct MCU_PACK {
  * \hideinitializer
  */
 #define I_TMR_SETATTR _IOCTLW(TMR_IOC_IDENT_CHAR, I_GLOBAL_SETATTR, tmr_attr_t)
+#define I_TMR_30_SETATTR _IOCTLW(TMR_IOC_IDENT_CHAR, I_GLOBAL_SETATTR, tmr_30_attr_t)
 /*! \brief This request sets the timer interrupt action.
  * \hideinitializer
  */

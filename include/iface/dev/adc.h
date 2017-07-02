@@ -140,6 +140,28 @@ typedef struct MCU_PACK {
 	writing and the actual value when reading. */;
 } adc_attr_t;
 
+enum {
+	ADC_FLAG_LEFT_JUSTIFIED = (1<<0),
+	ADC_FLAG_RIGHT_JUSTIFIED = (1<<1)
+};
+
+typedef struct MCU_PACK {
+	u8 resolution /*! The number of bits supported by the ADC */;
+	u32 o_features /*! A bitmask for the supported features */;
+	u32 o_events /*! Events supported by this driver */;
+} adc_info_t;
+
+typedef struct MCU_PACK {
+	u8 pin_assignment[4];
+	u32 o_flags;
+	u32 freq;
+} adc_3_attr_t;
+
+typedef struct MCU_PACK {
+	u32 pin_assign;
+	u32 channel;
+} adc_channel_t;
+
 /*! \brief See below for details.
  * \details This requests reads the ADC attributes.
  *

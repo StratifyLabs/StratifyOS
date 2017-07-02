@@ -108,7 +108,7 @@
 
 #include <stdint.h>
 #include "ioctl.h"
-#include "mcu/arch.h"
+#include "mcu/types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -145,6 +145,18 @@ enum {
 	SPI_ATTR_FORMAT_MICROWIRE /*! Microwire Format */
 };
 
+typedef enum {
+	SPI_FLAG_FORMAT_SPI = (1<<0),
+	SPI_FLAG_FORMAT_TI = (1<<1),
+	SPI_FLAG_FORMAT_MICROWIRE = (1<<2),
+	SPI_FLAG_MODE0 = (1<<3) /*! SPI Mode 0 */,
+	SPI_FLAG_MODE1 = (1<<4) /*! SPI Mode 1 */,
+	SPI_FLAG_MODE2 = (1<<5) /*! SPI Mode 2 */,
+	SPI_FLAG_MODE3 = (1<<6) /*! SPI Mode 3 */,
+	SPI_FLAG_MASTER = (1<<7) /*! SPI Master */,
+	SPI_FLAG_SLAVE = (1<<8) /*! SPI Slave */,
+} spi_flag_t;
+
 /*! \brief SPI Attribute Data Structure
  * \details This structure defines how the control structure
  * for opening or reconfiguring the SPI port.
@@ -158,6 +170,17 @@ typedef struct MCU_PACK {
 	u8 resd[3];
 	u32 bitrate /*! \brief The SPI bitrate */;
 } spi_attr_t;
+
+typedef struct MCU_PACK {
+	u32 o_flags;
+} spi_info_t;
+
+typedef struct MCU_PACK {
+	u32 o_flags;
+	u8 pin_assignment[4];
+	u32 freq;
+	u8 width;
+} spi_3_attr_t;
 
 
 typedef mcu_action_t spi_action_t;

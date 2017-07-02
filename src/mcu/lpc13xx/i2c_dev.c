@@ -93,7 +93,7 @@ void _mcu_i2c_dev_power_on(int port){
 		_mcu_lpc_core_enable_pwr(PCI2C);
 		LPC_SYSCON->PRESETCTRL |= (1<<1); //de-assert the I2C peripheral reset--applies to I2C and SSP0/1
 		LPC_SYSCON->SYSAHBCLKCTRL |= (SYSAHBCLKCTRL_I2C);
-		_mcu_core_priv_enable_irq((void*)I2C_IRQn);
+		_mcu_cortexm_priv_enable_irq((void*)I2C_IRQn);
 		i2c_local[port].callback = NULL;
 	}
 	i2c_local[port].ref_count++;
@@ -105,7 +105,7 @@ void _mcu_i2c_dev_power_off(int port){
 		i2c_local[port].ref_count--;
 		if( i2c_local[port].ref_count == 0 ){
 			LPC_SYSCON->SYSAHBCLKCTRL &= ~(SYSAHBCLKCTRL_I2C);
-			_mcu_core_priv_disable_irq((void*)I2C_IRQn);
+			_mcu_cortexm_priv_disable_irq((void*)I2C_IRQn);
 			_mcu_lpc_core_disable_pwr(PCI2C);
 		}
 	}

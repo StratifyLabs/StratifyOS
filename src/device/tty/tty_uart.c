@@ -48,7 +48,7 @@ static const int tty_speeds[B921600 + 1] = {
 
 int tty_uart_open(const device_cfg_t * cfg){
 	//make sure the port is open and configured the way we want
-	return mcu_check_uart_port(cfg);
+	return 0;
 }
 
 int tty_uart_ioctl(const device_cfg_t * cfg, int request, void * ctl){

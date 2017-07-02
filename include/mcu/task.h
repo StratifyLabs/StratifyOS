@@ -39,8 +39,7 @@
 #define MCU_TASK_H_
 
 #include <stdint.h>
-#include "mcu/types.h"
-#include "mcu/arch.h"
+#include "mcu/cortexm.h"
 
 #ifdef __cplusplus
 extern "C" {

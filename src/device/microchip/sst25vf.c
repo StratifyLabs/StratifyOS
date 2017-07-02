@@ -31,9 +31,20 @@ int sst25vf_open(const device_cfg_t * cfg){
 	uint8_t status;
 	pio_attr_t attr;
 	sst25vf_state_t * state = (sst25vf_state_t*)cfg->state;
+	spi_attr_t spi_cfg;
 
-	err = mcu_check_spi_port(cfg);
+	spi_cfg.pin_assign = cfg->pin_assign;
+	spi_cfg.width = cfg->pcfg.spi.width;
+	spi_cfg.mode = cfg->pcfg.spi.mode;
+	spi_cfg.format = cfg->pcfg.spi.format;
+	spi_cfg.bitrate = cfg->bitrate;
+	spi_cfg.master = SPI_ATTR_MASTER;
+	err = mcu_spi_open(cfg);
 	if ( err < 0 ){
+		return err;
+	}
+
+	if( (err = mcu_spi_ioctl(cfg, I_SPI_SETATTR, &spi_cfg)) < 0 ){
 		return err;
 	}
 

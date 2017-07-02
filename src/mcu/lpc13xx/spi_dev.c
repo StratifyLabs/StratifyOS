@@ -59,14 +59,14 @@ void _mcu_spi_dev_power_on(int port){
 		LPC_SYSCON->SSP0CLKDIV = 1;
 		LPC_SYSCON->PRESETCTRL |= (1<<0);
 		_mcu_lpc_core_enable_pwr(PCSSP0); //Enable clock to SSP module (including the register block)
-		_mcu_core_priv_enable_irq((void*)SSP0_IRQn);
+		_mcu_cortexm_priv_enable_irq((void*)SSP0_IRQn);
 		break;
 #if MCU_SSP_PORTS > 1
 	case 1:
 		LPC_SYSCON->SSP1CLKDIV = 1;
 		LPC_SYSCON->PRESETCTRL |= (1<<2);
 		_mcu_lpc_core_enable_pwr(PCSSP1);
-		_mcu_core_priv_enable_irq((void*)SSP1_IRQn);
+		_mcu_cortexm_priv_enable_irq((void*)SSP1_IRQn);
 		break;
 #endif
 	}
@@ -76,13 +76,13 @@ void _mcu_spi_dev_power_off(int port){
 	switch(port){
 	case 0:
 		LPC_SYSCON->PRESETCTRL &= ~(1<<0);
-		_mcu_core_priv_disable_irq((void*)SSP0_IRQn);
+		_mcu_cortexm_priv_disable_irq((void*)SSP0_IRQn);
 		_mcu_lpc_core_disable_pwr(PCSSP0);
 		break;
 #if MCU_SSP_PORTS > 1
 	case 1:
 		LPC_SYSCON->PRESETCTRL &= ~(1<<2);
-		_mcu_core_priv_disable_irq((void*)SSP1_IRQn);
+		_mcu_cortexm_priv_disable_irq((void*)SSP1_IRQn);
 		_mcu_lpc_core_disable_pwr(PCSSP1);
 		break;
 #endif

@@ -18,6 +18,7 @@
  */
 
 #include <errno.h>
+#include "mcu/cortexm.h"
 #include "mcu/eint.h"
 #include "mcu/core.h"
 #include "mcu/debug.h"
@@ -86,7 +87,7 @@ int mcu_eint_setaction(int port, void * ctl){
 		exec_callback(port, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
 	}
 
-	if( _mcu_core_priv_validate_callback(action->callback) < 0 ){
+	if( _mcu_cortexm_priv_validate_callback(action->callback) < 0 ){
 		return -1;
 	}
 
@@ -94,7 +95,7 @@ int mcu_eint_setaction(int port, void * ctl){
 	eint_local[port].handler.context = action->context;
 
 	set_event(port, action->event);
-	_mcu_core_setirqprio(EINT0_IRQn + port, action->prio);
+	_mcu_cortexm_set_irq_prio(EINT0_IRQn + port, action->prio);
 
 	return 0;
 }
@@ -168,7 +169,7 @@ int mcu_eint_setattr(int port, void * ctl){
 }
 
 void reset_eint_port(int port){
-	_mcu_core_priv_disable_irq((void*)(EINT0_IRQn + port));
+	_mcu_cortexm_priv_disable_irq((void*)(EINT0_IRQn + port));
 
 	eint_local[port].handler.callback = 0;
 
@@ -197,7 +198,7 @@ int set_event(int port, eint_action_event_t event){
 	int err;
 	err = 0;
 
-	_mcu_core_priv_disable_irq((void*)(EINT0_IRQn + port));
+	_mcu_cortexm_priv_disable_irq((void*)(EINT0_IRQn + port));
 
 	LPC_SC->EXTPOLAR &= ~(1<<port);
 	LPC_SC->EXTMODE &= ~(1<<port);
@@ -228,7 +229,7 @@ int set_event(int port, eint_action_event_t event){
 		LPC_SC->EXTINT |= (1<<port); //Clear the interrupt flag
 	}
 
-	_mcu_core_priv_enable_irq((void*)EINT0_IRQn + port);
+	_mcu_cortexm_priv_enable_irq((void*)EINT0_IRQn + port);
 	return err;
 }
 
@@ -261,7 +262,7 @@ eint_action_event_t get_event(int port){
  */
 
 void exec_callback(int port, void * data){
-	_mcu_core_exec_event_handler(&(eint_local[port].handler), data);
+	_mcu_cortexm_execute_event_handler(&(eint_local[port].handler), data);
 }
 
 //Interrupt Handling

@@ -17,7 +17,8 @@
  * 
  */
 
-#include "mcu/mcu.h"
+#include "mcu/fault.h"
+#include "mcu/arch.h"
 
 int fault_dev_save(fault_t * fault){
 	LPC_RTC->GPREG0 = fault->num;

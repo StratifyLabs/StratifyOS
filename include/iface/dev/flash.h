@@ -42,7 +42,7 @@
 
 #include <stdint.h>
 #include "ioctl.h"
-#include "mcu/arch.h"
+#include "mcu/types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -73,6 +73,10 @@ extern "C" {
 typedef struct {
 	u8 pin_assign /*! ignored */;
 } flash_attr_t;
+
+typedef struct {
+	u32 o_flags;
+} flash_info_t;
 
 #define I_FLASH_ATTR _IOCTLR(FLASH_IOC_IDENT_CHAR, I_GLOBAL_ATTR, flash_attr_t)
 #define I_FLASH_GETATTR I_FLASH_ATTR

@@ -50,12 +50,10 @@
 
 /*! @} */
 
-/*! \addtogroup HWPL
+/*! \addtogroup MCU
  * @{
  */
 
-#include "mcu/fault.h"
-#include "mcu/arch.h"
 #include "mcu/types.h"
 #include "iface/dev/pio.h"
 #include "iface/device_config.h"
@@ -75,13 +73,6 @@ extern u32 _bss;
 extern u32 _ebss;
 extern u32 _sys;
 extern u32 _esys;
-
-int mcu_check_adc_port(const device_cfg_t * cfgp);
-int mcu_check_spi_port(const device_cfg_t * cfgp);
-int mcu_check_ssp_port(const device_cfg_t * cfgp);
-int mcu_check_i2c_port(const device_cfg_t * cfgp);
-int mcu_check_pwm_port(const device_cfg_t * cfgp);
-int mcu_check_uart_port(const device_cfg_t * cfgp);
 
 #define MCU_SYNC_IO_FLAG_READ (1<<15)
 
@@ -124,6 +115,15 @@ typedef struct MCU_PACK {
 } mcu_board_config_t;
 
 extern const mcu_board_config_t mcu_board_config;
+
+typedef struct MCU_PACK {
+	u16 irq_total;
+	u16 irq_middle_prio;
+	u16 usb_logical_endpoint_count;
+} mcu_config_t;
+
+extern const mcu_config_t mcu_config;
+
 
 void mcu_board_event(int event, void * args);
 

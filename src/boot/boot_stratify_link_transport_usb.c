@@ -4,12 +4,14 @@
 #include <stdbool.h>
 #include <sys/fcntl.h>
 #include <unistd.h>
+#include "mcu/cortexm.h"
 #include "iface/link.h"
 #include "mcu/mcu.h"
 #include "iface/dev/usb.h"
 #include "dev/usbfifo.h"
 #include "stratify/usb_dev.h"
 #include "stratify/usb_dev_cdc.h"
+#include "mcu/cortexm.h"
 #include "mcu/core.h"
 #include "mcu/usb.h"
 #include "mcu/debug.h"
@@ -48,7 +50,7 @@ link_transport_phy_t stratify_link_boot_transport_usb_open(const char * name, us
 
 	dstr("OPEN USB\n");
 	//open USB
-	_mcu_core_delay_ms(250);
+	_mcu_cortexm_delay_ms(250);
 	mcu_usb_open(&usb_dev);
 
 	dstr("USB OPEN\n");
@@ -138,7 +140,7 @@ int stratify_link_boot_transport_usb_close(link_transport_phy_t * handle){
 void stratify_link_boot_transport_usb_wait(int msec){
 	int i;
 	for(i = 0; i < msec; i++){
-		_mcu_core_delay_us(1000);
+		_mcu_cortexm_delay_us(1000);
 	}
 }
 

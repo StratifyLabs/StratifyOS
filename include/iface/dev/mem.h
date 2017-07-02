@@ -37,7 +37,7 @@
 
 #include <stdint.h>
 #include "ioctl.h"
-#include "mcu/arch.h"
+#include "mcu/types.h"
 
 #ifdef __cplusplus
 extern "C" {

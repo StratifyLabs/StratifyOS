@@ -42,17 +42,13 @@
 
 #include <stdint.h>
 #include "ioctl.h"
-#include "mcu/arch.h"
+#include "mcu/types.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #define USB_IOC_IDENT_CHAR 'u'
-
-#ifndef USB_LOGIC_EP_NUM
-#define USB_LOGIC_EP_NUM 0
-#endif
 
 enum {
 	USB_SETUP_EVENT /*! USB Setup event */,

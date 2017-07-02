@@ -44,7 +44,7 @@
 
 #include <stdint.h>
 #include "ioctl.h"
-#include "mcu/arch.h"
+#include "mcu/types.h"
 
 
 #define EMC_IOC_IDENT_CHAR 'E'

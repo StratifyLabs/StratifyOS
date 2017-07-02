@@ -19,6 +19,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include "mcu/cortexm.h"
 #include "mcu/i2c.h"
 #include "mcu/debug.h"
 #include "mcu/core.h"
@@ -128,7 +129,7 @@ void _mcu_i2c_dev_power_on(int port){
 		}
 		memset(&(i2c_local[port].master), 0, sizeof(i2c_local_transfer_t));
 		memset(&(i2c_local[port].slave), 0, sizeof(i2c_local_slave_t));
-		_mcu_core_priv_enable_irq((void*)(u32)(i2c_irqs[port]));
+		_mcu_cortexm_priv_enable_irq((void*)(u32)(i2c_irqs[port]));
 	}
 	i2c_local[port].ref_count++;
 }
@@ -143,7 +144,7 @@ void _mcu_i2c_dev_power_off(int port){
 			i2c_regs->ADR1 = 0;
 			i2c_regs->ADR2 = 0;
 			i2c_regs->ADR3 = 0;
-			_mcu_core_priv_disable_irq((void*)(u32)(i2c_irqs[port]));
+			_mcu_cortexm_priv_disable_irq((void*)(u32)(i2c_irqs[port]));
 			switch(port){
 			case 0:
 #if defined __lpc13uxx || __lpc13xx
@@ -380,7 +381,7 @@ int mcu_i2c_geterr(int port, void * ctl){
 int mcu_i2c_setaction(int port, void * ctl){
 	mcu_action_t * action = (mcu_action_t*)ctl;
 
-	_mcu_core_setirqprio(i2c_irqs[port], action->prio);
+	_mcu_cortexm_set_irq_prio(i2c_irqs[port], action->prio);
 
 	if( action->callback == 0 ){
 		i2c_local[port].slave.handler.callback = 0;
@@ -388,7 +389,7 @@ int mcu_i2c_setaction(int port, void * ctl){
 		return 0;
 	}
 
-	if( _mcu_core_priv_validate_callback(action->callback) < 0 ){
+	if( _mcu_cortexm_priv_validate_callback(action->callback) < 0 ){
 		return -1;
 	}
 
@@ -579,7 +580,7 @@ static void _mcu_i2c_isr(int port) {
 		} else if( (i2c_local[port].state >= I2C_STATE_SLAVE_READ) &&
 				(i2c_local[port].state <= I2C_STATE_SLAVE_WRITE_COMPLETE)){
 			i2c_regs->CONSET = STO;
-			_mcu_core_exec_event_handler(&(i2c_local[port].slave.handler), MCU_EVENT_SET_CODE(I2C_EVENT_SLAVE_BUS_ERROR));
+			_mcu_cortexm_execute_event_handler(&(i2c_local[port].slave.handler), MCU_EVENT_SET_CODE(I2C_EVENT_SLAVE_BUS_ERROR));
 		}
 
 		break;
@@ -622,7 +623,7 @@ static void _mcu_i2c_isr(int port) {
 		i2c_regs->CONSET = AA;
 		i2c_local[port].state = I2C_STATE_SLAVE_READ_COMPLETE;
 		//the device is no longer addressed and won't interrupt when the stop condition occurs
-		_mcu_core_exec_event_handler(&(i2c_local[port].slave.handler), MCU_EVENT_SET_CODE(I2C_EVENT_DATA_READY));
+		_mcu_cortexm_execute_event_handler(&(i2c_local[port].slave.handler), MCU_EVENT_SET_CODE(I2C_EVENT_DATA_READY));
 		break;
 
 	case 0xA8: //Own SLA+R has been received and ack returned
@@ -642,7 +643,7 @@ static void _mcu_i2c_isr(int port) {
 		i2c_regs->CONSET = AA;
 
 		//the device is no longer addressed and won't interrupt when the stop condition occurs
-		_mcu_core_exec_event_handler(&(i2c_local[port].slave.handler), MCU_EVENT_SET_CODE(I2C_EVENT_WRITE_COMPLETE));
+		_mcu_cortexm_execute_event_handler(&(i2c_local[port].slave.handler), MCU_EVENT_SET_CODE(I2C_EVENT_WRITE_COMPLETE));
 		break;
 
 	case 0xA0: //stop or restart has been received while addressed
@@ -661,7 +662,7 @@ static void _mcu_i2c_isr(int port) {
 
 		i2c_regs->CONSET = AA;
 
-		_mcu_core_exec_event_handler(&(i2c_local[port].slave.handler), MCU_EVENT_SET_CODE(event));
+		_mcu_cortexm_execute_event_handler(&(i2c_local[port].slave.handler), MCU_EVENT_SET_CODE(event));
 
 		break;
 	}
@@ -670,7 +671,7 @@ static void _mcu_i2c_isr(int port) {
 
 	if ( i2c_local[port].state == I2C_STATE_MASTER_COMPLETE ){
 		i2c_local[port].state = I2C_STATE_NONE;
-		_mcu_core_exec_event_handler(&(i2c_local[port].master.handler), &(i2c_local[port].transfer));
+		_mcu_cortexm_execute_event_handler(&(i2c_local[port].master.handler), &(i2c_local[port].transfer));
 	}
 }
 
@@ -694,7 +695,7 @@ int i2c_transfer(int port, int op, device_transfer_t * dop){
 	i2c_local[port].state = I2C_STATE_START;
 
 
-	if( _mcu_core_priv_validate_callback(dop->callback) < 0 ){
+	if( _mcu_cortexm_priv_validate_callback(dop->callback) < 0 ){
 		errno = EPERM;
 		return -1;
 	}

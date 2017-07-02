@@ -38,6 +38,7 @@ extern "C" {
 #endif
 
 #define DEVICE_GET_PORT(x) (x->periph.port)
+#define DEVICE3_GET_PORT(x) (x->port)
 
 /*! \brief Data structure for on-chip MCU peripherals.
  * \details This data structure is used for all on-chip MCU peripherals.
@@ -55,7 +56,9 @@ typedef struct MCU_PACK {
 typedef struct MCU_PACK {
 	i8 port /*! \brief The GPIO port number (-1 means not used)*/;
 	i8 pin /*! \brief The GPIO pin number */;
-} device_gpio_t;
+} device_pio_t;
+
+typedef device_pio_t device_gpio_t;
 
 /*! \brief Data structure for a SPI device with a CS pin
  * \details This data structure defines
@@ -66,10 +69,10 @@ typedef struct MCU_PACK {
  *
  */
 typedef struct MCU_PACK {
-	pio_t cs /*! \brief The chip select gpio port/pin */;
-	u8 width /*! \brief The width of a SPI bus word */;
-	u8 format /*! \brief The format the SPI bus uses */;
-	u8 mode /*! \brief The SPI mode (0, 1, 2, or 3) */;
+	pio_t cs /*! The chip select gpio port/pin */;
+	u8 width /*! The width of a SPI bus word */;
+	u8 format /*! The format the SPI bus uses */;
+	u8 mode /*! The SPI mode (0, 1, 2, or 3) */;
 	u8 reserved0;
 } device_spi_cfg_t;
 
@@ -79,7 +82,7 @@ typedef struct MCU_PACK {
  * the I2C bus.
  */
 typedef struct MCU_PACK {
-	u16 slave_addr /*! \brief The I2C Slave address */;
+	u16 slave_addr /*! The I2C Slave address */;
 } device_i2c_cfg_t;
 
 /*! \brief Data structure for a UART device (RX and TX lines)
@@ -88,9 +91,9 @@ typedef struct MCU_PACK {
  * uses the UART to communicate with the device.
  */
 typedef struct MCU_PACK {
-	u8 stop_bits /*! \brief The number of stop bits */;
-	u8 parity /*! \brief The Parity (none, odd, or even) */;
-	u8 width /*! \brief The width of a UART word */;
+	u8 stop_bits /*! The number of stop bits */;
+	u8 parity /*! The Parity (none, odd, or even) */;
+	u8 width /*! The width of a UART word */;
 } device_uart_cfg_t;
 
 /*! \brief The maximum number of ADC channels in \ref device_adc_cfg_t.
@@ -147,6 +150,12 @@ typedef struct MCU_PACK {
 	void * state /*! \brief Pointer to device specific state (RAM) */;
 } device_cfg_t;
 
+typedef struct MCU_PACK {
+	u32 port /*! The port associated with the device (for mcu peripherals) */;
+	const void * config /*! Pointer to device configuration (flash) */;
+	void * state /*! \brief Pointer to device state (RAM) */;
+} dev_handle_t;
+
 
 /*! \brief Data structure used for reads and writes of devices.
  * \details This is the data structure for data transfers.
@@ -172,6 +181,14 @@ typedef int (*device_driver_read_t)(const device_cfg_t*, device_transfer_t *);
 typedef int (*device_driver_write_t)(const device_cfg_t*, device_transfer_t *);
 typedef int (*device_driver_close_t)(const device_cfg_t*);
 
+typedef int (*device3_driver_open_t)(const dev_handle_t *);
+typedef int (*device3_driver_ioctl_t)(const dev_handle_t*, int, void*);
+typedef int (*device3_driver_read_t)(const dev_handle_t*, device_transfer_t *);
+typedef int (*device3_driver_write_t)(const dev_handle_t*, device_transfer_t *);
+typedef int (*device3_driver_close_t)(const dev_handle_t*);
+
+#ifndef __link
+
 /*! \brief HWPL Driver Function Pointers
  * \details This structure defines the contents
  * of a HWPL device file.  The HWPL device files
@@ -188,6 +205,14 @@ typedef struct MCU_PACK {
 	device_driver_close_t close /*! \brief A pointer to the periph_close() function */;
 } device_driver_t;
 
+typedef struct MCU_PACK {
+	device3_driver_open_t open /*! \brief A pointer to the periph_open() function */;
+	device3_driver_ioctl_t ioctl /*! \brief A pointer to the periph_ioctl() function */;
+	device3_driver_read_t read /*! \brief A pointer to the periph_read() function */;
+	device3_driver_write_t write /*! \brief A pointer to the periph_write() function */;
+	device3_driver_close_t close /*! \brief A pointer to the periph_close() function */;
+} device3_driver_t;
+
 /*! \brief A device driver (can either be an MCU peripheral or external IC)
  * \details This data structure contains the driver name,
  * function pointers, port number, and type.
@@ -201,10 +226,21 @@ typedef struct {
 	device_cfg_t cfg /*! \brief The configuration for the device */;
 } device_t;
 
+typedef struct {
+	char name[NAME_MAX] /*! The name of the device */;
+	u16 uid /*! The user ID of the device (either user or root) */;
+	u16 mode /*! The file access values */;
+	device_driver_t driver /*! \brief The driver functions */;
+	dev_handle_t handle /*! \brief The configuration for the device */;
+} device3_t;
+
 
 #define DEVICE_MODE(mode_value, uid_value, gid_value, type) .mode = mode_value | type, \
 		.uid = uid_value, \
 		.gid = gid_value
+
+#define DEVICE3_MODE(mode_value, uid_value, type) .mode = mode_value | type, \
+		.uid = uid_value
 
 #define DEVICE_DRIVER(driver_name) .driver.open = driver_name##_open, \
 		.driver.close = driver_name##_close, \
@@ -230,11 +266,18 @@ typedef struct {
 		.cfg.periph.port = port_number \
 }
 
+#define DEVICE3_PERIPH(device_name, periph_name, port_number, state, mode_value, uid_value, gid_value, device_type) { \
+		.name = device_name, \
+		DEVICE3_MODE(mode_value, uid_value, device_type), \
+		DEVICE_DRIVER(periph_name), \
+		.handle.port = port_number \
+		.handle.state = state \
+}
+
 #define DEVICE_TERMINATOR { \
 		.driver.open = NULL \
 }
 
-#ifndef __link
 
 static inline bool device_is_terminator(const device_t * dev);
 bool device_is_terminator(const device_t * dev){

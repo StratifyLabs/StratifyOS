@@ -19,9 +19,12 @@
 
 #include "mcu/mcu.h"
 #include "mcu/debug.h"
-#include "mcu/core.h"
+#include "mcu/cortexm.h"
 #include "mcu/task.h"
 #include "task_flags.h"
+
+#define TASK_THREAD_RETURN 0xFFFFFFFD
+
 
 static volatile uint32_t * volatile stack MCU_SYS_MEM; //static keeps this from being stored on the stack
 static void system_reset(); //This is used if the OS process returns
@@ -51,21 +54,21 @@ int task_init_single(int (*initial_thread)(),
 	frame->psr = 0x21000000; //default PSR value
 
 	//enable use of PSP
-	_mcu_core_priv_set_thread_stack_ptr( system_stack );
+	_mcu_cortexm_priv_set_thread_stack_ptr( system_stack );
 
 	//Set the interrupt priorities
-	for(i=0; i <= DEV_LAST_IRQ; i++){
-		NVIC_SetPriority( i, DEV_MIDDLE_PRIORITY - 1 );
+	for(i=0; i <= mcu_config.irq_total; i++){
+		NVIC_SetPriority( i, mcu_config.irq_middle_prio - 1 );
 	}
 
-	NVIC_SetPriority(SysTick_IRQn, DEV_MIDDLE_PRIORITY);
-	NVIC_SetPriority(PendSV_IRQn, DEV_MIDDLE_PRIORITY);
-	NVIC_SetPriority(SVCall_IRQn, DEV_MIDDLE_PRIORITY);
+	NVIC_SetPriority(SysTick_IRQn, mcu_config.irq_middle_prio);
+	NVIC_SetPriority(PendSV_IRQn, mcu_config.irq_middle_prio);
+	NVIC_SetPriority(SVCall_IRQn, mcu_config.irq_middle_prio);
 
 	//Turn on the SYSTICK timer and point to an empty interrupt
-	core_tick_enable_irq();  //Enable context switching
+	_mcu_cortexm_enable_systick_irq();  //Enable context switching
 
-	_mcu_core_priv_set_stack_ptr( (void*)&_top_of_stack ); //reset the handler stack pointer
+	_mcu_cortexm_priv_set_stack_ptr( (void*)&_top_of_stack ); //reset the handler stack pointer
 	task_priv_switch_context(NULL);
 
 	while(1);
@@ -94,7 +97,7 @@ void task_thread_stack_return(){
 }
 
 void system_reset(){
-	mcu_core_privcall(_mcu_core_priv_reset, NULL);
+	mcu_core_privcall(_mcu_cortexm_priv_reset, NULL);
 }
 
 int task_interrupt(task_interrupt_t * intr){

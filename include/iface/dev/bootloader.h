@@ -39,7 +39,6 @@
 #include <stdint.h>
 #include "iface/link_transport.h"
 #include "ioctl.h"
-#include "mcu/arch.h"
 #include "mcu/types.h"
 #include "iface/dev/pio.h"
 

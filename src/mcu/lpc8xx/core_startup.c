@@ -159,7 +159,7 @@ void _mcu_core_getserialno(uint32_t * serial_number){
 
 void _mcu_core_reset_handler(){
 	core_init();
-	//_mcu_core_priv_setvectortableaddr((void*)_mcu_core_vector_table);
+	//_mcu_cortexm_priv_set_vector_table_addr((void*)_mcu_core_vector_table);
 	_main(); //This function should never return
 	while(1);
 }

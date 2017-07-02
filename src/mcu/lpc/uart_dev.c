@@ -19,6 +19,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include "mcu/cortexm.h"
 #include "mcu/uart.h"
 #include "mcu/pio.h"
 #include "mcu/debug.h"
@@ -168,7 +169,7 @@ void _mcu_uart_dev_power_on(int port){
 void _mcu_uart_dev_power_off(int port){
 	if ( uart_local[port].ref_count > 0 ){
 		if ( uart_local[port].ref_count == 1 ){
-			_mcu_core_priv_disable_irq((void*)(u32)(uart_irqs[port]));
+			_mcu_cortexm_priv_disable_irq((void*)(u32)(uart_irqs[port]));
 			switch(port){
 			case 0:
 #if defined __lpc13uxx
@@ -364,7 +365,7 @@ int mcu_uart_setattr(int port, void * ctl){
 #endif
 
 	//! \todo Error check the width
-	_mcu_core_priv_disable_irq((void*)(u32)(uart_irqs[port]));
+	_mcu_cortexm_priv_disable_irq((void*)(u32)(uart_irqs[port]));
 
 	uart_regs->RBR;
 	uart_regs->IIR;
@@ -403,13 +404,13 @@ int mcu_uart_setattr(int port, void * ctl){
 	//! \todo need to store actual baud rate not target baud rate
 	//uart_local[port].attr.baudrate = ctl_ptr->baudrate;
 
-	_mcu_core_priv_enable_irq((void*)(u32)(uart_irqs[port]));
+	_mcu_cortexm_priv_enable_irq((void*)(u32)(uart_irqs[port]));
 
 	return 0;
 }
 
 static void exec_readcallback(int port, LPC_UART_Type * uart_regs, void * data){
-	_mcu_core_exec_event_handler(&(uart_local[port].read), (mcu_event_t)data);
+	_mcu_cortexm_execute_event_handler(&(uart_local[port].read), (mcu_event_t)data);
 
 	//if the callback is NULL now, disable the interrupt
 	if( uart_local[port].read.callback == NULL ){
@@ -420,7 +421,7 @@ static void exec_readcallback(int port, LPC_UART_Type * uart_regs, void * data){
 static void exec_writecallback(int port, LPC_UART_Type * uart_regs, void * data){
 	uart_local[port].tx_bufp = NULL;
 	//call the write callback
-	_mcu_core_exec_event_handler(&(uart_local[port].write), (mcu_event_t)data);
+	_mcu_cortexm_execute_event_handler(&(uart_local[port].write), (mcu_event_t)data);
 
 	//if the callback is NULL now, disable the interrupt
 	if( uart_local[port].write.callback == NULL ){
@@ -454,7 +455,7 @@ int mcu_uart_setaction(int port, void * ctl){
 
 	} else {
 
-		if( _mcu_core_priv_validate_callback(action->callback) < 0 ){
+		if( _mcu_cortexm_priv_validate_callback(action->callback) < 0 ){
 			return -1;
 		}
 
@@ -475,7 +476,7 @@ int mcu_uart_setaction(int port, void * ctl){
 		}
 	}
 
-	_mcu_core_setirqprio(uart_irqs[port], action->prio);
+	_mcu_cortexm_set_irq_prio(uart_irqs[port], action->prio);
 
 
 	return 0;
@@ -552,7 +553,7 @@ int _mcu_uart_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
 			errno = EAGAIN;
 			len = -1;
 		} else {
-			if( _mcu_core_priv_validate_callback(rop->callback) < 0 ){
+			if( _mcu_cortexm_priv_validate_callback(rop->callback) < 0 ){
 				return -1;
 			}
 
@@ -590,7 +591,7 @@ int _mcu_uart_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
 	uart_regs->TER = 0; //disable the transmitter
 	write_tx_data(port);
 
-	if( _mcu_core_priv_validate_callback(wop->callback) < 0 ){
+	if( _mcu_cortexm_priv_validate_callback(wop->callback) < 0 ){
 		return -1;
 	}
 

@@ -24,6 +24,7 @@
 #include <unistd.h>
 #include "stratify/usb_dev.h"
 #include "sys/ioctl.h"
+#include "mcu/mcu.h"
 #include "mcu/usb.h"
 #include "mcu/debug.h"
 #include "dev/sys.h"
@@ -249,11 +250,11 @@ int usb_dev_std_setup(void * context_object, mcu_event_t usb_event /*! Callback 
 	return 1;
 }
 
-#define USB_DEV_EP_MASK (USB_ENDPOINT_IN|(USB_LOGIC_EP_NUM-1))
+#define USB_DEV_EP_MASK (USB_ENDPOINT_IN|(mcu_config.usb_logical_endpoint_count-1))
 
 int usb_dev_decode_ep(usb_dev_context_t * context, int ep){
 	if ( ep & USB_ENDPOINT_IN ){
-		return ((ep << USB_LOGIC_EP_NUM) << (ep & (USB_LOGIC_EP_NUM-1)));
+		return ((ep << mcu_config.usb_logical_endpoint_count) << (ep & (mcu_config.usb_logical_endpoint_count-1)));
 	} else {
 		return (1<<ep);
 	}
@@ -294,7 +295,7 @@ u32 usb_dev_std_req_get_status(usb_dev_context_t * context) {
 	case USB_DEV_REQUEST_TO_ENDPOINT:
 		i = context->setup_pkt.wIndex.b[0] & USB_DEV_EP_MASK;
 		j = usb_dev_decode_ep(context, i);
-		if (((context->cfg != 0) || ((i & (USB_LOGIC_EP_NUM-1)) == 0)) && (context->ep_mask & j)) {
+		if (((context->cfg != 0) || ((i & (mcu_config.usb_logical_endpoint_count-1)) == 0)) && (context->ep_mask & j)) {
 			*ep0_bufp = (context->ep_halt & j) ? 1 : 0;
 			context->ep0_data.dptr = context->ep0_buf;
 		} else {
@@ -334,7 +335,7 @@ u32 usb_dev_std_reg_set_clrfeature(usb_dev_context_t * context, u32 sc) {
 	case USB_DEV_REQUEST_TO_ENDPOINT:
 		i = context->setup_pkt.wIndex.b[0] & USB_DEV_EP_MASK;
 		j = usb_dev_decode_ep(context, i);
-		if ((context->cfg != 0) && ((i & (USB_LOGIC_EP_NUM-1)) != 0) && (context->ep_mask & j)) {
+		if ((context->cfg != 0) && ((i & (mcu_config.usb_logical_endpoint_count-1)) != 0) && (context->ep_mask & j)) {
 			if (context->setup_pkt.wValue.w == USB_FEATURE_ENDPOINT_STALL) {
 				if (sc) {
 					mcu_usb_stallep(context->constants->port, (void*)i);
@@ -510,11 +511,11 @@ u32 usb_dev_std_req_setcfg (usb_dev_context_t * context) {
 						for (i = 0; i < USB_DEV_ALT_SETTING_SIZE; i++) {
 							context->alt_setting[i] = 0;
 						}
-						for (i = 1; i < USB_LOGIC_EP_NUM; i++) {
+						for (i = 1; i < mcu_config.usb_logical_endpoint_count; i++) {
 							if (context->ep_mask & (1 << i)) {
 								mcu_usb_disableep(context->constants->port, (void*)i);
 							}
-							if (context->ep_mask & ((1 << USB_LOGIC_EP_NUM) << i)) {
+							if (context->ep_mask & ((1 << mcu_config.usb_logical_endpoint_count) << i)) {
 								mcu_usb_disableep(context->constants->port, (void*)(i|USB_ENDPOINT_IN));
 							}
 						}
@@ -556,11 +557,11 @@ u32 usb_dev_std_req_setcfg (usb_dev_context_t * context) {
 		} else {
 			//configuration zero disables all USB configurations
 			context->cfg = 0;
-			for (i = 1; i < USB_LOGIC_EP_NUM; i++) {
+			for (i = 1; i < mcu_config.usb_logical_endpoint_count; i++) {
 				if (context->ep_mask & (1 << i)) {
 					mcu_usb_disableep(context->constants->port, (void*)i);
 				}
-				if (context->ep_mask & ((1 << USB_LOGIC_EP_NUM) << i)) {
+				if (context->ep_mask & ((1 << mcu_config.usb_logical_endpoint_count) << i)) {
 					mcu_usb_disableep(context->constants->port, (void*)(i|USB_ENDPOINT_IN));
 				}
 			}

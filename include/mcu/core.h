@@ -39,7 +39,7 @@
 #define _MCU_CORE_H_
 
 #include <stdint.h>
-#include "mcu/mcu.h"
+#include "mcu/types.h"
 #include "iface/device_config.h"
 #include "../iface/dev/core.h"
 
@@ -47,22 +47,6 @@
 extern "C" {
 #endif
 
-typedef void (*core_privcall_t)(void*);
-
-/*! \details A privileged call.
- */
-#ifndef __link
-/*! \details This performs a privileged call.
- *
- */
-void mcu_core_privcall(core_privcall_t call /*! the function to execute */,
-		void * args /*! the pointer to pass to call */) __attribute__((optimize("1")));
-#endif
-
-/*! \details This function reads the OS signature value.
- *
- */
-int _mcu_core_getsignature(int port, void * arg) MCU_PRIV_CODE;
 
 /*! \details This function sets the main clock speed based on
  * the desired speed (fclk) and the given oscillator frequency (fosc).  This function rounds the target
@@ -139,59 +123,19 @@ int mcu_core_setpinfunc(int port, void * arg) MCU_PRIV_CODE;
 
 void _mcu_core_getserialno(sn_t * serialno) MCU_PRIV_CODE;
 
-#define MCU_CORE_USB_MAX_PACKET_ZERO_VALUE 64
 
 #ifndef __link
 static inline int _mcu_core_getclock() MCU_ALWAYS_INLINE;
 int _mcu_core_getclock(){ return mcu_board_config.core_cpu_freq; }
 #endif
 
-void _mcu_core_priv_enable_interrupts(void * args) MCU_PRIV_CODE;
-void _mcu_core_priv_disable_interrupts(void * args) MCU_PRIV_CODE;
-void _mcu_core_priv_enable_irq(void * x) MCU_PRIV_CODE;
-void _mcu_core_priv_disable_irq(void * x) MCU_PRIV_CODE;
-void _mcu_core_priv_reset(void * args) MCU_PRIV_CODE;
-void _mcu_core_priv_get_stack_ptr(void * ptr) MCU_PRIV_CODE;
-void _mcu_core_priv_set_stack_ptr(void * ptr) MCU_PRIV_CODE;
-void _mcu_core_priv_get_thread_stack_ptr(void * ptr) MCU_PRIV_CODE;
-void _mcu_core_priv_set_thread_stack_ptr(void * ptr) MCU_PRIV_CODE;
-
-void _mcu_core_unprivileged_mode();
-void _mcu_core_thread_mode();
-
-void _mcu_core_delay_us(u32 us);
-void _mcu_core_delay_ms(u32 ms);
-
 void _mcu_core_priv_bootloader_api(void * args) MCU_PRIV_CODE;
 
-int _mcu_core_priv_validate_callback(mcu_callback_t callback) MCU_PRIV_CODE;
 
-void _mcu_core_exec_event_handler(mcu_event_handler_t * event, mcu_event_t arg) MCU_PRIV_CODE;
-int _mcu_core_setirqprio(int irq, int prio) MCU_PRIV_CODE;
-
-
-/*! \details
- * \sa periph_open()
- *
- */
 int mcu_core_open(const device_cfg_t * cfg) MCU_PRIV_CODE;
-/*! \details
- * \sa periph_read()
- *
- */
 int mcu_core_read(const device_cfg_t * cfg, device_transfer_t * rop) MCU_PRIV_CODE;
-/*! \details
- * \sa periph_write()
- */
 int mcu_core_write(const device_cfg_t * cfg, device_transfer_t * wop) MCU_PRIV_CODE;
-/*! \details
- * \sa periph_ioctl()
- *
- */
 int mcu_core_ioctl(const device_cfg_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
-/*! \details
- * \sa periph_close()
- */
 int mcu_core_close(const device_cfg_t * cfg) MCU_PRIV_CODE;
 
 int mcu_core_getattr(int port, void * arg) MCU_PRIV_CODE;
@@ -204,6 +148,7 @@ int mcu_core_invokebootloader(int port, void * arg) MCU_PRIV_CODE;
 int mcu_core_setclkout(int port, void * arg) MCU_PRIV_CODE;
 int mcu_core_setclkdivide(int port, void * arg) MCU_PRIV_CODE;
 int mcu_core_getmcuboardconfig(int port, void * arg) MCU_PRIV_CODE;
+void _mcu_core_set_nvic_priority(int irq, int prio) MCU_PRIV_CODE;
 
 
 

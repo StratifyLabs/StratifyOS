@@ -19,8 +19,6 @@
 
 #include "mcu/spi.h"
 
-#if MCU_SSP_PORTS > 0
-
 #define mcu_spi_open mcu_ssp_open
 #define mcu_spi_close mcu_ssp_close
 #define mcu_spi_setaction mcu_ssp_setaction
@@ -31,8 +29,6 @@
 #define mcu_spi_write mcu_ssp_write
 #define mcu_spi_read mcu_ssp_read
 #define mcu_spi_ioctl mcu_ssp_ioctl
-
-#define mcu_check_spi_port mcu_check_ssp_port
 
 #define sst25vf_open sst25vf_ssp_open
 #define sst25vf_ioctl sst25vf_ssp_ioctl
@@ -65,5 +61,3 @@
 
 #include "sst25vf.c"
 #include "sst25vf_share.c"
-
-#endif

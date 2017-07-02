@@ -35,7 +35,7 @@
 
 
 #include <stdint.h>
-#include "mcu/mcu.h"
+#include "mcu/types.h"
 #include "iface/dev/ioctl.h"
 
 #define RADIO_IOC_CHAR 'R'

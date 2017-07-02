@@ -40,7 +40,6 @@ int (* const _mcu_pio_ioctl_func_table[I_GLOBAL_TOTAL + I_PIO_TOTAL])(int, void*
 
 int mcu_pio_open(const device_cfg_t * cfg){
 	return mcu_open(cfg,
-			MCU_PIO_PORTS,
 			_mcu_pio_dev_powered_on,
 			_mcu_pio_dev_power_on);
 }
@@ -50,7 +49,6 @@ int mcu_pio_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 	return mcu_ioctl(cfg,
 			request,
 			ctl,
-			MCU_PIO_PORTS,
 			_mcu_pio_dev_powered_on,
 			_mcu_pio_ioctl_func_table,
 			I_GLOBAL_TOTAL + I_PIO_TOTAL);
@@ -66,13 +64,12 @@ int mcu_pio_read(const device_cfg_t * cfg, device_transfer_t * rop){
 int mcu_pio_write(const device_cfg_t * cfg, device_transfer_t * wop){
 	return mcu_write(cfg,
 			wop,
-			MCU_PIO_PORTS,
 			_mcu_pio_dev_powered_on,
 			_mcu_pio_dev_write);
 }
 
 int mcu_pio_close(const device_cfg_t * cfg){
-	return mcu_close(cfg, MCU_PIO_PORTS, _mcu_pio_dev_powered_on, _mcu_pio_dev_power_off);
+	return mcu_close(cfg, _mcu_pio_dev_powered_on, _mcu_pio_dev_power_off);
 }
 
 

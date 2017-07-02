@@ -132,7 +132,7 @@ int mcu_eint_setaction(int port, void * ctl){
 	_mcu_eint_local[port].context = action->context;
 
 	//set the interrupt on the wakeup pins
-	_mcu_core_priv_enable_irq((void*)(WAKEUP0_IRQn + port));
+	_mcu_cortexm_priv_enable_irq((void*)(WAKEUP0_IRQn + port));
 
 	return 0;
 }

@@ -18,6 +18,7 @@
  */
 
 #include "mcu/mcu.h"
+#include "mcu/cortexm.h"
 #include "mcu/core.h"
 
 #if MCU_DMA_CHANNELS > 0
@@ -35,7 +36,7 @@ void _mcu_dma_init(int mode){
 	//Enable the controller
 	LPC_GPDMA->CONFIG = (1<<0);
 	//Enable the interrupts
-	_mcu_core_priv_enable_irq((void*)DMA_IRQn);
+	_mcu_cortexm_priv_enable_irq((void*)DMA_IRQn);
 }
 
 void _mcu_dma_exit(){
@@ -68,12 +69,12 @@ void _mcu_core_dma_isr(){
 	for(i=0; i < MCU_DMA_CHANNELS; i++){
 		if ( LPC_GPDMA->INTTCSTAT & (1<<i) ){ //If there is an interrupt on the channel, check for the callback
 			LPC_GPDMA->INTTCCLEAR = (1<<i);
-			_mcu_core_exec_event_handler(&(dma_local[i].handler), 0);
+			_mcu_cortexm_execute_event_handler(&(dma_local[i].handler), 0);
 		}
 
 		if ( LPC_GPDMA->INTERRSTAT & (1<<i) ){
 			LPC_GPDMA->INTERRCLR = (1<<i);
-			_mcu_core_exec_event_handler(&(dma_local[i].handler), (mcu_event_t)1);
+			_mcu_cortexm_execute_event_handler(&(dma_local[i].handler), (mcu_event_t)1);
 		}
 	}
 }
@@ -111,7 +112,7 @@ int _mcu_dma_transferlist(int operation,
 	channel_regs->CLLI = (u32)linked_list->next;
 
 	//Set the callback value
-	if( _mcu_core_priv_validate_callback(callback) < 0 ){
+	if( _mcu_cortexm_priv_validate_callback(callback) < 0 ){
 		return -1;
 	}
 

@@ -18,6 +18,7 @@
  */
 #include <errno.h>
 #include <fcntl.h>
+#include "mcu/cortexm.h"
 #include "mcu/spi.h"
 #include "mcu/pio.h"
 #include "spi_flags.h"
@@ -52,7 +53,7 @@ static int byte_swap(int port, int byte);
 void _mcu_spi_dev_power_on(int port){
 	if ( spi_local[port].ref_count == 0 ){
 		_mcu_lpc_core_enable_pwr(PCSPI);
-		_mcu_core_priv_enable_irq((void*)(u32)(spi_irqs[port]));
+		_mcu_cortexm_priv_enable_irq((void*)(u32)(spi_irqs[port]));
 		spi_local[port].duplex_mem = NULL;
 		spi_local[port].callback = NULL;
 	}
@@ -63,7 +64,7 @@ void _mcu_spi_dev_power_on(int port){
 void _mcu_spi_dev_power_off(int port){
 	if ( spi_local[port].ref_count > 0 ){
 		if ( spi_local[port].ref_count == 1 ){
-			_mcu_core_priv_disable_irq((void*)(u32)(spi_irqs[port]));
+			_mcu_cortexm_priv_disable_irq((void*)(u32)(spi_irqs[port]));
 			_mcu_lpc_core_disable_pwr(PCSPI);
 		}
 		spi_local[port].ref_count--;
@@ -218,7 +219,7 @@ int mcu_spi_setaction(int port, void * ctl){
 
 	spi_local[port].callback = action->callback;
 	spi_local[port].context = action->context;
-	_mcu_core_setirqprio(spi_irqs[port], action->prio);
+	_mcu_cortexm_set_irq_prio(spi_irqs[port], action->prio);
 
 	return 0;
 }

@@ -19,9 +19,11 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include "mcu/cortexm.h"
 #include "mcu/usb.h"
 #include "mcu/pio.h"
 #include "usb_flags.h"
+#include "mcu/cortexm.h"
 #include "mcu/core.h"
 #include "mcu/debug.h"
 
@@ -54,8 +56,8 @@ static void exec_writecallback(int ep, void * data);
 
 
 typedef struct {
-	mcu_event_handler_t write[USB_LOGIC_EP_NUM];
-	mcu_event_handler_t read[USB_LOGIC_EP_NUM];
+	mcu_event_handler_t write[DEV_USB_LOGICAL_ENDPOINT_COUNT];
+	mcu_event_handler_t read[DEV_USB_LOGICAL_ENDPOINT_COUNT];
 	volatile u32 write_pending;
 	volatile u32 read_ready;
 	void (*event_handler)(usb_spec_event_t,int);
@@ -67,8 +69,8 @@ static usb_local_t usb_local MCU_SYS_MEM;
 
 static void clear_callbacks();
 void clear_callbacks(){
-	memset(usb_local.write, 0, USB_LOGIC_EP_NUM * sizeof(mcu_event_handler_t));
-	memset(usb_local.read, 0, USB_LOGIC_EP_NUM * sizeof(mcu_event_handler_t));
+	memset(usb_local.write, 0, DEV_USB_LOGICAL_ENDPOINT_COUNT * sizeof(mcu_event_handler_t));
+	memset(usb_local.read, 0, DEV_USB_LOGICAL_ENDPOINT_COUNT * sizeof(mcu_event_handler_t));
 }
 
 #define EP_MSK_CTRL 0x0001 // Control Endpoint Logical Address Mask
@@ -132,7 +134,7 @@ void _mcu_usb_dev_power_on(int port){
 void _mcu_usb_dev_power_off(int port){
 	if ( usb_local.ref_count > 0 ){
 		if ( usb_local.ref_count == 1 ){
-			_mcu_core_priv_disable_irq((void*)(USB_IRQn));  //Enable the USB interrupt
+			_mcu_cortexm_priv_disable_irq((void*)(USB_IRQn));  //Enable the USB interrupt
 			LPC_USB->USBClkCtrl = 0x0; //turn off dev clk en and AHB clk en
 			while( LPC_USB->USBClkCtrl != 0 ){}
 			_mcu_lpc_core_disable_pwr(PCUSB);
@@ -208,7 +210,7 @@ int mcu_usb_setattr(int port, void * ctl){
 
 	usb_irq_mask = DEV_STAT_INT | EP_FAST_INT | EP_SLOW_INT;
 
-	_mcu_core_priv_enable_irq((void*)USB_IRQn);  //Enable the USB interrupt
+	_mcu_cortexm_priv_enable_irq((void*)USB_IRQn);  //Enable the USB interrupt
 	mcu_usb_reset(0, NULL);
 	usb_set_addr(0,0);
 	return 0;
@@ -232,7 +234,7 @@ int mcu_usb_setaction(int port, void * ctl){
 	usb_action_t * action = (usb_action_t*)ctl;
 	int log_ep;
 
-	_mcu_core_setirqprio(USB_IRQn, action->prio);
+	_mcu_cortexm_set_irq_prio(USB_IRQn, action->prio);
 
 	if( action->channel & 0x80 ){
 		if( (action->callback == 0) && (action->event == USB_EVENT_WRITE_COMPLETE) ){
@@ -247,10 +249,10 @@ int mcu_usb_setaction(int port, void * ctl){
 
 
 	log_ep = action->channel & ~0x80;
-	if ( (log_ep < USB_LOGIC_EP_NUM)  ){
+	if ( (log_ep < DEV_USB_LOGICAL_ENDPOINT_COUNT)  ){
 		if( action->event == USB_EVENT_DATA_READY ){
-			//_mcu_core_priv_enable_interrupts(NULL);
-			if( _mcu_core_priv_validate_callback(action->callback) < 0 ){
+			//_mcu_cortexm_priv_enable_interrupts(NULL);
+			if( _mcu_cortexm_priv_validate_callback(action->callback) < 0 ){
 				return -1;
 			}
 
@@ -259,7 +261,7 @@ int mcu_usb_setaction(int port, void * ctl){
 
 			return 0;
 		} else if( action->event == USB_EVENT_WRITE_COMPLETE ){
-			if( _mcu_core_priv_validate_callback(action->callback) < 0 ){
+			if( _mcu_cortexm_priv_validate_callback(action->callback) < 0 ){
 				return -1;
 			}
 
@@ -324,7 +326,7 @@ int _mcu_usb_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
 	int ret;
 	int loc = rop->loc;
 
-	if ( loc > (USB_LOGIC_EP_NUM-1) ){
+	if ( loc > (DEV_USB_LOGICAL_ENDPOINT_COUNT-1) ){
 		errno = EINVAL;
 		return -1;
 	}
@@ -342,7 +344,7 @@ int _mcu_usb_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
 		rop->nbyte = 0;
 		if ( !(rop->flags & O_NONBLOCK) ){
 			//If this is a blocking call, set the callback and context
-			if( _mcu_core_priv_validate_callback(rop->callback) < 0 ){
+			if( _mcu_cortexm_priv_validate_callback(rop->callback) < 0 ){
 				return -1;
 			}
 
@@ -368,7 +370,7 @@ int _mcu_usb_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
 
 	ep = (loc & 0x7F);
 
-	if ( ep > (USB_LOGIC_EP_NUM-1) ){
+	if ( ep > (DEV_USB_LOGICAL_ENDPOINT_COUNT-1) ){
 		errno = EINVAL;
 		return -1;
 	}
@@ -380,7 +382,7 @@ int _mcu_usb_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
 
 	usb_local.write_pending |= (1<<ep);
 
-	if( _mcu_core_priv_validate_callback(wop->callback) < 0 ){
+	if( _mcu_cortexm_priv_validate_callback(wop->callback) < 0 ){
 		return -1;
 	}
 
@@ -569,7 +571,7 @@ void _mcu_core_usb0_isr(){
 
 	if (device_interrupt_status & DEV_STAT_INT){ //Status interrupt (Reset, suspend/resume or connect)
 		USB_DEV_DEBUG(0x08);
-		_mcu_core_delay_us(100);
+		_mcu_cortexm_delay_us(100);
 		tmp = usb_sie_rd_cmd_dat(USB_SIE_CMD_GET_DEV_STAT);
 		if (tmp & DEV_RST){
 			USB_DEV_DEBUG(0x10);
@@ -585,9 +587,9 @@ void _mcu_core_usb0_isr(){
 		if ( tmp == 0x0D ){
 			USB_DEV_DEBUG(0x20);
 			usb_local.connected = 0;
-			for(i = 1; i < USB_LOGIC_EP_NUM; i++){
-				_mcu_core_exec_event_handler(&(usb_local.read[i]), (mcu_event_t)MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
-				_mcu_core_exec_event_handler(&(usb_local.write[i]), (mcu_event_t)MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
+			for(i = 1; i < DEV_USB_LOGICAL_ENDPOINT_COUNT; i++){
+				_mcu_cortexm_execute_event_handler(&(usb_local.read[i]), (mcu_event_t)MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
+				_mcu_cortexm_execute_event_handler(&(usb_local.write[i]), (mcu_event_t)MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
 			}
 		}
 
@@ -654,7 +656,7 @@ void slow_ep_int(){
 				//Check for a setup packet
 				if ( (phy_ep == 0) && (tmp & EP_SEL_STP) ){
 					USB_DEV_DEBUG(0x200);
-					_mcu_core_exec_event_handler(&(usb_local.read[0]), (mcu_event_t)MCU_EVENT_SET_CODE(USB_SETUP_EVENT));
+					_mcu_cortexm_execute_event_handler(&(usb_local.read[0]), (mcu_event_t)MCU_EVENT_SET_CODE(USB_SETUP_EVENT));
 				} else {
 					exec_readcallback(log_ep, (mcu_event_t)MCU_EVENT_SET_CODE(USB_OUT_EVENT));
 				}
@@ -669,12 +671,12 @@ void slow_ep_int(){
 
 static void exec_readcallback(int log_ep, void * data){
 	usb_local.read_ready |= (1<<log_ep);
-	_mcu_core_exec_event_handler(&(usb_local.read[log_ep]), (mcu_event_t)data);
+	_mcu_cortexm_execute_event_handler(&(usb_local.read[log_ep]), (mcu_event_t)data);
 }
 
 static void exec_writecallback(int log_ep, void * data){
 	usb_local.write_pending &= ~(1<<log_ep);
-	_mcu_core_exec_event_handler(&(usb_local.write[log_ep]), data);
+	_mcu_cortexm_execute_event_handler(&(usb_local.write[log_ep]), data);
 }
 
 #endif

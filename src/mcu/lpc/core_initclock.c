@@ -19,6 +19,7 @@
 
 #include <errno.h>
 
+#include "mcu/arch.h"
 #include "mcu/mcu.h"
 #include "core_flags.h"
 

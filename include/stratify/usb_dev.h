@@ -57,6 +57,7 @@ typedef struct {
 	int (*hid_if_req)(void * context, int event);
 } usb_dev_const_t;
 
+#define MCU_CORE_USB_MAX_PACKET_ZERO_VALUE 64
 
 typedef struct MCU_PACK {
 	usb_setup_pkt_t setup_pkt;

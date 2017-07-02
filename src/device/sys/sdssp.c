@@ -19,8 +19,6 @@
 
 #include "mcu/spi.h"
 
-#if MCU_SSP_PORTS > 0
-
 #define mcu_spi_open mcu_ssp_open
 #define mcu_spi_close mcu_ssp_close
 #define mcu_spi_setaction mcu_ssp_setaction
@@ -32,7 +30,6 @@
 #define mcu_spi_read mcu_ssp_read
 #define mcu_spi_ioctl mcu_ssp_ioctl
 
-#define mcu_check_spi_port mcu_check_ssp_port
 
 #define sdspi_open sdssp_open
 #define sdspi_ioctl sdssp_ioctl
@@ -43,5 +40,4 @@
 
 #include "sdspi.c"
 
-#endif
 

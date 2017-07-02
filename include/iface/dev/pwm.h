@@ -84,7 +84,7 @@
 
 #include <stdint.h>
 #include "ioctl.h"
-#include "mcu/arch.h"
+#include "mcu/types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -118,6 +118,16 @@ typedef enum {
 	PWM_ACTION_EVENT_TOGGLEOC /*! toggle the OC channel pin */ = (1<<5)
 } pwm_action_event_t;
 
+typedef enum {
+	PWM_EVENT_NONE /*! no action */ = 0,
+	PWM_EVENT_INTERRUPT /*! enable interrupt on event and execute callback */ = (1<<0),
+	PWM_EVENT_RESET /*! reset the PWM timer on channel event */ = (1<<1),
+	PWM_EVENT_STOP /*! stop the PWM timer on channel event */ = (1<<2),
+	PWM_EVENT_SETOC /*! set the OC channel pin to logic 1 */ = (1<<3),
+	PWM_EVENT_CLROC /*! clear the OC channel pin to logic 0 */ = (1<<4),
+	PWM_EVENT_TOGGLEOC /*! toggle the OC channel pin */ = (1<<5)
+} pwm_event_t;
+
 /*! \details This lists the flags
  * that can be set when assigning the flags member of \ref pwm_attr_t.
  */
@@ -125,6 +135,11 @@ typedef enum {
 	PWM_ATTR_FLAGS_ACTIVE_HIGH /*! PWM output is high until a match and then goes low (default) */ = (1<<0),
 	PWM_ATTR_FLAGS_ACTIVE_LOW /*! PWM output is low until a match and then goes high */ = (1<<1)
 } pwm_attr_flags_t;
+
+typedef enum {
+	PWM_FLAG_ACTIVE_HIGH,
+	PWM_FLAG_ACTIVE_LOW,
+} pwm_flag_t;
 
 
 /*! \brief PWM Attribute Data Structure
@@ -139,6 +154,16 @@ typedef struct MCU_PACK {
 	pwm_duty_t top /*! \brief The top value of the PWM counter */;
 	u32 freq /*! \brief The PWM timer frequency (target value on write, actual value on read); The period is the "top" member divided by "freq" */;
 } pwm_attr_t;
+
+typedef struct MCU_PACK {
+	//provides info about the PWM
+	u32 o_flags /*! Bitmask to show which flags are supported through the driver */;
+} pwm_info_t;
+
+typedef struct MCU_PACK {
+	u32 o_flags;
+	u32 freq;
+} pwm_3_attr_t;
 
  /*! \brief Structure to set the duty cycle of a channel.
   * \details This structure is used to

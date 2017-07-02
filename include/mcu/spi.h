@@ -36,29 +36,18 @@ extern "C" {
 #endif
 
 
-/*! \details
- * \sa periph_open()
- *
- */
+
 int mcu_spi_open(const device_cfg_t * cfg) MCU_PRIV_CODE;
-/*! \details
- * \sa periph_read()
- *
- */
 int mcu_spi_read(const device_cfg_t * cfg, device_transfer_t * rop) MCU_PRIV_CODE;
-/*! \details
- * \sa periph_write()
- */
 int mcu_spi_write(const device_cfg_t * cfg, device_transfer_t * wop) MCU_PRIV_CODE;
-/*! \details
- * \sa periph_ioctl()
- *
- */
 int mcu_spi_ioctl(const device_cfg_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
-/*! \details
- * \sa periph_close()
- */
 int mcu_spi_close(const device_cfg_t * cfg) MCU_PRIV_CODE;
+
+int mcu3_spi_open(const dev_handle_t * handle) MCU_PRIV_CODE;
+int mcu3_spi_read(const dev_handle_t * handle, device_transfer_t * rop) MCU_PRIV_CODE;
+int mcu3_spi_write(const dev_handle_t * handle, device_transfer_t * wop) MCU_PRIV_CODE;
+int mcu3_spi_ioctl(const dev_handle_t * handle, int request, void * ctl) MCU_PRIV_CODE;
+int mcu3_spi_close(const dev_handle_t * handle) MCU_PRIV_CODE;
 
 int mcu_spi_getattr(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_spi_setattr(int port, void * ctl) MCU_PRIV_CODE;

@@ -89,7 +89,7 @@
 
 #include <stdint.h>
 #include "ioctl.h"
-#include "mcu/arch.h"
+#include "mcu/types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -119,6 +119,16 @@ enum {
 	UART_ATTR_STOP_BITS_0_5 /*! 0.5 stop bits */ = 3,
 	UART_ATTR_STOP_BITS_1_5 /*! 1.5 stop bits */ = 4
 };
+
+typedef enum {
+	UART_FLAG_STOP_BITS_1 /*! One stop bit */ = (1<<0),
+	UART_FLAG_STOP_BITS_2 /*! Two stop bits */ = (1<<1),
+	UART_FLAG_STOP_BITS_0_5 /*! 0.5 stop bits */ = (1<<2),
+	UART_FLAG_STOP_BITS_1_5 /*! 1.5 stop bits */ = (1<<3),
+	UART_FLAG_PARITY_NONE /*! Indicates no parity */ = (1<<4),
+	UART_FLAG_PARITY_ODD /*! Indicates odd parity */ = (1<<5),
+	UART_FLAG_PARITY_EVEN /*! Indicates even parity */ = (1<<6),
+} uart_flag_t;
 
 
 /*! \brief This specifies one start bit.
@@ -154,6 +164,13 @@ typedef struct MCU_PACK {
 	u8 resd[3];
 	u32 baudrate /*! \brief The UART baudrate */;
 } uart_attr_t;
+
+typedef struct MCU_PACK {
+	u32 o_flags;
+	u32 freq;
+	u8 pin_assignment[4];
+	u8 width;
+} uart_3_attr_t;
 
 /*! \brief This request gets the UART attributes.
  * \hideinitializer

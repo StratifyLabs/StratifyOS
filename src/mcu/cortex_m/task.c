@@ -25,6 +25,7 @@
 
 #include "mcu/mcu.h"
 #include "mcu/debug.h"
+#include "mcu/cortexm.h"
 #include "mcu/core.h"
 #include "mcu/task.h"
 
@@ -42,7 +43,7 @@ static void priv_task_rr_reload(void * args) MCU_PRIV_EXEC_CODE;
 
 static void system_reset(); //This is used if the OS process returns
 void system_reset(){
-	mcu_core_privcall(_mcu_core_priv_reset, NULL);
+	mcu_core_privcall(_mcu_cortexm_priv_reset, NULL);
 }
 
 
@@ -87,25 +88,25 @@ int task_init(int interval,
 #endif
 
 	//enable use of PSP
-	_mcu_core_priv_set_thread_stack_ptr( (void*)task_table[0].sp );
+	_mcu_cortexm_priv_set_thread_stack_ptr( (void*)task_table[0].sp );
 	task_current = 0;
 
 	//Set the interrupt priorities
-	for(i=0; i <= DEV_LAST_IRQ; i++){
-		NVIC_SetPriority( i, DEV_MIDDLE_PRIORITY ); //higher priority than the others
+	for(i=0; i <= mcu_config.irq_total; i++){
+		_mcu_core_set_nvic_priority( i, mcu_config.irq_middle_prio); //higher priority than the others
 	}
 
-	NVIC_SetPriority(SysTick_IRQn, DEV_MIDDLE_PRIORITY+1); //lower priority so they don't interrupt the hardware
-	NVIC_SetPriority(PendSV_IRQn, DEV_MIDDLE_PRIORITY+1);
-	NVIC_SetPriority(SVCall_IRQn, DEV_MIDDLE_PRIORITY-1); //elevate this so it isn't interrupted by peripheral hardware
-	NVIC_SetPriority(HardFault_IRQn, 2);
-
-#if !defined __lpc82x
-	NVIC_SetPriority(DebugMonitor_IRQn, 0);
-	NVIC_SetPriority(MemoryManagement_IRQn, 3);
-	NVIC_SetPriority(BusFault_IRQn, 3);
-	NVIC_SetPriority(UsageFault_IRQn, 3);
+	_mcu_core_set_nvic_priority(SysTick_IRQn, mcu_config.irq_middle_prio+1); //lower priority so they don't interrupt the hardware
+	_mcu_core_set_nvic_priority(PendSV_IRQn, mcu_config.irq_middle_prio+1);
+	_mcu_core_set_nvic_priority(SVCall_IRQn, mcu_config.irq_middle_prio-1); //elevate this so it isn't interrupted by peripheral hardware
+#if !defined MCU_NO_HARD_FAULT
+	_mcu_core_set_nvic_priority(HardFault_IRQn, 2);
 #endif
+
+	_mcu_core_set_nvic_priority(DebugMonitor_IRQn, 0);
+	_mcu_core_set_nvic_priority(MemoryManagement_IRQn, 3);
+	_mcu_core_set_nvic_priority(BusFault_IRQn, 3);
+	_mcu_core_set_nvic_priority(UsageFault_IRQn, 3);
 
 	//enable the FPU if it is in use
 #if __FPU_USED != 0
@@ -120,8 +121,8 @@ int task_init(int interval,
 	task_set_interval(interval);
 	task_table[0].rr_time = task_rr_reload;
 
-	_mcu_core_priv_set_stack_ptr( (void*)&_top_of_stack ); //reset the handler stack pointer
-	core_tick_enable_irq();  //Enable context switching
+	_mcu_cortexm_priv_set_stack_ptr( (void*)&_top_of_stack ); //reset the handler stack pointer
+	_mcu_cortexm_enable_systick_irq();  //Enable context switching
 	task_priv_switch_context(NULL);
 	return 0;
 }
@@ -257,7 +258,7 @@ void * task_get_sbrk_stack_ptr(struct _reent * reent_ptr){
 				if ( task_used_asserted(i) ){
 					if ( (i == task_get_current()) ){
 						//If the main thread is the current thread return the current stack
-						mcu_core_privcall(_mcu_core_priv_get_thread_stack_ptr, &stackaddr);
+						mcu_core_privcall(_mcu_cortexm_priv_get_thread_stack_ptr, &stackaddr);
 						return stackaddr;
 					} else {
 						//Return the stack value from thread 0 if another thread is running
@@ -349,7 +350,7 @@ void task_context_switcher(){
 	MPU->RASR = 0;
 #endif
 
-	_mcu_core_priv_disable_interrupts(NULL);
+	_mcu_cortexm_priv_disable_interrupts(NULL);
 
 	do {
 		task_current++;
@@ -402,20 +403,20 @@ void task_context_switcher(){
 	MPU->RASR = (uint32_t)(task_table[task_current].mem.stackguard.size);
 #endif
 
-	_mcu_core_priv_enable_interrupts(NULL);
+	_mcu_cortexm_priv_enable_interrupts(NULL);
 
 	_impure_ptr = task_table[task_current].reent;
 	_global_impure_ptr = task_table[task_current].global_reent;
 
 	if ( task_isfifo_asserted(task_current) ){
 		//disable the systick interrupt (because this is a fifo task)
-		core_tick_disable_irq();
+		_mcu_cortexm_disable_systick_irq();
 	} else {
 		//init sys tick to the amount of time remaining
 		SysTick->LOAD = task_table[task_current].rr_time;
 		SysTick->VAL = 0; //force a reload
 		//enable the systick interrupt
-		core_tick_enable_irq();
+		_mcu_cortexm_enable_systick_irq();
 	}
 
 #if __FPU_USED == 1

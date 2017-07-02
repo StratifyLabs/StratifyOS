@@ -35,7 +35,7 @@
 
 #include <stdint.h>
 #include "ioctl.h"
-#include "mcu/arch.h"
+#include "mcu/types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -56,13 +56,25 @@ enum {
 	I2S_MODE_MCLK_ENABLE = (1<<8) /*! Set this bit to enable the mclk output */,
 };
 
+enum {
+	I2S_FLAG_WORDWIDTH_8 /*! \brief I2S Word Width 8 bits */ = (1<<0),
+	I2S_FLAG_WORDWIDTH_16 /*! \brief I2S Word Width 16 bits */ = (1<<1),
+	I2S_FLAG_WORDWIDTH_32 /*! \brief I2S Word Width 32 bits */ = (1<<2),
+	I2S_FLAG_MONO = (1<<3),
+	I2S_FLAG_STEREO = (1<<4),
+	I2S_FLAG_MASTER = (1<<5),
+	I2S_FLAG_OUTPUT = (1<<6) /*! \brief Configure I2S output */,
+	I2S_FLAG_INPUT = (1<<7) /*! \brief Configure I2S input (independent from output) */,
+	I2S_FLAG_MCLK_ENABLE = (1<<8) /*! Set this bit to enable the mclk output */,
+};
+
 typedef enum {
 	I2S_EVENT_NONE = 0,
 	I2S_EVENT_DATA_READY = (1<<0),
 	I2S_EVENT_WRITE_COMPLETE = (1<<1)
-} i2s_action_event_t;
+} i2s_event_t;
 
-
+typedef i2s_event_t i2s_action_event_t;
 
 /*! \brief I2S IO Attributes
  *  \details This structure defines how the control structure
@@ -76,9 +88,14 @@ typedef struct MCU_PACK {
 	u32 frequency /*! \brief The I2S audio frequency */;
 } i2s_attr_t;
 
+typedef struct MCU_PACK {
+	u32 o_flags  /*! \brief Mode flags (see I2S_MODE_*) */;
+	u32 freq /*! \brief The I2S audio frequency */;
+	u8 pin_assignment[5] /*! \brief The GPIO configuration to use (see \ref LPC17XXDEV) */;
+	u8 width;
+	u32 mclk_freq /*! The I2S mclk frequency (if mclk is enabled) */;
+} i2s_3_attr_t;
 
-/*! \details This defines an I2S action.
- */
 typedef mcu_action_t i2s_action_t;
 
 /*! \brief This request gets the I2S attributes.

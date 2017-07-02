@@ -38,7 +38,7 @@
 
 #include <stdint.h>
 #include "ioctl.h"
-#include "mcu/arch.h"
+#include "mcu/types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -94,6 +94,13 @@ typedef struct MCU_PACK {
 	u32 mode /*! \brief The QEI mode (see \ref qei_mode_t) */;
 	u32 vfreq /*! \brief The frequency at which to update the velocity in Hz */;
 } qei_attr_t;
+
+typedef struct MCU_PACK {
+	u32 o_flags;
+	u32 freq;
+	u8 pin_assignment[4];
+	u32 max_position;
+} qei_3_attr_t;
 
 /*! \brief This defines a QEI action.
  */

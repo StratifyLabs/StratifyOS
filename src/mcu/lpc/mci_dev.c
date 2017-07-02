@@ -19,6 +19,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include "mcu/cortexm.h"
 #include "mcu/mci.h"
 #include "mcu/pio.h"
 #include "mcu/debug.h"
@@ -59,7 +60,7 @@ mci_local_t mci_local[MCU_MCI_PORTS] MCU_SYS_MEM;
 void _mcu_mci_dev_power_on(int port){
 	if ( mci_local[port].ref_count == 0 ){
 		_mcu_lpc_core_enable_pwr(PCMCI);
-		_mcu_core_priv_enable_irq((void*)MCI_IRQn);
+		_mcu_cortexm_priv_enable_irq((void*)MCI_IRQn);
 		mci_local[port].handler.callback = NULL;
 	}
 	mci_local[port].ref_count++;
@@ -68,7 +69,7 @@ void _mcu_mci_dev_power_on(int port){
 void _mcu_mci_dev_power_off(int port){
 	if ( mci_local[port].ref_count > 0 ){
 		if ( mci_local[port].ref_count == 1 ){
-			_mcu_core_priv_disable_irq((void*)MCI_IRQn);
+			_mcu_cortexm_priv_disable_irq((void*)MCI_IRQn);
 			_mcu_lpc_core_enable_pwr(PCMCI);
 		}
 		mci_local[port].ref_count--;
@@ -157,7 +158,7 @@ int mcu_mci_setaction(int port, void * ctl){
 
 	}
 
-	if( _mcu_core_priv_validate_callback(action->callback) < 0 ){
+	if( _mcu_cortexm_priv_validate_callback(action->callback) < 0 ){
 		return -1;
 	}
 
@@ -191,6 +192,7 @@ int _mcu_mci_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
 	//enable the interrupt
 
 	//load up the TXFIFO
+	mcu_mci_write_fifo(0,0,0);
 
 	return -1;
 }
@@ -214,7 +216,7 @@ void exec_callback(int port, void * data){
 
 	*/
 
-	_mcu_core_exec_event_handler(&(mci_local[port].handler), data);
+	_mcu_cortexm_execute_event_handler(&(mci_local[port].handler), data);
 
 }
 

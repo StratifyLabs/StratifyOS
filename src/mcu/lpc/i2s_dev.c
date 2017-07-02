@@ -20,6 +20,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <limits.h>
+#include "mcu/cortexm.h"
 #include "mcu/i2s.h"
 #include "mcu/debug.h"
 #include "mcu/core.h"
@@ -72,7 +73,7 @@ void _mcu_i2s_dev_power_on(int port){
 			_mcu_lpc_core_enable_pwr(PCI2S);
 			break;
 		}
-		_mcu_core_priv_enable_irq((void*)(u32)(i2s_irqs[port]));
+		_mcu_cortexm_priv_enable_irq((void*)(u32)(i2s_irqs[port]));
 		i2s_local[port].rx.handler.callback = NULL;
 		i2s_local[port].tx.handler.callback = NULL;
 		i2s_local[port].rx.bufp = 0;
@@ -84,7 +85,7 @@ void _mcu_i2s_dev_power_on(int port){
 void _mcu_i2s_dev_power_off(int port){
 	if ( i2s_local[port].ref_count > 0 ){
 		if ( i2s_local[port].ref_count == 1 ){
-			_mcu_core_priv_disable_irq((void*)(u32)(i2s_irqs[port]));
+			_mcu_cortexm_priv_disable_irq((void*)(u32)(i2s_irqs[port]));
 			switch(port){
 			case 0:
 				_mcu_lpc_core_disable_pwr(PCI2S);
@@ -253,7 +254,7 @@ int mcu_i2s_setaction(int port, void * ctl){
 			exec_callback(&i2s_local[port].rx, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
 		}
 
-		if( _mcu_core_priv_validate_callback(action->callback) < 0 ){
+		if( _mcu_cortexm_priv_validate_callback(action->callback) < 0 ){
 			return -1;
 		}
 
@@ -268,7 +269,7 @@ int mcu_i2s_setaction(int port, void * ctl){
 			exec_callback(&i2s_local[port].tx, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
 		}
 
-		if( _mcu_core_priv_validate_callback(action->callback) < 0 ){
+		if( _mcu_cortexm_priv_validate_callback(action->callback) < 0 ){
 			return -1;
 		}
 
@@ -277,7 +278,7 @@ int mcu_i2s_setaction(int port, void * ctl){
 
 	}
 
-	_mcu_core_setirqprio(i2s_irqs[port], action->prio);
+	_mcu_cortexm_set_irq_prio(i2s_irqs[port], action->prio);
 
 
 	return 0;
@@ -354,7 +355,7 @@ int _mcu_i2s_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
 	i2s_local[port].tx.len = wop->nbyte/4;
 
 	//Check the local buffer for bytes that are immediately available
-	if( _mcu_core_priv_validate_callback(wop->callback) < 0 ){
+	if( _mcu_cortexm_priv_validate_callback(wop->callback) < 0 ){
 		return -1;
 	}
 
@@ -415,7 +416,7 @@ int _mcu_i2s_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
 
 	} else if( len != nsamples ){
 		//for blocking operations wait until the entire buffer is read then call the callback
-		if( _mcu_core_priv_validate_callback(rop->callback) < 0 ){
+		if( _mcu_cortexm_priv_validate_callback(rop->callback) < 0 ){
 			return -1;
 		}
 
@@ -452,7 +453,7 @@ void _mcu_core_i2s0_isr(){
 
 void exec_callback(i2s_transfer_t * transfer, void * data){
 	transfer->bufp = 0;
-	_mcu_core_exec_event_handler(&(transfer->handler), data);
+	_mcu_cortexm_execute_event_handler(&(transfer->handler), data);
 }
 
 

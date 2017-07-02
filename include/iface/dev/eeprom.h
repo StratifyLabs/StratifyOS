@@ -10,7 +10,7 @@
 
 #include <stdint.h>
 #include "ioctl.h"
-#include "mcu/arch.h"
+#include "mcu/types.h"
 
 #define EEPROM_IOC_IDENT_CHAR 'E'
 
@@ -21,6 +21,11 @@
 typedef struct MCU_PACK {
 	u32 size;
 } eeprom_attr_t;
+
+typedef struct MCU_PACK {
+	u32 o_flags;
+	u32 size;
+} eeprom_info_t;
 
 #define I_EEPROM_ATTR _IOCTLR(EEPROM_IOC_IDENT_CHAR, I_GLOBAL_ATTR, mem_attr_t)
 #define I_EEPROM_GETATTR I_EEPROM_ATTR

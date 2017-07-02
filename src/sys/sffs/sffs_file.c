@@ -26,7 +26,7 @@
 #include <unistd.h>
 #include <errno.h>
 #ifndef __SIM__
-#include "mcu/core.h"
+#include "mcu/cortexm.h"
 #endif
 
 

@@ -45,8 +45,8 @@ volatile unsigned int usbdev_stat;
 #endif
 
 typedef struct {
-	mcu_callback_t callback[USB_LOGIC_EP_NUM];
-	void * context[USB_LOGIC_EP_NUM];
+	mcu_callback_t callback[DEV_USB_LOGICAL_ENDPOINT_COUNT];
+	void * context[DEV_USB_LOGICAL_ENDPOINT_COUNT];
 	volatile int write_pending;
 	volatile int read_ready;
 	void (*event_handler)(usb_spec_event_t,int);
@@ -57,7 +57,7 @@ static usb_local_t usb_local;
 
 static void clear_callbacks();
 void clear_callbacks(){
-	memset(usb_local.callback, 0, USB_LOGIC_EP_NUM * sizeof(void(*)(int)));
+	memset(usb_local.callback, 0, DEV_USB_LOGICAL_ENDPOINT_COUNT * sizeof(void(*)(int)));
 }
 
 #define EP_MSK_CTRL 0x0001 // Control Endpoint Logical Address Mask
@@ -123,7 +123,7 @@ void _mcu_usb_dev_power_on(int port){
 }
 
 void _mcu_usb_dev_power_off(int port){
-	_mcu_core_priv_disable_irq((void*)USB_IRQn);  //Enable the USB interrupt
+	_mcu_cortexm_priv_disable_irq((void*)USB_IRQn);  //Enable the USB interrupt
 	_mcu_lpc_core_disable_pwr(PCUSB_REG);
 }
 
@@ -162,7 +162,7 @@ int mcu_usb_setattr(int port, void * ctl){
 	_mcu_core_set_pinsel_func(0, 3, CORE_PERIPH_USB, 0);
 	usb_irq_mask = DEV_STAT_INT | (0xFF << 1);
 
-	_mcu_core_priv_enable_irq((void*)USB_IRQn);  //Enable the USB interrupt
+	_mcu_cortexm_priv_enable_irq((void*)USB_IRQn);  //Enable the USB interrupt
 	mcu_usb_reset(0, NULL);
 	usb_set_addr(0,0);
 	return 0;
@@ -173,7 +173,7 @@ int mcu_usb_setaction(int port, void * ctl){
 	int log_ep;
 
 	log_ep = action->channel & 0x7F;
-	if ( (log_ep < USB_LOGIC_EP_NUM)  ){
+	if ( (log_ep < DEV_USB_LOGICAL_ENDPOINT_COUNT)  ){
 		usb_local.callback[ log_ep ] = action->callback;
 		usb_local.context[ log_ep ] = action->context;
 	}
@@ -245,7 +245,7 @@ int mcu_usb_set_event_handler(int port, void * ctl){
 int _mcu_usb_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
 	int loc = rop->loc;
 
-	if ( loc > (USB_LOGIC_EP_NUM-1) ){
+	if ( loc > (DEV_USB_LOGICAL_ENDPOINT_COUNT-1) ){
 		return -1;
 	}
 
@@ -274,7 +274,7 @@ int _mcu_usb_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
 
 	ep = (loc & 0x7F);
 
-	if ( ep > (USB_LOGIC_EP_NUM-1) ){
+	if ( ep > (DEV_USB_LOGICAL_ENDPOINT_COUNT-1) ){
 		return -1;
 	}
 
@@ -510,7 +510,7 @@ void _mcu_core_usb_isr(){
 
 		if ( tmp == 0x0D ){
 			usb_local.connected = 0;
-			for(i = 1; i < USB_LOGIC_EP_NUM; i++){
+			for(i = 1; i < DEV_USB_LOGICAL_ENDPOINT_COUNT; i++){
 				if( usb_local.callback[i] != NULL ){
 					if( usb_local.callback[i](usb_local.context[i], (const void*)-1) == 0 ){
 						usb_local.callback[i] = NULL;

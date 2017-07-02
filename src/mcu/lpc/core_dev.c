@@ -18,6 +18,7 @@
 //#include "config.h"
 #include <errno.h>
 #include <fcntl.h>
+#include "mcu/cortexm.h"
 #include "iface/dev/bootloader.h"
 #include "mcu/core.h"
 
@@ -41,14 +42,6 @@ void _mcu_core_dev_power_off(int port){}
 int _mcu_core_dev_powered_on(int port){ return 1; }
 
 
-void _mcu_core_exec_event_handler(mcu_event_handler_t * event, mcu_event_t arg){
-	if( event->callback != 0 ){
-		if( event->callback(event->context, arg) == 0 ){
-			event->callback = 0;
-		}
-	}
-}
-
 int mcu_core_getattr(int port, void * arg){
 	core_attr_t * attrp = arg;
 	attrp->clock = mcu_board_config.core_cpu_freq;
@@ -56,7 +49,7 @@ int mcu_core_getattr(int port, void * arg){
 		mcu_core_reset_source = _mcu_core_get_reset_src();
 	}
 	attrp->reset_type = mcu_core_reset_source;
-	attrp->signature = _mcu_core_getsignature(port, arg);
+	attrp->signature = 0;
 	return _mcu_lpc_flash_get_serialno(attrp->serial_number);
 }
 
@@ -85,14 +78,14 @@ int mcu_core_sleep(int port, void * arg){
 
 int mcu_core_reset(int port, void * arg){
 	//delay first
-	_mcu_core_delay_us(20*1000);
-	_mcu_core_priv_reset(NULL);
+	_mcu_cortexm_delay_us(20*1000);
+	_mcu_cortexm_priv_reset(NULL);
 	//doesn't arrive here
 	return 0;
 }
 
 int mcu_core_invokebootloader(int port, void * arg){
-	_mcu_core_delay_us(500*1000);
+	_mcu_cortexm_delay_us(500*1000);
 	bootloader_api_t api;
 	_mcu_core_priv_bootloader_api(&api);
 	api.exec(0);
@@ -223,19 +216,12 @@ int _mcu_core_enable_clkout(int clk_source, int div){
 
 }
 
+void _mcu_core_set_nvic_priority(int irq, int prio){
+	NVIC_SetPriority((IRQn_Type)irq, prio);
+}
 
-int _mcu_core_setirqprio(int irq, int prio){
-
-	prio = DEV_MIDDLE_PRIORITY - prio;
-	if( prio < 1 ){
-		prio = 1;
-	}
-
-	if( prio > (DEV_MIDDLE_PRIORITY*2-1)){
-		prio = DEV_MIDDLE_PRIORITY*2-1;
-	}
-
-	NVIC_SetPriority( (IRQn_Type)irq, prio );
-
-	return 0;
+void _mcu_core_priv_bootloader_api(void * args){
+	void * ptr;
+	memcpy(&ptr, (void*)(36), sizeof(void*)); //get pointer to boot api
+	memcpy(args, ptr, sizeof(bootloader_api_t)); //copy boot api
 }

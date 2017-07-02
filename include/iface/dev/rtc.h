@@ -38,7 +38,8 @@
 #include <time.h>
 #include <stdint.h>
 #include "ioctl.h"
-#include "mcu/arch.h"
+#include "iface/link.h"
+#include "mcu/types.h"
 
 #ifdef __cplusplus
 extern "C" {
