@@ -34,30 +34,18 @@
 extern "C" {
 #endif
 
-/*! \details
- * \sa periph_open()
- *
- */
+
 int mcu_uart_open(const device_cfg_t * cfg) MCU_PRIV_CODE;
-/*! \details
- * \sa periph_read()
- *
- */
 int mcu_uart_read(const device_cfg_t * cfg, device_transfer_t * rop) MCU_PRIV_CODE;
-/*! \details
- * \sa periph_write()
- */
 int mcu_uart_write(const device_cfg_t * cfg, device_transfer_t * wop) MCU_PRIV_CODE;
-/*! \details
- * \sa periph_ioctl()
- *
- */
 int mcu_uart_ioctl(const device_cfg_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
-/*! \details
- * \sa periph_close()
- */
 int mcu_uart_close(const device_cfg_t * cfg) MCU_PRIV_CODE;
 
+int mcu_3_uart_open(const dev_handle_t * cfg) MCU_PRIV_CODE;
+int mcu_3_uart_read(const dev_handle_t * cfg, device_transfer_t * rop) MCU_PRIV_CODE;
+int mcu_3_uart_write(const dev_handle_t * cfg, device_transfer_t * wop) MCU_PRIV_CODE;
+int mcu_3_uart_ioctl(const dev_handle_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
+int mcu_3_uart_close(const dev_handle_t * cfg) MCU_PRIV_CODE;
 
 int mcu_uart_getattr(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_uart_setattr(int port, void * ctl) MCU_PRIV_CODE;

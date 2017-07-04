@@ -20,7 +20,6 @@
 #ifndef _MCU_DEBUG_H_
 #define _MCU_DEBUG_H_
 
-#include "arch.h"
 #include <stdio.h>
 #include <string.h>
 #include "mcu/cortexm.h"

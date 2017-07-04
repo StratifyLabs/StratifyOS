@@ -131,6 +131,9 @@ typedef enum {
 	CORE_PERIPH_MCPWM /*! Motor Control PWM */,
 	CORE_PERIPH_NMI /*! Non-maskable Interrupt */,
 	CORE_PERIPH_TRACE /*! Trace data */,
+	CORE_PERIPH_SYS /*! System data */,
+	CORE_PERIPH_QSPI /*! Quad SPI */,
+	CORE_PERIPH_USART /*! Quad SPI */,
 	CORE_PERIPH_TOTAL
 } core_periph_t;
 

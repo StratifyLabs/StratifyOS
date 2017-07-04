@@ -175,6 +175,18 @@ typedef struct MCU_PACK {
 	void * context /*! \brief The first argument to \a callback */;
 } device_transfer_t;
 
+typedef struct MCU_PACK {
+	int tid /*! The calling task ID */;
+	int flags /*! The flags for the open file descriptor */;
+	int loc /*! The location to read or write */;
+	union {
+		const void * buf_const /*! Pointer to const void buffer */;
+		void * buf /*! Pointer to void buffer */;
+	};
+	int nbyte /*! The number of bytes to transfer */;
+	mcu_event_handler_t handler /*! The function to call when the operation completes */;
+} device_3_transfer_t;
+
 typedef int (*device_driver_open_t)(const device_cfg_t*);
 typedef int (*device_driver_ioctl_t)(const device_cfg_t*, int, void*);
 typedef int (*device_driver_read_t)(const device_cfg_t*, device_transfer_t *);

@@ -89,6 +89,7 @@
 
 #include <stdint.h>
 #include "ioctl.h"
+#include "mcu/pio.h"
 #include "mcu/types.h"
 
 #ifdef __cplusplus
@@ -165,10 +166,12 @@ typedef struct MCU_PACK {
 	u32 baudrate /*! \brief The UART baudrate */;
 } uart_attr_t;
 
+#define UART_PIN_ASSIGNMENT_COUNT 4
+
 typedef struct MCU_PACK {
 	u32 o_flags;
 	u32 freq;
-	u8 pin_assignment[4];
+	pio_t pin_assignment[UART_PIN_ASSIGNMENT_COUNT];
 	u8 width;
 } uart_3_attr_t;
 
