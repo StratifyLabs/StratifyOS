@@ -73,10 +73,9 @@ void enable_opendrain_pin(int pio_port, int pio_pin, int internal_pullup){
 }
 
 static LPC_I2C_Type * const i2c_regs_table[MCU_I2C_PORTS] = MCU_I2C_REGS;
-
 static u8 const i2c_irqs[MCU_I2C_PORTS] = MCU_I2C_IRQS;
-
 static void set_master_done(LPC_I2C_Type * regs, int port, int error);
+static int set_slave_attr(int port, i2c_attr_t * attr);
 
 static void receive_byte(LPC_I2C_Type * regs, i2c_local_transfer_t * op);
 static void transmit_byte(LPC_I2C_Type * regs, i2c_local_transfer_t * op);
@@ -227,7 +226,7 @@ int mcu_i2c_setattr(int port, void * ctl){
 		i2c_regs->CONSET = (I2EN);
 	} else if( o_flags & I2C_FLAG_SET_SLAVE ){
 		//setup the device in slave mode
-		mcu_i2c_slave_setup(port, attr);
+		set_slave_attr(port, attr);
 
 	}
 
@@ -240,14 +239,12 @@ int mcu_i2c_setattr(int port, void * ctl){
 }
 
 int mcu_i2c_setup(int port, void * ctl){
-	i2c_setup_t * ctl_ptr;
-	ctl_ptr = ctl;
 	//i2c_local[port].transfer.slave_addr = ctl_ptr->slave_addr;
 	//i2c_local[port].transfer.transfer = ctl_ptr->transfer;
 	return 0;
 }
 
-int mcu_i2c_slave_setup(int port, i2c_attr_t * attr){
+int set_slave_attr(int port, i2c_attr_t * attr){
 	LPC_I2C_Type * i2c_regs;
 	int gen_call = 0;
 	u32 o_flags = attr->o_flags;
@@ -421,7 +418,7 @@ void set_slave_ack(LPC_I2C_Type * regs, i2c_local_slave_t * slave){
 
 static void _mcu_i2c_isr(int port) {
 	u8 stat_value;
-	u32 event;
+	u32 o_events;
 	LPC_I2C_Type * i2c_regs;
 	// this handler deals with master read and master write only
 	i2c_regs = i2c_get_regs(port);
@@ -509,7 +506,7 @@ static void _mcu_i2c_isr(int port) {
 		} else if( (i2c_local[port].state >= I2C_STATE_SLAVE_READ) &&
 				(i2c_local[port].state <= I2C_STATE_SLAVE_WRITE_COMPLETE)){
 			i2c_regs->CONSET = STO;
-			_mcu_cortexm_execute_event_handler(&(i2c_local[port].slave.handler), MCU_EVENT_SET_CODE(I2C_EVENT_SLAVE_BUS_ERROR));
+			mcu_execute_event_handler(&(i2c_local[port].slave.handler), MCU_EVENT_FLAG_ERROR, 0);
 		}
 
 		break;
@@ -552,7 +549,7 @@ static void _mcu_i2c_isr(int port) {
 		i2c_regs->CONSET = AA;
 		i2c_local[port].state = I2C_STATE_SLAVE_READ_COMPLETE;
 		//the device is no longer addressed and won't interrupt when the stop condition occurs
-		_mcu_cortexm_execute_event_handler(&(i2c_local[port].slave.handler), MCU_EVENT_SET_CODE(I2C_EVENT_DATA_READY));
+		mcu_execute_event_handler(&(i2c_local[port].slave.handler), MCU_EVENT_FLAG_DATA_READY, 0);
 		break;
 
 	case 0xA8: //Own SLA+R has been received and ack returned
@@ -572,26 +569,26 @@ static void _mcu_i2c_isr(int port) {
 		i2c_regs->CONSET = AA;
 
 		//the device is no longer addressed and won't interrupt when the stop condition occurs
-		_mcu_cortexm_execute_event_handler(&(i2c_local[port].slave.handler), MCU_EVENT_SET_CODE(I2C_EVENT_WRITE_COMPLETE));
+		mcu_execute_event_handler(&(i2c_local[port].slave.handler), MCU_EVENT_FLAG_WRITE_COMPLETE, 0);
 		break;
 
 	case 0xA0: //stop or restart has been received while addressed
 
 		//execute read and write callbacks
-		event = 0;
+		o_events = 0;
 		if( (i2c_local[port].state == I2C_STATE_SLAVE_WRITE_COMPLETE) ||
 				(i2c_local[port].state == I2C_STATE_SLAVE_WRITE) ){
-			event = I2C_EVENT_WRITE_COMPLETE;
+			o_events = MCU_EVENT_FLAG_WRITE_COMPLETE;
 		} else if( (i2c_local[port].state == I2C_STATE_SLAVE_READ_COMPLETE) ||
 				(i2c_local[port].state == I2C_STATE_SLAVE_READ) ){
-			event = I2C_EVENT_DATA_READY;
+			o_events = MCU_EVENT_FLAG_DATA_READY;
 		} else {
-			event = I2C_EVENT_UPDATE_POINTER_COMPLETE;
+			o_events = MCU_EVENT_FLAG_ADDRESSED;
 		}
 
 		i2c_regs->CONSET = AA;
 
-		_mcu_cortexm_execute_event_handler(&(i2c_local[port].slave.handler), MCU_EVENT_SET_CODE(event));
+		mcu_execute_event_handler(&(i2c_local[port].slave.handler), o_events, 0);
 
 		break;
 	}
@@ -600,7 +597,7 @@ static void _mcu_i2c_isr(int port) {
 
 	if ( i2c_local[port].state == I2C_STATE_MASTER_COMPLETE ){
 		i2c_local[port].state = I2C_STATE_NONE;
-		_mcu_cortexm_execute_event_handler(&(i2c_local[port].master.handler), 0);
+		mcu_execute_event_handler(&(i2c_local[port].master.handler), MCU_EVENT_FLAG_WRITE_COMPLETE | MCU_EVENT_FLAG_DATA_READY, 0);
 	}
 }
 

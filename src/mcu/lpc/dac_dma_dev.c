@@ -47,13 +47,13 @@ static dac_local_t dac_local[MCU_DAC_PORTS] MCU_SYS_MEM;
 
 //DMA functions
 static int dac_dma_transfer(const devfs_handle_t * cfg);
-static int dma_write_complete(void * context, mcu_event_t data);
+static int dma_write_complete(void * context, mcu_event_t * data);
 
 #if defined __lpc43xx
 static int write_complete(void * context, mcu_event_t data);
 #endif
 
-static void exec_callback(int port, mcu_event_t data);
+static void exec_callback(int port, u32 o_events);
 
 void _mcu_dac_dev_power_on(int port){
 	if ( dac_local[port].ref_count == 0 ){
@@ -131,7 +131,7 @@ int mcu_dac_setaction(int port, void * ctl){
 	mcu_action_t * action = (mcu_action_t*)ctl;
 	if( action->handler.callback == 0 ){
 		if ( LPC_GPDMA->ENBLDCHNS & (1<<DAC_DMA_CHAN) ){
-			exec_callback(port, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
+			exec_callback(port, MCU_EVENT_FLAG_CANCELED);
 		}
 	}
 
@@ -150,7 +150,7 @@ int mcu_dac_dma_setaction(int port, void * ctl){
 	mcu_action_t * action = (mcu_action_t*)ctl;
 	if( action->handler.callback == 0 ){
 		if ( LPC_GPDMA->ENBLDCHNS & (1<<DAC_DMA_CHAN) ){
-			exec_callback(port, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
+			exec_callback(port, MCU_EVENT_FLAG_CANCELED);
 		}
 	}
 
@@ -172,7 +172,7 @@ int mcu_dac_get(int port, void * ctl){
 
 int mcu_dac_set(int port, void * ctl){
 	mcu_channel_t * attr = ctl;
-	LPC_DAC->CR = attr->channel;
+	LPC_DAC->CR = attr->loc;
 	return 0;
 }
 
@@ -280,21 +280,21 @@ int dac_dma_transfer(const devfs_handle_t * cfg){
 	return 0;
 }
 
-void exec_callback(int port, mcu_event_t data){
+void exec_callback(int port, u32 o_events){
 	dac_local[port].bufp = NULL;
 	//call the signal callback
 	LPC_DAC->CTRL = 0;
-	_mcu_cortexm_execute_event_handler(&(dac_local[port].handler), data);
+	mcu_execute_event_handler(&(dac_local[port].handler), o_events, 0);
 }
 
-int dma_write_complete(void * context, mcu_event_t data){
+int dma_write_complete(void * context, mcu_event_t * data){
 	const devfs_handle_t * cfg = context;
 	const int port = cfg->port;
 	if ( dac_local[port].len ){
 		dac_dma_transfer(cfg);
 		return 1; //keep interrupt in place
 	} else {
-		exec_callback(port, 0);
+		exec_callback(port, MCU_EVENT_FLAG_WRITE_COMPLETE);
 	}
 	return 0;
 }

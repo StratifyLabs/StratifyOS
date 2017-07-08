@@ -122,14 +122,6 @@ void _mcu_cortexm_priv_get_thread_stack_ptr(void * ptr){
 	*ptrp = result;
 }
 
-void _mcu_cortexm_execute_event_handler(mcu_event_handler_t * event, mcu_event_t arg){
-	if( event->callback != 0 ){
-		if( event->callback(event->context, arg) == 0 ){
-			event->callback = 0;
-		}
-	}
-}
-
 void _mcu_cortexm_priv_set_thread_stack_ptr(void * ptr){
 	asm volatile ("MSR psp, %0\n\t" : : "r" (ptr) );
 }

@@ -222,13 +222,13 @@ int mcu_qei_reset(int port, void * ctl){
 }
 
 void _mcu_core_qei0_isr(){
-	int flags;
 	const int port = 0;
+	u32 o_events = 0;
 	LPC_QEI_Type * regs = qei_regs[port];
 
-	flags = regs->INTSTAT;
+	o_events = regs->INTSTAT;
 	regs->CLR = 0x1FFF;
-	_mcu_cortexm_execute_event_handler(&(qei_local[port].handler), (mcu_event_t)flags);
+	mcu_execute_event_handler(&(qei_local[port].handler), o_events, 0);
 }
 
 #endif

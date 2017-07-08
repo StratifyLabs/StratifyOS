@@ -270,6 +270,7 @@ static int find_protectable_free(const devfs_device_t * dev, int type, int size,
 	return smallest_space_addr;
 }
 
+/*
 static int find_free(const devfs_device_t * dev, int type, int size){
 	mem_pageinfo_t pageinfo;
 	//find any area for the code
@@ -293,6 +294,7 @@ static int find_free(const devfs_device_t * dev, int type, int size){
 
 	return -1;
 }
+*/
 
 int appfs_util_priv_free_ram(const devfs_device_t * dev, appfs_handle_t * h){
 	priv_load_fileinfo_t args;

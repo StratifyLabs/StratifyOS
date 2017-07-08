@@ -126,8 +126,9 @@ typedef struct MCU_PACK {
 
 extern const mcu_config_t mcu_config;
 
-
 void mcu_board_event(int event, void * args);
+
+int mcu_execute_event_handler(mcu_event_handler_t * handler, u32 o_events, void * data);
 
 #ifdef __cplusplus
 }

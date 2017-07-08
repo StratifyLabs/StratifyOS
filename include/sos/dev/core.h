@@ -53,17 +53,18 @@ typedef enum {
 	CORE_FLAG_IS_RESET_WDT /*! Watchdog Timer Reset */ = (1<<3),
 	CORE_FLAG_IS_RESET_BOR /*! Brown Out Reset */ = (1<<4),
 	CORE_FLAG_IS_RESET_SYSTEM /*! Software System Reset */ = (1<<5),
-	CORE_FLAG_SET_CLKOUT_CPU /*! Use the CPU Clock */ = (1<<6),
-	CORE_FLAG_SET_CLKOUT_MAIN_OSC /*! Use the Main Oscillator */ = (1<<7),
-	CORE_FLAG_SET_CLKOUT_INTERNAL_OSC /*! Use the Internal Oscillator */ = (1<<8),
-	CORE_FLAG_SET_CLKOUT_USB /*! Use the USB Clock */ = (1<<9),
-	CORE_FLAG_SET_CLKOUT_RTC /*! Use the RTC Clock */ = (1<<10),
-	CORE_FLAG_EXEC_SLEEP /*! Sleep */ = (1<<11),
-	CORE_FLAG_EXEC_DEEPSLEEP /*! Deep sleep (preserve SRAM) */ = (1<<12),
-	CORE_FLAG_EXEC_DEEPSLEEP_STOP /*! Deep sleep (preserve SRAM, stop clocks) */ = (1<<13),
-	CORE_FLAG_EXEC_DEEPSLEEP_STANDBY /*! Turn the device off (lose SRAM) */ = (1<<14),
-	CORE_FLAG_EXEC_RESET /*! Set this flag with I_CORE_SETATTR to reset the device */ = (1<<15),
-	CORE_FLAG_EXEC_RESET_BOOTLOADER /*! Set this flag with I_CORE_SETATTR to reset the device and start the bootloader */ = (1<<15)
+	CORE_FLAG_SET_CLKOUT /*! Use the CPU Clock */ = (1<<6),
+	CORE_FLAG_IS_CLKOUT_CPU /*! Use the CPU Clock */ = (1<<7),
+	CORE_FLAG_IS_CLKOUT_MAIN_OSC /*! Use the Main Oscillator */ = (1<<8),
+	CORE_FLAG_IS_CLKOUT_INTERNAL_OSC /*! Use the Internal Oscillator */ = (1<<9),
+	CORE_FLAG_IS_CLKOUT_USB /*! Use the USB Clock */ = (1<<10),
+	CORE_FLAG_IS_CLKOUT_RTC /*! Use the RTC Clock */ = (1<<11),
+	CORE_FLAG_EXEC_SLEEP /*! Sleep */ = (1<<12),
+	CORE_FLAG_EXEC_DEEPSLEEP /*! Deep sleep (preserve SRAM) */ = (1<<13),
+	CORE_FLAG_EXEC_DEEPSLEEP_STOP /*! Deep sleep (preserve SRAM, stop clocks) */ = (1<<14),
+	CORE_FLAG_EXEC_DEEPSLEEP_STANDBY /*! Turn the device off (lose SRAM) */ = (1<<15),
+	CORE_FLAG_EXEC_RESET /*! Set this flag with I_CORE_SETATTR to reset the device */ = (1<<16),
+	CORE_FLAG_EXEC_INVOKE_BOOTLOADER /*! Set this flag with I_CORE_SETATTR to reset the device and start the bootloader */ = (1<<17)
 } core_flag_t;
 
 

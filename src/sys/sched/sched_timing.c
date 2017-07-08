@@ -33,10 +33,10 @@
 
 static volatile uint32_t sched_usecond_counter MCU_SYS_MEM;
 
-static int usecond_overflow_event(void * context, mcu_event_t data);
+static int usecond_overflow_event(void * context, mcu_event_t * data);
 static int open_usecond_tmr();
 
-static int priv_usecond_match_event(void * context, mcu_event_t data);
+static int priv_usecond_match_event(void * context, mcu_event_t * data);
 
 int sched_timing_init(){
 	if ( open_usecond_tmr() < 0 ){
@@ -137,13 +137,13 @@ void sched_priv_get_realtime(struct sched_timeval * tv){
 	tv->tv_usec = (uint32_t)mcu_tmr_get(stratify_board_config.clk_usecond_tmr, NULL);
 }
 
-int usecond_overflow_event(void * context, mcu_event_t data){
+int usecond_overflow_event(void * context, mcu_event_t * data){
 	sched_usecond_counter++;
 	priv_usecond_match_event(NULL, 0);
 	return 1; //do not clear callback
 }
 
-int priv_usecond_match_event(void * context, mcu_event_t data){
+int priv_usecond_match_event(void * context, mcu_event_t * data){
 #if SINGLE_TASK == 0
 	int i;
 	uint32_t next;
@@ -214,7 +214,7 @@ int open_usecond_tmr(){
 
 	memset(&attr, 0, sizeof(tmr_attr_t));
 	attr.freq = 1000000;
-	attr.o_flags = TMR_FLAG_CLKSRC_CPU;
+	attr.o_flags = TMR_FLAG_IS_CLKSRC_CPU;
 	err = mcu_tmr_setattr(tmr.port, &attr);
 	if ( err ){
 		return err;

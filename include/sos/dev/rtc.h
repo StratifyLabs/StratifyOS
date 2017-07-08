@@ -58,14 +58,6 @@ typedef enum {
 	RTC_CLKSRC_INTERNAL_40000 /*! Internal 40KHz Oscillator */
 } rtc_clock_t;
 
-/*! \details This lists the bit assignments when
- * using the RTC interrupt callback.
- *
- */
-typedef enum {
-	RTC_EVENT_ALARM,
-	RTC_EVENT_COUNT
-} rtc_event_t;
 
 /*! \details This lists the times when the count
  * interrupt can be set.
@@ -121,9 +113,9 @@ typedef enum {
  */
 typedef struct MCU_PACK {
 	struct link_tm time /*! \brief Time (compatible with struct tm) used with set/get */;
-	uint32_t useconds /*! \brief Microseconds used with set/get */;
-	uint32_t time_t;
-	uint32_t use_time_t;
+	u32 useconds /*! \brief Microseconds used with set/get */;
+	u32 time_t;
+	u32 use_time_t;
 } rtc_time_t;
 
 
@@ -147,9 +139,14 @@ typedef enum {
  *
  */
 typedef struct MCU_PACK {
-	rtc_time_t time /*! \brief The time for the alarm */;
-	u8 type /*! \brief The type of alarm (\ref rtc_alarm_type_t) */;
+	rtc_time_t time /*! The time for the alarm */;
+	u8 type /*! The type of alarm (\ref rtc_alarm_type_t) */;
 } rtc_alarm_t;
+
+typedef struct {
+	rtc_time_t time;
+} rtc_event_t;
+
 
 
 /*! \brief RTC IO Attributes
@@ -160,7 +157,7 @@ typedef struct MCU_PACK {
 typedef struct MCU_PACK {
 	u8 pin_assign /*! Always 0 */;
 	u8 clock /*! The source clock */;
-	uint32_t freq /*! Calibration frequency for setting the pre-scalar */;
+	u32 freq /*! Calibration frequency for setting the pre-scalar */;
 } rtc_attr_t;
 
 #define I_RTC_GETINFO _IOCTLR(RTC_IOC_IDENT_CHAR, I_MCU_GETINFO, rtc_attr_t)

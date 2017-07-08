@@ -130,6 +130,9 @@ static void write_tx_data(int port);
 LPC_UART_Type * const uart_regs_table[UART_PORTS] = MCU_UART_REGS;
 u8 const uart_irqs[UART_PORTS] = MCU_UART_IRQS;
 
+static void exec_readcallback(int port, LPC_UART_Type * uart_regs, u32 o_events);
+static void exec_writecallback(int port, LPC_UART_Type * uart_regs, u32 o_events);
+
 void _mcu_uart_dev_power_on(int port){
 	if ( uart_local[port].ref_count == 0 ){
 		switch(port){
@@ -227,7 +230,6 @@ int mcu_uart_setattr(int port, void * ctl){
 	uart_attr_t * attr = (uart_attr_t*)ctl;
 	uart_regs = uart_regs_table[port];
 	o_flags = attr->o_flags;
-	int i;
 
 	if ( attr->freq != 0 ){
 		baud_rate = attr->freq;
@@ -311,8 +313,9 @@ int mcu_uart_setattr(int port, void * ctl){
 	return 0;
 }
 
-static void exec_readcallback(int port, LPC_UART_Type * uart_regs, void * data){
-	_mcu_cortexm_execute_event_handler(&(uart_local[port].read), (mcu_event_t)data);
+static void exec_readcallback(int port, LPC_UART_Type * uart_regs, u32 o_events){
+	uart_event_t uart_event;
+	mcu_execute_event_handler(&(uart_local[port].read), o_events, &uart_event);
 
 	//if the callback is NULL now, disable the interrupt
 	if( uart_local[port].read.callback == NULL ){
@@ -320,10 +323,11 @@ static void exec_readcallback(int port, LPC_UART_Type * uart_regs, void * data){
 	}
 }
 
-static void exec_writecallback(int port, LPC_UART_Type * uart_regs, void * data){
+static void exec_writecallback(int port, LPC_UART_Type * uart_regs, u32 o_events){
+	uart_event_t uart_event;
 	uart_local[port].tx_bufp = NULL;
 	//call the write callback
-	_mcu_cortexm_execute_event_handler(&(uart_local[port].write), (mcu_event_t)data);
+	mcu_execute_event_handler(&(uart_local[port].write), o_events, &uart_event);
 
 	//if the callback is NULL now, disable the interrupt
 	if( uart_local[port].write.callback == NULL ){
@@ -338,18 +342,18 @@ int mcu_uart_setaction(int port, void * ctl){
 	if( action->handler.callback == 0 ){
 		//if there is an ongoing operation -- cancel it
 
-		if( action->o_events == UART_EVENT_DATA_READY ){
+		if( action->o_events == MCU_EVENT_FLAG_DATA_READY ){
 			if ( uart_regs->IER & UIER_RBRIE ){
 				//There is an ongoing read operation
-				exec_readcallback(port, uart_regs, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
+				exec_readcallback(port, uart_regs, MCU_EVENT_FLAG_CANCELED);
 			}
 			uart_local[port].read.callback = 0;
 			return 0;
 		}
 
-		if( action->o_events == UART_EVENT_WRITE_COMPLETE ){
+		if( action->o_events == MCU_EVENT_FLAG_WRITE_COMPLETE ){
 			if ( uart_regs->IER & UIER_ETBEI ){
-				exec_writecallback(port, uart_regs, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
+				exec_writecallback(port, uart_regs, MCU_EVENT_FLAG_CANCELED);
 			}
 			uart_local[port].write.callback = 0;
 			return 0;
@@ -361,14 +365,14 @@ int mcu_uart_setaction(int port, void * ctl){
 			return -1;
 		}
 
-		if( action->o_events == UART_EVENT_DATA_READY ){
+		if( action->o_events == MCU_EVENT_FLAG_DATA_READY ){
 
 			uart_local[port].read.callback = action->handler.callback;
 			uart_local[port].read.context = action->handler.context;
 
 			uart_regs->IER |= (UIER_RBRIE);  //enable the receiver interrupt
 			uart_local[port].rx_bufp = NULL;
-		} else if ( action->o_events == UART_EVENT_WRITE_COMPLETE ){
+		} else if ( action->o_events == MCU_EVENT_FLAG_WRITE_COMPLETE ){
 
 			uart_local[port].write.callback = action->handler.callback;
 			uart_local[port].write.context = action->handler.context;

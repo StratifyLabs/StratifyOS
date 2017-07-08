@@ -276,19 +276,21 @@ int mcu_rtc_setcountevent(int port, void * ctl){
 void _mcu_core_rtc0_isr(){
 	const int port = 0;
 	LPC_RTC_Type * regs = rtc_regs[port];
+	u32 o_events;
 	rtc_event_t event;
 	int flags;
 	flags = regs->ILR & 0x03;
 	regs->ILR = flags; //clear the flags
-	event = 0;
+	o_events = 0;
 	if ( flags & RTCALF ){
-		event |= (1<<RTC_EVENT_ALARM);
+		o_events |= MCU_EVENT_FLAG_ALARM;
 	}
 	if ( flags & RTCCIF ){
-		event |= (1<<RTC_EVENT_COUNT);
+		o_events |= MCU_EVENT_FLAG_COUNT;
 	}
 
-	_mcu_cortexm_execute_event_handler(&(rtc_local.handler), (mcu_event_t)event);
+	mcu_rtc_get(port, &event.time);
+	mcu_execute_event_handler(&(rtc_local.handler), o_events, &event);
 }
 
 #endif

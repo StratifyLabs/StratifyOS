@@ -30,10 +30,6 @@
 extern "C" {
 #endif
 
-typedef struct MCU_PACK {
-	u32 value;
-} adc_event_data_t;
-
 int mcu_adc_open(const devfs_handle_t * cfg) MCU_PRIV_CODE;
 int mcu_adc_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_PRIV_CODE;
 int mcu_adc_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_PRIV_CODE;

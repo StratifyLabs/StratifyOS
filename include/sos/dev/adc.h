@@ -89,16 +89,15 @@ extern "C" {
 
 #define ADC_IOC_IDENT_CHAR 'a'
 
-enum {
-	ADC_EVENT_NONE = 0,
-	ADC_EVENT_DATA_READY = (1<<0)
-};
 
-
-enum {
+typedef enum {
 	ADC_FLAG_LEFT_JUSTIFIED = (1<<0),
 	ADC_FLAG_RIGHT_JUSTIFIED = (1<<1)
-};
+} adc_flag_t;
+
+typedef struct MCU_PACK {
+	u32 value;
+} adc_event_t;
 
 typedef struct MCU_PACK {
 	u32 o_flags /*! A bitmask for the supported features */;

@@ -83,10 +83,8 @@ extern "C" {
 
 #define DAC_IOC_IDENT_CHAR 'd'
 
-
-typedef enum {
-	DAC_EVENT_NONE = 0,
-	DAC_EVENT_WRITE_COMPLETE = (1<<0)
+typedef struct MCU_PACK {
+	u32 value;
 } dac_event_t;
 
 
@@ -100,7 +98,7 @@ typedef struct MCU_PACK {
 
 typedef struct MCU_PACK {
 	u32 o_flags;
-	u8 pin_assignment[DAC_PIN_ASSIGNMENT_COUNT];
+	mcu_pin_t pin_assignment[DAC_PIN_ASSIGNMENT_COUNT];
 	u32 freq;
 } dac_attr_t;
 

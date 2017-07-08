@@ -30,7 +30,7 @@ static int set_read_action(const devfs_handle_t * cfg, mcu_callback_t callback){
 	const uartfifo_cfg_t * cfgp = cfg->config;
 	action.handler.callback = callback;
 	action.handler.context = (void*)cfg;
-	action.o_events = UART_EVENT_DATA_READY;
+	action.o_events = MCU_EVENT_FLAG_DATA_READY;
 	action.prio = 0;
 	if( mcu_uart_setaction(cfgp->port, &action) < 0 ){
 		return -1;
@@ -39,7 +39,7 @@ static int set_read_action(const devfs_handle_t * cfg, mcu_callback_t callback){
 	return 0;
 }
 
-static int data_received(void * context, mcu_event_t data){
+static int data_received(void * context, mcu_event_t * data){
 	char c;
 	const devfs_handle_t * cfg;
 	const uartfifo_cfg_t * cfgp;

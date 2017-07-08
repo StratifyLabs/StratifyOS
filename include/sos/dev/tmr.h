@@ -112,36 +112,35 @@ extern "C" {
 #define TMR_IOC_IDENT_CHAR 't'
 
 
-/*! \details This defines no action
- * for an OC/IC event.
- */
-typedef enum {
-	TMR_EVENT_NONE /*! no action */ = 0,
-	TMR_EVENT_INTERRUPT /*! enable interrupt on IC/OC event */ = (1<<0),
-	TMR_EVENT_RESET /*! reset the timer on IC/OC event */ = (1<<1),
-	TMR_EVENT_STOP /*! stop the timer on OC/IC event */ = (1<<2),
-	TMR_EVENT_SETOC /*! set the OC channel pin to logic 1 */ = (1<<3),
-	TMR_EVENT_CLROC /*! clear the OC channel pin to logic 0 */ = (1<<4),
-	TMR_EVENT_TOGGLEOC /*! toggle the OC channel pin */ = (1<<5),
-	TMR_EVENT_PWMMODE /*! Execute OC channel in PWM Mode */ = (1<<6),
-} tmr_event_t;
-
 enum {
-	TMR_FLAG_CLKSRC_CPU /*! Use the CPU as the source for the clock (timer mode) */ = (1<<0),
-	TMR_FLAG_CLKSRC_IC0 /*! Use input capture channel 0 for the clock source (counter mode) */ = (1<<1),
-	TMR_FLAG_CLKSRC_IC1 /*! Use input capture channel 1 for the clock source (counter mode) */ = (1<<2),
-	TMR_FLAG_CLKSRC_IC2 /*! Use input capture channel 2 for the clock source (counter mode) */ = (1<<3),
-	TMR_FLAG_CLKSRC_IC3 /*! Use input capture channel 3 for the clock source (counter mode) */ = (1<<4),
-	TMR_FLAG_CLKSRC_EDGERISING /*! Count rising edges */ = (1<<5),
-	TMR_FLAG_CLKSRC_EDGEFALLING /*! Count falling edges */ = (1<<6),
-	TMR_FLAG_CLKSRC_EDGEBOTH /*! Count both edges */ = (1<<7),
-	TMR_FLAG_CLKSRC_COUNTDOWN /*! Count down (not up) */ = (1<<8),
+	TMR_FLAG_IS_CLKSRC_CPU /*! Use the CPU as the source for the clock (timer mode) */ = (1<<0),
+	TMR_FLAG_IS_CLKSRC_IC0 /*! Use input capture channel 0 for the clock source (counter mode) */ = (1<<1),
+	TMR_FLAG_IS_CLKSRC_IC1 /*! Use input capture channel 1 for the clock source (counter mode) */ = (1<<2),
+	TMR_FLAG_IS_CLKSRC_IC2 /*! Use input capture channel 2 for the clock source (counter mode) */ = (1<<3),
+	TMR_FLAG_IS_CLKSRC_IC3 /*! Use input capture channel 3 for the clock source (counter mode) */ = (1<<4),
+	TMR_FLAG_IS_CLKSRC_EDGERISING /*! Count rising edges */ = (1<<5),
+	TMR_FLAG_IS_CLKSRC_EDGEFALLING /*! Count falling edges */ = (1<<6),
+	TMR_FLAG_IS_CLKSRC_EDGEBOTH /*! Count both edges */ = (1<<7),
+	TMR_FLAG_IS_CLKSRC_COUNTDOWN /*! Count down (not up) */ = (1<<8),
 	TMR_FLAG_AUTO_RELOAD /*! Auto reload the time */ = (1<<9),
 	TMR_FLAG_ENABLE_OC /*! Auto reload the time */ = (1<<10),
 	TMR_FLAG_ENABLE_IC /*! Auto reload the time */ = (1<<11),
-	TMR_FLAG_ENABLE /*! Turn the timer on */ = (1<<12),
-	TMR_FLAG_DISABLE /*! Turn the timer off */ = (1<<13),
+	TMR_FLAG_SET_TIMER /*! Turn the timer on */ = (1<<12),
+	TMR_FLAG_UNUSED /*! Turn the timer off */ = (1<<13),
+	TMR_FLAG_SET_CHANNEL /*! Configure channel characteristics */ = (1<<14),
+	TMR_FLAG_IS_CHANNEL_STOP_ON_RESET /*! Stop when the timer resets */ = (1<<15),
+	TMR_FLAG_IS_CHANNEL_RESET_ON_MATCH /*! Stop when the timer finds a match */ = (1<<16),
+	TMR_FLAG_IS_CHANNEL_STOP_ON_MATCH /*! Stop when the timer resets */ = (1<<17),
+	TMR_FLAG_IS_CHANNEL_SET_OUTPUT_ON_MATCH /*! Stop when the timer resets */ = (1<<18),
+	TMR_FLAG_IS_CHANNEL_CLEAR_OUTPUT_ON_MATCH /*! Stop when the timer resets */ = (1<<19),
+	TMR_FLAG_IS_CHANNEL_TOGGLE_OUTPUT_ON_MATCH /*! Stop when the timer resets */ = (1<<20),
+	TMR_FLAG_IS_CHANNEL_PWM_MODE /*! Stop when the timer resets */ = (1<<21),
+
 };
+
+typedef struct MCU_PACK {
+	mcu_channel_t channel;
+} tmr_event_t;
 
 typedef struct MCU_PACK {
 	u32 o_flags;
@@ -155,6 +154,8 @@ typedef struct MCU_PACK {
 	u32 o_flags;
 	mcu_pin_t pin_assignment[TMR_PIN_ASSIGNMENT_COUNT];
 	u32 freq;
+	u32 top /*! If this value is non-zero, the timer will reset when it matchs this value */;
+	mcu_channel_t channel;
 } tmr_attr_t;
 
 
@@ -269,8 +270,10 @@ typedef struct MCU_PACK {
  * \hideinitializer
  */
 #define I_TMR_GET _IOCTL(TMR_IOC_IDENT_CHAR, I_MCU_TOTAL + 6)
+#define I_TMR_ON _IOCTL(TMR_IOC_IDENT_CHAR, I_MCU_TOTAL + 7)
+#define I_TMR_OFF _IOCTL(TMR_IOC_IDENT_CHAR, I_MCU_TOTAL + 8)
 
-#define I_TMR_TOTAL 7
+#define I_TMR_TOTAL 9
 
 #ifdef __cplusplus
 }

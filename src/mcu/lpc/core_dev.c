@@ -25,7 +25,7 @@
 #include "mcu/debug.h"
 
 static u32 _mcu_core_get_reset_src();
-static int _mcu_core_enable_clkout(int clk_source, int div);
+static int enable_clock_out(int o_flags, int div);
 void _mcu_set_sleep_mode(int * level);
 static u32 mcu_core_reset_source = CORE_FLAG_IS_RESET_SOFTWARE;
 
@@ -55,14 +55,41 @@ int mcu_core_getinfo(int port, void * arg){
 }
 
 int mcu_core_setattr(int port, void * arg){
+	core_attr_t * attr = arg;
+	u32 o_flags = attr->o_flags;
 
-	return -1;
+
+	if( o_flags & CORE_FLAG_SET_CLKOUT ){
+		enable_clock_out(o_flags, attr->freq);
+	}
+
+	if( o_flags & CORE_FLAG_EXEC_RESET ){
+		mcu_core_reset(port, 0);
+	}
+
+	if( o_flags & CORE_FLAG_EXEC_INVOKE_BOOTLOADER ){
+		mcu_core_invokebootloader(port, 0);
+	}
+
+	if( o_flags & CORE_FLAG_EXEC_SLEEP ){
+		mcu_core_sleep(port, (void*)CORE_SLEEP);
+	} else if( o_flags & CORE_FLAG_EXEC_DEEPSLEEP ){
+		mcu_core_sleep(port, (void*)CORE_DEEPSLEEP);
+	} else if( o_flags & CORE_FLAG_EXEC_DEEPSLEEP_STOP ){
+		mcu_core_sleep(port, (void*)CORE_DEEPSLEEP_STOP);
+	} else if( o_flags & CORE_FLAG_EXEC_DEEPSLEEP_STANDBY ){
+		mcu_core_sleep(port, (void*)CORE_DEEPSLEEP_STANDBY);
+	}
+
+
+	return 0;
 }
 
 int mcu_core_setaction(int port, void * arg){
 	errno = ENOTSUP;
 	return -1;
 }
+
 int mcu_core_sleep(int port, void * arg){
 	int level;
 	level = (int)arg;
@@ -96,7 +123,7 @@ int mcu_core_invokebootloader(int port, void * arg){
 
 int mcu_core_setclkout(int port, void * arg){
 	//core_clkout_t * clkout = arg;
-	//return _mcu_core_enable_clkout(clkout->src, clkout->div);
+	//return
 	return 0;
 }
 
@@ -197,30 +224,24 @@ u32 _mcu_core_get_reset_src(){
 	return src;
 }
 
-int _mcu_core_enable_clkout(int clk_source, int div){
+int enable_clock_out(int o_flags, int div){
 	div = (div & 0xF);
 	if ( div != 0 ){
 		div = div - 1;
 	}
 
 #if defined LPC_SC
-	switch(clk_source){
-	case CORE_FLAG_SET_CLKOUT_CPU:
+	if( o_flags & CORE_FLAG_IS_CLKOUT_CPU ){
 		LPC_SC->CLKOUTCFG = (1<<8)|(div<<4)|(0<<0);
-		break;
-	case CORE_FLAG_SET_CLKOUT_MAIN_OSC:
+	} else if( o_flags & CORE_FLAG_IS_CLKOUT_MAIN_OSC ){
 		LPC_SC->CLKOUTCFG = (1<<8)|(div<<4)|(1<<0);
-		break;
-	case CORE_FLAG_SET_CLKOUT_INTERNAL_OSC:
+	} else if( o_flags & CORE_FLAG_IS_CLKOUT_INTERNAL_OSC ){
 		LPC_SC->CLKOUTCFG = (1<<8)|(div<<4)|(2<<0);
-		break;
-	case CORE_FLAG_SET_CLKOUT_USB:
+	} else if( o_flags & CORE_FLAG_IS_CLKOUT_USB ){
 		LPC_SC->CLKOUTCFG = (1<<8)|(div<<4)|(3<<0);
-		break;
-	case CORE_FLAG_SET_CLKOUT_RTC:
+	} else if( o_flags & CORE_FLAG_IS_CLKOUT_RTC ){
 		LPC_SC->CLKOUTCFG = (1<<8)|(div<<4)|(4<<0);
-		break;
-	default:
+	} else {
 		return -1;
 	}
 #endif

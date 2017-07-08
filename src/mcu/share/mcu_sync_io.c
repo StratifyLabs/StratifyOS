@@ -24,9 +24,9 @@ void mcu_board_event(int event, void * args){
 	}
 }
 
-static int mcu_sync_io_complete(void * context, mcu_event_t data);
+static int mcu_sync_io_complete(void * context, mcu_event_t * data);
 
-int mcu_sync_io_complete(void * context, mcu_event_t data){
+int mcu_sync_io_complete(void * context, mcu_event_t * data){
 	int * done = context;
 	*done = 1;
 

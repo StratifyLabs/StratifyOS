@@ -109,14 +109,9 @@ typedef enum {
 } uart_flag_t;
 
 
-/*! details This list the available UART events when setting custom
- * actions for the UART callbacks.
- */
-enum {
-	UART_EVENT_NONE /*! No Event (used to adjust priority only) */,
-	UART_EVENT_DATA_READY /*! Data is ready to be read */ = (1<<0),
-	UART_EVENT_WRITE_COMPLETE /*! A write has completed */ = (1<<1)
-};
+typedef struct {
+	u8 value;
+} uart_event_t;
 
 
 #define UART_PIN_ASSIGNMENT_COUNT 4

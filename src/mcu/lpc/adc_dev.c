@@ -41,7 +41,7 @@ typedef struct {
 } adc_local_t;
 
 static adc_local_t adc_local[MCU_ADC_PORTS] MCU_SYS_MEM;
-static void exec_callback(int port, void * data) MCU_PRIV_CODE;
+static void exec_callback(int port, u32 o_events) MCU_PRIV_CODE;
 
 static LPC_ADC_Type * const adc_regs[MCU_ADC_PORTS] = MCU_ADC_REGS;
 static u8 const adc_irqs[MCU_ADC_PORTS] = MCU_ADC_IRQS;
@@ -121,13 +121,13 @@ int _mcu_adc_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	return 0;
 }
 
-void exec_callback(int port, void * data){
+void exec_callback(int port, u32 o_events){
 	LPC_ADC_Type * regs = adc_regs[port];
 	adc_local[port].bufp = NULL;
 	//Disable the interrupt
 	regs->INTEN = 0;
 	regs->CR &= ((1<<ADC_PDN)|(0xFF00)); //leave the clock div bits in place and PDN
-	_mcu_cortexm_execute_event_handler(&(adc_local[port].handler), data);
+	mcu_execute_event_handler(&(adc_local[port].handler), o_events, 0);
 }
 
 //! \todo Should this use DMA instead of this interrupt?
@@ -144,13 +144,13 @@ void _mcu_core_adc0_isr(){
 	if ( adc_local[port].len > 0 ){
 		regs->CR |= (1<<ADC_START); //set the start bit
 	} else {
-		exec_callback(0, 0);
+		exec_callback(0, MCU_EVENT_FLAG_DATA_READY);
 	}
 }
 
 
 int mcu_adc_getinfo(int port, void * ctl){
-	adc_info_t * info;
+	adc_info_t * info = ctl;
 
 	info->freq = ADC_MAX_FREQ;
 	info->o_flags = (ADC_FLAG_LEFT_JUSTIFIED|ADC_FLAG_RIGHT_JUSTIFIED);
@@ -207,7 +207,7 @@ int mcu_adc_setaction(int port, void * ctl){
 	mcu_action_t * action = (mcu_action_t*)ctl;
 	if( action->handler.callback == 0 ){
 		if ( regs->INTEN & 0xFF ){
-			exec_callback(port, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
+			exec_callback(port, MCU_EVENT_FLAG_CANCELED);
 		}
 	}
 

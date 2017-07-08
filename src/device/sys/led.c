@@ -36,12 +36,12 @@ int led_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 	mcu_pin_t port_pin;
 	pio_attr_t req_attr;
 	if( request == I_LED_SET ){
-		if ( req->channel > 3 ){
+		if ( req->loc > 3 ){
 			errno = EINVAL;
 			return -1;
 		}
 
-		port_pin = cfg->pcfg.pio[req->channel];
+		port_pin = cfg->pcfg.pio[req->loc];
 
 		if ( req->on != 0 ){
 			req_attr.o_pinmask = (1<<port_pin.pin);

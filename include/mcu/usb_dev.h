@@ -46,7 +46,7 @@ typedef struct {
 	const void * const device;
 	const void * const config;
 	const void * const string;
-	int (* const setup_event)(void * context, int event);
+	int (* const setup_event)(void * context, mcu_event_t * event);
 	void (*const feature_event)(void * context);
 	void (*const configure_event)(void * context);
 	void (*const interface_event)(void * context);
@@ -73,12 +73,12 @@ typedef struct MCU_PACK {
 	const usb_dev_const_t * constants;
 } usb_dev_context_t;
 
-int usb_dev_std_setup(void * context, mcu_event_t data);
-void usb_dev_std_setup_stage(usb_dev_context_t * context);
-void usb_dev_std_datain_stage(usb_dev_context_t * context) MCU_NEVER_INLINE;
-void usb_dev_std_dataout_stage (usb_dev_context_t * context);
-void usb_dev_std_statusin_stage(usb_dev_context_t * context);
-void usb_dev_std_statusout_stage (usb_dev_context_t * context);
+int usbd_control_handler(void * context, mcu_event_t * data);
+void usbd_control_handler_stage(usb_dev_context_t * context);
+void usbd_control_datain_stage(usb_dev_context_t * context) MCU_NEVER_INLINE;
+void usbd_control_dataout_stage (usb_dev_context_t * context);
+void usbd_control_statusin_stage(usb_dev_context_t * context);
+void usbd_control_statusout_stage (usb_dev_context_t * context);
 void usb_dev_priv_init(void * context);
 
 void usb_dev_default_event(void * context);

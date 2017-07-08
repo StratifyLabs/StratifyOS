@@ -132,10 +132,10 @@ int _mcu_ssp_dev_powered_on(int port){
 
 
 int mcu_ssp_getinfo(int port, void * ctl){
-	LPC_SSP_Type * regs;
-	spi_info_t * info = (spi_attr_t*)ctl;
+	spi_info_t * info = ctl;
 
 	//set flags
+	info->o_flags = 0;
 
 
 	return 0;
@@ -227,9 +227,9 @@ int mcu_ssp_setduplex(int port, void * ctl){
 	return 0;
 }
 
-static void exec_callback(int port, LPC_SSP_Type * regs, void * data){
+static void exec_callback(int port, LPC_SSP_Type * regs, u32 o_events){
 	regs->IMSC &= ~(SSPIMSC_RXIM|SSPIMSC_RTIM); //Kill the interrupts
-	_mcu_cortexm_execute_event_handler(&(ssp_local[port].handler), (mcu_event_t)0);
+	mcu_execute_event_handler(&(ssp_local[port].handler), o_events, 0);
 }
 
 
@@ -240,7 +240,7 @@ int mcu_ssp_setaction(int port, void * ctl){
 
 	if( action->handler.callback == 0 ){
 		if ( regs->IMSC & (SSPIMSC_RXIM|SSPIMSC_RTIM) ){
-			exec_callback(port, regs, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
+			exec_callback(port, regs, MCU_EVENT_FLAG_CANCELED);
 		}
 		ssp_local[port].handler.callback = 0;
 		return 0;

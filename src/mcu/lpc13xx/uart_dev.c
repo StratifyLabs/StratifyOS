@@ -262,7 +262,7 @@ int mcu_uart_setattr(int port, void * ctl){
 int mcu_uart_setaction(int port, void * ctl){
 	mcu_action_t * action = (mcu_action_t*)ctl;
 	LPC_UART_Type * uart_regs = uart_regs_table[port];
-	if( action->o_events == UART_EVENT_DATA_READY ){
+	if( action->o_events == MCU_EVENT_FLAG_DATA_READY ){
 		uart_local[port].read_callback = action->handler.callback;
 		uart_local[port].read_context = action->handler.context;
 		if ( uart_local[port].read_callback != NULL ){
@@ -271,7 +271,7 @@ int mcu_uart_setaction(int port, void * ctl){
 		} else {
 			uart_regs->IER &= (~UIER_RBRIE); //disable the receive interrupt
 		}
-	} else if ( action->o_events == UART_EVENT_WRITE_COMPLETE ){
+	} else if ( action->o_events == MCU_EVENT_FLAG_WRITE_COMPLETE ){
 		uart_local[port].write_callback = action->handler.callback;
 		uart_local[port].write_context = action->handler.context;
 	} else {

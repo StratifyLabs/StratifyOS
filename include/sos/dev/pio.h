@@ -91,14 +91,6 @@ extern "C" {
 
 #define PIO_IOC_IDENT_CHAR 'p'
 
-
-typedef enum {
-	PIO_EVENT_NONE /*! Specifies No PIO event */,
-	PIO_EVENT_RISING /*! Specifies a rising edge on the PIO */ = (1<<0),
-	PIO_EVENT_FALLING /*! Specifies a falling edge on the PIO */ = (1<<1),
-	PIO_EVENT_BOTH /*! Specifies both edges on the PIO */ = (1<<2)
-} pio_event_t;
-
 typedef enum {
 	PIO_FLAG_SET_INPUT /*! Input flag*/ = (1<<0),
 	PIO_FLAG_SET_OUTPUT /*! Output flag */ = (1<<1),
@@ -125,6 +117,12 @@ typedef struct MCU_PACK {
 	u32 o_flags;
 	u32 o_events;
 } pio_info_t;
+
+typedef struct MCU_PACK {
+	u32 status;
+	u32 rising;
+	u32 falling;
+} pio_event_t;
 
 
 typedef struct MCU_PACK {

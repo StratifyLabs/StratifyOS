@@ -42,10 +42,6 @@
 extern "C" {
 #endif
 
-typedef struct MCU_PACK {
-	u32 value;
-} i2s_event_data_t;
-
 int mcu_i2s_open(const devfs_handle_t * cfg) MCU_PRIV_CODE;
 int mcu_i2s_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_PRIV_CODE;
 int mcu_i2s_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_PRIV_CODE;

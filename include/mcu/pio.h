@@ -34,11 +34,6 @@
 extern "C" {
 #endif
 
-typedef struct MCU_PACK {
-	u32 status;
-	u32 rising;
-	u32 falling;
-} pio_event_data_t;
 
 int mcu_pio_open(const devfs_handle_t * cfg) MCU_PRIV_CODE;
 int mcu_pio_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_PRIV_CODE;

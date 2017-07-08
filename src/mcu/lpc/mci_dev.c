@@ -216,7 +216,7 @@ void exec_callback(int port, void * data){
 
 	*/
 
-	_mcu_cortexm_execute_event_handler(&(mci_local[port].handler), data);
+	mcu_execute_event_handler(&(mci_local[port].handler), data);
 
 }
 

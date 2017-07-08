@@ -56,27 +56,43 @@ extern "C" {
 #define MCU_NEVER_INLINE __attribute__((noinline))
 
 
-enum mcu_event_codes {
-	MCU_EVENT_OP_CANCELLED = 0xABCDEF,
-};
-
-
 typedef struct MCU_PACK {
 	u32 o_events /*! Event or events that happened */;
-	void * event_data /*! A pointer to the device specific event data */;
-} mcu_event_data_t;
+	void * data /*! A pointer to the device specific event data */;
+} mcu_event_t;
+
 
 typedef enum {
-	MCU_EVENT_CANCELLED = (1<<31)
-} mcu_even_t_t;
+	MCU_EVENT_FLAG_NONE = 0,
+	MCU_EVENT_FLAG_DATA_READY /*! Data have been received and is ready to read */ = (1<<0),
+	MCU_EVENT_FLAG_WRITE_COMPLETE /*! A write operation has completed */ = (1<<1),
+	MCU_EVENT_FLAG_CANCELED /*! An operation was canceled */ = (1<<2),
+	MCU_EVENT_FLAG_RISING /*! Specifies a rising edge */ = (1<<3),
+	MCU_EVENT_FLAG_FALLING /*! Specifies a falling edge */ = (1<<4),
+	MCU_EVENT_FLAG_UNUSED /*! Specifies both edges */ = (1<<5),
+	MCU_EVENT_FLAG_ERROR /*! An error occured during */ = (1<<6),
+	MCU_EVENT_FLAG_ADDRESSED /*! The device has been addressed (I2C for example) */ = (1<<7),
+	MCU_EVENT_FLAG_OVERFLOW /*! An overflow condition has occurred */ = (1<<8),
+	MCU_EVENT_FLAG_UNDERRUN /*! An underrun condition has occurred */ = (1<<9),
+	MCU_EVENT_FLAG_HIGH /*! High event */ = (1<<10),
+	MCU_EVENT_FLAG_LOW /*! Low event (used with external interrupts) */ = (1<<11),
+	MCU_EVENT_FLAG_SETUP /*! USB Setup event */ = (1<<12),
+	MCU_EVENT_FLAG_STALL /*! Stall event */ = (1<<13),
+	MCU_EVENT_FLAG_STOP /*! Stop event (Stall alias) */ = MCU_EVENT_FLAG_STALL,
+	MCU_EVENT_FLAG_RESET /*! Reset event */ = (1<<14),
+	MCU_EVENT_FLAG_POWER /*! Stall event */ = (1<<15),
+	MCU_EVENT_FLAG_SUSPEND /*! Stall event */ = (1<<16),
+	MCU_EVENT_FLAG_RESUME /*! Stall event */ = (1<<17),
+	MCU_EVENT_FLAG_DEBUG /*! Stall event */ = (1<<18),
+	MCU_EVENT_FLAG_WAKEUP /*! Stall event */ = (1<<19),
+	MCU_EVENT_FLAG_SOF /*! Stall event */ = (1<<20),
+	MCU_EVENT_FLAG_MATCH /*! Match */ = (1<<21),
+	MCU_EVENT_FLAG_ALARM /*! Alarm (match alias) */ = MCU_EVENT_FLAG_MATCH,
+	MCU_EVENT_FLAG_COUNT /*! Alarm (match alias) */ = (1<<22),
 
-typedef void * mcu_event_t;
+} mcu_event_flag_t;
 
-#define MCU_EVENT_SET_CODE(x) ((mcu_event_t)((x<<1) | 0x01))
-#define MCU_EVENT_CODE(x) ((u32)x >> 1)
-
-
-typedef int (*mcu_callback_t)(void*, mcu_event_t);
+typedef int (*mcu_callback_t)(void*, mcu_event_t *);
 
 typedef struct {
 	mcu_callback_t callback;
@@ -115,7 +131,7 @@ typedef struct {
 typedef struct {
 	u8 channel /*! The channel (a GPIO pin or timer channel) */;
 	s8 prio /*! The interrupt priority */;
-	u16 o_events /*! The peripheral specific event */;
+	u32 o_events /*! The peripheral specific event */;
 	mcu_event_handler_t handler /*! Event handler */;
 } mcu_action_t;
 
@@ -130,7 +146,7 @@ static inline int mcu_is_port_valid(u8 port){
 }
 
 typedef struct MCU_PACK {
-	u32 channel;
+	u32 loc;
 	u32 value;
 } mcu_channel_t;
 

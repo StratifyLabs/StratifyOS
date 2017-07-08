@@ -315,10 +315,10 @@ int stratify_link_transport_usb_cdc_if_req(void * object, int event){
 			case SEND_ENCAPSULATED_COMMAND:
 				//need to receive information from the host
 				context->ep0_data.dptr = context->ep0_buf;
-				usb_dev_std_statusin_stage(context);
+				usbd_control_statusin_stage(context);
 				return 1;
 			case SET_CONTROL_LINE_STATE:
-				usb_dev_std_statusin_stage(context);
+				usbd_control_statusin_stage(context);
 				return 1;
 			case GET_LINE_CODING:
 				context->ep0_data.dptr = context->ep0_buf;
@@ -332,20 +332,20 @@ int stratify_link_transport_usb_cdc_if_req(void * object, int event){
 				context->ep0_buf[5] =  0; //no parity
 				context->ep0_buf[6] =  8; //8 data bits
 
-				usb_dev_std_statusin_stage(context);
+				usbd_control_statusin_stage(context);
 				return 1;
 			case CLEAR_COMM_FEATURE:
-				usb_dev_std_statusin_stage(context);
+				usbd_control_statusin_stage(context);
 				return 1;
 			case GET_COMM_FEATURE:
 				context->ep0_data.dptr = context->ep0_buf;
 				//copy data to dev_std_ep0_buf
-				usb_dev_std_statusin_stage(context);
+				usbd_control_statusin_stage(context);
 				return 1;
 			case GET_ENCAPSULATED_RESPONSE:
 				context->ep0_data.dptr = context->ep0_buf;
 				//copy data to dev_std_ep0_buf
-				usb_dev_std_statusin_stage(context);
+				usbd_control_statusin_stage(context);
 				return 1;
 			default:
 				return 0;
@@ -357,7 +357,7 @@ int stratify_link_transport_usb_cdc_if_req(void * object, int event){
 			case SET_COMM_FEATURE:
 			case SEND_ENCAPSULATED_COMMAND:
 				//use data in dev_std_ep0_buf to take action
-				usb_dev_std_statusin_stage(context);
+				usbd_control_statusin_stage(context);
 				return 1;
 			default:
 				return 0;

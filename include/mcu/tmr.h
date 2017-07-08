@@ -33,10 +33,6 @@
 extern "C" {
 #endif
 
-typedef struct MCU_PACK {
-	u32 value;
-} tmr_event_data_t;
-
 
 int mcu_tmr_open(const devfs_handle_t * cfg) MCU_PRIV_CODE;
 int mcu_tmr_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_PRIV_CODE;
@@ -59,6 +55,8 @@ int mcu_tmr_setic(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_tmr_getic(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_tmr_set(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_tmr_get(int port, void * ctl) MCU_PRIV_CODE;
+int mcu_tmr_on(int port, void * ctl) MCU_PRIV_CODE;
+int mcu_tmr_off(int port, void * ctl) MCU_PRIV_CODE;
 
 
 

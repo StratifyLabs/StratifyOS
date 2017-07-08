@@ -36,8 +36,7 @@ typedef struct {
 	u8 pin_assign;
 	u8 width;
 	u8 ref_count;
-	mcu_callback_t callback;
-	void * context;
+	mcu_event_handler_t handler;
 } spi_local_t;
 
 static spi_local_t spi_local[MCU_SPI_PORTS] MCU_SYS_MEM;
@@ -45,7 +44,7 @@ static spi_local_t spi_local[MCU_SPI_PORTS] MCU_SYS_MEM;
 static LPC_SPI_Type * const spi_regs[MCU_SPI_PORTS] = MCU_SPI_REGS;
 static u8 const spi_irqs[MCU_SPI_PORTS] = MCU_SPI_IRQS;
 
-static void exec_callback(int port, void * data);
+static void exec_callback(int port, u32 o_events);
 
 static int spi_port_transfer(int port, int is_read, devfs_async_t * dop);
 static int byte_swap(int port, int byte);
@@ -55,7 +54,7 @@ void _mcu_spi_dev_power_on(int port){
 		_mcu_lpc_core_enable_pwr(PCSPI);
 		_mcu_cortexm_priv_enable_irq((void*)(u32)(spi_irqs[port]));
 		spi_local[port].duplex_mem = NULL;
-		spi_local[port].callback = NULL;
+		spi_local[port].handler.callback = NULL;
 	}
 	spi_local[port].ref_count++;
 
@@ -77,10 +76,10 @@ int _mcu_spi_dev_powered_on(int port){
 
 
 int mcu_spi_getinfo(int port, void * ctl){
-	LPC_SPI_Type * regs = spi_regs[port];
 	spi_info_t * info = ctl;
 
 	//set flags
+	info->o_flags = 0;
 
 	return 0;
 }
@@ -92,7 +91,6 @@ int mcu_spi_setattr(int port, void * ctl){
 	spi_attr_t * attr = (spi_attr_t*)ctl;
 	u32 mode;
 	u32 o_flags = attr->o_flags;
-	int i;
 
 
 	if( o_flags & SPI_FLAG_SET_MASTER ){
@@ -161,29 +159,24 @@ int mcu_spi_setduplex(int port, void * ctl){
 	return 0;
 }
 
-void exec_callback(int port, void * data){
+void exec_callback(int port, u32 o_events){
 	LPC_SPI_Type * regs = spi_regs[port];
 	regs->CR &= ~(SPIE); //disable the interrupt
-	if ( spi_local[port].callback != NULL ){
-		if( spi_local[port].callback(spi_local[port].context, data) == 0 ){
-			spi_local[port].callback = NULL;
-		}
-	}
+
+	mcu_execute_event_handler(&(spi_local[port].handler), o_events, 0);
 }
 
 int mcu_spi_setaction(int port, void * ctl){
 	LPC_SPI_Type * regs = spi_regs[port];
 
 	mcu_action_t * action = (mcu_action_t*)ctl;
-	if( action->handler.callback == 0 ){
-		//cancel any ongoing operation
-		if ( regs->CR & (SPIE) ){
-			exec_callback(port, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
-		}
-	}
 
-	spi_local[port].callback = action->handler.callback;
-	spi_local[port].context = action->handler.context;
+		if ( regs->CR & (SPIE) ){
+			exec_callback(port, MCU_EVENT_FLAG_CANCELED);
+		}
+
+
+	spi_local[port].handler = action->handler;
 	_mcu_cortexm_set_irq_prio(spi_irqs[port], action->prio);
 
 	return 0;
@@ -236,7 +229,7 @@ void _mcu_core_spi0_isr(){
 	regs->INT |= (SPIF_INT); //clear the interrupt flag
 
 	if ( spi_local[port].size == 0 ){
-		exec_callback(0, 0);
+		exec_callback(0, MCU_EVENT_FLAG_WRITE_COMPLETE|MCU_EVENT_FLAG_DATA_READY);
 	}
 }
 
@@ -262,8 +255,7 @@ int spi_port_transfer(int port, int is_read, devfs_async_t * dop){
 		spi_local[port].rx_buf = spi_local[port].duplex_mem;
 	}
 	spi_local[port].size = size;
-	spi_local[port].callback = dop->handler.callback;
-	spi_local[port].context = dop->handler.context;
+	spi_local[port].handler = dop->handler;
 	regs->CR |= SPIE; //enable the interrupt
 	if ( spi_local[port].tx_buf ){
 		//! \todo This won't handle spi widths other than 8 bits

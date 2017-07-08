@@ -195,7 +195,7 @@ int complete_spi_write(const devfs_handle_t * cfg, uint32_t ignore){
 	action.handler.context = (void*)cfg;
 	action.handler.callback = (mcu_callback_t)continue_spi_write;
 	action.channel = sst_cfg->miso.pin;
-	action.o_events = PIO_EVENT_RISING;
+	action.o_events = MCU_EVENT_FLAG_RISING;
 	action.prio = 0;
 	mcu_pio_setaction(sst_cfg->miso.port, &action);
 

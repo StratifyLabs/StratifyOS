@@ -43,8 +43,6 @@ void _mcu_cortexm_set_thread_mode() MCU_PRIV_CODE;
 void _mcu_cortexm_delay_us(u32 us);
 void _mcu_cortexm_delay_ms(u32 ms);
 
-void _mcu_cortexm_execute_event_handler(mcu_event_handler_t * event, mcu_event_t arg) MCU_PRIV_CODE;
-
 #define SYSTICK_CTRL_TICKINT (1<<1)
 
 static inline void _mcu_cortexm_enable_systick_irq() MCU_ALWAYS_INLINE;

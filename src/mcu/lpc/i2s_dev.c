@@ -55,7 +55,6 @@ typedef struct {
 typedef struct {
 	u8 ref_count;
 	u8 resd;
-	u16 o_mode;
 	i2s_transfer_t rx;
 	i2s_transfer_t tx;
 } i2s_local_t;
@@ -63,7 +62,7 @@ typedef struct {
 i2s_attr_t i2s_local_attr[MCU_I2S_PORTS] MCU_SYS_MEM;
 i2s_local_t i2s_local[MCU_I2S_PORTS] MCU_SYS_MEM;
 
-static void exec_callback(i2s_transfer_t * transfer, void * data);
+static void exec_callback(i2s_transfer_t * transfer, u32 o_events);
 
 
 void _mcu_i2s_dev_power_on(int port){
@@ -107,24 +106,25 @@ int mcu_i2s_getinfo(int port, void * ctl){
 
 int mcu_i2s_setattr(int port, void * ctl){
 	LPC_I2S_Type * i2s_regs = i2s_get_regs(port);
-	i2s_attr_t * p = ctl;
+	i2s_attr_t * attr = ctl;
 	u32 audio_reg = (1<<4); //start by holding the i2s in reset
 	u32 bits;
 	u32 bitrate;
 	u32 half_period;
+	u32 o_flags = attr->o_flags;
 
 	bits = 8;
-	if( p->o_mode & I2S_MODE_WORDWIDTH_16 ){
+	if( o_flags & I2S_FLAG_IS_WIDTH_16 ){
 		audio_reg |= 1;
 		bits = 16;
-	} else if( p->o_mode & I2S_MODE_WORDWIDTH_32 ){
+	} else if( o_flags & I2S_FLAG_IS_WIDTH_32 ){
 		audio_reg |= 3;
 		bits = 32;
 	}
 
-	bitrate = bits * p->frequency;
+	bitrate = bits * attr->freq;
 
-	if( p->o_mode & I2S_MODE_MONO ){
+	if( o_flags & I2S_FLAG_IS_MONO ){
 		audio_reg |= (1<<2);
 		half_period = bits/2 - 1;
 	} else {
@@ -134,60 +134,36 @@ int mcu_i2s_setattr(int port, void * ctl){
 
 	audio_reg |= (half_period << 6);
 
-	if( (p->o_mode & I2S_MODE_MASTER) == 0 ){
+	if( (o_flags & I2S_FLAG_SET_MASTER) == 0 ){
 		//set slave mode because I2S_MODE_MASTER is zero
 		audio_reg |= (1<<5);
 	}
 
 	//enable the transmitter
-	if( p->o_mode & I2S_MODE_OUTPUT ){
+	if( o_flags & I2S_FLAG_IS_TRANSMITTER ){
 		i2s_regs->DAO = audio_reg;
 	} else {
 		i2s_regs->DAO = (1<<3);
 	}
 
 	//enable the receiver
-	if( p->o_mode & I2S_MODE_INPUT ){
+	if( o_flags & I2S_FLAG_IS_RECEIVER ){
 		i2s_regs->DAI = audio_reg;
 	} else {
 		i2s_regs->DAI = (1<<3);
 	}
 
-	//pin assignment
-	if( p->pin_assign == 0 ){ //pin assign 0 uses TX WS and TX bit clock and TX mclk
+	i2s_regs->TXMODE = 0; //transmitter is typical with no MCLK
+	i2s_regs->RXMODE = (1<<2); //share WS and bit clock with TX block
 
-		//4 pin mode
-		i2s_regs->TXMODE = 0; //transmitter is typical with no MCLK
-		i2s_regs->RXMODE = (1<<2); //share WS and bit clock with TX block
-
-		//enable the pins
-		if ( _mcu_core_set_pinsel_func(0, 7, CORE_PERIPH_I2S, port) ) return -1;
-		if ( _mcu_core_set_pinsel_func(0, 8, CORE_PERIPH_I2S, port) ) return -1;
-
-		//transmitter pin
-		if( p->o_mode & I2S_MODE_OUTPUT ){
-			if ( _mcu_core_set_pinsel_func(0, 9, CORE_PERIPH_I2S, port) ) return -1;
-		}
-
-		//receiver pin
-		if( p->o_mode & I2S_MODE_INPUT ){
-			if ( _mcu_core_set_pinsel_func(0, 6, CORE_PERIPH_I2S, port) ) return -1;
-		}
-
-
-		if( p->o_mode & I2S_MODE_MCLK_ENABLE ){
-#if defined __lpc17xx
-			//4.29 is only on lpc17xx -- TX MCLK
-			if ( _mcu_core_set_pinsel_func(4, 29, CORE_PERIPH_I2S, port) ) return -1;
-#elif defined __lpc407x_8x
-			//not available on 80 pin parts -- TX MCLK
-			if ( _mcu_core_set_pinsel_func(1, 16, CORE_PERIPH_I2S, port) ) return -1;
-#endif
-			i2s_regs->TXMODE |= (1<<3);
-		}
-
-
+	if( mcu_core_set_pin_assignment(attr->pin_assignment, I2S_PIN_ASSIGNMENT_COUNT, CORE_PERIPH_I2S, port) < 0 ){
+		return -1;
 	}
+
+	if( o_flags & I2S_FLAG_IS_MCLK_ENABLED ){
+		i2s_regs->TXMODE |= (1<<3);
+	}
+
 
 	// \todo Add pin assign 1 that uses RX WS and RX CLK -- RX WS can be 0.5 or 0.24
 
@@ -201,7 +177,7 @@ int mcu_i2s_setattr(int port, void * ctl){
 	s32 err;
 	s32 tmp;
 
-	mclk = bitrate*p->mclk_bitrate_mult;
+	mclk = bitrate*attr->mclk_mult;
 	core_clk = mcu_board_config.core_periph_freq;
 
 	min_x = 1;
@@ -225,13 +201,11 @@ int mcu_i2s_setattr(int port, void * ctl){
 	i2s_regs->TXRATE = min_y | (min_x<<8);
 
 	//now set bit clock which is TXRATE / (TX_BITRATE+1) up to 64
-	i2s_regs->TXBITRATE = p->mclk_bitrate_mult-1;
+	i2s_regs->TXBITRATE = attr->mclk_mult-1;
 
 
 	i2s_regs->IRQ = (4<<8)|(4<<16); //set RX and TX depth triggers
 
-
-	i2s_local[port].o_mode = p->o_mode;
 
 	i2s_regs->DAO &= ~(1<<4);
 	i2s_regs->DAI &= ~(1<<4);
@@ -248,10 +222,10 @@ int mcu_i2s_setaction(int port, void * ctl){
 	mcu_action_t * action = (mcu_action_t*)ctl;
 
 
-	if( action->o_events & I2S_EVENT_DATA_READY ){
+	if( action->o_events & MCU_EVENT_FLAG_DATA_READY ){
 
 		if( action->handler.callback == 0 ){
-			exec_callback(&i2s_local[port].rx, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
+			exec_callback(&i2s_local[port].rx, MCU_EVENT_FLAG_CANCELED);
 		}
 
 		if( _mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
@@ -263,10 +237,10 @@ int mcu_i2s_setaction(int port, void * ctl){
 
 	}
 
-	if( action->o_events & I2S_EVENT_WRITE_COMPLETE ){
+	if( action->o_events & MCU_EVENT_FLAG_WRITE_COMPLETE ){
 
 		if( action->handler.callback == 0 ){
-			exec_callback(&i2s_local[port].tx, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
+			exec_callback(&i2s_local[port].tx, MCU_EVENT_FLAG_CANCELED);
 		}
 
 		if( _mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
@@ -451,9 +425,9 @@ void _mcu_core_i2s0_isr(){
 	}
 }
 
-void exec_callback(i2s_transfer_t * transfer, void * data){
+void exec_callback(i2s_transfer_t * transfer, u32 o_events){
 	transfer->bufp = 0;
-	_mcu_cortexm_execute_event_handler(&(transfer->handler), data);
+	mcu_execute_event_handler(&(transfer->handler), o_events, 0);
 }
 
 

@@ -52,17 +52,17 @@ volatile bool waiting;
 
 static void priv_check_op_complete(void * args);
 static void priv_device_data_transfer(void * args) MCU_PRIV_EXEC_CODE;
-static int priv_data_transfer_callback(void * context, mcu_event_t data) MCU_PRIV_CODE;
+static int priv_data_transfer_callback(void * context, mcu_event_t * data) MCU_PRIV_CODE;
 static int device_data_transfer(open_file_t * open_file, void * buf, int nbyte, int read);
 static int get_mode(const sysfs_t* fs, void * handle);
 
-int priv_data_transfer_callback(void * context, mcu_event_t data){
+int priv_data_transfer_callback(void * context, mcu_event_t * event){
 	//activate all tasks that are blocked on this signal
 	int i;
 	int new_priority;
 	priv_device_data_transfer_t * args = (priv_device_data_transfer_t*)context;
 
-	if( (u32)data == MCU_EVENT_CODE(MCU_EVENT_OP_CANCELLED) ){
+	if( event->o_events & MCU_EVENT_FLAG_CANCELED ){
 		args->op.nbyte = -1; //ignore any data transferred and return an error
 	}
 

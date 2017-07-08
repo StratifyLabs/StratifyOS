@@ -35,9 +35,9 @@ static eint_local_t eint_local[4] MCU_SYS_MEM;
 
 
 //static eint_action_event_t get_event(int port);
-static int set_event(int port, eint_event_t event);
+static int set_event(int port, u32 event);
 static void reset_eint_port(int port);
-static void exec_callback(int port, void * data);
+static void exec_callback(int port, u32 o_events);
 
 
 void _mcu_eint_dev_power_on(int port){
@@ -85,7 +85,7 @@ int mcu_eint_setaction(int port, void * ctl){
 	mcu_action_t * action = (mcu_action_t*)ctl;
 
 	if( action->handler.callback == 0 ){
-		exec_callback(port, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
+		exec_callback(port, MCU_EVENT_FLAG_CANCELED);
 	}
 
 	if( _mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
@@ -104,6 +104,7 @@ int mcu_eint_setaction(int port, void * ctl){
 int mcu_eint_getinfo(int port, void * ctl){
 	eint_info_t * info = ctl;
 
+	info->o_flags = 0;
 
 	return 0;
 }
@@ -155,7 +156,7 @@ void reset_eint_port(int port){
 	LPC_SC->EXTINT |= (1<<port); //Clear the interrupt flag
 }
 
-int set_event(int port, eint_event_t event){
+int set_event(int port, u32 o_events){
 	int err;
 	err = 0;
 
@@ -163,29 +164,20 @@ int set_event(int port, eint_event_t event){
 
 	LPC_SC->EXTPOLAR &= ~(1<<port);
 	LPC_SC->EXTMODE &= ~(1<<port);
-	switch(event){
-	case EINT_EVENT_RISING:
+	if( o_events & MCU_EVENT_FLAG_RISING ){
 		LPC_SC->EXTPOLAR |= (1<<port);
 		LPC_SC->EXTMODE |= (1<<port);
-		break;
-	case EINT_EVENT_FALLING:
+	} else if( o_events & MCU_EVENT_FLAG_FALLING ){
 		LPC_SC->EXTMODE |= (1<<port);
-		break;
-	case EINT_EVENT_HIGH:
+	} else if( o_events & MCU_EVENT_FLAG_HIGH ){
 		LPC_SC->EXTPOLAR |= (1<<port);
-		break;
-	case EINT_EVENT_LOW:
-		break;
-	case EINT_EVENT_NONE:
+	} else if( o_events & MCU_EVENT_FLAG_LOW){
+
+	} else {
 		LPC_SC->EXTINT |= (1<<port); //Clear the interrupt flag
 		return 0;
-		break;
-	case EINT_EVENT_BOTH:
-	default:
-		errno = EINVAL;
-		err = -1;
-		break;
 	}
+
 	if ( err == 0 ){
 		LPC_SC->EXTINT |= (1<<port); //Clear the interrupt flag
 	}
@@ -222,8 +214,8 @@ eint_action_event_t get_event(int port){
 }
  */
 
-void exec_callback(int port, void * data){
-	_mcu_cortexm_execute_event_handler(&(eint_local[port].handler), data);
+void exec_callback(int port, u32 o_events){
+	mcu_execute_event_handler(&(eint_local[port].handler), o_events, 0);
 }
 
 //Interrupt Handling

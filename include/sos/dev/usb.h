@@ -81,6 +81,10 @@ typedef enum {
 } usb_spec_event_t;
 
 
+typedef struct {
+	u8 epnum;
+} usb_event_t;
+
 /*! \details This lists the valid USB modes.
  *
  */

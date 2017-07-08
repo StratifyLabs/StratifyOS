@@ -89,13 +89,10 @@ extern "C" {
 
 #define EINT_IOC_IDENT_CHAR 'e'
 
-typedef enum {
-	EINT_EVENT_NONE /*! The trigger has not been set */,
-	EINT_EVENT_RISING /*! Trigger on the rising edge */ = (1<<0),
-	EINT_EVENT_FALLING /*! Trigger on the falling edge */ = (1<<1),
-	EINT_EVENT_BOTH /*! Trigger on both edges */ = (1<<2),
-	EINT_EVENT_LOW /*! Trigger while low */ = (1<<3),
-	EINT_EVENT_HIGH /*! Trigger while high */ = (1<<4)
+typedef struct MCU_PACK {
+	u32 status;
+	u32 rising;
+	u32 falling;
 } eint_event_t;
 
 

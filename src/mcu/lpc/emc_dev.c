@@ -45,7 +45,7 @@ int mcu_emc_setattr(int port, void * ctl){
 	int width;
 	int i;
 
-	if( attr->channel >= MCU_EMC_CHANS ){
+	if( attr->loc >= MCU_EMC_CHANS ){
 		errno = EINVAL;
 		return -1 - offsetof(emc_attr_t, channel);
 	}
@@ -71,13 +71,13 @@ int mcu_emc_setattr(int port, void * ctl){
 
 	if( attr->mode & EMC_MODE_DYNAMIC ){
 		//dynamic configuration
-		LPC_EMC_Dynamic_Type * dyn_regs = mcu_dynamic_regs[attr->channel];
+		LPC_EMC_Dynamic_Type * dyn_regs = mcu_dynamic_regs[attr->loc];
 
 		dyn_regs->DynamicConfig = 0;
 
 	} else {
 		//static configuration
-		LPC_EMC_Static_Type * static_regs = mcu_static_regs[attr->channel];
+		LPC_EMC_Static_Type * static_regs = mcu_static_regs[attr->loc];
 
 		//check static configuration
 		tmp = 0;
@@ -115,22 +115,22 @@ int mcu_emc_setattr(int port, void * ctl){
 
 		_mcu_core_set_pinsel_func(4,24,CORE_PERIPH_EMC,0); //OE
 
-		if( attr->channel == 0 ){
+		if( attr->loc == 0 ){
 			_mcu_core_set_pinsel_func(4,30,CORE_PERIPH_EMC,0); //CS0
 			if( attr->mode & EMC_MODE_USEBLS ){
 				_mcu_core_set_pinsel_func(4,26,CORE_PERIPH_EMC,0); //BLS0
 			}
-		} else if( attr->channel == 1 ){
+		} else if( attr->loc == 1 ){
 			_mcu_core_set_pinsel_func(4,31,CORE_PERIPH_EMC,0); //CS1
 			if( attr->mode & EMC_MODE_USEBLS ){
 				_mcu_core_set_pinsel_func(4,27,CORE_PERIPH_EMC,0); //BLS1
 			}
-		} else if( attr->channel == 2 ){
+		} else if( attr->loc == 2 ){
 			_mcu_core_set_pinsel_func(2,14,CORE_PERIPH_EMC,0); //CS2
 			if( attr->mode & EMC_MODE_USEBLS ){
 				_mcu_core_set_pinsel_func(4,28,CORE_PERIPH_EMC,0); //BLS2
 			}
-		} else if( attr->channel == 3 ){
+		} else if( attr->loc == 3 ){
 			_mcu_core_set_pinsel_func(2,15,CORE_PERIPH_EMC,0); //CS3
 			if( attr->mode & EMC_MODE_USEBLS ){
 				_mcu_core_set_pinsel_func(4,29,CORE_PERIPH_EMC,0); //BLS3

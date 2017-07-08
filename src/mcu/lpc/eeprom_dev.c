@@ -116,7 +116,7 @@ int mcu_eeprom_setaction(int port, void * ctl){
 	mcu_action_t * action = (mcu_action_t *)ctl;
 	if( action->handler.callback == 0 ){
 		if( eeprom_local[port].buf != 0 ){
-			exec_callback(port, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
+			exec_callback(port, MCU_EVENT_FLAG_CANCELED);
 		}
 	}
 
@@ -252,7 +252,7 @@ void exec_callback(int port, void * data){
 	LPC_EEPROM_Type * regs = eeprom_regs[port];
 	eeprom_local[port].buf = 0;
 	regs->INTENCLR = (1<<26)|(1<<28); //disable the interrupts
-	_mcu_cortexm_execute_event_handler(&(eeprom_local[port].handler), 0);
+	mcu_execute_event_handler(&(eeprom_local[port].handler), 0);
 }
 
 void _mcu_core_eeprom0_isr(){

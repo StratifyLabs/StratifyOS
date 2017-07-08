@@ -32,7 +32,7 @@
 #define WRITE_OVERFLOW (1<<1)
 
 static void update_pwm(int port, int chan, int duty);
-static void exec_callback(int port, LPC_PWM_Type * regs, void * data);
+static void exec_callback(int port, LPC_PWM_Type * regs, u32 o_events);
 
 typedef struct MCU_PACK {
 	const uint32_t * volatile duty;
@@ -181,7 +181,7 @@ int mcu_pwm_setaction(int port, void * ctl){
 	if( action->handler.callback == 0 ){
 		//cancel any ongoing operation
 		if ( regs->MCR & (1<<0) ){ //If the interrupt is enabled--the pwm is busy
-			exec_callback(port, regs, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
+			exec_callback(port, regs, MCU_EVENT_FLAG_CANCELED);
 		}
 	}
 
@@ -216,7 +216,7 @@ int mcu_pwm_set(int port, void * ctl){
 		return -1;
 	}
 
-	update_pwm(port, writep->channel, writep->value);
+	update_pwm(port, writep->loc, writep->value);
 	return 0;
 }
 
@@ -279,7 +279,7 @@ void update_pwm(int port, int chan, int duty){
 	regs->LER |= (1<<(chan+1));
 }
 
-void exec_callback(int port, LPC_PWM_Type * regs, void * data){
+void exec_callback(int port, LPC_PWM_Type * regs, u32 o_events){
 	//stop updating the duty cycle
 	pwm_local[port].duty = NULL;
 
@@ -287,7 +287,7 @@ void exec_callback(int port, LPC_PWM_Type * regs, void * data){
 	regs->MCR = (1<<1); //leave the reset on, but disable the interrupt
 
 	//call the event handler
-	_mcu_cortexm_execute_event_handler(&(pwm_local[port].handler), data);
+	mcu_execute_event_handler(&(pwm_local[port].handler), o_events, 0);
 }
 
 
@@ -303,7 +303,7 @@ static void _mcu_core_pwm_isr(int port){
 		}
 		pwm_local[port].pwm_nbyte_len--;
 	} else {
-		exec_callback(port, regs, 0);
+		exec_callback(port, regs, MCU_EVENT_FLAG_WRITE_COMPLETE);
 	}
 }
 

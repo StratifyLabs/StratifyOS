@@ -39,7 +39,7 @@ char htoc(int nibble){
 
 /*! \details This function reads the setup packet as part of the setup stage.
  */
-void usb_dev_std_setup_stage(usb_dev_context_t * context){
+void usbd_control_handler_stage(usb_dev_context_t * context){
 #if defined __lpc13uxx
 	mcu_usb_rd_setup_ep(context->constants->port, 0x00, (uint8_t *)&(context->setup_pkt));
 #else
@@ -51,7 +51,7 @@ void usb_dev_std_setup_stage(usb_dev_context_t * context){
 /*! \details
  */
 
-void usb_dev_std_datain_stage(usb_dev_context_t * context) {
+void usbd_control_datain_stage(usb_dev_context_t * context) {
 	u32 cnt;
 	if (context->ep0_data.cnt > mcu_board_config.usb_max_packet_zero) {
 		cnt = mcu_board_config.usb_max_packet_zero;
@@ -66,7 +66,7 @@ void usb_dev_std_datain_stage(usb_dev_context_t * context) {
 
 /*! \details
  */
-void usb_dev_std_dataout_stage (usb_dev_context_t * context){
+void usbd_control_dataout_stage (usb_dev_context_t * context){
 	u32 cnt;
 	cnt = mcu_usb_rd_ep(context->constants->port, 0x00, context->ep0_data.dptr);
 	context->ep0_data.dptr += cnt;
@@ -76,13 +76,13 @@ void usb_dev_std_dataout_stage (usb_dev_context_t * context){
 
 /*! \details
  */
-void usb_dev_std_statusin_stage (usb_dev_context_t * context){
+void usbd_control_statusin_stage (usb_dev_context_t * context){
 	mcu_usb_wr_ep(context->constants->port, 0x80, NULL, 0);
 }
 
 /*! \details
  */
-void usb_dev_std_statusout_stage (usb_dev_context_t * context){
+void usbd_control_statusout_stage (usb_dev_context_t * context){
 	mcu_usb_rd_ep(context->constants->port, 0x00, context->ep0_buf);
 }
 

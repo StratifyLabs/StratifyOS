@@ -157,9 +157,7 @@ void ffifo_data_received(const ffifo_cfg_t * cfgp, ffifo_state_t * state){
 	if( state->rop != NULL ){
 		if( (bytes_read = ffifo_read_buffer(cfgp, state, state->rop->buf, state->rop_len)) > 0 ){
 			state->rop->nbyte = bytes_read;
-			if ( state->rop->handler.callback(state->rop->handler.context, (mcu_event_t)NULL) == 0 ){
-				state->rop = NULL;
-			}
+			mcu_execute_event_handler(&(state->rop->handler), MCU_EVENT_FLAG_DATA_READY, 0);
 		}
 	}
 }
@@ -167,9 +165,7 @@ void ffifo_data_received(const ffifo_cfg_t * cfgp, ffifo_state_t * state){
 void ffifo_cancel_rop(ffifo_state_t * state){
 	if( state->rop != NULL ){
 		state->rop->nbyte = -1;
-		if ( state->rop->handler.callback(state->rop->handler.context, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED)) == 0 ){
-			state->rop = NULL;
-		}
+		mcu_execute_event_handler(&(state->rop->handler), MCU_EVENT_FLAG_CANCELED, 0);
 	}
 }
 

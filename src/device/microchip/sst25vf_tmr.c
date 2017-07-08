@@ -43,7 +43,7 @@ int sst25vf_tmr_open(const devfs_handle_t * cfg){
 	spi_cfg.format = cfg->pcfg.spi.format;
 	spi_cfg.bitrate = cfg->bitrate;
 	spi_cfg.master = SPI_ATTR_MASTER;
-	*/
+	 */
 	err = mcu_spi_open(cfg);
 	if ( err < 0 ){
 		return err;
@@ -91,10 +91,11 @@ int sst25vf_tmr_open(const devfs_handle_t * cfg){
 static void complete_spi_read(const devfs_handle_t * cfg, mcu_event_t ignore){
 	sst25vf_state_t * state = (sst25vf_state_t*)cfg->state;
 	sst25vf_share_deassert_cs(cfg);
-	if( state->handler.callback != NULL ){
-		state->handler.callback(state->handler.context, (mcu_event_t)NULL);
-		state->handler.callback = NULL;
-	}
+	//if( state->handler.callback != NULL ){
+	//state->handler.callback(state->handler.context, (mcu_event_t)NULL);
+	mcu_execute_event_handler(&(state->handler), 0, 0);
+	state->handler.callback = NULL;
+	//}
 }
 
 int sst25vf_tmr_read(const devfs_handle_t * cfg, devfs_async_t * rop){

@@ -392,11 +392,11 @@ int mcu_tmr_setoc(int port, void * ctl){
 	regs = tmr_regs_table[port];
 	//Write the output compare value
 	mcu_channel_t * req = (mcu_channel_t*)ctl;
-	if ( req->channel > 3 ){
+	if ( req->loc > 3 ){
 		errno = EINVAL;
 		return -1;
 	}
-	((uint32_t*)&(regs->MR0))[ req->channel ] = req->value;
+	((uint32_t*)&(regs->MR0))[ req->loc ] = req->value;
 	return 0;
 }
 
@@ -405,11 +405,11 @@ int mcu_tmr_getoc(int port, void * ctl){
 	regs = tmr_regs_table[port];
 	//Read the output compare channel
 	mcu_channel_t * req = (mcu_channel_t*)ctl;
-	if ( req->channel > 3 ){
+	if ( req->loc > 3 ){
 		errno = EINVAL;
 		return -1;
 	}
-	req->value = ((uint32_t*)&(regs->MR0))[ req->channel ];
+	req->value = ((uint32_t*)&(regs->MR0))[ req->loc ];
 	return 0;
 }
 
@@ -418,12 +418,12 @@ int mcu_tmr_setic(int port, void * ctl){
 	regs = tmr_regs_table[port];
 	unsigned int chan;
 	mcu_channel_t * req = (mcu_channel_t*)ctl;
-	chan = req->channel - TMR_ACTION_CHANNEL_IC0;
+	chan = req->loc - TMR_ACTION_CHANNEL_IC0;
 	if ( chan > 1 ){
 		errno = EINVAL;
 		return -1;
 	}
-	((uint32_t*)&(regs->CR0))[ req->channel ] = req->value;
+	((uint32_t*)&(regs->CR0))[ req->loc ] = req->value;
 	return 0;
 }
 
@@ -432,7 +432,7 @@ int mcu_tmr_getic(int port, void * ctl){
 	unsigned int chan;
 	regs = tmr_regs_table[port];
 	mcu_channel_t * req = (mcu_channel_t*)ctl;
-	chan = req->channel - TMR_ACTION_CHANNEL_IC0;
+	chan = req->loc - TMR_ACTION_CHANNEL_IC0;
 	if ( chan > 1 ){
 		errno = EINVAL;
 		return -1;

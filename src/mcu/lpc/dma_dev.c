@@ -69,12 +69,12 @@ void _mcu_core_dma_isr(){
 	for(i=0; i < MCU_DMA_CHANNELS; i++){
 		if ( LPC_GPDMA->INTTCSTAT & (1<<i) ){ //If there is an interrupt on the channel, check for the callback
 			LPC_GPDMA->INTTCCLEAR = (1<<i);
-			_mcu_cortexm_execute_event_handler(&(dma_local[i].handler), 0);
+			mcu_execute_event_handler(&(dma_local[i].handler), MCU_EVENT_FLAG_DATA_READY, 0);
 		}
 
 		if ( LPC_GPDMA->INTERRSTAT & (1<<i) ){
 			LPC_GPDMA->INTERRCLR = (1<<i);
-			_mcu_cortexm_execute_event_handler(&(dma_local[i].handler), (mcu_event_t)1);
+			mcu_execute_event_handler(&(dma_local[i].handler), MCU_EVENT_FLAG_DATA_READY, 0);
 		}
 	}
 }

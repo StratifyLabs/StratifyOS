@@ -41,7 +41,7 @@ static int set_read_action(const devfs_handle_t * cfg, mcu_callback_t callback){
 	return 0;
 }
 
-static int data_received(void * context, mcu_event_t data){
+static int data_received(void * context, mcu_event_t * data){
 	int i;
 	int bytes_read;
 	const devfs_handle_t * cfg;
@@ -80,6 +80,7 @@ int usbfifo_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 	mcu_action_t * action = ctl;
 	const usbfifo_cfg_t * cfgp = cfg->config;
 	usbfifo_state_t * state = cfg->state;
+	mcu_event_t event;
 	switch(request){
 	case I_FIFO_GETINFO:
 		fifo_getinfo(info, &(cfgp->fifo), &(state->fifo));
@@ -96,7 +97,9 @@ int usbfifo_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 		fifo_flush(&(state->fifo));
 		if ( state->fifo.rop != NULL ){
 			state->fifo.rop->nbyte = -1;
-			if ( state->fifo.rop->handler.callback(state->fifo.rop->handler.context, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED)) == 0 ){
+			event.o_events = MCU_EVENT_FLAG_CANCELED;
+			event.data = 0;
+			if ( state->fifo.rop->handler.callback(state->fifo.rop->handler.context, &event) == 0 ){
 				state->fifo.rop = NULL;
 			}
 		}

@@ -126,7 +126,7 @@ void _sdspi_state_callback(const devfs_handle_t * cfg, int err, int nbyte){
 	}
 }
 
-static int continue_spi_read(void * cfg, mcu_event_t ignore){
+static int continue_spi_read(void * cfg, mcu_event_t * ignore){
 	//data has been read -- complete the operation
 	int err = 0;
 	sdspi_state_t * state = ((devfs_handle_t *)cfg)->state;
@@ -257,7 +257,7 @@ int sdspi_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	return _sdspi_try_read(cfg, 1);
 }
 
-static int continue_spi_write(void * cfg, mcu_event_t ignore){
+static int continue_spi_write(void * cfg, mcu_event_t * ignore){
 	sdspi_state_t * state = ((const devfs_handle_t *)cfg)->state;
 
 	uint16_t checksum;

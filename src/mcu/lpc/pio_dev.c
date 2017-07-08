@@ -33,53 +33,53 @@ typedef struct {
 	uint8_t ref_count;
 } pio_local_t;
 
-static pio_local_t _mcu_pio0_local MCU_SYS_MEM;
-static pio_local_t _mcu_pio2_local MCU_SYS_MEM;
+static pio_local_t m_pio0_local MCU_SYS_MEM;
+static pio_local_t m_pio2_local MCU_SYS_MEM;
 
-static int _mcu_pio_set_event(int port, int event, int pin);
+static int set_event(int port, int event, int pin);
 
 void _mcu_pio_dev_power_on(int port){
 	if ( port == 0 ){
-		if ( _mcu_pio0_local.ref_count == 0 ){
-			_mcu_pio0_local.handler.callback = NULL;
+		if ( m_pio0_local.ref_count == 0 ){
+			m_pio0_local.handler.callback = NULL;
 		}
-		_mcu_pio0_local.ref_count++;
+		m_pio0_local.ref_count++;
 	} else if ( port == 2 ){
-		if ( _mcu_pio2_local.ref_count == 0 ){
-			_mcu_pio2_local.handler.callback = NULL;
+		if ( m_pio2_local.ref_count == 0 ){
+			m_pio2_local.handler.callback = NULL;
 		}
-		_mcu_pio2_local.ref_count++;
+		m_pio2_local.ref_count++;
 	}
 }
 
 void _mcu_pio_dev_power_off(int port){
 
 	if ( port == 0 ){
-		if ( _mcu_pio0_local.ref_count > 0 ){
-			if ( _mcu_pio0_local.ref_count == 1 ){
-				_mcu_pio0_local.handler.callback = NULL;
+		if ( m_pio0_local.ref_count > 0 ){
+			if ( m_pio0_local.ref_count == 1 ){
+				m_pio0_local.handler.callback = NULL;
 			}
-			_mcu_pio0_local.ref_count--;
+			m_pio0_local.ref_count--;
 		}
 	} else if ( port == 2 ){
-		if ( _mcu_pio2_local.ref_count > 0 ){
-			if ( _mcu_pio2_local.ref_count == 1 ){
-				_mcu_pio2_local.handler.callback = NULL;
+		if ( m_pio2_local.ref_count > 0 ){
+			if ( m_pio2_local.ref_count == 1 ){
+				m_pio2_local.handler.callback = NULL;
 			}
-			_mcu_pio2_local.ref_count--;
+			m_pio2_local.ref_count--;
 		}
 	}
 }
 
 int _mcu_pio_dev_powered_on(int port){
 	if ( port == 0 ){
-		if ( _mcu_pio0_local.ref_count > 0 ){
+		if ( m_pio0_local.ref_count > 0 ){
 			return 1;
 		} else {
 			return 0;
 		}
 	} else if ( port == 2 ){
-		if ( _mcu_pio2_local.ref_count > 0 ){
+		if ( m_pio2_local.ref_count > 0 ){
 			return 1;
 		} else {
 			return 0;
@@ -89,7 +89,7 @@ int _mcu_pio_dev_powered_on(int port){
 	}
 }
 
-int _mcu_pio_set_event(int port, int event, int pin){
+int set_event(int port, int event, int pin){
 
 	if ( port == 0 ){
 
@@ -103,27 +103,17 @@ int _mcu_pio_set_event(int port, int event, int pin){
 		}
 #endif
 
-		switch(event){
-		case PIO_EVENT_NONE:
-			LPC_GPIOINT->IO0IntEnR &= ~(1<<pin);
-			LPC_GPIOINT->IO0IntEnF &= ~(1<<pin);
-			break;
-		case PIO_EVENT_RISING:
+		LPC_GPIOINT->IO0IntEnR &= ~(1<<pin);
+		LPC_GPIOINT->IO0IntEnF &= ~(1<<pin);
+
+		if( event & MCU_EVENT_FLAG_RISING ){
 			LPC_GPIOINT->IO0IntEnR |= (1<<pin);
-			LPC_GPIOINT->IO0IntEnF &= ~(1<<pin);
-			break;
-		case PIO_EVENT_FALLING:
-			LPC_GPIOINT->IO0IntEnR &= ~(1<<pin);
-			LPC_GPIOINT->IO0IntEnF |= (1<<pin);
-			break;
-		case PIO_EVENT_BOTH:
-			LPC_GPIOINT->IO0IntEnR |= (1<<pin);
-			LPC_GPIOINT->IO0IntEnF |= (1<<pin);
-			break;
-		default:
-			errno = EINVAL;
-			return -1 - offsetof(mcu_action_t, o_events);
 		}
+
+		if( event & MCU_EVENT_FLAG_FALLING ){
+			LPC_GPIOINT->IO0IntEnF |= (1<<pin);
+		}
+
 
 	} else if ( port == 2 ){
 
@@ -134,26 +124,15 @@ int _mcu_pio_set_event(int port, int event, int pin){
 		}
 #endif
 
-		switch(event){
-		case PIO_EVENT_NONE:
-			LPC_GPIOINT->IO2IntEnR &= ~(1<<pin);
-			LPC_GPIOINT->IO2IntEnF &= ~(1<<pin);
-			break;
-		case PIO_EVENT_RISING:
+		LPC_GPIOINT->IO2IntEnR &= ~(1<<pin);
+		LPC_GPIOINT->IO2IntEnF &= ~(1<<pin);
+
+		if( event & MCU_EVENT_FLAG_RISING ){
 			LPC_GPIOINT->IO2IntEnR |= (1<<pin);
-			LPC_GPIOINT->IO2IntEnF &= ~(1<<pin);
-			break;
-		case PIO_EVENT_FALLING:
-			LPC_GPIOINT->IO2IntEnR &= ~(1<<pin);
+		}
+
+		if( event & MCU_EVENT_FLAG_FALLING ){
 			LPC_GPIOINT->IO2IntEnF |= (1<<pin);
-			break;
-		case PIO_EVENT_BOTH:
-			LPC_GPIOINT->IO2IntEnR |= (1<<pin);
-			LPC_GPIOINT->IO2IntEnF |= (1<<pin);
-			break;
-		default:
-			errno = EINVAL;
-			return -1 - offsetof(mcu_action_t, o_events);
 		}
 	}
 	return 0;
@@ -182,13 +161,13 @@ int mcu_pio_setaction(int port, void * ctl){
 
 	if( action->handler.callback == 0 ){
 		if( port == 0 ){
-			_mcu_cortexm_execute_event_handler(&(_mcu_pio0_local.handler), MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
+			mcu_execute_event_handler(&(m_pio0_local.handler), MCU_EVENT_FLAG_CANCELED, 0);
 		} else if ( port == 2 ){
-			_mcu_cortexm_execute_event_handler(&(_mcu_pio2_local.handler), MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
+			mcu_execute_event_handler(&(m_pio2_local.handler), MCU_EVENT_FLAG_CANCELED, 0);
 		}
 	}
 
-	err = _mcu_pio_set_event(port, action->o_events, action->channel);
+	err = set_event(port, action->o_events, action->channel);
 	if ( err ){
 		return err;
 	}
@@ -198,16 +177,16 @@ int mcu_pio_setaction(int port, void * ctl){
 			return -1;
 		}
 
-		_mcu_pio0_local.handler.callback = action->handler.callback;
-		_mcu_pio0_local.handler.context = action->handler.context;
+		m_pio0_local.handler.callback = action->handler.callback;
+		m_pio0_local.handler.context = action->handler.context;
 		LPC_GPIOINT->IO0IntClr = -1; //clear pending interrupts
 	} else if ( port == 2 ){
 		if( _mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
 			return -1;
 		}
 
-		_mcu_pio2_local.handler.callback = action->handler.callback;
-		_mcu_pio2_local.handler.context = action->handler.context;
+		m_pio2_local.handler.callback = action->handler.callback;
+		m_pio2_local.handler.context = action->handler.context;
 		LPC_GPIOINT->IO2IntClr = -1; //clear pending interrupts
 	} else {
 		errno = EINVAL;
@@ -370,23 +349,23 @@ int mcu_pio_set(int port, void * ctl){
 }
 
 void exec_cancelled0(){
-	_mcu_cortexm_execute_event_handler(&(_mcu_pio0_local.handler), MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
+	mcu_execute_event_handler(&(m_pio0_local.handler), MCU_EVENT_FLAG_CANCELED, 0);
 }
 
 void exec_cancelled2(){
-	_mcu_cortexm_execute_event_handler(&(_mcu_pio2_local.handler), MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
+	mcu_execute_event_handler(&(m_pio2_local.handler), MCU_EVENT_FLAG_CANCELED, 0);
 }
 
 //On __lpc17xx The pio interrupts use the eint3 interrupt service routine -- this function should be called from there
 void _mcu_core_pio0_isr(){
-	pio_event_data_t ev;
+	pio_event_t ev;
 
 	if ( LPC_GPIOINT->IntStatus & (1<<0) ){
 		ev.status = 0;
 		ev.rising = LPC_GPIOINT->IO0IntStatR;
 		ev.falling = LPC_GPIOINT->IO0IntStatF;
 		LPC_GPIOINT->IO0IntClr = ev.rising | ev.falling;
-		_mcu_cortexm_execute_event_handler(&(_mcu_pio0_local.handler), &ev);
+		mcu_execute_event_handler(&(m_pio0_local.handler), MCU_EVENT_FLAG_RISING | MCU_EVENT_FLAG_FALLING, &ev);
 	}
 
 	if ( LPC_GPIOINT->IntStatus & (1<<2) ){
@@ -394,7 +373,7 @@ void _mcu_core_pio0_isr(){
 		ev.rising = LPC_GPIOINT->IO2IntStatR;
 		ev.falling = LPC_GPIOINT->IO2IntStatF;
 		LPC_GPIOINT->IO2IntClr = ev.rising | ev.falling;
-		_mcu_cortexm_execute_event_handler(&(_mcu_pio2_local.handler), &ev);
+		mcu_execute_event_handler(&(m_pio2_local.handler), MCU_EVENT_FLAG_RISING | MCU_EVENT_FLAG_FALLING, &ev);
 	}
 }
 

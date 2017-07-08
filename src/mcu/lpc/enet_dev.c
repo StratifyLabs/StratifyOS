@@ -261,10 +261,10 @@ void _mcu_core_enet0_isr(int port){
 	//check for a tx or an rx interrupt
 	if( 1 ){ //tx interrupt
 		enet_local[port].tx_desc.buf = 0;
-		_mcu_cortexm_execute_event_handler(&(enet_local[port].write), 0);
+		mcu_execute_event_handler(&(enet_local[port].write), MCU_EVENT_FLAG_WRITE_COMPLETE, 0);
 	} else {
 		enet_local[port].tx_desc.buf = 0;
-		_mcu_cortexm_execute_event_handler(&(enet_local[port].read), 0);
+		mcu_execute_event_handler(&(enet_local[port].read), MCU_EVENT_FLAG_DATA_READY, 0);
 	}
 }
 
