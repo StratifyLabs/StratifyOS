@@ -26,7 +26,7 @@
 #include  "unistd_fs.h"
 #include  "unistd_flags.h"
 #include "mcu/debug.h"
-#include "stratify/stratify.h"
+#include "sos/stratify.h"
 
 
 /*! \details This function writes \a nbyte bytes \a fildes  from the memory
@@ -85,7 +85,7 @@ int _write(int fildes, const void *buf, size_t nbyte) {
 
 
 	fs = get_fs(fildes);
-	if ( fs->priv_write != NULL ){  //This means the handle is not a regular file -- must be a device
+	if ( fs->write_async != NULL ){  //This means the handle is not a regular file -- must be a device
 		return u_write(get_open_file(fildes), buf, nbyte);
 	} else {
 		//initialize the file offset location

@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "iface/link_transport.h"
+#include "sos/link/link_transport.h"
 
 #include "mcu/core.h"
 #include "mcu/debug.h"

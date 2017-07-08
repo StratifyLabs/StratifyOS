@@ -26,40 +26,27 @@
 #ifndef _MCU_QEI_H_
 #define _MCU_QEI_H_
 
-#include "../iface/dev/qei.h"
-#include "iface/device_config.h"
+#include "sos/dev/qei.h"
+
+#include "sos/fs/devfs.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-
-/*! \details
- * \sa periph_open()
- *
- */
-int mcu_qei_open(const device_cfg_t * cfg) MCU_PRIV_CODE;
-/*! \details
- * \sa periph_read()
- *
- */
-int mcu_qei_read(const device_cfg_t * cfg, device_transfer_t * rop) MCU_PRIV_CODE;
-/*! \details
- * \sa periph_write()
- */
-int mcu_qei_write(const device_cfg_t * cfg, device_transfer_t * wop) MCU_PRIV_CODE;
-/*! \details
- * \sa periph_ioctl()
- *
- */
-int mcu_qei_ioctl(const device_cfg_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
-/*! \details
- * \sa periph_close()
- */
-int mcu_qei_close(const device_cfg_t * cfg) MCU_PRIV_CODE;
+typedef struct MCU_PACK {
+	u32 value;
+} qei_event_data_t;
 
 
-int mcu_qei_getattr(int port, void * ctl) MCU_PRIV_CODE;
+int mcu_qei_open(const devfs_handle_t * cfg) MCU_PRIV_CODE;
+int mcu_qei_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_PRIV_CODE;
+int mcu_qei_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_PRIV_CODE;
+int mcu_qei_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
+int mcu_qei_close(const devfs_handle_t * cfg) MCU_PRIV_CODE;
+
+
+int mcu_qei_getinfo(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_qei_setattr(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_qei_setaction(int port, void * ctl) MCU_PRIV_CODE;
 

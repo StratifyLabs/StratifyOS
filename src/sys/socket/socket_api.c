@@ -19,7 +19,7 @@
 
 #include <unistd.h>
 #include "../unistd/unistd_flags.h"
-#include "stratify/stratify.h"
+#include "sos/stratify.h"
 #include "sys/socket.h"
 
 //int close(int s);

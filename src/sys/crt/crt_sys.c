@@ -7,7 +7,7 @@
 
 
 #include <stdlib.h>
-#include <stratify/sysfs.h>
+#include <sos/fs/sysfs.h>
 #include <string.h>
 
 #include "../sched/sched_flags.h"

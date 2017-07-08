@@ -21,9 +21,10 @@
 #if !defined __link
 
 #include "mcu/debug.h"
-#include "iface/dev/uart.h"
+#include "sos/dev/uart.h"
 #include "mcu/uart.h"
 #include "mcu/core.h"
+#include "mcu/mcu.h"
 
 
 #if MCU_DEBUG
@@ -36,15 +37,15 @@ int mcu_debug_init(){
 
 	//Open the debugging UART
 	port = MCU_DEBUG_PORT;
-	if( mcu_uart_open((device_cfg_t*)&port) < 0 ){
+	if( mcu_uart_open((devfs_handle_t*)&port) < 0 ){
 		return -1;
 	}
 
-	attr.pin_assign = 0;
-	attr.baudrate = 115200;
-	attr.parity = UART_PARITY_NONE;
-	attr.stop = UART_ATTR_STOP_BITS_1;
-	attr.start = UART_ATTR_START_BITS_1; //not used
+	memset(attr.pin_assignment, 0xff, UART_PIN_ASSIGNMENT_COUNT*sizeof(mcu_pin_t));
+	attr.pin_assignment[0] = mcu_board_config.debug_uart_pin_assignment[0];
+	attr.pin_assignment[1] = mcu_board_config.debug_uart_pin_assignment[1];
+	attr.freq = 115200;
+	attr.o_flags = UART_FLAG_IS_PARITY_NONE | UART_FLAG_IS_STOP1;
 	attr.width = 8;
 
 	return mcu_uart_setattr(port, &attr);
@@ -61,18 +62,18 @@ void mcu_priv_write_debug_uart(void * args){
 	int nbyte;
 	int err;
 	volatile int busy;
-	device_transfer_t wop;
+	devfs_async_t wop;
 	int port = MCU_DEBUG_PORT;
 	wop.loc = 0;
 	wop.buf = mcu_debug_buffer;
 	wop.nbyte = 0;
-	wop.callback = write_done;
-	wop.context = (void*)&busy;
+	wop.handler.callback = write_done;
+	wop.handler.context = (void*)&busy;
 	nbyte = strlen(mcu_debug_buffer);
 	wop.nbyte = nbyte;
 	busy = 1;
 
-	if ( (err = mcu_uart_write((device_cfg_t*)&port, &wop)) == 0 ){
+	if ( (err = mcu_uart_write((devfs_handle_t*)&port, &wop)) == 0 ){
 		while(busy == 1){
 			;
 		}

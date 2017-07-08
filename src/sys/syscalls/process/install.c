@@ -24,10 +24,10 @@
 #include <errno.h>
 
 #include "config.h"
-#include "iface/device_config.h"
+#include "sos/fs/devfs.h"
 #include "mcu/task.h"
 #include "mcu/debug.h"
-#include "stratify/sysfs.h"
+#include "sos/fs/sysfs.h"
 #include "../../sched/sched_flags.h"
 #include "../../sysfs/appfs.h"
 

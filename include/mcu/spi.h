@@ -27,45 +27,46 @@
 #define _MCU_SPI_H_
 
 
-#include "../iface/dev/spi.h"
+#include "sos/dev/spi.h"
+
+#include "sos/fs/devfs.h"
 #include "arch.h"
-#include "iface/device_config.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+typedef struct MCU_PACK {
+	u32 value;
+} spi_event_data_t;
 
+int mcu_spi_open(const devfs_handle_t * cfg) MCU_PRIV_CODE;
+int mcu_spi_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_PRIV_CODE;
+int mcu_spi_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_PRIV_CODE;
+int mcu_spi_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
+int mcu_spi_close(const devfs_handle_t * cfg) MCU_PRIV_CODE;
 
-int mcu_spi_open(const device_cfg_t * cfg) MCU_PRIV_CODE;
-int mcu_spi_read(const device_cfg_t * cfg, device_transfer_t * rop) MCU_PRIV_CODE;
-int mcu_spi_write(const device_cfg_t * cfg, device_transfer_t * wop) MCU_PRIV_CODE;
-int mcu_spi_ioctl(const device_cfg_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
-int mcu_spi_close(const device_cfg_t * cfg) MCU_PRIV_CODE;
+int mcu3_spi_open(const devfs_handle_t * handle) MCU_PRIV_CODE;
+int mcu3_spi_read(const devfs_handle_t * handle, devfs_async_t * rop) MCU_PRIV_CODE;
+int mcu3_spi_write(const devfs_handle_t * handle, devfs_async_t * wop) MCU_PRIV_CODE;
+int mcu3_spi_ioctl(const devfs_handle_t * handle, int request, void * ctl) MCU_PRIV_CODE;
+int mcu3_spi_close(const devfs_handle_t * handle) MCU_PRIV_CODE;
 
-int mcu3_spi_open(const dev_handle_t * handle) MCU_PRIV_CODE;
-int mcu3_spi_read(const dev_handle_t * handle, device_transfer_t * rop) MCU_PRIV_CODE;
-int mcu3_spi_write(const dev_handle_t * handle, device_transfer_t * wop) MCU_PRIV_CODE;
-int mcu3_spi_ioctl(const dev_handle_t * handle, int request, void * ctl) MCU_PRIV_CODE;
-int mcu3_spi_close(const dev_handle_t * handle) MCU_PRIV_CODE;
-
-int mcu_spi_getattr(int port, void * ctl) MCU_PRIV_CODE;
+int mcu_spi_getinfo(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_spi_setattr(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_spi_setaction(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_spi_swap(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_spi_setduplex(int port, void * ctl) MCU_PRIV_CODE;
 
 
-int mcu_ssp_open(const device_cfg_t * cfg) MCU_PRIV_CODE;
-int mcu_ssp_read(const device_cfg_t * cfg, device_transfer_t * rop) MCU_PRIV_CODE;
-int mcu_ssp_write(const device_cfg_t * cfg, device_transfer_t * wop) MCU_PRIV_CODE;
-int mcu_ssp_ioctl(const device_cfg_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
-int mcu_ssp_close(const device_cfg_t * cfg) MCU_PRIV_CODE;
-int mcu_ssp_getattr(int port, void * ctl) MCU_PRIV_CODE;
+int mcu_ssp_open(const devfs_handle_t * cfg) MCU_PRIV_CODE;
+int mcu_ssp_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_PRIV_CODE;
+int mcu_ssp_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_PRIV_CODE;
+int mcu_ssp_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
+int mcu_ssp_close(const devfs_handle_t * cfg) MCU_PRIV_CODE;
+int mcu_ssp_getinfo(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_ssp_setattr(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_ssp_setaction(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_ssp_swap(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_ssp_setduplex(int port, void * ctl) MCU_PRIV_CODE;
 
 #ifdef __cplusplus
 }

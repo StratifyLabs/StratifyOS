@@ -30,7 +30,7 @@
 #include <fcntl.h>
 
 #include "mcu/mcu.h"
-#include "iface/dev/rtc.h"
+#include "sos/dev/rtc.h"
 
 #include "../sched/sched_flags.h"
 

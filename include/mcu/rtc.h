@@ -26,40 +26,25 @@
 #ifndef _MCU_RTC_H_
 #define _MCU_RTC_H_
 
-#include "../iface/dev/rtc.h"
-#include "iface/device_config.h"
+#include "sos/dev/rtc.h"
+
+#include "sos/fs/devfs.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/*! \details
- * \sa periph_open()
- *
- */
-int mcu_rtc_open(const device_cfg_t * cfg) MCU_PRIV_CODE;
-/*! \details The RTC time is read using the ioctl request: \ref I_RTC_GET.  This
- * function always returns an error.
- * \sa periph_read()
- *
- */
-int mcu_rtc_read(const device_cfg_t * cfg, device_transfer_t * rop) MCU_PRIV_CODE;
-/*! \details The RTC time is written using the ioctl request: \ref I_RTC_SET.  This
- * function always returns an error.
- * \sa periph_write()
- */
-int mcu_rtc_write(const device_cfg_t * cfg, device_transfer_t * wop) MCU_PRIV_CODE;
-/*! \details
- * \sa periph_ioctl()
- *
- */
-int mcu_rtc_ioctl(const device_cfg_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
-/*! \details
- * \sa periph_close()
- */
-int mcu_rtc_close(const device_cfg_t * cfg) MCU_PRIV_CODE;
+typedef struct MCU_PACK {
+	u32 value;
+} rtc_event_data_t;
 
-int mcu_rtc_getattr(int port, void * ctl) MCU_PRIV_CODE;
+int mcu_rtc_open(const devfs_handle_t * cfg) MCU_PRIV_CODE;
+int mcu_rtc_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_PRIV_CODE;
+int mcu_rtc_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_PRIV_CODE;
+int mcu_rtc_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
+int mcu_rtc_close(const devfs_handle_t * cfg) MCU_PRIV_CODE;
+
+int mcu_rtc_getinfo(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_rtc_setattr(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_rtc_setaction(int port, void * ctl) MCU_PRIV_CODE;
 

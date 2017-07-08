@@ -31,7 +31,7 @@
 #ifdef __SIM__
 #include "../sffs/sim_device.h"
 #else
-#include "iface/device_config.h"
+#include "sos/fs/devfs.h"
 #include "mcu/core.h"
 #endif
 #include "sffs_dev.h"
@@ -117,7 +117,7 @@ typedef struct MCU_PACK {
 	block_t hdr_block /*! the block for the file header */;
 	block_t segment_list_block /*! The block containing the file's list of segments */;
 	int serialno_addr /*! The address of the serial number entry */;
-	device_transfer_t * op /*! a pointer to the current operation */;
+	devfs_async_t * op /*! a pointer to the current operation */;
 	int bytes_left /*! the number of bytes read/written so far */;
 	int size /*! The size of the file */;
 	uint8_t amode /*! The open mode */;

@@ -211,7 +211,7 @@ int _mcu_uart_dev_powered_on(int port){
 	return ( uart_local[port].ref_count != 0 );
 }
 
-int mcu_uart_getattr(int port, void * ctl){
+int mcu_uart_getinfo(int port, void * ctl){
 	memcpy(ctl, &(uart_local[port].attr), sizeof(uart_attr_t));
 	return 0;
 }
@@ -223,146 +223,48 @@ int mcu_uart_setattr(int port, void * ctl){
 	uint8_t lcr;
 	uint32_t f_div;
 	LPC_UART_Type * uart_regs;
-	uart_attr_t * ctl_ptr = (uart_attr_t*)ctl;
+	u32 o_flags;
+	uart_attr_t * attr = (uart_attr_t*)ctl;
 	uart_regs = uart_regs_table[port];
+	o_flags = attr->o_flags;
+	int i;
 
-	if ( ctl_ptr->baudrate != 0 ){
-		baud_rate = ctl_ptr->baudrate;
+	if ( attr->freq != 0 ){
+		baud_rate = attr->freq;
 	} else {
 		errno = EINVAL;
-		return -1 - offsetof(uart_attr_t, baudrate);
+		return -1 - offsetof(uart_attr_t, freq);
 	}
 
 	lcr = 0;
 
-	switch(ctl_ptr->stop){
-	case UART_ATTR_STOP_BITS_1:
-		lcr |= ULCR_STOP_1;
-		break;
-	case UART_ATTR_STOP_BITS_2:
+	lcr |= ULCR_STOP_1;
+	if( o_flags & UART_FLAG_IS_STOP2 ){
 		lcr |= ULCR_STOP_2;
-		break;
-	default:
-		errno = EINVAL;
-		return -1 - offsetof(uart_attr_t, stop);
 	}
 
-	if ( (ctl_ptr->width > 8) || (ctl_ptr->width < 5) ){
+
+	if ( (attr->width > 8) || (attr->width < 5) ){
 		errno = EINVAL;
 		return -1 - offsetof(uart_attr_t, width);
 	} else {
-		lcr |= (ctl_ptr->width - 5);
+		lcr |= (attr->width - 5);
 	}
 
 
-	switch(ctl_ptr->parity){
-	case UART_PARITY_NONE:
-		lcr |= ULCR_PAR_NO;
-		break;
-	case UART_PARITY_ODD:
-		lcr |= ULCR_PAR_ODD;
-		break;
-	case UART_PARITY_EVEN:
+	lcr |= ULCR_PAR_NO;
+	if( o_flags & UART_FLAG_IS_PARITY_EVEN ){
 		lcr |= ULCR_PAR_EVEN;
-		break;
-	default:
-		errno = EINVAL;
-		return -1 - offsetof(uart_attr_t, parity);
+	} else if( o_flags & UART_FLAG_IS_PARITY_ODD ){
+		lcr |= ULCR_PAR_ODD;
 	}
 
 
-	if ( ctl_ptr->pin_assign != MCU_GPIO_CFG_USER ){
-		switch(port){
-		case 0:
-			if (1){
-				switch(ctl_ptr->pin_assign){
-				case 0:
-					_mcu_uart_cfg_pio(0, MCU_UART_PORT0_PINASSIGN0, MCU_UART_RXPIN0_PINASSIGN0, MCU_UART_TXPIN0_PINASSIGN0);
-					break;
-#if defined LPCXX7X_8X
-				case 1:
-					_mcu_uart_cfg_pio(0, 0, 0, 1);
-					break;
-#endif
-				default:
-					errno = EINVAL;
-					return -1 - offsetof(uart_attr_t, pin_assign);
-				}
-			}
-			break;
-#if MCU_UART_PORTS > 1
-		case 1:
-			if (1){
-				switch(ctl_ptr->pin_assign){
-				case 0:
-					_mcu_uart_cfg_pio(1, 0, 16, 15);
-					break;
-				case 1:
-					_mcu_uart_cfg_pio(1, 2, 1, 0);
-					break;
-				case 2:
-					_mcu_uart_cfg_pio(1, 3, 16, 17);
-					break;
-				default:
-					errno = EINVAL;
-					return -1 - offsetof(uart_attr_t, pin_assign);
-				}
-			}
-			break;
-#endif
-#if MCU_UART_PORTS > 2
-		case 2:
-			if (1){
-				switch(ctl_ptr->pin_assign){
-				case 0:
-					_mcu_uart_cfg_pio(2, 0, 11, 10);
-					break;
-				case 1:
-					_mcu_uart_cfg_pio(2, 2, 9, 8);
-					break;
-				case 2:
-					_mcu_uart_cfg_pio(2, 4, 22, 23);
-					break;
-				default:
-					errno = EINVAL;
-					return -1 - offsetof(uart_attr_t, pin_assign);
-				}
-			}
-			break;
-#endif
-#if MCU_UART_PORTS > 3
-		case 3:
-			if (1){
-				switch(ctl_ptr->pin_assign){
-				case 0:
-					_mcu_uart_cfg_pio(3, 0, 1, 0);
-					break;
-				case 1:
-					_mcu_uart_cfg_pio(3, 0, 3, 2);
-					break;
-				case 2:
-					_mcu_uart_cfg_pio(3, 0, 26, 25);
-					break;
-				case 3:
-					_mcu_uart_cfg_pio(3, 4, 29, 28);
-					break;
-				default:
-					errno = EINVAL;
-					return -1 - offsetof(uart_attr_t, pin_assign);
-				}
-			}
-			break;
-#endif
-		default:
-			errno = EINVAL;
-			return -1 - offsetof(uart_attr_t, pin_assign);
-		}
+	if( mcu_core_set_pin_assignment(attr->pin_assignment, UART_PIN_ASSIGNMENT_COUNT, CORE_PERIPH_UART, port) < 0 ){
+		return -1;
 	}
 
-#if defined __lpc13uxx
-	LPC_SYSCON->UARTCLKDIV = 1;
-	LPC_SYSCON->SYSAHBCLKCTRL |= (SYSAHBCLKCTRL_UART);
-#endif
+
 
 	//! \todo Error check the width
 	_mcu_cortexm_priv_disable_irq((void*)(u32)(uart_irqs[port]));
@@ -433,10 +335,10 @@ int mcu_uart_setaction(int port, void * ctl){
 	mcu_action_t * action = (mcu_action_t*)ctl;
 	LPC_UART_Type * uart_regs = uart_regs_table[port];
 
-	if( action->callback == 0 ){
+	if( action->handler.callback == 0 ){
 		//if there is an ongoing operation -- cancel it
 
-		if( action->event == UART_EVENT_DATA_READY ){
+		if( action->o_events == UART_EVENT_DATA_READY ){
 			if ( uart_regs->IER & UIER_RBRIE ){
 				//There is an ongoing read operation
 				exec_readcallback(port, uart_regs, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
@@ -445,7 +347,7 @@ int mcu_uart_setaction(int port, void * ctl){
 			return 0;
 		}
 
-		if( action->event == UART_EVENT_WRITE_COMPLETE ){
+		if( action->o_events == UART_EVENT_WRITE_COMPLETE ){
 			if ( uart_regs->IER & UIER_ETBEI ){
 				exec_writecallback(port, uart_regs, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
 			}
@@ -455,21 +357,21 @@ int mcu_uart_setaction(int port, void * ctl){
 
 	} else {
 
-		if( _mcu_cortexm_priv_validate_callback(action->callback) < 0 ){
+		if( _mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
 			return -1;
 		}
 
-		if( action->event == UART_EVENT_DATA_READY ){
+		if( action->o_events == UART_EVENT_DATA_READY ){
 
-			uart_local[port].read.callback = action->callback;
-			uart_local[port].read.context = action->context;
+			uart_local[port].read.callback = action->handler.callback;
+			uart_local[port].read.context = action->handler.context;
 
 			uart_regs->IER |= (UIER_RBRIE);  //enable the receiver interrupt
 			uart_local[port].rx_bufp = NULL;
-		} else if ( action->event == UART_EVENT_WRITE_COMPLETE ){
+		} else if ( action->o_events == UART_EVENT_WRITE_COMPLETE ){
 
-			uart_local[port].write.callback = action->callback;
-			uart_local[port].write.context = action->context;
+			uart_local[port].write.callback = action->handler.callback;
+			uart_local[port].write.context = action->handler.context;
 		} else {
 			errno = EINVAL;
 			return -1;
@@ -523,13 +425,13 @@ int mcu_uart_getall(int port, void * ctl){
 
 
 
-int _mcu_uart_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
+int _mcu_uart_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	int len;
 	int port;
 	LPC_UART_Type * uart_regs;
 
 	//grab the port and registers
-	port = DEVICE_GET_PORT(cfg);
+	port = DEVFS_GET_PORT(cfg);
 	uart_regs = uart_regs_table[port];
 
 	if ( uart_regs->IER & UIER_RBRIE ){
@@ -553,22 +455,22 @@ int _mcu_uart_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
 			errno = EAGAIN;
 			len = -1;
 		} else {
-			if( _mcu_cortexm_priv_validate_callback(rop->callback) < 0 ){
+			if( _mcu_cortexm_priv_validate_callback(rop->handler.callback) < 0 ){
 				return -1;
 			}
 
-			uart_local[port].read.callback = rop->callback;
-			uart_local[port].read.context = rop->context;
+			uart_local[port].read.callback = rop->handler.callback;
+			uart_local[port].read.context = rop->handler.context;
 			uart_regs->IER |= UIER_RBRIE;  //enable the receiver interrupt
 		}
 	}
 	return len;
 }
 
-int _mcu_uart_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
+int _mcu_uart_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	LPC_UART_Type * uart_regs;
 	int port;
-	port = DEVICE_GET_PORT(cfg);
+	port = DEVFS_GET_PORT(cfg);
 
 	//Grab the registers
 	uart_regs = uart_regs_table[port];
@@ -591,12 +493,12 @@ int _mcu_uart_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
 	uart_regs->TER = 0; //disable the transmitter
 	write_tx_data(port);
 
-	if( _mcu_cortexm_priv_validate_callback(wop->callback) < 0 ){
+	if( _mcu_cortexm_priv_validate_callback(wop->handler.callback) < 0 ){
 		return -1;
 	}
 
-	uart_local[port].write.callback = wop->callback;
-	uart_local[port].write.context = wop->context;
+	uart_local[port].write.callback = wop->handler.callback;
+	uart_local[port].write.context = wop->handler.context;
 	uart_regs->IER |= UIER_ETBEI;  //enable the transmit interrupt
 	uart_regs->TER = UTER_TXEN; //enable the transmitter
 

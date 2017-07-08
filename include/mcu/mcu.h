@@ -40,6 +40,8 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+#include "sos/dev/pio.h"
+#include "sos/fs/devfs.h"
 
 /*! @} */
 
@@ -55,8 +57,7 @@
  */
 
 #include "mcu/types.h"
-#include "iface/dev/pio.h"
-#include "iface/device_config.h"
+#include "sos/dev/usb.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -76,8 +77,8 @@ extern u32 _esys;
 
 #define MCU_SYNC_IO_FLAG_READ (1<<15)
 
-int mcu_sync_io(const device_cfg_t * cfg,
-		int (*func)(const device_cfg_t * cfg, device_transfer_t * op),
+int mcu_sync_io(const devfs_handle_t * cfg,
+		int (*func)(const devfs_handle_t * cfg, devfs_async_t * op),
 		int loc,
 		const void * buf,
 		int nbyte,
@@ -109,8 +110,9 @@ typedef struct MCU_PACK {
 	u32 usb_max_packet_zero;
 	u32 o_flags;
 	void (*event)(int, void*);
-	pio_t led;
-	u8 usb_pin_assign;
+	mcu_pin_t led;
+	mcu_pin_t debug_uart_pin_assignment[2];
+	mcu_pin_t usb_pin_assignment[USB_PIN_ASSIGNMENT_COUNT];
 	u8 resd;
 } mcu_board_config_t;
 

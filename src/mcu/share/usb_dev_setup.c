@@ -19,7 +19,7 @@
 
 
 #include <stdio.h>
-#include "stratify/usb_dev.h"
+#include "mcu/usb_dev.h"
 
 #include "mcu/core.h"
 #include "mcu/usb.h"

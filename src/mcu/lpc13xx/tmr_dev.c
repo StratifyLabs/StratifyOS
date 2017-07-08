@@ -141,7 +141,7 @@ int _mcu_tmr_dev_powered_on(int port){
 	return -1;
 }
 
-int mcu_tmr_getattr(int port, void * ctl){
+int mcu_tmr_getinfo(int port, void * ctl){
 	uint32_t ctcr;
 	tmr_attr_t * ctlp;
 	ctlp = (tmr_attr_t *)ctl;
@@ -391,7 +391,7 @@ int mcu_tmr_setoc(int port, void * ctl){
 	LPC_TMR_Type * regs;
 	regs = tmr_regs_table[port];
 	//Write the output compare value
-	tmr_reqattr_t * req = (tmr_reqattr_t*)ctl;
+	mcu_channel_t * req = (mcu_channel_t*)ctl;
 	if ( req->channel > 3 ){
 		errno = EINVAL;
 		return -1;
@@ -404,7 +404,7 @@ int mcu_tmr_getoc(int port, void * ctl){
 	LPC_TMR_Type * regs;
 	regs = tmr_regs_table[port];
 	//Read the output compare channel
-	tmr_reqattr_t * req = (tmr_reqattr_t*)ctl;
+	mcu_channel_t * req = (mcu_channel_t*)ctl;
 	if ( req->channel > 3 ){
 		errno = EINVAL;
 		return -1;
@@ -417,7 +417,7 @@ int mcu_tmr_setic(int port, void * ctl){
 	LPC_TMR_Type * regs;
 	regs = tmr_regs_table[port];
 	unsigned int chan;
-	tmr_reqattr_t * req = (tmr_reqattr_t*)ctl;
+	mcu_channel_t * req = (mcu_channel_t*)ctl;
 	chan = req->channel - TMR_ACTION_CHANNEL_IC0;
 	if ( chan > 1 ){
 		errno = EINVAL;
@@ -431,7 +431,7 @@ int mcu_tmr_getic(int port, void * ctl){
 	LPC_TMR_Type * regs;
 	unsigned int chan;
 	regs = tmr_regs_table[port];
-	tmr_reqattr_t * req = (tmr_reqattr_t*)ctl;
+	mcu_channel_t * req = (mcu_channel_t*)ctl;
 	chan = req->channel - TMR_ACTION_CHANNEL_IC0;
 	if ( chan > 1 ){
 		errno = EINVAL;
@@ -441,10 +441,10 @@ int mcu_tmr_getic(int port, void * ctl){
 	return 0;
 }
 
-int _mcu_tmr_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
+int _mcu_tmr_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	int port;
 	mcu_action_t * action;
-	port = cfg->periph.port;
+	port = cfg->port;
 
 	if( wop->nbyte != sizeof(mcu_action_t) ){
 		errno = EINVAL;
@@ -452,46 +452,46 @@ int _mcu_tmr_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
 	}
 
 	action = wop->buf;
-	action->callback = wop->callback;
-	action->context = wop->context;
+	action->handler.callback = wop->handler.callback;
+	action->handler.context = wop->handler.context;
 	return mcu_tmr_setaction(port, &action);
 }
 
 int mcu_tmr_setaction(int port, void * ctl){
-	tmr_action_t * action = (tmr_action_t*)ctl;
+	mcu_action_t * action = (mcu_action_t*)ctl;
 	LPC_TMR_Type * regs;
 	regs = tmr_regs_table[port];
 	int chan;
 	int event;
 
-	event = action->event;
+	event = action->o_events;
 	chan = action->channel;
 
-	if ( event == TMR_ACTION_EVENT_NONE ){ //Check to see if all actions are disabled
+	if ( event == TMR_EVENT_NONE ){ //Check to see if all actions are disabled
 		regs->MCR &= ~(0x03 << (chan*3) );
 		_mcu_tmr_local[port].callback[chan] = NULL;
 	} else {
 
 
 		//Check for an interrupt action with a callback
-		if ( event & TMR_ACTION_EVENT_INTERRUPT){
+		if ( event & TMR_EVENT_INTERRUPT){
 			regs->MCR |= ((1<<0) << (chan*3) );
-			_mcu_tmr_local[port].callback[chan] = action->callback;
-			_mcu_tmr_local[port].context[chan] = action->context;
+			_mcu_tmr_local[port].callback[chan] = action->handler.callback;
+			_mcu_tmr_local[port].context[chan] = action->handler.context;
 		}
 
 		//Check for reset action
-		if ( event & TMR_ACTION_EVENT_RESET){
+		if ( event & TMR_EVENT_RESET){
 			regs->MCR |= ((1<<1) << (chan*3) );
 		}
 
 		//Check to see if the timer should stop on a match
-		if ( event & TMR_ACTION_EVENT_STOP){
+		if ( event & TMR_EVENT_STOP){
 			regs->MCR |= ((1<<2) << (chan*3) );
 		}
 
 		if( chan <= TMR_ACTION_CHANNEL_OC3 ){
-			if( event & TMR_ACTION_EVENT_PWMMODE ){
+			if( event & TMR_EVENT_PWMMODE ){
 				regs->PWMC |= (1<<chan);
 			} else {
 				regs->PWMC &= ~(1<<chan);
@@ -499,17 +499,17 @@ int mcu_tmr_setaction(int port, void * ctl){
 
 
 			regs->EMR &= ~(0x3<<(chan+4));
-			if( event & TMR_ACTION_EVENT_SETOC ){
+			if( event & TMR_EVENT_SETOC ){
 				//set OC output on event
 				regs->EMR |= (0x2<<(chan+4));
 			}
 
-			if( event & TMR_ACTION_EVENT_CLROC ){
+			if( event & TMR_EVENT_CLROC ){
 				//clr OC output on event
 				regs->EMR |= (0x1<<(chan+4));
 			}
 
-			if( event & TMR_ACTION_EVENT_TOGGLEOC ){
+			if( event & TMR_EVENT_TOGGLEOC ){
 				//toggle OC output on event
 				regs->EMR |= (0x3<<(chan+4));
 			}
@@ -519,11 +519,11 @@ int mcu_tmr_setaction(int port, void * ctl){
 	return 0;
 }
 
-int _mcu_tmr_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
-	int port = DEVICE_GET_PORT(cfg);
+int _mcu_tmr_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
+	int port = DEVFS_GET_PORT(cfg);
 	int chan = rop->loc;
-	_mcu_tmr_local[port].callback[chan] = rop->callback;
-	_mcu_tmr_local[port].context[chan] = rop->context;
+	_mcu_tmr_local[port].callback[chan] = rop->handler.callback;
+	_mcu_tmr_local[port].context[chan] = rop->handler.context;
 	return 0;
 }
 

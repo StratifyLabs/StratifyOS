@@ -24,7 +24,7 @@
 #include "mcu/debug.h"
 #include "mcu/core.h"
 #include "mcu/wdt.h"
-#include "iface/dev/bootloader.h"
+#include "sos/dev/bootloader.h"
 
 
 extern u32 _text;
@@ -70,7 +70,7 @@ int _mcu_mem_getsyspage(){
 	return (SRAM_PAGES);
 }
 
-int mcu_mem_getattr(int port, void * ctl){
+int mcu_mem_getinfo(int port, void * ctl){
 	mem_attr_t * attr = ctl;
 	attr->flash_pages = (u32)&_flash_pages;
 	attr->flash_size = FLASH_SIZE;
@@ -214,7 +214,7 @@ int mcu_mem_writepage(int port, void * ctl){
 	return wattr->nbyte;
 }
 
-int _mcu_mem_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
+int _mcu_mem_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 
 	if ( is_ram(wop->loc, wop->nbyte) ){
 		memcpy((void*)wop->loc, wop->buf, wop->nbyte);
@@ -225,7 +225,7 @@ int _mcu_mem_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
 	return -1;
 }
 
-int _mcu_mem_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
+int _mcu_mem_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	if ( (is_flash(rop->loc, rop->nbyte) ) ||
 			( is_ram(rop->loc, rop->nbyte) ) 	){
 		memcpy(rop->buf, (const void*)rop->loc, rop->nbyte);

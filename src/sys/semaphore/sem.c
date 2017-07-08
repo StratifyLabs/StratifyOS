@@ -30,7 +30,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>
-#include <stratify/sysfs.h>
+#include "sos/fs/sysfs.h"
 
 #include "semaphore.h"
 #include "../sched/sched_flags.h"

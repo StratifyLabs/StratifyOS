@@ -25,32 +25,32 @@
 
 #include "config.h"
 #include <errno.h>
-#include "iface/dev/sys.h"
+#include "mcu/sys.h"
 #include "mcu/core.h"
 #include "mcu/sys.h"
 #include "mcu/debug.h"
 #include "sched/sched_flags.h"
 #include "signal/sig_local.h"
-#include "dev/sys.h"
+#include "mcu/sys.h"
 #include "symbols.h"
 
 
-int sys_23_open(const device_cfg_t * cfg){
+int sys_23_open(const devfs_handle_t * cfg){
 	return sys_open(cfg);
 }
 
-int sys_23_ioctl(const device_cfg_t * cfg, int request, void * ctl){
+int sys_23_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 	sys_23_attr_t * sys = ctl;
 
 	switch(request){
-	case I_SYS_GETATTR: //this will be the wrong version
+	case I_SYS_GETINFO: //this will be the wrong version
 		break;
-	case I_SYS_23_GETATTR:
+	case I_SYS_23_GETINFO:
 		memset(sys, 0, sizeof(sys_23_attr_t));
 		strncpy(sys->version, VERSION, 7);
 		strncpy(sys->sys_version, stratify_board_config.sys_version, 7);
 		strncpy(sys->arch, ARCH, 7);
-		sys->security = _mcu_sys_getsecurity();
+		sys->security = 0;
 		sys->signature = symbols_table[0];
 		sys->cpu_freq = _mcu_core_getclock();
 		sys->sys_mem_size = stratify_board_config.sys_memory_size;
@@ -67,15 +67,15 @@ int sys_23_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 	return -1;
 }
 
-int sys_23_read(const device_cfg_t * cfg, device_transfer_t * rop){
+int sys_23_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	return sys_read(cfg, rop);
 }
 
-int sys_23_write(const device_cfg_t * cfg, device_transfer_t * wop){
+int sys_23_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	return sys_write(cfg, wop);
 }
 
-int sys_23_close(const device_cfg_t * cfg){
+int sys_23_close(const devfs_handle_t * cfg){
 	return sys_close(cfg);;
 }
 

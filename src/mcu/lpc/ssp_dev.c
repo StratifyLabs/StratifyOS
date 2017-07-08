@@ -41,7 +41,7 @@ typedef struct {
 
 static ssp_local_t ssp_local[MCU_SSP_PORTS] MCU_SYS_MEM;
 
-static int ssp_port_transfer(int port, int is_read, device_transfer_t * dop);
+static int ssp_port_transfer(int port, int is_read, devfs_async_t * dop);
 static void ssp_fill_tx_fifo(int port, LPC_SSP_Type * regs);
 static void ssp_empty_rx_fifo(int port, LPC_SSP_Type * regs);
 static int byte_swap(int port, int byte);
@@ -53,8 +53,8 @@ static u8 const ssp_irqs[MCU_SSP_PORTS] = MCU_SSP_IRQS;
 static void enable_pin(int pio_port, int pio_pin) MCU_PRIV_CODE;
 void enable_pin(int pio_port, int pio_pin){
 	pio_attr_t pattr;
-	pattr.mask = (1<<pio_pin);
-	pattr.mode = PIO_MODE_OUTPUT;
+	pattr.o_pinmask = (1<<pio_pin);
+	pattr.mode = PIO_FLAG_SET_OUTPUT;
 	mcu_pio_setattr(pio_port, &pattr);
 }
 #endif
@@ -131,52 +131,11 @@ int _mcu_ssp_dev_powered_on(int port){
 }
 
 
-int mcu_ssp_getattr(int port, void * ctl){
+int mcu_ssp_getinfo(int port, void * ctl){
 	LPC_SSP_Type * regs;
-	spi_attr_t * ctlp = (spi_attr_t*)ctl;
+	spi_info_t * info = (spi_attr_t*)ctl;
 
-	uint8_t tmp;
-
-	ctlp->pin_assign = ssp_local[port].pin_assign;
-
-	regs = ssp_regs_table[port];
-
-	//Master
-	if ( regs->CR1 & (1<<2) ){
-		//Slave
-		ctlp->master = SPI_ATTR_SLAVE;
-	} else {
-		ctlp->master = SPI_ATTR_MASTER;
-	}
-
-	//width
-	ctlp->width = (regs->CR0 & 0x0F) + 1;
-
-	//format
-	tmp = (regs->CR0 >> 4) & 0x03;
-	if ( tmp == 0 ){
-		ctlp->format = SPI_ATTR_FORMAT_SPI;
-	} else if ( tmp == 1 ){
-		ctlp->format = SPI_ATTR_FORMAT_TI;
-	} else if ( tmp == 2 ){
-		ctlp->format = SPI_ATTR_FORMAT_MICROWIRE;
-	}
-
-	//Mode
-	ctlp->mode = 0;
-	if ( regs->CR0 & (1<<6) ){
-		ctlp->mode |= 0x02;
-	}
-	if ( regs->CR0 & (1<<7) ){
-		ctlp->mode |= 0x01;
-	}
-
-	//bitrate
-	if ( regs->CPSR != 0){
-		ctlp->bitrate = mcu_board_config.core_periph_freq / (regs->CPSR);
-	} else {
-		ctlp->bitrate = -1;
-	}
+	//set flags
 
 
 	return 0;
@@ -186,165 +145,75 @@ int mcu_ssp_setattr(int port, void * ctl){
 	LPC_SSP_Type * regs;
 	uint32_t cr0, cr1, cpsr;
 	uint32_t tmp;
-	spi_attr_t * ctlp = (spi_attr_t*)ctl;
+	spi_attr_t * attr = ctl;
+	u32 o_flags = attr->o_flags;
+	u32 mode;
+	int i;
 
 	regs = ssp_regs_table[port];
 
-	if ( ctlp->bitrate == 0 ) {
-		errno = EINVAL;
-		return -1 - offsetof(spi_attr_t, bitrate);
-	}
+	if( o_flags & SPI_FLAG_SET_MASTER ){
 
-	if ( ctlp->mode >= 4 ) {
-		errno = EINVAL;
-		return -1 - offsetof(spi_attr_t, mode);
-	}
-
-	if ( ctlp->master != SPI_ATTR_MASTER ){
-		errno = EINVAL;
-		return -1 - offsetof(spi_attr_t, master);
-	}
-
-	if ( ctlp->width < 4 && ctlp->width > 16 ){
-		errno = EINVAL;
-		return -1 - offsetof(spi_attr_t, width);
-	}
-
-
-	cr0 = 0;
-	cr1 = (1<<1); //set the enable
-
-	tmp = mcu_board_config.core_periph_freq / ctlp->bitrate;
-	tmp = ( tmp > 255 ) ? 254 : tmp;
-	tmp = ( tmp < 2 ) ? 2 : tmp;
-	if ( tmp & 0x01 ){
-		tmp++; //round the divisor up so that actual is less than the target
-	}
-	cpsr = tmp;
-
-	if ( ctlp->mode & 0x01 ){
-		cr0 |= (1<<7);
-	}
-	if ( ctlp->mode & 0x02 ){
-		cr0 |= (1<<6);
-	}
-
-	cr0 |= ( ctlp->width - 1);
-
-
-	if ( ctlp->format == SPI_ATTR_FORMAT_SPI ){
-
-	} else if ( ctlp->format == SPI_ATTR_FORMAT_TI ){
-		cr0 |= (1<<4);
-	} else if ( ctlp->format == SPI_ATTR_FORMAT_MICROWIRE ){
-		cr0 |= (1<<5);
-	} else {
-		errno = EINVAL;
-		return -1 - offsetof(spi_attr_t, format);
-	}
-
-	if ( ctlp->pin_assign != MCU_GPIO_CFG_USER ){
-
-		switch(port){
-		case 0:
-			if (1){
-				switch(ctlp->pin_assign){
-				case 0:
-					if ( _mcu_ssp_cfg_pio(0,
-							MCU_SPI_PORT0_PINASSIGN0,
-							MCU_SPI_MOSIPIN0_PINASSIGN0,
-							MCU_SPI_MISOPIN0_PINASSIGN0,
-							MCU_SPI_SCKPIN0_PINASSIGN0
-					) < 0 ){
-						errno = ENODEV;
-						return -1;
-					}
-#if defined __lpc13xx
-					LPC_IOCON->SCK_LOC = 0;
-#endif
-					break;
-				case 1:
-					if( _mcu_ssp_cfg_pio(0,
-							MCU_SPI_PORT0_PINASSIGN1,
-							MCU_SPI_MOSIPIN0_PINASSIGN1,
-							MCU_SPI_MISOPIN0_PINASSIGN1,
-							MCU_SPI_SCKPIN0_PINASSIGN1
-					) < 0 ){
-						errno = ENODEV;
-						return -1;
-					}
-
-#if defined __lpc13xx
-					LPC_IOCON->SCK_LOC = 2;
-#endif
-					break;
-#ifdef LPCXX7X_8X
-				case 2:
-					if( _mcu_ssp_cfg_pio(0, 2, 27, 26, 22) < 0 ){
-						errno = ENODEV;
-						return -1;
-					}
-					break;
-#endif
-				default:
-					errno = EINVAL;
-					return -1 - offsetof(spi_attr_t, pin_assign);
-				}
-			}
-			break;
-		case 1:
-			if (1){
-				switch(ctlp->pin_assign){
-				case 0:
-#ifdef LPCXX7X_8X
-					enable_pin(0,9);
-					enable_pin(0,8);
-					enable_pin(0,7);
-#endif
-					if ( _mcu_ssp_cfg_pio(1, 0, 9, 8, 7) < 0 ){
-						errno = ENODEV;
-						return -1;
-					}
-					break;
-#ifdef LPCXX7X_8X
-				case 1:
-					if ( _mcu_ssp_cfg_pio(1, 4, 23, 22, 20) < 0 ){
-						errno = ENODEV;
-						return -1;
-					}
-					break;
-#endif
-				default:
-					errno = EINVAL;
-					return -1 - offsetof(spi_attr_t, pin_assign);
-				}
-			}
-			break;
-#ifdef LPCXX7X_8X
-		case 2:
-			if (1){
-				switch(ctlp->pin_assign){
-				case 0:
-					if ( _mcu_ssp_cfg_pio(2, 1, 4, 1, 0) < 0 ){
-						errno = ENODEV;
-						return -1;
-					}
-					break;
-				default:
-					errno = EINVAL;
-					return -1 - offsetof(spi_attr_t, pin_assign);
-				}
-			}
-#endif
+		if( attr->freq == 0 ){
+			errno = EINVAL;
+			return -1 - offsetof(spi_attr_t, freq);
 		}
+
+		if ( (attr->width < 4) && (attr->width > 16) ){
+			errno = EINVAL;
+			return -1 - offsetof(spi_attr_t, width);
+		}
+
+		mode = 0;
+		if( o_flags & SPI_FLAG_MODE1 ){
+			mode = 1;
+		} else if( o_flags & SPI_FLAG_MODE2 ){
+			mode = 2;
+		} else if( o_flags & SPI_FLAG_MODE3 ){
+			mode = 3;
+		}
+
+		cr0 = 0;
+		cr1 = (1<<1); //set the enable
+
+		tmp = mcu_board_config.core_periph_freq / attr->freq;
+		tmp = ( tmp > 255 ) ? 254 : tmp;
+		tmp = ( tmp < 2 ) ? 2 : tmp;
+		if ( tmp & 0x01 ){
+			tmp++; //round the divisor up so that actual is less than the target
+		}
+		cpsr = tmp;
+
+		if ( mode & 0x01 ){
+			cr0 |= (1<<7);
+		}
+		if ( mode & 0x02 ){
+			cr0 |= (1<<6);
+		}
+
+		cr0 |= ( attr->width - 1);
+
+		//default mode is SPI
+		if ( o_flags & SPI_FLAG_FORMAT_TI ){
+			cr0 |= (1<<4);
+		} else if ( o_flags & SPI_FLAG_FORMAT_MICROWIRE ){
+			cr0 |= (1<<5);
+		}
+
+		for(i=0; i < SPI_PIN_ASSIGNMENT_COUNT; i++){
+			if( mcu_is_port_valid(attr->pin_assignment[i].port) ){
+				if ( _mcu_core_set_pinsel_func(attr->pin_assignment[i].port, attr->pin_assignment[i].pin, CORE_PERIPH_SSP, port) ){
+					return -1;  //pin failed to allocate as a UART pin
+				}
+			}
+		}
+
+		regs->CR0 = cr0;
+		regs->CR1 = cr1;
+		regs->CPSR = cpsr;
+		regs->IMSC = 0;
+
 	}
-
-	regs->CR0 = cr0;
-	regs->CR1 = cr1;
-	regs->CPSR = cpsr;
-	regs->IMSC = 0;
-
-	ssp_local[port].pin_assign = ctlp->pin_assign;
 
 	return 0;
 }
@@ -369,7 +238,7 @@ int mcu_ssp_setaction(int port, void * ctl){
 	LPC_SSP_Type * regs;
 	regs = ssp_regs_table[port];
 
-	if( action->callback == 0 ){
+	if( action->handler.callback == 0 ){
 		if ( regs->IMSC & (SSPIMSC_RXIM|SSPIMSC_RTIM) ){
 			exec_callback(port, regs, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
 		}
@@ -377,12 +246,12 @@ int mcu_ssp_setaction(int port, void * ctl){
 		return 0;
 	}
 
-	if( _mcu_cortexm_priv_validate_callback(action->callback) < 0 ){
+	if( _mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
 		return -1;
 	}
 
-	ssp_local[port].handler.callback = action->callback;
-	ssp_local[port].handler.context = action->context;
+	ssp_local[port].handler.callback = action->handler.callback;
+	ssp_local[port].handler.context = action->handler.context;
 
 	_mcu_cortexm_set_irq_prio(ssp_irqs[port], action->prio);
 
@@ -411,13 +280,13 @@ int byte_swap(int port, int byte){
 
 }
 
-int _mcu_ssp_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
-	int port = DEVICE_GET_PORT(cfg);
+int _mcu_ssp_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
+	int port = DEVFS_GET_PORT(cfg);
 	return ssp_port_transfer(port, 0, wop);
 }
 
-int _mcu_ssp_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
-	int port = DEVICE_GET_PORT(cfg);
+int _mcu_ssp_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
+	int port = DEVFS_GET_PORT(cfg);
 	return ssp_port_transfer(port, 1, rop);
 }
 
@@ -471,7 +340,7 @@ void _mcu_core_ssp2_isr(){
 	_mcu_core_ssp_isr(2);
 }
 
-int ssp_port_transfer(int port, int is_read, device_transfer_t * dop){
+int ssp_port_transfer(int port, int is_read, devfs_async_t * dop){
 	int size;
 	LPC_SSP_Type * regs;
 	size = dop->nbyte;
@@ -497,7 +366,7 @@ int ssp_port_transfer(int port, int is_read, device_transfer_t * dop){
 	}
 	ssp_local[port].size = size;
 
-	if( _mcu_cortexm_priv_validate_callback(dop->callback) < 0 ){
+	if( _mcu_cortexm_priv_validate_callback(dop->handler.callback) < 0 ){
 		return -1;
 	}
 
@@ -510,8 +379,8 @@ int ssp_port_transfer(int port, int is_read, device_transfer_t * dop){
 	//this code suppress a warning we don't want but doesn't do anything
 	if( byte & 0 ){ byte = 0; }
 
-	ssp_local[port].handler.callback = dop->callback;
-	ssp_local[port].handler.context = dop->context;
+	ssp_local[port].handler.callback = dop->handler.callback;
+	ssp_local[port].handler.context = dop->handler.context;
 
 	//fill the TX buffer
 	ssp_fill_tx_fifo(port, regs);

@@ -135,7 +135,7 @@ int _mcu_usb_dev_powered_on(int port){
 }
 
 
-int mcu_usb_getattr(int port, void * ctl){
+int mcu_usb_getinfo(int port, void * ctl){
 	memcpy(ctl, &usb_ctl, sizeof(usb_attr_t));
 	return 0;
 }
@@ -149,7 +149,7 @@ int mcu_usb_setattr(int port, void * ctl){
 		return -1;
 	}
 
-	if (ctlp->mode != USB_ATTR_MODE_DEVICE){
+	if (ctlp->mode != USB_FLAG_SET_DEVICE){
 		return -1;
 	}
 
@@ -174,8 +174,8 @@ int mcu_usb_setaction(int port, void * ctl){
 
 	log_ep = action->channel & 0x7F;
 	if ( (log_ep < DEV_USB_LOGICAL_ENDPOINT_COUNT)  ){
-		usb_local.callback[ log_ep ] = action->callback;
-		usb_local.context[ log_ep ] = action->context;
+		usb_local.callback[ log_ep ] = action->handler.callback;
+		usb_local.context[ log_ep ] = action->handler.context;
 	}
 
 	return 0;
@@ -242,7 +242,7 @@ int mcu_usb_set_event_handler(int port, void * ctl){
 	return 0;
 }
 
-int _mcu_usb_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
+int _mcu_usb_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	int loc = rop->loc;
 
 	if ( loc > (DEV_USB_LOGICAL_ENDPOINT_COUNT-1) ){
@@ -257,20 +257,20 @@ int _mcu_usb_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
 		rop->nbyte = 0;
 		if ( !(rop->flags & O_NONBLOCK) ){
 			//If this is a blocking call, set the callback and context
-			usb_local.callback[loc] = rop->callback;
-			usb_local.context[loc] = rop->context;
+			usb_local.callback[loc] = rop->handler.callback;
+			usb_local.context[loc] = rop->handler.context;
 		}
 		return 0;
 	}
 }
 
-int _mcu_usb_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
+int _mcu_usb_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	//Asynchronous write
 	int ep;
 	int port;
 	int loc = wop->loc;
 
-	port = DEVICE_GET_PORT(cfg);
+	port = DEVFS_GET_PORT(cfg);
 
 	ep = (loc & 0x7F);
 
@@ -283,8 +283,8 @@ int _mcu_usb_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
 		return -1;
 	}
 
-	usb_local.callback[ep] = wop->callback;
-	usb_local.context[ep] = wop->context;
+	usb_local.callback[ep] = wop->handler.callback;
+	usb_local.context[ep] = wop->handler.context;
 
 	usb_local.write_pending |= (1<<ep);
 	wop->nbyte = mcu_usb_wr_ep(0, loc, wop->buf, wop->nbyte);

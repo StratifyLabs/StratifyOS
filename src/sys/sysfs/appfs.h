@@ -29,8 +29,8 @@ typedef struct {
 	void * code_start /*! The start of memory */;
 	u32 code_size /*! The size of the code section */;
 	void * ram_start /*! The start of memory */;
-	i32 ram_size /*! The size of  memory (total RAM for process)*/;
-	i32 data_size /*! Number of initialized bytes */;
+	s32 ram_size /*! The size of  memory (total RAM for process)*/;
+	s32 data_size /*! Number of initialized bytes */;
 	u32 options /*! must be valid to execute the file */;
 	u32 signature /*! The kernel signature used for the build */;
 } appfs_exec_t; //32 bytes

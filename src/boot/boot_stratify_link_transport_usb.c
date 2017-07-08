@@ -5,25 +5,23 @@
 #include <sys/fcntl.h>
 #include <unistd.h>
 #include "mcu/cortexm.h"
-#include "iface/link.h"
+#include "sos/link/link.h"
 #include "mcu/mcu.h"
-#include "iface/dev/usb.h"
-#include "dev/usbfifo.h"
-#include "stratify/usb_dev.h"
-#include "stratify/usb_dev_cdc.h"
+#include "sos/dev/usb.h"
+#include "mcu/usbfifo.h"
+#include "mcu/usb_dev.h"
+#include "mcu/usb_dev_cdc.h"
 #include "mcu/cortexm.h"
 #include "mcu/core.h"
 #include "mcu/usb.h"
 #include "mcu/debug.h"
-#include "stratify/usb_dev_typedefs.h"
-#include "stratify/usb_dev_defs.h"
 #include "mcu/boot_debug.h"
 
-#include "iface/stratify_link_transport_usb.h"
+#include "sos/stratify_link_transport_usb.h"
 
 #define USBDEV_PORT 0
 
-const device_cfg_t usb_dev = { .periph.port = USBDEV_PORT };
+const devfs_handle_t usb_dev = { .port = USBDEV_PORT };
 
 #define BUF_SIZE 256
 static char rd_buffer[BUF_SIZE];
@@ -56,11 +54,11 @@ link_transport_phy_t stratify_link_boot_transport_usb_open(const char * name, us
 	dstr("USB OPEN\n");
 
 	//set USB attributes
-	usb_attr.pin_assign = mcu_board_config.usb_pin_assign;
-	usb_attr.mode = USB_ATTR_MODE_DEVICE;
-	usb_attr.crystal_freq = mcu_board_config.core_osc_freq;
+	memcpy(usb_attr.pin_assignment, mcu_board_config.usb_pin_assignment, sizeof(mcu_pin_t)*USB_PIN_ASSIGNMENT_COUNT);
+	usb_attr.o_flags = USB_FLAG_SET_DEVICE;
+	usb_attr.freq = mcu_board_config.core_osc_freq;
 	dstr("SET USB ATTR\n");
-	if( mcu_usb_setattr(usb_dev.periph.port, &usb_attr) < 0 ){
+	if( mcu_usb_setattr(usb_dev.port, &usb_attr) < 0 ){
 		dstr("FAILED TO SET USB ATTR\n");
 	}
 

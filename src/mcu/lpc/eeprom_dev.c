@@ -103,7 +103,7 @@ int _mcu_eeprom_dev_powered_on(int port){
 }
 
 
-int mcu_eeprom_getattr(int port, void * ctl){
+int mcu_eeprom_getinfo(int port, void * ctl){
 	eeprom_attr_t * attr = ctl;
 	attr->size = 4032;
 	return 0;
@@ -114,24 +114,24 @@ int mcu_eeprom_setattr(int port, void * ctl){
 
 int mcu_eeprom_setaction(int port, void * ctl){
 	mcu_action_t * action = (mcu_action_t *)ctl;
-	if( action->callback == 0 ){
+	if( action->handler.callback == 0 ){
 		if( eeprom_local[port].buf != 0 ){
 			exec_callback(port, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
 		}
 	}
 
-	if( _mcu_cortexm_priv_validate_callback(action->callback) < 0 ){
+	if( _mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
 		return -1;
 	}
 
-	eeprom_local[port].handler.callback = action->callback;
-	eeprom_local[port].handler.context = action->context;
+	eeprom_local[port].handler.callback = action->handler.callback;
+	eeprom_local[port].handler.context = action->handler.context;
 	return -1;
 }
 
 
-int _mcu_eeprom_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
-	int port = cfg->periph.port;
+int _mcu_eeprom_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
+	int port = cfg->port;
 	if ( wop->nbyte == 0 ){
 		return 0;
 	}
@@ -156,12 +156,12 @@ int _mcu_eeprom_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
 	eeprom_local[port].page = calc_page(wop->loc);
 	eeprom_local[port].offset = calc_offset(wop->loc);
 
-	if( _mcu_cortexm_priv_validate_callback(wop->callback) < 0 ){
+	if( _mcu_cortexm_priv_validate_callback(wop->handler.callback) < 0 ){
 		return -1;
 	}
 
-	eeprom_local[port].handler.callback = wop->callback;
-	eeprom_local[port].handler.context = wop->context;
+	eeprom_local[port].handler.callback = wop->handler.callback;
+	eeprom_local[port].handler.context = wop->handler.context;
 
 	//fill the page
 	LPC_EEPROM_Type * regs = eeprom_regs[port];
@@ -192,8 +192,8 @@ int _mcu_eeprom_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
 
 }
 
-int _mcu_eeprom_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
-	int port = cfg->periph.port;
+int _mcu_eeprom_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
+	int port = cfg->port;
 
 	if ( rop->nbyte == 0 ){
 		return 0;

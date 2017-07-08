@@ -80,7 +80,7 @@ int _mcu_mci_dev_powered_on(int port){
 	return ( mci_local[port].ref_count != 0 );
 }
 
-int mcu_mci_getattr(int port, void * ctl){
+int mcu_mci_getinfo(int port, void * ctl){
 	memcpy(ctl, &(mci_local_attr[port]), sizeof(mci_attr_t));
 	return 0;
 }
@@ -153,17 +153,17 @@ int mcu_mci_setattr(int port, void * ctl){
 
 int mcu_mci_setaction(int port, void * ctl){
 	mcu_action_t * action = (mcu_action_t*)ctl;
-	if( action->callback == 0 ){
+	if( action->handler.callback == 0 ){
 
 
 	}
 
-	if( _mcu_cortexm_priv_validate_callback(action->callback) < 0 ){
+	if( _mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
 		return -1;
 	}
 
-	mci_local[port].handler.callback = action->callback;
-	mci_local[port].handler.context = action->context;
+	mci_local[port].handler.callback = action->handler.callback;
+	mci_local[port].handler.context = action->handler.context;
 
 	return 0;
 }
@@ -173,8 +173,8 @@ static int mcu_mci_write_fifo(LPC_MCI_Type * regs, uint32_t * src, int nbyte){
 }
 
 
-int _mcu_mci_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
-	int port = cfg->periph.port;
+int _mcu_mci_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
+	int port = cfg->port;
 	LPC_MCI_Type * regs = mci_regs_table[port];
 
 	//int num_blocks;
@@ -197,7 +197,7 @@ int _mcu_mci_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
 	return -1;
 }
 
-int _mcu_mci_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
+int _mcu_mci_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	return -1;
 }
 

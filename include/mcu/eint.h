@@ -27,38 +27,27 @@
 #define _MCU_EINT_H_
 
 
-#include "../iface/dev/eint.h"
-#include "iface/device_config.h"
+#include "sos/dev/eint.h"
+
+#include "sos/fs/devfs.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/*! \details
- * \sa periph_open()
- *
- */
-int mcu_eint_open(const device_cfg_t * cfg) MCU_PRIV_CODE;
-/*! \details
- * \sa periph_read()
- *
- */
-int mcu_eint_read(const device_cfg_t * cfg, device_transfer_t * rop) MCU_PRIV_CODE;
-/*! \details
- * \sa periph_write()
- */
-int mcu_eint_write(const device_cfg_t * cfg, device_transfer_t * wop) MCU_PRIV_CODE;
-/*! \details
- * \sa periph_ioctl()
- *
- */
-int mcu_eint_ioctl(const device_cfg_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
-/*! \details
- * \sa periph_close()
- */
-int mcu_eint_close(const device_cfg_t * cfg) MCU_PRIV_CODE;
+typedef struct MCU_PACK {
+	u32 status;
+	u32 rising;
+	u32 falling;
+} eint_event_data_t;
 
-int mcu_eint_getattr(int port, void * ctl) MCU_PRIV_CODE;
+int mcu_eint_open(const devfs_handle_t * cfg) MCU_PRIV_CODE;
+int mcu_eint_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_PRIV_CODE;
+int mcu_eint_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_PRIV_CODE;
+int mcu_eint_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
+int mcu_eint_close(const devfs_handle_t * cfg) MCU_PRIV_CODE;
+
+int mcu_eint_getinfo(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_eint_setattr(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_eint_setaction(int port, void * ctl) MCU_PRIV_CODE;
 

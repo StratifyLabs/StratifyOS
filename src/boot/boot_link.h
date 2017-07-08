@@ -41,9 +41,9 @@
 #ifndef BOOT_LINK_H_
 #define BOOT_LINK_H_
 
-#include "iface/device_config.h"
-#include "iface/link.h"
-#include "stratify/usb_dev_typedefs.h"
+#include "sos/fs/devfs.h"
+#include "sos/link/link.h"
+#include "mcu/usb_dev_typedefs.h"
 #include "mcu/boot_debug.h"
 
 void * boot_link_update(void * arg);

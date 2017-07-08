@@ -21,42 +21,42 @@
 extern void _mcu_adc_dev_power_on(int port) MCU_PRIV_CODE;
 extern void _mcu_adc_dev_power_off(int port) MCU_PRIV_CODE;
 extern int _mcu_adc_dev_powered_on(int port) MCU_PRIV_CODE;
-extern int _mcu_adc_dev_read(const device_cfg_t * cfg, device_transfer_t * rop) MCU_PRIV_CODE;
+extern int _mcu_adc_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_PRIV_CODE;
 
-int (* const adc_ioctl_func_table[I_GLOBAL_TOTAL])(int, void*) = {
-		mcu_adc_getattr,
+int (* const adc_ioctl_func_table[I_MCU_TOTAL])(int, void*) = {
+		mcu_adc_getinfo,
 		mcu_adc_setattr,
 		mcu_adc_setaction
 };
 
-int mcu_adc_open(const device_cfg_t * cfg){
+int mcu_adc_open(const devfs_handle_t * cfg){
 	return mcu_open(cfg,
 			_mcu_adc_dev_powered_on,
 			_mcu_adc_dev_power_on);
 }
 
-int mcu_adc_ioctl(const device_cfg_t * cfg, int request, void * ctl){
+int mcu_adc_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 	return mcu_ioctl(cfg,
 			request,
 			ctl,
 			_mcu_adc_dev_powered_on,
 			adc_ioctl_func_table,
-			I_GLOBAL_TOTAL);
+			I_MCU_TOTAL);
 }
 
-int mcu_adc_read(const device_cfg_t * cfg, device_transfer_t * rop){
+int mcu_adc_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	return mcu_read(cfg,
 			rop,
 			_mcu_adc_dev_powered_on,
 			_mcu_adc_dev_read);
 }
 
-int mcu_adc_write(const device_cfg_t * cfg, device_transfer_t * wop){
+int mcu_adc_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	errno = ENOTSUP;
 	return -1;
 }
 
-int mcu_adc_close(const device_cfg_t * cfg){
+int mcu_adc_close(const devfs_handle_t * cfg){
 	return mcu_close(cfg, _mcu_adc_dev_powered_on, _mcu_adc_dev_power_off);
 }
 

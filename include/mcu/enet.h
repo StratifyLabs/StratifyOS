@@ -34,20 +34,21 @@
 #ifndef ENET_H_
 #define ENET_H_
 
-#include "iface/dev/enet.h"
-#include "iface/device_config.h"
+#include "sos/dev/enet.h"
+
+#include "sos/fs/devfs.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-int mcu_enet_open(const device_cfg_t * cfg) MCU_PRIV_CODE;
-int mcu_enet_read(const device_cfg_t * cfg, device_transfer_t * rop) MCU_PRIV_CODE;
-int mcu_enet_write(const device_cfg_t * cfg, device_transfer_t * wop) MCU_PRIV_CODE;
-int mcu_enet_ioctl(const device_cfg_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
+int mcu_enet_open(const devfs_handle_t * cfg) MCU_PRIV_CODE;
+int mcu_enet_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_PRIV_CODE;
+int mcu_enet_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_PRIV_CODE;
+int mcu_enet_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
 
-int mcu_enet_close(const device_cfg_t * cfg) MCU_PRIV_CODE;
-int mcu_enet_getattr(int port, void * ctl) MCU_PRIV_CODE;
+int mcu_enet_close(const devfs_handle_t * cfg) MCU_PRIV_CODE;
+int mcu_enet_getinfo(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_enet_setattr(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_enet_setaction(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_enet_inittxpkt(int port, void * ctl) MCU_PRIV_CODE;

@@ -24,37 +24,33 @@
 extern void _mcu_i2c_dev_power_on(int port);
 extern void _mcu_i2c_dev_power_off(int port);
 extern int _mcu_i2c_dev_powered_on(int port);
-extern int _mcu_i2c_dev_read(const device_cfg_t * cfg, device_transfer_t * rop);
-extern int _mcu_i2c_dev_write(const device_cfg_t * cfg, device_transfer_t * wop);
+extern int _mcu_i2c_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop);
+extern int _mcu_i2c_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop);
 
-int (* const i2c_ioctl_func_table[I_GLOBAL_TOTAL + I_I2C_TOTAL])(int, void*) = {
-		mcu_i2c_getattr,
+int (* const i2c_ioctl_func_table[I_MCU_TOTAL + I_I2C_TOTAL])(int, void*) = {
+		mcu_i2c_getinfo,
 		mcu_i2c_setattr,
 		mcu_i2c_setaction,
-		mcu_i2c_setup,
-		mcu_i2c_geterr,
-		mcu_i2c_slave_setup,
-		mcu_i2c_reset
 };
 
-int mcu_i2c_open(const device_cfg_t * cfg){
+int mcu_i2c_open(const devfs_handle_t * cfg){
 	return mcu_open(cfg,
 			_mcu_i2c_dev_powered_on,
 			_mcu_i2c_dev_power_on);
 }
 
-int mcu_i2c_ioctl(const device_cfg_t * cfg, int request, void * ctl){
+int mcu_i2c_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 	return mcu_ioctl(cfg,
 			request,
 			ctl,
 			_mcu_i2c_dev_powered_on,
 			i2c_ioctl_func_table,
-			I_GLOBAL_TOTAL + I_I2C_TOTAL);
+			I_MCU_TOTAL + I_I2C_TOTAL);
 }
 
 
 
-int mcu_i2c_read(const device_cfg_t * cfg, device_transfer_t * rop){
+int mcu_i2c_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	return mcu_read(cfg, rop,
 			_mcu_i2c_dev_powered_on,
 			_mcu_i2c_dev_read);
@@ -62,14 +58,14 @@ int mcu_i2c_read(const device_cfg_t * cfg, device_transfer_t * rop){
 }
 
 
-int mcu_i2c_write(const device_cfg_t * cfg, device_transfer_t * wop){
+int mcu_i2c_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	return mcu_write(cfg, wop,
 			_mcu_i2c_dev_powered_on,
 			_mcu_i2c_dev_write);
 
 }
 
-int mcu_i2c_close(const device_cfg_t * cfg){
+int mcu_i2c_close(const devfs_handle_t * cfg){
 	return mcu_close(cfg, _mcu_i2c_dev_powered_on, _mcu_i2c_dev_power_off);
 }
 

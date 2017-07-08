@@ -225,8 +225,8 @@ typedef u32 pwm_duty_t;
 #define MEM_MAX_FLASH_WRITE_SIZE 1024
 
 /*! \details This defines the timer channels.
- * It is assigned to the channel member of \ref tmr_action_t
- * and \ref tmr_reqattr_t.
+ * It is assigned to the channel member of \ref mcu_action_t
+ * and \ref mcu_channel_t.
  */
 typedef enum {
 	TMR_ACTION_CHANNEL_OC0 /*! Output compare channel 0 */,

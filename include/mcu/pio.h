@@ -27,38 +27,26 @@
 #define _MCU_PIO_H_
 
 #include "core.h"
-#include "iface/device_config.h"
-#include "../iface/dev/pio.h"
+#include "sos/dev/pio.h"
+#include "sos/fs/devfs.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/*! \details
- * \sa periph_open()
- *
- */
-int mcu_pio_open(const device_cfg_t * cfg) MCU_PRIV_CODE;
-/*! \details
- * \sa periph_read()
- *
- */
-int mcu_pio_read(const device_cfg_t * cfg, device_transfer_t * rop) MCU_PRIV_CODE;
-/*! \details
- * \sa periph_write()
- */
-int mcu_pio_write(const device_cfg_t * cfg, device_transfer_t * wop) MCU_PRIV_CODE;
-/*! \details
- * \sa periph_ioctl()
- *
- */
-int mcu_pio_ioctl(const device_cfg_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
-/*! \details
- * \sa periph_close()
- */
-int mcu_pio_close(const device_cfg_t * cfg) MCU_PRIV_CODE;
+typedef struct MCU_PACK {
+	u32 status;
+	u32 rising;
+	u32 falling;
+} pio_event_data_t;
 
-int mcu_pio_getattr(int port, void * ctl) MCU_PRIV_CODE;
+int mcu_pio_open(const devfs_handle_t * cfg) MCU_PRIV_CODE;
+int mcu_pio_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_PRIV_CODE;
+int mcu_pio_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_PRIV_CODE;
+int mcu_pio_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
+int mcu_pio_close(const devfs_handle_t * cfg) MCU_PRIV_CODE;
+
+int mcu_pio_getinfo(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_pio_setattr(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_pio_setaction(int port, void * ctl) MCU_PRIV_CODE;
 

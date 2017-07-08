@@ -3,14 +3,15 @@
 //#include "config.h"
 #include <sys/lock.h>
 #include "mcu/mcu.h"
-#include "iface/dev/usb.h"
-#include "iface/device_config.h"
+#include "sos/dev/usb.h"
+#include "sos/fs/devfs.h"
 #include "mcu/cortexm.h"
 #include "mcu/core.h"
 #include "mcu/uart.h"
+#include "mcu/pio.h"
 #include "mcu/usb.h"
 #include "mcu/debug.h"
-#include "stratify/usb_dev.h"
+#include "mcu/usb_dev.h"
 #include "mcu/boot_debug.h"
 #include "boot_link.h"
 #include "boot_config.h"
@@ -165,8 +166,8 @@ void init_hw(){
 	delay_ms(50);
 
 	//This only needs to be enabled for debugging
-	action.callback = 0;
-	action.context = 0;
+	action.handler.callback = 0;
+	action.handler.context = 0;
 	action.channel = 0;
 	action.prio = 128;
 	mcu_uart_setaction(0, &action);
@@ -206,14 +207,14 @@ void init_hw(){
 void gled_on(){
 	if( mcu_board_config.led.port != 255 ){
 		pio_attr_t attr;
-		attr.mask = (1<<mcu_board_config.led.pin);
-		attr.mode = PIO_MODE_OUTPUT | PIO_MODE_DIRONLY;
+		attr.o_pinmask = (1<<mcu_board_config.led.pin);
+		attr.o_flags = PIO_FLAG_SET_OUTPUT | PIO_FLAG_IS_DIRONLY;
 		mcu_pio_setattr(mcu_board_config.led.port, &attr);
 		if( mcu_board_config.o_flags & MCU_BOARD_CONFIG_FLAG_LED_ACTIVE_HIGH ){
 			//LED is active low
-			mcu_pio_setmask(mcu_board_config.led.port, (void*)attr.mask);
+			mcu_pio_setmask(mcu_board_config.led.port, (void*)attr.o_pinmask);
 		} else {
-			mcu_pio_clrmask(mcu_board_config.led.port, (void*)attr.mask);
+			mcu_pio_clrmask(mcu_board_config.led.port, (void*)attr.o_pinmask);
 		}
 	}
 }
@@ -224,8 +225,8 @@ void gled_on(){
 void gled_off(){
 	if( mcu_board_config.led.port != 255 ){
 		pio_attr_t attr;
-		attr.mask = (1<<mcu_board_config.led.pin);
-		attr.mode = PIO_MODE_INPUT | PIO_MODE_DIRONLY;
+		attr.o_pinmask = (1<<mcu_board_config.led.pin);
+		attr.o_flags = PIO_FLAG_SET_INPUT | PIO_FLAG_IS_DIRONLY;
 		mcu_pio_setattr(mcu_board_config.led.port, &attr);
 	}
 }

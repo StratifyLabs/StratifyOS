@@ -26,13 +26,14 @@
 #include <errno.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <stratify/stratify.h>
-#include <stratify/sysfs.h>
+#include "sos/stratify.h"
+#include "sos/fs/sysfs.h"
 #include "config.h"
-#include "mcu/types.h"
 #include "mcu/debug.h"
 #include "mcu/pio.h"
-#include "stratify/link.h"
+#include "sos/link/link.h"
+
+extern void * link_update(void * args);
 
 static int init_fs();
 static int startup_fs();
@@ -41,28 +42,33 @@ static void start_filesystem(void);
 static void priv_check_reset_source(void * args) MCU_PRIV_EXEC_CODE;
 
 void priv_check_reset_source(void * args){
-	u8 * src = args;
-	core_attr_t attr;
-	mcu_core_getattr(0, &attr);
-	*src = attr.reset_type;
-	switch(attr.reset_type){
-	case CORE_RESET_SRC_WDT:
-		mcu_priv_debug("wdt rst\n");
-		break;
-	case CORE_RESET_SRC_POR:
+	u32 * src = args;
+	core_info_t info;
+	mcu_core_getinfo(0, &info);
+
+	if( info.o_flags & CORE_FLAG_IS_RESET_SOFTWARE ){
+		mcu_priv_debug("soft rst\n");
+		*src = CORE_FLAG_IS_RESET_SOFTWARE;
+	} else if( info.o_flags & CORE_FLAG_IS_RESET_POR ){
 		mcu_priv_debug("por rst\n");
-		break;
-	case CORE_RESET_SRC_BOR:
-		mcu_priv_debug("bor rst\n");
-		break;
-	case CORE_RESET_SRC_EXTERNAL:
+		*src = CORE_FLAG_IS_RESET_POR;
+	} else if( info.o_flags & CORE_FLAG_IS_RESET_EXTERNAL ){
 		mcu_priv_debug("ext rst\n");
-		break;
+		*src = CORE_FLAG_IS_RESET_EXTERNAL;
+	} else if( info.o_flags & CORE_FLAG_IS_RESET_WDT ){
+		mcu_priv_debug("wdt rst\n");
+		*src = CORE_FLAG_IS_RESET_WDT;
+	} else if( info.o_flags & CORE_FLAG_IS_RESET_BOR ){
+		mcu_priv_debug("bor rst\n");
+		*src = CORE_FLAG_IS_RESET_BOR;
+	} else if( info.o_flags & CORE_FLAG_IS_RESET_SYSTEM ){
+		mcu_priv_debug("sys rst\n");
+		*src = CORE_FLAG_IS_RESET_SYSTEM;
 	}
 }
 
 void check_reset_source(void){
-	u8 src;
+	u32 src;
 	mcu_core_privcall(priv_check_reset_source, &src);
 	mcu_board_event(MCU_BOARD_CONFIG_EVENT_START_INIT, 0);
 }

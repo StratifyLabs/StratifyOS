@@ -20,28 +20,28 @@
 #include <errno.h>
 #include <stddef.h>
 #include <string.h>
-#include "dev/sys.h"
+#include "mcu/sys.h"
 
 
-int full_open(const device_cfg_t * cfg){
+int full_open(const devfs_handle_t * cfg){
 	return 0;
 }
 
-int full_ioctl(const device_cfg_t * cfg, int request, void * ctl){
+int full_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 	return 0;
 }
 
-int full_read(const device_cfg_t * cfg, device_transfer_t * rop){
+int full_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	memset(rop->buf, 0, rop->nbyte);
 	return rop->nbyte;
 }
 
-int full_write(const device_cfg_t * cfg, device_transfer_t * wop){
+int full_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	errno = ENOSPC;
 	return -1;
 }
 
-int full_close(const device_cfg_t * cfg){
+int full_close(const devfs_handle_t * cfg){
 	return 0;
 }
 

@@ -24,7 +24,7 @@
 
 #include <stdbool.h>
 
-#include "../../../include/stratify/sffs.h"
+#include "sos/fs/sffs.h"
 #include "../sffs/sffs_block.h"
 #include "../sffs/sffs_dir.h"
 #include "../sffs/sffs_local.h"

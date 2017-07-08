@@ -37,7 +37,7 @@ typedef struct {
 
 static spi_local_t spi_local[MCU_SSP_PORTS] MCU_SYS_MEM;
 
-static int ssp_port_transfer(int port, int is_read, device_transfer_t * dop);
+static int ssp_port_transfer(int port, int is_read, devfs_async_t * dop);
 static void ssp_fill_tx_fifo(int port);
 static void ssp_empty_rx_fifo(int port);
 static int byte_swap(int port, int byte);
@@ -103,7 +103,7 @@ int _mcu_spi_dev_powered_on(int port){
 }
 
 
-int mcu_spi_getattr(int port, void * ctl){
+int mcu_spi_getinfo(int port, void * ctl){
 	LPC_SSP_Type * regs;
 	spi_attr_t * ctlp = (spi_attr_t*)ctl;
 	uint8_t tmp;
@@ -293,8 +293,8 @@ int mcu_spi_setduplex(int port, void * ctl){
 
 int mcu_spi_setaction(int port, void * ctl){
 	mcu_action_t * action = (mcu_action_t*)ctl;
-	spi_local[port].callback = action->callback;
-	spi_local[port].context = action->context;
+	spi_local[port].callback = action->handler.callback;
+	spi_local[port].context = action->handler.context;
 	return 0;
 }
 
@@ -310,13 +310,13 @@ int byte_swap(int port, int byte){
 	return byte;
 }
 
-int _mcu_spi_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
-	int port = DEVICE_GET_PORT(cfg);
+int _mcu_spi_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
+	int port = DEVFS_GET_PORT(cfg);
 	return ssp_port_transfer(port, 0, wop);
 }
 
-int _mcu_spi_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
-	int port = DEVICE_GET_PORT(cfg);
+int _mcu_spi_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
+	int port = DEVFS_GET_PORT(cfg);
 	return ssp_port_transfer(port, 1, rop);
 }
 
@@ -373,7 +373,7 @@ void _mcu_core_ssp1_isr(){
 }
 
 
-int ssp_port_transfer(int port, int is_read, device_transfer_t * dop){
+int ssp_port_transfer(int port, int is_read, devfs_async_t * dop){
 	int size;
 	LPC_SSP_Type * regs;
 	size = dop->nbyte;
@@ -397,8 +397,8 @@ int ssp_port_transfer(int port, int is_read, device_transfer_t * dop){
 		spi_local[port].rx_buf = spi_local[port].duplex_mem;
 	}
 	spi_local[port].size = size;
-	spi_local[port].callback = dop->callback;
-	spi_local[port].context = dop->context;
+	spi_local[port].callback = dop->handler.callback;
+	spi_local[port].context = dop->handler.context;
 	ssp_fill_tx_fifo(port);
 
 	//! \todo Use DMA for SSP spi_local??

@@ -19,19 +19,19 @@
 #include <stdbool.h>
 #include <sys/fcntl.h>
 #include <unistd.h>
-#include "iface/link.h"
+#include "sos/link/link.h"
 #include "mcu/mcu.h"
-#include "iface/dev/usb.h"
-#include "dev/usbfifo.h"
-#include "stratify/usb_dev.h"
-#include "stratify/usb_dev_cdc.h"
+#include "sos/dev/usb.h"
+#include "mcu/usbfifo.h"
+#include "mcu/usb_dev.h"
+#include "mcu/usb_dev_cdc.h"
 #include "mcu/core.h"
 #include "mcu/debug.h"
-#include "stratify/usb_dev_typedefs.h"
-#include "stratify/usb_dev_defs.h"
-#include "dev/sys.h"
+#include "mcu/usb_dev_typedefs.h"
+#include "mcu/usb_dev_defs.h"
+#include "mcu/sys.h"
 
-#include "iface/stratify_link_transport_usb.h"
+#include "sos/stratify_link_transport_usb.h"
 
 #define LINK_USB_VID 0x20A0
 #define LINK_USB_PID 0x413B

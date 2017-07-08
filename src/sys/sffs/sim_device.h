@@ -19,26 +19,26 @@ typedef struct MCU_PACK {
 	int nbyte /*! The number of bytes to transfer */;
 	void (*callback)(void*, const void*) /*! The function to call when the operation completes */;
 	void * context /*! The first argument to \a callback */;
-} device_transfer_t;
+} devfs_async_t;
 
 typedef struct {
 	const void * dcfg /*! Pointer to device specific configuration */;
 	void * state /*! Pointer to device specific state (RAM) */;
-} device_cfg_t;
+} devfs_handle_t;
 
-typedef int (*device_driver_open_t)(const device_cfg_t*);
-typedef int (*device_driver_ioctl_t)(const device_cfg_t*, int, void*);
-typedef int (*device_driver_read_t)(const device_cfg_t*, device_transfer_t *);
-typedef int (*device_driver_write_t)(const device_cfg_t*, device_transfer_t *);
-typedef int (*device_driver_close_t)(const device_cfg_t*);
+typedef int (*dev_driver_open_t)(const devfs_handle_t*);
+typedef int (*dev_driver_ioctl_t)(const devfs_handle_t*, int, void*);
+typedef int (*dev_driver_read_t)(const devfs_handle_t*, devfs_async_t *);
+typedef int (*dev_driver_write_t)(const devfs_handle_t*, devfs_async_t *);
+typedef int (*dev_driver_close_t)(const devfs_handle_t*);
 
 typedef struct MCU_PACK {
-	device_driver_open_t open /*! A pointer to the periph_open() function */;
-	device_driver_ioctl_t ioctl /*! A pointer to the periph_ioctl() function */;
-	device_driver_read_t read /*! A pointer to the periph_read() function */;
-	device_driver_write_t write /*! A pointer to the periph_write() function */;
-	device_driver_close_t close /*! A pointer to the periph_close() function */;
-} device_driver_t;
+	dev_driver_open_t open /*! A pointer to the periph_open() function */;
+	dev_driver_ioctl_t ioctl /*! A pointer to the periph_ioctl() function */;
+	dev_driver_read_t read /*! A pointer to the periph_read() function */;
+	dev_driver_write_t write /*! A pointer to the periph_write() function */;
+	dev_driver_close_t close /*! A pointer to the periph_close() function */;
+} dev_driver_t;
 
 
 typedef struct {
@@ -51,8 +51,8 @@ typedef struct {
 typedef struct {
 	char name[32];
 	uint8_t type /*! The device type: 'c': character device, 'b': block device, or 'B': block device with special location use */;
-	device_driver_t driver /*! The driver functions */;
-	device_cfg_t cfg /*! The configuration for the device */;
+	dev_driver_t driver /*! The driver functions */;
+	devfs_handle_t cfg /*! The configuration for the device */;
 } device_t;
 
 

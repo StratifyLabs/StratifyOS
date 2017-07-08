@@ -108,7 +108,7 @@ int appfs_init(const void * cfg){
 	mem_attr_t attr;
 	priv_load_fileinfo_t info;
 	uint32_t buf[APPFS_RAM_USAGE_WORDS];
-	const device_t * dev;
+	const devfs_device_t * dev;
 	dev = cfg;
 
 	//the RAM usage table needs to be initialized
@@ -118,14 +118,14 @@ int appfs_init(const void * cfg){
 	appfs_ram_setrange(buf, _mcu_mem_getsyspage(), stratify_board_config.sys_memory_size, APPFS_MEMPAGETYPE_SYS);
 
 	//now scan each flash page to see what RAM is used
-	dev->driver.ioctl(&(dev->cfg), I_MEM_GETATTR, &attr);
+	dev->driver.ioctl(&(dev->handle), I_MEM_GETINFO, &attr);
 	for(i=0; i < attr.flash_pages; i++){
 		if ( (appfs_util_getfileinfo(&info, dev, i, MEM_PAGEINFO_TYPE_FLASH, NULL) == APPFS_MEMPAGETYPE_USER) && (appfs_util_isexecutable(&info.fileinfo) == true) ){
 
 			//get the RAM page associated with the data start
 			info.pageinfo.type = MEM_PAGEINFO_TYPE_QUERY;
 			info.pageinfo.addr = (int)info.fileinfo.exec.ram_start;
-			if ( dev->driver.ioctl(&(dev->cfg), I_MEM_GET_PAGEINFO, &info.pageinfo) < 0 ){
+			if ( dev->driver.ioctl(&(dev->handle), I_MEM_GET_PAGEINFO, &info.pageinfo) < 0 ){
 				continue;
 			}
 
@@ -145,13 +145,13 @@ int appfs_startup(const void * cfg){
 	priv_load_fileinfo_t info;
 	task_memories_t mem;
 	int started;
-	const device_t * dev;
+	const devfs_device_t * dev;
 
 	dev = cfg;
 
 	//go through each flash page and look for programs that should be run on startup
 	started = 0;
-	dev->driver.ioctl(&(dev->cfg), I_MEM_GETATTR, &attr);
+	dev->driver.ioctl(&(dev->handle), I_MEM_GETINFO, &attr);
 	for(i=0; i < attr.flash_pages; i++){
 		if (appfs_util_getfileinfo(&info, dev, i, MEM_PAGEINFO_TYPE_FLASH, NULL) == APPFS_MEMPAGETYPE_USER ){
 			if ( (appfs_util_isexecutable(&info.fileinfo) == true) &&
@@ -405,8 +405,8 @@ int appfs_stat(const void* cfg, const char * path, struct stat * st){
 	return appfs_fstat(cfg, &handle, st);
 }
 
-int appfs_priv_read(const void* cfg, void * handle, device_transfer_t * op){
-	const device_t * dev;
+int appfs_priv_read(const void* cfg, void * handle, devfs_async_t * op){
+	const devfs_device_t * dev;
 	appfs_handle_t * h;
 
 	h = handle;
@@ -427,10 +427,10 @@ int appfs_priv_read(const void* cfg, void * handle, device_transfer_t * op){
 	}
 
 	op->loc = (int)h->type.reg.beg_addr + op->loc;
-	return dev->driver.read(&(dev->cfg), op);
+	return dev->driver.read(&(dev->handle), op);
 }
 
-int appfs_priv_write(const void* cfg, void * handle, device_transfer_t * op){
+int appfs_priv_write(const void* cfg, void * handle, devfs_async_t * op){
 	errno = EROFS;
 	return -1;
 }

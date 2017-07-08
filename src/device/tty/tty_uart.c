@@ -20,7 +20,7 @@
 #include "mcu/mcu.h"
 #include "mcu/uart.h"
 
-#include "iface/dev/tty.h"
+#include "sos/dev/tty.h"
 
 static const int tty_speeds[B921600 + 1] = {
 		0,
@@ -46,15 +46,17 @@ static const int tty_speeds[B921600 + 1] = {
 };
 
 
-int tty_uart_open(const device_cfg_t * cfg){
+int tty_uart_open(const devfs_handle_t * cfg){
 	//make sure the port is open and configured the way we want
 	return 0;
 }
 
-int tty_uart_ioctl(const device_cfg_t * cfg, int request, void * ctl){
+int tty_uart_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 	uart_attr_t attr;
 	int tmp;
 	struct termios * p = (struct termios*)ctl;
+
+	attr.o_flags = 0;
 
 	switch(request){
 	case I_TTY_SETATTR:
@@ -65,7 +67,7 @@ int tty_uart_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 
 		tmp = p->c_ospeed;
 		if ( tmp < (B921600 + 1) ){
-			attr.baudrate = tty_speeds[tmp];
+			attr.freq = tty_speeds[tmp];
 		} else {
 			return -1;
 		}
@@ -90,22 +92,22 @@ int tty_uart_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 		}
 
 		if ( p->c_cflag & CSTOPB ){
-			attr.stop = 2;
+			attr.o_flags |= UART_FLAG_IS_STOP2;
 		} else {
-			attr.stop = 1;
+			attr.o_flags |= UART_FLAG_IS_STOP1;
 		}
 
 		if ( p->c_cflag & PARENB ){
 			if ( p->c_cflag & PARODD){
-				attr.parity = UART_PARITY_ODD;
+				attr.o_flags |= UART_FLAG_IS_PARITY_ODD;
 			} else {
-				attr.parity = UART_PARITY_EVEN;
+				attr.o_flags |= UART_FLAG_IS_PARITY_EVEN;
 			}
 		} else {
-			attr.parity = UART_PARITY_NONE;
+			attr.o_flags |= UART_FLAG_IS_PARITY_NONE;
 		}
 
-		return mcu_uart_setattr(cfg->periph.port, &attr);
+		return mcu_uart_setattr(cfg->port, &attr);
 
 		break;
 	}
@@ -113,14 +115,14 @@ int tty_uart_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 	return 0;
 }
 
-int tty_uart_write(const device_cfg_t * cfg, device_transfer_t * wop){
+int tty_uart_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	return mcu_uart_write(cfg, wop);
 }
 
-int tty_uart_read(const device_cfg_t * cfg, device_transfer_t * rop){
+int tty_uart_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	return mcu_uart_read(cfg, rop);
 }
 
-int tty_uart_close(const device_cfg_t * cfg){
+int tty_uart_close(const devfs_handle_t * cfg){
 	return 0;
 }

@@ -34,13 +34,13 @@ int mcu_sync_io_complete(void * context, mcu_event_t data){
 	return 0;
 }
 
-int mcu_sync_io(const device_cfg_t * cfg,
-		int (*func)(const device_cfg_t * cfg, device_transfer_t * op),
+int mcu_sync_io(const devfs_handle_t * cfg,
+		int (*func)(const devfs_handle_t * cfg, devfs_async_t * op),
 		int loc,
 		const void * buf,
 		int nbyte,
 		int flags){
-	device_transfer_t op;
+	devfs_async_t op;
 	volatile int done;
 	int ret;
 
@@ -49,12 +49,12 @@ int mcu_sync_io(const device_cfg_t * cfg,
 	}
 
 	done = 0;
-	op.cbuf = buf;
+	op.buf_const = buf;
 	op.loc = loc;
 	op.flags = flags | O_RDWR;
 	op.nbyte = nbyte;
-	op.context = (void*)&done;
-	op.callback = mcu_sync_io_complete;
+	op.handler.context = (void*)&done;
+	op.handler.callback = mcu_sync_io_complete;
 	op.tid = 0;
 
 	ret = func(cfg, &op);

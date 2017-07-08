@@ -19,15 +19,15 @@
 #include <errno.h>
 #include <fcntl.h>
 #include "mcu/cortexm.h"
-#include "iface/dev/bootloader.h"
+#include "sos/dev/bootloader.h"
 #include "mcu/core.h"
 
 #include "mcu/debug.h"
 
-static core_reset_src_t _mcu_core_get_reset_src();
+static u32 _mcu_core_get_reset_src();
 static int _mcu_core_enable_clkout(int clk_source, int div);
 void _mcu_set_sleep_mode(int * level);
-static u8 mcu_core_reset_source = CORE_RESET_SRC_SOFTWARE;
+static u32 mcu_core_reset_source = CORE_FLAG_IS_RESET_SOFTWARE;
 
 int mcu_core_setpinfunc(int port, void * arg){
 	core_pinfunc_t * argp = arg;
@@ -42,19 +42,20 @@ void _mcu_core_dev_power_off(int port){}
 int _mcu_core_dev_powered_on(int port){ return 1; }
 
 
-int mcu_core_getattr(int port, void * arg){
-	core_attr_t * attrp = arg;
-	attrp->clock = mcu_board_config.core_cpu_freq;
-	if( mcu_core_reset_source == CORE_RESET_SRC_SOFTWARE ){
+int mcu_core_getinfo(int port, void * arg){
+	core_info_t * info = arg;
+	info->o_flags = 0;
+	info->freq = mcu_board_config.core_cpu_freq;
+	if( mcu_core_reset_source == CORE_FLAG_IS_RESET_SOFTWARE ){
 		mcu_core_reset_source = _mcu_core_get_reset_src();
 	}
-	attrp->reset_type = mcu_core_reset_source;
-	attrp->signature = 0;
-	return _mcu_lpc_flash_get_serialno(attrp->serial_number);
+
+	info->o_flags |= mcu_core_reset_source;
+	return _mcu_lpc_flash_get_serialno(info->serial_number);
 }
 
 int mcu_core_setattr(int port, void * arg){
-	errno = ENOTSUP;
+
 	return -1;
 }
 
@@ -94,8 +95,9 @@ int mcu_core_invokebootloader(int port, void * arg){
 
 
 int mcu_core_setclkout(int port, void * arg){
-	core_clkout_t * clkout = arg;
-	return _mcu_core_enable_clkout(clkout->src, clkout->div);
+	//core_clkout_t * clkout = arg;
+	//return _mcu_core_enable_clkout(clkout->src, clkout->div);
+	return 0;
 }
 
 int mcu_core_setclkdivide(int port, void * arg){
@@ -120,6 +122,18 @@ int mcu_core_setclkdivide(int port, void * arg){
 	}
 #endif
 
+	return 0;
+}
+
+int mcu_core_set_pin_assignment(const mcu_pin_t * pin_assignment, int count, int periph, int periph_port){
+	int i;
+	for(i=0; i < count; i++){
+		if( mcu_is_port_valid(pin_assignment[i].port) ){
+			if ( _mcu_core_set_pinsel_func(pin_assignment[i].port, pin_assignment[i].pin, periph, periph_port) ){
+				return -1;  //pin failed to allocate as a UART pin
+			}
+		}
+	}
 	return 0;
 }
 
@@ -155,9 +169,9 @@ void _mcu_set_sleep_mode(int * level){
 #endif
 }
 
-core_reset_src_t _mcu_core_get_reset_src(){
-	core_reset_src_t src = CORE_RESET_SRC_SOFTWARE;
-	uint32_t src_reg;
+u32 _mcu_core_get_reset_src(){
+	u32 src = CORE_FLAG_IS_RESET_SOFTWARE;
+	u32 src_reg;
 
 #if defined LPC_SC
 	src_reg = LPC_SC->RSID;
@@ -165,19 +179,19 @@ core_reset_src_t _mcu_core_get_reset_src(){
 #endif
 
 	if ( src_reg & (1<<3) ){
-		return CORE_RESET_SRC_BOR;
+		return CORE_FLAG_IS_RESET_BOR;
 	}
 
 	if ( src_reg & (1<<2) ){
-		return CORE_RESET_SRC_WDT;
+		return CORE_FLAG_IS_RESET_WDT;
 	}
 
 	if ( src_reg & (1<<0) ){
-		return CORE_RESET_SRC_POR;
+		return CORE_FLAG_IS_RESET_POR;
 	}
 
 	if ( src_reg & (1<<1) ){
-		return CORE_RESET_SRC_EXTERNAL;
+		return CORE_FLAG_IS_RESET_EXTERNAL;
 	}
 
 	return src;
@@ -191,19 +205,19 @@ int _mcu_core_enable_clkout(int clk_source, int div){
 
 #if defined LPC_SC
 	switch(clk_source){
-	case CORE_CLKOUT_CPU:
+	case CORE_FLAG_SET_CLKOUT_CPU:
 		LPC_SC->CLKOUTCFG = (1<<8)|(div<<4)|(0<<0);
 		break;
-	case CORE_CLKOUT_MAIN_OSC:
+	case CORE_FLAG_SET_CLKOUT_MAIN_OSC:
 		LPC_SC->CLKOUTCFG = (1<<8)|(div<<4)|(1<<0);
 		break;
-	case CORE_CLKOUT_INTERNAL_OSC:
+	case CORE_FLAG_SET_CLKOUT_INTERNAL_OSC:
 		LPC_SC->CLKOUTCFG = (1<<8)|(div<<4)|(2<<0);
 		break;
-	case CORE_CLKOUT_USB:
+	case CORE_FLAG_SET_CLKOUT_USB:
 		LPC_SC->CLKOUTCFG = (1<<8)|(div<<4)|(3<<0);
 		break;
-	case CORE_CLKOUT_RTC:
+	case CORE_FLAG_SET_CLKOUT_RTC:
 		LPC_SC->CLKOUTCFG = (1<<8)|(div<<4)|(4<<0);
 		break;
 	default:

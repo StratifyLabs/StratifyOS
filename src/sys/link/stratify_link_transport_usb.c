@@ -20,22 +20,20 @@ limitations under the License.
 #include <stdbool.h>
 #include <sys/fcntl.h>
 #include <unistd.h>
-#include "iface/link.h"
+#include "sos/link/link.h"
 #include "mcu/mcu.h"
-#include "iface/dev/usb.h"
-#include "dev/usbfifo.h"
-#include "stratify/usb_dev.h"
-#include "stratify/usb_dev_cdc.h"
+#include "sos/dev/usb.h"
+#include "mcu/usbfifo.h"
+#include "mcu/usb_dev.h"
+#include "mcu/usb_dev_cdc.h"
 #include "mcu/core.h"
 #include "mcu/usb.h"
 #include "mcu/debug.h"
-#include "stratify/usb_dev_typedefs.h"
-#include "stratify/usb_dev_defs.h"
-#include "dev/sys.h"
-#include "iface/stratify_link_transport_usb.h"
+#include "mcu/sys.h"
+#include "sos/stratify_link_transport_usb.h"
 
 
-static device_transfer_t notify_op;
+static devfs_async_t notify_op;
 
 
 link_transport_phy_t stratify_link_transport_usb_open(const char * name, usb_dev_context_t * context){
@@ -52,9 +50,9 @@ link_transport_phy_t stratify_link_transport_usb_open(const char * name, usb_dev
 	//set USB attributes
 	mcu_debug("Set USB attr fd:%d\n", fd);
 
-	usb_attr.pin_assign = mcu_board_config.usb_pin_assign;
-	usb_attr.mode = USB_ATTR_MODE_DEVICE;
-	usb_attr.crystal_freq = mcu_board_config.core_osc_freq;
+	memcpy(usb_attr.pin_assignment, mcu_board_config.usb_pin_assignment, sizeof(mcu_pin_t)*USB_PIN_ASSIGNMENT_COUNT);
+	usb_attr.o_flags = USB_FLAG_SET_DEVICE;
+	usb_attr.freq = mcu_board_config.core_osc_freq;
 	if( ioctl(fd, I_USB_SETATTR, &usb_attr) < 0 ){
 		return LINK_PHY_ERROR;
 	}
@@ -73,15 +71,15 @@ int stratify_link_transport_usb_write(link_transport_phy_t handle, const void * 
 }
 
 void stratify_link_transport_usb_notify(const void * buf, int nbyte){
-	device_cfg_t usb;
-	usb.periph.port = STRATIFY_LINK_TRANSPORT_USB_PORT;
+	devfs_handle_t usb;
+	usb.port = STRATIFY_LINK_TRANSPORT_USB_PORT;
 
 	notify_op.loc = STRATIFY_LINK_TRANSPORT_USB_BULK_ENDPOINT_IN_ALT;
-	notify_op.cbuf = buf;
+	notify_op.buf_const = buf;
 	notify_op.nbyte = nbyte;
 	notify_op.tid = task_get_current();
-	notify_op.callback = 0;
-	notify_op.context = 0;
+	notify_op.handler.callback = 0;
+	notify_op.handler.context = 0;
 	notify_op.flags = O_NONBLOCK | O_RDWR;
 
 	mcu_usb_write(&usb, &notify_op);

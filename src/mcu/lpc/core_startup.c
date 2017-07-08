@@ -20,7 +20,7 @@
 #include "mcu/cortexm.h"
 #include "mcu/mcu.h"
 #include "mcu/debug.h"
-#include "iface/dev/bootloader.h"
+#include "sos/dev/bootloader.h"
 
 static void core_init();
 static const char sys_proc_name[] = "sys";
@@ -377,7 +377,7 @@ void (* const _mcu_core_vector_table[])() __attribute__ ((section(".startup"))) 
 
 };
 
-void _mcu_core_getserialno(sn_t * serial_number){
+void _mcu_core_getserialno(mcu_sn_t * serial_number){
 	_mcu_lpc_flash_get_serialno(serial_number->sn);
 }
 

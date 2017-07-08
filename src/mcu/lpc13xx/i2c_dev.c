@@ -74,7 +74,7 @@ void i2c_clr_done(int port){
 	i2c_local[port].state  &= ~(I2C_DONE_FLAG);
 }
 
-static int i2c_transfer(int port, int op, device_transfer_t * dop);
+static int i2c_transfer(int port, int op, devfs_async_t * dop);
 
 #define i2c_slave_ack(port) (LPC_I2C[port].CONSET = I2CONSET_AA)
 #define i2c_slave_nack(port) (LPC_I2C[port].CONCLR = I2CONCLR_AAC)
@@ -115,7 +115,7 @@ int _mcu_i2c_dev_powered_on(int port){
 	if ( _mcu_lpc_core_pwr_enabled(PCI2C) ) return 1;
 	return 0;
 }
-int mcu_i2c_getattr(int port, void * ctl){
+int mcu_i2c_getinfo(int port, void * ctl){
 	memcpy(ctl, &(i2c_local_attr[port]), sizeof(i2c_attr_t));
 	return 0;
 }
@@ -140,8 +140,8 @@ int mcu_i2c_setattr(int port, void * ctl){
 
 	if ( ctl_ptr->pin_assign != MCU_GPIO_CFG_USER ){
 		//configure as open drain
-		pattr.mask = (1<<4)|(1<<5);
-		pattr.mode = PIO_MODE_OUTPUT | PIO_MODE_OPENDRAIN;
+		pattr.o_pinmask = (1<<4)|(1<<5);
+		pattr.mode = PIO_FLAG_SET_OUTPUT | PIO_FLAG_IS_OPENDRAIN;
 		mcu_pio_setattr(port, &pattr);
 
 		//set I2C function for pins
@@ -190,18 +190,18 @@ int mcu_i2c_geterr(int port, void * ctl){
 
 int mcu_i2c_setaction(int port, void * ctl){
 	mcu_action_t * action = (mcu_action_t*)ctl;
-	i2c_local[port].callback = action->callback;
-	i2c_local[port].context = action->context;
+	i2c_local[port].callback = action->handler.callback;
+	i2c_local[port].context = action->handler.context;
 	return 0;
 }
 
-int _mcu_i2c_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
-	int port = DEVICE_GET_PORT(cfg);;
+int _mcu_i2c_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
+	int port = DEVFS_GET_PORT(cfg);;
 	return i2c_transfer(port, WRITE_OP, wop);
 }
 
-int _mcu_i2c_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
-	int port = DEVICE_GET_PORT(cfg);
+int _mcu_i2c_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
+	int port = DEVFS_GET_PORT(cfg);
 	return i2c_transfer(port, READ_OP, rop);
 }
 
@@ -335,7 +335,7 @@ void _mcu_core_i2c_isr() {
 
 }
 
-int i2c_transfer(int port, int op, device_transfer_t * dop){
+int i2c_transfer(int port, int op, devfs_async_t * dop){
 	LPC_I2C_Type * i2c_regs;
 	int size = dop->nbyte;
 	i2c_regs = i2c_get_regs(port);
@@ -346,8 +346,8 @@ int i2c_transfer(int port, int op, device_transfer_t * dop){
 		return -1;
 	}
 
-	i2c_local[port].callback = dop->callback;
-	i2c_local[port].context = dop->context;
+	i2c_local[port].callback = dop->handler.callback;
+	i2c_local[port].context = dop->handler.context;
 
 	if ( dop->nbyte == 0 ){
 		return 0;

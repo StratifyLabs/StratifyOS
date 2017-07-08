@@ -29,12 +29,14 @@
 #include <errno.h>
 #include <dirent.h>
 #include <pthread.h>
-#include <stratify/stratify.h>
-#include <sys/syscalls/process/process_start.h>
+
+#include "sys/syscalls/process/process_start.h"
+
+#include "sos/stratify.h"
 #include "mcu/flash.h"
 #include "mcu/debug.h"
 
-#include "stratify/link.h"
+#include "sos/link/link.h"
 
 #include "trace.h"
 
@@ -176,14 +178,14 @@ void link_cmd_isbootloader(link_transport_driver_t * driver, link_data_t * args)
 
 static void priv_get_serialno(void * dest) MCU_PRIV_EXEC_CODE;
 void priv_get_serialno(void * dest){
-	core_attr_t attr;
+	core_info_t info;
 	int i, j;
 	char * p = dest;
-	mcu_core_getattr(0, &attr);
+	mcu_core_getinfo(0, &info);
 	for(j=SERIAL_NUM_WIDTH; j >= 0; j--){
 		for(i=0; i < 8; i++){
-			*p++ = htoc((attr.serial_number[j] >> 28) & 0x0F);
-			attr.serial_number[j] <<= 4;
+			*p++ = htoc((info.serial_number[j] >> 28) & 0x0F);
+			info.serial_number[j] <<= 4;
 		}
 	}
 }

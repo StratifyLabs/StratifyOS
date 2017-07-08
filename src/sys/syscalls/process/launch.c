@@ -16,16 +16,16 @@
 
 #include "config.h"
 
-#include "iface/link.h"
-#include "iface/device_config.h"
+#include "sos/link/link.h"
+#include "sos/fs/devfs.h"
 #include "mcu/task.h"
 #include "mcu/debug.h"
 
 #include <fcntl.h>
 #include <errno.h>
 
-#include "stratify/sysfs.h"
-#include "stratify/stratify.h"
+#include "sos/fs/sysfs.h"
+#include "sos/stratify.h"
 #include "process_start.h"
 #include "../../sched/sched_flags.h"
 #include "../../sysfs/appfs.h"

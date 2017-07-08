@@ -24,11 +24,11 @@
 extern void _mcu_dac_dev_power_on(int port);
 extern void _mcu_dac_dev_power_off(int port);
 extern int _mcu_dac_dev_powered_on(int port);
-extern int _mcu_dac_dma_dev_write(const device_cfg_t * cfg, device_transfer_t * wop);
+extern int _mcu_dac_dma_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop);
 
 
-int (* const dac_dma_ioctl_func_table[I_GLOBAL_TOTAL + I_DAC_TOTAL])(int, void*) = {
-		mcu_dac_getattr,
+int (* const dac_dma_ioctl_func_table[I_MCU_TOTAL + I_DAC_TOTAL])(int, void*) = {
+		mcu_dac_getinfo,
 		mcu_dac_dma_setattr,
 		mcu_dac_dma_setaction,
 		mcu_dac_get,
@@ -36,37 +36,37 @@ int (* const dac_dma_ioctl_func_table[I_GLOBAL_TOTAL + I_DAC_TOTAL])(int, void*)
 
 };
 
-int mcu_dac_dma_open(const device_cfg_t * cfg){
+int mcu_dac_dma_open(const devfs_handle_t * cfg){
 	return mcu_open(cfg,
 			_mcu_dac_dev_powered_on,
 			_mcu_dac_dev_power_on);
 }
 
-int mcu_dac_dma_ioctl(const device_cfg_t * cfg, int request, void * ctl){
+int mcu_dac_dma_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 	return mcu_ioctl(cfg,
 			request,
 			ctl,
 			_mcu_dac_dev_powered_on,
 			dac_dma_ioctl_func_table,
-			I_GLOBAL_TOTAL + I_DAC_TOTAL);
+			I_MCU_TOTAL + I_DAC_TOTAL);
 }
 
 
 
-int mcu_dac_dma_read(const device_cfg_t * cfg, device_transfer_t * rop){
+int mcu_dac_dma_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	errno = ENOTSUP;
 	return -1;
 }
 
 
-int mcu_dac_dma_write(const device_cfg_t * cfg, device_transfer_t * wop){
+int mcu_dac_dma_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	return mcu_write(cfg, wop,
 			_mcu_dac_dev_powered_on,
 			_mcu_dac_dma_dev_write);
 
 }
 
-int mcu_dac_dma_close(const device_cfg_t * cfg){
+int mcu_dac_dma_close(const devfs_handle_t * cfg){
 	return mcu_close(cfg, _mcu_dac_dev_powered_on, _mcu_dac_dev_power_off);
 }
 

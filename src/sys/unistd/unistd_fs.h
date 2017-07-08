@@ -27,7 +27,7 @@
 #include <unistd.h>
 #include <errno.h>
 
-#include "../../../include/stratify/sysfs.h"
+#include "sos/fs/sysfs.h"
 
 
 #endif /* UNISTD_FS_H_ */

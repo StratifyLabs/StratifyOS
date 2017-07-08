@@ -23,7 +23,7 @@
 
 /*! \file */
 
-#include "stratify/stratify.h"
+#include "sos/stratify.h"
 #include "config.h"
 #include "mcu/mcu.h"
 #include "mcu/cortexm.h"

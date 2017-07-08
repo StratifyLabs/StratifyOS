@@ -31,7 +31,7 @@
 #include <sys/unistd.h>
 
 
-#include "iface/dev/sys.h"
+#include "sos/dev/sys.h"
 #include "mcu/mcu.h"
 #include "unistd_fs.h"
 #include "unistd_flags.h"

@@ -25,9 +25,9 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <stdint.h>
-#include <stratify/sffs.h>
-#include <sys/sffs/sffs_dev.h>
-#include "iface/dev/disk.h"
+#include "sos/fs/sffs.h"
+#include "sys/sffs/sffs_dev.h"
+#include "sos/dev/drive.h"
 #include "../unistd/unistd_flags.h"
 #include "../sched/sched_flags.h"
 
@@ -76,7 +76,7 @@ int sffs_dev_open(const void * cfg){
 				return -1;
 			}
 
-	return u_ioctl(cfgp->open_file, I_DISK_GETATTR, &(cfgp->state->dattr));
+	return u_ioctl(cfgp->open_file, I_DRIVE_GETINFO, &(cfgp->state->dattr));
 }
 
 int sffs_dev_write(const void * cfg, int loc, const void * buf, int nbyte){
@@ -122,7 +122,7 @@ int sffs_dev_erase(const void * cfg){
 		return -1;
 	}
 	int usec;
-	if( u_ioctl(cfgp->open_file, I_DISK_ERASEDEVICE, NULL) < 0 ){
+	if( u_ioctl(cfgp->open_file, I_DRIVE_ERASEDEVICE, NULL) < 0 ){
 		return -1;
 	}
 
@@ -141,7 +141,7 @@ int sffs_dev_erasesection(const void * cfg, int loc){
 		return -1;
 	}
 
-	if( u_ioctl(cfgp->open_file, I_DISK_ERASEBLOCK, (void*)loc) < 0 ){
+	if( u_ioctl(cfgp->open_file, I_DRIVE_ERASEBLOCK, (void*)loc) < 0 ){
 		return -1;
 	}
 

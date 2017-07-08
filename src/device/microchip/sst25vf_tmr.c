@@ -26,34 +26,37 @@
 #include "mcu/debug.h"
 #include "sst25vf_local.h"
 
-static void complete_spi_write(const device_cfg_t * cfg, uint32_t ignore);
-static void continue_spi_write(const device_cfg_t * cfg, uint32_t ignore);
+static void complete_spi_write(const devfs_handle_t * cfg, uint32_t ignore);
+static void continue_spi_write(const devfs_handle_t * cfg, uint32_t ignore);
 
-int sst25vf_tmr_open(const device_cfg_t * cfg){
+int sst25vf_tmr_open(const devfs_handle_t * cfg){
 	int err;
-	uint8_t status;
+	u8 status;
 	pio_attr_t attr;
-	spi_attr_t spi_cfg;
+	const sst25vf_cfg_t * config = cfg->config;
 
+	/*
+	spi_attr_t spi_cfg;
 	spi_cfg.pin_assign = cfg->pin_assign;
 	spi_cfg.width = cfg->pcfg.spi.width;
 	spi_cfg.mode = cfg->pcfg.spi.mode;
 	spi_cfg.format = cfg->pcfg.spi.format;
 	spi_cfg.bitrate = cfg->bitrate;
 	spi_cfg.master = SPI_ATTR_MASTER;
+	*/
 	err = mcu_spi_open(cfg);
 	if ( err < 0 ){
 		return err;
 	}
 
-	if( (err = mcu_spi_ioctl(cfg, I_SPI_SETATTR, &spi_cfg)) < 0 ){
+	if( (err = mcu_spi_ioctl(cfg, I_SPI_SETATTR, (void*)&(config->attr))) < 0 ){
 		return err;
 	}
 
 	sst25vf_share_deassert_cs(cfg);
-	attr.mask = (1<<cfg->pcfg.spi.cs.pin);
-	attr.mode = PIO_MODE_OUTPUT | PIO_MODE_DIRONLY;
-	mcu_pio_setattr(cfg->pcfg.spi.cs.port, &attr);
+	attr.o_pinmask = (1<<config->cs.pin);
+	attr.o_flags = PIO_FLAG_SET_OUTPUT | PIO_FLAG_IS_DIRONLY;
+	mcu_pio_setattr(config->cs.port, &attr);
 
 	sst25vf_share_write_disable(cfg);
 
@@ -85,22 +88,22 @@ int sst25vf_tmr_open(const device_cfg_t * cfg){
 	return 0;
 }
 
-static void complete_spi_read(const device_cfg_t * cfg, mcu_event_t ignore){
+static void complete_spi_read(const devfs_handle_t * cfg, mcu_event_t ignore){
 	sst25vf_state_t * state = (sst25vf_state_t*)cfg->state;
 	sst25vf_share_deassert_cs(cfg);
-	if( state->callback != NULL ){
-		state->callback(state->context, (mcu_event_t)NULL);
-		state->callback = NULL;
+	if( state->handler.callback != NULL ){
+		state->handler.callback(state->handler.context, (mcu_event_t)NULL);
+		state->handler.callback = NULL;
 	}
 }
 
-int sst25vf_tmr_read(const device_cfg_t * cfg, device_transfer_t * rop){
+int sst25vf_tmr_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	sst25vf_state_t * state = (sst25vf_state_t*)cfg->state;
-	const sst25vf_cfg_t * dcfg = (const sst25vf_cfg_t *)(cfg->dcfg);
-	state->callback = rop->callback;
-	state->context = rop->context;
-	rop->context = (void*)cfg;
-	rop->callback = (mcu_callback_t)complete_spi_read;
+	const sst25vf_cfg_t * dcfg = (const sst25vf_cfg_t *)(cfg->config);
+	state->handler.callback = rop->handler.callback;
+	state->handler.context = rop->handler.context;
+	rop->handler.context = (void*)cfg;
+	rop->handler.callback = (mcu_callback_t)complete_spi_read;
 
 	if ( rop->loc >= dcfg->size ){
 		return EOF;
@@ -112,27 +115,30 @@ int sst25vf_tmr_read(const device_cfg_t * cfg, device_transfer_t * rop){
 
 	sst25vf_share_assert_cs(cfg);
 	sst25vf_share_write_opcode_addr(cfg, SST25VF_INS_RD_HS, rop->loc);
-	mcu_spi_swap(cfg->periph.port, NULL); //dummy byte output
+	mcu_spi_swap(cfg->port, NULL); //dummy byte output
 	return mcu_spi_read(cfg, rop);
 }
 
 
-void continue_spi_write(const device_cfg_t * cfg, uint32_t ignore){
+void continue_spi_write(const devfs_handle_t * cfg, uint32_t ignore){
 	sst25vf_state_t * state = (sst25vf_state_t *)cfg->state;
-	const sst25vf_cfg_t * sst_cfg = (sst25vf_cfg_t*)cfg->dcfg;
+	const sst25vf_cfg_t * sst_cfg = (sst25vf_cfg_t*)cfg->config;
 	mcu_action_t action;
 	uint8_t * addrp;
+	tmr_attr_t tmr_attr;
 	//should be called 10 us after complete_spi_write() executes
 
 	//Disable the TMR interrupt
-	action.callback = NULL;
-	action.context = NULL;
-	action.event = TMR_ACTION_EVENT_NONE;
+	action.handler.callback = NULL;
+	action.handler.context = NULL;
+	action.o_events = TMR_EVENT_NONE;
 	action.channel = sst_cfg->miso.pin;
 	action.prio = 0;
-	mcu_tmr_off(sst_cfg->miso.port, NULL);
+	tmr_attr.o_flags = TMR_FLAG_DISABLE;
+	mcu_tmr_setattr(sst_cfg->miso.port, &tmr_attr);
 	mcu_tmr_setaction(sst_cfg->miso.port, &action);
-	mcu_tmr_on(sst_cfg->miso.port, NULL);
+	tmr_attr.o_flags = TMR_FLAG_ENABLE;
+	mcu_tmr_setattr(sst_cfg->miso.port, &tmr_attr); //start the timer
 
 
 	if( state->nbyte > 0 ){
@@ -159,33 +165,34 @@ void continue_spi_write(const device_cfg_t * cfg, uint32_t ignore){
 		state->buf = NULL;
 
 		//call the event handler to show the operation is complete
-		if ( state->callback != NULL ){
-			state->callback(state->context, NULL);
-			state->callback = NULL;
+		if ( state->handler.callback != NULL ){
+			state->handler.callback(state->handler.context, NULL);
+			state->handler.callback = NULL;
 		}
 	}
 }
 
-void complete_spi_write(const device_cfg_t * cfg, uint32_t ignore){
+void complete_spi_write(const devfs_handle_t * cfg, uint32_t ignore){
 	uint32_t tval;
 	mcu_action_t action;
-	tmr_reqattr_t attr;
-	sst25vf_cfg_t * sst_cfg = (sst25vf_cfg_t*)cfg->dcfg;
-
+	mcu_channel_t attr;
+	sst25vf_cfg_t * sst_cfg = (sst25vf_cfg_t*)cfg->config;
+	tmr_attr_t tmr_attr;
 
 	sst25vf_share_deassert_cs(cfg);
 
 	//configure the TMR to interrupt in 10 microseconds
-	action.context = (void*)cfg;
-	action.callback = (mcu_callback_t)continue_spi_write;
+	action.handler.context = (void*)cfg;
+	action.handler.callback = (mcu_callback_t)continue_spi_write;
 	action.channel = sst_cfg->miso.pin;
-	action.event = TMR_ACTION_EVENT_INTERRUPT;
+	action.o_events = TMR_EVENT_INTERRUPT;
 	action.prio = 0;
 
 	attr.channel = sst_cfg->miso.pin;
 
 	//turn the timer off
-	mcu_tmr_off(sst_cfg->miso.port, NULL);
+	tmr_attr.o_flags = TMR_FLAG_DISABLE;
+	mcu_tmr_setattr(sst_cfg->miso.port, &tmr_attr); //start the timer
 	mcu_tmr_setaction(sst_cfg->miso.port, &action);
 	tval = mcu_tmr_get(sst_cfg->miso.port, NULL);
 	attr.value = tval + 20;
@@ -195,10 +202,11 @@ void complete_spi_write(const device_cfg_t * cfg, uint32_t ignore){
 	mcu_tmr_setoc(sst_cfg->miso.port, &attr);
 
 	//everything is set; turn the timer back on
-	mcu_tmr_on(sst_cfg->miso.port, NULL);
+	tmr_attr.o_flags = TMR_FLAG_ENABLE;
+	mcu_tmr_setattr(sst_cfg->miso.port, &tmr_attr); //start the timer
 }
 
-int sst25vf_tmr_write(const device_cfg_t * cfg, device_transfer_t * wop){
+int sst25vf_tmr_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	int err;
 	uint8_t *addrp;
 	sst25vf_state_t * state = (sst25vf_state_t*)cfg->state;
@@ -209,8 +217,8 @@ int sst25vf_tmr_write(const device_cfg_t * cfg, device_transfer_t * wop){
 	}
 
 	//This is the final callback and context when all the writing is done
-	state->callback = wop->callback;
-	state->context = wop->context;
+	state->handler.callback = wop->handler.callback;
+	state->handler.context = wop->handler.context;
 	state->buf = wop->buf;
 	state->nbyte = wop->nbyte;
 
@@ -226,9 +234,9 @@ int sst25vf_tmr_write(const device_cfg_t * cfg, device_transfer_t * wop){
 
 	sst25vf_share_assert_cs(cfg);
 	state->op.flags = wop->flags;
-	state->op.callback = (mcu_callback_t)complete_spi_write;
-	state->op.context = (void*)cfg;
-	state->op.cbuf = state->cmd;
+	state->op.handler.callback = (mcu_callback_t)complete_spi_write;
+	state->op.handler.context = (void*)cfg;
+	state->op.buf_const = state->cmd;
 	state->op.nbyte = 5;
 	state->op.loc = wop->loc;
 
@@ -239,34 +247,34 @@ int sst25vf_tmr_write(const device_cfg_t * cfg, device_transfer_t * wop){
 	return err;
 }
 
-int sst25vf_tmr_ioctl(const device_cfg_t * cfg, int request, void * ctl){
-	sst25vf_cfg_t * sst_cfg = (sst25vf_cfg_t*)cfg->dcfg;
+int sst25vf_tmr_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
+	sst25vf_cfg_t * sst_cfg = (sst25vf_cfg_t*)cfg->config;
 	switch(request){
-	case I_DISK_PROTECT:
+	case I_DRIVE_PROTECT:
 		sst25vf_share_global_protect(cfg);
 		break;
-	case I_DISK_UNPROTECT:
+	case I_DRIVE_UNPROTECT:
 		sst25vf_share_global_unprotect(cfg);
 		break;
-	case I_DISK_ERASE_BLOCK:
+	case I_DRIVE_ERASE_BLOCK:
 		sst25vf_share_block_erase_4kb(cfg, (ssize_t)ctl);
 		break;
-	case I_DISK_ERASE_DEVICE:
+	case I_DRIVE_ERASE_DEVICE:
 		sst25vf_share_chip_erase(cfg);
 		break;
-	case I_DISK_POWER_DOWN:
+	case I_DRIVE_POWER_DOWN:
 		sst25vf_share_power_down(cfg);
 		break;
-	case I_DISK_POWER_UP:
+	case I_DRIVE_POWER_UP:
 		sst25vf_share_power_up(cfg);
 		break;
-	case I_DISK_GET_BLOCKSIZE:
+	case I_DRIVE_GET_BLOCKSIZE:
 		return SST25VF_BLOCK_ERASE_SIZE;
-	case I_DISK_GET_DEVICE_ERASETIME:
+	case I_DRIVE_GET_DEVICE_ERASETIME:
 		return SST25VF_CHIP_ERASE_TIME;
-	case I_DISK_GET_BLOCK_ERASETIME:
+	case I_DRIVE_GET_BLOCK_ERASETIME:
 		return SST25VF_BLOCK_ERASE_TIME;
-	case I_DISK_GET_SIZE:
+	case I_DRIVE_GET_SIZE:
 		return sst_cfg->size;
 	default:
 		return mcu_spi_ioctl(cfg, request, ctl);
@@ -274,7 +282,7 @@ int sst25vf_tmr_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 	return 0;
 }
 
-int sst25vf_tmr_close(const device_cfg_t * cfg){
+int sst25vf_tmr_close(const devfs_handle_t * cfg){
 	sst25vf_share_power_down(cfg);
 	return mcu_spi_close(cfg);
 }

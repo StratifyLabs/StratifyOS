@@ -152,7 +152,7 @@ int _mcu_uart_dev_powered_on(int port){
 	return 0;
 }
 
-int mcu_uart_getattr(int port, void * ctl){
+int mcu_uart_getinfo(int port, void * ctl){
 	memcpy(ctl, &(uart_local[port].attr), sizeof(uart_attr_t));
 	return 0;
 }
@@ -262,18 +262,18 @@ int mcu_uart_setattr(int port, void * ctl){
 int mcu_uart_setaction(int port, void * ctl){
 	mcu_action_t * action = (mcu_action_t*)ctl;
 	LPC_UART_Type * uart_regs = uart_regs_table[port];
-	if( action->event == UART_EVENT_DATA_READY ){
-		uart_local[port].read_callback = action->callback;
-		uart_local[port].read_context = action->context;
+	if( action->o_events == UART_EVENT_DATA_READY ){
+		uart_local[port].read_callback = action->handler.callback;
+		uart_local[port].read_context = action->handler.context;
 		if ( uart_local[port].read_callback != NULL ){
 			uart_regs->IER |= (UIER_RBRIE);  //enable the receiver interrupt
 			uart_local[port].rx_bufp = NULL;
 		} else {
 			uart_regs->IER &= (~UIER_RBRIE); //disable the receive interrupt
 		}
-	} else if ( action->event == UART_EVENT_WRITE_COMPLETE ){
-		uart_local[port].write_callback = action->callback;
-		uart_local[port].write_context = action->context;
+	} else if ( action->o_events == UART_EVENT_WRITE_COMPLETE ){
+		uart_local[port].write_callback = action->handler.callback;
+		uart_local[port].write_context = action->handler.context;
 	} else {
 		errno = EINVAL;
 		return -1;
@@ -305,13 +305,13 @@ int mcu_uart_getbyte(int port, void * ctl){
 }
 
 
-int _mcu_uart_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
+int _mcu_uart_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	int len;
 	int port;
 	LPC_UART_Type * uart_regs;
 
 	//grab the port and registers
-	port = DEVICE_GET_PORT(cfg);
+	port = DEVFS_GET_PORT(cfg);
 	uart_regs = uart_regs_table[port];
 
 	if ( uart_regs->IER & UIER_RBRIE ){
@@ -335,18 +335,18 @@ int _mcu_uart_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
 			errno = EAGAIN;
 			len = -1;
 		} else {
-			uart_local[port].read_callback = rop->callback;
-			uart_local[port].read_context = rop->context;
+			uart_local[port].read_callback = rop->handler.callback;
+			uart_local[port].read_context = rop->handler.context;
 			uart_regs->IER |= UIER_RBRIE;  //enable the receiver interrupt
 		}
 	}
 	return len;
 }
 
-int _mcu_uart_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
+int _mcu_uart_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	LPC_UART_Type * uart_regs;
 	int port;
-	port = DEVICE_GET_PORT(cfg);
+	port = DEVFS_GET_PORT(cfg);
 
 	if ( wop->nbyte == 0 ){
 		return 0;
@@ -367,8 +367,8 @@ int _mcu_uart_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
 
 	uart_regs->TER = 0; //disable the transmitter
 	write_tx_data(port);
-	uart_local[port].write_callback = wop->callback;
-	uart_local[port].write_context = wop->context;
+	uart_local[port].write_callback = wop->handler.callback;
+	uart_local[port].write_context = wop->handler.context;
 	uart_regs->IER |= UIER_ETBEI;  //enable the transmit interrupt
 	uart_regs->TER = UTER_TXEN; //enable the transmitter
 

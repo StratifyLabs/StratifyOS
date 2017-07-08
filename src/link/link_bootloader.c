@@ -26,7 +26,7 @@
 static int reset_device(link_transport_mdriver_t * driver, bool invoke_bootloader);
 
 int link_bootloader_attr(link_transport_mdriver_t * driver, bootloader_attr_t * attr, uint32_t id){
-	if( link_ioctl(driver, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_GETATTR, attr) < 0 ){
+	if( link_ioctl(driver, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_GETINFO, attr) < 0 ){
 		return -1;
 	}
 
@@ -44,10 +44,10 @@ int link_isbootloader(link_transport_mdriver_t * driver){
 	bootloader_attr_t attr;
 	bootloader_attr_14x_t attr_14x;
 
-	if( link_ioctl(handle, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_GETATTR, &attr) < 0 ){
+	if( link_ioctl(handle, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_GETINFO, &attr) < 0 ){
 
 		attr_14x.version = 0;
-		link_ioctl(handle, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_GETATTR_14X, &attr_14x);
+		link_ioctl(handle, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_GETINFO_14X, &attr_14x);
 			//If this fails, no bootloader
 
 		if( (attr_14x.version == 0x150) ||

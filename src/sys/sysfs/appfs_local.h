@@ -23,10 +23,10 @@
 #include "config.h"
 #include <stdbool.h>
 #include "appfs.h"
-#include "iface/dev/mem.h"
+#include "sos/dev/mem.h"
 #include "mcu/debug.h"
-#include "iface/link.h"
-#include "../../../include/stratify/sysfs.h"
+#include "sos/link/link.h"
+#include "sos/fs/sysfs.h"
 
 
 typedef struct {
@@ -62,7 +62,7 @@ typedef struct {
 
 typedef struct {
 	int ret;
-	const device_t * dev;
+	const devfs_device_t * dev;
 	mem_pageinfo_t pageinfo;
 	appfs_file_t fileinfo;
 } priv_load_fileinfo_t;
@@ -77,13 +77,13 @@ int appfs_util_lookupname(const void * cfg, const char * path, priv_load_fileinf
 
 //memory access utilities
 void appfs_util_priv_closeinstall(void * args) MCU_PRIV_EXEC_CODE;
-int appfs_util_priv_writeinstall(const device_t * dev, appfs_handle_t * h, appfs_installattr_t * attr) MCU_PRIV_EXEC_CODE;
-int appfs_util_priv_create(const device_t * dev, appfs_handle_t * h, appfs_installattr_t * attr) MCU_PRIV_EXEC_CODE;
-int appfs_util_priv_free_ram(const device_t * dev, appfs_handle_t * h) MCU_PRIV_EXEC_CODE;
-int appfs_util_priv_reclaim_ram(const device_t * dev, appfs_handle_t * h) MCU_PRIV_EXEC_CODE;
-int appfs_util_getfileinfo(priv_load_fileinfo_t * info, const device_t * dev, int page, int type, int * size);
-int appfs_util_erasepages(const device_t * dev, int start_page, int end_page);
-int appfs_util_getpageinfo(const device_t * dev, mem_pageinfo_t * pageinfo);
+int appfs_util_priv_writeinstall(const devfs_device_t * dev, appfs_handle_t * h, appfs_installattr_t * attr) MCU_PRIV_EXEC_CODE;
+int appfs_util_priv_create(const devfs_device_t * dev, appfs_handle_t * h, appfs_installattr_t * attr) MCU_PRIV_EXEC_CODE;
+int appfs_util_priv_free_ram(const devfs_device_t * dev, appfs_handle_t * h) MCU_PRIV_EXEC_CODE;
+int appfs_util_priv_reclaim_ram(const devfs_device_t * dev, appfs_handle_t * h) MCU_PRIV_EXEC_CODE;
+int appfs_util_getfileinfo(priv_load_fileinfo_t * info, const devfs_device_t * dev, int page, int type, int * size);
+int appfs_util_erasepages(const devfs_device_t * dev, int start_page, int end_page);
+int appfs_util_getpageinfo(const devfs_device_t * dev, mem_pageinfo_t * pageinfo);
 
 //ram access
 #define APPFS_RAM_PAGES ((DEVICE_MAX_RAM-DEVICE_SYS_RAM)/DEVICE_RAM_PAGE_SIZE)

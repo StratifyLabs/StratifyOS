@@ -20,7 +20,7 @@
 
 #include <errno.h>
 #include <limits.h>
-#include <stratify/stratify.h>
+#include "sos/stratify.h"
 
 #include "mcu/mcu.h"
 #include "mcu/mpu.h"
@@ -41,7 +41,7 @@
 
 static void appfs_util_privloadfileinfo(void * args) MCU_PRIV_EXEC_CODE;
 static int get_hdrinfo(appfs_file_t * file, int page, int type);
-static int get_filesize(const device_t * dev, priv_load_fileinfo_t * args, int filetype);
+static int get_filesize(const devfs_device_t * dev, priv_load_fileinfo_t * args, int filetype);
 
 static void priv_op_erase_pages(void * args) MCU_PRIV_EXEC_CODE;
 
@@ -58,8 +58,8 @@ static u8 calc_checksum(const char * name){
 
 typedef struct {
 	int ret;
-	const device_t * dev;
-	device_transfer_t op;
+	const devfs_device_t * dev;
+	devfs_async_t op;
 	int start_page;
 	int end_page;
 } priv_op_t;
@@ -69,11 +69,11 @@ void priv_op_erase_pages(void * args){
 	priv_op_t * p = args;
 	for(i=p->start_page; i <= p->end_page; i++){
 		mcu_wdt_reset();
-		p->ret = p->dev->driver.ioctl(&(p->dev->cfg), I_MEM_ERASE_PAGE, (void*)i);
+		p->ret = p->dev->driver.ioctl(&(p->dev->handle), I_MEM_ERASE_PAGE, (void*)i);
 	}
 }
 
-int appfs_util_erasepages(const device_t * dev, int start_page, int end_page){
+int appfs_util_erasepages(const devfs_device_t * dev, int start_page, int end_page){
 	priv_op_t args;
 	args.dev = dev;
 	args.start_page = start_page;
@@ -82,8 +82,8 @@ int appfs_util_erasepages(const device_t * dev, int start_page, int end_page){
 	return 0;
 }
 
-int appfs_util_getpageinfo(const device_t * dev, mem_pageinfo_t * pageinfo){
-	return dev->driver.ioctl(&(dev->cfg), I_MEM_GET_PAGEINFO, pageinfo);
+int appfs_util_getpageinfo(const devfs_device_t * dev, mem_pageinfo_t * pageinfo){
+	return dev->driver.ioctl(&(dev->handle), I_MEM_GET_PAGEINFO, pageinfo);
 }
 
 
@@ -118,7 +118,7 @@ static u32 translate_value(u32 addr, u32 mask, u32 code_start, u32 data_start, u
 	return ret;
 }
 
-static int find_protectable_addr(const device_t * dev, int size, int type, int * page){
+static int find_protectable_addr(const devfs_device_t * dev, int size, int type, int * page){
 	int i;
 	u32 tmp_rbar;
 	u32 tmp_rasr;
@@ -137,7 +137,7 @@ static int find_protectable_addr(const device_t * dev, int size, int type, int *
 		//go through each page
 		pageinfo.num = i;
 		pageinfo.type = type;
-		if ( dev->driver.ioctl(&(dev->cfg), I_MEM_GET_PAGEINFO, &pageinfo) < 0 ){
+		if ( dev->driver.ioctl(&(dev->handle), I_MEM_GET_PAGEINFO, &pageinfo) < 0 ){
 			return -1;
 		}
 
@@ -164,7 +164,7 @@ static int find_protectable_addr(const device_t * dev, int size, int type, int *
 	return -1;
 }
 
-int check_for_free_space(const device_t * dev, int start_page, int type, int size){
+int check_for_free_space(const devfs_device_t * dev, int start_page, int type, int size){
 	priv_load_fileinfo_t info;
 	int free_size;
 	int last_addr;
@@ -219,7 +219,7 @@ int check_for_free_space(const device_t * dev, int start_page, int type, int siz
 	return free_size;
 }
 
-static int find_protectable_free(const device_t * dev, int type, int size, int * page){
+static int find_protectable_free(const devfs_device_t * dev, int type, int size, int * page){
 	int start_addr;
 	int tmp;
 	int space_available;
@@ -270,7 +270,7 @@ static int find_protectable_free(const device_t * dev, int type, int size, int *
 	return smallest_space_addr;
 }
 
-static int find_free(const device_t * dev, int type, int size){
+static int find_free(const devfs_device_t * dev, int type, int size){
 	mem_pageinfo_t pageinfo;
 	//find any area for the code
 
@@ -279,7 +279,7 @@ static int find_free(const device_t * dev, int type, int size){
 	do {
 
 		pageinfo.type = type;
-		if ( dev->driver.ioctl(&(dev->cfg), I_MEM_GET_PAGEINFO, &pageinfo) < 0 ){
+		if ( dev->driver.ioctl(&(dev->handle), I_MEM_GET_PAGEINFO, &pageinfo) < 0 ){
 			return -1;
 		}
 
@@ -294,7 +294,7 @@ static int find_free(const device_t * dev, int type, int size){
 	return -1;
 }
 
-int appfs_util_priv_free_ram(const device_t * dev, appfs_handle_t * h){
+int appfs_util_priv_free_ram(const devfs_device_t * dev, appfs_handle_t * h){
 	priv_load_fileinfo_t args;
 	link_appfs_file_t * f;
 
@@ -321,7 +321,7 @@ int appfs_util_priv_free_ram(const device_t * dev, appfs_handle_t * h){
 	return 0;
 }
 
-int appfs_util_priv_reclaim_ram(const device_t * dev, appfs_handle_t * h){
+int appfs_util_priv_reclaim_ram(const devfs_device_t * dev, appfs_handle_t * h){
 	priv_load_fileinfo_t args;
 	link_appfs_file_t * f;
 	size_t s;
@@ -358,7 +358,7 @@ int appfs_util_priv_reclaim_ram(const device_t * dev, appfs_handle_t * h){
 	return 0;
 }
 
-static int mem_write_page(const device_t * dev, appfs_handle_t * h, appfs_installattr_t * attr){
+static int mem_write_page(const devfs_device_t * dev, appfs_handle_t * h, appfs_installattr_t * attr){
 	//now write the buffer
 	mem_writepage_t write_page;
 
@@ -370,10 +370,10 @@ static int mem_write_page(const device_t * dev, appfs_handle_t * h, appfs_instal
 	write_page.addr = h->type.install.code_start + attr->loc;
 	write_page.nbyte = attr->nbyte;
 	memcpy(write_page.buf, attr->buffer, 256);
-	return dev->driver.ioctl(&(dev->cfg), I_MEM_WRITEPAGE, &write_page);
+	return dev->driver.ioctl(&(dev->handle), I_MEM_WRITEPAGE, &write_page);
 }
 
-int appfs_util_priv_create(const device_t * dev, appfs_handle_t * h, appfs_installattr_t * attr){
+int appfs_util_priv_create(const devfs_device_t * dev, appfs_handle_t * h, appfs_installattr_t * attr){
 	int code_start_addr;
 	int type;
 	int len;
@@ -457,7 +457,7 @@ int appfs_util_priv_create(const device_t * dev, appfs_handle_t * h, appfs_insta
 
 
 
-int appfs_util_priv_writeinstall(const device_t * dev, appfs_handle_t * h, appfs_installattr_t * attr){
+int appfs_util_priv_writeinstall(const devfs_device_t * dev, appfs_handle_t * h, appfs_installattr_t * attr){
 	union {
 		const appfs_file_t * file;
 		const u32 * ptr;
@@ -712,10 +712,10 @@ bool appfs_util_isexecutable(const appfs_file_t * info){
 
 void appfs_util_privloadfileinfo(void * args){
 	priv_load_fileinfo_t * p = (priv_load_fileinfo_t*)args;
-	device_transfer_t op;
+	devfs_async_t op;
 
 	if ( p->dev->driver.ioctl(
-			&(p->dev->cfg),
+			&(p->dev->handle),
 			I_MEM_GET_PAGEINFO,
 			&p->pageinfo
 	) < 0 ){
@@ -725,11 +725,11 @@ void appfs_util_privloadfileinfo(void * args){
 
 	op.buf = &(p->fileinfo);
 	op.nbyte = sizeof(appfs_file_t);
-	op.context = NULL;
+	op.handler.context = NULL;
 	op.loc = (int)p->pageinfo.addr;
 	op.tid = task_get_current();
 
-	if ( p->dev->driver.read(&(p->dev->cfg), &op) == sizeof(appfs_file_t) ){
+	if ( p->dev->driver.read(&(p->dev->handle), &op) == sizeof(appfs_file_t) ){
 		//read successfully
 		p->ret = 0;
 		return;
@@ -738,7 +738,7 @@ void appfs_util_privloadfileinfo(void * args){
 	p->ret = -2;
 }
 
-int appfs_util_getfileinfo(priv_load_fileinfo_t * info, const device_t * dev, int page, int type, int * size){
+int appfs_util_getfileinfo(priv_load_fileinfo_t * info, const devfs_device_t * dev, int page, int type, int * size){
 	int filetype;
 	info->dev = dev;
 	info->pageinfo.num = page;
@@ -758,7 +758,7 @@ int appfs_util_getfileinfo(priv_load_fileinfo_t * info, const device_t * dev, in
 	return filetype;
 }
 
-int get_filesize(const device_t * dev, priv_load_fileinfo_t * args, int filetype){
+int get_filesize(const devfs_device_t * dev, priv_load_fileinfo_t * args, int filetype){
 	//this will start at the end of the page and count backwards until it hits a non 0xFF value
 	if ( filetype == APPFS_MEMPAGETYPE_USER ){
 		return args->fileinfo.exec.code_size + args->fileinfo.exec.data_size;

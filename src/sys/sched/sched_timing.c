@@ -60,7 +60,8 @@ uint32_t sched_nanoseconds_to_clocks(int nanoseconds){
 void sched_priv_timedblock(void * block_object, struct sched_timeval * abs_time){
 #if SINGLE_TASK == 0
 	int id;
-	tmr_reqattr_t chan_req;
+	mcu_channel_t chan_req;
+	tmr_attr_t attr;
 	uint32_t now;
 	bool time_sleep;
 
@@ -76,7 +77,8 @@ void sched_priv_timedblock(void * block_object, struct sched_timeval * abs_time)
 
 		if(abs_time->tv_sec == sched_usecond_counter){
 
-			mcu_tmr_off(stratify_board_config.clk_usecond_tmr, NULL); //stop the timer
+			attr.o_flags = TMR_FLAG_DISABLE;
+			mcu_tmr_setattr(stratify_board_config.clk_usecond_tmr, &attr); //stop the timer
 
 			//Read the current OC value to see if it needs to be updated
 			chan_req.channel = SCHED_USECOND_TMR_SLEEP_OC;
@@ -92,7 +94,8 @@ void sched_priv_timedblock(void * block_object, struct sched_timeval * abs_time)
 				time_sleep = true;
 			}
 
-			mcu_tmr_on(stratify_board_config.clk_usecond_tmr, NULL); //start the timer
+			attr.o_flags = TMR_FLAG_ENABLE;
+			mcu_tmr_setattr(stratify_board_config.clk_usecond_tmr, &attr); //start the timer
 
 
 		} else {
@@ -146,9 +149,10 @@ int priv_usecond_match_event(void * context, mcu_event_t data){
 	uint32_t next;
 	uint32_t tmp;
 	int new_priority;
-	tmr_reqattr_t chan_req;
+	mcu_channel_t chan_req;
 	static const uint32_t overflow = (STFY_USECOND_PERIOD);
 	uint32_t current_match;
+	tmr_attr_t attr;
 
 	//Initialize variables
 	chan_req.channel = SCHED_USECOND_TMR_SLEEP_OC;
@@ -156,7 +160,8 @@ int priv_usecond_match_event(void * context, mcu_event_t data){
 	new_priority = SCHED_LOWEST_PRIORITY - 1;
 	next = overflow;
 
-	mcu_tmr_off(stratify_board_config.clk_usecond_tmr, NULL); //stop the timer
+	attr.o_flags = TMR_FLAG_DISABLE;
+	mcu_tmr_setattr(stratify_board_config.clk_usecond_tmr, &attr); //stop the timer
 	current_match = mcu_tmr_get(stratify_board_config.clk_usecond_tmr, NULL);
 
 	for(i=1; i < task_get_total(); i++){
@@ -186,30 +191,31 @@ int priv_usecond_match_event(void * context, mcu_event_t data){
 
 	sched_priv_update_on_wake(new_priority);
 
-	mcu_tmr_on(stratify_board_config.clk_usecond_tmr, NULL);
+	attr.o_flags = TMR_FLAG_ENABLE;
+	mcu_tmr_setattr(stratify_board_config.clk_usecond_tmr, &attr); //stop the timer
 #endif
 	return 1;
 }
 
 int open_usecond_tmr(){
 	int err;
-	tmr_attr_t cfg;
-	tmr_action_t action;
-	tmr_reqattr_t chan_req;
-	device_periph_t tmr;
+	tmr_attr_t attr;
+	mcu_action_t action;
+	mcu_channel_t chan_req;
+	devfs_handle_t tmr;
 
 
 	tmr.port = stratify_board_config.clk_usecond_tmr;
 	//Open the microsecond timer
-	err = mcu_tmr_open((device_cfg_t*)&tmr);
+	err = mcu_tmr_open(&tmr);
 	if (err){
 		return err;
 	}
 
-	memset(&cfg, 0, sizeof(tmr_attr_t));
-	cfg.freq = 1000000;
-	cfg.clksrc = TMR_CLKSRC_CPU;
-	err = mcu_tmr_setattr(tmr.port, &cfg);
+	memset(&attr, 0, sizeof(tmr_attr_t));
+	attr.freq = 1000000;
+	attr.o_flags = TMR_FLAG_CLKSRC_CPU;
+	err = mcu_tmr_setattr(tmr.port, &attr);
 	if ( err ){
 		return err;
 	}
@@ -230,15 +236,16 @@ int open_usecond_tmr(){
 
 	action.prio = 0;
 	action.channel = SCHED_USECOND_TMR_RESET_OC;
-	action.event = TMR_ACTION_EVENT_RESET|TMR_ACTION_EVENT_INTERRUPT;
-	action.callback = usecond_overflow_event;
+	action.o_events = TMR_EVENT_RESET|TMR_EVENT_INTERRUPT;
+	action.handler.callback = usecond_overflow_event;
 	err = mcu_tmr_setaction(tmr.port, &action);
 	if (err){
 		return -1;
 	}
 
 	//Turn the timer on
-	err = mcu_tmr_on(tmr.port, NULL);
+	attr.o_flags = TMR_FLAG_ENABLE;
+	err = mcu_tmr_setattr(tmr.port, &attr);
 	if (err){
 		return -1;
 	}
@@ -252,8 +259,8 @@ int open_usecond_tmr(){
 	}
 
 	action.channel = SCHED_USECOND_TMR_SLEEP_OC;
-	action.event = TMR_ACTION_EVENT_INTERRUPT;
-	action.callback = priv_usecond_match_event;
+	action.o_events = TMR_EVENT_INTERRUPT;
+	action.handler.callback = priv_usecond_match_event;
 
 	err = mcu_tmr_setaction(tmr.port, &action);
 	if ( err ){

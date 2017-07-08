@@ -23,7 +23,7 @@
 
 #include <pthread.h>
 
-#include "stratify/sffs.h"
+#include "sos/fs/sffs.h"
 
 int sffs_dev_open(const void * cfg);
 int sffs_dev_write(const void * cfg, int loc, const void * buf, int nbyte);

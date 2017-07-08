@@ -18,7 +18,7 @@
  */
 
 #include "mcu/debug.h"
-#include "iface/dev/uart.h"
+#include "sos/dev/uart.h"
 #include "mcu/uart.h"
 
 #if defined MCU_DEBUG
@@ -32,7 +32,7 @@ int mcu_debug_init(){
 
 	//Open the debugging UART
 	port = 0;
-	err = mcu_uart_open((device_cfg_t*)&port);
+	err = mcu_uart_open((devfs_handle_t*)&port);
 	if ( err < 0 ){
 		return err;
 	}
@@ -45,7 +45,7 @@ int mcu_debug_init(){
 	uart_cfg.start = 0;
 	uart_cfg.width = 8;
 
-	err = mcu_uart_ioctl((device_cfg_t*)&port, I_UART_SETATTR, &uart_cfg);
+	err = mcu_uart_ioctl((devfs_handle_t*)&port, I_UART_SETATTR, &uart_cfg);
 
 	if ( err < 0 ){
 		return err;
@@ -56,19 +56,19 @@ int mcu_debug_init(){
 
 
 void mcu_priv_write_debug_uart(void * args){
-	device_transfer_t wop;
+	devfs_async_t wop;
 	int port = 0;
 	wop.loc = 0;
 	wop.buf = NULL;
 	wop.nbyte = 0;
-	wop.callback = NULL;
-	while( mcu_uart_write((device_cfg_t*)&port, &wop) == 0 );
+	wop.handler.callback = NULL;
+	while( mcu_uart_write((devfs_handle_t*)&port, &wop) == 0 );
 	wop.buf = mcu_debug_buffer;
 	wop.nbyte = strlen(mcu_debug_buffer);
-	if ( mcu_uart_write((device_cfg_t*)&port, &wop) == 0 ){
+	if ( mcu_uart_write((devfs_handle_t*)&port, &wop) == 0 ){
 		wop.nbyte = 0;
 		wop.buf = NULL;
-		while( mcu_uart_write((device_cfg_t*)&port, &wop) == 0 );
+		while( mcu_uart_write((devfs_handle_t*)&port, &wop) == 0 );
 	}
 }
 

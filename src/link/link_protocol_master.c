@@ -1,10 +1,9 @@
 
+#include <dev/link.h>
 #include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "iface/link.h"
-
 #include "link_flags.h"
 
 #include "mcu/debug.h"

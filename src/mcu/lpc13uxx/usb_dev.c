@@ -198,7 +198,7 @@ int _mcu_usb_dev_powered_on(int port){
 }
 
 
-int mcu_usb_getattr(int port, void * ctl){
+int mcu_usb_getinfo(int port, void * ctl){
 	memcpy(ctl, &usb_ctl, sizeof(usb_attr_t));
 	return 0;
 }
@@ -225,7 +225,7 @@ int mcu_usb_setattr(int port, void * ctl){
 	}
 #endif
 
-	if (ctlp->mode != USB_ATTR_MODE_DEVICE){
+	if (ctlp->mode != USB_FLAG_SET_DEVICE){
 		errno = EINVAL;
 		return -1 - offsetof(usb_attr_t, mode);
 	}
@@ -272,25 +272,25 @@ int mcu_usb_setaction(int port, void * ctl){
 	int log_ep;
 
 	if( action->channel & 0x80 ){
-		if( action->callback == 0 ){
+		if( action->handler.callback == 0 ){
 			exec_writecallback(action->channel & ~0x80, DEVICE_OP_CANCELLED);
 		}
 	} else {
-		if( action->callback == 0 ){
+		if( action->handler.callback == 0 ){
 			exec_readcallback(action->channel & ~0x80, DEVICE_OP_CANCELLED);
 		}
 	}
 
 	log_ep = action->channel & ~0x80;
 	if ( (log_ep < DEV_USB_LOGICAL_ENDPOINT_COUNT)  ){
-		if( action->event == USB_EVENT_DATA_READY ){
+		if( action->o_events == USB_EVENT_DATA_READY ){
 			_mcu_cortexm_priv_enable_interrupts(NULL);
-			usb_local.read_callback[ log_ep ] = action->callback;
-			usb_local.read_context[ log_ep ] = action->context;
+			usb_local.read_callback[ log_ep ] = action->handler.callback;
+			usb_local.read_context[ log_ep ] = action->handler.context;
 			return 0;
-		} else if( action->event == USB_EVENT_WRITE_COMPLETE ){
-			usb_local.write_callback[ log_ep ] = action->callback;
-			usb_local.write_context[ log_ep ] = action->context;
+		} else if( action->o_events == USB_EVENT_WRITE_COMPLETE ){
+			usb_local.write_callback[ log_ep ] = action->handler.callback;
+			usb_local.write_context[ log_ep ] = action->handler.context;
 			return 0;
 		}
 	}
@@ -346,7 +346,7 @@ int mcu_usb_seteventhandler(int port, void * ctl){
 	return 0;
 }
 
-int _mcu_usb_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
+int _mcu_usb_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	int ret;
 	int loc = rop->loc;
 
@@ -368,8 +368,8 @@ int _mcu_usb_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
 		rop->nbyte = 0;
 		if ( !(rop->flags & O_NONBLOCK) ){
 			//If this is a blocking call, set the callback and context
-			usb_local.read_callback[loc] = rop->callback;
-			usb_local.read_context[loc] = rop->context;
+			usb_local.read_callback[loc] = rop->handler.callback;
+			usb_local.read_context[loc] = rop->handler.context;
 			ret = 0;
 		} else {
 			errno = EAGAIN;
@@ -380,13 +380,13 @@ int _mcu_usb_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
 	return ret;
 }
 
-int _mcu_usb_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
+int _mcu_usb_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	//Asynchronous write
 	int ep;
 	int port;
 	int loc = wop->loc;
 
-	port = DEVICE_GET_PORT(cfg);
+	port = DEVFS_GET_PORT(cfg);
 
 	ep = (loc & 0x7F);
 
@@ -401,8 +401,8 @@ int _mcu_usb_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
 	}
 
 	usb_local.write_pending |= (1<<ep);
-	usb_local.write_callback[ep] = wop->callback;
-	usb_local.write_context[ep] = wop->context;
+	usb_local.write_callback[ep] = wop->handler.callback;
+	usb_local.write_context[ep] = wop->handler.context;
 	wop->nbyte = mcu_usb_wr_ep(0, loc, wop->buf, wop->nbyte);
 
 	if ( wop->nbyte < 0 ){

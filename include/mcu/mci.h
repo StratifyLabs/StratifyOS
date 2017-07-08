@@ -27,8 +27,9 @@
 #define _mcu_mci_H_
 
 
-#include "../iface/dev/mci.h"
-#include "iface/device_config.h"
+#include "sos/dev/mci.h"
+
+#include "sos/fs/devfs.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -39,27 +40,27 @@ extern "C" {
  * \sa periph_open()
  *
  */
-int mcu_mci_open(const device_cfg_t * cfg) MCU_PRIV_CODE;
+int mcu_mci_open(const devfs_handle_t * cfg) MCU_PRIV_CODE;
 /*! \details
  * \sa periph_read()
  *
  */
-int mcu_mci_read(const device_cfg_t * cfg, device_transfer_t * rop) MCU_PRIV_CODE;
+int mcu_mci_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_PRIV_CODE;
 /*! \details
  * \sa periph_write()
  */
-int mcu_mci_write(const device_cfg_t * cfg, device_transfer_t * wop) MCU_PRIV_CODE;
+int mcu_mci_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_PRIV_CODE;
 /*! \details
  * \sa periph_ioctl()
  *
  */
-int mcu_mci_ioctl(const device_cfg_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
+int mcu_mci_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
 /*! \details
  * \sa periph_close()
  */
-int mcu_mci_close(const device_cfg_t * cfg) MCU_PRIV_CODE;
+int mcu_mci_close(const devfs_handle_t * cfg) MCU_PRIV_CODE;
 
-int mcu_mci_getattr(int port, void * ctl) MCU_PRIV_CODE;
+int mcu_mci_getinfo(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_mci_setattr(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_mci_setaction(int port, void * ctl) MCU_PRIV_CODE;
 

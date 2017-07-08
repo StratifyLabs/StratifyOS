@@ -25,14 +25,14 @@
 
 #include "config.h"
 
-#include "iface/dev/ioctl.h"
+#include "mcu/ioctl.h"
 #include "mcu/mcu.h"
 #include <errno.h>
 #include <stdarg.h>
 #include "unistd_flags.h"
-#include "stratify/stratify.h"
+#include "sos/stratify.h"
 #include "mcu/core.h"
-#include "dev/sys.h"
+#include "mcu/sys.h"
 
 
 /*! \details This function performs a control request on the device
@@ -73,7 +73,7 @@ int ioctl(int fildes, int request, ...) {
 	}
 
 	fs = get_fs(fildes);
-	if ( fs->priv_ioctl != NULL ){
+	if ( fs->ioctl != NULL ){
 		//Character and device drivers both have the same interface to ioctl
 		return u_ioctl(get_open_file(fildes), request, ctl);
 	}
@@ -84,23 +84,8 @@ int ioctl(int fildes, int request, ...) {
 
 
 int u_ioctl(open_file_t * open_file, int request, void * ctl){
-	u_priv_attr_t args;
-	args.fs = open_file->fs;
-	args.handle = open_file->handle;
-	args.request = request;
-	args.ctl = ctl;
-
-	mcu_core_privcall(u_priv_ioctl, &args);
-	return args.err;
-}
-
-void u_priv_ioctl(void * args){
-	u_priv_attr_t * p = (u_priv_attr_t*)args;
-	p->err = p->fs->priv_ioctl(
-			p->fs->cfg,
-			p->handle,
-			p->request,
-			p->ctl );
+	const sysfs_t * fs = open_file->fs;
+	return fs->ioctl(fs->cfg, open_file->handle, request, ctl);
 }
 
 /*! @} */

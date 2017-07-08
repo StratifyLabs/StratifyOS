@@ -24,11 +24,11 @@
 extern void _mcu_i2s_dev_power_on(int port);
 extern void _mcu_i2s_dev_power_off(int port);
 extern int _mcu_i2s_dev_powered_on(int port);
-extern int _mcu_i2s_dev_read(const device_cfg_t * cfg, device_transfer_t * rop);
-extern int _mcu_i2s_dev_write(const device_cfg_t * cfg, device_transfer_t * wop);
+extern int _mcu_i2s_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop);
+extern int _mcu_i2s_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop);
 
-int (* const i2s_ioctl_func_table[I_GLOBAL_TOTAL + I_I2S_TOTAL])(int, void*) = {
-		mcu_i2s_getattr,
+int (* const i2s_ioctl_func_table[I_MCU_TOTAL + I_I2S_TOTAL])(int, void*) = {
+		mcu_i2s_getinfo,
 		mcu_i2s_setattr,
 		mcu_i2s_setaction,
 		mcu_i2s_mute,
@@ -36,24 +36,24 @@ int (* const i2s_ioctl_func_table[I_GLOBAL_TOTAL + I_I2S_TOTAL])(int, void*) = {
 };
 
 
-int mcu_i2s_open(const device_cfg_t * cfg){
+int mcu_i2s_open(const devfs_handle_t * cfg){
 	return mcu_open(cfg,
 			_mcu_i2s_dev_powered_on,
 			_mcu_i2s_dev_power_on);
 }
 
-int mcu_i2s_ioctl(const device_cfg_t * cfg, int request, void * ctl){
+int mcu_i2s_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 	return mcu_ioctl(cfg,
 			request,
 			ctl,
 			_mcu_i2s_dev_powered_on,
 			i2s_ioctl_func_table,
-			I_GLOBAL_TOTAL + I_I2S_TOTAL);
+			I_MCU_TOTAL + I_I2S_TOTAL);
 }
 
 
 
-int mcu_i2s_read(const device_cfg_t * cfg, device_transfer_t * rop){
+int mcu_i2s_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	return mcu_read(cfg, rop,
 			_mcu_i2s_dev_powered_on,
 			_mcu_i2s_dev_read);
@@ -61,14 +61,14 @@ int mcu_i2s_read(const device_cfg_t * cfg, device_transfer_t * rop){
 }
 
 
-int mcu_i2s_write(const device_cfg_t * cfg, device_transfer_t * wop){
+int mcu_i2s_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	return mcu_write(cfg, wop,
 			_mcu_i2s_dev_powered_on,
 			_mcu_i2s_dev_write);
 
 }
 
-int mcu_i2s_close(const device_cfg_t * cfg){
+int mcu_i2s_close(const devfs_handle_t * cfg){
 	return mcu_close(cfg, _mcu_i2s_dev_powered_on, _mcu_i2s_dev_power_off);
 }
 

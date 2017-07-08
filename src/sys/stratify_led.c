@@ -17,7 +17,7 @@
  *
  */
 
-#include "stratify/stratify.h"
+#include "sos/stratify.h"
 #include "mcu/core.h"
 #include "mcu/pio.h"
 
@@ -48,8 +48,8 @@ void stratify_led_startup(){
 void stratify_led_priv_on(void * args){
 	if( mcu_board_config.led.port != 255 ){
 		pio_attr_t attr;
-		attr.mask = (1<<mcu_board_config.led.pin);
-		attr.mode = PIO_MODE_OUTPUT | PIO_MODE_DIRONLY;
+		attr.o_pinmask = (1<<mcu_board_config.led.pin);
+		attr.o_flags = PIO_FLAG_SET_OUTPUT | PIO_FLAG_IS_DIRONLY;
 		mcu_pio_setattr(mcu_board_config.led.port, &attr);
 		if( mcu_board_config.o_flags & MCU_BOARD_CONFIG_FLAG_LED_ACTIVE_HIGH ){
 			mcu_pio_setmask(mcu_board_config.led.port, (void*)(1<<mcu_board_config.led.pin));
@@ -62,8 +62,8 @@ void stratify_led_priv_on(void * args){
 void stratify_led_priv_off(void * args){
 	if( mcu_board_config.led.port != 255 ){
 		pio_attr_t attr;
-		attr.mode = PIO_MODE_INPUT | PIO_MODE_DIRONLY;
-		attr.mask = (1<<mcu_board_config.led.pin);
+		attr.o_flags = PIO_FLAG_SET_INPUT | PIO_FLAG_IS_DIRONLY;
+		attr.o_pinmask = (1<<mcu_board_config.led.pin);
 		mcu_pio_setattr(mcu_board_config.led.port, &attr);
 	}
 }

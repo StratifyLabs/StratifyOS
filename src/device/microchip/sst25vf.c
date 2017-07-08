@@ -22,36 +22,39 @@
 #include "mcu/debug.h"
 #include "sst25vf_local.h"
 
-static int complete_spi_write(const device_cfg_t * cfg, uint32_t ignore);
-static int continue_spi_write(const device_cfg_t * cfg, uint32_t ignore);
+static int complete_spi_write(const devfs_handle_t * cfg, uint32_t ignore);
+static int continue_spi_write(const devfs_handle_t * cfg, uint32_t ignore);
 
 
-int sst25vf_open(const device_cfg_t * cfg){
+int sst25vf_open(const devfs_handle_t * cfg){
 	int err;
 	uint8_t status;
-	pio_attr_t attr;
+	pio_attr_t pio_attr;
 	sst25vf_state_t * state = (sst25vf_state_t*)cfg->state;
-	spi_attr_t spi_cfg;
+	const sst25vf_cfg_t * config = cfg->config;
 
+	/*
+	spi_attr_t spi_cfg;
 	spi_cfg.pin_assign = cfg->pin_assign;
 	spi_cfg.width = cfg->pcfg.spi.width;
 	spi_cfg.mode = cfg->pcfg.spi.mode;
 	spi_cfg.format = cfg->pcfg.spi.format;
 	spi_cfg.bitrate = cfg->bitrate;
 	spi_cfg.master = SPI_ATTR_MASTER;
+	*/
 	err = mcu_spi_open(cfg);
 	if ( err < 0 ){
 		return err;
 	}
 
-	if( (err = mcu_spi_ioctl(cfg, I_SPI_SETATTR, &spi_cfg)) < 0 ){
+	if( (err = mcu_spi_ioctl(cfg, I_SPI_SETATTR, (void*)&(config->attr))) < 0 ){
 		return err;
 	}
 
 	sst25vf_share_deassert_cs(cfg);
-	attr.mask = (1<<cfg->pcfg.spi.cs.pin);
-	attr.mode = PIO_MODE_OUTPUT | PIO_MODE_DIRONLY;
-	mcu_pio_setattr(cfg->pcfg.spi.cs.port, &attr);
+	pio_attr.o_pinmask = (1<<config->cs.pin);
+	pio_attr.o_flags = PIO_FLAG_SET_OUTPUT | PIO_FLAG_IS_DIRONLY;
+	mcu_pio_setattr(config->cs.port, &pio_attr);
 
 	sst25vf_share_write_disable(cfg);
 
@@ -85,23 +88,24 @@ int sst25vf_open(const device_cfg_t * cfg){
 	return 0;
 }
 
-static void complete_spi_read(const device_cfg_t * cfg, uint32_t ignore){
+static int complete_spi_read(const devfs_handle_t * cfg, uint32_t ignore){
 	sst25vf_state_t * state = (sst25vf_state_t*)cfg->state;
 	sst25vf_share_deassert_cs(cfg);
-	if( state->callback != NULL ){
-		state->callback(state->context, NULL);
-		state->callback = NULL;
+	if( state->handler.callback != NULL ){
+		state->handler.callback(state->handler.context, NULL);
+		state->handler.callback = NULL;
 	}
+	return 0;
 }
 
 
-int sst25vf_read(const device_cfg_t * cfg, device_transfer_t * rop){
+int sst25vf_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	sst25vf_state_t * state = (sst25vf_state_t*)cfg->state;
-	const sst25vf_cfg_t * dcfg = (const sst25vf_cfg_t *)(cfg->dcfg);
-	state->callback = rop->callback;
-	state->context = rop->context;
-	rop->context = (void*)cfg;
-	rop->callback = (mcu_callback_t)complete_spi_read;
+	const sst25vf_cfg_t * dcfg = (const sst25vf_cfg_t *)(cfg->config);
+	state->handler.callback = rop->handler.callback;
+	state->handler.context = rop->handler.context;
+	rop->handler.context = (void*)cfg;
+	rop->handler.callback = (mcu_callback_t)complete_spi_read;
 
 	if ( rop->loc >= dcfg->size ){
 		return EOF;
@@ -113,7 +117,7 @@ int sst25vf_read(const device_cfg_t * cfg, device_transfer_t * rop){
 
 	sst25vf_share_assert_cs(cfg);
 	sst25vf_share_write_opcode_addr(cfg, SST25VF_INS_RD_HS, rop->loc);
-	mcu_spi_swap(cfg->periph.port, NULL); //dummy byte output
+	mcu_spi_swap(cfg->port, NULL); //dummy byte output
 	return mcu_spi_read(cfg, rop);
 }
 
@@ -138,7 +142,7 @@ static void assert_delay(){
 	}
 }
 
-int continue_spi_write(const device_cfg_t * cfg, uint32_t ignore){
+int continue_spi_write(const devfs_handle_t * cfg, uint32_t ignore){
 	sst25vf_state_t * state = (sst25vf_state_t *)cfg->state;
 	int tmp;
 	//should be called 10 us after complete_spi_write() executes
@@ -173,25 +177,25 @@ int continue_spi_write(const device_cfg_t * cfg, uint32_t ignore){
 		state->buf = NULL;
 
 		//call the event handler to show the operation is complete
-		if ( state->callback != NULL ){
-			state->callback(state->context, NULL);
-			state->callback = NULL;
+		if ( state->handler.callback != NULL ){
+			state->handler.callback(state->handler.context, NULL);
+			state->handler.callback = NULL;
 		}
 	}
 	return 0;
 }
 
-int complete_spi_write(const device_cfg_t * cfg, uint32_t ignore){
+int complete_spi_write(const devfs_handle_t * cfg, uint32_t ignore){
 	mcu_action_t action;
-	sst25vf_cfg_t * sst_cfg = (sst25vf_cfg_t*)cfg->dcfg;
+	sst25vf_cfg_t * sst_cfg = (sst25vf_cfg_t*)cfg->config;
 	sst25vf_state_t * state = (sst25vf_state_t*)cfg->state;
 
 
 	//configure the GPIO to interrupt on a rising edge
-	action.context = (void*)cfg;
-	action.callback = (mcu_callback_t)continue_spi_write;
+	action.handler.context = (void*)cfg;
+	action.handler.callback = (mcu_callback_t)continue_spi_write;
 	action.channel = sst_cfg->miso.pin;
-	action.event = PIO_ACTION_EVENT_RISING;
+	action.o_events = PIO_EVENT_RISING;
 	action.prio = 0;
 	mcu_pio_setaction(sst_cfg->miso.port, &action);
 
@@ -206,12 +210,12 @@ int complete_spi_write(const device_cfg_t * cfg, uint32_t ignore){
 	}
 }
 
-int sst25vf_write(const device_cfg_t * cfg, device_transfer_t * wop){
+int sst25vf_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	int tmp;
 	int err;
 	uint8_t *addrp;
 	sst25vf_state_t * state = (sst25vf_state_t*)cfg->state;
-	//sst25vf_cfg_t * sst_cfg = (sst25vf_cfg_t*)cfg->dcfg;
+	//sst25vf_cfg_t * sst_cfg = (sst25vf_cfg_t*)cfg->config;
 
 	if( state->prot == 1 ){
 		errno = EROFS;
@@ -224,8 +228,7 @@ int sst25vf_write(const device_cfg_t * cfg, device_transfer_t * wop){
 	}
 
 	//This is the final callback and context when all the writing is done
-	state->callback = wop->callback;
-	state->context = wop->context;
+	state->handler = wop->handler;
 	state->buf = wop->buf;
 	state->nbyte = wop->nbyte;
 
@@ -256,9 +259,9 @@ int sst25vf_write(const device_cfg_t * cfg, device_transfer_t * wop){
 	}
 
 	state->op.flags = wop->flags;
-	state->op.callback = (mcu_callback_t)complete_spi_write;
-	state->op.context = (void*)cfg;
-	state->op.cbuf = state->cmd;
+	state->op.handler.callback = (mcu_callback_t)complete_spi_write;
+	state->op.handler.context = (void*)cfg;
+	state->op.buf_const = state->cmd;
 	state->op.nbyte = 6;
 	state->op.loc = 0;
 
@@ -270,14 +273,14 @@ int sst25vf_write(const device_cfg_t * cfg, device_transfer_t * wop){
 	return err;
 }
 
-int sst25vf_ioctl(const device_cfg_t * cfg, int request, void * ctl){
-	sst25vf_cfg_t * sst_cfg = (sst25vf_cfg_t*)cfg->dcfg;
+int sst25vf_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
+	sst25vf_cfg_t * sst_cfg = (sst25vf_cfg_t*)cfg->config;
 	sst25vf_state_t * state = (sst25vf_state_t*)cfg->state;
-	disk_attr_t * attr;
+	drive_info_t * attr;
 
 	switch(request){
-	case I_DISK_ERASE_BLOCK:
-	case I_DISK_ERASE_DEVICE:
+	case I_DRIVE_ERASE_BLOCK:
+	case I_DRIVE_ERASE_DEVICE:
 		if( state->prot == 1 ){
 			errno = EROFS;
 			return -1;
@@ -286,27 +289,27 @@ int sst25vf_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 	}
 
 	switch(request){
-	case I_DISK_PROTECT:
+	case I_DRIVE_PROTECT:
 		sst25vf_share_global_protect(cfg);
 		state->prot = 1;
 		break;
-	case I_DISK_UNPROTECT:
+	case I_DRIVE_UNPROTECT:
 		sst25vf_share_global_unprotect(cfg);
 		state->prot = 0;
 		break;
-	case I_DISK_ERASE_BLOCK:
+	case I_DRIVE_ERASE_BLOCK:
 		sst25vf_share_block_erase_4kb(cfg, (ssize_t)ctl);
 		break;
-	case I_DISK_ERASE_DEVICE:
+	case I_DRIVE_ERASE_DEVICE:
 		sst25vf_share_chip_erase(cfg);
 		break;
-	case I_DISK_POWER_DOWN:
+	case I_DRIVE_POWER_DOWN:
 		sst25vf_share_power_down(cfg);
 		break;
-	case I_DISK_POWER_UP:
+	case I_DRIVE_POWER_UP:
 		sst25vf_share_power_up(cfg);
 		break;
-	case I_DISK_GETATTR:
+	case I_DRIVE_GETINFO:
 		attr = ctl;
 
 		attr->address_size = 1;
@@ -318,13 +321,13 @@ int sst25vf_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 		attr->write_block_size = SST25VF_BLOCK_SIZE;
 		return 0;
 
-	case I_DISK_GET_BLOCKSIZE:
+	case I_DRIVE_GET_BLOCKSIZE:
 		return SST25VF_BLOCK_ERASE_SIZE;
-	case I_DISK_GET_DEVICE_ERASETIME:
+	case I_DRIVE_GET_DEVICE_ERASETIME:
 		return SST25VF_CHIP_ERASE_TIME;
-	case I_DISK_GET_BLOCK_ERASETIME:
+	case I_DRIVE_GET_BLOCK_ERASETIME:
 		return SST25VF_BLOCK_ERASE_TIME;
-	case I_DISK_GET_SIZE:
+	case I_DRIVE_GET_SIZE:
 		return sst_cfg->size;
 	default:
 		return mcu_spi_ioctl(cfg, request, ctl);
@@ -332,7 +335,7 @@ int sst25vf_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 	return 0;
 }
 
-int sst25vf_close(const device_cfg_t * cfg){
+int sst25vf_close(const devfs_handle_t * cfg){
 	return 0;
 }
 

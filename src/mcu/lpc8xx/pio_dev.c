@@ -77,10 +77,10 @@ int _mcu_pio_set_event(int port, int event, int pin){
 	return 0;
 }
 
-int _mcu_pio_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
+int _mcu_pio_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	int port;
 	mcu_action_t * action;
-	port = cfg->periph.port;
+	port = cfg->port;
 
 	if( wop->nbyte != sizeof(mcu_action_t) ){
 		errno = EINVAL;
@@ -88,8 +88,8 @@ int _mcu_pio_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
 	}
 
 	action = wop->buf;
-	action->callback = wop->callback;
-	action->context = wop->context;
+	action->handler.callback = wop->handler.callback;
+	action->handler.context = wop->handler.context;
 	return mcu_pio_setaction(port, &action);
 }
 
@@ -98,13 +98,13 @@ int mcu_pio_setaction(int port, void * ctl){
 	int err;
 	mcu_action_t * action = (mcu_action_t*)ctl;
 
-	err = _mcu_pio_set_event(port, action->event, action->channel);
+	err = _mcu_pio_set_event(port, action->o_events, action->channel);
 	if ( err ){
 		return err;
 	}
 
-	_mcu_pio_local[port].callback = action->callback;
-	_mcu_pio_local[port].context = action->context;
+	_mcu_pio_local[port].callback = action->handler.callback;
+	_mcu_pio_local[port].context = action->handler.context;
 
 	//set the interrupt on the GPIO Group pins
 	//_mcu_cortexm_priv_enable_irq((void*)(GINT0_IRQn + port));
@@ -113,7 +113,7 @@ int mcu_pio_setaction(int port, void * ctl){
 }
 
 
-int mcu_pio_getattr(int port, void * ctl){
+int mcu_pio_getinfo(int port, void * ctl){
 	//read the direction pin status
 	errno = ENOTSUP;
 	return -1;
@@ -126,40 +126,40 @@ int mcu_pio_setattr(int port, void * ctl){
 	attr = ctl;
 	__IO uint32_t * regs_iocon;
 
-	if( attr->mode & PIO_MODE_INPUT ){
+	if( attr->mode & PIO_FLAG_SET_INPUT ){
 		//set as input
 		//LPC_GPIO->DIR[port] &= ~attr->mask;
 	}
 
-	if( attr->mode & (PIO_MODE_OUTPUT) ){
+	if( attr->mode & (PIO_FLAG_SET_OUTPUT) ){
 		//set output pins as output
 		//LPC_GPIO->DIR[port] |= attr->mask;
 	}
 
-	if( attr->mode & PIO_MODE_DIRONLY ){
+	if( attr->mode & PIO_FLAG_IS_DIRONLY ){
 		return 0;
 	}
 
 	mode = (1<<6); //bit 6 is reserved and always set to 1
-	if( attr->mode & PIO_MODE_PULLUP ){
+	if( attr->mode & PIO_FLAG_PULLUP ){
 		mode |= (2<<3);
-	} else if( attr->mode & PIO_MODE_REPEATER ){
+	} else if( attr->mode & PIO_FLAG_REPEATER ){
 		mode |= (3<<3);
-	} else if( attr->mode & PIO_MODE_FLOAT ){
+	} else if( attr->mode & PIO_FLAG_FLOAT ){
 		mode |= (0<<3);
-	} else if ( attr->mode & PIO_MODE_PULLDOWN ){
+	} else if ( attr->mode & PIO_FLAG_PULLDOWN ){
 		mode |= 1<<3;
 	}
 
-	if( attr->mode & PIO_MODE_HYSTERESIS ){
+	if( attr->mode & PIO_FLAG_IS_HYSTERESIS ){
 		mode |= 1<<5;
 	}
 
-	if( !(attr->mode & PIO_MODE_ANALOG) ){
+	if( !(attr->mode & PIO_FLAG_IS_ANALOG) ){
 		mode |= (1<<7);
 	}
 
-	if( attr->mode & PIO_MODE_OPENDRAIN ){
+	if( attr->mode & PIO_FLAG_IS_OPENDRAIN ){
 		mode |= 1<<10;
 	}
 

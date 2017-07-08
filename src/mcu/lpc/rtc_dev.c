@@ -87,7 +87,7 @@ int _mcu_rtc_dev_powered_on(int port){
 }
 
 
-int mcu_rtc_getattr(int port, void * ctl){
+int mcu_rtc_getinfo(int port, void * ctl){
 	rtc_attr_t * ctlp;
 	ctlp = (rtc_attr_t *)ctl;
 	ctlp->pin_assign = 0;
@@ -108,21 +108,21 @@ int mcu_rtc_setattr(int port, void * ctl){
 int mcu_rtc_setaction(int port, void * ctl){
 	mcu_action_t * action = (mcu_action_t*)ctl;
 
-	if( _mcu_cortexm_priv_validate_callback(action->callback) < 0 ){
+	if( _mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
 		return -1;
 	}
 
-	rtc_local.handler.callback = action->callback;
-	rtc_local.handler.context = action->context;
+	rtc_local.handler.callback = action->handler.callback;
+	rtc_local.handler.context = action->handler.context;
 
 	_mcu_cortexm_set_irq_prio(rtc_irqs[port], action->prio);
 
 
 	//Set the event
-	return mcu_rtc_setcountevent(port, (void*)action->event);
+	return mcu_rtc_setcountevent(port, (void*)action->o_events);
 }
 
-int _mcu_rtc_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
+int _mcu_rtc_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	return 0;
 }
 

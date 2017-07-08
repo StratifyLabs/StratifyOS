@@ -9,7 +9,7 @@
 #define SD_SPI_H_
 
 #include "mcu/types.h"
-#include "iface/dev/disk.h"
+#include "sos/dev/drive.h"
 
 #define SDSPI_IOC_IDENT_CHAR 'S'
 

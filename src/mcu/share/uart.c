@@ -24,14 +24,14 @@
 extern void _mcu_uart_dev_power_on(int port);
 extern void _mcu_uart_dev_power_off(int port);
 extern int _mcu_uart_dev_powered_on(int port);
-extern int _mcu_uart_dev_read(const device_cfg_t * cfg, device_transfer_t * rop);
-extern int _mcu_uart_dev_write(const device_cfg_t * cfg, device_transfer_t * wop);
+extern int _mcu_uart_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop);
+extern int _mcu_uart_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop);
 
-extern int _mcu_3_uart_dev_read(const dev_handle_t * cfg, device_transfer_t * rop);
-extern int _mcu_3_uart_dev_write(const dev_handle_t * cfg, device_transfer_t * wop);
+extern int _mcu_3_uart_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop);
+extern int _mcu_3_uart_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop);
 
-int (* const uart_ioctl_func_table[I_GLOBAL_TOTAL + I_UART_TOTAL])(int, void*) = {
-		mcu_uart_getattr,
+int (* const uart_ioctl_func_table[I_MCU_TOTAL + I_UART_TOTAL])(int, void*) = {
+		mcu_uart_getinfo,
 		mcu_uart_setattr,
 		mcu_uart_setaction,
 		mcu_uart_clear,
@@ -39,72 +39,38 @@ int (* const uart_ioctl_func_table[I_GLOBAL_TOTAL + I_UART_TOTAL])(int, void*) =
 		mcu_uart_flush
 };
 
-int mcu_uart_open(const device_cfg_t * cfg){
+int mcu_uart_open(const devfs_handle_t * cfg){
 	return mcu_open(cfg,
 			_mcu_uart_dev_powered_on,
 			_mcu_uart_dev_power_on);
 }
 
-int mcu_uart_ioctl(const device_cfg_t * cfg, int request, void * ctl){
+int mcu_uart_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 	return mcu_ioctl(cfg,
 			request,
 			ctl,
 			_mcu_uart_dev_powered_on,
 			uart_ioctl_func_table,
-			I_GLOBAL_TOTAL + I_UART_TOTAL);
+			I_MCU_TOTAL + I_UART_TOTAL);
 }
 
 
 
-int mcu_uart_read(const device_cfg_t * cfg, device_transfer_t * rop){
+int mcu_uart_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	return mcu_read(cfg, rop,
 			_mcu_uart_dev_powered_on,
 			_mcu_uart_dev_read);
 }
 
-int mcu_uart_write(const device_cfg_t * cfg, device_transfer_t * wop){
+int mcu_uart_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	return mcu_write(cfg, wop,
 			_mcu_uart_dev_powered_on,
 			_mcu_uart_dev_write);
 
 }
 
-int mcu_uart_close(const device_cfg_t * cfg){
+int mcu_uart_close(const devfs_handle_t * cfg){
 	return mcu_close(cfg, _mcu_uart_dev_powered_on, _mcu_uart_dev_power_off);
-}
-
-int mcu_3_uart_open(const dev_handle_t * cfg){
-	return mcu_3_open(cfg,
-			_mcu_uart_dev_powered_on,
-			_mcu_uart_dev_power_on);
-}
-
-int mcu_3_uart_ioctl(const dev_handle_t * cfg, int request, void * ctl){
-	return mcu_3_ioctl(cfg,
-			request,
-			ctl,
-			_mcu_uart_dev_powered_on,
-			uart_ioctl_func_table,
-			I_GLOBAL_TOTAL + I_UART_TOTAL);
-}
-
-
-
-int mcu_3_uart_read(const dev_handle_t * cfg, device_transfer_t * rop){
-	return mcu_3_read(cfg, rop,
-			_mcu_uart_dev_powered_on,
-			_mcu_3_uart_dev_read);
-}
-
-int mcu_3_uart_write(const dev_handle_t * cfg, device_transfer_t * wop){
-	return mcu_3_write(cfg, wop,
-			_mcu_uart_dev_powered_on,
-			_mcu_3_uart_dev_write);
-
-}
-
-int mcu_3_uart_close(const dev_handle_t * cfg){
-	return mcu_3_close(cfg, _mcu_uart_dev_powered_on, _mcu_uart_dev_power_off);
 }
 
 

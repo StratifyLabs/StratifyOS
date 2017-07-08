@@ -26,8 +26,8 @@ extern void _mcu_qei_dev_power_off(int port);
 extern int _mcu_qei_dev_powered_on(int port);
 
 
-int (* const qei_ioctl_func_table[I_GLOBAL_TOTAL + I_QEI_TOTAL])(int, void*) = {
-		mcu_qei_getattr,
+int (* const qei_ioctl_func_table[I_MCU_TOTAL + I_QEI_TOTAL])(int, void*) = {
+		mcu_qei_getinfo,
 		mcu_qei_setattr,
 		mcu_qei_setaction,
 		mcu_qei_get,
@@ -36,36 +36,36 @@ int (* const qei_ioctl_func_table[I_GLOBAL_TOTAL + I_QEI_TOTAL])(int, void*) = {
 		mcu_qei_reset
 };
 
-int mcu_qei_open(const device_cfg_t * cfg){
+int mcu_qei_open(const devfs_handle_t * cfg){
 	return mcu_open(cfg,
 			_mcu_qei_dev_powered_on,
 			_mcu_qei_dev_power_on);
 }
 
-int mcu_qei_ioctl(const device_cfg_t * cfg, int request, void * ctl){
+int mcu_qei_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 	return mcu_ioctl(cfg,
 			request,
 			ctl,
 			_mcu_qei_dev_powered_on,
 			qei_ioctl_func_table,
-			I_GLOBAL_TOTAL + I_QEI_TOTAL);
+			I_MCU_TOTAL + I_QEI_TOTAL);
 }
 
 
 
-int mcu_qei_read(const device_cfg_t * cfg, device_transfer_t * rop){
+int mcu_qei_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	errno = ENOTSUP;
 	return -1;
 
 }
 
-int mcu_qei_write(const device_cfg_t * cfg, device_transfer_t * wop){
+int mcu_qei_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	errno = ENOTSUP;
 	return -1;
 
 }
 
-int mcu_qei_close(const device_cfg_t * cfg){
+int mcu_qei_close(const devfs_handle_t * cfg){
 	return mcu_close(cfg, _mcu_qei_dev_powered_on, _mcu_qei_dev_power_off);
 }
 

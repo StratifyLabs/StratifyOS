@@ -322,7 +322,7 @@
 .global sem_unlink; sem_unlink = LINK_ADDR;
 .global sem_close; sem_close = LINK_ADDR;
 .global sem_wait; sem_wait = LINK_ADDR;
-.global mq_getattr; mq_getattr = LINK_ADDR;
+.global mq_getinfo; mq_getinfo = LINK_ADDR;
 .global mq_setattr; mq_setattr = LINK_ADDR;
 .global mq_open; mq_open = LINK_ADDR;
 .global mq_close; mq_close = LINK_ADDR;

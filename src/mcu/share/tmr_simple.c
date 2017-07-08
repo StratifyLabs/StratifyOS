@@ -31,12 +31,10 @@ static int invalid_request(int port, void * ctl){
 	return -1;
 }
 
-int (* const tmrsimple_ioctl_func_table[I_GLOBAL_TOTAL + I_TMR_TOTAL])(int, void*) = {
-		mcu_tmrsimple_getattr,
+int (* const tmrsimple_ioctl_func_table[I_MCU_TOTAL + I_TMR_TOTAL])(int, void*) = {
+		mcu_tmrsimple_getinfo,
 		mcu_tmrsimple_setattr,
 		mcu_tmrsimple_setaction,
-		mcu_tmr_on,
-		mcu_tmr_off,
 		invalid_request,
 		invalid_request,
 		invalid_request,
@@ -46,32 +44,32 @@ int (* const tmrsimple_ioctl_func_table[I_GLOBAL_TOTAL + I_TMR_TOTAL])(int, void
 };
 
 
-int mcu_tmrsimpleopen(const device_cfg_t * cfg){
+int mcu_tmrsimpleopen(const devfs_handle_t * cfg){
 	return mcu_open(cfg,
 			_mcu_tmr_dev_powered_on,
 			_mcu_tmr_dev_power_on);
 }
 
-int mcu_tmrsimple_ioctl(const device_cfg_t * cfg, int request, void * ctl){
+int mcu_tmrsimple_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 	return mcu_ioctl(cfg,
 			request,
 			ctl,
 			_mcu_tmr_dev_powered_on,
 			tmrsimple_ioctl_func_table,
-			I_GLOBAL_TOTAL + I_TMR_TOTAL);
+			I_MCU_TOTAL + I_TMR_TOTAL);
 }
 
-int mcu_tmrsimple_read(const device_cfg_t * cfg, device_transfer_t * rop){
+int mcu_tmrsimple_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	errno = ENOTSUP;
 	return -1;
 }
 
-int mcu_tmrsimple_write(const device_cfg_t * cfg, device_transfer_t * wop){
+int mcu_tmrsimple_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	errno = ENOTSUP;
 	return -1;
 }
 
-int mcu_tmrsimple_close(const device_cfg_t * cfg){
+int mcu_tmrsimple_close(const devfs_handle_t * cfg){
 	return mcu_close(cfg, _mcu_tmr_dev_powered_on, _mcu_tmr_dev_power_off);
 }
 

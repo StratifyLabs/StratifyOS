@@ -47,7 +47,7 @@ static u8 const spi_irqs[MCU_SPI_PORTS] = MCU_SPI_IRQS;
 
 static void exec_callback(int port, void * data);
 
-static int spi_port_transfer(int port, int is_read, device_transfer_t * dop);
+static int spi_port_transfer(int port, int is_read, devfs_async_t * dop);
 static int byte_swap(int port, int byte);
 
 void _mcu_spi_dev_power_on(int port){
@@ -76,38 +76,11 @@ int _mcu_spi_dev_powered_on(int port){
 }
 
 
-int mcu_spi_getattr(int port, void * ctl){
+int mcu_spi_getinfo(int port, void * ctl){
 	LPC_SPI_Type * regs = spi_regs[port];
-	spi_attr_t * ctlp = (spi_attr_t*)ctl;
-	ctlp->pin_assign = spi_local[port].pin_assign;
+	spi_info_t * info = ctl;
 
-
-	//Master
-	if ( regs->CR & (1<<5) ){
-		//Slave
-		ctlp->master = SPI_ATTR_MASTER;
-	} else {
-		ctlp->master = SPI_ATTR_SLAVE;
-	}
-
-	//width
-	ctlp->width = (regs->CR >> 8) & 0x0F;
-	if ( ctlp->width == 0 ){
-		ctlp->width = 16;
-	}
-
-	//format
-	ctlp->format = SPI_ATTR_FORMAT_SPI;
-
-	//Mode
-	ctlp->mode = (regs->CR >> 3) & 0x03;
-
-	//bitrate
-	if ( regs->CCR < 8 ){
-		ctlp->bitrate = -1;
-	} else {
-		ctlp->bitrate = mcu_board_config.core_periph_freq / (regs->CCR);
-	}
+	//set flags
 
 	return 0;
 }
@@ -116,73 +89,65 @@ int mcu_spi_setattr(int port, void * ctl){
 	LPC_SPI_Type * regs = spi_regs[port];
 	uint32_t cr0, cpsr;
 	uint32_t tmp;
-	spi_attr_t * ctlp = (spi_attr_t*)ctl;
+	spi_attr_t * attr = (spi_attr_t*)ctl;
+	u32 mode;
+	u32 o_flags = attr->o_flags;
+	int i;
 
 
-	if ( ctlp->bitrate == 0 ) {
-		errno = EINVAL;
-		return -1 - offsetof(spi_attr_t, bitrate);
+	if( o_flags & SPI_FLAG_SET_MASTER ){
+
+		if( attr->freq == 0 ){
+			errno = EINVAL;
+			return -1 - offsetof(spi_attr_t, freq);
+		}
+
+		if( attr->width > 8 ){
+			errno = EINVAL;
+			return -1 - offsetof(spi_attr_t, width);
+		}
+
+		mode = 0;
+		if( o_flags & SPI_FLAG_MODE1 ){
+			mode = 1;
+		} else if( o_flags & SPI_FLAG_MODE2 ){
+			mode = 2;
+		} else if( o_flags & SPI_FLAG_MODE3 ){
+			mode = 3;
+		}
+
+
+		//2 uses the SPI
+		cr0 = (1<<2);
+
+		tmp = mcu_board_config.core_periph_freq / attr->freq;
+		tmp = ( tmp > 255 ) ? 254 : tmp;
+		tmp = ( tmp < 8 ) ? 8 : tmp;
+		if ( tmp & 0x01 ){
+			tmp++; //round the divisor up so that actual is less than the target
+		}
+		cpsr = (tmp & 0xFE);
+
+		cr0 |= (mode << 3);
+		cr0 |= (1<<5);  //must be a master
+
+
+		if ( attr->width >= 8 && attr->width <= 16 ){
+			cr0 |= (( attr->width & 0x0F ) << 8);
+		} else {
+			errno = EINVAL;
+			return -1;
+		}
+
+		if( mcu_core_set_pin_assignment(attr->pin_assignment, SPI_PIN_ASSIGNMENT_COUNT, CORE_PERIPH_SPI, port) < 0 ){
+			return -1;
+		}
+
+		regs->CCR = cpsr & 0xFE;
+		regs->CR = cr0;
+
 	}
 
-	if ( ctlp->mode >= 4 ) {
-		errno = EINVAL;
-		return -1 - offsetof(spi_attr_t, mode);
-	}
-
-	if ( ctlp->master != SPI_ATTR_MASTER ){
-		errno = EINVAL;
-		return -1 - offsetof(spi_attr_t, master);
-	}
-
-	if( ctlp->width > 8 ){
-		errno = EINVAL;
-		return -1 - offsetof(spi_attr_t, width);
-	}
-
-
-	//2 uses the SPI
-	cr0 = (1<<2);
-
-	tmp = mcu_board_config.core_periph_freq / ctlp->bitrate;
-	tmp = ( tmp > 255 ) ? 254 : tmp;
-	tmp = ( tmp < 8 ) ? 8 : tmp;
-	if ( tmp & 0x01 ){
-		tmp++; //round the divisor up so that actual is less than the target
-	}
-	cpsr = (tmp & 0xFE);
-
-	cr0 |= ( ctlp->mode << 3);
-	cr0 |= (1<<5);  //must be a master
-
-
-	if ( ctlp->width >= 8 && ctlp->width <= 16 ){
-		cr0 |= (( ctlp->width & 0x0F ) << 8);
-	} else {
-		errno = EINVAL;
-		return -1;
-	}
-
-	if ( ctlp->format != SPI_ATTR_FORMAT_SPI ){
-		errno = EINVAL;
-		return -1;
-	}
-
-	switch(ctlp->pin_assign){
-	case 0:
-		_mcu_spi_cfg_pio(2, 0, 18, 17, 15);
-		break;
-	case MCU_GPIO_CFG_USER:
-		break;
-	default:
-		errno = EINVAL;
-		return -1;
-	}
-
-	regs->CCR = cpsr & 0xFE;
-	regs->CR = cr0;
-
-
-	spi_local[port].pin_assign = ctlp->pin_assign;
 
 	return 0;
 }
@@ -210,15 +175,15 @@ int mcu_spi_setaction(int port, void * ctl){
 	LPC_SPI_Type * regs = spi_regs[port];
 
 	mcu_action_t * action = (mcu_action_t*)ctl;
-	if( action->callback == 0 ){
+	if( action->handler.callback == 0 ){
 		//cancel any ongoing operation
 		if ( regs->CR & (SPIE) ){
 			exec_callback(port, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
 		}
 	}
 
-	spi_local[port].callback = action->callback;
-	spi_local[port].context = action->context;
+	spi_local[port].callback = action->handler.callback;
+	spi_local[port].context = action->handler.context;
 	_mcu_cortexm_set_irq_prio(spi_irqs[port], action->prio);
 
 	return 0;
@@ -232,12 +197,12 @@ int byte_swap(int port, int byte){
 	return regs->DR;
 }
 
-int _mcu_spi_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
-	return spi_port_transfer(cfg->periph.port, 0, wop);
+int _mcu_spi_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
+	return spi_port_transfer(cfg->port, 0, wop);
 }
 
-int _mcu_spi_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
-	return spi_port_transfer(cfg->periph.port, 1, rop);
+int _mcu_spi_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
+	return spi_port_transfer(cfg->port, 1, rop);
 }
 
 void _mcu_core_spi0_isr(){
@@ -275,7 +240,7 @@ void _mcu_core_spi0_isr(){
 	}
 }
 
-int spi_port_transfer(int port, int is_read, device_transfer_t * dop){
+int spi_port_transfer(int port, int is_read, devfs_async_t * dop){
 	LPC_SPI_Type * regs = spi_regs[port];
 	int size;
 	size = dop->nbyte;
@@ -297,8 +262,8 @@ int spi_port_transfer(int port, int is_read, device_transfer_t * dop){
 		spi_local[port].rx_buf = spi_local[port].duplex_mem;
 	}
 	spi_local[port].size = size;
-	spi_local[port].callback = dop->callback;
-	spi_local[port].context = dop->context;
+	spi_local[port].callback = dop->handler.callback;
+	spi_local[port].context = dop->handler.context;
 	regs->CR |= SPIE; //enable the interrupt
 	if ( spi_local[port].tx_buf ){
 		//! \todo This won't handle spi widths other than 8 bits

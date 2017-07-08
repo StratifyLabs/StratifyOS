@@ -20,6 +20,6 @@
 #ifndef _SYS_IOCTL_H_
 #define _SYS_IOCTL_H_
 
-#include <iface/dev/ioctl.h>
+#include "ioctl.h"
 
 #endif /* _SYS_IOCTL_H_ */

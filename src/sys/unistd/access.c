@@ -31,7 +31,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include <stratify/sysfs.h>
+#include "sos/fs/sysfs.h"
 
 static int check_permissions(int file_mode, int file_uid, int file_gid, int amode);
 

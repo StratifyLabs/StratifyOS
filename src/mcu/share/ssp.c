@@ -20,51 +20,49 @@
 #include "local.h"
 #include "mcu/spi.h"
 
-int mcu_ssp_open(const device_cfg_t * cfg) MCU_PRIV_CODE;
-int mcu_ssp_read(const device_cfg_t * cfg, device_transfer_t * rop) MCU_PRIV_CODE;
-int mcu_ssp_write(const device_cfg_t * cfg, device_transfer_t * wop) MCU_PRIV_CODE;
-int mcu_ssp_ioctl(const device_cfg_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
-int mcu_ssp_close(const device_cfg_t * cfg) MCU_PRIV_CODE;
-int mcu_ssp_getattr(int port, void * ctl) MCU_PRIV_CODE;
+int mcu_ssp_open(const devfs_handle_t * cfg) MCU_PRIV_CODE;
+int mcu_ssp_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_PRIV_CODE;
+int mcu_ssp_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_PRIV_CODE;
+int mcu_ssp_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
+int mcu_ssp_close(const devfs_handle_t * cfg) MCU_PRIV_CODE;
+int mcu_ssp_getinfo(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_ssp_setattr(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_ssp_setaction(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_ssp_swap(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_ssp_setduplex(int port, void * ctl) MCU_PRIV_CODE;
 
 //These functions are device specific
 extern void _mcu_ssp_dev_power_on(int port);
 extern void _mcu_ssp_dev_power_off(int port);
 extern int _mcu_ssp_dev_powered_on(int port);
-extern int _mcu_ssp_dev_read(const device_cfg_t * cfg, device_transfer_t * rop);
-extern int _mcu_ssp_dev_write(const device_cfg_t * cfg, device_transfer_t * wop);
+extern int _mcu_ssp_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop);
+extern int _mcu_ssp_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop);
 
-int (* const ssp_ioctl_func_table[I_GLOBAL_TOTAL + I_SPI_TOTAL])(int, void*) = {
-		mcu_ssp_getattr,
+int (* const ssp_ioctl_func_table[I_MCU_TOTAL + I_SPI_TOTAL])(int, void*) = {
+		mcu_ssp_getinfo,
 		mcu_ssp_setattr,
 		mcu_ssp_setaction,
-		mcu_ssp_swap,
-		mcu_ssp_setduplex,
+		mcu_ssp_swap
 };
 
-int mcu_ssp_open(const device_cfg_t * cfg){
+int mcu_ssp_open(const devfs_handle_t * cfg){
 	return mcu_open(cfg,
 			_mcu_ssp_dev_powered_on,
 			_mcu_ssp_dev_power_on);
 }
 
 
-int mcu_ssp_ioctl(const device_cfg_t * cfg, int request, void * ctl){
+int mcu_ssp_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 	return mcu_ioctl(cfg,
 			request,
 			ctl,
 			_mcu_ssp_dev_powered_on,
 			ssp_ioctl_func_table,
-			I_GLOBAL_TOTAL + I_SPI_TOTAL);
+			I_MCU_TOTAL + I_SPI_TOTAL);
 }
 
 
 
-int mcu_ssp_read(const device_cfg_t * cfg, device_transfer_t * rop){
+int mcu_ssp_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	return mcu_read(cfg, rop,
 			_mcu_ssp_dev_powered_on,
 			_mcu_ssp_dev_read);
@@ -72,14 +70,14 @@ int mcu_ssp_read(const device_cfg_t * cfg, device_transfer_t * rop){
 }
 
 
-int mcu_ssp_write(const device_cfg_t * cfg, device_transfer_t * wop){
+int mcu_ssp_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	return mcu_write(cfg, wop,
 			_mcu_ssp_dev_powered_on,
 			_mcu_ssp_dev_write);
 
 }
 
-int mcu_ssp_close(const device_cfg_t * cfg){
+int mcu_ssp_close(const devfs_handle_t * cfg){
 	return mcu_close(cfg, _mcu_ssp_dev_powered_on, _mcu_ssp_dev_power_off);
 }
 

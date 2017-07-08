@@ -27,7 +27,7 @@
 #include <stdarg.h>
 #include "unistd_fs.h"
 #include "unistd_flags.h"
-#include "stratify/stratify.h"
+#include "sos/stratify.h"
 
 #include "mcu/debug.h"
 

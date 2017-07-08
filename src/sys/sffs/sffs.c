@@ -38,7 +38,7 @@
 #include <sys/sffs/sffs_block.h>
 #include <sys/sffs/sffs_scratch.h>
 #include <stratify/sffs.h>
-#include <stratify/sysfs.h>
+#include "sos/fs/sysfs.h"
 
 extern int pthread_mutex_force_unlock(pthread_mutex_t *mutex);
 
@@ -398,7 +398,7 @@ int sffs_open(const void * cfg, void ** handle, const char * path, int flags, in
 
 int sffs_read(const void * cfg, void * handle, int flags, int loc, void * buf, int nbyte){
 	cl_handle_t * h = (cl_handle_t*)handle;
-	device_transfer_t op;
+	devfs_async_t op;
 	int ret;
 
 	h->op = &op;
@@ -406,8 +406,8 @@ int sffs_read(const void * cfg, void * handle, int flags, int loc, void * buf, i
 	op.loc = loc;
 	op.buf = buf;
 	op.nbyte = nbyte;
-	op.callback = NULL;
-	op.context = NULL;
+	op.handler.callback = NULL;
+	op.handler.context = NULL;
 
 	CL_TP(CL_PROB_IMPROBABLE);
 
@@ -438,7 +438,7 @@ int sffs_read(const void * cfg, void * handle, int flags, int loc, void * buf, i
 
 int sffs_write(const void * cfg, void * handle, int flags, int loc, const void * buf, int nbyte){
 	cl_handle_t * h = (cl_handle_t*)handle;
-	device_transfer_t op;
+	devfs_async_t op;
 	int ret;
 
 	h->op = &op;
@@ -448,10 +448,10 @@ int sffs_write(const void * cfg, void * handle, int flags, int loc, const void *
 	}
 
 	op.loc = loc;
-	op.cbuf = buf;
+	op.buf_const = buf;
 	op.nbyte = nbyte;
-	op.callback = NULL;
-	op.context = NULL;
+	op.handler.callback = NULL;
+	op.handler.context = NULL;
 
 	CL_TP(CL_PROB_IMPROBABLE);
 

@@ -38,10 +38,10 @@
 #ifndef _MCU_CORE_H_
 #define _MCU_CORE_H_
 
-#include <stdint.h>
 #include "mcu/types.h"
-#include "iface/device_config.h"
-#include "../iface/dev/core.h"
+#include "mcu/mcu.h"
+#include "sos/dev/core.h"
+#include "sos/fs/devfs.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -95,6 +95,13 @@ void _mcu_core_setclock_main_12mhz_72mhz() MCU_PRIV_CODE;
  */
 int _mcu_core_setusbclock(int fosc /*! The oscillator frequency */) MCU_PRIV_CODE;
 
+typedef enum {
+	CORE_SLEEP /*! Sleep mode */,
+	CORE_DEEPSLEEP /*! Deep sleep (preserve SRAM) */,
+	CORE_DEEPSLEEP_STOP /*! Deep sleep (preserve SRAM, stop clocks) */,
+	CORE_DEEPSLEEP_STANDBY /*! Turn the device off (lose SRAM) */
+} core_sleep_t;
+
 /*! \details This function puts the MCU in sleep mode.
  */
 int _mcu_core_sleep(core_sleep_t level /*! The sleep type */);
@@ -121,7 +128,7 @@ int _mcu_core_set_pinsel_func(int gpio_port /*! The GPIO port number */,
 
 int mcu_core_setpinfunc(int port, void * arg) MCU_PRIV_CODE;
 
-void _mcu_core_getserialno(sn_t * serialno) MCU_PRIV_CODE;
+void _mcu_core_getserialno(mcu_sn_t * serialno) MCU_PRIV_CODE;
 
 
 #ifndef __link
@@ -132,13 +139,13 @@ int _mcu_core_getclock(){ return mcu_board_config.core_cpu_freq; }
 void _mcu_core_priv_bootloader_api(void * args) MCU_PRIV_CODE;
 
 
-int mcu_core_open(const device_cfg_t * cfg) MCU_PRIV_CODE;
-int mcu_core_read(const device_cfg_t * cfg, device_transfer_t * rop) MCU_PRIV_CODE;
-int mcu_core_write(const device_cfg_t * cfg, device_transfer_t * wop) MCU_PRIV_CODE;
-int mcu_core_ioctl(const device_cfg_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
-int mcu_core_close(const device_cfg_t * cfg) MCU_PRIV_CODE;
+int mcu_core_open(const devfs_handle_t * cfg) MCU_PRIV_CODE;
+int mcu_core_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_PRIV_CODE;
+int mcu_core_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_PRIV_CODE;
+int mcu_core_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
+int mcu_core_close(const devfs_handle_t * cfg) MCU_PRIV_CODE;
 
-int mcu_core_getattr(int port, void * arg) MCU_PRIV_CODE;
+int mcu_core_getinfo(int port, void * arg) MCU_PRIV_CODE;
 int mcu_core_setattr(int port, void * arg) MCU_PRIV_CODE;
 int mcu_core_setaction(int port, void * arg) MCU_PRIV_CODE;
 int mcu_core_setpinfunc(int port, void * arg) MCU_PRIV_CODE;
@@ -150,6 +157,7 @@ int mcu_core_setclkdivide(int port, void * arg) MCU_PRIV_CODE;
 int mcu_core_getmcuboardconfig(int port, void * arg) MCU_PRIV_CODE;
 void _mcu_core_set_nvic_priority(int irq, int prio) MCU_PRIV_CODE;
 
+int mcu_core_set_pin_assignment(const mcu_pin_t * pin_assignement, int count, int periph, int periph_port);
 
 
 

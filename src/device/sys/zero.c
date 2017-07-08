@@ -20,27 +20,27 @@
 #include <errno.h>
 #include <stddef.h>
 #include <string.h>
-#include "dev/sys.h"
+#include "mcu/sys.h"
 
 
-int zero_open(const device_cfg_t * cfg){
+int zero_open(const devfs_handle_t * cfg){
 	return 0;
 }
 
-int zero_ioctl(const device_cfg_t * cfg, int request, void * ctl){
+int zero_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 	return 0;
 }
 
-int zero_read(const device_cfg_t * cfg, device_transfer_t * rop){
+int zero_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	memset(rop->buf, 0, rop->nbyte);
 	return rop->nbyte;
 }
 
-int zero_write(const device_cfg_t * cfg, device_transfer_t * wop){
+int zero_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	return wop->nbyte;
 }
 
-int zero_close(const device_cfg_t * cfg){
+int zero_close(const devfs_handle_t * cfg){
 	return 0;
 }
 

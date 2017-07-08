@@ -45,7 +45,7 @@ int flash_dev_powered_on(int port){
 	return 1;
 }
 
-int mcu_flash_getattr(int port, void * ctl){
+int mcu_flash_getinfo(int port, void * ctl){
 	return 0;
 }
 int mcu_flash_setattr(int port, void * ctl){
@@ -194,7 +194,7 @@ int mcu_flash_writepage(int port, void * ctl){
 
 }
 
-int _mcu_flash_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
+int _mcu_flash_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 
 	if ( rop->loc >= (u32)&_flash_size ){
 		return -1;

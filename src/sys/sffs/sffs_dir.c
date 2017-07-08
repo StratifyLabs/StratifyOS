@@ -25,7 +25,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <errno.h>
-#include <stratify/sysfs.h>
+#include "sos/fs/sysfs.h"
 
 #include <sys/sffs/sffs_dir.h>
 #include <sys/sffs/sffs_list.h>

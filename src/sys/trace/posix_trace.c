@@ -472,7 +472,7 @@ int posix_trace_get_filter(trace_id_t id, trace_event_set_t * event_set){
 int posix_trace_get_status(trace_id_t id, struct posix_trace_status_info * info){
 	struct mq_attr attr;
 
-	mq_getattr(id->mq, &attr);
+	mq_getinfo(id->mq, &attr);
 	if( attr.mq_msgsize == attr.mq_maxmsg ){
 		id->status |= POSIX_STREAM_FULL_STATUS_MASK;
 	}

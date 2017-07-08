@@ -25,7 +25,7 @@
 #include "mcu/cortexm.h"
 #include "mcu/core.h"
 
-#include "iface/device_config.h"
+#include "sos/fs/devfs.h"
 #include "uart.h"
 
 #ifdef __cplusplus
@@ -65,15 +65,15 @@ extern char mcu_debug_buffer[MCU_DEBUG_BUFFER_SIZE];
 
 #define mcu_debug_irq(...) do { \
 	int bytes; \
-	device_transfer_t op; \
+	devfs_async_t op; \
 	device_periph_t periph; \
 	siprintf(mcu_debug_buffer, __VA_ARGS__); \
 	bytes = strlen(mcu_debug_buffer); \
 	periph.port = MCU_DEBUG_PORT; \
 	op.buf = mcu_debug_buffer; \
 	op.nbyte = bytes; \
-	op.callback = NULL; \
-	mcu_uart_write((const device_cfg_t *)&periph, &op); \
+	op.handler.callback = NULL; \
+	mcu_uart_write((const devfs_handle_t *)&periph, &op); \
 } while(0)
 
 extern volatile int usbdev_stat;

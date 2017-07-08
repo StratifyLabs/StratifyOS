@@ -20,11 +20,11 @@
 
 #include <errno.h>
 
-#include "stratify/stratify.h"
-#include "iface/stratify_link_transport_usb.h"
+#include "sos/stratify.h"
+#include "sos/stratify_link_transport_usb.h"
 #include "mcu/task.h"
 #include "mcu/core.h"
-#include "iface/link.h"
+#include "sos/link/link.h"
 #include "mcu/mpu.h"
 
 static void stratify_trace_event_addr(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len, u32 addr);

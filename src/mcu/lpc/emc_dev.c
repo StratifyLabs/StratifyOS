@@ -34,7 +34,7 @@ int _mcu_emc_dev_powered_on(int port){
 	return _mcu_lpc_core_pwr_enabled(PCEMC);
 }
 
-int mcu_emc_getattr(int port, void * ctl){
+int mcu_emc_getinfo(int port, void * ctl){
 	errno = ENOTSUP;
 	return -1;
 }

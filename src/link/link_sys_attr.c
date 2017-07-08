@@ -28,10 +28,10 @@ int link_get_sys_attr(link_transport_mdriver_t * driver, sys_attr_t * sys_attr){
 	if( sys_fd >= 0 ){
 
 		memset(sys_attr, 0, sizeof(sys_attr_t));
-		if( link_ioctl(driver, sys_fd, I_SYS_GETATTR, sys_attr) < 0 ){
+		if( link_ioctl(driver, sys_fd, I_SYS_GETINFO, sys_attr) < 0 ){
 			//this usually means there is a version mismatch between StratifyIO and StratifyOS
 			sys_23_attr_t sys_23_attr;
-			if( link_ioctl(driver, sys_fd, I_SYS_23_GETATTR, &sys_23_attr) < 0 ){
+			if( link_ioctl(driver, sys_fd, I_SYS_23_GETINFO, &sys_23_attr) < 0 ){
 				//unknown version
 			} else {
 				sys_id_t sys_id;
@@ -62,7 +62,7 @@ sys_attr_t convert_sys_23_attr(const sys_23_attr_t * sys_23_attr, const sys_id_t
     memcpy(sys_attr.stdin_name, sys_23_attr->stdin_name, LINK_NAME_MAX);
     memcpy(sys_attr.name, sys_23_attr->name, LINK_NAME_MAX);
     memcpy(sys_attr.id, id, LINK_PATH_MAX);
-    memcpy(&sys_attr.serial, &sys_23_attr->serial, sizeof(sn_t));
+    memcpy(&sys_attr.serial, &sys_23_attr->serial, sizeof(mcu_sn_t));
     sys_attr.flags =  sys_23_attr->flags;
 
     return sys_attr;

@@ -20,17 +20,17 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <stddef.h>
-#include "iface/dev/uartfifo.h"
-#include "dev/uartfifo.h"
+#include "sos/dev/uartfifo.h"
+#include "mcu/uartfifo.h"
 #include "mcu/debug.h"
 
 
-static int set_read_action(const device_cfg_t * cfg, mcu_callback_t callback){
+static int set_read_action(const devfs_handle_t * cfg, mcu_callback_t callback){
 	mcu_action_t action;
-	const uartfifo_cfg_t * cfgp = cfg->dcfg;
-	action.callback = callback;
-	action.context = (void*)cfg;
-	action.event = UART_EVENT_DATA_READY;
+	const uartfifo_cfg_t * cfgp = cfg->config;
+	action.handler.callback = callback;
+	action.handler.context = (void*)cfg;
+	action.o_events = UART_EVENT_DATA_READY;
 	action.prio = 0;
 	if( mcu_uart_setaction(cfgp->port, &action) < 0 ){
 		return -1;
@@ -41,11 +41,11 @@ static int set_read_action(const device_cfg_t * cfg, mcu_callback_t callback){
 
 static int data_received(void * context, mcu_event_t data){
 	char c;
-	const device_cfg_t * cfg;
+	const devfs_handle_t * cfg;
 	const uartfifo_cfg_t * cfgp;
 	uartfifo_state_t * state;
 	cfg = context;
-	cfgp = cfg->dcfg;
+	cfgp = cfg->config;
 	state = cfg->state;
 
 	while( mcu_uart_getbyte(cfgp->port, &c) == 0 ){
@@ -59,32 +59,32 @@ static int data_received(void * context, mcu_event_t data){
 	return 1; //leave the callback in place
 }
 
-int uartfifo_open(const device_cfg_t * cfg){
-	const uartfifo_cfg_t * cfgp = cfg->dcfg;
+int uartfifo_open(const devfs_handle_t * cfg){
+	const uartfifo_cfg_t * cfgp = cfg->config;
 	uartfifo_state_t * state = cfg->state;
 	fifo_flush(&(state->fifo));
 	state->fifo.rop = NULL;
 	//setup the device to write to the fifo when data arrives
-	if( mcu_uart_open((const device_cfg_t*)&(cfgp->port)) < 0 ){
+	if( mcu_uart_open((const devfs_handle_t*)&(cfgp->port)) < 0 ){
 		return -1;
 	}
 
 	return 0;
 }
 
-int uartfifo_ioctl(const device_cfg_t * cfg, int request, void * ctl){
-	fifo_attr_t * attr = ctl;
+int uartfifo_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
+	fifo_info_t * info = ctl;
 	mcu_action_t * action = ctl;
-	const uartfifo_cfg_t * cfgp = cfg->dcfg;
+	const uartfifo_cfg_t * cfgp = cfg->config;
 	uartfifo_state_t * state = cfg->state;
 	int ret;
 	switch(request){
-	case I_FIFO_GETATTR:
-		fifo_getattr(attr, &(cfgp->fifo), &(state->fifo));
+	case I_FIFO_GETINFO:
+		fifo_getinfo(info, &(cfgp->fifo), &(state->fifo));
 		break;
-	case I_GLOBAL_SETACTION:
+	case I_MCU_SETACTION:
 	case I_UART_SETACTION:
-		if( action->callback == 0 ){
+		if( action->handler.callback == 0 ){
 			//This needs to cancel an ongoing operation
 			fifo_cancel_rop(&(state->fifo));
 			return 0;
@@ -108,33 +108,33 @@ int uartfifo_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 		}
 		break;
 	default:
-		return mcu_uart_ioctl((const device_cfg_t*)&(cfgp->port), request, ctl);
+		return mcu_uart_ioctl((const devfs_handle_t*)&(cfgp->port), request, ctl);
 }
 return 0;
 }
 
 
-int uartfifo_read(const device_cfg_t * cfg, device_transfer_t * rop){
-	const uartfifo_cfg_t * cfgp = cfg->dcfg;
+int uartfifo_read(const devfs_handle_t * cfg, devfs_async_t * rop){
+	const uartfifo_cfg_t * cfgp = cfg->config;
 	uartfifo_state_t * state = cfg->state;
 	return fifo_read_local(&(cfgp->fifo), &(state->fifo), rop);
 }
 
-int uartfifo_write(const device_cfg_t * cfg, device_transfer_t * wop){
-	const uartfifo_cfg_t * cfgp = cfg->dcfg;
+int uartfifo_write(const devfs_handle_t * cfg, devfs_async_t * wop){
+	const uartfifo_cfg_t * cfgp = cfg->config;
 
 	//FIFO is not used for writing; hardware is written directly
-	return mcu_uart_write((const device_cfg_t*)&(cfgp->port), wop);
+	return mcu_uart_write((const devfs_handle_t*)&(cfgp->port), wop);
 }
 
-int uartfifo_close(const device_cfg_t * cfg){
-	const uartfifo_cfg_t * cfgp = cfg->dcfg;
+int uartfifo_close(const devfs_handle_t * cfg){
+	const uartfifo_cfg_t * cfgp = cfg->config;
 
 	//clear the callback for the device
 	if( set_read_action(cfg, NULL) < 0 ){
 		return -1;
 	}
 
-	return mcu_uart_close((const device_cfg_t*)&(cfgp->port));
+	return mcu_uart_close((const devfs_handle_t*)&(cfgp->port));
 }
 

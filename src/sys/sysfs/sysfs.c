@@ -27,7 +27,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <stratify/sysfs.h>
+#include "sos/fs/sysfs.h"
 
 const char sysfs_validset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_./";
 const char sysfs_whitespace[] = " \t\r\n";

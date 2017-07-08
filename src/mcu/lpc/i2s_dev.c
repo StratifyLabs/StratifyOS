@@ -100,7 +100,7 @@ int _mcu_i2s_dev_powered_on(int port){
 	return ( i2s_local[port].ref_count != 0 );
 }
 
-int mcu_i2s_getattr(int port, void * ctl){
+int mcu_i2s_getinfo(int port, void * ctl){
 	memcpy(ctl, &(i2s_local_attr[port]), sizeof(i2s_attr_t));
 	return 0;
 }
@@ -248,33 +248,33 @@ int mcu_i2s_setaction(int port, void * ctl){
 	mcu_action_t * action = (mcu_action_t*)ctl;
 
 
-	if( action->event & I2S_EVENT_DATA_READY ){
+	if( action->o_events & I2S_EVENT_DATA_READY ){
 
-		if( action->callback == 0 ){
+		if( action->handler.callback == 0 ){
 			exec_callback(&i2s_local[port].rx, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
 		}
 
-		if( _mcu_cortexm_priv_validate_callback(action->callback) < 0 ){
+		if( _mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
 			return -1;
 		}
 
-		i2s_local[port].rx.handler.callback = action->callback;
-		i2s_local[port].rx.handler.context = action->context;
+		i2s_local[port].rx.handler.callback = action->handler.callback;
+		i2s_local[port].rx.handler.context = action->handler.context;
 
 	}
 
-	if( action->event & I2S_EVENT_WRITE_COMPLETE ){
+	if( action->o_events & I2S_EVENT_WRITE_COMPLETE ){
 
-		if( action->callback == 0 ){
+		if( action->handler.callback == 0 ){
 			exec_callback(&i2s_local[port].tx, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
 		}
 
-		if( _mcu_cortexm_priv_validate_callback(action->callback) < 0 ){
+		if( _mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
 			return -1;
 		}
 
-		i2s_local[port].tx.handler.callback = action->callback;
-		i2s_local[port].tx.handler.context = action->context;
+		i2s_local[port].tx.handler.callback = action->handler.callback;
+		i2s_local[port].tx.handler.context = action->handler.context;
 
 	}
 
@@ -329,8 +329,8 @@ u8 write_tx_data(int port){
 	return level;
 }
 
-int _mcu_i2s_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
-	int port = DEVICE_GET_PORT(cfg);
+int _mcu_i2s_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
+	int port = DEVFS_GET_PORT(cfg);
 
 	//Grab the registers
 	LPC_I2S_Type * i2s_regs = i2s_get_regs(port);
@@ -355,12 +355,12 @@ int _mcu_i2s_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
 	i2s_local[port].tx.len = wop->nbyte/4;
 
 	//Check the local buffer for bytes that are immediately available
-	if( _mcu_cortexm_priv_validate_callback(wop->callback) < 0 ){
+	if( _mcu_cortexm_priv_validate_callback(wop->handler.callback) < 0 ){
 		return -1;
 	}
 
-	i2s_local[port].tx.handler.callback = wop->callback;
-	i2s_local[port].tx.handler.context = wop->context;
+	i2s_local[port].tx.handler.callback = wop->handler.callback;
+	i2s_local[port].tx.handler.context = wop->handler.context;
 
 	write_tx_data(port);
 	i2s_regs->IRQ |= (1<<1); //enable TX interrupt -- interrupt fires when FIFO is ready for more data
@@ -368,8 +368,8 @@ int _mcu_i2s_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
 }
 
 
-int _mcu_i2s_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
-	int port = DEVICE_GET_PORT(cfg);
+int _mcu_i2s_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
+	int port = DEVFS_GET_PORT(cfg);
 	int nsamples;
 	int len;
 
@@ -416,12 +416,12 @@ int _mcu_i2s_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
 
 	} else if( len != nsamples ){
 		//for blocking operations wait until the entire buffer is read then call the callback
-		if( _mcu_cortexm_priv_validate_callback(rop->callback) < 0 ){
+		if( _mcu_cortexm_priv_validate_callback(rop->handler.callback) < 0 ){
 			return -1;
 		}
 
-		i2s_local[port].rx.handler.callback = rop->callback;
-		i2s_local[port].rx.handler.context = rop->context;
+		i2s_local[port].rx.handler.callback = rop->handler.callback;
+		i2s_local[port].rx.handler.context = rop->handler.context;
 
 		i2s_regs->IRQ |= (1<<0);  //enable the receiver interrupt
 		len = 0;

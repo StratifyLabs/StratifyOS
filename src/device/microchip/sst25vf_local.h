@@ -13,8 +13,8 @@
 #include "mcu/pio.h"
 #include "mcu/spi.h"
 #include "mcu/debug.h"
-#include "iface/dev/microchip/sst25vf.h"
-#include "dev/microchip/sst25vf.h"
+#include "sos/dev/microchip/sst25vf.h"
+#include "mcu/microchip/sst25vf.h"
 
 #define SST25VF_CHIP_ERASE_TIME (75*1000)
 #define SST25VF_BLOCK_ERASE_TIME (30*1000)
@@ -51,27 +51,27 @@
 #define SST25VF_STATUS_SWP_BIT2 4
 #define SST25VF_STATUS_SWP_BIT3 5
 
-void sst25vf_share_assert_cs(const device_cfg_t * cfg);
-void sst25vf_share_deassert_cs(const device_cfg_t * cfg);
-void sst25vf_share_write_enable(const device_cfg_t * cfg);
-void sst25vf_share_write_disable(const device_cfg_t * cfg);
-void sst25vf_share_write_ebsy(const device_cfg_t * cfg);
-void sst25vf_share_write_dbsy(const device_cfg_t * cfg);
-void sst25vf_share_write_opcode_addr(const device_cfg_t * cfg, uint8_t opcode, uint32_t addr);
-void sst25vf_share_write_quick_opcode(const device_cfg_t * cfg, uint8_t opcode);
-void sst25vf_share_block_erase_4kb(const device_cfg_t * cfg, uint32_t addr);
-void sst25vf_share_block_erase_32kb(const device_cfg_t * cfg, uint32_t addr);
-void sst25vf_share_block_erase_64kb(const device_cfg_t * cfg, uint32_t addr);
-void sst25vf_share_chip_erase(const device_cfg_t * cfg);
-void sst25vf_share_write_byte(const device_cfg_t * cfg, uint32_t addr, char byte);
-char sst25vf_share_read_byte(const device_cfg_t * cfg, uint32_t addr);
-uint8_t sst25vf_share_read_status(const device_cfg_t * cfg);
-void sst25vf_share_write_status(const device_cfg_t * cfg, uint8_t status);
-void sst25vf_share_power_down(const device_cfg_t * cfg);
-void sst25vf_share_power_up(const device_cfg_t * cfg);
-void sst25vf_share_global_protect(const device_cfg_t * cfg);
-int sst25vf_share_global_unprotect(const device_cfg_t * cfg);
-void sst25vf_share_read_id(const device_cfg_t * cfg, char * dest);
+void sst25vf_share_assert_cs(const devfs_handle_t * cfg);
+void sst25vf_share_deassert_cs(const devfs_handle_t * cfg);
+void sst25vf_share_write_enable(const devfs_handle_t * cfg);
+void sst25vf_share_write_disable(const devfs_handle_t * cfg);
+void sst25vf_share_write_ebsy(const devfs_handle_t * cfg);
+void sst25vf_share_write_dbsy(const devfs_handle_t * cfg);
+void sst25vf_share_write_opcode_addr(const devfs_handle_t * cfg, uint8_t opcode, uint32_t addr);
+void sst25vf_share_write_quick_opcode(const devfs_handle_t * cfg, uint8_t opcode);
+void sst25vf_share_block_erase_4kb(const devfs_handle_t * cfg, uint32_t addr);
+void sst25vf_share_block_erase_32kb(const devfs_handle_t * cfg, uint32_t addr);
+void sst25vf_share_block_erase_64kb(const devfs_handle_t * cfg, uint32_t addr);
+void sst25vf_share_chip_erase(const devfs_handle_t * cfg);
+void sst25vf_share_write_byte(const devfs_handle_t * cfg, uint32_t addr, char byte);
+char sst25vf_share_read_byte(const devfs_handle_t * cfg, uint32_t addr);
+uint8_t sst25vf_share_read_status(const devfs_handle_t * cfg);
+void sst25vf_share_write_status(const devfs_handle_t * cfg, uint8_t status);
+void sst25vf_share_power_down(const devfs_handle_t * cfg);
+void sst25vf_share_power_up(const devfs_handle_t * cfg);
+void sst25vf_share_global_protect(const devfs_handle_t * cfg);
+int sst25vf_share_global_unprotect(const devfs_handle_t * cfg);
+void sst25vf_share_read_id(const devfs_handle_t * cfg, char * dest);
 
 
 #endif /* SST25VF_LOCAL_H_ */

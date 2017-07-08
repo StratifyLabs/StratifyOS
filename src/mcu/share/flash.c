@@ -25,11 +25,11 @@
 extern void flash_dev_power_on(int port);
 extern void flash_dev_power_off(int port);
 extern int flash_dev_powered_on(int port);
-extern int _mcu_flash_dev_read(const device_cfg_t * cfg, device_transfer_t * rop);
-extern int _mcu_flash_dev_write(const device_cfg_t * cfg, device_transfer_t * wop);
+extern int _mcu_flash_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop);
+extern int _mcu_flash_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop);
 
-int (* const flash_ioctl_func_table[I_GLOBAL_TOTAL + I_FLASH_TOTAL])(int, void*) = {
-		mcu_flash_getattr,
+int (* const flash_ioctl_func_table[I_MCU_TOTAL + I_FLASH_TOTAL])(int, void*) = {
+		mcu_flash_getinfo,
 		mcu_flash_setattr,
 		mcu_flash_setaction,
 		mcu_flash_eraseaddr,
@@ -40,37 +40,37 @@ int (* const flash_ioctl_func_table[I_GLOBAL_TOTAL + I_FLASH_TOTAL])(int, void*)
 		mcu_flash_writepage
 };
 
-int mcu_flash_open(const device_cfg_t * cfg){
+int mcu_flash_open(const devfs_handle_t * cfg){
 	return mcu_open(cfg,
 			flash_dev_powered_on,
 			flash_dev_power_on);
 }
 
-int mcu_flash_ioctl(const device_cfg_t * cfg, int request, void * ctl){
+int mcu_flash_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 	return mcu_ioctl(cfg,
 			request,
 			ctl,
 			flash_dev_powered_on,
 			flash_ioctl_func_table,
-			I_GLOBAL_TOTAL + I_FLASH_TOTAL);
+			I_MCU_TOTAL + I_FLASH_TOTAL);
 }
 
 
 
 
-int mcu_flash_read(const device_cfg_t * cfg, device_transfer_t * rop){
+int mcu_flash_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	return mcu_read(cfg, rop,
 			flash_dev_powered_on,
 			_mcu_flash_dev_read);
 }
 
 
-int mcu_flash_write(const device_cfg_t * cfg, device_transfer_t * wop){
+int mcu_flash_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	errno = ENOTSUP;
 	return -1;
 }
 
-int mcu_flash_close(const device_cfg_t * cfg){
+int mcu_flash_close(const devfs_handle_t * cfg){
 	return mcu_close(cfg, flash_dev_powered_on, flash_dev_power_off);
 }
 

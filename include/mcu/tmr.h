@@ -26,50 +26,33 @@
 #ifndef _MCU_TMR_H_
 #define _MCU_TMR_H_
 
-#include "../iface/dev/tmr.h"
-#include "iface/device_config.h"
+#include "sos/dev/tmr.h"
+#include "sos/fs/devfs.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/*! \details
- * \sa periph_open()
- *
- */
-int mcu_tmr_open(const device_cfg_t * cfg) MCU_PRIV_CODE;
-/*! \details The timer value is read using the ioctl request: \ref I_TMR_GET.  This
- * function always returns an error.
- * \sa periph_read()
- *
- */
-int mcu_tmr_read(const device_cfg_t * cfg, device_transfer_t * rop) MCU_PRIV_CODE;
-/*! \details The timer value is written using the ioctl request: \ref I_TMR_SET.  This
- * function always returns an error.
- * \sa periph_write()
- */
-int mcu_tmr_write(const device_cfg_t * cfg, device_transfer_t * wop) MCU_PRIV_CODE;
-/*! \details
- * \sa periph_ioctl()
- *
- */
-int mcu_tmr_ioctl(const device_cfg_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
-/*! \details
- * \sa periph_close()
- */
-int mcu_tmr_close(const device_cfg_t * cfg) MCU_PRIV_CODE;
+typedef struct MCU_PACK {
+	u32 value;
+} tmr_event_data_t;
 
 
-int mcu_tmr_getattr(int port, void * ctl) MCU_PRIV_CODE;
+int mcu_tmr_open(const devfs_handle_t * cfg) MCU_PRIV_CODE;
+int mcu_tmr_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_PRIV_CODE;
+int mcu_tmr_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_PRIV_CODE;
+int mcu_tmr_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
+int mcu_tmr_close(const devfs_handle_t * cfg) MCU_PRIV_CODE;
+
+
+int mcu_tmr_getinfo(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_tmr_setattr(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_tmr_setaction(int port, void * ctl) MCU_PRIV_CODE;
 
-int mcu_tmrsimple_getattr(int port, void * ctl) MCU_PRIV_CODE;
+int mcu_tmrsimple_getinfo(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_tmrsimple_setattr(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_tmrsimple_setaction(int port, void * ctl) MCU_PRIV_CODE;
 
-int mcu_tmr_on(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_tmr_off(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_tmr_setoc(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_tmr_getoc(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_tmr_setic(int port, void * ctl) MCU_PRIV_CODE;

@@ -24,12 +24,12 @@
 /*! \file
  */
 
-#include <stratify/sysfs.h>
+#include "sos/fs/sysfs.h"
 #include "mcu/mcu.h"
 #include "unistd_fs.h"
 #include "unistd_flags.h"
 #include "mcu/debug.h"
-#include "stratify/stratify.h"
+#include "sos/stratify.h"
 
 /*! \details This function closes the file associated
  * with the specified descriptor.

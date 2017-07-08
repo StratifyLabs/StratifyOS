@@ -26,11 +26,11 @@
 #include "mcu/core.h"
 #include "mcu/debug.h"
 #include "mcu/wdt.h"
-#include "iface/device_config.h"
+#include "sos/fs/devfs.h"
 
-#include "dev/sys.h"
+#include "mcu/sys.h"
 #include "mcu/core.h"
-#include "iface/dev/disk.h"
+#include "sos/dev/drive.h"
 #include "sdspi_local.h"
 #include "mcu/task.h"
 
@@ -44,87 +44,92 @@
 #define FLAG_SDSC (1<<1)
 
 
-static int _sdspi_is_sdsc(const device_cfg_t * cfg);
+static int _sdspi_is_sdsc(const devfs_handle_t * cfg);
 
-static int _sdspi_erase_blocks(const device_cfg_t * cfg, uint32_t block_num, uint32_t end_block);
-static int _sdspi_busy(const device_cfg_t * cfg);
-static int _sdspi_status(const device_cfg_t * cfg, uint8_t * buf);
-static int _sdspi_csd(const device_cfg_t * cfg, uint8_t * buf);
+static int _sdspi_erase_blocks(const devfs_handle_t * cfg, uint32_t block_num, uint32_t end_block);
+static int _sdspi_busy(const devfs_handle_t * cfg);
+static int _sdspi_status(const devfs_handle_t * cfg, uint8_t * buf);
+static int _sdspi_csd(const devfs_handle_t * cfg, uint8_t * buf);
 
-static sdspi_r1_t _sdspi_cmd_r1(const device_cfg_t * cfg, uint8_t cmd, uint32_t arg, uint8_t * r);
-//static sdspi_r2_t _sdspi_cmd_r2(const device_cfg_t * cfg, uint8_t cmd, uint32_t arg, uint8_t * r);
-static sdspi_r3_t _sdspi_cmd_r3(const device_cfg_t * cfg, uint8_t cmd, uint32_t arg);
+static sdspi_r1_t _sdspi_cmd_r1(const devfs_handle_t * cfg, uint8_t cmd, uint32_t arg, uint8_t * r);
+//static sdspi_r2_t _sdspi_cmd_r2(const devfs_handle_t * cfg, uint8_t cmd, uint32_t arg, uint8_t * r);
+static sdspi_r3_t _sdspi_cmd_r3(const devfs_handle_t * cfg, uint8_t cmd, uint32_t arg);
 
 
-static int _sdspi_send_cmd(const device_cfg_t * cfg, uint8_t cmd, uint32_t arg, uint8_t * response);
+static int _sdspi_send_cmd(const devfs_handle_t * cfg, uint8_t cmd, uint32_t arg, uint8_t * response);
 static int _sdspi_parse_response(uint8_t * response, int num, sdspi_r_t * r, uint32_t * arg);
 static int _sdspi_parse_data(uint8_t * dest, int nbyte, int count, uint8_t token, uint8_t * response);
-static int _sdspi_read_data(const device_cfg_t * cfg, void * data, int nbyte, uint8_t token, uint8_t * first_response);
-//static int _sdspi_write_data(const device_cfg_t * cfg, const void * data, int nbyte);
+static int _sdspi_read_data(const devfs_handle_t * cfg, void * data, int nbyte, uint8_t token, uint8_t * first_response);
+//static int _sdspi_write_data(const devfs_handle_t * cfg, const void * data, int nbyte);
 
-static int _sdspi_transfer(const device_cfg_t * cfg, const uint8_t * data_out, uint8_t * data_in, int nbyte);
+static int _sdspi_transfer(const devfs_handle_t * cfg, const uint8_t * data_out, uint8_t * data_in, int nbyte);
 
-static int _sdspi_try_read(const device_cfg_t * cfg, int first);
+static int _sdspi_try_read(const devfs_handle_t * cfg, int first);
 
-static void _sdspi_deassert_cs(const device_cfg_t * cfg){
-	mcu_pio_setmask(cfg->pcfg.spi.cs.port, (void*)(ssize_t)(1<<cfg->pcfg.spi.cs.pin));
+static void _sdspi_deassert_cs(const devfs_handle_t * cfg){
+	const sdspi_cfg_t * config = cfg->config;
+	mcu_pio_setmask(config->cs.port, (void*)(ssize_t)(1<<config->cs.pin));
 }
 
-static void _sdspi_assert_cs(const device_cfg_t * cfg){
-	mcu_pio_clrmask(cfg->pcfg.spi.cs.port, (void*)(ssize_t)(1<<cfg->pcfg.spi.cs.pin));
+static void _sdspi_assert_cs(const devfs_handle_t * cfg){
+	const sdspi_cfg_t * config = cfg->config;
+	mcu_pio_clrmask(config->cs.port, (void*)(ssize_t)(1<<config->cs.pin));
 }
 
-static void _sdspi_state_callback(const device_cfg_t * cfg, int err, int nbyte);
+static void _sdspi_state_callback(const devfs_handle_t * cfg, int err, int nbyte);
 
 
-int sdspi_open(const device_cfg_t * cfg){
+int sdspi_open(const devfs_handle_t * cfg){
 	int err;
 	pio_attr_t attr;
 	//sdspi_state_t * state = (sdspi_state_t*)cfg->state;
-	spi_attr_t spi_cfg;
+	const sdspi_cfg_t * config = cfg->config;
 
+	/*
+	spi_attr_t spi_cfg;
 	spi_cfg.pin_assign = cfg->pin_assign;
 	spi_cfg.width = cfg->pcfg.spi.width;
 	spi_cfg.mode = cfg->pcfg.spi.mode;
 	spi_cfg.format = cfg->pcfg.spi.format;
 	spi_cfg.bitrate = cfg->bitrate;
 	spi_cfg.master = SPI_ATTR_MASTER;
+	*/
 	err = mcu_spi_open(cfg);
 	if ( err < 0 ){
 		return err;
 	}
 
-	if( (err = mcu_spi_ioctl(cfg, I_SPI_SETATTR, &spi_cfg)) < 0 ){
+	if( (err = mcu_spi_ioctl(cfg, I_SPI_SETATTR, (void*)&(config->attr))) < 0 ){
 		return err;
 	}
 
 	_sdspi_deassert_cs(cfg);
-	attr.mask = (1<<cfg->pcfg.spi.cs.pin);
-	attr.mode = PIO_MODE_OUTPUT | PIO_MODE_DIRONLY;
-	mcu_pio_setattr(cfg->pcfg.spi.cs.port, &attr);
+	attr.o_pinmask = (1<<config->cs.pin);
+	attr.o_flags = PIO_FLAG_SET_OUTPUT | PIO_FLAG_IS_DIRONLY;
+	mcu_pio_setattr(config->cs.port, &attr);
 
 	//The device is ready to use
 	return 0;
 }
 
 
-void _sdspi_state_callback(const device_cfg_t * cfg, int err, int nbyte){
-	sdspi_state_t * state = ((device_cfg_t *)cfg)->state;
-	if( state->callback ){
+void _sdspi_state_callback(const devfs_handle_t * cfg, int err, int nbyte){
+	sdspi_state_t * state = ((devfs_handle_t *)cfg)->state;
+	if( state->handler.callback ){
 		*(state->nbyte) = nbyte;
 		if( nbyte < 0 ){
 			struct _reent * reent = task_table[state->op.tid].reent;
 			reent->_errno = err;
 		}
-		state->callback(state->context, 0);
-		state->callback = 0;
+		state->handler.callback(state->handler.context, 0);
+		state->handler.callback = 0;
 	}
 }
 
 static int continue_spi_read(void * cfg, mcu_event_t ignore){
 	//data has been read -- complete the operation
 	int err = 0;
-	sdspi_state_t * state = ((device_cfg_t *)cfg)->state;
+	sdspi_state_t * state = ((devfs_handle_t *)cfg)->state;
 	u16 checksum;
 	u16 checksum_calc;
 
@@ -160,7 +165,7 @@ static int continue_spi_read(void * cfg, mcu_event_t ignore){
 	return 0;
 }
 
-int _sdspi_try_read(const device_cfg_t * cfg, int first){
+int _sdspi_try_read(const devfs_handle_t * cfg, int first){
 	sdspi_state_t * state = cfg->state;
 	state->count = _sdspi_parse_data((uint8_t*)state->buf, *(state->nbyte), -1, SDSPI_START_BLOCK_TOKEN, state->cmd);
 	if( state->count >= 0 ){
@@ -170,8 +175,8 @@ int _sdspi_try_read(const device_cfg_t * cfg, int first){
 		state->op.nbyte = CMD_FRAME_SIZE;
 		state->op.buf = state->cmd;
 	}
-	state->op.context = (void*)cfg;
-	state->op.callback = continue_spi_read;
+	state->op.handler.context = (void*)cfg;
+	state->op.handler.callback = continue_spi_read;
 
 
 	if( first != 0 ){
@@ -186,7 +191,7 @@ int _sdspi_try_read(const device_cfg_t * cfg, int first){
 	return 1;
 }
 
-int sdspi_read(const device_cfg_t * cfg, device_transfer_t * rop){
+int sdspi_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	//first write the header command
 	sdspi_state_t * state = cfg->state;
 	sdspi_r1_t r1;
@@ -202,8 +207,8 @@ int sdspi_read(const device_cfg_t * cfg, device_transfer_t * rop){
 		return -1;
 	}
 
-	state->context = rop->context;
-	state->callback = rop->callback;
+	state->handler.context = rop->handler.context;
+	state->handler.callback = rop->handler.callback;
 	state->nbyte = &(rop->nbyte);
 	state->buf = rop->buf;
 	state->timeout = 0;
@@ -253,7 +258,7 @@ int sdspi_read(const device_cfg_t * cfg, device_transfer_t * rop){
 }
 
 static int continue_spi_write(void * cfg, mcu_event_t ignore){
-	sdspi_state_t * state = ((const device_cfg_t *)cfg)->state;
+	sdspi_state_t * state = ((const devfs_handle_t *)cfg)->state;
 
 	uint16_t checksum;
 
@@ -281,7 +286,7 @@ static int continue_spi_write(void * cfg, mcu_event_t ignore){
 }
 
 
-int sdspi_write(const device_cfg_t * cfg, device_transfer_t * wop){
+int sdspi_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 
 	sdspi_state_t * state = cfg->state;
 	sdspi_r1_t r1;
@@ -299,8 +304,8 @@ int sdspi_write(const device_cfg_t * cfg, device_transfer_t * wop){
 		return -1;
 	}
 
-	state->context = wop->context;
-	state->callback = wop->callback;
+	state->handler.context = wop->handler.context;
+	state->handler.callback = wop->handler.callback;
 	state->nbyte = &(wop->nbyte);
 	state->buf = wop->buf;
 	state->timeout = 0;
@@ -332,19 +337,20 @@ int sdspi_write(const device_cfg_t * cfg, device_transfer_t * wop){
 
 	state->op.nbyte = wop->nbyte;
 	state->op.buf = wop->buf;
-	state->op.context = (void*)cfg;
-	state->op.callback = continue_spi_write;
+	state->op.handler.context = (void*)cfg;
+	state->op.handler.callback = continue_spi_write;
 	state->op.tid = wop->tid;
 
 	return mcu_spi_write(cfg, &(state->op));
 }
 
-int sdspi_ioctl(const device_cfg_t * cfg, int request, void * ctl){
-	//sdspi_cfg_t * sst_cfg = (sdspi_cfg_t*)cfg->dcfg;
+int sdspi_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
+	//sdspi_cfg_t * sst_cfg = (sdspi_cfg_t*)cfg->config;
 	sdspi_state_t * state = (sdspi_state_t*)cfg->state;
-	disk_attr_t * attr = ctl;
-	disk_erase_block_t * deb = ctl;
-	disk_erase_block_t debs;
+	const sdspi_cfg_t * config = cfg->config;
+	drive_info_t * attr = ctl;
+	drive_erase_block_t * deb = ctl;
+	drive_erase_block_t debs;
 	sdspi_r_t resp;
 	spi_attr_t spi_attr;
 	int timeout;
@@ -355,8 +361,8 @@ int sdspi_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 	uint8_t buffer[64];
 
 	switch(request){
-	case I_DISK_ERASE_BLOCK:
-	case I_DISK_ERASE_DEVICE:
+	case I_DRIVE_ERASE_BLOCK:
+	case I_DRIVE_ERASE_DEVICE:
 		if( state->flags & FLAG_PROTECTED ){
 			errno = EROFS;
 			return -1;
@@ -365,15 +371,15 @@ int sdspi_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 	}
 
 	switch(request){
-	case I_DISK_PROTECT:
-	case I_DISK_UNPROTECT:
-	case I_DISK_ERASE_DEVICE:
-	case I_DISK_POWER_DOWN:
-	case I_DISK_POWER_UP:
-	case I_DISK_GET_BLOCKSIZE:
-	case I_DISK_GET_DEVICE_ERASETIME:
-	case I_DISK_GET_BLOCK_ERASETIME:
-	case I_DISK_GET_SIZE:
+	case I_DRIVE_PROTECT:
+	case I_DRIVE_UNPROTECT:
+	case I_DRIVE_ERASE_DEVICE:
+	case I_DRIVE_POWER_DOWN:
+	case I_DRIVE_POWER_UP:
+	case I_DRIVE_GET_BLOCKSIZE:
+	case I_DRIVE_GET_DEVICE_ERASETIME:
+	case I_DRIVE_GET_BLOCK_ERASETIME:
+	case I_DRIVE_GET_SIZE:
 		errno = ENOTSUP;
 		return -1;
 		break;
@@ -384,16 +390,14 @@ int sdspi_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 
 		break;
 
-	case I_DISK_INIT:
+	case I_DRIVE_INIT:
 		//set SPI to 100kbits
 		state->flags = 0;
-		spi_attr.bitrate = 400000;
-		spi_attr.format = SPI_ATTR_FORMAT_SPI;
-		spi_attr.mode = SPI_ATTR_MODE0;
-		spi_attr.width = 8;
-		spi_attr.pin_assign = cfg->pin_assign;
-		spi_attr.master = SPI_ATTR_MASTER;
-		if( mcu_spi_setattr(cfg->periph.port, &spi_attr) < 0 ){
+
+		memcpy(&spi_attr, &(config->attr), sizeof(spi_attr_t));
+		spi_attr.freq = 400000;
+
+		if( mcu_spi_setattr(cfg->port, &spi_attr) < 0 ){
 			mcu_priv_debug("Attr\n");
 			return -2;
 		}
@@ -483,8 +487,8 @@ int sdspi_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 			return -9;
 		}
 
-		spi_attr.bitrate = cfg->bitrate;
-		if( mcu_spi_setattr(cfg->periph.port, &spi_attr) < 0 ){
+		memcpy(&spi_attr, &(config->attr), sizeof(spi_attr_t));
+		if( mcu_spi_setattr(cfg->port, &spi_attr) < 0 ){
 			mcu_priv_debug("BITRATE\n");
 			return -10;
 		}
@@ -498,12 +502,12 @@ int sdspi_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 
 		return 0;
 
-	case I_DISK_ERASE_BLOCK:
+	case I_DRIVE_ERASE_BLOCK:
 		debs.start = ((ssize_t)ctl) / BLOCK_SIZE;
 		debs.end = debs.start;
 		deb = &debs;
 		/* no break */
-	case I_DISK_ERASEBLOCKS:
+	case I_DRIVE_ERASEBLOCKS:
 		//erase blocks in a sequence
 		if( _sdspi_busy(cfg) != 0 ){
 			errno = EBUSY;
@@ -511,10 +515,10 @@ int sdspi_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 		}
 		return _sdspi_erase_blocks(cfg, deb->start, deb->end);
 
-	case I_DISK_BUSY:
+	case I_DRIVE_BUSY:
 		return _sdspi_busy(cfg);
 
-	case I_DISK_GETATTR:
+	case I_DRIVE_GETINFO:
 
 		if( _sdspi_busy(cfg) != 0 ){
 			errno = EBUSY;
@@ -575,11 +579,11 @@ int sdspi_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 	return 0;
 }
 
-int sdspi_close(const device_cfg_t * cfg){
+int sdspi_close(const devfs_handle_t * cfg){
 	return 0;
 }
 
-int _sdspi_is_sdsc(const device_cfg_t * cfg){
+int _sdspi_is_sdsc(const devfs_handle_t * cfg){
 	sdspi_state_t * state = (sdspi_state_t*)cfg->state;
 
 	if( state->flags & FLAG_SDSC ){
@@ -590,7 +594,7 @@ int _sdspi_is_sdsc(const device_cfg_t * cfg){
 
 }
 
-int _sdspi_erase_blocks(const device_cfg_t * cfg, uint32_t block_num, uint32_t end_block){
+int _sdspi_erase_blocks(const devfs_handle_t * cfg, uint32_t block_num, uint32_t end_block){
 	sdspi_r_t r;
 
 	if( _sdspi_is_sdsc(cfg) ){
@@ -615,16 +619,16 @@ int _sdspi_erase_blocks(const device_cfg_t * cfg, uint32_t block_num, uint32_t e
 	return 0;
 }
 
-int _sdspi_busy(const device_cfg_t * cfg){
+int _sdspi_busy(const devfs_handle_t * cfg){
 	uint8_t c;
 	_sdspi_assert_cs(cfg);
 	_mcu_cortexm_delay_us(LONG_DELAY);
-	c = mcu_spi_swap(cfg->periph.port, (void*)0xFF);
+	c = mcu_spi_swap(cfg->port, (void*)0xFF);
 	_sdspi_deassert_cs(cfg);
 	return (c == 0x00);
 }
 
-int _sdspi_status(const device_cfg_t * cfg, uint8_t * buf){
+int _sdspi_status(const devfs_handle_t * cfg, uint8_t * buf){
 	sdspi_r_t resp;
 	int ret;
 	uint8_t tmp[CMD_FRAME_SIZE];
@@ -650,7 +654,7 @@ int _sdspi_status(const device_cfg_t * cfg, uint8_t * buf){
 	return ret;
 }
 
-int _sdspi_csd(const device_cfg_t * cfg, uint8_t * buf){
+int _sdspi_csd(const devfs_handle_t * cfg, uint8_t * buf){
 	sdspi_r_t resp;
 	int ret;
 	uint8_t tmp[CMD_FRAME_SIZE];
@@ -670,7 +674,7 @@ int _sdspi_csd(const device_cfg_t * cfg, uint8_t * buf){
 	return ret;
 }
 
-int _sdspi_send_cmd(const device_cfg_t * cfg, uint8_t cmd, uint32_t arg, uint8_t * response){
+int _sdspi_send_cmd(const devfs_handle_t * cfg, uint8_t cmd, uint32_t arg, uint8_t * response){
 	uint8_t buffer[CMD_FRAME_SIZE];
 	int i;
 	int ret;
@@ -729,7 +733,7 @@ int _sdspi_parse_data(uint8_t * dest, int nbyte, int count, uint8_t token, uint8
 	return count;
 }
 
-int _sdspi_read_data(const device_cfg_t * cfg, void * data, int nbyte, uint8_t token, uint8_t * first_response){
+int _sdspi_read_data(const devfs_handle_t * cfg, void * data, int nbyte, uint8_t token, uint8_t * first_response){
 	//look through the first response for the data token
 	int timeout;
 	uint8_t response[CMD_FRAME_SIZE];
@@ -767,19 +771,19 @@ int _sdspi_read_data(const device_cfg_t * cfg, void * data, int nbyte, uint8_t t
 	return count;
 }
 
-int _sdspi_transfer(const device_cfg_t * cfg, const uint8_t * data_out, uint8_t * data_in, int nbyte){
+int _sdspi_transfer(const devfs_handle_t * cfg, const uint8_t * data_out, uint8_t * data_in, int nbyte){
 	int i;
 	for(i=0; i < nbyte; i++){
 		if( data_out == 0 ){
 			if( data_in != 0 ){
-				data_in[i] = mcu_spi_swap(cfg->periph.port, (void*)0xFF);
+				data_in[i] = mcu_spi_swap(cfg->port, (void*)0xFF);
 			} else {
-				mcu_spi_swap(cfg->periph.port, (void*)0xFF);
+				mcu_spi_swap(cfg->port, (void*)0xFF);
 			}
 		} else if( data_in == 0) {
-			mcu_spi_swap(cfg->periph.port, (void*)(ssize_t)data_out[i]);
+			mcu_spi_swap(cfg->port, (void*)(ssize_t)data_out[i]);
 		} else {
-			data_in[i] = mcu_spi_swap(cfg->periph.port, (void*)(ssize_t)data_out[i]);
+			data_in[i] = mcu_spi_swap(cfg->port, (void*)(ssize_t)data_out[i]);
 		}
 	}
 	return nbyte;
@@ -816,7 +820,7 @@ int _sdspi_parse_response(uint8_t * response, int num, sdspi_r_t * r, uint32_t *
 	return false;
 }
 
-sdspi_r1_t _sdspi_cmd_r1(const device_cfg_t * cfg, uint8_t cmd, uint32_t arg, uint8_t * r){
+sdspi_r1_t _sdspi_cmd_r1(const devfs_handle_t * cfg, uint8_t cmd, uint32_t arg, uint8_t * r){
 	uint8_t tmp[CMD_FRAME_SIZE];
 	uint8_t * response;
 	if( r == 0 ){
@@ -834,7 +838,7 @@ sdspi_r1_t _sdspi_cmd_r1(const device_cfg_t * cfg, uint8_t cmd, uint32_t arg, ui
 }
 
 /*
-sdspi_r2_t _sdspi_cmd_r2(const device_cfg_t * cfg, uint8_t cmd, uint32_t arg, uint8_t * r){
+sdspi_r2_t _sdspi_cmd_r2(const devfs_handle_t * cfg, uint8_t cmd, uint32_t arg, uint8_t * r){
 	uint8_t tmp[CMD_FRAME_SIZE];
 	uint8_t * response;
 	if( r == 0 ){
@@ -852,7 +856,7 @@ sdspi_r2_t _sdspi_cmd_r2(const device_cfg_t * cfg, uint8_t cmd, uint32_t arg, ui
 }
  */
 
-sdspi_r3_t _sdspi_cmd_r3(const device_cfg_t * cfg, uint8_t cmd, uint32_t arg){
+sdspi_r3_t _sdspi_cmd_r3(const devfs_handle_t * cfg, uint8_t cmd, uint32_t arg){
 	uint8_t response[CMD_FRAME_SIZE];
 	sdspi_r_t r;
 	_sdspi_send_cmd(cfg, cmd, arg, response);

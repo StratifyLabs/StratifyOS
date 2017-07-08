@@ -22,10 +22,10 @@
 #include <stdarg.h>
 #include <sys/stat.h>
 #include <errno.h>
-#include <stratify/sysfs.h>
+#include "sos/fs/sysfs.h"
 
 #include "mcu/mcu.h"
-#include "iface/device_config.h"
+#include "sos/fs/devfs.h"
 #include "../unistd/unistd_fs.h"
 #include "../unistd/unistd_flags.h"
 #include "../sched/sched_flags.h"

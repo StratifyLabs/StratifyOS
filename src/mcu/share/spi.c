@@ -25,36 +25,35 @@
 extern void _mcu_spi_dev_power_on(int port);
 extern void _mcu_spi_dev_power_off(int port);
 extern int _mcu_spi_dev_powered_on(int port);
-extern int _mcu_spi_dev_read(const device_cfg_t * cfg, device_transfer_t * rop);
-extern int _mcu_spi_dev_write(const device_cfg_t * cfg, device_transfer_t * wop);
+extern int _mcu_spi_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop);
+extern int _mcu_spi_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop);
 
 
-int (* const spi_ioctl_func_table[I_GLOBAL_TOTAL + I_SPI_TOTAL])(int, void*) = {
-		mcu_spi_getattr,
+int (* const spi_ioctl_func_table[I_MCU_TOTAL + I_SPI_TOTAL])(int, void*) = {
+		mcu_spi_getinfo,
 		mcu_spi_setattr,
 		mcu_spi_setaction,
 		mcu_spi_swap,
-		mcu_spi_setduplex,
 };
 
-int mcu_spi_open(const device_cfg_t * cfg){
+int mcu_spi_open(const devfs_handle_t * cfg){
 	return mcu_open(cfg,
 			_mcu_spi_dev_powered_on,
 			_mcu_spi_dev_power_on);
 }
 
-int mcu_spi_ioctl(const device_cfg_t * cfg, int request, void * ctl){
+int mcu_spi_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 	return mcu_ioctl(cfg,
 			request,
 			ctl,
 			_mcu_spi_dev_powered_on,
 			spi_ioctl_func_table,
-			I_GLOBAL_TOTAL + I_SPI_TOTAL);
+			I_MCU_TOTAL + I_SPI_TOTAL);
 }
 
 
 
-int mcu_spi_read(const device_cfg_t * cfg, device_transfer_t * rop){
+int mcu_spi_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	return mcu_read(cfg, rop,
 			_mcu_spi_dev_powered_on,
 			_mcu_spi_dev_read);
@@ -62,14 +61,14 @@ int mcu_spi_read(const device_cfg_t * cfg, device_transfer_t * rop){
 }
 
 
-int mcu_spi_write(const device_cfg_t * cfg, device_transfer_t * wop){
+int mcu_spi_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	return mcu_write(cfg, wop,
 			_mcu_spi_dev_powered_on,
 			_mcu_spi_dev_write);
 
 }
 
-int mcu_spi_close(const device_cfg_t * cfg){
+int mcu_spi_close(const devfs_handle_t * cfg){
 	return mcu_close(cfg, _mcu_spi_dev_powered_on, _mcu_spi_dev_power_off);
 }
 

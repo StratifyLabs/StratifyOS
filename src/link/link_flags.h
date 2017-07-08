@@ -21,8 +21,8 @@
 #ifndef LINK_FLAGS_H_
 #define LINK_FLAGS_H_
 
+#include "../../include/dev/link.h"
 #include "mcu/mcu.h"
-#include "iface/link.h"
 
 #ifdef __cplusplus
 extern "C" {

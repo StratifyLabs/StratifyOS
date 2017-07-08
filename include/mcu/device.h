@@ -1,4 +1,4 @@
-/* Copyright 2011-2016 Tyler Gilbert; 
+/* Copyright 2011-2016 Tyler Gilbert;
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -13,33 +13,39 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
-#ifndef _MCU_DEVICE_H_
-#define _MCU_DEVICE_H_
+/*! \addtogroup DEVICE Device Configuration
+ * @{
+ *
+ * \ingroup IFACE_DEV
+ *
+ * \details This interface describes data structures for writing device drivers.
+ *
+ */
 
-#include "mcu/adc.h"
-#include "mcu/dac.h"
-#include "mcu/core.h"
-#include "mcu/eint.h"
-#include "mcu/emc.h"
-#include "mcu/eeprom.h"
-#include "mcu/enet.h"
-#include "mcu/flash.h"
-#include "mcu/mci.h"
-#include "mcu/mem.h"
-#include "mcu/i2c.h"
-#include "mcu/i2s.h"
-#include "mcu/pio.h"
-#include "mcu/pwm.h"
-#include "mcu/qei.h"
-#include "mcu/rtc.h"
-#include "mcu/spi.h"
-#include "mcu/tmr.h"
-#include "mcu/uart.h"
-#include "mcu/usb.h"
+#ifndef MCU_DEVICE_H_
+#define MCU_DEVICE_H_
 
 
-#endif /* _MCU_DEVICE_H_ */
+#include "mcu/types.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
+/*! @} */
+
+/*! @} */
+
+#ifdef __cplusplus
+}
+#endif
+
+
+#endif /* _DEVICE_H_ */
+
+/*! @} */

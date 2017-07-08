@@ -34,44 +34,29 @@
 #ifndef I2S_H_
 #define I2S_H_
 
-#include "../iface/dev/i2s.h"
-#include "iface/device_config.h"
+#include "sos/dev/i2s.h"
+
+#include "sos/fs/devfs.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/*! \details
- * \sa periph_open()
- *
- */
-int mcu_i2s_open(const device_cfg_t * cfg) MCU_PRIV_CODE;
-/*! \details
- *
- * \sa periph_read()
- *
- */
-int mcu_i2s_read(const device_cfg_t * cfg, device_transfer_t * rop) MCU_PRIV_CODE;
-/*! \details
- * \sa periph_write()
- */
-int mcu_i2s_write(const device_cfg_t * cfg, device_transfer_t * wop) MCU_PRIV_CODE;
-/*! \details
- * \sa periph_ioctl()
- *
- */
-int mcu_i2s_ioctl(const device_cfg_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
-/*! \details
- * \sa periph_close()
- */
-int mcu_i2s_close(const device_cfg_t * cfg) MCU_PRIV_CODE;
+typedef struct MCU_PACK {
+	u32 value;
+} i2s_event_data_t;
 
-int mcu_i2s_getattr(int port, void * ctl) MCU_PRIV_CODE;
+int mcu_i2s_open(const devfs_handle_t * cfg) MCU_PRIV_CODE;
+int mcu_i2s_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_PRIV_CODE;
+int mcu_i2s_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_PRIV_CODE;
+int mcu_i2s_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
+int mcu_i2s_close(const devfs_handle_t * cfg) MCU_PRIV_CODE;
+
+int mcu_i2s_getinfo(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_i2s_setattr(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_i2s_setaction(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_i2s_mute(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_i2s_unmute(int port, void * ctl) MCU_PRIV_CODE;
-
 
 
 #ifdef __cplusplus

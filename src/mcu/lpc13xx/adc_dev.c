@@ -75,7 +75,7 @@ int _mcu_adc_dev_powered_on(int port){
 	return _mcu_lpc_core_pwr_enabled(PCADC);
 }
 
-int _mcu_adc_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
+int _mcu_adc_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	if ( (uint8_t)rop->loc > 7 ){
 		errno = EINVAL;
 		return -1;
@@ -87,8 +87,8 @@ int _mcu_adc_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
 		return -1;
 	}
 
-	adc_local.callback = rop->callback;
-	adc_local.context = rop->context;
+	adc_local.callback = rop->handler.callback;
+	adc_local.context = rop->handler.context;
 	adc_local.bufp = rop->buf;
 	adc_local.len = rop->nbyte & ~(sizeof(adc_sample_t)-1);
 	rop->nbyte = adc_local.len;
@@ -120,7 +120,7 @@ void _mcu_core_adc_isr(){
 }
 
 
-int mcu_adc_getattr(int port, void * ctl){
+int mcu_adc_getinfo(int port, void * ctl){
 	adc_attr_t * ctlp;
 	uint16_t clk_div;
 	ctlp = (adc_attr_t*)ctl;
@@ -171,52 +171,52 @@ int mcu_adc_setattr(int port, void * ctl){
 	adc_local.enabled_channels = ctlp->enabled_channels;
 
 
-	pattr.mode = PIO_MODE_INPUT | PIO_MODE_ANALOG | PIO_MODE_FLOAT;
+	pattr.mode = PIO_FLAG_SET_INPUT | PIO_FLAG_IS_ANALOG | PIO_FLAG_FLOAT;
 	//Enable the pins to use the ADC and Disable pull-up/down resistors
 	if ( adc_local.enabled_channels & (1<<0) ){
-		pattr.mask = (1<<11);
+		pattr.o_pinmask = (1<<11);
 		mcu_pio_setattr(0, &pattr);
 		_mcu_core_set_pinsel_func(0,11,CORE_PERIPH_ADC,0);
 	}
 
 	if ( adc_local.enabled_channels & (1<<1) ){
-		pattr.mask = (1<<0);
+		pattr.o_pinmask = (1<<0);
 		mcu_pio_setattr(1, &pattr);
 		_mcu_core_set_pinsel_func(1,0,CORE_PERIPH_ADC,0);
 	}
 
 	if ( adc_local.enabled_channels & (1<<2) ){
-		pattr.mask = (1<<1);
+		pattr.o_pinmask = (1<<1);
 		mcu_pio_setattr(1, &pattr);
 		_mcu_core_set_pinsel_func(1,1,CORE_PERIPH_ADC,0);
 	}
 
 	if ( adc_local.enabled_channels & (1<<3) ){
-		pattr.mask = (1<<2);
+		pattr.o_pinmask = (1<<2);
 		mcu_pio_setattr(1, &pattr);
 		_mcu_core_set_pinsel_func(1,2,CORE_PERIPH_ADC,0);
 	}
 
 	if ( adc_local.enabled_channels & (1<<4) ){
-		pattr.mask = (1<<3);
+		pattr.o_pinmask = (1<<3);
 		mcu_pio_setattr(1, &pattr);
 		_mcu_core_set_pinsel_func(1,3,CORE_PERIPH_ADC,0);
 	}
 
 	if ( adc_local.enabled_channels & (1<<5) ){
-		pattr.mask = (1<<4);
+		pattr.o_pinmask = (1<<4);
 		mcu_pio_setattr(1, &pattr);
 		_mcu_core_set_pinsel_func(1,4,CORE_PERIPH_ADC,0);
 	}
 
 	if ( adc_local.enabled_channels & (1<<6) ){
-		pattr.mask = (1<<10);
+		pattr.o_pinmask = (1<<10);
 		mcu_pio_setattr(1, &pattr);
 		_mcu_core_set_pinsel_func(1,10,CORE_PERIPH_ADC,0);
 	}
 
 	if ( adc_local.enabled_channels & (1<<7) ){
-		pattr.mask = (1<<11);
+		pattr.o_pinmask = (1<<11);
 		mcu_pio_setattr(1, &pattr);
 		_mcu_core_set_pinsel_func(1,11,CORE_PERIPH_ADC,0);
 	}
@@ -228,8 +228,8 @@ int mcu_adc_setattr(int port, void * ctl){
 
 int mcu_adc_setaction(int port, void * ctl){
 	mcu_action_t * action = (mcu_action_t*)ctl;
-	adc_local.callback = action->callback;
-	adc_local.callback = action->context;
+	adc_local.callback = action->handler.callback;
+	adc_local.callback = action->handler.context;
 	return 0;
 }
 

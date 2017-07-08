@@ -102,10 +102,10 @@ int _mcu_eint_set_event(int port, int event){
 	return 0;
 }
 
-int _mcu_eint_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
+int _mcu_eint_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	int port;
 	mcu_action_t * action;
-	port = cfg->periph.port;
+	port = cfg->port;
 
 	if( wop->nbyte != sizeof(mcu_action_t) ){
 		errno = EINVAL;
@@ -113,8 +113,8 @@ int _mcu_eint_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
 	}
 
 	action = wop->buf;
-	action->callback = wop->callback;
-	action->context = wop->context;
+	action->handler.callback = wop->handler.callback;
+	action->handler.context = wop->handler.context;
 	return mcu_eint_setaction(port, &action);
 }
 
@@ -123,13 +123,13 @@ int mcu_eint_setaction(int port, void * ctl){
 	int err;
 	mcu_action_t * action = (mcu_action_t*)ctl;
 
-	err = _mcu_eint_set_event(port, action->event);
+	err = _mcu_eint_set_event(port, action->o_events);
 	if ( err ){
 		return err;
 	}
 
-	_mcu_eint_local[port].callback = action->callback;
-	_mcu_eint_local[port].context = action->context;
+	_mcu_eint_local[port].callback = action->handler.callback;
+	_mcu_eint_local[port].context = action->handler.context;
 
 	//set the interrupt on the wakeup pins
 	_mcu_cortexm_priv_enable_irq((void*)(WAKEUP0_IRQn + port));
@@ -138,7 +138,7 @@ int mcu_eint_setaction(int port, void * ctl){
 }
 
 
-int mcu_eint_getattr(int port, void * ctl){
+int mcu_eint_getinfo(int port, void * ctl){
 	//read the direction pin status
 	int pio_port, pinmask;
 	pio_sample_t p;

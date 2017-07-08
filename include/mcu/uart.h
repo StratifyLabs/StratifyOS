@@ -27,27 +27,32 @@
 #ifndef _MCU_UART_H_
 #define _MCU_UART_H_
 
-#include "iface/device_config.h"
-#include "iface/dev/uart.h"
+#include "sos/dev/uart.h"
+
+#include "sos/fs/devfs.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+typedef struct MCU_PACK {
+	u32 value;
+} uart_event_data_t;
 
-int mcu_uart_open(const device_cfg_t * cfg) MCU_PRIV_CODE;
-int mcu_uart_read(const device_cfg_t * cfg, device_transfer_t * rop) MCU_PRIV_CODE;
-int mcu_uart_write(const device_cfg_t * cfg, device_transfer_t * wop) MCU_PRIV_CODE;
-int mcu_uart_ioctl(const device_cfg_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
-int mcu_uart_close(const device_cfg_t * cfg) MCU_PRIV_CODE;
 
-int mcu_3_uart_open(const dev_handle_t * cfg) MCU_PRIV_CODE;
-int mcu_3_uart_read(const dev_handle_t * cfg, device_transfer_t * rop) MCU_PRIV_CODE;
-int mcu_3_uart_write(const dev_handle_t * cfg, device_transfer_t * wop) MCU_PRIV_CODE;
-int mcu_3_uart_ioctl(const dev_handle_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
-int mcu_3_uart_close(const dev_handle_t * cfg) MCU_PRIV_CODE;
+int mcu_uart_open(const devfs_handle_t * cfg) MCU_PRIV_CODE;
+int mcu_uart_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_PRIV_CODE;
+int mcu_uart_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_PRIV_CODE;
+int mcu_uart_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
+int mcu_uart_close(const devfs_handle_t * cfg) MCU_PRIV_CODE;
 
-int mcu_uart_getattr(int port, void * ctl) MCU_PRIV_CODE;
+int mcu_3_uart_open(const devfs_handle_t * cfg) MCU_PRIV_CODE;
+int mcu_3_uart_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_PRIV_CODE;
+int mcu_3_uart_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_PRIV_CODE;
+int mcu_3_uart_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
+int mcu_3_uart_close(const devfs_handle_t * cfg) MCU_PRIV_CODE;
+
+int mcu_uart_getinfo(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_uart_setattr(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_uart_setaction(int port, void * ctl) MCU_PRIV_CODE;
 

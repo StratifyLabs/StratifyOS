@@ -3,8 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "iface/link.h"
-
+#include "sos/link/link.h"
 #include "mcu/core.h"
 #include "mcu/debug.h"
 

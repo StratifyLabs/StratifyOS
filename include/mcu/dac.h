@@ -25,31 +25,36 @@
 #ifndef _MCU_DAC_H_
 #define _MCU_DAC_H_
 
-#include "iface/dev/dac.h"
-#include "iface/device_config.h"
+#include "sos/dev/dac.h"
+
+#include "sos/fs/devfs.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-int mcu_dac_open(const device_cfg_t * cfg) MCU_PRIV_CODE;
-int mcu_dac_read(const device_cfg_t * cfg, device_transfer_t * rop) MCU_PRIV_CODE;
-int mcu_dac_write(const device_cfg_t * cfg, device_transfer_t * wop) MCU_PRIV_CODE;
-int mcu_dac_ioctl(const device_cfg_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
-int mcu_dac_close(const device_cfg_t * cfg) MCU_PRIV_CODE;
+typedef struct MCU_PACK {
+	u32 value;
+} dac_event_data_t;
 
-int mcu_dac_getattr(int port, void * ctl) MCU_PRIV_CODE;
+int mcu_dac_open(const devfs_handle_t * cfg) MCU_PRIV_CODE;
+int mcu_dac_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_PRIV_CODE;
+int mcu_dac_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_PRIV_CODE;
+int mcu_dac_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
+int mcu_dac_close(const devfs_handle_t * cfg) MCU_PRIV_CODE;
+
+int mcu_dac_getinfo(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_dac_setattr(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_dac_setaction(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_dac_get(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_dac_set(int port, void * ctl) MCU_PRIV_CODE;
 
 //DMA version of the driver
-int mcu_dac_dma_open(const device_cfg_t * cfg) MCU_PRIV_CODE;
-int mcu_dac_dma_read(const device_cfg_t * cfg, device_transfer_t * rop) MCU_PRIV_CODE;
-int mcu_dac_dma_write(const device_cfg_t * cfg, device_transfer_t * wop) MCU_PRIV_CODE;
-int mcu_dac_dma_ioctl(const device_cfg_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
-int mcu_dac_dma_close(const device_cfg_t * cfg) MCU_PRIV_CODE;
+int mcu_dac_dma_open(const devfs_handle_t * cfg) MCU_PRIV_CODE;
+int mcu_dac_dma_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_PRIV_CODE;
+int mcu_dac_dma_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_PRIV_CODE;
+int mcu_dac_dma_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
+int mcu_dac_dma_close(const devfs_handle_t * cfg) MCU_PRIV_CODE;
 
 int mcu_dac_dma_setattr(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_dac_dma_setaction(int port, void * ctl) MCU_PRIV_CODE;

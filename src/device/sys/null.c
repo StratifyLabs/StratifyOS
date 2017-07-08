@@ -19,26 +19,26 @@
 
 #include <errno.h>
 #include <stddef.h>
-#include "dev/sys.h"
+#include "mcu/sys.h"
 
 
-int null_open(const device_cfg_t * cfg){
+int null_open(const devfs_handle_t * cfg){
 	return 0;
 }
 
-int null_ioctl(const device_cfg_t * cfg, int request, void * ctl){
+int null_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 	return 0;
 }
 
-int null_read(const device_cfg_t * cfg, device_transfer_t * rop){
+int null_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	return -1;
 }
 
-int null_write(const device_cfg_t * cfg, device_transfer_t * wop){
+int null_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	return wop->nbyte;
 }
 
-int null_close(const device_cfg_t * cfg){
+int null_close(const devfs_handle_t * cfg){
 	return 0;
 }
 

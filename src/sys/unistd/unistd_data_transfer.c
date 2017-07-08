@@ -40,7 +40,7 @@
 typedef struct {
 	const sysfs_t * fs;
 	void * handle;
-	device_transfer_t op;
+	devfs_async_t op;
 	volatile int read;
 	int ret;
 } priv_device_data_transfer_t;
@@ -115,9 +115,9 @@ void priv_device_data_transfer(void * args){
 
 	if ( p->read != 0 ){
 		//Read operation
-		p->ret = p->fs->priv_read(p->fs->cfg, p->handle, &p->op);
+		p->ret = p->fs->read_async(p->fs->cfg, p->handle, &p->op);
 	} else {
-		p->ret = p->fs->priv_write(p->fs->cfg, p->handle, &p->op);
+		p->ret = p->fs->write_async(p->fs->cfg, p->handle, &p->op);
 	}
 
 	priv_check_op_complete(args);
@@ -125,14 +125,9 @@ void priv_device_data_transfer(void * args){
 }
 
 void unistd_clr_action(open_file_t * open_file){
-	u_priv_attr_t args;
 	mcu_action_t action;
-	args.fs = open_file->fs;
-	args.handle = open_file->handle;
-	args.request = I_GLOBAL_SETACTION;
-	args.ctl = &action;
 	memset(&action, 0, sizeof(mcu_action_t));
-	mcu_core_privcall(u_priv_ioctl, &args);
+	u_ioctl(open_file, I_MCU_SETACTION, &action);
 }
 
 
@@ -155,7 +150,7 @@ int device_data_transfer(open_file_t * open_file, void * buf, int nbyte, int rea
 	}
 
 	args.fs = (const sysfs_t*)open_file->fs;
-	args.handle = (device_t *)open_file->handle;
+	args.handle = (devfs_device_t *)open_file->handle;
 	if( read ){
 		args.read = ARGS_READ_READ;
 	} else {
@@ -164,8 +159,8 @@ int device_data_transfer(open_file_t * open_file, void * buf, int nbyte, int rea
 	args.op.loc = open_file->loc;
 	args.op.flags = open_file->flags;
 	args.op.buf = buf;
-	args.op.callback = priv_data_transfer_callback;
-	args.op.context = (void*)&args;
+	args.op.handler.callback = priv_data_transfer_callback;
+	args.op.handler.context = (void*)&args;
 	args.op.tid = task_get_current();
 
 	if ( (mode = get_mode(args.fs, args.handle)) < 0 ){

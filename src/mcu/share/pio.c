@@ -26,10 +26,10 @@
 extern void _mcu_pio_dev_power_on(int port);
 extern void _mcu_pio_dev_power_off(int port);
 extern int _mcu_pio_dev_powered_on(int port);
-extern int _mcu_pio_dev_write(const device_cfg_t * cfg, device_transfer_t * wop);
+extern int _mcu_pio_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop);
 
-int (* const _mcu_pio_ioctl_func_table[I_GLOBAL_TOTAL + I_PIO_TOTAL])(int, void*) = {
-		mcu_pio_getattr,
+int (* const _mcu_pio_ioctl_func_table[I_MCU_TOTAL + I_PIO_TOTAL])(int, void*) = {
+		mcu_pio_getinfo,
 		mcu_pio_setattr,
 		mcu_pio_setaction,
 		mcu_pio_setmask,
@@ -38,37 +38,37 @@ int (* const _mcu_pio_ioctl_func_table[I_GLOBAL_TOTAL + I_PIO_TOTAL])(int, void*
 		mcu_pio_set
 };
 
-int mcu_pio_open(const device_cfg_t * cfg){
+int mcu_pio_open(const devfs_handle_t * cfg){
 	return mcu_open(cfg,
 			_mcu_pio_dev_powered_on,
 			_mcu_pio_dev_power_on);
 }
 
-int mcu_pio_ioctl(const device_cfg_t * cfg, int request, void * ctl){
+int mcu_pio_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 
 	return mcu_ioctl(cfg,
 			request,
 			ctl,
 			_mcu_pio_dev_powered_on,
 			_mcu_pio_ioctl_func_table,
-			I_GLOBAL_TOTAL + I_PIO_TOTAL);
+			I_MCU_TOTAL + I_PIO_TOTAL);
 }
 
-int mcu_pio_read(const device_cfg_t * cfg, device_transfer_t * rop){
+int mcu_pio_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	errno = ENOTSUP;
 	return -1;
 
 }
 
 
-int mcu_pio_write(const device_cfg_t * cfg, device_transfer_t * wop){
+int mcu_pio_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	return mcu_write(cfg,
 			wop,
 			_mcu_pio_dev_powered_on,
 			_mcu_pio_dev_write);
 }
 
-int mcu_pio_close(const device_cfg_t * cfg){
+int mcu_pio_close(const devfs_handle_t * cfg){
 	return mcu_close(cfg, _mcu_pio_dev_powered_on, _mcu_pio_dev_power_off);
 }
 

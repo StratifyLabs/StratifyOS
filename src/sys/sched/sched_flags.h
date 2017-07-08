@@ -32,7 +32,7 @@
 #include "mcu/task.h"
 #include "mcu/debug.h"
 #include "mcu/core.h"
-#include "stratify/stratify.h"
+#include "sos/stratify.h"
 #include "trace.h"
 #include "sched.h"
 

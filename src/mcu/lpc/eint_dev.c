@@ -20,6 +20,7 @@
 #include <errno.h>
 #include "mcu/cortexm.h"
 #include "mcu/eint.h"
+#include "mcu/pio.h"
 #include "mcu/core.h"
 #include "mcu/debug.h"
 
@@ -34,7 +35,7 @@ static eint_local_t eint_local[4] MCU_SYS_MEM;
 
 
 //static eint_action_event_t get_event(int port);
-static int set_event(int port, eint_action_event_t event);
+static int set_event(int port, eint_event_t event);
 static void reset_eint_port(int port);
 static void exec_callback(int port, void * data);
 
@@ -60,10 +61,10 @@ int _mcu_eint_dev_powered_on(int port){
 	return eint_local[port].ref_count;
 }
 
-int _mcu_eint_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
+int _mcu_eint_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	int port;
 	mcu_action_t * action;
-	port = cfg->periph.port;
+	port = cfg->port;
 	if ( eint_local[port].handler.callback != 0 ){
 		//The interrupt is on -- port is busy
 		errno = EAGAIN;
@@ -75,95 +76,55 @@ int _mcu_eint_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
 	}
 
 	action = (mcu_action_t*)wop->buf;
-	action->callback = wop->callback;
-	action->context = wop->context;
+	action->handler.callback = wop->handler.callback;
+	action->handler.context = wop->handler.context;
 	return mcu_eint_setaction(port, action);
 }
 
 int mcu_eint_setaction(int port, void * ctl){
 	mcu_action_t * action = (mcu_action_t*)ctl;
 
-	if( action->callback == 0 ){
+	if( action->handler.callback == 0 ){
 		exec_callback(port, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
 	}
 
-	if( _mcu_cortexm_priv_validate_callback(action->callback) < 0 ){
+	if( _mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
 		return -1;
 	}
 
-	eint_local[port].handler.callback = action->callback;
-	eint_local[port].handler.context = action->context;
+	eint_local[port].handler.callback = action->handler.callback;
+	eint_local[port].handler.context = action->handler.context;
 
-	set_event(port, action->event);
+	set_event(port, action->o_events);
 	_mcu_cortexm_set_irq_prio(EINT0_IRQn + port, action->prio);
 
 	return 0;
 }
 
-int mcu_eint_getattr(int port, void * ctl){
-	eint_attr_t * ctlp;
-	ctlp = (eint_attr_t *)ctl;
-	ctlp->pin_assign = 0;
+int mcu_eint_getinfo(int port, void * ctl){
+	eint_info_t * info = ctl;
 
-#ifdef LPC_GPIO2
-	switch(port){
-	case 0:
-		ctlp->value = ((LPC_GPIO2->PIN & (1<<10)) == (1<<10));
-		break;
-	case 1:
-		ctlp->value = ((LPC_GPIO2->PIN & (1<<11)) == (1<<11));
-		break;
-	case 2:
-		ctlp->value = ((LPC_GPIO2->PIN & (1<<12)) == (1<<12));
-		break;
-	case 3:
-		ctlp->value = ((LPC_GPIO2->PIN & (1<<13)) == (1<<13));
-		break;
-	}
-#endif
 
 	return 0;
 }
 
 int mcu_eint_setattr(int port, void * ctl){
-	eint_attr_t * ctlp;
+	eint_attr_t * attr = ctl;
 	pio_attr_t pattr;
-
-	ctlp = (eint_attr_t *)ctl;
-
-	if ( ctlp->pin_assign != 0 ){
-		errno = EINVAL;
-		return -1 - offsetof(eint_attr_t, pin_assign);
-	}
 
 	reset_eint_port(port);
 
-	pattr.mode = ctlp->mode;
-
-	switch(port){
-	case 0:
-		//set the pinmode
-		pattr.mask = 1<<10;
-		mcu_pio_setattr(2, &pattr);
-		_mcu_core_set_pinsel_func(2,10,CORE_PERIPH_EINT,0);
-		break;
-	case 1:
-		pattr.mask = 1<<11;
-		mcu_pio_setattr(2, &pattr);
-		_mcu_core_set_pinsel_func(2,11,CORE_PERIPH_EINT,1);
-		break;
-	case 2:
-		pattr.mask = 1<<12;
-		mcu_pio_setattr(2, &pattr);
-		_mcu_core_set_pinsel_func(2,12,CORE_PERIPH_EINT,2);
-		break;
-	case 3:
-		pattr.mask = 1<<13;
-		mcu_pio_setattr(2, &pattr);
-		_mcu_core_set_pinsel_func(2,13,CORE_PERIPH_EINT,3);
-		break;
+	pattr.o_flags = attr->o_flags;
+	int i;
+	for(i=0; i < EINT_PIN_ASSIGNMENT_COUNT; i++){
+		if( mcu_is_port_valid(attr->pin_assignment[i].port) ){
+			pattr.o_pinmask = 1<<attr->pin_assignment[i].pin;
+			mcu_pio_setattr(attr->pin_assignment[i].port, &pattr);
+			if ( _mcu_core_set_pinsel_func(attr->pin_assignment[i].port, attr->pin_assignment[i].pin, CORE_PERIPH_EINT, port) ){
+				return -1;  //pin failed to allocate as a UART pin
+			}
+		}
 	}
-
 
 	return 0;
 }
@@ -194,7 +155,7 @@ void reset_eint_port(int port){
 	LPC_SC->EXTINT |= (1<<port); //Clear the interrupt flag
 }
 
-int set_event(int port, eint_action_event_t event){
+int set_event(int port, eint_event_t event){
 	int err;
 	err = 0;
 
@@ -203,23 +164,23 @@ int set_event(int port, eint_action_event_t event){
 	LPC_SC->EXTPOLAR &= ~(1<<port);
 	LPC_SC->EXTMODE &= ~(1<<port);
 	switch(event){
-	case EINT_ACTION_EVENT_RISING:
+	case EINT_EVENT_RISING:
 		LPC_SC->EXTPOLAR |= (1<<port);
 		LPC_SC->EXTMODE |= (1<<port);
 		break;
-	case EINT_ACTION_EVENT_FALLING:
+	case EINT_EVENT_FALLING:
 		LPC_SC->EXTMODE |= (1<<port);
 		break;
-	case EINT_ACTION_EVENT_HIGH:
+	case EINT_EVENT_HIGH:
 		LPC_SC->EXTPOLAR |= (1<<port);
 		break;
-	case EINT_ACTION_EVENT_LOW:
+	case EINT_EVENT_LOW:
 		break;
-	case EINT_ACTION_EVENT_UNCONFIGURED:
+	case EINT_EVENT_NONE:
 		LPC_SC->EXTINT |= (1<<port); //Clear the interrupt flag
 		return 0;
 		break;
-	case EINT_ACTION_EVENT_BOTH:
+	case EINT_EVENT_BOTH:
 	default:
 		errno = EINVAL;
 		err = -1;

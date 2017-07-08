@@ -46,13 +46,13 @@ static void exec_callback(int port, void * data) MCU_PRIV_CODE;
 static LPC_ADC_Type * const adc_regs[MCU_ADC_PORTS] = MCU_ADC_REGS;
 static u8 const adc_irqs[MCU_ADC_PORTS] = MCU_ADC_IRQS;
 
-static void enable_pin(int pio_port, int pio_pin, int adc_port) MCU_PRIV_CODE;
-void enable_pin(int pio_port, int pio_pin, int adc_port){
+static int enable_pin(int pio_port, int pio_pin, int adc_port) MCU_PRIV_CODE;
+int enable_pin(int pio_port, int pio_pin, int adc_port){
 	pio_attr_t pattr;
-	pattr.mask = (1<<pio_pin);
-	pattr.mode = PIO_MODE_INPUT | PIO_MODE_FLOAT | PIO_MODE_ANALOG;
+	pattr.o_pinmask = (1<<pio_pin);
+	pattr.o_flags = PIO_FLAG_SET_INPUT | PIO_FLAG_IS_FLOAT | PIO_FLAG_IS_ANALOG;
 	mcu_pio_setattr(pio_port, &pattr);
-	_mcu_core_set_pinsel_func(pio_port,pio_pin,CORE_PERIPH_ADC,adc_port);
+	return _mcu_core_set_pinsel_func(pio_port,pio_pin,CORE_PERIPH_ADC,adc_port);
 }
 
 
@@ -90,9 +90,9 @@ int _mcu_adc_dev_powered_on(int port){
 	return (adc_local[port].ref_count != 0);
 }
 
-int _mcu_adc_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
-	const int port = cfg->periph.port;
-	LPC_ADC_Type * regs = adc_regs[cfg->periph.port];
+int _mcu_adc_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
+	const int port = cfg->port;
+	LPC_ADC_Type * regs = adc_regs[cfg->port];
 
 	if ( (uint8_t)rop->loc > 7 ){
 		errno = EINVAL;
@@ -105,12 +105,12 @@ int _mcu_adc_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
 		return -1;
 	}
 
-	if( _mcu_cortexm_priv_validate_callback(rop->callback) < 0 ){
+	if( _mcu_cortexm_priv_validate_callback(rop->handler.callback) < 0 ){
 		return -1;
 	}
 
-	adc_local[port].handler.callback = rop->callback;
-	adc_local[port].handler.context = rop->context;
+	adc_local[port].handler.callback = rop->handler.callback;
+	adc_local[port].handler.context = rop->handler.context;
 	adc_local[port].bufp = rop->buf;
 	adc_local[port].len = rop->nbyte & ~(sizeof(adc_sample_t)-1);
 	rop->nbyte = adc_local[port].len;
@@ -149,93 +149,52 @@ void _mcu_core_adc0_isr(){
 }
 
 
-int mcu_adc_getattr(int port, void * ctl){
-	LPC_ADC_Type * regs = adc_regs[port];
+int mcu_adc_getinfo(int port, void * ctl){
+	adc_info_t * info;
 
-	adc_attr_t * ctlp;
-	uint16_t clk_div;
-	ctlp = (adc_attr_t*)ctl;
+	info->freq = ADC_MAX_FREQ;
+	info->o_flags = (ADC_FLAG_LEFT_JUSTIFIED|ADC_FLAG_RIGHT_JUSTIFIED);
+	info->resolution = 12;
 
-	ctlp->pin_assign = 0; //Pin assign is always 0
-	ctlp->enabled_channels = adc_local[port].enabled_channels;
-	clk_div = (regs->CR >> 8) & 0xFF;
-	ctlp->freq = mcu_board_config.core_periph_freq / ((clk_div + 1) * 65); //calculate the truncated frequency value
 	return 0;
 }
 
 int mcu_adc_setattr(int port, void * ctl){
+	int i;
 	LPC_ADC_Type * regs = adc_regs[port];
 
-	adc_attr_t * ctlp;
-	ctlp = (adc_attr_t*)ctl;
-	uint16_t clk_div;
+	adc_attr_t * attr = ctl;
+	u16 clk_div;
 
-	if ( ctlp->freq == 0 ){
+	if ( attr->freq == 0 ){
 		errno = EINVAL;
 		return -1 - offsetof(adc_attr_t, freq);
 	}
 
-	if ( ctlp->freq > ADC_MAX_FREQ ){
-		ctlp->freq = ADC_MAX_FREQ;
+	if ( attr->freq > ADC_MAX_FREQ ){
+		attr->freq = ADC_MAX_FREQ;
 	}
 
-	if ( ctlp->pin_assign != 0 ){
-		errno = EINVAL;
-		return -1 - offsetof(adc_attr_t, pin_assign);
+	for(i=0; i < ADC_PIN_ASSIGNMENT_COUNT; i++){
+		if( mcu_is_port_valid(attr->pin_assignment[i].port) ){
+			if ( enable_pin(attr->pin_assignment[i].port, attr->pin_assignment[i].pin, 0) ){
+				return -1;  //pin failed to allocate as a UART pin
+			}
+		}
 	}
 
-	if ( ctlp->enabled_channels & ~(0xFF) ){
-		errno = EINVAL;
-		return -1 - offsetof(adc_attr_t, enabled_channels);
-	}
 
 	//Calculate the clock setting
 #ifdef __lpc17xx
-	clk_div = mcu_board_config.core_periph_freq/(ctlp->freq * 65);
+	clk_div = mcu_board_config.core_periph_freq/(attr->freq * 65);
 #endif
 #ifdef LPCXX7X_8X
-	clk_div = mcu_board_config.core_periph_freq/(ctlp->freq * 31);
+	clk_div = mcu_board_config.core_periph_freq/(attr->freq * 31);
 #endif
 	if ( clk_div > 0 ){
 		clk_div = clk_div - 1;
 	}
 	clk_div = clk_div > 255 ? 255 : clk_div;
-
-	//Update the channels
-	adc_local[port].enabled_channels = ctlp->enabled_channels;
-
-	//Enable the pins to use the ADC and Disable pull-up/down resistors
-	if ( adc_local[port].enabled_channels & (1<<0) ){
-		enable_pin(MCU_ADC_CHANNEL0_PORT, MCU_ADC_CHANNEL0_PIN, 0);
-	}
-
-	if ( adc_local[port].enabled_channels & (1<<1) ){
-		enable_pin(MCU_ADC_CHANNEL1_PORT, MCU_ADC_CHANNEL1_PIN, 0);
-	}
-
-	if ( adc_local[port].enabled_channels & (1<<2) ){
-		enable_pin(MCU_ADC_CHANNEL2_PORT, MCU_ADC_CHANNEL2_PIN, 0);
-	}
-
-	if ( adc_local[port].enabled_channels & (1<<3) ){
-		enable_pin(MCU_ADC_CHANNEL3_PORT, MCU_ADC_CHANNEL3_PIN, 0);
-	}
-
-	if ( adc_local[port].enabled_channels & (1<<4) ){
-		enable_pin(MCU_ADC_CHANNEL4_PORT, MCU_ADC_CHANNEL4_PIN, 0);
-	}
-
-	if ( adc_local[port].enabled_channels & (1<<5) ){
-		enable_pin(MCU_ADC_CHANNEL5_PORT, MCU_ADC_CHANNEL5_PIN, 0);
-	}
-
-	if ( adc_local[port].enabled_channels & (1<<6) ){
-		enable_pin(MCU_ADC_CHANNEL6_PORT, MCU_ADC_CHANNEL6_PIN, 0);
-	}
-
-	if ( adc_local[port].enabled_channels & (1<<7) ){
-		enable_pin(MCU_ADC_CHANNEL7_PORT, MCU_ADC_CHANNEL7_PIN, 0);
-	}
 
 	regs->CR = (1<<ADC_PDN)|(clk_div<<8); //Set the clock bits
 	regs->INTEN = 0;
@@ -246,18 +205,18 @@ int mcu_adc_setaction(int port, void * ctl){
 	LPC_ADC_Type * regs = adc_regs[port];
 
 	mcu_action_t * action = (mcu_action_t*)ctl;
-	if( action->callback == 0 ){
+	if( action->handler.callback == 0 ){
 		if ( regs->INTEN & 0xFF ){
 			exec_callback(port, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED));
 		}
 	}
 
-	if( _mcu_cortexm_priv_validate_callback(action->callback) < 0 ){
+	if( _mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
 		return -1;
 	}
 
-	adc_local[port].handler.callback = action->callback;
-	adc_local[port].handler.context = action->context;
+	adc_local[port].handler.callback = action->handler.callback;
+	adc_local[port].handler.context = action->handler.context;
 
 	_mcu_cortexm_set_irq_prio(adc_irqs[port], action->prio);
 

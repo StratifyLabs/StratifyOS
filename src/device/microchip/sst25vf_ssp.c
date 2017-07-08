@@ -24,7 +24,7 @@
 #define mcu_spi_setaction mcu_ssp_setaction
 #define mcu_spi_setduplex mcu_ssp_setduplex
 #define mcu_spi_swap mcu_ssp_swap
-#define mcu_spi_getattr mcu_ssp_getattr
+#define mcu_spi_getinfo mcu_ssp_getinfo
 #define mcu_spi_setattr mcu_ssp_setattr
 #define mcu_spi_write mcu_ssp_write
 #define mcu_spi_read mcu_ssp_read

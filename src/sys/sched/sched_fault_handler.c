@@ -29,7 +29,7 @@
 #include <signal.h>
 #include "mcu/mcu.h"
 #include "mcu/core.h"
-#include "stratify/stratify.h"
+#include "sos/stratify.h"
 
 #include "sched_flags.h"
 #include "../unistd/unistd_flags.h"

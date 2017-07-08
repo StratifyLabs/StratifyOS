@@ -51,7 +51,7 @@ static int get_sffs_block_data_addr(const void * cfg, block_t block){
 }
 
 void execute_callback(cl_handle_t * handle){
-	handle->op->callback(handle->op->context, NULL);
+	handle->op->handler.callback(handle->op->handler.context, NULL);
 }
 
 static int calc_page_size(const void * cfg, cl_handle_t * handle, int * offset){
@@ -144,7 +144,7 @@ int sffs_file_finishread(const void * cfg, cl_handle_t * handle){
 		read_current_segment(cfg, handle);
 	}
 
-	if ( handle->op->callback != NULL ){
+	if ( handle->op->handler.callback != NULL ){
 		mcu_core_privcall((core_privcall_t)execute_callback, handle);
 	}
 
@@ -211,7 +211,7 @@ int sffs_file_finishwrite(const void * cfg, cl_handle_t * handle){
 		write_current_segment(cfg, handle);
 	}
 
-	if ( handle->op->callback != NULL ){
+	if ( handle->op->handler.callback != NULL ){
 		mcu_core_privcall((core_privcall_t)execute_callback, handle);
 	}
 	return 0;

@@ -34,7 +34,7 @@
 
 #include "mcu/mcu.h"
 #include "mcu/wdt.h"
-#include "iface/dev/rtc.h"
+#include "sos/dev/rtc.h"
 
 #include "../sched/sched_flags.h"
 

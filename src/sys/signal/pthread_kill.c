@@ -32,7 +32,7 @@
 #include <pthread.h>
 #include <signal.h>
 #include <errno.h>
-#include <stratify/stratify.h>
+#include "sos/stratify.h"
 #include "../sched/sched_flags.h"
 #include "sig_local.h"
 

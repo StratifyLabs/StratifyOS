@@ -20,18 +20,18 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <stddef.h>
-#include "iface/dev/usbfifo.h"
-#include "dev/usbfifo.h"
+#include "sos/dev/usbfifo.h"
+#include "mcu/usbfifo.h"
 #include "mcu/usb.h"
 #include "mcu/debug.h"
 
 
-static int set_read_action(const device_cfg_t * cfg, mcu_callback_t callback){
+static int set_read_action(const devfs_handle_t * cfg, mcu_callback_t callback){
 	mcu_action_t action;
-	const usbfifo_cfg_t * cfgp = cfg->dcfg;
-	action.callback = callback;
-	action.context = (void*)cfg;
-	action.event = USB_EVENT_DATA_READY;
+	const usbfifo_cfg_t * cfgp = cfg->config;
+	action.handler.callback = callback;
+	action.handler.context = (void*)cfg;
+	action.o_events = USB_EVENT_DATA_READY;
 	action.channel = cfgp->endpoint;
 	action.prio = 0;
 	if( mcu_usb_setaction(cfgp->port, &action) < 0 ){
@@ -44,11 +44,11 @@ static int set_read_action(const device_cfg_t * cfg, mcu_callback_t callback){
 static int data_received(void * context, mcu_event_t data){
 	int i;
 	int bytes_read;
-	const device_cfg_t * cfg;
+	const devfs_handle_t * cfg;
 	const usbfifo_cfg_t * cfgp;
 	usbfifo_state_t * state;
 	cfg = context;
-	cfgp = cfg->dcfg;
+	cfgp = cfg->config;
 	state = cfg->state;
 	int size = cfgp->fifo.size;
 	char buffer[cfgp->endpoint_size];
@@ -70,23 +70,23 @@ static int data_received(void * context, mcu_event_t data){
 	return 1; //leave the callback in place
 }
 
-int usbfifo_open(const device_cfg_t * cfg){
-	const usbfifo_cfg_t * cfgp = cfg->dcfg;
-	return mcu_usb_open((const device_cfg_t*)&(cfgp->port));
+int usbfifo_open(const devfs_handle_t * cfg){
+	const usbfifo_cfg_t * cfgp = cfg->config;
+	return mcu_usb_open((const devfs_handle_t*)&(cfgp->port));
 }
 
-int usbfifo_ioctl(const device_cfg_t * cfg, int request, void * ctl){
-	fifo_attr_t * attr = ctl;
+int usbfifo_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
+	fifo_info_t * info = ctl;
 	mcu_action_t * action = ctl;
-	const usbfifo_cfg_t * cfgp = cfg->dcfg;
+	const usbfifo_cfg_t * cfgp = cfg->config;
 	usbfifo_state_t * state = cfg->state;
 	switch(request){
-	case I_FIFO_GETATTR:
-		fifo_getattr(attr, &(cfgp->fifo), &(state->fifo));
+	case I_FIFO_GETINFO:
+		fifo_getinfo(info, &(cfgp->fifo), &(state->fifo));
 		break;
 	case I_USB_SETACTION:
-	case I_GLOBAL_SETACTION:
-		if( action->callback == 0 ){
+	case I_MCU_SETACTION:
+		if( action->handler.callback == 0 ){
 			fifo_cancel_rop(&(state->fifo));
 		} else {
 			return mcu_usb_setaction(cfgp->port, ctl);
@@ -96,7 +96,7 @@ int usbfifo_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 		fifo_flush(&(state->fifo));
 		if ( state->fifo.rop != NULL ){
 			state->fifo.rop->nbyte = -1;
-			if ( state->fifo.rop->callback(state->fifo.rop->context, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED)) == 0 ){
+			if ( state->fifo.rop->handler.callback(state->fifo.rop->handler.context, MCU_EVENT_SET_CODE(MCU_EVENT_OP_CANCELLED)) == 0 ){
 				state->fifo.rop = NULL;
 			}
 		}
@@ -122,29 +122,29 @@ int usbfifo_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 		if( set_read_action(cfg, NULL) < 0 ){
 			return -1;
 		}
-		return mcu_usb_close((const device_cfg_t*)&(cfgp->port));
+		return mcu_usb_close((const devfs_handle_t*)&(cfgp->port));
 	default:
-		return mcu_usb_ioctl((const device_cfg_t*)&(cfgp->port), request, ctl);
+		return mcu_usb_ioctl((const devfs_handle_t*)&(cfgp->port), request, ctl);
 	}
 	return 0;
 }
 
 
-int usbfifo_read(const device_cfg_t * cfg, device_transfer_t * rop){
-	const usbfifo_cfg_t * cfgp = cfg->dcfg;
+int usbfifo_read(const devfs_handle_t * cfg, devfs_async_t * rop){
+	const usbfifo_cfg_t * cfgp = cfg->config;
 	usbfifo_state_t * state = cfg->state;
 	return fifo_read_local(&(cfgp->fifo), &(state->fifo), rop);
 }
 
-int usbfifo_write(const device_cfg_t * cfg, device_transfer_t * wop){
-	const usbfifo_cfg_t * cfgp = cfg->dcfg;
+int usbfifo_write(const devfs_handle_t * cfg, devfs_async_t * wop){
+	const usbfifo_cfg_t * cfgp = cfg->config;
 	wop->loc = 0x80 | cfgp->endpoint;
 
 	//Writing to the USB FIFO is not buffered, it just writes the USB HW directly
-	return mcu_usb_write((const device_cfg_t*)&(cfgp->port), wop);
+	return mcu_usb_write((const devfs_handle_t*)&(cfgp->port), wop);
 }
 
-int usbfifo_close(const device_cfg_t * cfg){
+int usbfifo_close(const devfs_handle_t * cfg){
 	//use I_FIFO_EXIT to close the USB
 	return 0;
 }

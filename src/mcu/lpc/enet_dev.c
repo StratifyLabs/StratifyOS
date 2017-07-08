@@ -82,7 +82,7 @@ int _mcu_enet_dev_powered_on(int port){
 	return ( enet_local[port].ref_count != 0 );
 }
 
-int mcu_enet_getattr(int port, void * ctl){
+int mcu_enet_getinfo(int port, void * ctl){
 	memcpy(ctl, &(enet_local[port].attr), sizeof(enet_attr_t));
 	return 0;
 }
@@ -169,8 +169,8 @@ int mcu_enet_setaction(int port, void * ctl){
 
 
 
-int _mcu_enet_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
-	int port = cfg->periph.port;
+int _mcu_enet_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
+	int port = cfg->port;
 
 	if( enet_local[port].rx_desc.buf != 0 ){
 		errno = EAGAIN;
@@ -185,12 +185,12 @@ int _mcu_enet_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
 	//setup the tx descriptor to transfer the packet
 	enet_local[port].rx_desc.buf = rop->buf;
 	enet_local[port].rx_desc.ctrl = ENET_RCTRL_SIZE(rop->nbyte) | ENET_RCTRL_INT;
-	if( _mcu_cortexm_priv_validate_callback(rop->callback) < 0 ){
+	if( _mcu_cortexm_priv_validate_callback(rop->handler.callback) < 0 ){
 		return -1;
 	}
 
-	enet_local[port].read.callback = rop->callback;
-	enet_local[port].read.context = rop->context;
+	enet_local[port].read.callback = rop->handler.callback;
+	enet_local[port].read.context = rop->handler.context;
 
 	//TX interrupt should be enabled
 
@@ -208,8 +208,8 @@ int _mcu_enet_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
 	return 0;
 }
 
-int _mcu_enet_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
-	int port = cfg->periph.port;
+int _mcu_enet_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
+	int port = cfg->port;
 
 
 
@@ -227,12 +227,12 @@ int _mcu_enet_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
 	enet_local[port].tx_desc.buf = wop->buf;
 	enet_local[port].tx_desc.ctrl = ENET_TCTRL_SIZE(wop->nbyte) | ENET_TCTRL_LAST | ENET_TCTRL_INT;
 
-	if( _mcu_cortexm_priv_validate_callback(wop->callback) < 0 ){
+	if( _mcu_cortexm_priv_validate_callback(wop->handler.callback) < 0 ){
 		return -1;
 	}
 
-	enet_local[port].write.callback = wop->callback;
-	enet_local[port].write.context = wop->context;
+	enet_local[port].write.callback = wop->handler.callback;
+	enet_local[port].write.context = wop->handler.context;
 
 	//TX interrupt should be enabled
 

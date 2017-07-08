@@ -22,13 +22,13 @@
 
 #include "config.h"
 
-#include "iface/device_config.h"
+#include "sos/fs/devfs.h"
 #include "mcu/task.h"
 #include "mcu/debug.h"
 
 #include <fcntl.h>
 #include <errno.h>
-#include <stratify/sysfs.h>
+#include "sos/fs/sysfs.h"
 #include <sys/syscalls/process/process_start.h>
 
 #include "../../sched/sched_flags.h"

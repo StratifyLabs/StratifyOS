@@ -25,13 +25,13 @@
 
 #include "config.h"
 #include <errno.h>
-#include "iface/dev/sys.h"
+#include "sos/dev/sys.h"
 #include "mcu/core.h"
 #include "mcu/sys.h"
 #include "mcu/debug.h"
 #include "sched/sched_flags.h"
 #include "signal/sig_local.h"
-#include "dev/sys.h"
+#include "mcu/sys.h"
 #include "symbols.h"
 
 extern void _mcu_core_hardware_id();
@@ -40,23 +40,23 @@ static int read_task(sys_taskattr_t * task);
 
 uint8_t sys_euid MCU_SYS_MEM;
 
-int sys_open(const device_cfg_t * cfg){
+int sys_open(const devfs_handle_t * cfg){
 	return 0;
 }
 
-int sys_ioctl(const device_cfg_t * cfg, int request, void * ctl){
+int sys_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 	sys_id_t * id = ctl;
 	sys_attr_t * sys = ctl;
 	sys_killattr_t * killattr = ctl;
 
 	int i;
 	switch(request){
-	case  I_SYS_GETATTR:
+	case  I_SYS_GETINFO:
 		memset(sys, 0, sizeof(sys_attr_t));
 		strncpy(sys->kernel_version, VERSION, 7);
 		strncpy(sys->sys_version, stratify_board_config.sys_version, 7);
 		strncpy(sys->arch, ARCH, 15);
-		sys->security = _mcu_sys_getsecurity();
+		sys->security = 0;
 		sys->signature = symbols_table[0];
 		sys->cpu_freq = _mcu_core_getclock();
 		sys->sys_mem_size = stratify_board_config.sys_memory_size;
@@ -104,17 +104,17 @@ int sys_ioctl(const device_cfg_t * cfg, int request, void * ctl){
 	return -1;
 }
 
-int sys_read(const device_cfg_t * cfg, device_transfer_t * rop){
+int sys_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	errno = ENOTSUP;
 	return -1;
 }
 
-int sys_write(const device_cfg_t * cfg, device_transfer_t * wop){
+int sys_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	errno = ENOTSUP;
 	return -1;
 }
 
-int sys_close(const device_cfg_t * cfg){
+int sys_close(const devfs_handle_t * cfg){
 	return 0;
 }
 

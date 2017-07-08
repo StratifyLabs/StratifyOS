@@ -27,8 +27,9 @@
 #define _MCU_I2C_H_
 
 
-#include "../iface/dev/i2c.h"
-#include "iface/device_config.h"
+#include "sos/dev/i2c.h"
+
+#include "sos/fs/devfs.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -38,35 +39,30 @@ extern "C" {
  * \sa periph_open()
  *
  */
-int mcu_i2c_open(const device_cfg_t * cfg) MCU_PRIV_CODE;
+int mcu_i2c_open(const devfs_handle_t * cfg) MCU_PRIV_CODE;
 /*! \details
  *
  * \sa periph_read()
  *
  */
-int mcu_i2c_read(const device_cfg_t * cfg, device_transfer_t * rop) MCU_PRIV_CODE;
+int mcu_i2c_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_PRIV_CODE;
 /*! \details
  * \sa periph_write()
  */
-int mcu_i2c_write(const device_cfg_t * cfg, device_transfer_t * wop) MCU_PRIV_CODE;
+int mcu_i2c_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_PRIV_CODE;
 /*! \details
  * \sa periph_ioctl()
  *
  */
-int mcu_i2c_ioctl(const device_cfg_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
+int mcu_i2c_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
 /*! \details
  * \sa periph_close()
  */
-int mcu_i2c_close(const device_cfg_t * cfg) MCU_PRIV_CODE;
+int mcu_i2c_close(const devfs_handle_t * cfg) MCU_PRIV_CODE;
 
-int mcu_i2c_getattr(int port, void * ctl) MCU_PRIV_CODE;
+int mcu_i2c_getinfo(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_i2c_setattr(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_i2c_setaction(int port, void * ctl) MCU_PRIV_CODE;
-
-int mcu_i2c_setup(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_i2c_geterr(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_i2c_slave_setup(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_i2c_reset(int port, void * ctl) MCU_PRIV_CODE;
 
 
 #ifdef __cplusplus

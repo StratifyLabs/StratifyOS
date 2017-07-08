@@ -25,7 +25,7 @@
  * interface.
  *
  * \code
- * #include "iface/dev/sys/dirent.h"
+ * #include "sos/dev/sys/dirent.h"
  * #include <stdio.h>
  *
  * void show_directory(){
@@ -60,7 +60,7 @@
 #include <unistd.h>
 #include <malloc.h>
 #include <errno.h>
-#include <stratify/sysfs.h>
+#include "sos/fs/sysfs.h"
 
 #include "dirent.h"
 #include "mcu/debug.h"

@@ -47,7 +47,7 @@ typedef struct {
 static void priv_suspend(void * args) MCU_PRIV_EXEC_CODE;
 
 typedef struct {
-	const device_t * device;
+	const devfs_device_t * device;
 	struct aiocb * aiocbp;
 	int read;
 	int ret;
@@ -330,9 +330,9 @@ void priv_device_data_transfer(void * args){
 	//set the device callback for the read/write op
 	if ( p->read == true ){
 		//Read operation
-		p->ret = p->device->driver.read(&p->device->cfg, &p->aiocbp->op);
+		p->ret = p->device->driver.read(&p->device->handle, &p->aiocbp->op);
 	} else {
-		p->ret = p->device->driver.write(&p->device->cfg, &p->aiocbp->op);
+		p->ret = p->device->driver.write(&p->device->handle, &p->aiocbp->op);
 	}
 
 	stratify_sched_table[task_get_current()].block_object = NULL;
@@ -361,7 +361,7 @@ int aio_data_transfer(struct aiocb * aiocbp){
 	//! \todo make sure the fildes is valid
 
 	open_file = get_open_file(aiocbp->aio_fildes);
-	args.device = (device_t *)open_file->handle;
+	args.device = (devfs_device_t *)open_file->handle;
 	args.aiocbp = aiocbp;
 	if ( aiocbp->aio_lio_opcode == LIO_READ ){
 		args.read = true;
@@ -372,9 +372,9 @@ int aio_data_transfer(struct aiocb * aiocbp){
 	args.aiocbp->op.flags = 0; //this is never a blocking call
 	args.aiocbp->op.nbyte = aiocbp->aio_nbytes;
 	args.aiocbp->op.buf = (void*)aiocbp->aio_buf;
-	args.aiocbp->op.callback = (mcu_callback_t)aio_data_transfer_callback;
 	args.aiocbp->op.tid = task_get_current();
-	args.aiocbp->op.context = aiocbp;
+	args.aiocbp->op.handler.callback = (mcu_callback_t)aio_data_transfer_callback;
+	args.aiocbp->op.handler.context = aiocbp;
 	args.aiocbp->aio_nbytes = -1; //means status is in progress
 	mcu_core_privcall(priv_device_data_transfer, &args);
 	return args.ret;

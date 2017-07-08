@@ -25,7 +25,7 @@
 #include <errno.h>
 #include <stdbool.h>
 #include <sys/fcntl.h>
-#include "stratify/stratify.h"
+#include "sos/stratify.h"
 #include "mcu/cortexm.h"
 #include "mcu/core.h"
 #include "mcu/debug.h"
@@ -36,7 +36,7 @@
 #define FLASH_PORT 0
 
 static bool is_erased = false;
-const device_cfg_t flash_dev = { .periph.port = 0 };
+const devfs_handle_t flash_dev = { .port = 0 };
 
 
 void gled_on();
@@ -130,7 +130,7 @@ void boot_link_cmd_readserialno(link_transport_driver_t * driver, link_data_t * 
 	memset(serialno, 0, LINK_PACKET_DATA_SIZE);
 
 
-	_mcu_core_getserialno((sn_t*)tmp);
+	_mcu_core_getserialno((mcu_sn_t*)tmp);
 	for(j=3; j >= 0; j--){
 		for(i=0; i < 8; i++){
 			*p++ = htoc((tmp[j] >> 28) & 0x0F);
@@ -182,10 +182,10 @@ void boot_link_cmd_ioctl(link_transport_driver_t * driver, link_data_t * args){
 		dstr("erd\n");
 		return;
 
-	case I_BOOTLOADER_GETATTR:
+	case I_BOOTLOADER_GETINFO:
 		//write data to io_buf
 		attr.version = BCDVERSION;
-		_mcu_core_getserialno((sn_t*)(attr.serialno));
+		_mcu_core_getserialno((mcu_sn_t*)(attr.serialno));
 
 		attr.startaddr = boot_board_config.program_start_addr;
 		attr.hardware_id = boot_board_config.id;

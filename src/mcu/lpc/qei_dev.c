@@ -106,7 +106,7 @@ int mcu_qei_setattr(int port, void * ctl){
 	return 0;
 }
 
-int mcu_qei_getattr(int port, void * ctl){
+int mcu_qei_getinfo(int port, void * ctl){
 	LPC_QEI_Type * regs = qei_regs[port];
 
 	qei_attr_t * ctlp;
@@ -149,20 +149,20 @@ int mcu_qei_setaction(int port, void * ctl){
 
 	mcu_action_t * action = (mcu_action_t*)ctl;
 	regs->IEC = 0x1FFF;
-	if( action->event & QEI_ACTION_EVENT_INDEX ){
+	if( action->o_events & QEI_ACTION_EVENT_INDEX ){
 		regs->IES = (1<<0);
 	}
 
-	if( action->event & QEI_ACTION_EVENT_DIRCHANGE ){
+	if( action->o_events & QEI_ACTION_EVENT_DIRCHANGE ){
 		regs->IES = (1<<4);
 	}
 
-	if( _mcu_cortexm_priv_validate_callback(action->callback) < 0 ){
+	if( _mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
 		return -1;
 	}
 
-	qei_local[port].handler.callback = action->callback;
-	qei_local[port].handler.context = action->context;
+	qei_local[port].handler.callback = action->handler.callback;
+	qei_local[port].handler.context = action->handler.context;
 
 	_mcu_cortexm_set_irq_prio(qei_irqs[port], action->prio);
 
@@ -170,14 +170,14 @@ int mcu_qei_setaction(int port, void * ctl){
 	return 0;
 }
 
-int _mcu_qei_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
-	const int port = cfg->periph.port;
-	if( _mcu_cortexm_priv_validate_callback(rop->callback) < 0 ){
+int _mcu_qei_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
+	const int port = cfg->port;
+	if( _mcu_cortexm_priv_validate_callback(rop->handler.callback) < 0 ){
 		return -1;
 	}
 
-	qei_local[port].handler.callback = rop->callback;
-	qei_local[port].handler.context = rop->context;
+	qei_local[port].handler.callback = rop->handler.callback;
+	qei_local[port].handler.context = rop->handler.context;
 	return 0;
 }
 

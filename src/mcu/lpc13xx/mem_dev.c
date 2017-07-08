@@ -67,7 +67,7 @@ int _mcu_mem_getsyspage(){
 	return (SRAM_PAGES);
 }
 
-int mcu_mem_getattr(int port, void * ctl){
+int mcu_mem_getinfo(int port, void * ctl){
 	mem_attr_t * attr = ctl;
 	attr->flash_pages = (uint32_t)&_flash_pages;
 	attr->flash_size = (uint32_t)&_flash_size;
@@ -207,7 +207,7 @@ int mcu_mem_writepage(int port, void * ctl){
 	return wattr->nbyte;
 }
 
-int _mcu_mem_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
+int _mcu_mem_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 
 	if ( is_ram(wop->loc, wop->nbyte) ){
 		memcpy((void*)wop->loc, wop->buf, wop->nbyte);
@@ -218,7 +218,7 @@ int _mcu_mem_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
 	return -1;
 }
 
-int _mcu_mem_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
+int _mcu_mem_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	if ( (is_flash(rop->loc, rop->nbyte) ) ||
 			( is_ram(rop->loc, rop->nbyte) ) 	){
 		memcpy(rop->buf, (const void*)rop->loc, rop->nbyte);

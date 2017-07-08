@@ -44,7 +44,9 @@ typedef struct MCU_PACK {
 } i2c_local_transfer_t;
 
 typedef struct MCU_PACK {
-	i2c_slave_setup_t setup;
+	//i2c_slave_setup_t setup;
+	u32 size;
+	char * data;
 	mcu_event_handler_t handler;
 	i2c_ptr_t ptr;
 } i2c_local_slave_t;
@@ -56,7 +58,8 @@ typedef struct MCU_PACK {
 	volatile u8 err;
 	u8 resd[1];
 	volatile i2c_ptr_t ptr;
-	i2c_setup_t transfer;
+	u16 slave_addr;
+	u32 o_flags;
 	i2c_local_transfer_t master;
 	i2c_local_slave_t slave;
 } i2c_local_t;
@@ -64,8 +67,8 @@ typedef struct MCU_PACK {
 static void enable_opendrain_pin(int pio_port, int pio_pin, int internal_pullup) MCU_PRIV_CODE;
 void enable_opendrain_pin(int pio_port, int pio_pin, int internal_pullup){
 	pio_attr_t pattr;
-	pattr.mask = (1<<pio_pin);
-	pattr.mode = PIO_MODE_OUTPUT | PIO_MODE_OPENDRAIN | internal_pullup;
+	pattr.o_pinmask = (1<<pio_pin);
+	pattr.o_flags = PIO_FLAG_SET_OUTPUT | PIO_FLAG_IS_OPENDRAIN | internal_pullup;
 	mcu_pio_setattr(pio_port, &pattr);
 }
 
@@ -100,7 +103,7 @@ i2c_local_t i2c_local[MCU_I2C_PORTS] MCU_SYS_MEM;
 #define I2EN (1<<6) //interface enable
 
 
-static int i2c_transfer(int port, int op, device_transfer_t * dop);
+static int i2c_transfer(int port, int op, devfs_async_t * dop);
 
 #define i2c_slave_ack(port) (LPC_I2C[port].CONSET = I2CONSET_AA)
 #define i2c_slave_nack(port) (LPC_I2C[port].CONCLR = I2CONCLR_AAC)
@@ -111,10 +114,6 @@ void _mcu_i2c_dev_power_on(int port){
 		switch(port){
 		case 0:
 			_mcu_lpc_core_enable_pwr(PCI2C0);
-#if defined __lpc13uxx || __lpc13xx
-			LPC_SYSCON->PRESETCTRL |= (1<<1); //de-assert the I2C peripheral reset--applies to I2C and SSP0/1
-			LPC_SYSCON->SYSAHBCLKCTRL |= (SYSAHBCLKCTRL_I2C);
-#endif
 			break;
 #if MCU_I2C_PORTS > 1
 		case 1:
@@ -147,9 +146,6 @@ void _mcu_i2c_dev_power_off(int port){
 			_mcu_cortexm_priv_disable_irq((void*)(u32)(i2c_irqs[port]));
 			switch(port){
 			case 0:
-#if defined __lpc13uxx || __lpc13xx
-				LPC_SYSCON->SYSAHBCLKCTRL &= ~(SYSAHBCLKCTRL_I2C);
-#endif
 				_mcu_lpc_core_disable_pwr(PCI2C0);
 				break;
 #if MCU_I2C_PORTS > 1
@@ -172,188 +168,121 @@ int _mcu_i2c_dev_powered_on(int port){
 	return ( i2c_local[port].ref_count != 0 );
 }
 
-int mcu_i2c_getattr(int port, void * ctl){
+int mcu_i2c_getinfo(int port, void * ctl){
 	memcpy(ctl, &(i2c_local_attr[port]), sizeof(i2c_attr_t));
 	return 0;
 }
 
 int mcu_i2c_setattr(int port, void * ctl){
 	LPC_I2C_Type * i2c_regs;
-	i2c_attr_t * ctl_ptr;
+	i2c_attr_t * attr = ctl;
+	u32 o_flags = attr->o_flags;
 	int count;
+	int i;
 	int internal_pullup;
-#if defined __lpc13uxx || defined __lpc13xx
-	pio_attr_t pattr;
-	__IO uint32_t * regs_iocon;
-#endif
 
-	ctl_ptr = (i2c_attr_t *)ctl;
 
 	//Check for a valid port
 	i2c_regs = i2c_regs_table[port];
 
-	if ( ctl_ptr->bitrate == 0 ){
-		errno = EINVAL;
-		return -1 - offsetof(i2c_attr_t, bitrate);
-	}
-
-	if ( ctl_ptr->o_flags & I2C_ATTR_FLAG_PULLUP ){
-		internal_pullup = PIO_MODE_PULLUP;
-	} else {
-		internal_pullup = 0;
-	}
-
-	if ( ctl_ptr->pin_assign != MCU_GPIO_CFG_USER ){
-
-		switch(port){
-		case 0:
-			if (1){ //This makes auto-indent work properly with eclipse
-				switch(ctl_ptr->pin_assign){
-				case 0:
-
-#if defined __lpc13uxx || defined __lpc13xx
-					pattr.mask = (1<<4)|(1<<5);
-					pattr.mode = PIO_MODE_OUTPUT | PIO_MODE_OPENDRAIN;
-					mcu_pio_setattr(port, &pattr);
-
-					regs_iocon = _mcu_get_iocon_regs(0, 4);
-					*regs_iocon = 0;
-					regs_iocon = _mcu_get_iocon_regs(0, 5);
-					*regs_iocon = 0;
-#else
-					enable_opendrain_pin(MCU_I2C_PORT0_PINASSIGN0,MCU_I2C_SCLPIN0_PINASSIGN0,internal_pullup);
-					enable_opendrain_pin(MCU_I2C_PORT0_PINASSIGN0,MCU_I2C_SDAPIN0_PINASSIGN0,internal_pullup);
-#endif
-
-
-					if ( _mcu_i2c_cfg_pio(0, MCU_I2C_PORT0_PINASSIGN0,
-							MCU_I2C_SCLPIN0_PINASSIGN0,
-							MCU_I2C_SDAPIN0_PINASSIGN0) < 0 ){
-						errno = EINVAL;
-						return -1;
-					}
-					break;
-				default:
-					errno = EINVAL;
-					return -1 - offsetof(i2c_attr_t, pin_assign);
-				}
-			}
-			break;
-#if MCU_I2C_PORTS > 1
-		case 1:
-			if (1){
-				switch(ctl_ptr->pin_assign){
-				case 0:
-					//configure pins as open drain
-					enable_opendrain_pin(0,0,internal_pullup);
-					enable_opendrain_pin(0,1,internal_pullup);
-
-					if( _mcu_i2c_cfg_pio(1, 0, 1, 0) < 0 ){
-						errno = EINVAL;
-						return -1;
-					}
-					break;
-				case 1:
-					enable_opendrain_pin(0,19,internal_pullup);
-					enable_opendrain_pin(0,20,internal_pullup);
-					if ( _mcu_i2c_cfg_pio(1, 0, 20, 19) < 0 ){
-						errno = EINVAL;
-						return -1;
-					}
-					break;
-				default:
-					errno = EINVAL;
-					return -1 - offsetof(i2c_attr_t, pin_assign);
-				}
-			}
-			break;
-#endif
-#if MCU_I2C_PORTS > 2
-		case 2:
-			if (1){
-				switch(ctl_ptr->pin_assign){
-				case 0:
-					enable_opendrain_pin(0,10,internal_pullup);
-					enable_opendrain_pin(0,11,internal_pullup);
-					_mcu_i2c_cfg_pio(2, 0, 11, 10);
-					break;
-				default:
-					errno = EINVAL;
-					return -1 - offsetof(i2c_attr_t, pin_assign);
-				}
-			}
-			break;
-#endif
-		default:
+	if( o_flags & I2C_FLAG_SET_MASTER ){
+		if ( attr->freq == 0 ){
 			errno = EINVAL;
-			return -1 - offsetof(i2c_attr_t, pin_assign);
+			return -1 - offsetof(i2c_attr_t, freq);
 		}
+
+		if ( o_flags & I2C_FLAG_IS_PULLUP ){
+			internal_pullup = PIO_FLAG_IS_PULLUP;
+		} else {
+			internal_pullup = 0;
+		}
+
+		for(i=0; i < 2; i++){
+			if( mcu_is_port_valid(attr->pin_assignment[i].port) ){
+
+				enable_opendrain_pin(attr->pin_assignment[i].port,
+						attr->pin_assignment[i].pin, internal_pullup);
+
+
+				if ( _mcu_core_set_pinsel_func(attr->pin_assignment[i].port, attr->pin_assignment[i].pin, CORE_PERIPH_I2C, port) ){
+					return -1;  //pin failed to allocate as a UART pin
+				}
+			}
+		}
+
+		i2c_regs->CONCLR = 0xFF;
+
+		i2c_local[port].state = I2C_STATE_NONE;
+		i2c_local[port].master.size = 0; //no bytes
+		i2c_local[port].master.data = 0; //no data pointer
+
+		count = ((mcu_board_config.core_periph_freq) / (attr->freq * 2));
+		if ( count > 0xFFFF ){
+			count = 0xFFFF;
+		}
+		i2c_regs->SCLH = count;
+		i2c_regs->SCLL = count;
+
+		//Enable the I2C unit
+		i2c_regs->CONSET = (I2EN);
+	} else if( o_flags & I2C_FLAG_SET_SLAVE ){
+		//setup the device in slave mode
+		mcu_i2c_slave_setup(port, attr);
+
 	}
 
-	i2c_regs->CONCLR = 0xFF;
-
-	i2c_local[port].state = I2C_STATE_NONE;
-	i2c_local[port].master.size = 0; //no bytes
-	i2c_local[port].master.data = 0; //no data pointer
-
-	count = ((mcu_board_config.core_periph_freq) / (ctl_ptr->bitrate * 2));
-	if ( count > 0xFFFF ){
-		count = 0xFFFF;
+	if( o_flags & (I2C_FLAG_ENABLE_WRITE_PTR|I2C_FLAG_ENABLE_WRITE_PTR_16|I2C_FLAG_ENABLE_READ_ONLY|I2C_FLAG_ENABLE_WRITE_PTR_ONLY|I2C_FLAG_ENABLE_WRITE_ONLY|I2C_FLAG_ENABLE_DATA_ONLY) ){
+		i2c_local[port].slave_addr = attr->slave_addr;
+		i2c_local[port].o_flags = o_flags;
 	}
-	i2c_regs->SCLH = count;
-	i2c_regs->SCLL = count;
 
-	//Enable the I2C unit
-	i2c_regs->CONSET = (I2EN);
-	memcpy(&(i2c_local_attr[port]), ctl_ptr, sizeof(i2c_attr_t));
-	i2c_local_attr[port].bitrate = mcu_board_config.core_periph_freq / (2 * count);
 	return 0;
 }
 
 int mcu_i2c_setup(int port, void * ctl){
 	i2c_setup_t * ctl_ptr;
 	ctl_ptr = ctl;
-	i2c_local[port].transfer.slave_addr = ctl_ptr->slave_addr;
-	i2c_local[port].transfer.transfer = ctl_ptr->transfer;
+	//i2c_local[port].transfer.slave_addr = ctl_ptr->slave_addr;
+	//i2c_local[port].transfer.transfer = ctl_ptr->transfer;
 	return 0;
 }
 
-int mcu_i2c_slave_setup(int port, void * ctl){
-	i2c_slave_setup_t * ctlp = ctl;
+int mcu_i2c_slave_setup(int port, i2c_attr_t * attr){
 	LPC_I2C_Type * i2c_regs;
 	int gen_call = 0;
+	u32 o_flags = attr->o_flags;
 
 	// \todo To fix Issue #30, we need to check the dest mem and make sure it is writable by the caller
 
-	memcpy( &(i2c_local[port].slave.setup), ctl, sizeof(i2c_slave_setup_t));
+	//memcpy( &(i2c_local[port].slave.setup), ctl, sizeof(i2c_slave_setup_t));
 
-	if( ctlp->size > 255 ){
-		i2c_local[port].slave.setup.o_flags |= I2C_SLAVE_SETUP_FLAG_16_BIT_PTR;
+	if( attr->size > 255 ){
+		i2c_local[port].o_flags |= I2C_FLAG_IS_SLAVE_16BIT_PTR;
 	}
 
 	i2c_regs = i2c_regs_table[port];
 
-	if( ctlp->o_flags & I2C_SLAVE_SETUP_FLAG_ENABLE_GENERAL_CALL ){
+	if( o_flags & I2C_FLAG_IS_SLAVE_ACK_GENERAL_CALL ){
 		gen_call = 1;
 	}
 
-	if( i2c_local[port].slave.setup.o_flags & I2C_SLAVE_SETUP_FLAG_ALT_ADDR1 ){
-		i2c_regs->ADR1 = (ctlp->addr << 1) | gen_call;
+	if( o_flags & I2C_FLAG_IS_SLAVE_ADDR1 ){
+		i2c_regs->ADR1 = (attr->slave_addr << 1) | gen_call;
 #if MCU_I2C_API == 0
 		i2c_regs->MASK1 = 0x00;
 #endif
-	} else if( i2c_local[port].slave.setup.o_flags & I2C_SLAVE_SETUP_FLAG_ALT_ADDR2 ){
-		i2c_regs->ADR2 = (ctlp->addr << 1) | gen_call;
+	} else if( o_flags & I2C_FLAG_IS_SLAVE_ADDR2 ){
+		i2c_regs->ADR2 = (attr->slave_addr << 1) | gen_call;
 #if MCU_I2C_API == 0
 		i2c_regs->MASK2 = 0x00;
 #endif
-	} else if( i2c_local[port].slave.setup.o_flags & I2C_SLAVE_SETUP_FLAG_ALT_ADDR3 ){
-		i2c_regs->ADR3 = (ctlp->addr << 1) | gen_call;
+	} else if( o_flags & I2C_FLAG_IS_SLAVE_ADDR3 ){
+		i2c_regs->ADR3 = (attr->slave_addr << 1) | gen_call;
 #if MCU_I2C_API == 0
 		i2c_regs->MASK3 = 0x00;
 #endif
 	} else {
-		i2c_regs->ADR0 = (ctlp->addr << 1) | gen_call;
+		i2c_regs->ADR0 = (attr->slave_addr << 1) | gen_call;
 #if MCU_I2C_API == 0
 		i2c_regs->MASK0 = 0x00;
 #endif
@@ -383,29 +312,29 @@ int mcu_i2c_setaction(int port, void * ctl){
 
 	_mcu_cortexm_set_irq_prio(i2c_irqs[port], action->prio);
 
-	if( action->callback == 0 ){
+	if( action->handler.callback == 0 ){
 		i2c_local[port].slave.handler.callback = 0;
 		i2c_local[port].slave.handler.context = 0;
 		return 0;
 	}
 
-	if( _mcu_cortexm_priv_validate_callback(action->callback) < 0 ){
+	if( _mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
 		return -1;
 	}
 
-	i2c_local[port].slave.handler.callback = action->callback;
-	i2c_local[port].slave.handler.context = action->context;
+	i2c_local[port].slave.handler.callback = action->handler.callback;
+	i2c_local[port].slave.handler.context = action->handler.context;
 
 	return 0;
 }
 
-int _mcu_i2c_dev_write(const device_cfg_t * cfg, device_transfer_t * wop){
-	int port = DEVICE_GET_PORT(cfg);;
+int _mcu_i2c_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
+	int port = DEVFS_GET_PORT(cfg);;
 	return i2c_transfer(port, WRITE_OP, wop);
 }
 
-int _mcu_i2c_dev_read(const device_cfg_t * cfg, device_transfer_t * rop){
-	int port = DEVICE_GET_PORT(cfg);
+int _mcu_i2c_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
+	int port = DEVFS_GET_PORT(cfg);
 	return i2c_transfer(port, READ_OP, rop);
 }
 
@@ -458,22 +387,22 @@ void transmit_byte(LPC_I2C_Type * regs, i2c_local_transfer_t * op){
 }
 
 int receive_slave_byte(LPC_I2C_Type * regs, i2c_local_slave_t * op){
-	if( op->ptr.ptr16 < op->setup.size ){
-		op->setup.data[ op->ptr.ptr16 ] = regs->DAT;
+	if( op->ptr.ptr16 < op->size ){
+		op->data[ op->ptr.ptr16 ] = regs->DAT;
 		op->ptr.ptr16++;
 	} else {
 		regs->DAT;
 		return 0;
 	}
 
-	return (op->ptr.ptr16+1) < op->setup.size;
+	return (op->ptr.ptr16+1) < op->size;
 }
 
 int transmit_slave_byte(LPC_I2C_Type * regs, i2c_local_slave_t * op){
-	if( op->ptr.ptr16 < op->setup.size ){
-		regs->DAT = op->setup.data[ op->ptr.ptr16 ];
+	if( op->ptr.ptr16 < op->size ){
+		regs->DAT = op->data[ op->ptr.ptr16 ];
 		op->ptr.ptr16++;
-		if( op->ptr.ptr16 == op->setup.size ){
+		if( op->ptr.ptr16 == op->size ){
 			op->ptr.ptr16 = 0;
 		}
 	} else {
@@ -483,7 +412,7 @@ int transmit_slave_byte(LPC_I2C_Type * regs, i2c_local_slave_t * op){
 }
 
 void set_slave_ack(LPC_I2C_Type * regs, i2c_local_slave_t * slave){
-	if( slave->setup.size > (slave->ptr.ptr16 + 1) ){
+	if( slave->size > (slave->ptr.ptr16 + 1) ){
 		regs->CONSET = AA;
 	} else {
 		regs->CONCLR = AA;
@@ -504,9 +433,9 @@ static void _mcu_i2c_isr(int port) {
 	case 0x10: //Repeated Start condition
 		i2c_local[port].err = 0;
 		if ( i2c_local[port].state == I2C_STATE_START ){
-			i2c_regs->DAT = (i2c_local[port].transfer.slave_addr << 1) | 0x01; //Set the Read bit -- repeated start after write ptr
+			i2c_regs->DAT = (i2c_local[port].slave_addr << 1) | 0x01; //Set the Read bit -- repeated start after write ptr
 		} else {
-			i2c_regs->DAT = (i2c_local[port].transfer.slave_addr << 1); //send the address -- in write mode
+			i2c_regs->DAT = (i2c_local[port].slave_addr << 1); //send the address -- in write mode
 		}
 
 		i2c_regs->CONSET = AA;
@@ -590,7 +519,7 @@ static void _mcu_i2c_isr(int port) {
 	case 0x60: //Slave mode SLA+W has been received -- Ack returned
 	case 0x78: //Arbitration lost and general ack received
 	case 0x70: //General call has been received -- ack returned
-		if( i2c_local[port].slave.setup.o_flags & I2C_SLAVE_SETUP_FLAG_16_BIT_PTR ){
+		if( i2c_local[port].o_flags & I2C_SLAVE_SETUP_FLAG_16_BIT_PTR ){
 			i2c_local[port].state = I2C_STATE_SLAVE_READ_PTR_16;
 		} else {
 			i2c_local[port].state = I2C_STATE_SLAVE_READ_PTR;
@@ -671,18 +600,18 @@ static void _mcu_i2c_isr(int port) {
 
 	if ( i2c_local[port].state == I2C_STATE_MASTER_COMPLETE ){
 		i2c_local[port].state = I2C_STATE_NONE;
-		_mcu_cortexm_execute_event_handler(&(i2c_local[port].master.handler), &(i2c_local[port].transfer));
+		_mcu_cortexm_execute_event_handler(&(i2c_local[port].master.handler), 0);
 	}
 }
 
 
-int i2c_transfer(int port, int op, device_transfer_t * dop){
+int i2c_transfer(int port, int op, devfs_async_t * dop){
 	LPC_I2C_Type * i2c_regs;
 	int size = dop->nbyte;
 	i2c_regs = i2c_get_regs(port);
 
 	//writes will always write the loc value -- so only abort on read only
-	if( i2c_local[port].transfer.transfer == I2C_TRANSFER_READ_ONLY){
+	if( i2c_local[port].o_flags & I2C_FLAG_ENABLE_READ_ONLY){
 		if ( dop->nbyte == 0 ){
 			return 0;
 		}
@@ -695,18 +624,18 @@ int i2c_transfer(int port, int op, device_transfer_t * dop){
 	i2c_local[port].state = I2C_STATE_START;
 
 
-	if( _mcu_cortexm_priv_validate_callback(dop->callback) < 0 ){
+	if( _mcu_cortexm_priv_validate_callback(dop->handler.callback) < 0 ){
 		errno = EPERM;
 		return -1;
 	}
 
-	i2c_local[port].master.handler.callback = dop->callback;
-	i2c_local[port].master.handler.context = dop->context;
+	i2c_local[port].master.handler.callback = dop->handler.callback;
+	i2c_local[port].master.handler.context = dop->handler.context;
 	i2c_local[port].master.data = (void * volatile)dop->buf;
 	i2c_local[port].master.ret = &(dop->nbyte);
 
-	switch(i2c_local[port].transfer.transfer){
-	case I2C_TRANSFER_NORMAL:
+
+	if( i2c_local[port].o_flags & I2C_FLAG_ENABLE_WRITE_PTR ){
 		i2c_local[port].ptr.ptr8[1] = dop->loc; //8-bit ptr
 		i2c_local[port].master.size = size;
 		if ( op == WRITE_OP ){
@@ -714,13 +643,11 @@ int i2c_transfer(int port, int op, device_transfer_t * dop){
 		} else {
 			i2c_local[port].state = I2C_STATE_RD_OP;
 		}
-		break;
-	case I2C_TRANSFER_WRITE_PTR:
+	} else if( i2c_local[port].o_flags & I2C_FLAG_ENABLE_WRITE_PTR_ONLY ){
 		i2c_local[port].ptr.ptr8[1] = dop->loc; //8-bit ptr
 		i2c_local[port].master.size = 0;
 		i2c_local[port].state = I2C_STATE_WR_PTR_ONLY;
-		break;
-	case I2C_TRANSFER_NORMAL_16:
+	} else if( i2c_local[port].o_flags & I2C_FLAG_ENABLE_WRITE_PTR_16 ){
 		i2c_local[port].ptr.ptr16 = dop->loc;  //16-bit ptr
 		i2c_local[port].master.size = size;
 		if ( op == WRITE_OP ){
@@ -728,18 +655,14 @@ int i2c_transfer(int port, int op, device_transfer_t * dop){
 		} else {
 			i2c_local[port].state = I2C_STATE_RD_16_OP;
 		}
-		break;
-	case I2C_TRANSFER_DATA_ONLY:
-	case I2C_TRANSFER_WRITE_ONLY:
-	case I2C_TRANSFER_READ_ONLY:
+	} else if( i2c_local[port].o_flags & (I2C_FLAG_ENABLE_READ_ONLY|I2C_FLAG_ENABLE_WRITE_ONLY|I2C_FLAG_ENABLE_DATA_ONLY) ){
 		i2c_local[port].master.size = size;
 		if ( op == WRITE_OP ){
 			i2c_local[port].state = I2C_STATE_WR_ONLY;
 		} else {
 			i2c_local[port].state = I2C_STATE_START;
 		}
-		break;
-	default:
+	} else {
 		errno = EINVAL;
 		return -1;
 	}

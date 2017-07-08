@@ -19,15 +19,15 @@
 
 
 #include <stdio.h>
-#include "stratify/usb_dev_cdc.h"
-#include "stratify/usb_dev_std.h"
+#include "mcu/usb_dev_cdc.h"
+#include "mcu/usb_dev_std.h"
 #include <unistd.h>
-#include "stratify/usb_dev.h"
+#include "mcu/usb_dev.h"
 #include "sys/ioctl.h"
 #include "mcu/mcu.h"
 #include "mcu/usb.h"
 #include "mcu/debug.h"
-#include "dev/sys.h"
+#include "mcu/sys.h"
 
 static u32 usb_dev_std_req_setinterface(usb_dev_context_t * context);
 static u32 usb_dev_std_req_getinterface(usb_dev_context_t * context);
@@ -55,12 +55,12 @@ void usb_dev_priv_init(void * args){
 
 	//Set up the action to take when there is data on the control endpoint
 	action.channel = 0;
-	action.context = context;
-	action.callback = usb_dev_std_setup;
-	action.event = USB_EVENT_DATA_READY;
+	action.handler.context = context;
+	action.handler.callback = usb_dev_std_setup;
+	action.o_events = USB_EVENT_DATA_READY;
 	action.prio = 0;
 	mcu_usb_setaction(context->constants->port, &action);
-	action.event = USB_EVENT_WRITE_COMPLETE;
+	action.o_events = USB_EVENT_WRITE_COMPLETE;
 	mcu_usb_setaction(context->constants->port, &action);
 
 	mcu_usb_attach(context->constants->port, NULL);
@@ -365,7 +365,7 @@ u32 usb_dev_std_reg_set_clrfeature(usb_dev_context_t * context, u32 sc) {
 extern char htoc(int nibble);
 
 static void usb_dev_std_get_serialno(void * dest){
-	sn_t tmp;
+	mcu_sn_t tmp;
 	union {
 		u8 * b;
 		u16 * w;

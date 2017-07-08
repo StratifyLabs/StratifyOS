@@ -29,10 +29,10 @@
 #include <unistd.h>
 #include <sys/reent.h>
 #include <errno.h>
-#include <stratify/sysfs.h>
+#include "sos/fs/sysfs.h"
 
 #include "mcu/mpu.h"
-#include "iface/link.h"
+#include "sos/link/link.h"
 #include "../sched/sched_flags.h"
 #include "../signal/sig_local.h"
 

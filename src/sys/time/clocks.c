@@ -34,7 +34,7 @@
 #include "../sched/sched_flags.h"
 
 #define CLOCK_PROCESS_FLAG (1<<31)
-static i32 convert_clocks_to_nanoseconds(i32 clocks);
+static s32 convert_clocks_to_nanoseconds(s32 clocks);
 static void task_timer_to_timespec(struct timespec * tp, uint64_t task_timer);
 
 

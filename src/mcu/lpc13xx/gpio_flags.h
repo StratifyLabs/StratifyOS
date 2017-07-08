@@ -23,12 +23,12 @@
 static inline void gpio_init() MCU_ALWAYS_INLINE;
 static inline void gpio_set(int p, int mask) MCU_ALWAYS_INLINE;
 static inline void gpio_clr(int p, int mask) MCU_ALWAYS_INLINE;
-static inline int gpio_tst(int p, int mask) MCU_ALWAYS_INLINE;
-static inline void gpio_toggle(int p, int mask) MCU_ALWAYS_INLINE;
+static inline int gmcu_pin_tst(int p, int mask) MCU_ALWAYS_INLINE;
+static inline void gmcu_pin_toggle(int p, int mask) MCU_ALWAYS_INLINE;
 static inline void gpio_set_dir(int p, int mask) MCU_ALWAYS_INLINE;
 static inline void gpio_clr_dir(int p, int mask) MCU_ALWAYS_INLINE;
-static inline void gpio_toggle_dir(int p, int mask) MCU_ALWAYS_INLINE;
-static inline int gpio_tst_dir(int p, int mask) MCU_ALWAYS_INLINE;
+static inline void gmcu_pin_toggle_dir(int p, int mask) MCU_ALWAYS_INLINE;
+static inline int gmcu_pin_tst_dir(int p, int mask) MCU_ALWAYS_INLINE;
 static inline void gpio_wr(int p, int value) MCU_ALWAYS_INLINE;
 static inline int gpio_rd(int p) MCU_ALWAYS_INLINE;
 
@@ -70,7 +70,7 @@ void gpio_clr(int p, int mask){
 	}
 }
 
-int gpio_tst(int p, int mask){
+int gmcu_pin_tst(int p, int mask){
 	switch(p){
 	case 0:
 		return LPC_GPIO0->MASKED_ACCESS[mask];
@@ -88,7 +88,7 @@ int gpio_tst(int p, int mask){
 	return 0;
 }
 
-void gpio_toggle(int p, int mask){
+void gmcu_pin_toggle(int p, int mask){
 	switch(p){
 	case 0:
 		LPC_GPIO0->MASKED_ACCESS[mask] ^= (mask);
@@ -140,7 +140,7 @@ void gpio_clr_dir(int p, int mask){
 	}
 }
 
-void gpio_toggle_dir(int p, int mask){
+void gmcu_pin_toggle_dir(int p, int mask){
 	switch(p){
 	case 0:
 		LPC_GPIO0->DIR ^= (mask);
@@ -158,7 +158,7 @@ void gpio_toggle_dir(int p, int mask){
 }
 
 
-int gpio_tst_dir(int p, int mask){
+int gmcu_pin_tst_dir(int p, int mask){
 	switch(p){
 	case 0:
 		return LPC_GPIO0->DIR & (mask);

@@ -94,7 +94,7 @@
 #include <string.h>
 #include <limits.h>
 #include <stdarg.h>
-#include <stratify/sysfs.h>
+#include "sos/fs/sysfs.h"
 
 #include "mcu/debug.h"
 #include "mqueue.h"
@@ -329,7 +329,7 @@ typedef struct {
  * - EBADF: \a mqdes is not a valid message queue descriptor
  *
  */
-int mq_getattr(mqd_t mqdes, struct mq_attr *mqstat){
+int mq_getinfo(mqd_t mqdes, struct mq_attr *mqstat){
 	mq_t * mq = mq_get_ptr(mqdes);
 	if ( mq == NULL ){
 		return -1;

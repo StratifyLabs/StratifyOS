@@ -21,12 +21,12 @@
 
 #include <errno.h>
 #include <unistd.h>
-#include "iface/dev/tty.h"
+#include "sos/dev/tty.h"
 #include "sys/ioctl.h"
 
 
 int tcgetattr(int fd, struct termios * termios_p){
-	return ioctl(fd, I_TTY_GETATTR, termios_p);
+	return ioctl(fd, I_TTY_GETINFO, termios_p);
 }
 
 int tcsetattr(int fd, int optional_actions, const struct termios * termios_p){

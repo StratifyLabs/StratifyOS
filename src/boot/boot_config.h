@@ -1,7 +1,7 @@
 #ifndef BOOT_CONFIG_H_
 #define BOOT_CONFIG_H_
 
-#include "iface/dev/bootloader.h"
+#include "sos/dev/bootloader.h"
 
 #define BCDVERSION 0x200
 

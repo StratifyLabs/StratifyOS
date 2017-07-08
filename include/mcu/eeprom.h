@@ -35,20 +35,21 @@
 #ifndef DEV_EEPROM_H_
 #define DEV_EEPROM_H_
 
-#include "device.h"
-#include "iface/dev/eeprom.h"
+#include "sos/dev/eeprom.h"
+
+#include "sos/fs/devfs.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-int mcu_eeprom_open(const device_cfg_t * cfg);
-int mcu_eeprom_read(const device_cfg_t * cfg, device_transfer_t * rop);
-int mcu_eeprom_write(const device_cfg_t * cfg, device_transfer_t * wop);
-int mcu_eeprom_ioctl(const device_cfg_t * cfg, int request, void * ctl);
-int mcu_eeprom_close(const device_cfg_t * cfg);
+int mcu_eeprom_open(const devfs_handle_t * cfg);
+int mcu_eeprom_read(const devfs_handle_t * cfg, devfs_async_t * rop);
+int mcu_eeprom_write(const devfs_handle_t * cfg, devfs_async_t * wop);
+int mcu_eeprom_ioctl(const devfs_handle_t * cfg, int request, void * ctl);
+int mcu_eeprom_close(const devfs_handle_t * cfg);
 
-int mcu_eeprom_getattr(int port, void * ctl);
+int mcu_eeprom_getinfo(int port, void * ctl);
 int mcu_eeprom_setattr(int port, void * ctl);
 int mcu_eeprom_setaction(int port, void * ctl);
 

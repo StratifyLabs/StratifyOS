@@ -35,7 +35,7 @@ void _mcu_core_dev_power_off(int port){}
 int _mcu_core_dev_powered_on(int port){ return 1; }
 
 
-int mcu_core_getattr(int port, void * arg){
+int mcu_core_getinfo(int port, void * arg){
 	core_attr_t * attrp = arg;
 	attrp->clock = mcu_board_config.core_cpu_freq;
 	attrp->reset_type = _mcu_core_get_reset_src();
