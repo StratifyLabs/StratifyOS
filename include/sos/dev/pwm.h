@@ -92,16 +92,6 @@ extern "C" {
 
 
 typedef enum {
-	PWM_EVENT_NONE /*! no action */ = 0,
-	PWM_EVENT_INTERRUPT /*! enable interrupt on event and execute callback */ = (1<<0),
-	PWM_EVENT_RESET /*! reset the PWM timer on channel event */ = (1<<1),
-	PWM_EVENT_STOP /*! stop the PWM timer on channel event */ = (1<<2),
-	PWM_EVENT_SETOC /*! set the OC channel pin to logic 1 */ = (1<<3),
-	PWM_EVENT_CLROC /*! clear the OC channel pin to logic 0 */ = (1<<4),
-	PWM_EVENT_TOGGLEOC /*! toggle the OC channel pin */ = (1<<5)
-} pwm_event_t;
-
-typedef enum {
 	PWM_FLAG_IS_ACTIVE_HIGH = (1<<0),
 	PWM_FLAG_IS_ACTIVE_LOW = (1<<1),
 } pwm_flag_t;
@@ -117,8 +107,8 @@ typedef struct MCU_PACK {
 
 typedef struct MCU_PACK {
 	u32 o_flags;
-	u32 freq /*! \brief The PWM timer frequency (target value on write, actual value on read); The period is the "top" member divided by "freq" */;
 	mcu_pin_t pin_assignment[PWM_PIN_ASSIGNMENT_COUNT];
+	u32 freq /*! \brief The PWM timer frequency (target value on write, actual value on read); The period is the "top" member divided by "freq" */;
 	u32 top /*! \brief The top value of the PWM counter */;
 } pwm_attr_t;
 

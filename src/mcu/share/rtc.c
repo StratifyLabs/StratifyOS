@@ -29,12 +29,8 @@ int (* const rtc_ioctl_func_table[I_MCU_TOTAL + I_RTC_TOTAL])(int, void*) = {
 		mcu_rtc_getinfo,
 		mcu_rtc_setattr,
 		mcu_rtc_setaction,
-		mcu_rtc_setalarm,
-		mcu_rtc_getalarm,
-		mcu_rtc_disablealarm,
 		mcu_rtc_set,
-		mcu_rtc_get,
-		mcu_rtc_setcountevent
+		mcu_rtc_get
 };
 
 int mcu_rtc_open(const devfs_handle_t * cfg){

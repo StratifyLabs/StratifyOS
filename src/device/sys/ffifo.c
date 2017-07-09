@@ -71,26 +71,26 @@ int ffifo_is_write_ok(ffifo_state_t * state, u16 count, int writeblock){
 }
 
 int ffifo_is_writeblock(ffifo_state_t * state){
-	return ((state->o_flags & FIFO_FLAG_WRITEBLOCK) != 0);
+	return ((state->o_flags & FIFO_FLAG_SET_WRITEBLOCK) != 0);
 }
 
 void ffifo_set_writeblock(ffifo_state_t * state, int value){
 	if( value ){
-		state->o_flags |= FIFO_FLAG_WRITEBLOCK;
+		state->o_flags |= FIFO_FLAG_SET_WRITEBLOCK;
 	} else {
-		state->o_flags &= ~FIFO_FLAG_WRITEBLOCK;
+		state->o_flags &= ~FIFO_FLAG_SET_WRITEBLOCK;
 	}
 }
 
 int ffifo_is_overflow(ffifo_state_t * state){
-	return ((state->o_flags & FIFO_FLAG_OVERFLOW) != 0);
+	return ((state->o_flags & FIFO_FLAG_IS_OVERFLOW) != 0);
 }
 
 void ffifo_set_overflow(ffifo_state_t * state, int value){
 	if( value ){
-		state->o_flags |= FIFO_FLAG_OVERFLOW;
+		state->o_flags |= FIFO_FLAG_IS_OVERFLOW;
 	} else {
-		state->o_flags &= ~FIFO_FLAG_OVERFLOW;
+		state->o_flags &= ~FIFO_FLAG_IS_OVERFLOW;
 	}
 }
 
@@ -209,9 +209,9 @@ int ffifo_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 		ffifo_data_transmitted(cfgp, state); //something might be waiting to write the fifo
 		return 0;
 	case I_FFIFO_SETATTR:
-		if( attr->o_flags & FIFO_FLAG_WRITEBLOCK ){
+		if( attr->o_flags & FIFO_FLAG_SET_WRITEBLOCK ){
 			ffifo_set_writeblock(state, 1);
-		} else if( attr->o_flags & FIFO_FLAG_OVERFLOW ){
+		} else if( attr->o_flags & FIFO_FLAG_IS_OVERFLOW ){
 			ffifo_set_writeblock(state, 0);
 		}
 		if( ffifo_is_writeblock(state) ){

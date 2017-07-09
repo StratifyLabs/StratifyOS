@@ -81,18 +81,18 @@ void priv_hibernate(void * args){
 
 int set_alarm(int seconds){
 	int fd;
-	rtc_alarm_t alarm;
+	rtc_attr_t attr;
 	int ret;
 
 	fd = open("/dev/rtc", O_RDWR);
 	if ( fd >= 0 ){
-		alarm.time.time_t = time(NULL);
-		alarm.time.time_t += seconds;
-		gmtime_r((time_t*)&alarm.time.time_t, (struct tm*)&alarm.time.time);
-		alarm.type = RTC_ALARM_ONCE;
+		attr.time.time_t = time(NULL);
+		attr.time.time_t += seconds;
+		gmtime_r((time_t*)&attr.time.time_t, (struct tm*)&attr.time.time);
+		attr.o_flags = RTC_FLAG_IS_ALARM_ONCE | RTC_FLAG_ENABLE_ALARM;
 
 		//set the alarm for "seconds" from now
-		ret = ioctl(fd, I_RTC_SETALARM, &alarm);
+		ret = ioctl(fd, I_RTC_SETATTR, &attr);
 		close(fd);
 		return ret;
 	}

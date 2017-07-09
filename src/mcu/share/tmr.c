@@ -35,7 +35,10 @@ int (* const tmr_ioctl_func_table[I_MCU_TOTAL + I_TMR_TOTAL])(int, void*) = {
 		mcu_tmr_setic,
 		mcu_tmr_getic,
 		mcu_tmr_set,
-		mcu_tmr_get
+		mcu_tmr_get,
+		mcu_tmr_enable,
+		mcu_tmr_disable,
+
 };
 
 

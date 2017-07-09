@@ -58,89 +58,72 @@ int _mcu_qei_dev_powered_on(int port){
 int mcu_qei_setattr(int port, void * ctl){
 
 	LPC_QEI_Type * regs = qei_regs[port];
-	qei_attr_t * ctlp;
-	ctlp = (qei_attr_t*)ctl;
+	const qei_attr_t * attr = ctl;
+	u32 o_flags = attr->o_flags;
 
-	if ( ctlp->vfreq == 0 ){
-		errno = EINVAL;
-		return -1 - offsetof(qei_attr_t, vfreq);
+	if( o_flags & QEI_FLAG_RESET ){
+		if ( o_flags & QEI_FLAG_IS_RESET_POS ){
+			regs->CON |= (1<<0);
+		}
+
+		if ( o_flags & QEI_FLAG_IS_RESET_VELOCITY ){
+			regs->CON |= (1<<2);
+		}
+
+		if ( o_flags & QEI_FLAG_IS_RESET_INDEX ){
+			regs->CON |= (1<<3);
+		}
+
+		if ( o_flags & QEI_FLAG_IS_RESET_POS_ONINDEX ){
+			regs->CON |= (1<<1);
+		}
 	}
 
-	if ( ctlp->vfreq > mcu_board_config.core_periph_freq ){
-		errno = EINVAL;
-		return -1 - offsetof(qei_attr_t, vfreq);
-	}
+	if( o_flags & QEI_FLAG_SET ){
 
-	//configure the GPIO
-	if ( ctlp->pin_assign == 0 ){
-		_mcu_core_set_pinsel_func(1, 20, CORE_PERIPH_QEI, 0);
-		_mcu_core_set_pinsel_func(1, 23, CORE_PERIPH_QEI, 0);
-		_mcu_core_set_pinsel_func(1, 24, CORE_PERIPH_QEI, 0);
-	} else {
-		errno = EINVAL;
-		return -1 - offsetof(qei_attr_t, pin_assign);
-	}
 
-	regs->MAXPOS = ctlp->max_pos;
-	regs->LOAD = mcu_board_config.core_periph_freq / ctlp->vfreq;
+		if ( attr->velocity_freq == 0 ){
+			errno = EINVAL;
+			return -1 - offsetof(qei_attr_t, velocity_freq);
+		}
+
+		if ( attr->velocity_freq > mcu_board_config.core_periph_freq ){
+			errno = EINVAL;
+			return -1 - offsetof(qei_attr_t, velocity_freq);
+		}
+
+		if( mcu_core_set_pin_assignment(attr->pin_assignment, QEI_PIN_ASSIGNMENT_COUNT, CORE_PERIPH_QEI, port) < 0 ){
+			errno = EINVAL;
+			return -1 - offsetof(qei_attr_t, pin_assignment);
+		}
+
+		regs->MAXPOS = attr->max_position;
+		regs->LOAD = mcu_board_config.core_periph_freq / attr->velocity_freq;
 #ifdef __lpc17xx
-	regs->FILTER = ctlp->filter;
+		regs->FILTER = attr->filter;
 #endif
 
-	regs->CONF = 0;
-	if( ctlp->mode & QEI_MODE_INVERT_DIR ){
-		regs->CONF |= (1<<0);
-	}
+		regs->CONF = 0;
+		if( o_flags & QEI_FLAG_IS_INVERT_DIR ){
+			regs->CONF |= (1<<0);
+		}
 
-	if( ctlp->mode & QEI_MODE_SIGNAL_MODE ){
-		regs->CONF |= (1<<1);
-	}
+		if( o_flags & QEI_FLAG_IS_SIGNAL_MODE ){
+			regs->CONF |= (1<<1);
+		}
 
-	if( ctlp->mode & QEI_MODE_DOUBLE_EDGE ){
-		regs->CONF |= (1<<2);
-	}
+		if( o_flags & QEI_FLAG_IS_DOUBLE_EDGE ){
+			regs->CONF |= (1<<2);
+		}
 
-	if( ctlp->mode & QEI_MODE_INVERT_INDEX ){
-		regs->CONF |= (1<<3);
+		if( o_flags & QEI_FLAG_IS_INVERT_INDEX ){
+			regs->CONF |= (1<<3);
+		}
 	}
 	return 0;
 }
 
 int mcu_qei_getinfo(int port, void * ctl){
-	LPC_QEI_Type * regs = qei_regs[port];
-
-	qei_attr_t * ctlp;
-	ctlp = (qei_attr_t*)ctl;
-
-	ctlp->max_pos = regs->MAXPOS;
-	if ( regs->LOAD == 0 ){
-		errno = EINVAL;
-		return -1;
-	} else {
-		ctlp->vfreq = mcu_board_config.core_periph_freq / (regs->LOAD);
-	}
-
-#ifdef __lpc17xx
-	ctlp->filter = regs->FILTER;
-#endif
-
-	ctlp->mode = 0;
-	if ( regs->CONF & (1<<0) ){
-		ctlp->mode |= QEI_MODE_INVERT_DIR;
-	}
-
-	if ( regs->CONF & (1<<1) ){
-		ctlp->mode |= QEI_MODE_SIGNAL_MODE;
-	}
-
-	if ( regs->CONF & (1<<2) ){
-		ctlp->mode |= QEI_MODE_DOUBLE_EDGE;
-	}
-
-	if ( regs->CONF & (1<<3) ){
-		ctlp->mode |= QEI_MODE_INVERT_INDEX;
-	}
-
 	return 0;
 }
 
@@ -149,11 +132,11 @@ int mcu_qei_setaction(int port, void * ctl){
 
 	mcu_action_t * action = (mcu_action_t*)ctl;
 	regs->IEC = 0x1FFF;
-	if( action->o_events & QEI_ACTION_EVENT_INDEX ){
+	if( action->o_events & MCU_EVENT_FLAG_INDEX ){
 		regs->IES = (1<<0);
 	}
 
-	if( action->o_events & QEI_ACTION_EVENT_DIRCHANGE ){
+	if( action->o_events & MCU_EVENT_FLAG_DIRECTION_CHANGED ){
 		regs->IES = (1<<4);
 	}
 
@@ -197,28 +180,6 @@ int mcu_qei_getindex(int port, void * ctl){
 	LPC_QEI_Type * regs = qei_regs[port];
 
 	return regs->INXCNT;
-}
-
-int mcu_qei_reset(int port, void * ctl){
-	LPC_QEI_Type * regs = qei_regs[port];
-
-	int mask = (int)ctl;
-	if ( mask & QEI_RESET_POS ){
-		regs->CON |= (1<<0);
-	}
-
-	if ( mask & QEI_RESET_VELOCITY ){
-		regs->CON |= (1<<2);
-	}
-
-	if ( mask & QEI_RESET_INDEX ){
-		regs->CON |= (1<<3);
-	}
-
-	if ( mask & QEI_RESET_POS_ONINDEX ){
-		regs->CON |= (1<<1);
-	}
-	return 0;
 }
 
 void _mcu_core_qei0_isr(){

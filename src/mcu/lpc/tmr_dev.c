@@ -213,14 +213,14 @@ int mcu_tmr_setattr(int port, void * ctl){
 	return 0;
 }
 
-int mcu_tmr_on(int port, void * ctl){
+int mcu_tmr_enable(int port, void * ctl){
 	LPC_TIM_Type * regs;
 	regs = tmr_regs_table[port];
 	regs->TCR = 1;
 	return 0;
 }
 
-int mcu_tmr_off(int port, void * ctl){
+int mcu_tmr_disable(int port, void * ctl){
 	LPC_TIM_Type * regs;
 	regs = tmr_regs_table[port];
 	regs->TCR = 0;
@@ -340,14 +340,12 @@ int mcu_tmr_setaction(int port, void * ctl){
 	if ( event == MCU_EVENT_FLAG_NONE ){ //Check to see if all actions are disabled
 		regs->MCR &= ~(0x03 << (chan*3) );
 		m_tmr_local[port].handler[chan].callback = NULL;
-	} else {
-
+	} else if( event & MCU_EVENT_FLAG_MATCH ){
 
 		if( action->handler.callback != 0 ){
-			regs->MCR |= ((1<<0) << (chan*3) );
+			regs->MCR |= ((1<<0) << (chan*3) ); //set the interrupt on match flag
 			m_tmr_local[port].handler[chan] = action->handler;
 		}
-
 
 	}
 

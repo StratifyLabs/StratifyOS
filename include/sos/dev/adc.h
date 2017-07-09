@@ -32,39 +32,6 @@
  *
  * \code
  *
- * #include <unistd.h>
- * #include <fcntl.h>
- * #include <errno.h>
- * #include <stdio.h>
- * #include <dev/adc.h>
- *
- * int read_adc(){
- * 	int fd;
- * 	adc_sample_t buffer[16]; //a buffer for 16 samples
- * 	adc_attr_t attr;
- *
- * 	fd = open("/dev/adc0", O_RDWR);
- * 	if ( fd < 0 ){
- * 		printf("Error opening peripheral (%d)\n", errno);
- * 	} else {
- *		attr.enabled_channels = (1<<5); //enabled channel five
- * 		attr.freq = ADC_MAX_FREQ;
- * 		attr.pin_assign = 0;
- * 		if( ioctl(fd, I_ADC_SETATTR, &ctl_adc) < 0 ){
- * 			printf("Failed to set ADC configuration (%d)\n", errno);
- * 			return -1;
- *		}
- *
- *		//now read 16 samples of the ADC
- *		lseek(fd, 5, SEEK_SET); //this sets the channel to 5 -- it's a 'c' device so it doesn't auto-increment
- *		if ( read(fd, buffer, sizeof(adc_sample_t)*16) < 0 ){
- *			printf("Error reading peripheral (%d)\n", errno);
- *			return -1;
- *		}
- * 	}
- * 	close(fd);
- * 	return 0;
- * }
  *
  * \endcode
  *
@@ -114,11 +81,6 @@ typedef struct MCU_PACK {
 	mcu_pin_t pin_assignment[ADC_PIN_ASSIGNMENT_COUNT];
 	u32 freq;
 } adc_attr_t;
-
-typedef struct MCU_PACK {
-	u32 pin_assign;
-	u32 channel;
-} adc_channel_t;
 
 /*! \brief See below for details.
  * \details This requests reads the ADC attributes.

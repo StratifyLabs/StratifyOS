@@ -30,64 +30,6 @@
  *
  * \code
  *
- * #include <unistd.h>
- * #include <fcntl.h>
- * #include <errno.h>
- * #include <stdio.h>
- * #include "mcu/mcu.h"
- *
- * int my_tmr_action(void * context, u32 value){
- * 	//take some action on an eint event -- this runs in priveleged, handler mode, it should be fast and short
- * 	return 1; //return non-zero to keep the action between successive events
- * }
- *
- * int tmr_example(){
- * 	int fd;
- * 	tmr_attr_t attr;
- * 	mcu_action_t action;
- * 	mcu_channel_t chan_req;
- *
- * 	fd = open("/dev/tmr0", O_RDWR);
- * 	if ( fd < 0 ){
- * 		perror("Failed to open timer");
- * 	} else {
- *
- * 		//This configuration sets a timer at 1MHz using the CPU as the clock source
- *		attr.pin_assign = 0;
- *		attr.freq = 1000000; //Run the timer at 1MHz (if CPU is fast enough) -- this is not applicable in counter mode
- *		attr.clksrc = TMR_CLKSRC_CPU;
- *		attr.enabled_ic_chans = 0; //Setting bits here will configure the GPIO for input capture (depending on pin_assign)
- *		attr.enabled_oc_chans = 0; //Setting bits here will configure the GPIO for output compare (depending on pin_assign)
- * 		if( ioctl(fd, I_SETATTR, &attr) < 0 ){
- * 			perror("Failed to set attr");
- * 			return -1;
- *		}
- *
- *		//Now we will set up the counter to reset at 1 million counts using an output compare unit (no GPIO is affected)
- *		chan_req.channel = TMR_ACTION_CHANNEL_OC0;
- *		chan_req.value = 1000000;
- *		if ( ioctl(fd, I_TMR_SET_OC, &chan_req) ){ //sets the value of OC0 to 1 million
- *			perror("failed to set OC");
- *		}
- *
- *		action.channel = TMR_ACTION_CHANNEL_OC0; //This will output compare 0 -- MCU specific definition
- *		action.o_events = TMR_EVENT_RESET;
- *		action.handler.callback = NULL;
- *		action.handler.context = NULL;
- *		if ( ioctl(fd, I_SETACTION, &action) ){ //cause the timer to reset to zero when it hits 1 million
- *			perror("failed to set action");
- *		}
- *
- *		//Have the timer start counting
- *		if ( ioctl(fd, I_TMR_ON) ){
- *			 perror("failed to enable timer");
- *		}
- *
- * 	}
- * 	close(fd); //This turns off power to the timer
- * 	return 0;
- * }
- *
  * \endcode
  *
  *
@@ -270,8 +212,8 @@ typedef struct MCU_PACK {
  * \hideinitializer
  */
 #define I_TMR_GET _IOCTL(TMR_IOC_IDENT_CHAR, I_MCU_TOTAL + 6)
-#define I_TMR_ON _IOCTL(TMR_IOC_IDENT_CHAR, I_MCU_TOTAL + 7)
-#define I_TMR_OFF _IOCTL(TMR_IOC_IDENT_CHAR, I_MCU_TOTAL + 8)
+#define I_TMR_ENABLE _IOCTL(TMR_IOC_IDENT_CHAR, I_MCU_TOTAL + 7)
+#define I_TMR_DISABLE _IOCTL(TMR_IOC_IDENT_CHAR, I_MCU_TOTAL + 8)
 
 #define I_TMR_TOTAL 9
 

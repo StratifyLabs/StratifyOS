@@ -32,8 +32,7 @@ int (* const qei_ioctl_func_table[I_MCU_TOTAL + I_QEI_TOTAL])(int, void*) = {
 		mcu_qei_setaction,
 		mcu_qei_get,
 		mcu_qei_getvelocity,
-		mcu_qei_getindex,
-		mcu_qei_reset
+		mcu_qei_getindex
 };
 
 int mcu_qei_open(const devfs_handle_t * cfg){

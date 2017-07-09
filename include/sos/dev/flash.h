@@ -70,7 +70,7 @@ extern "C" {
 
 
 typedef struct {
-	u8 pin_assign /*! ignored */;
+	u32 o_flags;
 } flash_attr_t;
 
 typedef struct {

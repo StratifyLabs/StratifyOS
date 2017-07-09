@@ -56,6 +56,10 @@ typedef struct {
 static rtc_local_t rtc_local MCU_SYS_MEM;
 
 
+static int set_alarm(int port, const rtc_attr_t * attr);
+static int get_alarm(int port, rtc_info_t * info);
+static int set_count_event(int port, u32 o_flags);
+
 void _mcu_rtc_dev_power_on(int port){
 	LPC_RTC_Type * regs = rtc_regs[port];
 	if ( rtc_local.ref_count == 0 ){
@@ -88,20 +92,35 @@ int _mcu_rtc_dev_powered_on(int port){
 
 
 int mcu_rtc_getinfo(int port, void * ctl){
-	rtc_attr_t * ctlp;
-	ctlp = (rtc_attr_t *)ctl;
-	ctlp->pin_assign = 0;
+	rtc_info_t * info = ctl;
+	info->o_flags = 0;
+	info->o_events = 0;
+	get_alarm(port, info);
 	return 0;
 }
 
 int mcu_rtc_setattr(int port, void * ctl){
-	//LPC_RTC_Type * regs = rtc_regs[port];
-	rtc_attr_t * ctlp;
-	ctlp = (rtc_attr_t *)ctl;
-	if ( ctlp->pin_assign != 0 ){
-		errno = EINVAL;
-		return -1 - offsetof(rtc_attr_t, pin_assign);
+	rtc_attr_t * attr = ctl;
+	u32 o_flags = attr->o_flags;
+
+	if( o_flags & RTC_FLAG_ENABLE ){
+
+		if( o_flags & RTC_FLAG_IS_CLKSRC_EXTERNAL_32768 ){
+
+		}
+
+	} else if( o_flags & RTC_FLAG_DISABLE ){
+
 	}
+
+	if( set_alarm(port, attr) < 0 ){
+		return -1;
+	}
+
+	if( set_count_event(port, o_flags) < 0 ){
+		return -1;
+	}
+
 	return 0;
 }
 
@@ -112,81 +131,73 @@ int mcu_rtc_setaction(int port, void * ctl){
 		return -1;
 	}
 
-	rtc_local.handler.callback = action->handler.callback;
-	rtc_local.handler.context = action->handler.context;
+	rtc_local.handler = action->handler;
 
 	_mcu_cortexm_set_irq_prio(rtc_irqs[port], action->prio);
-
-
-	//Set the event
-	return mcu_rtc_setcountevent(port, (void*)action->o_events);
-}
-
-int _mcu_rtc_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	return 0;
 }
 
-int mcu_rtc_setalarm(int port, void * ctl){
+int _mcu_rtc_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
+	errno = ENOTSUP;
+	return -1;
+}
+
+int set_alarm(int port, const rtc_attr_t * attr){
 	LPC_RTC_Type * regs = rtc_regs[port];
+	u32 o_flags = attr->o_flags;
 
-	rtc_alarm_t * alarmp;
+	if( o_flags & RTC_FLAG_ENABLE_ALARM ){
 
-	alarmp = (rtc_alarm_t *)ctl;
-	_mcu_cortexm_priv_enable_irq((void*)RTC_IRQn);
+		_mcu_cortexm_priv_enable_irq((void*)RTC_IRQn);
 
-	//elevate prio to come out of hibernate
-	_mcu_cortexm_set_irq_prio(RTC_IRQn, 3);
-
-
-	regs->ASEC = alarmp->time.time.tm_sec;
-	regs->AMIN = alarmp->time.time.tm_min;
-	regs->AHRS = alarmp->time.time.tm_hour;
-	regs->ADOM = alarmp->time.time.tm_mday;
-	regs->ADOW = alarmp->time.time.tm_wday;
-	regs->ADOY = alarmp->time.time.tm_yday + 1;
-	regs->AMON = alarmp->time.time.tm_mon + 1;
-	regs->AYRS = alarmp->time.time.tm_year;
+		//elevate prio to come out of hibernate
+		_mcu_cortexm_set_irq_prio(RTC_IRQn, 3);
 
 
-	switch(alarmp->type){
-	case RTC_ALARM_ONCE:
-		regs->AMR = AMRDOY|AMRDOW; //don't compare the day of the year or day of week
-		break;
-	case RTC_ALARM_MINUTE:
-		regs->AMR = (~(AMRSEC)) & 0xFF; //only compare seconds
-		break;
-	case RTC_ALARM_HOURLY:
-		regs->AMR = (~(AMRSEC|AMRMIN))  & 0xFF;
-		break;
-	case RTC_ALARM_DAILY:
-		regs->AMR =  (~(AMRSEC|AMRMIN|AMRHOUR))  & 0xFF;
-		break;
-	case RTC_ALARM_WEEKLY:
-		regs->AMR = (~(AMRSEC|AMRMIN|AMRHOUR|AMRDOW)) & 0xFF;
-		break;
-	case RTC_ALARM_MONTHLY:
-		regs->AMR = (~(AMRSEC|AMRMIN|AMRHOUR|AMRDOM)) & 0xFF;
-		break;
-	case RTC_ALARM_YEARLY:
-		regs->AMR = (~(AMRSEC|AMRMIN|AMRHOUR|AMRDOM|AMRMON)) & 0xFF;
-		break;
+		regs->ASEC = attr->time.time.tm_sec;
+		regs->AMIN = attr->time.time.tm_min;
+		regs->AHRS = attr->time.time.tm_hour;
+		regs->ADOM = attr->time.time.tm_mday;
+		regs->ADOW = attr->time.time.tm_wday;
+		regs->ADOY = attr->time.time.tm_yday + 1;
+		regs->AMON = attr->time.time.tm_mon + 1;
+		regs->AYRS = attr->time.time.tm_year;
+
+		if( o_flags & RTC_FLAG_IS_ALARM_ONCE ){
+			regs->AMR = AMRDOY|AMRDOW; //don't compare the day of the year or day of week
+		} else if( o_flags & RTC_FLAG_IS_ALARM_MINUTE ){
+			regs->AMR = (~(AMRSEC)) & 0xFF; //only compare seconds
+		} else if( o_flags & RTC_FLAG_IS_ALARM_HOURLY ){
+			regs->AMR = (~(AMRSEC|AMRMIN))  & 0xFF;
+		} else if( o_flags & RTC_FLAG_IS_ALARM_DAILY ){
+			regs->AMR =  (~(AMRSEC|AMRMIN|AMRHOUR))  & 0xFF;
+		} else if( o_flags & RTC_FLAG_IS_ALARM_WEEKLY ){
+			regs->AMR = (~(AMRSEC|AMRMIN|AMRHOUR|AMRDOW)) & 0xFF;
+		} else if( o_flags & RTC_FLAG_IS_ALARM_MONTHLY ){
+			regs->AMR = (~(AMRSEC|AMRMIN|AMRHOUR|AMRDOM)) & 0xFF;
+		} else if( o_flags & RTC_FLAG_IS_ALARM_YEARLY ){
+			regs->AMR = (~(AMRSEC|AMRMIN|AMRHOUR|AMRDOM|AMRMON)) & 0xFF;
+		} else {
+
+		}
+
+
+	} else if( o_flags & RTC_FLAG_DISABLE_ALARM ){
+
 	}
 	return 0;
 }
 
-int mcu_rtc_getalarm(int port, void * ctl){
+int get_alarm(int port, rtc_info_t * info){
 	LPC_RTC_Type * regs = rtc_regs[port];
-
-	rtc_alarm_t * alarmp;
-	alarmp = (rtc_alarm_t *)ctl;
-	alarmp->time.time.tm_sec = regs->ASEC;
-	alarmp->time.time.tm_min = regs->AMIN;
-	alarmp->time.time.tm_hour = regs->AHRS;
-	alarmp->time.time.tm_mday = regs->ADOM;
-	alarmp->time.time.tm_wday = regs->ADOW;
-	alarmp->time.time.tm_yday = regs->ADOY - 1;
-	alarmp->time.time.tm_mon = regs->AMON - 1;
-	alarmp->time.time.tm_year = regs->AYRS;
+	info->alarm.time.tm_sec = regs->ASEC;
+	info->alarm.time.tm_min = regs->AMIN;
+	info->alarm.time.tm_hour = regs->AHRS;
+	info->alarm.time.tm_mday = regs->ADOM;
+	info->alarm.time.tm_wday = regs->ADOW;
+	info->alarm.time.tm_yday = regs->ADOY - 1;
+	info->alarm.time.tm_mon = regs->AMON - 1;
+	info->alarm.time.tm_year = regs->AYRS;
 	return 0;
 }
 
@@ -236,39 +247,49 @@ int mcu_rtc_get(int port, void * ctl){
 	return 0;
 }
 
-int mcu_rtc_setcountevent(int port, void * ctl){
+int set_count_event(int port, u32 o_flags){
 	LPC_RTC_Type * regs = rtc_regs[port];
 
-	rtc_event_count_t event = (rtc_event_count_t)ctl;
 	_mcu_cortexm_priv_enable_irq((void*)RTC_IRQn);
-	switch(event){
-	case RTC_EVENT_COUNT_NONE:
+
+	if( o_flags & RTC_FLAG_DISABLE_COUNT_EVENT ){
 		regs->CIIR = 0;
-		break;
-	case RTC_EVENT_COUNT_SECOND:
-		regs->CIIR = 1;
-		break;
-	case RTC_EVENT_COUNT_MINUTE:
-		regs->CIIR = 2;
-		break;
-	case RTC_EVENT_COUNT_HOUR:
-		regs->CIIR = 4;
-		break;
-	case RTC_EVENT_COUNT_DAY:
-		regs->CIIR = 8;
-		break;
-	case RTC_EVENT_COUNT_WEEK:
-		regs->CIIR = 16;
-		break;
-	case RTC_EVENT_COUNT_MONTH:
-		regs->CIIR = 64;
-		break;
-	case RTC_EVENT_COUNT_YEAR:
-		regs->CIIR = 128;
-		break;
-	default:
-		errno = EINVAL;
-		return -1;
+	} else if( o_flags & RTC_FLAG_ENABLE_COUNT_EVENT ){
+		if( o_flags & RTC_FLAG_IS_COUNT_SECOND ){
+			regs->CIIR |= (1<<0);
+		}
+
+		if( o_flags & RTC_FLAG_IS_COUNT_MINUTE ){
+			regs->CIIR |= (1<<1);
+		}
+
+		if( o_flags & RTC_FLAG_IS_COUNT_HOUR ){
+			regs->CIIR |= (1<<2);
+		}
+
+		if( o_flags & RTC_FLAG_IS_COUNT_DAY_OF_MONTH ){
+			regs->CIIR |= (1<<3);
+		}
+
+		if( o_flags & RTC_FLAG_IS_COUNT_DAY_OF_WEEK ){
+			regs->CIIR |= (1<<4);
+		}
+
+		if( o_flags & RTC_FLAG_IS_COUNT_DAY_OF_YEAR ){
+			regs->CIIR |= (1<<5);
+		}
+
+		if( o_flags & RTC_FLAG_IS_COUNT_WEEK ){
+			regs->CIIR |= (1<<4);
+		}
+
+		if( o_flags & RTC_FLAG_IS_COUNT_MONTH ){
+			regs->CIIR |= (1<<6);
+		}
+
+		if( o_flags & RTC_FLAG_IS_COUNT_YEAR ){
+			regs->CIIR |= (1<<7);
+		}
 	}
 	return 0;
 }

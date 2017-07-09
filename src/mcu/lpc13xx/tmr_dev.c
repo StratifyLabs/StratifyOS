@@ -373,14 +373,14 @@ int mcu_tmr_setattr(int port, void * ctl){
 	return 0;
 }
 
-int mcu_tmr_on(int port, void * ctl){
+int mcu_tmr_enable(int port, void * ctl){
 	LPC_TMR_Type * regs;
 	regs = tmr_regs_table[port];
 	regs->TCR = 1;
 	return 0;
 }
 
-int mcu_tmr_off(int port, void * ctl){
+int mcu_tmr_disable(int port, void * ctl){
 	LPC_TMR_Type * regs;
 	regs = tmr_regs_table[port];
 	regs->TCR = 0;

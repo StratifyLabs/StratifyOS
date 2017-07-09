@@ -55,8 +55,8 @@ int mcu_tmr_setic(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_tmr_getic(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_tmr_set(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_tmr_get(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_tmr_on(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_tmr_off(int port, void * ctl) MCU_PRIV_CODE;
+int mcu_tmr_enable(int port, void * ctl) MCU_PRIV_CODE;
+int mcu_tmr_disable(int port, void * ctl) MCU_PRIV_CODE;
 
 
 

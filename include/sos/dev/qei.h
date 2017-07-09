@@ -54,51 +54,35 @@ typedef u32 qei_sample_t;
  * the "mode" member of \ref qei_attr_t.
  */
 typedef enum {
-	QEI_MODE_INVERT_DIR /*! Invert the direction */ = (1<<0),
-	QEI_MODE_SIGNAL_MODE /*! Use signal mode */ = (1<<1),
-	QEI_MODE_DOUBLE_EDGE /*! Count both edges */ = (1<<2),
-	QEI_MODE_INVERT_INDEX /*! Invert the index */ = (1<<3),
-} qei_mode_t;
+	QEI_FLAG_NONE = 0,
+	QEI_FLAG_SET /*! Set the QEI attributes */ = (1<<0),
+	QEI_FLAG_IS_INVERT_DIR /*! Invert the direction */ = (1<<1),
+	QEI_FLAG_IS_SIGNAL_MODE /*! Use signal mode */ = (1<<2),
+	QEI_FLAG_IS_DOUBLE_EDGE /*! Count both edges */ = (1<<3),
+	QEI_FLAG_IS_INVERT_INDEX /*! Invert the index */ = (1<<4),
+	QEI_FLAG_RESET /*! Reset the QEI */ = (1<<5),
+	QEI_FLAG_IS_RESET_POS /*! Reset the position */ = (1<<6),
+	QEI_FLAG_IS_RESET_VELOCITY /*! Reset the velocity */ = (1<<7),
+	QEI_FLAG_IS_RESET_INDEX /*! Reset the index count */ = (1<<8),
+	QEI_FLAG_IS_RESET_POS_ONINDEX /*! Reset the position on the next index pulse */ = (1<<9)
+} qei_flag_t;
 
-/*! \details This lists the bitmask used with
- * the \ref I_QEI_RESET request.
- */
-typedef enum {
-	QEI_RESET_POS /*! Reset the position */ = (1<<0),
-	QEI_RESET_VELOCITY /*! Reset the velocity */ = (1<<1),
-	QEI_RESET_INDEX /*! Reset the index count */ = (1<<2),
-	QEI_RESET_POS_ONINDEX /*! Reset the position on the next index pulse */ = (1<<3)
-} qei_reset_mask_t;
-
-
-/*! \brief See below for details.
- * \details These are the events for \ref qei_action_t.
- */
-typedef enum {
-	QEI_ACTION_EVENT_INDEX /*! A pulse on the index line */ = (1<<0),
-	QEI_ACTION_EVENT_DIRCHANGE /*! A change in direction */ = (1<<1)
-} qei_action_event_mask_t;
+#define QEI_PIN_ASSIGNMENT_COUNT 3
 
 /*! \brief QEI IO Attributes
  * \details This structure defines how the control structure
  * for opening or reconfiguring the QEI port.
  */
 typedef struct MCU_PACK {
-	u8 pin_assign /*! \brief The GPIO configuration to use (see \ref LPC17XXDEV) */;
-	u8 resd[3];
-	u32 max_pos /*! \brief The maximum position (QEI rolls over at this point) */;
-	u32 velocity_comp /*! \brief The Velocity compare value */;
-	u32 filter /*! \brief The filter coefficient (0 to disable) */;
-	u32 mode /*! \brief The QEI mode (see \ref qei_mode_t) */;
-	u32 vfreq /*! \brief The frequency at which to update the velocity in Hz */;
-} qei_attr_t;
-
-typedef struct MCU_PACK {
 	u32 o_flags;
+	mcu_pin_t pin_assignment[QEI_PIN_ASSIGNMENT_COUNT];
 	u32 freq;
-	u8 pin_assignment[4];
-	u32 max_position;
-} qei_3_attr_t;
+	u32 top /*! Maximum value */;
+	u32 velocity_freq;
+	u32 max_position /*! The maximum position (QEI rolls over at this point) */;
+	u32 velocity_comp /*! The Velocity compare value */;
+	u32 filter /*! The filter coefficient (0 to disable) */;
+} qei_attr_t;
 
 /*! \brief This defines a QEI action.
  */
@@ -159,21 +143,8 @@ typedef mcu_action_t qei_action_t;
 #define I_QEI_GETINDEX _IOCTL(QEI_IOC_IDENT_CHAR, I_MCU_TOTAL + 2)
 #define I_QEI_GET_INDEX I_QEI_GETINDEX
 
-/*! \brief See details below.
- * \details This request resets the QEI position.  The ctl
- * argument is one or more \ref qei_reset_mask_t values.
- *
- * Example (resets the position and velocity but not the index count):
- * \code
- * ioctl(qei_fd, I_QEI_RESETPOS, (QEI_RESET_POS|QEI_RESET_VELOCITY));
- * \endcode
- *
- * \hideinitializer
- */
-#define I_QEI_RESET _IOCTL(QEI_IOC_IDENT_CHAR, I_MCU_TOTAL + 3)
 
-
-#define I_QEI_TOTAL 4
+#define I_QEI_TOTAL 3
 
 #ifdef __cplusplus
 }

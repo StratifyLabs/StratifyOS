@@ -574,7 +574,7 @@ typedef struct {
  * \endcode
  *
  */
-int signal_callback(void * context, mcu_event_t data);
+int signal_callback(void * context, mcu_event_t * data);
 
 void stratify_trace_event(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len);
 void stratify_trace_event_addr_tid(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len, u32 addr, int tid);

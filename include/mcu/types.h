@@ -77,8 +77,10 @@ typedef enum {
 	MCU_EVENT_FLAG_HIGH /*! High event */ = (1<<10),
 	MCU_EVENT_FLAG_LOW /*! Low event (used with external interrupts) */ = (1<<11),
 	MCU_EVENT_FLAG_SETUP /*! USB Setup event */ = (1<<12),
+	MCU_EVENT_FLAG_INDEX /*! Index event for QEI and similar (Setup alias) */ = MCU_EVENT_FLAG_SETUP,
 	MCU_EVENT_FLAG_STALL /*! Stall event */ = (1<<13),
 	MCU_EVENT_FLAG_STOP /*! Stop event (Stall alias) */ = MCU_EVENT_FLAG_STALL,
+	MCU_EVENT_FLAG_DIRECTION_CHANGED /*! Direction change for QEI an similar (Stall alias) */ = MCU_EVENT_FLAG_STALL,
 	MCU_EVENT_FLAG_RESET /*! Reset event */ = (1<<14),
 	MCU_EVENT_FLAG_POWER /*! Stall event */ = (1<<15),
 	MCU_EVENT_FLAG_SUSPEND /*! Stall event */ = (1<<16),
@@ -149,8 +151,6 @@ typedef struct MCU_PACK {
 	u32 loc;
 	u32 value;
 } mcu_channel_t;
-
-
 
 
 #define I_MCU_GETINFO 0

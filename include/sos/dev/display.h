@@ -32,7 +32,7 @@
  *
  * \code
  * int fd;
- * display_attr_t attr;
+ * display_info_t attr;
  *
  * fd = open("/dev/lcd0", O_RDWR);
  * ioctl(fd, I_DISPLAY_GETINFO, &attr);
@@ -49,7 +49,6 @@
 #include <stdint.h>
 
 #include "mcu/types.h"
-#include "ioctl.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -96,19 +95,19 @@ typedef struct MCU_PACK {
 	u16 margin_right /*! \brief Right margin */;
 	u16 margin_top /*! \brief Top margin */;
 	u16 margin_bottom /*! \brief Bottom margin */;
-} display_attr_t;
+} display_info_t;
 
 
 /*! \details This request gets the attributes of the device.
  *
  * Example:
  * \code
- * display_attr_t attr;
- * ioctl(fildes, I_DISPLAY_GETINFO, &attr);
+ * display_info_t info;
+ * ioctl(fildes, I_DISPLAY_GETINFO, &info);
  * \endcode
  * \hideinitializer
  */
-#define I_DISPLAY_GETINFO _IOCTLR(DISPLAY_IOC_CHAR, 0, display_attr_t)
+#define I_DISPLAY_GETINFO _IOCTLR(DISPLAY_IOC_CHAR, 0, display_info_t)
 
 /*! \details This request clears the LCD.  This does not
  * affect the video memory.  This is only supported on

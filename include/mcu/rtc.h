@@ -48,14 +48,8 @@ int mcu_rtc_getinfo(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_rtc_setattr(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_rtc_setaction(int port, void * ctl) MCU_PRIV_CODE;
 
-int mcu_rtc_setalarm(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_rtc_getalarm(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_rtc_disablealarm(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_rtc_set(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_rtc_get(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_rtc_settime(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_rtc_gettime(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_rtc_setcountevent(int port, void * ctl) MCU_PRIV_CODE;
 
 #ifdef __cplusplus
 }

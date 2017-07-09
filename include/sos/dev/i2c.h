@@ -91,7 +91,7 @@ extern "C" {
  * occur when running an I2C operation.
  */
 enum {
-	I2C_STATE_NONE /*! No errors */,
+	I2C_ERROR_NONE /*! No errors */,
 	I2C_ERROR_START /*! Error while starting */,
 	I2C_ERROR_WRITE /*! Error while writing */,
 	I2C_ERROR_ACK /*! Ack Error (most common error for a mis-wired hardware) */,
@@ -99,145 +99,51 @@ enum {
 	I2C_ERROR_MASTER_ACK /*! The master could not create an ACK */,
 	I2C_ERROR_BUS_BUSY /*! The Bus is busy (happens with multi-masters on bus) */,
 	I2C_ERROR_LONG_SLEW,
-	I2C_ERROR_ARBITRATION_LOST /*! Arbitration lost on multi-master bus */,
-	I2C_STATE_START /*! Internal Use only */,
-	I2C_STATE_RD_OP /*! Internal Use only */,
-	I2C_STATE_WR_OP /*! Internal Use only */,
-	I2C_STATE_RD_16_OP /*! Internal Use only */,
-	I2C_STATE_WR_16_OP /*! Internal Use only */,
-	I2C_STATE_WR_PTR_ONLY /*! Internal use only */,
-	I2C_STATE_WR_ONLY /*! Internal use only */,
-	I2C_STATE_MASTER_COMPLETE /*! Internal use only */,
-	I2C_STATE_SLAVE_READ /*! Internal use only */,
-	I2C_STATE_SLAVE_READ_PTR /*! Internal use only */,
-	I2C_STATE_SLAVE_READ_PTR_16 /*! Internal use only */,
-	I2C_STATE_SLAVE_READ_PTR_COMPLETE /*! Internal use only */,
-	I2C_STATE_SLAVE_READ_COMPLETE /*! Internal use only */,
-	I2C_STATE_SLAVE_WRITE /*! Internal use only */,
-	I2C_STATE_SLAVE_WRITE_COMPLETE /*! Internal use only */,
-	I2C_STATE_GENERAL_READ /*! Internal use only */,
-	I2C_STATE_GENERAL_WRITE /*! Internal use only */,
-	I2C_ERROR_TOTAL
+	I2C_ERROR_ARBITRATION_LOST /*! Arbitration lost on multi-master bus */
 };
 
 
-/*! \details This lists the I2C setup transfer types.
- *
- */
-typedef enum {
-	I2C_TRANSFER_NORMAL /*! This specifies the IOCTL mode value for Normal.
-	 * This means read() performs:
-	 * - Start
-	 * - Write value to ptr
-	 * - Restart
-	 * - Read I2C data
-	 * - Stop
-	 *
-	 * And write() performs
-	 * - Start
-	 * - Write value to ptr
-	 * - Write data
-	 * - Stop
-	 */,
-	 I2C_TRANSFER_NORMAL_16  /*! \brief This specifies the IOCTL mode value for Normal but
-	  * uses a 16-bit pointer rather than an 8-bit pointer value.
-	  */,
-	  I2C_TRANSFER_READ_ONLY  /*! \brief This specifies the IOCTL mode value for read only.
-	   * This means the read() performs:
-	   * - Start
-	   * - Read I2C data
-	   * - Stop
-	   *
-	   * The write() function is not available in this mode.
-	   *
-	   */,
-	   I2C_TRANSFER_WRITE_PTR /*! \brief This will write the ptr value only without writing or reading any data. */,
-	   I2C_TRANSFER_WRITE_ONLY /*! \brief This will write data without first writing the pointer information */,
-	   I2C_TRANSFER_DATA_ONLY /*! \brief This will write data without first writing the pointer information */,
-} i2c_transfer_t;
-
-enum {
-	I2C_EVENT_NONE /*! No Event (used to adjust priority only) */,
-	I2C_EVENT_DATA_READY /*! Data is ready to be read (has been written to slave) */ = (1<<0),
-	I2C_EVENT_WRITE_COMPLETE /*! A write has completed (master has read data) */ = (1<<1),
-	I2C_EVENT_UPDATE_POINTER_COMPLETE /*! Master has written the slave data pointer */ = (1<<2),
-	I2C_EVENT_SLAVE_BUS_ERROR /*! An error occurred while addressed in slave mode */ = (1<<3)
-};
-
-
-/*! \brief Data used to setup I2C transfers.
- * \details This is the I2C transfer setup structure.
- *
- */
-typedef struct MCU_PACK {
-	u16 transfer /*! \brief The I2C transfer type (\sa i2c_transfer_t) */;
-	u16 slave_addr /*! \brief The slave address */;
-} i2c_setup_t;
-
-enum {
-	I2C_SLAVE_SETUP_FLAG_ALT_ADDR0 /*! If hardware supports multiple slave addrs, use the first slot (default) */ = 0,
-	I2C_SLAVE_SETUP_FLAG_ALT_ADDR1 /*! If hardware supports multiple slave addrs, use the second slot */ = (1<<0),
-	I2C_SLAVE_SETUP_FLAG_ALT_ADDR2 /*! If hardware supports multiple slave addrs, use the third slot */ = (1<<1),
-	I2C_SLAVE_SETUP_FLAG_ALT_ADDR3 /*! If hardware supports multiple slave addrs, use the fourth slot */ = (1<<2),
-	I2C_SLAVE_SETUP_FLAG_8_BIT_PTR /*! Use a 8-bit address pointer when accessing data (default) */ = 0,
-	I2C_SLAVE_SETUP_FLAG_16_BIT_PTR /*! Use a 16-bit address pointer when accessing data (set automatically is size > 255) */ = (1<<3),
-	I2C_SLAVE_SETUP_FLAG_ENABLE_GENERAL_CALL /*! Accept writes from general calls */ = (1<<4),
-};
-
-/*! \brief Data used to setup I2C slave transfers.
- * \details Data structure for setting up shared
- * memory registers access via an I2C slave interface.
- *
- */
-typedef struct MCU_PACK {
-	u8 addr /*! Slave address */;
-	u8 o_flags /*! Slave flag attributes */;
-	u16 size /*! Size of the data (if more than 255 set the I2C_SLAVE_SETUP_FLAG_16_BIT_PTR flag) */;
-	char * data /*! Pointer to the data */;
-} i2c_slave_setup_t;
-
-typedef i2c_setup_t i2c_reqattr_t; //legacy support
-
-enum {
-	I2C_ATTR_FLAG_MASTER /*! \brief Operate as a master I2C bus */ = (0<<0),
-	I2C_ATTR_FLAG_SLAVE/*! \brief Operate as a slave (ignored if master is set) */ = (1<<0),
-	I2C_ATTR_FLAG_SLAVE_ACK_GENERAL_CALL /*! If slave operation, ack general call */ = (1<<1),
-	I2C_ATTR_FLAG_PULLUP /*! \brief Enable internal pullups if available (ignore otherwise) */ = (1<<2)
-};
+typedef struct {
+	u32 value;
+} i2c_event_t;
 
 typedef struct MCU_PACK {
 	u32 o_flags /*! Bitmask of supported flags */;
 	u32 o_events /*! Bitmask of supported events */;
 	u32 freq /*! Maximum supported bitrate */;
-	u8 err /*! The error of the most recent transaction */;
+	u32 err /*! The error of the most recent transaction */;
 } i2c_info_t;
 
 typedef enum {
 	I2C_FLAG_NONE = 0,
-	I2C_FLAG_SET_MASTER /*! Operate as a master I2C bus */ = (0<<0),
-	I2C_FLAG_SET_SLAVE/*! Operate as a slave (ignored if master is set) */ = (1<<0),
-	I2C_FLAG_IS_SLAVE_ACK_GENERAL_CALL /*! If slave operation, ack general call */ = (1<<1),
-	I2C_FLAG_IS_PULLUP /*! Enable internal pullups if available (ignore otherwise) */ = (1<<2),
-	I2C_FLAG_ENABLE_WRITE_PTR = (1<<3) /*! Normal I2C transaction (write addr/ptr then read/write data) */,
-	I2C_FLAG_ENABLE_WRITE_PTR_16 = (1<<4) /*! Normal I2C transaction with 16 location pointer */,
-	I2C_FLAG_ENABLE_READ_ONLY = (1<<5) /*! Read only I2C transaction (do not write ptr) */,
-	I2C_FLAG_ENABLE_WRITE_PTR_ONLY /*! This will write the ptr value only without writing or reading any data. */ = (1<<6),
-	I2C_FLAG_ENABLE_WRITE_ONLY /*! This will write data without first writing the pointer information */ = (1<<7),
-	I2C_FLAG_ENABLE_DATA_ONLY /*! This will write data without first writing the pointer information */ = (1<<8),
-	I2C_FLAG_IS_SLAVE_ADDR0 /*! If hardware supports multiple slave addrs, use the first slot (default) */ = (1<<9),
-	I2C_FLAG_IS_SLAVE_ADDR1 /*! If hardware supports multiple slave addrs, use the second slot */ = (1<<10),
-	I2C_FLAG_IS_SLAVE_ADDR2 /*! If hardware supports multiple slave addrs, use the third slot */ = (1<<11),
-	I2C_FLAG_IS_SLAVE_ADDR3 /*! If hardware supports multiple slave addrs, use the fourth slot */ = (1<<12),
-	I2C_FLAG_IS_SLAVE_8BIT_PTR /*! Use a 8-bit address pointer when accessing data (default) */ = (1<<13),
-	I2C_FLAG_IS_SLAVE_16BIT_PTR /*! Use a 16-bit address pointer when accessing data (set automatically is size > 255) */ = (1<<14),
-	I2C_FLAG_RESET /*! Reset the state of the I2C */ = (1<<15),
+	I2C_FLAG_SET_MASTER /*! Operate as a master I2C bus */ = (1<<0),
+	I2C_FLAG_SET_SLAVE/*! Operate as a slave (ignored if master is set) */ = (1<<1),
+	I2C_FLAG_IS_SLAVE_ACK_GENERAL_CALL /*! If slave operation, ack general call */ = (1<<2),
+	I2C_FLAG_IS_PULLUP /*! Enable internal pullups if available (ignore otherwise) */ = (1<<3),
+	I2C_FLAG_PREPARE_PTR_DATA /*! This prepares the driver to write the ptr then read/write data */ = (1<<4),
+	I2C_FLAG_PREPARE_PTR_16_DATA /*! This prepares the driver to write a 16-bit ptr then read/write data */ = (1<<5),
+	I2C_FLAG_PREPARE_PTR /*! This will write the ptr value only without writing or reading any data. */ = (1<<6),
+	I2C_FLAG_PREPARE_DATA /*! This will read/write data without first writing the pointer information */ = (1<<7),
+	I2C_FLAG_IS_SLAVE_ADDR0 /*! If hardware supports multiple slave addrs, use the first slot (default) */ = (1<<8),
+	I2C_FLAG_IS_SLAVE_ADDR1 /*! If hardware supports multiple slave addrs, use the second slot */ = (1<<9),
+	I2C_FLAG_IS_SLAVE_ADDR2 /*! If hardware supports multiple slave addrs, use the third slot */ = (1<<10),
+	I2C_FLAG_IS_SLAVE_ADDR3 /*! If hardware supports multiple slave addrs, use the fourth slot */ = (1<<11),
+	I2C_FLAG_IS_SLAVE_PTR_8 /*! Use a 8-bit address pointer when accessing data (default) */ = (1<<12),
+	I2C_FLAG_IS_SLAVE_PTR_16 /*! Use a 16-bit address pointer when accessing data (set automatically is size > 255) */ = (1<<13),
+	I2C_FLAG_RESET /*! Reset the state of the I2C */ = (1<<14),
+	I2C_FLAG_STRETCH_CLOCK = (1<<15),
 } i2c_flag_t;
+
+typedef union {
+	u8 addr8[2];
+	u16 addr16;
+} i2c_slave_addr_t;
 
 typedef struct MCU_PACK {
 	u32 o_flags /*! Attribute flags */;
 	mcu_pin_t pin_assignment[2] /*! The pin assignment */;
 	u32 freq /*! The bit frequency */;
-	u32 slave_addr /*! Slave address */;
+	i2c_slave_addr_t slave_addr[2] /*! Slave address */;
 	u32 size /*! Memory size when setting up slave */;
 } i2c_attr_t;
 

@@ -17,7 +17,7 @@
 #ifndef DEV_LINK_TRANSPORT_H_
 #define DEV_LINK_TRANSPORT_H_
 
-#include "../mcu/types.h"
+#include "mcu/types.h"
 
 #define LINK_MAX_TRANSFER_SIZE 64
 #define LINK_MAX_PACKET_SIZE (63)

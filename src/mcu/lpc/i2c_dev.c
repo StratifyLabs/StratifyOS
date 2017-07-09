@@ -25,7 +25,30 @@
 #include "mcu/core.h"
 #include "mcu/pio.h"
 
+
 #if MCU_I2C_PORTS > 0
+
+enum {
+	I2C_STATE_NONE,
+	I2C_STATE_START /*! Internal Use only */,
+	I2C_STATE_RD_OP /*! Internal Use only */,
+	I2C_STATE_WR_OP /*! Internal Use only */,
+	I2C_STATE_RD_16_OP /*! Internal Use only */,
+	I2C_STATE_WR_16_OP /*! Internal Use only */,
+	I2C_STATE_WR_PTR_ONLY /*! Internal use only */,
+	I2C_STATE_WR_ONLY /*! Internal use only */,
+	I2C_STATE_MASTER_COMPLETE /*! Internal use only */,
+	I2C_STATE_SLAVE_READ /*! Internal use only */,
+	I2C_STATE_SLAVE_READ_PTR /*! Internal use only */,
+	I2C_STATE_SLAVE_READ_PTR_16 /*! Internal use only */,
+	I2C_STATE_SLAVE_READ_PTR_COMPLETE /*! Internal use only */,
+	I2C_STATE_SLAVE_READ_COMPLETE /*! Internal use only */,
+	I2C_STATE_SLAVE_WRITE /*! Internal use only */,
+	I2C_STATE_SLAVE_WRITE_COMPLETE /*! Internal use only */,
+	I2C_STATE_GENERAL_READ /*! Internal use only */,
+	I2C_STATE_GENERAL_WRITE /*! Internal use only */,
+	I2C_ERROR_TOTAL
+};
 
 #define WRITE_OP 0
 #define READ_OP 1
@@ -58,7 +81,7 @@ typedef struct MCU_PACK {
 	volatile u8 err;
 	u8 resd[1];
 	volatile i2c_ptr_t ptr;
-	u16 slave_addr;
+	i2c_slave_addr_t slave_addr[2];
 	u32 o_flags;
 	i2c_local_transfer_t master;
 	i2c_local_slave_t slave;
@@ -91,6 +114,7 @@ static inline LPC_I2C_Type * i2c_get_regs(int port) MCU_ALWAYS_INLINE;
 LPC_I2C_Type * i2c_get_regs(int port){
 	return i2c_regs_table[port];
 }
+
 
 i2c_attr_t i2c_local_attr[MCU_I2C_PORTS] MCU_SYS_MEM;
 i2c_local_t i2c_local[MCU_I2C_PORTS] MCU_SYS_MEM;
@@ -230,19 +254,15 @@ int mcu_i2c_setattr(int port, void * ctl){
 
 	}
 
-	if( o_flags & (I2C_FLAG_ENABLE_WRITE_PTR|I2C_FLAG_ENABLE_WRITE_PTR_16|I2C_FLAG_ENABLE_READ_ONLY|I2C_FLAG_ENABLE_WRITE_PTR_ONLY|I2C_FLAG_ENABLE_WRITE_ONLY|I2C_FLAG_ENABLE_DATA_ONLY) ){
-		i2c_local[port].slave_addr = attr->slave_addr;
+	if( o_flags & (I2C_FLAG_PREPARE_PTR_DATA|I2C_FLAG_PREPARE_PTR_16_DATA|I2C_FLAG_PREPARE_PTR|I2C_FLAG_PREPARE_DATA) ){
+		i2c_local[port].slave_addr[0] = attr->slave_addr[0];
+		i2c_local[port].slave_addr[1] = attr->slave_addr[1];
 		i2c_local[port].o_flags = o_flags;
 	}
 
 	return 0;
 }
 
-int mcu_i2c_setup(int port, void * ctl){
-	//i2c_local[port].transfer.slave_addr = ctl_ptr->slave_addr;
-	//i2c_local[port].transfer.transfer = ctl_ptr->transfer;
-	return 0;
-}
 
 int set_slave_attr(int port, i2c_attr_t * attr){
 	LPC_I2C_Type * i2c_regs;
@@ -254,7 +274,7 @@ int set_slave_attr(int port, i2c_attr_t * attr){
 	//memcpy( &(i2c_local[port].slave.setup), ctl, sizeof(i2c_slave_setup_t));
 
 	if( attr->size > 255 ){
-		i2c_local[port].o_flags |= I2C_FLAG_IS_SLAVE_16BIT_PTR;
+		i2c_local[port].o_flags |= I2C_FLAG_IS_SLAVE_PTR_16;
 	}
 
 	i2c_regs = i2c_regs_table[port];
@@ -263,27 +283,35 @@ int set_slave_attr(int port, i2c_attr_t * attr){
 		gen_call = 1;
 	}
 
-	if( o_flags & I2C_FLAG_IS_SLAVE_ADDR1 ){
-		i2c_regs->ADR1 = (attr->slave_addr << 1) | gen_call;
-#if MCU_I2C_API == 0
-		i2c_regs->MASK1 = 0x00;
-#endif
-	} else if( o_flags & I2C_FLAG_IS_SLAVE_ADDR2 ){
-		i2c_regs->ADR2 = (attr->slave_addr << 1) | gen_call;
-#if MCU_I2C_API == 0
-		i2c_regs->MASK2 = 0x00;
-#endif
-	} else if( o_flags & I2C_FLAG_IS_SLAVE_ADDR3 ){
-		i2c_regs->ADR3 = (attr->slave_addr << 1) | gen_call;
-#if MCU_I2C_API == 0
-		i2c_regs->MASK3 = 0x00;
-#endif
-	} else {
-		i2c_regs->ADR0 = (attr->slave_addr << 1) | gen_call;
+	if( o_flags & I2C_FLAG_IS_SLAVE_ADDR0 ){
+		i2c_regs->ADR0 = (attr->slave_addr[0].addr8[0] << 1) | gen_call;
 #if MCU_I2C_API == 0
 		i2c_regs->MASK0 = 0x00;
 #endif
 	}
+
+	if( o_flags & I2C_FLAG_IS_SLAVE_ADDR1 ){
+		i2c_regs->ADR1 = (attr->slave_addr[0].addr8[1] << 1) | gen_call;
+#if MCU_I2C_API == 0
+		i2c_regs->MASK1 = 0x00;
+#endif
+	}
+
+	if( o_flags & I2C_FLAG_IS_SLAVE_ADDR2 ){
+		i2c_regs->ADR2 = (attr->slave_addr[1].addr8[0] << 1) | gen_call;
+#if MCU_I2C_API == 0
+		i2c_regs->MASK2 = 0x00;
+#endif
+	}
+
+	if( o_flags & I2C_FLAG_IS_SLAVE_ADDR3 ){
+		i2c_regs->ADR3 = (attr->slave_addr[1].addr8[1] << 1) | gen_call;
+#if MCU_I2C_API == 0
+		i2c_regs->MASK3 = 0x00;
+#endif
+	}
+
+
 
 	i2c_regs->CONSET = (AA);
 
@@ -430,9 +458,9 @@ static void _mcu_i2c_isr(int port) {
 	case 0x10: //Repeated Start condition
 		i2c_local[port].err = 0;
 		if ( i2c_local[port].state == I2C_STATE_START ){
-			i2c_regs->DAT = (i2c_local[port].slave_addr << 1) | 0x01; //Set the Read bit -- repeated start after write ptr
+			i2c_regs->DAT = (i2c_local[port].slave_addr[0].addr8[0] << 1) | 0x01; //Set the Read bit -- repeated start after write ptr
 		} else {
-			i2c_regs->DAT = (i2c_local[port].slave_addr << 1); //send the address -- in write mode
+			i2c_regs->DAT = (i2c_local[port].slave_addr[0].addr8[0] << 1); //send the address -- in write mode
 		}
 
 		i2c_regs->CONSET = AA;
@@ -516,7 +544,7 @@ static void _mcu_i2c_isr(int port) {
 	case 0x60: //Slave mode SLA+W has been received -- Ack returned
 	case 0x78: //Arbitration lost and general ack received
 	case 0x70: //General call has been received -- ack returned
-		if( i2c_local[port].o_flags & I2C_SLAVE_SETUP_FLAG_16_BIT_PTR ){
+		if( i2c_local[port].o_flags & I2C_FLAG_IS_SLAVE_PTR_16 ){
 			i2c_local[port].state = I2C_STATE_SLAVE_READ_PTR_16;
 		} else {
 			i2c_local[port].state = I2C_STATE_SLAVE_READ_PTR;
@@ -608,7 +636,7 @@ int i2c_transfer(int port, int op, devfs_async_t * dop){
 	i2c_regs = i2c_get_regs(port);
 
 	//writes will always write the loc value -- so only abort on read only
-	if( i2c_local[port].o_flags & I2C_FLAG_ENABLE_READ_ONLY){
+	if( i2c_local[port].o_flags & I2C_FLAG_PREPARE_DATA){
 		if ( dop->nbyte == 0 ){
 			return 0;
 		}
@@ -632,7 +660,7 @@ int i2c_transfer(int port, int op, devfs_async_t * dop){
 	i2c_local[port].master.ret = &(dop->nbyte);
 
 
-	if( i2c_local[port].o_flags & I2C_FLAG_ENABLE_WRITE_PTR ){
+	if( i2c_local[port].o_flags & I2C_FLAG_PREPARE_PTR_DATA ){
 		i2c_local[port].ptr.ptr8[1] = dop->loc; //8-bit ptr
 		i2c_local[port].master.size = size;
 		if ( op == WRITE_OP ){
@@ -640,11 +668,11 @@ int i2c_transfer(int port, int op, devfs_async_t * dop){
 		} else {
 			i2c_local[port].state = I2C_STATE_RD_OP;
 		}
-	} else if( i2c_local[port].o_flags & I2C_FLAG_ENABLE_WRITE_PTR_ONLY ){
+	} else if( i2c_local[port].o_flags & I2C_FLAG_PREPARE_PTR ){
 		i2c_local[port].ptr.ptr8[1] = dop->loc; //8-bit ptr
 		i2c_local[port].master.size = 0;
 		i2c_local[port].state = I2C_STATE_WR_PTR_ONLY;
-	} else if( i2c_local[port].o_flags & I2C_FLAG_ENABLE_WRITE_PTR_16 ){
+	} else if( i2c_local[port].o_flags & I2C_FLAG_PREPARE_PTR_16_DATA ){
 		i2c_local[port].ptr.ptr16 = dop->loc;  //16-bit ptr
 		i2c_local[port].master.size = size;
 		if ( op == WRITE_OP ){
@@ -652,7 +680,7 @@ int i2c_transfer(int port, int op, devfs_async_t * dop){
 		} else {
 			i2c_local[port].state = I2C_STATE_RD_16_OP;
 		}
-	} else if( i2c_local[port].o_flags & (I2C_FLAG_ENABLE_READ_ONLY|I2C_FLAG_ENABLE_WRITE_ONLY|I2C_FLAG_ENABLE_DATA_ONLY) ){
+	} else if( i2c_local[port].o_flags & (I2C_FLAG_PREPARE_DATA) ){
 		i2c_local[port].master.size = size;
 		if ( op == WRITE_OP ){
 			i2c_local[port].state = I2C_STATE_WR_ONLY;

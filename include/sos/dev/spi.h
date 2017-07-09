@@ -32,68 +32,6 @@
  *
  * \code
  *
- * #include <unistd.h>
- * #include <fcntl.h>
- * #include <errno.h>
- * #include <stdio.h>
- * #include "mcu/mcu.h"
- *
- * int read_write_spi(){
- * 	int fd;
- * 	spi_attr_t attr;
- * 	char buffer[16];
- * 	char duplex_buffer[16];
- *
- * 	fd = open("/dev/spi0", O_RDWR); //Here O_RDWR could be OR'd with O_NONBLOCK for non blocking operation
- * 	if ( fd < 0 ){
- * 		printf("Error opening peripheral (%d)\n", errno);
- * 	} else {
- *		attr.bitrate = 1000000; //1MHz bitrate
- * 		attr.format = SPI_ATTR_FORMAT_SPI;
- * 		attr.pin_assign = 0; //Use GPIO configuration zero (see device specific documentation for details)
- * 		attr.master = SPI_ATTR_MASTER;
- * 		attr.mode = SPI_ATTR_MODE0;
- * 		attr.width = 8;
- * 		if( ioctl(fd, I_SETATTR, &attr) < 0 ){
- * 			printf("Failed to set peripheral configuration (%d)\n", errno);
- * 			return -1;
- *		}
- *
- *		//Now read or write the SPI in half duplex mode
- *		strcpy(buffer, "1/2 Duplex Test\n");
- *		if ( write(fd, buffer, strlen(buffer) < 0 ){ //returns after all bytes have been written
- *			printf("Failed to write peripheral (%d)\n", errno);
- *		}
- *
- *		if ( read(fd, buffer, 16) < 0 ){ //Return after all bytes have been read
- *			printf("Failed to read peripheral (%d)\n", errno);
- *		}
- *
- *		//Now read or write the SPI in full duplex mode
- *
- *		if ( ioctl(fd, I_SPI_SETDUPLEX, duplex_buffer) < 0 ){
- *			printf("Failed to configure duplex buffer (%d)\n", errno);
- *		}
- *
- *		strcpy(buffer, "Full Duplex Test\n");
- *		if ( write(fd, buffer, strlen(buffer) < 0 ){ //returns after all bytes have been written
- *			printf("Failed to write peripheral (%d)\n", errno);
- *		}
- *
- *		if ( read(fd, buffer, 16) < 0 ){ //doesn't return until 16 bytes arrive (use O_NONBLOCK to return with whatever is available)
- *			printf("Failed to read peripheral (%d)\n", errno);
- *		}
- *
- *		//This puts the SPI back in half-duplex mode
- *		if ( ioctl(fd, I_SPI_SETDUPLEX, NULL) < 0 ){
- *			printf("Failed to configure duplex buffer (%d)\n", errno);
- *		}
- *
- * 	}
- * 	close(fd);
- * 	return 0;
- * }
- *
  * \endcode
  *
  */
@@ -133,6 +71,7 @@ typedef enum {
 
 typedef struct MCU_PACK {
 	u32 o_flags /*! Bitmask of supported flags */;
+	u32 o_events /*! Bitmask of supported events */;
 } spi_info_t;
 
 #define SPI_PIN_ASSIGNMENT_COUNT 4

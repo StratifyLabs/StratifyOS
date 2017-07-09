@@ -42,36 +42,37 @@
 extern "C" {
 #endif
 
-
 #define RTC_IOC_IDENT_CHAR 'r'
 
-/*! \details This defines a RTC action.
- *
- */
-typedef mcu_action_t rtc_action_t;
-
-/*! \brief See below for details.
- * \details These are the values for \a clock of \ref rtc_attr_t.
- */
 typedef enum {
-	RTC_CLKSRC_EXTERNAL_32768 /*! External 32.768KHz Crystal */,
-	RTC_CLKSRC_INTERNAL_40000 /*! Internal 40KHz Oscillator */
-} rtc_clock_t;
+	RTC_FLAG_NONE = 0,
+	RTC_FLAG_ENABLE /*! Set the alarm */ = (1<<0),
+	RTC_FLAG_DISABLE /*! Set the alarm */ = (1<<1),
+	RTC_FLAG_IS_CLKSRC_EXTERNAL_32768 /*! External 32.768KHz Crystal */ = (1<<2),
+	RTC_FLAG_IS_CLKSRC_INTERNAL_40000 /*! Internal 40KHz Oscillator */ = (1<<3),
+	RTC_FLAG_ENABLE_ALARM /*! Enable the alarm */ = (1<<4),
+	RTC_FLAG_DISABLE_ALARM /*! Enable the alarm */ = (1<<5),
+	RTC_FLAG_IS_ALARM_ONCE /*! One time alarm */ = (1<<6),
+	RTC_FLAG_IS_ALARM_MINUTE /*! Alarm every minute */ = (1<<7),
+	RTC_FLAG_IS_ALARM_HOURLY /*! Alarm every hour */ = (1<<8),
+	RTC_FLAG_IS_ALARM_DAILY /*! Daily alarm */ = (1<<9),
+	RTC_FLAG_IS_ALARM_WEEKLY /*! Weekly alarm */ = (1<<10),
+	RTC_FLAG_IS_ALARM_MONTHLY /*! Monthly alarm */ = (1<<11),
+	RTC_FLAG_IS_ALARM_YEARLY /*! Yearly alarm */ = (1<<12),
+	RTC_FLAG_ENABLE_COUNT_EVENT /*! Enable a count event */ = (1<<13),
+	RTC_FLAG_IS_COUNT_SECOND /*! One time alarm */ = (1<<14),
+	RTC_FLAG_IS_COUNT_MINUTE /*! One time alarm */ = (1<<15),
+	RTC_FLAG_IS_COUNT_HOUR /*! One time alarm */ = (1<<16),
+	RTC_FLAG_IS_COUNT_DAY_OF_WEEK /*! One time alarm */ = (1<<17),
+	RTC_FLAG_IS_COUNT_DAY_OF_MONTH /*! One time alarm */ = (1<<18),
+	RTC_FLAG_IS_COUNT_DAY_OF_YEAR /*! One time alarm */ = (1<<19),
+	RTC_FLAG_IS_COUNT_WEEK /*! One time alarm */ = (1<<20),
+	RTC_FLAG_IS_COUNT_MONTH /*! One time alarm */ = (1<<21),
+	RTC_FLAG_IS_COUNT_YEAR /*! One time alarm */ = (1<<22),
+	RTC_FLAG_DISABLE_COUNT_EVENT /*! Enable a count event */ = (1<<23),
 
+} rtc_flag_t;
 
-/*! \details This lists the times when the count
- * interrupt can be set.
- */
-typedef enum {
-	RTC_EVENT_COUNT_NONE /*! Do not interrupt based on the count (default) */,
-	RTC_EVENT_COUNT_SECOND /*! Interrupt every second */,
-	RTC_EVENT_COUNT_MINUTE /*! Interrupt every minute */,
-	RTC_EVENT_COUNT_HOUR /*! Interrupt every hour */,
-	RTC_EVENT_COUNT_DAY /*! Interrupt every day */,
-	RTC_EVENT_COUNT_WEEK /*! Interrupt every week */,
-	RTC_EVENT_COUNT_MONTH /*! Interrupt every month */,
-	RTC_EVENT_COUNT_YEAR /*! Interrupt every year */
-} rtc_event_count_t;
 
 /*!
  * \brief Lists the days of the week.
@@ -118,99 +119,32 @@ typedef struct MCU_PACK {
 	u32 use_time_t;
 } rtc_time_t;
 
-
-/*! \brief Lists the valid alarm types.
- * \details This enumerates the valid alarm types.
- */
-typedef enum {
-	RTC_ALARM_ONCE /*! One time alarm */,
-	RTC_ALARM_MINUTE /*! Alarm every minute */,
-	RTC_ALARM_HOURLY /*! Alarm every hour */,
-	RTC_ALARM_DAILY /*! Daily alarm */,
-	RTC_ALARM_WEEKLY /*! Weekly alarm */,
-	RTC_ALARM_MONTHLY /*! Monthly alarm */,
-	RTC_ALARM_YEARLY /*! Yearly alarm */
-} rtc_alarm_type_t;
-
-/*! \brief RTC Alarm including Time and Alarm Type
- * \details This structure is used
- * to read and write the RTC alarm
- * using the rtc_ioctl() function.
- *
- */
-typedef struct MCU_PACK {
-	rtc_time_t time /*! The time for the alarm */;
-	u8 type /*! The type of alarm (\ref rtc_alarm_type_t) */;
-} rtc_alarm_t;
-
 typedef struct {
 	rtc_time_t time;
 } rtc_event_t;
 
+typedef struct {
+	u32 o_flags;
+	u32 o_events;
+	rtc_time_t alarm;
+} rtc_info_t;
 
 
-/*! \brief RTC IO Attributes
+
+/*! \brief RTC Attributes
  * \details This data structure defines
  * the structure used with I_RTC_ATTR and I_RTC_SETATTR
  * ioctl requests on the RTC.  It is also used when opening the RTC.
  */
 typedef struct MCU_PACK {
-	u8 pin_assign /*! Always 0 */;
-	u8 clock /*! The source clock */;
+	u32 o_flags /*! Bitmask for setting attributes */;
 	u32 freq /*! Calibration frequency for setting the pre-scalar */;
+	rtc_time_t time;
 } rtc_attr_t;
 
 #define I_RTC_GETINFO _IOCTLR(RTC_IOC_IDENT_CHAR, I_MCU_GETINFO, rtc_attr_t)
 #define I_RTC_SETATTR _IOCTLW(RTC_IOC_IDENT_CHAR, I_MCU_SETATTR, rtc_attr_t)
 #define I_RTC_SETACTION _IOCTLW(RTC_IOC_IDENT_CHAR, I_MCU_SETACTION, rtc_action_t)
-
-/*! \brief See details below.
- * \details This request writes the alarm value.
- * The ctl argument is a pointer to an rtc_alarm_t
- * which contains the alarm.
- *
- * Example:
- * \code
- * rtc_alarm_t alarm;
- * //set alarm members
- * ioctl(rtc_fd, I_RTC_SETALARM, &alarm);
- * \endcode
- *
- * \hideinitializer
- */
-#define I_RTC_SETALARM _IOCTLW(RTC_IOC_IDENT_CHAR, I_MCU_TOTAL + 0, rtc_alarm_t)
-#define I_RTC_SET_ALARM I_RTC_SETALARM
-
-/*! \brief See details below.
- * \details This request reads the alarm value.
- * The ctl argument is a pointer to memory
- * where the rtc_alarm_t will be stored.
- *
- * Example:
- * \code
- * rtc_alarm_t alarm;
- * ioctl(rtc_fd, I_RTC_GETALARM, &alarm);
- * //alarm is populated with the current alarm values
- * \endcode
- * \hideinitializer
- */
-#define I_RTC_GETALARM _IOCTLR(RTC_IOC_IDENT_CHAR, I_MCU_TOTAL + 1, rtc_alarm_t)
-#define I_RTC_GET_ALARM I_RTC_GETALARM
-
-
-/*! \brief See details below.
- * \details This request disable the alarm.  The ctl
- * argument is NULL.
- *
- * Example:
- * \code
- * ioctl(rtc_fd, I_RTC_DISABLEALARM);
- * \endcode
- *
- * \hideinitializer
- */
-#define I_RTC_DISABLEALARM _IOCTL(RTC_IOC_IDENT_CHAR, I_MCU_TOTAL + 2)
-#define I_RTC_DISABLE_ALARM I_RTC_DISABLEALARM
 
 /*! \brief See details below.
  * \details This request writes the value of the timer.
@@ -221,7 +155,7 @@ typedef struct MCU_PACK {
  * \endcode
  * \hideinitializer
  */
-#define I_RTC_SET _IOCTLW(RTC_IOC_IDENT_CHAR, I_MCU_TOTAL + 3, rtc_time_t)
+#define I_RTC_SET _IOCTLW(RTC_IOC_IDENT_CHAR, I_MCU_TOTAL + 0, rtc_time_t)
 
 /*! \brief See details below.
  * \details This request reads the value of the timer.
@@ -232,22 +166,10 @@ typedef struct MCU_PACK {
  * \endcode
  * \hideinitializer
  */
-#define I_RTC_GET _IOCTLR(RTC_IOC_IDENT_CHAR, I_MCU_TOTAL + 4, rtc_time_t)
+#define I_RTC_GET _IOCTLR(RTC_IOC_IDENT_CHAR, I_MCU_TOTAL + 1, rtc_time_t)
 
 
-/*! \brief See details below.
- * \details This request controls when the count action
- * is triggered.  The ctl argument is a \ref rtc_event_count_t.
- *
- * \code
- * ioctl(rtc_fd, I_RTC_SETCOUNTEVENT, (void*)RTC_EVENT_COUNT_SECOND );
- * \endcode
- * \hideinitializer
- */
-#define I_RTC_SETCOUNTEVENT _IOCTL(RTC_IOC_IDENT_CHAR, I_MCU_TOTAL + 7)
-#define I_RTC_SET_COUNT_EVENT I_RTC_SETCOUNTEVENT
-
-#define I_RTC_TOTAL 8
+#define I_RTC_TOTAL 2
 
 #ifdef __cplusplus
 }

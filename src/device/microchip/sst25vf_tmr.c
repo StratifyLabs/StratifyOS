@@ -126,20 +126,17 @@ void continue_spi_write(const devfs_handle_t * cfg, uint32_t ignore){
 	const sst25vf_cfg_t * sst_cfg = (sst25vf_cfg_t*)cfg->config;
 	mcu_action_t action;
 	uint8_t * addrp;
-	tmr_attr_t tmr_attr;
 	//should be called 10 us after complete_spi_write() executes
 
 	//Disable the TMR interrupt
-	action.handler.callback = NULL;
-	action.handler.context = NULL;
-	action.o_events = TMR_EVENT_NONE;
+	action.handler.callback = 0;
+	action.handler.context = 0;
+	action.o_events = MCU_EVENT_FLAG_NONE;
 	action.channel = sst_cfg->miso.pin;
 	action.prio = 0;
-	tmr_attr.o_flags = TMR_FLAG_DISABLE;
-	mcu_tmr_setattr(sst_cfg->miso.port, &tmr_attr);
+	mcu_tmr_disable(sst_cfg->miso.port, 0);
 	mcu_tmr_setaction(sst_cfg->miso.port, &action);
-	tmr_attr.o_flags = TMR_FLAG_ENABLE;
-	mcu_tmr_setattr(sst_cfg->miso.port, &tmr_attr); //start the timer
+	mcu_tmr_enable(sst_cfg->miso.port, 0);
 
 
 	if( state->nbyte > 0 ){
@@ -176,9 +173,8 @@ void continue_spi_write(const devfs_handle_t * cfg, uint32_t ignore){
 void complete_spi_write(const devfs_handle_t * cfg, uint32_t ignore){
 	uint32_t tval;
 	mcu_action_t action;
-	mcu_channel_t attr;
+	mcu_channel_t channel;
 	sst25vf_cfg_t * sst_cfg = (sst25vf_cfg_t*)cfg->config;
-	tmr_attr_t tmr_attr;
 
 	sst25vf_share_deassert_cs(cfg);
 
@@ -186,25 +182,23 @@ void complete_spi_write(const devfs_handle_t * cfg, uint32_t ignore){
 	action.handler.context = (void*)cfg;
 	action.handler.callback = (mcu_callback_t)continue_spi_write;
 	action.channel = sst_cfg->miso.pin;
-	action.o_events = TMR_EVENT_INTERRUPT;
+	action.o_events = MCU_EVENT_FLAG_MATCH;
 	action.prio = 0;
 
-	attr.channel = sst_cfg->miso.pin;
+	channel.loc = sst_cfg->miso.pin;
 
 	//turn the timer off
-	tmr_attr.o_flags = TMR_FLAG_DISABLE;
-	mcu_tmr_setattr(sst_cfg->miso.port, &tmr_attr); //start the timer
+	mcu_tmr_disable(sst_cfg->miso.port, 0);
 	mcu_tmr_setaction(sst_cfg->miso.port, &action);
 	tval = mcu_tmr_get(sst_cfg->miso.port, NULL);
-	attr.value = tval + 20;
-	if( attr.value > (1000000*2048) ){
-		attr.value -= (1000000*2048);
+	channel.value = tval + 20;
+	if( channel.value > (1000000*2048) ){
+		channel.value -= (1000000*2048);
 	}
-	mcu_tmr_setoc(sst_cfg->miso.port, &attr);
+	mcu_tmr_setoc(sst_cfg->miso.port, &channel);
 
 	//everything is set; turn the timer back on
-	tmr_attr.o_flags = TMR_FLAG_ENABLE;
-	mcu_tmr_setattr(sst_cfg->miso.port, &tmr_attr); //start the timer
+	mcu_tmr_enable(sst_cfg->miso.port, 0);
 }
 
 int sst25vf_tmr_write(const devfs_handle_t * cfg, devfs_async_t * wop){
