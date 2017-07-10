@@ -22,7 +22,7 @@ limitations under the License.
 #include "mcu/usbfifo.h"
 #include "sos/link/link.h"
 #include "sos/link/link_transport.h"
-#include "mcu/usb_dev.h"
+#include "mcu/usbd_control.h"
 
 /* \details This structure defines the USB descriptors.  This
  * value is read over the control channel by the host to configure
@@ -86,9 +86,9 @@ struct MCU_PACK stratify_link_transport_usb_string_t {
 extern const usb_dev_desc_t stratify_link_transport_usb_dev_desc MCU_WEAK;
 extern const stratify_link_transport_usb_cfg_desc_t stratify_link_transport_usb_cfg_desc MCU_WEAK;
 extern const struct stratify_link_transport_usb_string_t stratify_link_transport_usb_string_desc MCU_WEAK;
-extern const usb_dev_const_t stratify_link_transport_usb_constants;
+extern const usbd_control_constants_t stratify_link_transport_usb_constants;
 
-link_transport_phy_t stratify_link_transport_usb_open(const char * name, usb_dev_context_t * context);
+link_transport_phy_t stratify_link_transport_usb_open(const char * name, usbd_control_t * context);
 int stratify_link_transport_usb_read(link_transport_phy_t, void * buf, int nbyte);
 int stratify_link_transport_usb_write(link_transport_phy_t, const void * buf, int nbyte);
 int stratify_link_transport_usb_close(link_transport_phy_t * handle);
@@ -106,9 +106,9 @@ extern usbfifo_state_t stratify_link_transport_usb_fifo_state MCU_SYS_MEM;
 extern const usb_dev_desc_t stratify_link_boot_transport_usb_dev_desc MCU_WEAK;
 extern const stratify_link_boot_transport_usb_cfg_desc_t stratify_link_boot_transport_usb_cfg_desc MCU_WEAK;
 extern const struct stratify_link_transport_usb_string_t stratify_link_boot_transport_usb_string_desc MCU_WEAK;
-extern const usb_dev_const_t stratify_link_boot_transport_usb_constants;
+extern const usbd_control_constants_t stratify_link_boot_transport_usb_constants;
 
-link_transport_phy_t stratify_link_boot_transport_usb_open(const char * name, usb_dev_context_t * context);
+link_transport_phy_t stratify_link_boot_transport_usb_open(const char * name, usbd_control_t * context);
 int stratify_link_boot_transport_usb_read(link_transport_phy_t, void * buf, int nbyte);
 int stratify_link_boot_transport_usb_write(link_transport_phy_t, const void * buf, int nbyte);
 int stratify_link_boot_transport_usb_close(link_transport_phy_t * handle);

@@ -74,15 +74,15 @@ int usbfifo_close(const devfs_handle_t * cfg);
  * const device_t devices[DEVICES_TOTAL+1] = {
  *	USBFIFO_DEVICE("usb0-fifo", &usbfifo_cfg, 0666, USER_ROOT, GROUP_ROOT),
  * 	...
- * 	DEVICE_TERMINATOR
+ * 	DEVFS_TERMINATOR
  * }
  * \endcode
  *
  */
 #define USBFIFO_DEVICE(device_name, cfg_ptr, state_ptr, mode_value, uid_value, gid_value) { \
 		.name = device_name, \
-		DEVICE_MODE(mode_value, uid_value, gid_value, S_IFCHR), \
-		DEVICE_DRIVER(usbfifo), \
+		DEVFS_MODE(mode_value, uid_value, gid_value, S_IFCHR), \
+		DEVFS_DRIVER(usbfifo), \
 		.cfg.state = state_ptr, \
 		.cfg.dcfg = cfg_ptr \
 }

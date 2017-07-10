@@ -23,8 +23,8 @@
 #include "mcu/mcu.h"
 #include "sos/dev/usb.h"
 #include "mcu/usbfifo.h"
-#include "mcu/usb_dev.h"
-#include "mcu/usb_dev_cdc.h"
+#include "mcu/usbd_control.h"
+#include "mcu/usbd_cdc.h"
 #include "mcu/core.h"
 #include "mcu/debug.h"
 #include "mcu/sys.h"
@@ -34,8 +34,8 @@
 #define LINK_USB_VID 0x20A0
 #define LINK_USB_PID 0x41D5
 
-#ifndef LINK_USB_DEV_PORT
-#define LINK_USB_DEV_PORT 0
+#ifndef LINK_USBD_PORT
+#define LINK_USBD_PORT 0
 #endif
 
 #define LINK_REQD_CURRENT 500
@@ -51,18 +51,18 @@ const usbfifo_cfg_t stratify_link_boot_transport_usb_fifo_cfg = USBFIFO_DEVICE_C
 usbfifo_state_t stratify_link_boot_transport_usb_fifo_state MCU_SYS_MEM;
 
 
-const usb_dev_const_t stratify_link_boot_transport_usb_constants = {
+const usbd_control_constants_t stratify_link_boot_transport_usb_constants = {
 		.port = STRATIFY_LINK_TRANSPORT_USB_PORT,
 		.device =  &stratify_link_boot_transport_usb_dev_desc,
 		.config = &stratify_link_boot_transport_usb_cfg_desc,
 		.string = &stratify_link_boot_transport_usb_string_desc,
-		.feature_event = usb_dev_default_event,
-		.configure_event = usb_dev_default_event,
-		.interface_event = usb_dev_default_event,
-		.adc_if_req = usb_dev_default_if_req,
-		.msc_if_req = usb_dev_default_if_req,
+		.feature_event = 0,
+		.configure_event = 0,
+		.interface_event = 0,
+		.adc_if_req = 0,
+		.msc_if_req = 0,
 		.cdc_if_req = stratify_link_transport_usb_cdc_if_req,
-		.hid_if_req = usb_dev_default_if_req
+		.hid_if_req = 0
 };
 
 

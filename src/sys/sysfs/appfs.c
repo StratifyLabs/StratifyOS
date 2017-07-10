@@ -41,6 +41,16 @@
 #define ANALYZE_PATH_RAM 4
 #define ANALYZE_PATH_RAM_DIR 5
 
+typedef struct {
+	const void * cfg;
+	void * handle;
+	int request;
+	void * ctl;
+	int ret;
+} priv_ioctl_t;
+
+static void priv_ioctl(void * args);
+
 static int analyze_path(const char * path, const char ** name, int * mem_type){
 	int elements;
 
@@ -405,7 +415,7 @@ int appfs_stat(const void* cfg, const char * path, struct stat * st){
 	return appfs_fstat(cfg, &handle, st);
 }
 
-int appfs_priv_read(const void* cfg, void * handle, devfs_async_t * op){
+int appfs_read_async(const void* cfg, void * handle, devfs_async_t * op){
 	const devfs_device_t * dev;
 	appfs_handle_t * h;
 
@@ -430,7 +440,7 @@ int appfs_priv_read(const void* cfg, void * handle, devfs_async_t * op){
 	return dev->driver.read(&(dev->handle), op);
 }
 
-int appfs_priv_write(const void* cfg, void * handle, devfs_async_t * op){
+int appfs_write_async(const void* cfg, void * handle, devfs_async_t * op){
 	errno = EROFS;
 	return -1;
 }
@@ -458,9 +468,14 @@ int appfs_opendir(const void* cfg, void ** handle, const char * path){
 }
 
 
-int appfs_priv_ioctl(const void * cfg, void * handle, int request, void * ctl){
-	appfs_handle_t * h = handle;
+
+void priv_ioctl(void * args){
+	priv_ioctl_t * a = args;
+	appfs_handle_t * h = a->handle;
+	int request = a->request;
 	appfs_installattr_t * attr;
+	void * ctl = a->ctl;
+	a->ret = -1;
 
 	mcu_wdt_reset();
 
@@ -469,21 +484,33 @@ int appfs_priv_ioctl(const void * cfg, void * handle, int request, void * ctl){
 
 	//INSTALL and CREATE only with with the special .install file
 	case I_APPFS_INSTALL:
-		return appfs_util_priv_writeinstall(cfg, h, attr);
+		a->ret = appfs_util_priv_writeinstall(a->cfg, h, attr);
 	case I_APPFS_CREATE:
-		return appfs_util_priv_create(cfg, h, attr);
+		a->ret = appfs_util_priv_create(a->cfg, h, attr);
 
 	//These calls work with the specific file name
 	case I_APPFS_FREE_RAM:
-		return appfs_util_priv_free_ram(cfg, h);
+		a->ret =  appfs_util_priv_free_ram(a->cfg, h);
 	case I_APPFS_RECLAIM_RAM:
-		return appfs_util_priv_reclaim_ram(cfg, h);
+		a->ret = appfs_util_priv_reclaim_ram(a->cfg, h);
+	default:
+		errno = EINVAL;
+		break;
 	}
 
-
-	errno = EINVAL;
-	return -1;
 }
+
+int appfs_ioctl(const void * cfg, void * handle, int request, void * ctl){
+	priv_ioctl_t args;
+	args.cfg = cfg;
+	args.handle = handle;
+	args.request = request;
+	args.ctl = ctl;
+	mcu_cortexm_svcall(priv_ioctl, &args);
+	return args.ret;
+
+}
+
 
 static int readdir_mem(const void* cfg, int loc, struct dirent * entry, int type){
 	//this needs to load page number loc and see what the file is

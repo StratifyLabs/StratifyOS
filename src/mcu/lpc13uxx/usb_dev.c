@@ -38,9 +38,9 @@ volatile EP_LIST EPList[USB_EP_NUM*BUFFER_MULT];
 
 #ifdef MCU_DEBUG
 volatile int usbdev_stat;
-#define USB_DEV_DEBUG(x) (usbdev_stat |= x)
+#define USBD_DEBUG(x) (usbdev_stat |= x)
 #else
-#define USB_DEV_DEBUG(x)
+#define USBD_DEBUG(x)
 #endif
 
 static usb_attr_t usb_ctl;
@@ -268,7 +268,7 @@ int mcu_usb_detach(int port, void * ctl){
 }
 
 int mcu_usb_setaction(int port, void * ctl){
-	usb_action_t * action = (usb_action_t*)ctl;
+	mcu_action_t * action = (mcu_action_t*)ctl;
 	int log_ep;
 
 	if( action->channel & 0x80 ){
@@ -808,12 +808,12 @@ void _mcu_core_usb_isr1(){
 	uint32_t device_interrupt_status;
 	uint32_t val;
 
-	USB_DEV_DEBUG(0x01);
+	USBD_DEBUG(0x01);
 	device_interrupt_status = LPC_USB->INTSTAT;     //Device interrupt status
 	LPC_USB->INTSTAT = device_interrupt_status;
 
 	if (device_interrupt_status & FRAME_INT){ //start of frame
-		USB_DEV_DEBUG(0x04);
+		USBD_DEBUG(0x04);
 		if ( usb_local.event_handler ){
 			usb_local.event_handler(USB_SPEC_EVENT_SOF, 0);
 		}
@@ -825,7 +825,7 @@ void _mcu_core_usb_isr1(){
 		if( val & USB_DRESET_C ){ //reset
 			LPC_USB->DEVCMDSTAT |= USB_DRESET_C;
 
-			USB_DEV_DEBUG(0x10);
+			USBD_DEBUG(0x10);
 			//mcu_usb_reset(0, NULL);
 			usb_local.connected = 1;
 			usb_local.write_pending = 0;
@@ -862,11 +862,11 @@ void _mcu_core_usb_isr1(){
 
 		/*
 		if (device_interrupt_status & DEV_STAT_INT){ //Status interrupt (Reset, suspend/resume or connect)
-			USB_DEV_DEBUG(0x08);
+			USBD_DEBUG(0x08);
 			_delay_us(100);
 			tmp = usb_sie_rd_cmd_dat(USB_SIE_CMD_GET_DEV_STAT);
 			if (tmp & DEV_RST){
-				USB_DEV_DEBUG(0x10);
+				USBD_DEBUG(0x10);
 				//mcu_usb_reset(0, NULL);
 				usb_local.connected = 1;
 				usb_local.write_pending = 0;
@@ -877,7 +877,7 @@ void _mcu_core_usb_isr1(){
 			}
 
 			if ( tmp == 0x0D ){
-				USB_DEV_DEBUG(0x20);
+				USBD_DEBUG(0x20);
 				usb_local.connected = 0;
 				for(i = 1; i < DEV_USB_LOGICAL_ENDPOINT_COUNT; i++){
 					if( usb_local.read_callback[i] != NULL ){
@@ -932,7 +932,7 @@ void _mcu_core_usb_isr1(){
 void slow_ep_int(int episr){
 	uint32_t phy_ep, log_ep;
 
-	USB_DEV_DEBUG(0x100);
+	USBD_DEBUG(0x100);
 	for (phy_ep = 0; phy_ep < USB_EP_NUM; phy_ep++){
 		if (episr & (1 << phy_ep)){
 			//Calculate the logical endpoint value (associated with the USB Spec)
@@ -943,7 +943,7 @@ void slow_ep_int(int episr){
 
 				//Check for a setup packet
 				if ( (phy_ep == 0) && (LPC_USB->DEVCMDSTAT & USB_SETUP_RCVD) ){
-					USB_DEV_DEBUG(0x200);
+					USBD_DEBUG(0x200);
 					if (usb_local.read_callback[0]){
 						if( usb_local.read_callback[0](usb_local.read_context, (const void*)USB_SETUP_EVENT) == 0 ){
 							usb_local.read_callback[0] = NULL;

@@ -375,7 +375,7 @@ int link_unlink(link_transport_mdriver_t * driver, const char * path){
 }
 
 
-int link_lseek(link_transport_mdriver_t * driver, int fildes, off_t offset, int whence){
+int link_lseek(link_transport_mdriver_t * driver, int fildes, s32 offset, int whence){
 	link_op_t op;
 	link_reply_t reply;
 	int err;

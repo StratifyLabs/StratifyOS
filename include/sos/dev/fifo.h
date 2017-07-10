@@ -65,9 +65,9 @@ typedef struct MCU_PACK {
 /*! \brief FIFO Peek data */
 /*! \details This is used when peeking at data in the FIFO */
 typedef struct MCU_PACK {
-	ssize_t loc /*! The location to peek */;
+	u32 loc /*! The location to peek */;
 	char * buf /*! A pointer to the buffer to receive peek bytes */;
-	ssize_t nbyte /*! The number of bytes to peek */;
+	int nbyte /*! The number of bytes to peek */;
 } fifo_peek_t;
 
 /*! \brief See below.

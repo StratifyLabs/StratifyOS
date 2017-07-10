@@ -90,6 +90,7 @@ int reset_device(link_transport_mdriver_t * driver, bool invoke_bootloader){
 	//use "/dev/core" to reset
 	int fd;
 	link_op_t op;
+	core_attr_t attr;
 
 	fd = link_open(driver, "/dev/core", LINK_O_RDWR);
 	if ( fd < 0 ){
@@ -102,11 +103,13 @@ int reset_device(link_transport_mdriver_t * driver, bool invoke_bootloader){
 
 	if( invoke_bootloader == false ){
 		link_debug(LINK_DEBUG_MESSAGE, "Try to reset");
-		op.ioctl.request = I_CORE_RESET;
+		op.ioctl.request = I_CORE_SETATTR;
+		attr.o_flags = CORE_FLAG_EXEC_RESET;
 
 	} else {
 		link_debug(LINK_DEBUG_MESSAGE, "Try to invoke bootloader");
-		op.ioctl.request = I_CORE_INVOKEBOOTLOADER;
+		op.ioctl.request = I_CORE_SETATTR;
+		attr.o_flags = CORE_FLAG_EXEC_INVOKE_BOOTLOADER;
 	}
 
 	link_transport_masterwrite(driver, &op, sizeof(link_ioctl_t));

@@ -49,18 +49,18 @@ typedef struct {
  * Example:
  * \code
  * const device_t devices[DEVICES_TOTAL+1] = {
- *	DEVICE_PERIPH("uart0", uart, 0, 0666, USER_ROOT, GROUP_ROOT, S_IFCHR),
+ *	DEVFS_HANDLE("uart0", uart, 0, 0666, USER_ROOT, GROUP_ROOT, S_IFCHR),
  *	DEVFIFO_DEVICE("uart0-fifo", &devices[0], 0666, USER_ROOT, GROUP_ROOT),
  * 	...
- * 	DEVICE_TERMINATOR
+ * 	DEVFS_TERMINATOR
  * }
  * \endcode
  *
  */
 #define UARTFIFO_DEVICE(device_name, cfg_ptr, state_ptr, mode_value, uid_value, gid_value) { \
 		.name = device_name, \
-		DEVICE_MODE(mode_value, uid_value, gid_value, S_IFCHR), \
-		DEVICE_DRIVER(uartfifo), \
+		DEVFS_MODE(mode_value, uid_value, gid_value, S_IFCHR), \
+		DEVFS_DRIVER(uartfifo), \
 		.cfg.state = state_ptr, \
 		.cfg.dcfg = cfg_ptr \
 }

@@ -102,7 +102,7 @@ void fifo_cancel_rop(fifo_state_t * state);
  * 	...
  * 	FIFO_DEVICE("fifo0", &fifo_cfg0, &fifo_state0, 0666, USER_ROOT, GROUP_ROOT),
  * 	...
- * 	DEVICE_TERMINATOR
+ * 	DEVFS_TERMINATOR
  * }
  * \endcode
  *
@@ -110,8 +110,8 @@ void fifo_cancel_rop(fifo_state_t * state);
 
 #define FIFO_DEVICE(device_name, cfg_ptr, state_ptr, mode_value, uid_value, gid_value) { \
 		.name = device_name, \
-		DEVICE_MODE(mode_value, uid_value, gid_value, S_IFCHR), \
-		DEVICE_DRIVER(fifo), \
+		DEVFS_MODE(mode_value, uid_value, gid_value, S_IFCHR), \
+		DEVFS_DRIVER(fifo), \
 		.cfg.state = state_ptr, \
 		.cfg.dcfg = cfg_ptr \
 }

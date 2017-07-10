@@ -83,37 +83,10 @@ int rootfs_opendir(const void* cfg, void ** handle, const char * path);
 int rootfs_readdir_r(const void* cfg, void * handle, int loc, struct dirent * entry);
 int rootfs_closedir(const void* cfg, void ** handle);
 
-int devfs_init(const void * cfg);
-int devfs_open(const void * cfg, void ** handle, const char * path, int flags, int mode);
-int devfs_priv_read(const void * cfg, void * handle, devfs_async_t * op);
-int devfs_priv_write(const void * cfg, void * handle, devfs_async_t * op);
-int devfs_priv_ioctl(const void * cfg, void * handle, int request, void * ctl);
-int devfs_close(const void * cfg, void ** handle);
-int devfs_fstat(const void * cfg, void * handle, struct stat * st);
-int devfs_stat(const void * cfg, const char * path, struct stat * st);
-int devfs_opendir(const void * cfg, void ** handle, const char * path);
-int devfs_readdir_r(const void * cfg, void * handle, int loc, struct dirent * entry);
-int devfs_closedir(const void * cfg, void ** handle);
-
-int appfs_init(const void* cfg);
-int appfs_startup(const void* cfg);
-int appfs_mkfs(const void* cfg);
-int appfs_open(const void* cfg, void ** handle, const char * path, int flags, int mode);
-int appfs_priv_read(const void* cfg, void * handle, devfs_async_t * op);
-int appfs_priv_write(const void* cfg, void * handle, devfs_async_t * op);
-int appfs_priv_ioctl(const void * cfg, void * handle, int request, void * ctl);
-int appfs_close(const void* cfg, void ** handle);
-int appfs_fstat(const void* cfg, void * handle, struct stat * st);
-int appfs_stat(const void* cfg, const char * path, struct stat * st);
-int appfs_opendir(const void* cfg, void ** handle, const char * path);
-int appfs_readdir_r(const void* cfg, void * handle, int loc, struct dirent * entry);
-int appfs_closedir(const void* cfg, void ** handle);
-int appfs_unlink(const void* cfg, const char * path);
-
 #define SYSFS_READONLY_ACCESS (S_IRUSR|S_IRGRP|S_IROTH|S_IXUSR|S_IXGRP|S_IXOTH)
 #define SYSFS_ALL_ACCESS (0777)
 
-#define SYSFS_ROOT(mount_loc_name, cfgp, access_mode) { \
+#define SYSFS_MOUNT(mount_loc_name, cfgp, access_mode) { \
 		.mount_path = mount_loc_name, \
 		.access = access_mode, \
 		.mount = rootfs_init, \
@@ -122,11 +95,11 @@ int appfs_unlink(const void* cfg, const char * path);
 		.startup = SYSFS_NOTSUP, \
 		.mkfs = SYSFS_NOTSUP, \
 		.open = SYSFS_NOTSUP, \
-		.priv_read = NULL, \
-		.priv_write = NULL, \
+		.read_async = NULL, \
+		.write_async = NULL, \
 		.read = SYSFS_NOTSUP, \
 		.write = SYSFS_NOTSUP, \
-		.priv_ioctl = SYSFS_NOTSUP, \
+		.ioctl = SYSFS_NOTSUP, \
 		.close = SYSFS_NOTSUP, \
 		.rename = SYSFS_NOTSUP, \
 		.unlink = SYSFS_NOTSUP, \
@@ -147,73 +120,6 @@ int appfs_unlink(const void* cfg, const char * path);
 		.cfg = cfgp, \
 }
 
-#define SYSFS_DEV(mount_loc_name, cfgp, access_mode) { \
-		.mount_path = mount_loc_name, \
-		.access = access_mode, \
-		.mount = devfs_init, \
-		.unmount = SYSFS_NOTSUP, \
-		.ismounted = sysfs_always_mounted, \
-		.startup = SYSFS_NOTSUP, \
-		.mkfs = SYSFS_NOTSUP, \
-		.open = devfs_open, \
-		.priv_read = devfs_priv_read, \
-		.priv_write = devfs_priv_write, \
-		.priv_ioctl = devfs_priv_ioctl, \
-		.read = NULL, \
-		.write = NULL, \
-		.close = devfs_close, \
-		.rename = SYSFS_NOTSUP, \
-		.unlink = SYSFS_NOTSUP, \
-		.mkdir = SYSFS_NOTSUP, \
-		.rmdir = SYSFS_NOTSUP, \
-		.remove = SYSFS_NOTSUP, \
-		.opendir = devfs_opendir, \
-		.closedir = devfs_closedir, \
-		.readdir_r = devfs_readdir_r, \
-		.link = SYSFS_NOTSUP, \
-		.symlink = SYSFS_NOTSUP, \
-		.stat = devfs_stat, \
-		.lstat = SYSFS_NOTSUP, \
-		.fstat = devfs_fstat, \
-		.chmod = SYSFS_NOTSUP, \
-		.chown = SYSFS_NOTSUP, \
-		.unlock = SYSFS_NOTSUP_VOID, \
-		.cfg = cfgp, \
-}
-
-#define SYSFS_APP(mount_loc_name, cfgp, access_mode) { \
-		.mount_path = mount_loc_name, \
-		.access = access_mode, \
-		.mount = appfs_init, \
-		.unmount = SYSFS_NOTSUP, \
-		.ismounted = sysfs_always_mounted, \
-		.startup = appfs_startup, \
-		.mkfs = appfs_mkfs, \
-		.open = appfs_open, \
-		.priv_read = appfs_priv_read, \
-		.priv_write = appfs_priv_write, \
-		.read = NULL, \
-		.write = NULL, \
-		.close = appfs_close, \
-		.priv_ioctl = appfs_priv_ioctl, \
-		.rename = SYSFS_NOTSUP, \
-		.unlink = appfs_unlink, \
-		.mkdir = SYSFS_NOTSUP, \
-		.rmdir = SYSFS_NOTSUP, \
-		.remove = SYSFS_NOTSUP, \
-		.opendir = appfs_opendir, \
-		.closedir = appfs_closedir, \
-		.readdir_r = appfs_readdir_r, \
-		.link = SYSFS_NOTSUP, \
-		.symlink = SYSFS_NOTSUP, \
-		.stat = appfs_stat, \
-		.lstat = SYSFS_NOTSUP, \
-		.fstat = appfs_fstat, \
-		.chmod = SYSFS_NOTSUP, \
-		.chown = SYSFS_NOTSUP, \
-		.unlock = SYSFS_NOTSUP_VOID, \
-		.cfg = cfgp, \
-}
 
 #define SYSFS_TERMINATOR { \
 	.mount = NULL \

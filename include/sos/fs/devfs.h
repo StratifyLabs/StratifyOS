@@ -17,6 +17,7 @@
 #ifndef SOS_FS_DEVFS_H_
 #define SOS_FS_DEVFS_H_
 
+#include <sys/dirent.h>
 #include "mcu/types.h"
 
 #define DEVFS_GET_PORT(x) (x->port)
@@ -49,9 +50,6 @@ typedef int (*devfs_read_t)(const devfs_handle_t*, devfs_async_t *);
 typedef int (*devfs_write_t)(const devfs_handle_t*, devfs_async_t *);
 typedef int (*devfs_close_t)(const devfs_handle_t*);
 
-
-#ifndef __link
-
 typedef struct MCU_PACK {
 	devfs_open_t open;
 	devfs_ioctl_t ioctl;
@@ -71,10 +69,10 @@ typedef struct {
 } devfs_device_t;
 
 
-#define DEVICE_MODE(mode_value, uid_value, type) .mode = mode_value | type, \
+#define DEVFS_MODE(mode_value, uid_value, type) .mode = mode_value | type, \
 		.uid = uid_value
 
-#define DEVICE_DRIVER(driver_name) .driver.open = driver_name##_open, \
+#define DEVFS_DRIVER(driver_name) .driver.open = driver_name##_open, \
 		.driver.close = driver_name##_close, \
 		.driver.ioctl = driver_name##_ioctl, \
 		.driver.read = driver_name##_read, \
@@ -82,16 +80,16 @@ typedef struct {
 
 
 
-#define DEVICE_PERIPH(device_name, periph_name, port_number, state, mode_value, uid_value, gid_value, device_type) { \
+#define DEVFS_HANDLE(device_name, periph_name, handle_port, handle_state, mode_value, uid_value, device_type) { \
 		.name = device_name, \
-		DEVICE_MODE(mode_value, uid_value, device_type), \
-		DEVICE_DRIVER(periph_name), \
-		.handle.port = port_number \
-		.handle.state = state \
+		DEVFS_MODE(mode_value, uid_value, device_type), \
+		DEVFS_DRIVER(periph_name), \
+		.handle.port = handle_port, \
+		.handle.state = handle_state, \
 		.handle.config = 0 \
 }
 
-#define DEVICE_TERMINATOR { \
+#define DEVFS_TERMINATOR { \
 		.driver.open = NULL \
 }
 
@@ -103,8 +101,52 @@ bool devfs_is_terminator(const devfs_device_t * dev){
 	}
 	return false;
 }
-#endif
 
+int devfs_init(const void * cfg);
+int devfs_open(const void * cfg, void ** handle, const char * path, int flags, int mode);
+int devfs_read_async(const void * cfg, void * handle, devfs_async_t * op);
+int devfs_write_async(const void * cfg, void * handle, devfs_async_t * op);
+int devfs_ioctl(const void * cfg, void * handle, int request, void * ctl);
+int devfs_close(const void * cfg, void ** handle);
+int devfs_fstat(const void * cfg, void * handle, struct stat * st);
+int devfs_stat(const void * cfg, const char * path, struct stat * st);
+int devfs_opendir(const void * cfg, void ** handle, const char * path);
+int devfs_readdir_r(const void * cfg, void * handle, int loc, struct dirent * entry);
+int devfs_closedir(const void * cfg, void ** handle);
+
+#define DEVFS_MOUNT(mount_loc_name, cfgp, access_mode) { \
+		.mount_path = mount_loc_name, \
+		.access = access_mode, \
+		.mount = devfs_init, \
+		.unmount = SYSFS_NOTSUP, \
+		.ismounted = sysfs_always_mounted, \
+		.startup = SYSFS_NOTSUP, \
+		.mkfs = SYSFS_NOTSUP, \
+		.open = devfs_open, \
+		.read_async = devfs_read_async, \
+		.write_async = devfs_write_async, \
+		.ioctl = devfs_ioctl, \
+		.read = NULL, \
+		.write = NULL, \
+		.close = devfs_close, \
+		.rename = SYSFS_NOTSUP, \
+		.unlink = SYSFS_NOTSUP, \
+		.mkdir = SYSFS_NOTSUP, \
+		.rmdir = SYSFS_NOTSUP, \
+		.remove = SYSFS_NOTSUP, \
+		.opendir = devfs_opendir, \
+		.closedir = devfs_closedir, \
+		.readdir_r = devfs_readdir_r, \
+		.link = SYSFS_NOTSUP, \
+		.symlink = SYSFS_NOTSUP, \
+		.stat = devfs_stat, \
+		.lstat = SYSFS_NOTSUP, \
+		.fstat = devfs_fstat, \
+		.chmod = SYSFS_NOTSUP, \
+		.chown = SYSFS_NOTSUP, \
+		.unlock = SYSFS_NOTSUP_VOID, \
+		.cfg = cfgp, \
+}
 
 
 #endif /* SOS_FS_DEVFS_H_ */

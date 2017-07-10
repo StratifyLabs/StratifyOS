@@ -11,14 +11,14 @@
 #include "mcu/pio.h"
 #include "mcu/usb.h"
 #include "mcu/debug.h"
-#include "mcu/usb_dev.h"
+#include "mcu/usbd_control.h"
 #include "mcu/boot_debug.h"
 #include "boot_link.h"
 #include "boot_config.h"
 
 
-#define USB_DEV_DFU_TRANSFER_SIZE 1024
-char dnload_buf[USB_DEV_DFU_TRANSFER_SIZE];
+#define USBD_DFU_TRANSFER_SIZE 1024
+char dnload_buf[USBD_DFU_TRANSFER_SIZE];
 #define SW_BOOT_APP_OVERRIDE 0x55664422
 
 void exec_bootloader(void * args){
@@ -39,7 +39,7 @@ extern u32 _etext;
 const bootloader_api_t _mcu_core_bootloader_api = {
 		.code_size = (u32)&_etext,
 		.exec = exec_bootloader,
-		.usb_dev_priv_init = usb_dev_priv_init,
+		.usbd_control_priv_init = usbd_control_priv_init,
 		.event = boot_event
 };
 

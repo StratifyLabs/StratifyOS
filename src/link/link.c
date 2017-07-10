@@ -14,12 +14,12 @@
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>. */
 
-#include <dev/dev/sys.h>
 #include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "sos/dev/sys.h"
 #include "link_flags.h"
 
 #define MAX_TRIES 3
@@ -339,7 +339,7 @@ char * link_new_device_list(link_transport_mdriver_t * driver, int max){
 					if( sys_fd >= 0 ){
 						if( link_ioctl(driver, sys_fd, I_SYS_GETINFO, &sys_attr) == 0 ){
 							//now add the sys_attr to the string list
-							sys_attr.name[NAME_MAX-1] = 0;  //make sure these are zero terminated
+							sys_attr.name[LINK_NAME_MAX-1] = 0;  //make sure these are zero terminated
 							sys_attr.kernel_version[7] = 0;
 							sprintf(entry, "%s:%s:%s",
 									sys_attr.name,

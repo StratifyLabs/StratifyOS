@@ -54,7 +54,7 @@ struct mq_attr {
 #define MQ_PRIO_MAX INT_MAX
 
 
-int mq_getinfo(mqd_t mqdes, struct mq_attr *mqstat);
+int mq_getattr(mqd_t mqdes, struct mq_attr *mqstat);
 int mq_setattr(mqd_t mqdes, const struct mq_attr * mqstat, struct mq_attr * omqstat);
 
 mqd_t mq_open(const char * name, int oflag, ...);

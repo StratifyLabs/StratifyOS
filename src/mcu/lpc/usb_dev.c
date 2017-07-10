@@ -32,10 +32,10 @@
 
 #ifdef MCU_DEBUG
 volatile int usbdev_stat;
-#define USB_DEV_DEBUG_INIT() (usbdev_stat = 0)
-#define USB_DEV_DEBUG(x) (usbdev_stat |= x)
+#define USBD_DEBUG_INIT() (usbdev_stat = 0)
+#define USBD_DEBUG(x) (usbdev_stat |= x)
 #else
-#define USB_DEV_DEBUG(x)
+#define USBD_DEBUG(x)
 #endif
 
 static u32 usb_irq_mask;
@@ -115,7 +115,7 @@ u32 usb_sie_rd_cmd_dat (u32 cmd){
 
 void _mcu_usb_dev_power_on(int port){
 	if ( usb_local.ref_count == 0 ){
-		USB_DEV_DEBUG_INIT();
+		USBD_DEBUG_INIT();
 		//Set callbacks to NULL
 		usb_local.connected = 0;
 		clear_callbacks();
@@ -212,7 +212,7 @@ int mcu_usb_detach(int port, void * ctl){
 }
 
 int mcu_usb_setaction(int port, void * ctl){
-	usb_action_t * action = (usb_action_t*)ctl;
+	mcu_action_t * action = (mcu_action_t*)ctl;
 	int log_ep;
 
 	_mcu_cortexm_set_irq_prio(USB_IRQn, action->prio);
@@ -233,7 +233,7 @@ int mcu_usb_setaction(int port, void * ctl){
 
 
 	if ( (log_ep < DEV_USB_LOGICAL_ENDPOINT_COUNT)  ){
-		if( action->o_events == USB_EVENT_DATA_READY ){
+		if( action->o_events & MCU_EVENT_FLAG_DATA_READY ){
 			//_mcu_cortexm_priv_enable_interrupts(NULL);
 			if( _mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
 				return -1;
@@ -243,7 +243,9 @@ int mcu_usb_setaction(int port, void * ctl){
 			usb_local.read[log_ep].context = action->handler.context;
 
 			return 0;
-		} else if( action->o_events == USB_EVENT_WRITE_COMPLETE ){
+		}
+
+		if( action->o_events & MCU_EVENT_FLAG_WRITE_COMPLETE ){
 			if( _mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
 				return -1;
 			}
@@ -533,27 +535,27 @@ void _mcu_core_usb0_isr(){
 	u32 tmp;
 	int i;
 
-	USB_DEV_DEBUG(0x01);
+	USBD_DEBUG(0x01);
 	device_interrupt_status = LPC_USB->DevIntSt;     //Device interrupt status
 	if (device_interrupt_status & ERR_INT){ //Error interrupt
-		USB_DEV_DEBUG(0x02);
+		USBD_DEBUG(0x02);
 		tmp = usb_sie_rd_cmd_dat(USB_SIE_CMD_RD_ERR_STAT);
 		mcu_execute_event_handler(&(usb_local.special_event_handler), MCU_EVENT_FLAG_ERROR, 0);
 		LPC_USB->DevIntClr = ERR_INT;
 	}
 
 	if (device_interrupt_status & FRAME_INT){ //start of frame
-		USB_DEV_DEBUG(0x04);
+		USBD_DEBUG(0x04);
 		mcu_execute_event_handler(&(usb_local.special_event_handler), MCU_EVENT_FLAG_SOF, 0);
 		LPC_USB->DevIntClr = FRAME_INT;
 	}
 
 	if (device_interrupt_status & DEV_STAT_INT){ //Status interrupt (Reset, suspend/resume or connect)
-		USB_DEV_DEBUG(0x08);
+		USBD_DEBUG(0x08);
 		_mcu_cortexm_delay_us(100);
 		tmp = usb_sie_rd_cmd_dat(USB_SIE_CMD_GET_DEV_STAT);
 		if (tmp & DEV_RST){
-			USB_DEV_DEBUG(0x10);
+			USBD_DEBUG(0x10);
 			//mcu_usb_reset(0, NULL);
 			usb_local.connected = 1;
 			usb_local.write_pending = 0;
@@ -562,7 +564,7 @@ void _mcu_core_usb0_isr(){
 		}
 
 		if ( tmp == 0x0D ){
-			USB_DEV_DEBUG(0x20);
+			USBD_DEBUG(0x20);
 			usb_local.connected = 0;
 			for(i = 1; i < DEV_USB_LOGICAL_ENDPOINT_COUNT; i++){
 				mcu_execute_event_handler(&(usb_local.read[i]), MCU_EVENT_FLAG_CANCELED, 0);
@@ -571,13 +573,13 @@ void _mcu_core_usb0_isr(){
 		}
 
 		if (tmp & DEV_CON_CH){
-			USB_DEV_DEBUG(0x40);
+			USBD_DEBUG(0x40);
 			mcu_execute_event_handler(&(usb_local.special_event_handler), MCU_EVENT_FLAG_POWER, 0);
 		}
 
 		if (tmp & DEV_SUS_CH){
 			if (tmp & DEV_SUS){
-				USB_DEV_DEBUG(0x80);
+				USBD_DEBUG(0x80);
 				usb_local.connected = 0;
 				mcu_execute_event_handler(&(usb_local.special_event_handler), MCU_EVENT_FLAG_SUSPEND, 0);
 			} else {
@@ -606,7 +608,7 @@ void slow_ep_int(){
 	episr = LPC_USB->EpIntSt;
 	usb_event_t event;
 
-	USB_DEV_DEBUG(0x100);
+	USBD_DEBUG(0x100);
 
 	for (phy_ep = 0; phy_ep < USB_EP_NUM; phy_ep++){
 
@@ -628,7 +630,7 @@ void slow_ep_int(){
 
 				//Check for a setup packet
 				if ( (phy_ep == 0) && (tmp & EP_SEL_STP) ){
-					USB_DEV_DEBUG(0x200);
+					USBD_DEBUG(0x200);
 					mcu_execute_event_handler(&(usb_local.read[0]), MCU_EVENT_FLAG_SETUP, &event);
 				} else {
 					usb_local.read_ready |= (1<<log_ep);

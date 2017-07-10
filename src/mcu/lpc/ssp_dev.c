@@ -54,7 +54,7 @@ static void enable_pin(int pio_port, int pio_pin) MCU_PRIV_CODE;
 void enable_pin(int pio_port, int pio_pin){
 	pio_attr_t pattr;
 	pattr.o_pinmask = (1<<pio_pin);
-	pattr.mode = PIO_FLAG_SET_OUTPUT;
+	pattr.o_flags = PIO_FLAG_SET_OUTPUT;
 	mcu_pio_setattr(pio_port, &pattr);
 }
 #endif
@@ -66,18 +66,10 @@ void _mcu_ssp_dev_power_on(int port){
 
 		switch(port){
 		case 0:
-#if defined __lpc13uxx || __lpc13xx
-			LPC_SYSCON->SSP0CLKDIV = 1;
-			LPC_SYSCON->PRESETCTRL |= (1<<0);
-#endif
 			_mcu_lpc_core_enable_pwr(PCSSP0);
 			break;
 
 		case 1:
-#if defined __lpc13uxx || __lpc13xx
-			LPC_SYSCON->SSP1CLKDIV = 1;
-			LPC_SYSCON->PRESETCTRL |= (1<<2);
-#endif
 			_mcu_lpc_core_enable_pwr(PCSSP1);
 			break;
 
@@ -202,8 +194,17 @@ int mcu_ssp_setattr(int port, void * ctl){
 
 		for(i=0; i < SPI_PIN_ASSIGNMENT_COUNT; i++){
 			if( mcu_is_port_valid(attr->pin_assignment[i].port) ){
+#ifdef LPCXX7X_8X
+				if( attr->pin_assignment[i].port == 0 ){
+					if( (attr->pin_assignment[i].pin == 7) ||
+							(attr->pin_assignment[i].pin == 8) ||
+							(attr->pin_assignment[i].pin == 9) ){
+						enable_pin(attr->pin_assignment[i].port,attr->pin_assignment[i].pin);
+					}
+				}
+#endif
 				if ( _mcu_core_set_pinsel_func(attr->pin_assignment[i].port, attr->pin_assignment[i].pin, CORE_PERIPH_SSP, port) ){
-					return -1;  //pin failed to allocate as a UART pin
+					return -1;  //faile to set pin function
 				}
 			}
 		}

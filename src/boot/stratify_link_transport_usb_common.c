@@ -23,12 +23,12 @@
 #include "mcu/mcu.h"
 #include "sos/dev/usb.h"
 #include "mcu/usbfifo.h"
-#include "mcu/usb_dev.h"
-#include "mcu/usb_dev_cdc.h"
+#include "mcu/usbd_control.h"
+#include "mcu/usbd_cdc.h"
 #include "mcu/core.h"
 #include "mcu/debug.h"
-#include "mcu/usb_dev_typedefs.h"
-#include "mcu/usb_dev_defs.h"
+#include "mcu/usbd_typedefs.h"
+#include "mcu/usbd_defs.h"
 #include "mcu/sys.h"
 
 #include "sos/stratify_link_transport_usb.h"
@@ -36,8 +36,8 @@
 #define LINK_USB_VID 0x20A0
 #define LINK_USB_PID 0x413B
 
-#ifndef LINK_USB_DEV_PORT
-#define LINK_USB_DEV_PORT 0
+#ifndef LINK_USBD_PORT
+#define LINK_USBD_PORT 0
 #endif
 
 #define LINK_REQD_CURRENT 500
@@ -52,18 +52,18 @@ const usbfifo_cfg_t stratify_link_transport_usb_fifo_cfg = USBFIFO_DEVICE_CFG(0,
 		USB0_DEVFIFO_BUFFER_SIZE);
 usbfifo_state_t stratify_link_transport_usb_fifo_state MCU_SYS_MEM;
 
-const usb_dev_const_t stratify_link_transport_usb_constants = {
+const usbd_control_constants_t stratify_link_transport_usb_constants = {
 		.port = STRATIFY_LINK_TRANSPORT_USB_PORT,
 		.device =  &stratify_link_transport_usb_dev_desc,
 		.config = &stratify_link_transport_usb_cfg_desc,
 		.string = &stratify_link_transport_usb_string_desc,
-		.feature_event = usb_dev_default_event,
-		.configure_event = usb_dev_default_event,
-		.interface_event = usb_dev_default_event,
-		.adc_if_req = usb_dev_default_if_req,
-		.msc_if_req = usb_dev_default_if_req,
+		.feature_event = 0,
+		.configure_event = 0,
+		.interface_event = 0,
+		.adc_if_req = 0,
+		.msc_if_req = 0,
 		.cdc_if_req = stratify_link_transport_usb_cdc_if_req,
-		.hid_if_req = usb_dev_default_if_req
+		.hid_if_req = 0
 };
 
 
@@ -302,12 +302,12 @@ const struct stratify_link_transport_usb_string_t stratify_link_transport_usb_st
 
 int stratify_link_transport_usb_cdc_if_req(void * object, int event){
 	u32 rate = 12000000;
-	usb_dev_context_t * context = object;
+	usbd_control_t * context = object;
 
 	if ( (context->setup_pkt.wIndex.b[0] == 0) || (context->setup_pkt.wIndex.b[0] == 1) ||
 			(context->setup_pkt.wIndex.b[0] == 2) || (context->setup_pkt.wIndex.b[0] == 3) ) { //! \todo The wIndex should equal the CDC interface number
 
-		if ( (event == USB_SETUP_EVENT) ){
+		if ( (event & MCU_EVENT_FLAG_SETUP) ){
 			switch(context->setup_pkt.bRequest){
 			case SET_LINE_CODING:
 			case SET_COMM_FEATURE:
@@ -350,7 +350,7 @@ int stratify_link_transport_usb_cdc_if_req(void * object, int event){
 			default:
 				return 0;
 			}
-		} else if ( event == USB_OUT_EVENT ){
+		} else if ( event & MCU_EVENT_FLAG_DATA_READY ){
 			switch(context->setup_pkt.bRequest){
 			case SET_LINE_CODING:
 			case SET_CONTROL_LINE_STATE:

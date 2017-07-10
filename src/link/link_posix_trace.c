@@ -6,7 +6,6 @@
  */
 
 
-#include <dev/link.h>
 #include "link_flags.h"
 
 int link_posix_trace_create(link_transport_mdriver_t * driver, uint32_t pid, link_trace_id_t * id){

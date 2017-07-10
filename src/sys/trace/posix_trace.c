@@ -227,7 +227,7 @@ int posix_trace_create(pid_t pid, const trace_attr_t * attr, trace_id_t * id){
 	memcpy(&(trace_handle.attr), &tmp_attr, sizeof(trace_attr_t));
 
 	//populate the timestamp
-	clock_gettime(CLOCK_REALTIME, &(trace_handle.attr.create_time));
+	clock_gettime(CLOCK_REALTIME, (struct timespec *)&(trace_handle.attr.create_time));
 
 	update_checksum(&trace_handle);
 
@@ -472,7 +472,7 @@ int posix_trace_get_filter(trace_id_t id, trace_event_set_t * event_set){
 int posix_trace_get_status(trace_id_t id, struct posix_trace_status_info * info){
 	struct mq_attr attr;
 
-	mq_getinfo(id->mq, &attr);
+	mq_getattr(id->mq, &attr);
 	if( attr.mq_msgsize == attr.mq_maxmsg ){
 		id->status |= POSIX_STREAM_FULL_STATUS_MASK;
 	}

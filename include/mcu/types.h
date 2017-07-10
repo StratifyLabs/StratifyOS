@@ -147,11 +147,24 @@ static inline int mcu_is_port_valid(u8 port){
 	return (port != 0xff);
 }
 
+static inline mcu_pin_t mcu_invalid_pin(){
+	mcu_pin_t pin;
+	pin.port = 0xff;
+	pin.pin = 0xff;
+	return pin;
+}
+
+static inline mcu_pin_t mcu_pin(u8 port, u8 num){
+	mcu_pin_t pin;
+	pin.port = port;
+	pin.pin = num;
+	return pin;
+}
+
 typedef struct MCU_PACK {
 	u32 loc;
 	u32 value;
 } mcu_channel_t;
-
 
 #define I_MCU_GETINFO 0
 #define I_MCU_SETATTR 1

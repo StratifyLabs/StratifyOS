@@ -42,8 +42,8 @@ extern "C" {
 #define mcu_debug(...)
 #define mcu_priv_debug(...)
 #define mcu_debug_irq(...)
-#define USB_DEV_DEBUG_INIT()
-#define USB_DEV_STAT() 0
+#define USBD_DEBUG_INIT()
+#define USBD_STAT() 0
 #else
 #define MCU_DEBUG 1
 int mcu_debug_init();
@@ -66,7 +66,7 @@ extern char mcu_debug_buffer[MCU_DEBUG_BUFFER_SIZE];
 #define mcu_debug_irq(...) do { \
 	int bytes; \
 	devfs_async_t op; \
-	device_periph_t periph; \
+	DEVFS_HANDLE_t periph; \
 	siprintf(mcu_debug_buffer, __VA_ARGS__); \
 	bytes = strlen(mcu_debug_buffer); \
 	periph.port = MCU_DEBUG_PORT; \
@@ -77,7 +77,7 @@ extern char mcu_debug_buffer[MCU_DEBUG_BUFFER_SIZE];
 } while(0)
 
 extern volatile int usbdev_stat;
-#define USB_DEV_STAT() (usbdev_stat)
+#define USBD_STAT() (usbdev_stat)
 
 #endif
 

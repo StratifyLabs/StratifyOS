@@ -17,6 +17,7 @@
 
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <limits.h>
@@ -177,6 +178,7 @@ void link_phy_flush(link_transport_phy_t handle){
 #endif
 
 #if defined __macosx || defined __linux
+#include <string.h>
 #include <dirent.h>
 #include <termios.h>
 #include <sys/ioctl.h>

@@ -33,7 +33,8 @@ int posix_trace_attr_getclockres(const trace_attr_t * attr,
 
 int posix_trace_attr_getcreatetime(const trace_attr_t * attr,
          struct timespec * createtime){
-	*createtime = attr->create_time;
+	createtime->tv_sec = attr->create_time.tv_sec;
+	createtime->tv_nsec = attr->create_time.tv_nsec;
 	return 0;
 }
 

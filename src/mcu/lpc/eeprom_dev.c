@@ -43,7 +43,7 @@ LPC_EEPROM_Type * const eeprom_regs[MCU_EEPROM_PORTS] = MCU_EEPROM_REGS;
 u8 const eeprom_irqs[MCU_EEPROM_PORTS] = MCU_EEPROM_IRQS;
 
 
-static void exec_callback(int port, void * data);
+static void exec_callback(int port, u32 o_flags, void * data);
 
 static int calc_offset(int loc){
 	return loc % MCU_EEPROM_PAGE_SIZE;
@@ -116,7 +116,7 @@ int mcu_eeprom_setaction(int port, void * ctl){
 	mcu_action_t * action = (mcu_action_t *)ctl;
 	if( action->handler.callback == 0 ){
 		if( eeprom_local[port].buf != 0 ){
-			exec_callback(port, MCU_EVENT_FLAG_CANCELED);
+			exec_callback(port, MCU_EVENT_FLAG_CANCELED, 0);
 		}
 	}
 
@@ -248,11 +248,11 @@ int _mcu_eeprom_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	return rop->nbyte;
 }
 
-void exec_callback(int port, void * data){
+void exec_callback(int port, u32 o_flags, void * data){
 	LPC_EEPROM_Type * regs = eeprom_regs[port];
 	eeprom_local[port].buf = 0;
 	regs->INTENCLR = (1<<26)|(1<<28); //disable the interrupts
-	mcu_execute_event_handler(&(eeprom_local[port].handler), 0);
+	mcu_execute_event_handler(&(eeprom_local[port].handler), o_flags, data);
 }
 
 void _mcu_core_eeprom0_isr(){
@@ -286,7 +286,7 @@ void _mcu_core_eeprom0_isr(){
 	}
 
 	if( eeprom_local[port].len == 0 ){
-		exec_callback(0, 0);
+		exec_callback(0, MCU_EVENT_FLAG_WRITE_COMPLETE|MCU_EVENT_FLAG_DATA_READY, 0);
 	}
 }
 

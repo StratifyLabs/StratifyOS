@@ -300,9 +300,14 @@ typedef struct MCU_PACK {
 } link_notify_file_t;
 
 
+struct link_timespec {
+	u32	tv_sec;
+	u32 tv_nsec;
+};
+
 
 typedef struct MCU_PACK {
-	struct timespec create_time;
+	struct link_timespec create_time;
 	u32 log_size;
 	u32 data_size;
 	u32 stream_size;

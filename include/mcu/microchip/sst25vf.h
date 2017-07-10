@@ -28,6 +28,7 @@
 
 #include "mcu/types.h"
 #include "sos/dev/microchip/sst25vf.h"
+#include "sos/dev/spi.h"
 
 typedef struct {
 	spi_attr_t attr;
@@ -68,8 +69,8 @@ int sst25vf_ssp_close(const devfs_handle_t * cfg);
 
 #define SST25VF_DEVICE(device_name, port_number, pin_assign_value, cs_port_value, cs_pin_value, bitrate_value, cfg_ptr, state_ptr, mode_value, uid_value, gid_value) { \
 		.name = device_name, \
-		DEVICE_MODE(mode_value, uid_value, gid_value, S_IFBLK), \
-		DEVICE_DRIVER(sst25vf), \
+		DEVFS_MODE(mode_value, uid_value, gid_value, S_IFBLK), \
+		DEVFS_DRIVER(sst25vf), \
 		.handle.port = port_number, \
 		.handle.state = state_ptr, \
 		.handle.config = cfg_ptr \
@@ -77,8 +78,8 @@ int sst25vf_ssp_close(const devfs_handle_t * cfg);
 
 #define SST25VF_SSP_DEVICE(device_name, port_number, pin_assign_value, cs_port_value, cs_pin_value, bitrate_value, cfg_ptr, state_ptr, mode_value, uid_value, gid_value) { \
 		.name = device_name, \
-		DEVICE_MODE(mode_value, uid_value, gid_value, S_IFBLK), \
-		DEVICE_DRIVER(sst25vf_ssp), \
+		DEVFS_MODE(mode_value, uid_value, gid_value, S_IFBLK), \
+		DEVFS_DRIVER(sst25vf_ssp), \
 		.handle.port = port_number, \
 		.handle.state = state_ptr, \
 		.handle.config = cfg_ptr \
@@ -97,8 +98,8 @@ int sst25vf_ssp_close(const devfs_handle_t * cfg);
 
 #define SST25VF_TMR_DEVICE(device_name, port_number, pin_assign_value, cs_port_value, cs_pin_value, bitrate_value, cfg_ptr, state_ptr, mode_value, uid_value, gid_value) { \
 		.name = device_name, \
-		DEVICE_MODE(mode_value, uid_value, gid_value, S_IFBLK), \
-		DEVICE_DRIVER(sst25vf_tmr), \
+		DEVFS_MODE(mode_value, uid_value, gid_value, S_IFBLK), \
+		DEVFS_DRIVER(sst25vf_tmr), \
 		.handle.port = port_number, \
 		.handle.state = state_ptr, \
 		.handle.config = cfg_ptr \

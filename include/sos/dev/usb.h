@@ -47,39 +47,6 @@ extern "C" {
 
 #define USB_IOC_IDENT_CHAR 'u'
 
-enum {
-	USB_SETUP_EVENT /*! USB Setup event */,
-	USB_OUT_EVENT /*! USB Out event (Out from host to device) */,
-	USB_IN_EVENT /*! USB In event (In to host from device) */,
-	USB_OUT_EVENT_STALL /*! Out stall event */,
-	USB_IN_EVENT_STALL /*! In stall event */
-};
-
-/*! \details This defines a USB action.
- *
- */
-typedef mcu_action_t usb_action_t;
-
-
-/*! \details These are the special events that can be passed to
- * the event callback handler.
- */
-typedef enum {
-	USB_SPEC_EVENT_NONE /*! 0 */,
-	USB_SPEC_EVENT_RESET /*! 1 Reset Event */,
-	USB_SPEC_EVENT_POWER /*! 2 Power Event */,
-	USB_SPEC_EVENT_SUSPEND /*! 3 Suspend Event */,
-	USB_SPEC_EVENT_RESUME /*! 4 Resume Event */,
-	USB_SPEC_EVENT_DEBUG /*! 5 Debug Event */,
-	USB_SPEC_EVENT_WAKEUP /*! 6 Wakeup Event */,
-	USB_SPEC_EVENT_WAKEUP_CFG /*! 7 Wakeup Configure Event */,
-	USB_SPEC_EVENT_DIR_CTRL_EP /*! 8 Direction Control Event */,
-	USB_SPEC_EVENT_ERR /*! 9 Error Event */,
-	USB_SPEC_EVENT_FIQ /*! 10 Fast Interrupt Event */,
-	USB_SPEC_EVENT_SOF /*! 11 Start of Frame Event */,
-	USB_SPEC_EVENT_TOTAL /*! Total Number of Events */
-} usb_spec_event_t;
-
 
 typedef struct {
 	u8 epnum;
@@ -89,19 +56,17 @@ typedef struct {
  *
  */
 typedef enum {
-	USB_FLAG_SET_UNCONFIGURED /*! unconfigured mode */,
-	USB_FLAG_SET_DEVICE /*! device mode */,
-	USB_FLAG_SET_HOST /*! host mode */,
-	USB_FLAG_SET_OTG /*! on-the-go mode */
-} usb_attr_mode_t;
+	USB_FLAG_SET_UNCONFIGURED /*! unconfigured mode */ = (1<<0),
+	USB_FLAG_SET_DEVICE /*! device mode */ = (1<<1),
+	USB_FLAG_SET_HOST /*! host mode */ = (1<<2),
+	USB_FLAG_SET_OTG /*! on-the-go mode */ = (1<<3)
+} usb_flag_t;
 
 
-typedef enum {
-	USB_EVENT_NONE,
-	USB_EVENT_DATA_READY,
-	USB_EVENT_WRITE_COMPLETE,
-	USB_EVENT_TOTAL
-} usb_action_event_t;
+typedef struct MCU_PACK {
+	u32 o_flags;
+	u32 o_events;
+} usb_info_t;
 
 #define USB_PIN_ASSIGNMENT_COUNT 4
 
@@ -115,12 +80,6 @@ typedef struct MCU_PACK {
 	u32 freq /*! \brief The crystal oscillator frequency */;
 } usb_attr_t;
 
-/*! \brief See details below.
- * \details This defines the type for a USB event handler.
- *
- */
-typedef void (*usb_event_handler_t)(usb_spec_event_t);
-
 /*! \brief This request gets the USB attributes.
  * \hideinitializer
  */
@@ -130,7 +89,7 @@ typedef void (*usb_event_handler_t)(usb_spec_event_t);
  * \hideinitializer
  */
 #define I_USB_SETATTR _IOCTLW(USB_IOC_IDENT_CHAR, I_MCU_SETATTR, usb_attr_t)
-#define I_USB_SETACTION _IOCTLW(USB_IOC_IDENT_CHAR, I_MCU_SETACTION, usb_action_t)
+#define I_USB_SETACTION _IOCTLW(USB_IOC_IDENT_CHAR, I_MCU_SETACTION, mcu_action_t)
 
 /*! \brief See details below.
  * \details This request resets the USB interface.

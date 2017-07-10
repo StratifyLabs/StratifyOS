@@ -90,8 +90,8 @@ void ffifo_cancel_rop(ffifo_state_t * state);
 
 #define FFIFO_DEVICE(device_name, cfg_ptr, state_ptr, mode_value, uid_value, gid_value) { \
 		.name = device_name, \
-		DEVICE_MODE(mode_value, uid_value, gid_value, S_IFCHR), \
-		DEVICE_DRIVER(ffifo), \
+		DEVFS_MODE(mode_value, uid_value, gid_value, S_IFCHR), \
+		DEVFS_DRIVER(ffifo), \
 		.cfg.state = state_ptr, \
 		.cfg.dcfg = cfg_ptr \
 }

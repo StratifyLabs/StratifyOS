@@ -216,7 +216,7 @@ void exec_callback(int port, void * data){
 
 	*/
 
-	mcu_execute_event_handler(&(mci_local[port].handler), data);
+	mcu_execute_event_handler(&(mci_local[port].handler), MCU_EVENT_FLAG_WRITE_COMPLETE, 0);
 
 }
 

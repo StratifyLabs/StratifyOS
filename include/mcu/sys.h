@@ -125,46 +125,46 @@ extern uint8_t sys_euid;
 
 #define SYS_DEVICE { \
 		.name = "sys", \
-		DEVICE_MODE(0666, 0, 0, S_IFCHR), \
-		DEVICE_DRIVER(sys), \
+		DEVFS_MODE(0666, 0, 0, S_IFCHR), \
+		DEVFS_DRIVER(sys), \
 		.cfg.port = 0 \
 }
 
 #define SYS_23_DEVICE { \
 		.name = "sys", \
-		DEVICE_MODE(0666, 0, 0, S_IFCHR), \
-		DEVICE_DRIVER(sys_23), \
+		DEVFS_MODE(0666, 0, 0, S_IFCHR), \
+		DEVFS_DRIVER(sys_23), \
 		.cfg.port = 0 \
 }
 
 
 #define NULL_DEVICE { \
 		.name = "null", \
-		DEVICE_MODE(0666, 0, 0, S_IFCHR), \
-		DEVICE_DRIVER(null), \
+		DEVFS_MODE(0666, 0, 0, S_IFCHR), \
+		DEVFS_DRIVER(null), \
 		.cfg.port = 0 \
 }
 
 
 #define ZERO_DEVICE { \
 		.name = "zero", \
-		DEVICE_MODE(0666, 0, 0, S_IFCHR), \
-		DEVICE_DRIVER(zero), \
+		DEVFS_MODE(0666, 0, 0, S_IFCHR), \
+		DEVFS_DRIVER(zero), \
 		.cfg.port = 0 \
 }
 
 
 #define FULL_DEVICE { \
 		.name = "full", \
-		DEVICE_MODE(0666, 0, 0, S_IFCHR), \
-		DEVICE_DRIVER(full), \
+		DEVFS_MODE(0666, 0, 0, S_IFCHR), \
+		DEVFS_DRIVER(full), \
 		.cfg.port = 0 \
 }
 
 #define LED_DEVICE(dev_name, active_level, pio_port0, pio_pin0, pio_port1, pio_pin1, pio_port2, pio_pin2, pio_port3, pio_pin3) { \
 		.name = dev_name, \
-		DEVICE_MODE(0666, 0, 0, S_IFCHR), \
-		DEVICE_DRIVER(led), \
+		DEVFS_MODE(0666, 0, 0, S_IFCHR), \
+		DEVFS_DRIVER(led), \
 		.cfg.port = 0, \
 		.cfg.pin_assign = active_level, \
 		.cfg.pcfg.pio[0].port = pio_port0, \
@@ -181,22 +181,22 @@ extern uint8_t sys_euid;
 
 #define RANDOM_DEVICE { \
 		.name = "random", \
-		DEVICE_MODE(0666, 0, 0, S_IFCHR), \
-		DEVICE_DRIVER(random), \
+		DEVFS_MODE(0666, 0, 0, S_IFCHR), \
+		DEVFS_DRIVER(random), \
 		.cfg.port = 0 \
 }
 
 #define URANDOM_DEVICE { \
 		.name = "urandom", \
-		DEVICE_MODE(0666, 0, 0, S_IFCHR), \
-		DEVICE_DRIVER(urandom), \
+		DEVFS_MODE(0666, 0, 0, S_IFCHR), \
+		DEVFS_DRIVER(urandom), \
 		.cfg.port = 0 \
 }
 
 #define SDSPI_DEVICE(device_name, port_number, pin_assign_value, cs_port_value, cs_pin_value, bitrate_value, cfg_ptr, state_ptr, mode_value, uid_value, gid_value) { \
 		.name = device_name, \
-		DEVICE_MODE(mode_value, uid_value, gid_value, S_IFBLK), \
-		DEVICE_DRIVER(sdspi), \
+		DEVFS_MODE(mode_value, uid_value, gid_value, S_IFBLK), \
+		DEVFS_DRIVER(sdspi), \
 		.handle.port = port_number, \
 		.handle.state = state_ptr, \
 		.handle.config = cfg_ptr \
@@ -204,8 +204,8 @@ extern uint8_t sys_euid;
 
 #define SDSSP_DEVICE(device_name, port_number, pin_assign_value, cs_port_value, cs_pin_value, bitrate_value, cfg_ptr, state_ptr, mode_value, uid_value, gid_value) { \
 		.name = device_name, \
-		DEVICE_MODE(mode_value, uid_value, gid_value, S_IFBLK), \
-		DEVICE_DRIVER(sdssp), \
+		DEVFS_MODE(mode_value, uid_value, gid_value, S_IFBLK), \
+		DEVFS_DRIVER(sdssp), \
 		.handle.port = port_number, \
 		.handle.state = state_ptr, \
 		.handle.config = cfg_ptr \
@@ -235,8 +235,8 @@ typedef struct MCU_PACK {
 
 #define DEVFIFO_DEVICE(device_name, cfg_ptr, state_ptr, mode_value, uid_value, gid_value) { \
 		.name = device_name, \
-		DEVICE_MODE(mode_value, uid_value, gid_value, S_IFCHR), \
-		DEVICE_DRIVER(devfifo), \
+		DEVFS_MODE(mode_value, uid_value, gid_value, S_IFCHR), \
+		DEVFS_DRIVER(devfifo), \
 		.cfg.state = state_ptr, \
 		.cfg.dcfg = cfg_ptr \
 }

@@ -24,8 +24,8 @@ limitations under the License.
 #include "mcu/mcu.h"
 #include "sos/dev/usb.h"
 #include "mcu/usbfifo.h"
-#include "mcu/usb_dev.h"
-#include "mcu/usb_dev_cdc.h"
+#include "mcu/usbd_control.h"
+#include "mcu/usbd_cdc.h"
 #include "mcu/core.h"
 #include "mcu/usb.h"
 #include "mcu/debug.h"
@@ -36,7 +36,7 @@ limitations under the License.
 static devfs_async_t notify_op;
 
 
-link_transport_phy_t stratify_link_transport_usb_open(const char * name, usb_dev_context_t * context){
+link_transport_phy_t stratify_link_transport_usb_open(const char * name, usbd_control_t * context){
 	link_transport_phy_t fd;
 	usb_attr_t usb_attr;
 
@@ -59,7 +59,7 @@ link_transport_phy_t stratify_link_transport_usb_open(const char * name, usb_dev
 
 	mcu_debug("USB Dev Init\n");
 	//initialize USB device
-	mcu_core_privcall(usb_dev_priv_init, context);
+	mcu_core_privcall(usbd_control_priv_init, context);
 
 	return fd;
 }

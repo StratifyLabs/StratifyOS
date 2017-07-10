@@ -31,7 +31,7 @@ static int set_read_action(const devfs_handle_t * cfg, mcu_callback_t callback){
 	const usbfifo_cfg_t * cfgp = cfg->config;
 	action.handler.callback = callback;
 	action.handler.context = (void*)cfg;
-	action.o_events = USB_EVENT_DATA_READY;
+	action.o_events = MCU_EVENT_FLAG_DATA_READY;
 	action.channel = cfgp->endpoint;
 	action.prio = 0;
 	if( mcu_usb_setaction(cfgp->port, &action) < 0 ){

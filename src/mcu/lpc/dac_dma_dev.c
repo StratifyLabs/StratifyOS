@@ -50,7 +50,7 @@ static int dac_dma_transfer(const devfs_handle_t * cfg);
 static int dma_write_complete(void * context, mcu_event_t * data);
 
 #if defined __lpc43xx
-static int write_complete(void * context, mcu_event_t data);
+static int write_complete(void * context);
 #endif
 
 static void exec_callback(int port, u32 o_events);
@@ -302,22 +302,22 @@ int dma_write_complete(void * context, mcu_event_t * data){
 
 #if defined __lpc43xx
 
-int write_complete(void * context, mcu_event_t data){
+int write_complete(void * context){
 	const devfs_handle_t * cfg = context;
 	const int port = cfg->port;
 	if ( dac_local[port].len ){
 		//dac_dma_transfer(cfg);
 		return 1; //keep interrupt in place
 	} else {
-		exec_callback(port, 0);
+		exec_callback(port, MCU_EVENT_FLAG_WRITE_COMPLETE);
 	}
 	return 0;
 }
 
 //when not using DMA -- use dedicated interrupt
 void _mcu_core_dac0_isr(){
-	mcu_event_t data = 0;
-	write_complete(dac_local[0].handler.context, data);
+
+	write_complete(dac_local[0].handler.context);
 }
 
 

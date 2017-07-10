@@ -9,8 +9,8 @@
 #include "mcu/mcu.h"
 #include "sos/dev/usb.h"
 #include "mcu/usbfifo.h"
-#include "mcu/usb_dev.h"
-#include "mcu/usb_dev_cdc.h"
+#include "mcu/usbd_control.h"
+#include "mcu/usbd_cdc.h"
 #include "mcu/cortexm.h"
 #include "mcu/core.h"
 #include "mcu/usb.h"
@@ -43,7 +43,7 @@ void init_stdio_vcp(){
 }
 #endif
 
-link_transport_phy_t stratify_link_boot_transport_usb_open(const char * name, usb_dev_context_t * context){
+link_transport_phy_t stratify_link_boot_transport_usb_open(const char * name, usbd_control_t * context){
 	usb_attr_t usb_attr;
 
 	dstr("OPEN USB\n");
@@ -64,7 +64,7 @@ link_transport_phy_t stratify_link_boot_transport_usb_open(const char * name, us
 
 	dstr("USB ATTR SET\n");
 	//initialize USB device
-	usb_dev_priv_init(context);
+	usbd_control_priv_init(context);
 	dstr("USB CONNECT\n");
 
 

@@ -43,7 +43,7 @@
 
 #include "sos/fs/devfs.h"
 #include "sos/link/link.h"
-#include "mcu/usb_dev_typedefs.h"
+#include "mcu/usbd_typedefs.h"
 #include "mcu/boot_debug.h"
 
 void * boot_link_update(void * arg);

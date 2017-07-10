@@ -257,7 +257,7 @@ int mcu_pio_setattr(int port, void * ctl){
 	}
 
 	for(i = 0; i < 32; i++){
-		if ( (1<<i) & (attr->mask) ){
+		if ( (1<<i) & (attr->o_pinmask) ){
 			regs_iocon = (u32*)LPC_IOCON + port*32 + i;
 			_mcu_core_set_pinsel_func(port, i, CORE_PERIPH_PIO, port); //set the pin to use GPIO
 
@@ -279,7 +279,7 @@ int mcu_pio_setattr(int port, void * ctl){
 				*regs_iocon &= ~(1<<7);
 			}
 
-			if( (attr->o_flags & PIO_FLAG_FAST_MODE) != 0 ){
+			if( (attr->o_flags & (PIO_FLAG_IS_SPEED_BLAZING|PIO_FLAG_IS_SPEED_HIGH) ) != 0 ){
 				*regs_iocon |= (1<<9);
 			} else {
 				*regs_iocon &= ~(1<<9);
