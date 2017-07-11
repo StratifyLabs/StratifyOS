@@ -58,12 +58,12 @@ typedef struct {
 
 typedef struct {
   u8 * dptr;
-  u16 cnt;
+  u16 nbyte;
 } usbd_control_data_t;
 
 typedef struct MCU_PACK {
 	usb_setup_pkt_t setup_pkt;
-	usbd_control_data_t ep0_data;
+	usbd_control_data_t data;
 	u16 status;
 	u8 addr;
 	u8 cfg;
@@ -71,7 +71,7 @@ typedef struct MCU_PACK {
 	u32 ep_halt;
 	u32 ep_stall;
 	u8 num_interfaces;
-	u8 ep0_buf[MCU_CORE_USB_MAX_PACKET_ZERO_VALUE];
+	u8 buf[MCU_CORE_USB_MAX_PACKET_ZERO_VALUE];
 	u8 alt_setting[USBD_ALT_SETTING_SIZE];
 	const usbd_control_constants_t * constants;
 } usbd_control_t;
@@ -80,7 +80,7 @@ int usbd_control_handler(void * context, mcu_event_t * data);
 void usbd_control_priv_init(void * context);
 
 
-void usbd_control_handler_stage(usbd_control_t * context);
+void usbd_control_handler_setup_stage(usbd_control_t * context);
 void usbd_control_datain_stage(usbd_control_t * context) MCU_NEVER_INLINE;
 void usbd_control_dataout_stage (usbd_control_t * context);
 void usbd_control_statusin_stage(usbd_control_t * context);

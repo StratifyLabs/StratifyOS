@@ -17,7 +17,8 @@
  *
  */
 
-#include "mcu/mcu.h"
+#include <string.h>
+#include "sos/dev/sys.h"
 #include "link_flags.h"
 
 static sys_attr_t convert_sys_23_attr(const sys_23_attr_t * sys_23_attr, const sys_id_t * id);

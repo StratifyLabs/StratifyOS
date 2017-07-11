@@ -18,7 +18,6 @@
  */
 
 
-#include <mcu/mcu.h>
 #include <stdbool.h>
 
 #include "link_flags.h"

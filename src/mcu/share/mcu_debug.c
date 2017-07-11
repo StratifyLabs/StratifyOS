@@ -51,7 +51,7 @@ int mcu_debug_init(){
 	return mcu_uart_setattr(port, &attr);
 }
 
-static int write_done(void * context, mcu_event_t data){
+static int write_done(void * context, mcu_event_t * data){
 	int * busy = (int*)context;
 	*busy = 0;
 	return 0;

@@ -72,18 +72,18 @@ u32 usdd_standard_request_get_status(usbd_control_t * context) {
 	u32 i;
 	u32 j;
 
-	u16 * ep0_bufp = (u16*)context->ep0_buf;
+	u16 * bufp = (u16*)context->buf;
 	switch (context->setup_pkt.bmRequestType.bitmap_t.recipient){
 	case USBD_REQUEST_TO_DEVICE:
-		context->ep0_data.dptr = (u8 *)&context->status;
+		context->data.dptr = (u8 *)&context->status;
 		break;
 
 	case USBD_REQUEST_TO_INTERFACE:
 		if ((context->cfg != 0) && (context->setup_pkt.wIndex.b[0] < context->num_interfaces)) {
-			*ep0_bufp = 0;
-			context->ep0_data.dptr = context->ep0_buf;
+			*bufp = 0;
+			context->data.dptr = context->buf;
 		} else {
-			return false;
+			return 0;
 		}
 		break;
 
@@ -91,18 +91,18 @@ u32 usdd_standard_request_get_status(usbd_control_t * context) {
 		i = context->setup_pkt.wIndex.b[0] & USBD_EP_MASK;
 		j = usb_dev_decode_ep(context, i);
 		if (((context->cfg != 0) || ((i & (mcu_config.usb_logical_endpoint_count-1)) == 0)) && (context->ep_mask & j)) {
-			*ep0_bufp = (context->ep_halt & j) ? 1 : 0;
-			context->ep0_data.dptr = context->ep0_buf;
+			*bufp = (context->ep_halt & j) ? 1 : 0;
+			context->data.dptr = context->buf;
 		} else {
-			return false;
+			return 0;
 		}
 		break;
 
 	default:
-		return false;
+		return 0;
 
 	}
-	return (true);
+	return 1;
 }
 
 u32 usbd_standard_request_set_clr_feature(usbd_control_t * context, u32 sc) {
@@ -119,12 +119,12 @@ u32 usbd_standard_request_set_clr_feature(usbd_control_t * context, u32 sc) {
 				context->status &= ~USB_GETSTATUS_REMOTE_WAKEUP;
 			}
 		} else {
-			return false;
+			return 0;
 		}
 		break;
 
 	case USBD_REQUEST_TO_INTERFACE:
-		return false;
+		return 0;
 
 	case USBD_REQUEST_TO_ENDPOINT:
 		i = context->setup_pkt.wIndex.b[0] & USBD_EP_MASK;
@@ -136,24 +136,24 @@ u32 usbd_standard_request_set_clr_feature(usbd_control_t * context, u32 sc) {
 					context->ep_halt |=  j;
 				} else {
 					if ((context->ep_stall & j) != 0) {
-						return (true);
+						return 1;
 					}
 					mcu_usb_unstallep(context->constants->port, (void*)i);
 					context->ep_halt &= ~j;
 				}
 			} else {
-				return false;
+				return 0;
 			}
 		} else {
-			return false;
+			return 0;
 		}
 		break;
 
 	default:
-		return false;
+		return 0;
 
 	}
-	return (true);
+	return 1;
 }
 
 u32 usbd_standard_request_set_address (usbd_control_t * context) {
@@ -165,9 +165,9 @@ u32 usbd_standard_request_set_address (usbd_control_t * context) {
 		break;
 
 	default:
-		return false;
+		return 0;
 	}
-	return (true);
+	return 1;
 }
 
 u32 usbd_standard_request_get_config (usbd_control_t * context) {
@@ -175,13 +175,13 @@ u32 usbd_standard_request_get_config (usbd_control_t * context) {
 	switch (context->setup_pkt.bmRequestType.bitmap_t.recipient) {
 
 	case USBD_REQUEST_TO_DEVICE:
-		context->ep0_data.dptr = &context->cfg;
+		context->data.dptr = &context->cfg;
 		break;
 
 	default:
-		return false;
+		return 0;
 	}
-	return (true);
+	return 1;
 }
 
 u32 usbd_standard_request_set_config (usbd_control_t * context) {
@@ -260,30 +260,30 @@ u32 usbd_standard_request_set_config (usbd_control_t * context) {
 				}
 			}
 			usbd_control_init_ep(context);
-			mcu_usb_configure(context->constants->port, (void*)false);
+			mcu_usb_configure(context->constants->port, (void*)0);
 		}
 
 		if (context->cfg != context->setup_pkt.wValue.b[0]) {
-			return false;
+			return 0;
 		}
 
 		return true;
 	}
-	return false;
+	return 0;
 }
 
 u32 usbd_standard_request_get_interface(usbd_control_t * context) {
 
 	if( context->setup_pkt.bmRequestType.bitmap_t.recipient == USBD_REQUEST_TO_INTERFACE) {
 		if ((context->cfg != 0) && (context->setup_pkt.wIndex.b[0] < context->num_interfaces)) {
-			context->ep0_data.dptr = context->alt_setting + context->setup_pkt.wIndex.b[0];
+			context->data.dptr = context->alt_setting + context->setup_pkt.wIndex.b[0];
 		} else {
-			return false;
+			return 0;
 		}
 	} else {
-		return false;
+		return 0;
 	}
-	return (true);
+	return 1;
 }
 
 u32 usbd_standard_request_set_interface(usbd_control_t * context){
@@ -300,10 +300,10 @@ u32 usbd_standard_request_set_interface(usbd_control_t * context){
 
 		if (context->cfg == 0){
 			//configuration has not been set -- can't operate on the interface
-			return false;
+			return 0;
 		}
 
-		ret = false;
+		ret = 0;
 		dptr  = (usb_common_desc_t *)context->constants->config;
 
 		while (dptr->bLength) {
@@ -327,7 +327,7 @@ u32 usbd_standard_request_set_interface(usbd_control_t * context){
 						prev_interface_number = context->alt_setting[interface_number];
 						context->alt_setting[interface_number] = (u8)alternate_setting;
 					} else {
-						return false;
+						return 0;
 					}
 				}
 				break;
@@ -357,7 +357,7 @@ u32 usbd_standard_request_set_interface(usbd_control_t * context){
 			dptr = usbd_control_add_ptr(context, dptr, dptr->bLength);
 		}
 	} else {
-		return false;
+		return 0;
 	}
 
 	return ret;
@@ -378,7 +378,7 @@ u32 usbd_standard_request_get_descriptor(usbd_control_t * context) {
 
 		case USB_DEVICE_DESCRIPTOR_TYPE:
 			//give the device descriptor
-			context->ep0_data.dptr = (u8 * const)context->constants->device;
+			context->data.dptr = (u8 * const)context->constants->device;
 			len = sizeof(usb_dev_desc_t);
 			break;
 
@@ -391,9 +391,9 @@ u32 usbd_standard_request_get_descriptor(usbd_control_t * context) {
 				}
 			}
 			if (ptr.cfg->bLength == 0) {
-				return false;
+				return 0;
 			}
-			context->ep0_data.dptr = ptr.b;
+			context->data.dptr = ptr.b;
 			len = ptr.cfg->wTotalLength;
 			break;
 
@@ -408,36 +408,36 @@ u32 usbd_standard_request_get_descriptor(usbd_control_t * context) {
 
 			len = ptr.cstr->bLength;
 			if ( len == 0){
-				return false;
+				return 0;
 			}
 
 			//as a special case - generate the device serial number if no string is provided
 			if ( ptr.cstr->bString == NULL ){
 				//generate the string from the device serial number
-				ptr.b = context->ep0_buf;
+				ptr.b = context->buf;
 				ptr.str->bLength = 32*2 + 2;
 				ptr.str->bDescriptorType = USB_STRING_DESCRIPTOR_TYPE;
 				usbd_control_get_serialno( &(ptr.str->bString) );
 				len = ptr.str->bLength;
-				context->ep0_data.dptr = context->ep0_buf;
+				context->data.dptr = context->buf;
 			} else {
-				context->ep0_data.dptr = ptr.b;
+				context->data.dptr = ptr.b;
 			}
 
 			break;
 
 		default:
-			return false;
+			return 0;
 		}
 
 	} else {
-		return false;
+		return 0;
 	}
 
-	if (context->ep0_data.cnt > len) {
-		context->ep0_data.cnt = len;
+	if (context->data.nbyte > len) {
+		context->data.nbyte = len;
 	}
 
-	return (true);
+	return 1;
 }
 

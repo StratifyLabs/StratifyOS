@@ -314,23 +314,23 @@ int stratify_link_transport_usb_cdc_if_req(void * object, int event){
 			case SEND_BREAK:
 			case SEND_ENCAPSULATED_COMMAND:
 				//need to receive information from the host
-				context->ep0_data.dptr = context->ep0_buf;
+				context->data.dptr = context->buf;
 				usbd_control_statusin_stage(context);
 				return 1;
 			case SET_CONTROL_LINE_STATE:
 				usbd_control_statusin_stage(context);
 				return 1;
 			case GET_LINE_CODING:
-				context->ep0_data.dptr = context->ep0_buf;
+				context->data.dptr = context->buf;
 
-				//copy line coding to dev_std_ep0_buf
-				context->ep0_buf[0] = (rate >>  0) & 0xFF;
-				context->ep0_buf[1] = (rate >>  8) & 0xFF;
-				context->ep0_buf[2] = (rate >> 16) & 0xFF;
-				context->ep0_buf[3] = (rate >> 24) & 0xFF;  //rate
-				context->ep0_buf[4] =  0; //stop bits 1
-				context->ep0_buf[5] =  0; //no parity
-				context->ep0_buf[6] =  8; //8 data bits
+				//copy line coding to dev_std_buf
+				context->buf[0] = (rate >>  0) & 0xFF;
+				context->buf[1] = (rate >>  8) & 0xFF;
+				context->buf[2] = (rate >> 16) & 0xFF;
+				context->buf[3] = (rate >> 24) & 0xFF;  //rate
+				context->buf[4] =  0; //stop bits 1
+				context->buf[5] =  0; //no parity
+				context->buf[6] =  8; //8 data bits
 
 				usbd_control_statusin_stage(context);
 				return 1;
@@ -338,13 +338,13 @@ int stratify_link_transport_usb_cdc_if_req(void * object, int event){
 				usbd_control_statusin_stage(context);
 				return 1;
 			case GET_COMM_FEATURE:
-				context->ep0_data.dptr = context->ep0_buf;
-				//copy data to dev_std_ep0_buf
+				context->data.dptr = context->buf;
+				//copy data to dev_std_buf
 				usbd_control_statusin_stage(context);
 				return 1;
 			case GET_ENCAPSULATED_RESPONSE:
-				context->ep0_data.dptr = context->ep0_buf;
-				//copy data to dev_std_ep0_buf
+				context->data.dptr = context->buf;
+				//copy data to dev_std_buf
 				usbd_control_statusin_stage(context);
 				return 1;
 			default:
@@ -356,7 +356,7 @@ int stratify_link_transport_usb_cdc_if_req(void * object, int event){
 			case SET_CONTROL_LINE_STATE:
 			case SET_COMM_FEATURE:
 			case SEND_ENCAPSULATED_COMMAND:
-				//use data in dev_std_ep0_buf to take action
+				//use data in dev_std_buf to take action
 				usbd_control_statusin_stage(context);
 				return 1;
 			default:

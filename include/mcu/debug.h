@@ -22,17 +22,20 @@
 
 #include <stdio.h>
 #include <string.h>
-#include "mcu/cortexm.h"
-#include "mcu/core.h"
 
-#include "sos/fs/devfs.h"
-#include "uart.h"
+#ifndef __link
+
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#ifndef __link
+
+#include "mcu/cortexm.h"
+#include "mcu/core.h"
+#include "sos/fs/devfs.h"
+#include "uart.h"
+
 
 #define MCU_DEBUG_PORT 0
 
@@ -44,6 +47,7 @@ extern "C" {
 #define mcu_debug_irq(...)
 #define USBD_DEBUG_INIT()
 #define USBD_STAT() 0
+#define USBD_DEBUG(x)
 #else
 #define MCU_DEBUG 1
 int mcu_debug_init();
@@ -76,17 +80,21 @@ extern char mcu_debug_buffer[MCU_DEBUG_BUFFER_SIZE];
 	mcu_uart_write((const devfs_handle_t *)&periph, &op); \
 } while(0)
 
-extern volatile int usbdev_stat;
+extern volatile u32 usbdev_stat;
 #define USBD_STAT() (usbdev_stat)
 
+#define USBD_DEBUG(x) (usbdev_stat |= x)
+
 #endif
 
 
-#endif
 
 #ifdef __cplusplus
 }
 #endif
+
+#endif
+
 
 
 #endif /* DEBUG_H_ */

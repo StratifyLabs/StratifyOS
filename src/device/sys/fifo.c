@@ -204,9 +204,12 @@ int fifo_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 	case I_FIFO_SETATTR:
 		if( attr->o_flags & FIFO_FLAG_SET_WRITEBLOCK ){
 			fifo_set_writeblock(state, 1);
-		} else if( attr->o_flags & FIFO_FLAG_IS_OVERFLOW ){
-			fifo_set_writeblock(state, 0);
+			if( attr->o_flags & FIFO_FLAG_IS_OVERFLOW ){
+				fifo_set_writeblock(state, 0);
+			}
 		}
+
+
 		if( fifo_is_writeblock(state) ){
 			//make sure the FIFO is not currently blocked
 			data_transmitted(cfg);

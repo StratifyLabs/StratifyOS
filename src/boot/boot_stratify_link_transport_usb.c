@@ -28,22 +28,7 @@ static char rd_buffer[BUF_SIZE];
 static int rd_tail;
 static int rd_head;
 
-
-#ifdef __STDIO_VCP
-void init_stdio_vcp(){
-	int fd;
-	fd = open("/dev/stdio", O_RDWR);
-	if( fd < 0 ){
-		return;
-	}
-
-	ioctl(fd, I_FIFO_INIT);
-	close(fd);
-	return;
-}
-#endif
-
-link_transport_phy_t stratify_link_boot_transport_usb_open(const char * name, usbd_control_t * context){
+link_transport_phy_t stratify_link_boot_transport_usb_open(const char * name, usbd_control_t * control){
 	usb_attr_t usb_attr;
 
 	dstr("OPEN USB\n");
@@ -64,7 +49,7 @@ link_transport_phy_t stratify_link_boot_transport_usb_open(const char * name, us
 
 	dstr("USB ATTR SET\n");
 	//initialize USB device
-	usbd_control_priv_init(context);
+	usbd_control_priv_init(control);
 	dstr("USB CONNECT\n");
 
 

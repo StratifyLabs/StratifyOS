@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "sos/link/link.h"
-#include "mcu/core.h"
 #include "mcu/debug.h"
 
 #define TIMEOUT_VALUE 500
@@ -13,7 +12,7 @@
 
 void link_transport_insert_checksum(link_pkt_t * pkt){
 	int i;
-	uint8_t checksum;
+	u8 checksum;
 	checksum = 0;
 	checksum ^= pkt->size;
 	for(i=0; i < pkt->size; i++){
@@ -23,7 +22,7 @@ void link_transport_insert_checksum(link_pkt_t * pkt){
 }
 
 bool link_transport_checksum_isok(link_pkt_t * pkt){
-	uint8_t checksum;
+	u8 checksum;
 	if( pkt->size <= LINK_PACKET_DATA_SIZE ){
 		checksum = pkt->data[pkt->size];
 	} else {

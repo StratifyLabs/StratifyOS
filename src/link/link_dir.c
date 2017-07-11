@@ -22,7 +22,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "mcu/mcu.h"
 #include "link_flags.h"
 
 

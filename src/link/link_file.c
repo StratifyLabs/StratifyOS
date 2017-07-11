@@ -17,10 +17,9 @@
  * 
  */
 
-
+#include <string.h>
 #include <stdarg.h>
 
-#include "mcu/mcu.h"
 #include "link_flags.h"
 
 int link_open(link_transport_mdriver_t * driver, const char * path, int flags, ...){

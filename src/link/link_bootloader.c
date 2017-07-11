@@ -17,10 +17,10 @@
  * 
  */
 
-#include <stdbool.h>
+#include <string.h>
 #include <stdarg.h>
 
-#include "mcu/mcu.h"
+#include "sos/dev/bootloader.h"
 #include "link_flags.h"
 
 static int reset_device(link_transport_mdriver_t * driver, bool invoke_bootloader);

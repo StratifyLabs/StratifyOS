@@ -84,24 +84,7 @@ int _mcu_ssp_cfg_pio(int port, int pio_port, int mosi_pin, int miso_pin, int sck
 	return 0;
 }
 
-static inline int _mcu_usb_cfg_pio(int usb_port,
-		int data_pio_port,
-		int datap_pin,
-		int datam_pin,
-		int vbus_pio_port,
-		int vbus_pio_pin) MCU_ALWAYS_INLINE MCU_PRIV_CODE;
 
-int _mcu_usb_cfg_pio(int port,
-		int data_pio_port,
-		int datap_pin,
-		int datam_pin,
-		int vbus_pio_port,
-		int vbus_pio_pin){
-	if ( _mcu_core_set_pinsel_func(data_pio_port, datap_pin, CORE_PERIPH_USB, port) ) return -1;  //Use pin for USB
-	if ( _mcu_core_set_pinsel_func(data_pio_port, datam_pin, CORE_PERIPH_USB, port) ) return -1;  //Use pin for USB
-	if ( _mcu_core_set_pinsel_func(vbus_pio_port, vbus_pio_pin, CORE_PERIPH_USB, port) ) return -1;  //Use pin for USB
-	return 0;
-}
 
 #endif
 
