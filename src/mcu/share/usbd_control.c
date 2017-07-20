@@ -135,11 +135,10 @@ void * usbd_control_add_ptr(usbd_control_t * context, void * ptr, u32 value){
 void usbd_control_handler_setup_stage(usbd_control_t * context){
 	mcu_usb_rd_ep(context->constants->port, 0x00, (uint8_t *)&(context->setup_pkt));
 	context->data.nbyte = context->setup_pkt.wLength;
+	context->data.max = context->data.nbyte;
 }
 
 
-/*! \details
- */
 
 void usbd_control_datain_stage(usbd_control_t * context) {
 	u32 nbyte;
@@ -158,7 +157,9 @@ void usbd_control_datain_stage(usbd_control_t * context) {
 void usbd_control_dataout_stage(usbd_control_t * context){
 	u32 nbyte;
 	nbyte = mcu_usb_rd_ep(context->constants->port, 0x00, context->data.dptr);
-	context->data.dptr += nbyte;
+	if( context->data.nbyte + MCU_CORE_USB_MAX_PACKET_ZERO_VALUE < context->data.max ){
+		context->data.dptr += nbyte;
+	}
 	context->data.nbyte -= nbyte;
 }
 

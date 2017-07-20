@@ -54,6 +54,7 @@ typedef struct {
 typedef struct {
   u8 * dptr;
   u16 nbyte;
+  u16 max;
 } usbd_control_data_t;
 
 typedef struct MCU_PACK {
@@ -66,7 +67,7 @@ typedef struct MCU_PACK {
 	u32 ep_halt;
 	u32 ep_stall;
 	u8 num_interfaces;
-	u8 buf[MCU_CORE_USB_MAX_PACKET_ZERO_VALUE];
+	u8 buf[USBD_CONTROL_DATAOUT_BUF_SIZE];
 	u8 alt_setting[USBD_ALT_SETTING_SIZE];
 	const usbd_control_constants_t * constants;
 } usbd_control_t;
@@ -95,6 +96,11 @@ static inline int usbd_control_setup_request(usbd_control_t * context){
 
 static inline int usbd_control_setup_request_direction(usbd_control_t * context){
 	return context->setup_pkt.bmRequestType.bitmap_t.dir;
+}
+
+static inline void usbd_control_prepare_buffer(usbd_control_t * context){
+	context->data.dptr = context->buf;
+	context->data.max = USBD_CONTROL_DATAOUT_BUF_SIZE;
 }
 
 
