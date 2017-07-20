@@ -100,13 +100,13 @@ void scheduler(){
 	}
 
 	if ( sched_prepare() ){  //this starts memory protection
-		mcu_board_event(MCU_BOARD_CONFIG_EVENT_FATAL, (void*)"sprep");
+		mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_FATAL, (void*)"sprep");
 	}
 
 	mcu_debug("Start first thread\n");
 	if ( start_first_thread() ){
 		sched_debug("Start first thread failed\n");
-		mcu_board_event(MCU_BOARD_CONFIG_EVENT_FATAL, (void*)"strt1t");
+		mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_FATAL, (void*)"strt1t");
 	}
 
 	while(1){

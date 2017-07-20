@@ -208,9 +208,12 @@ int open_usecond_tmr(){
 	memset(&attr, 0, sizeof(tmr_attr_t));
 	attr.freq = 1000000;
 	attr.o_flags = TMR_FLAG_SET_TIMER | TMR_FLAG_IS_CLKSRC_CPU;
-	err = mcu_tmr_setattr(tmr.port, &attr);
-	if ( err ){ return err; }
+	memset(&attr.pin_assignment, 0xff, sizeof(mcu_pin_t)*TMR_PIN_ASSIGNMENT_COUNT);
 
+	err = mcu_tmr_setattr(tmr.port, &attr);
+	if ( err ){
+		return err;
+	}
 
 
 	//Initialize the value of the timer to zero
@@ -230,14 +233,18 @@ int open_usecond_tmr(){
 	attr.channel.loc = SCHED_USECOND_TMR_RESET_OC;
 	attr.o_flags = TMR_FLAG_SET_CHANNEL | TMR_FLAG_IS_CHANNEL_RESET_ON_MATCH;
 	err = mcu_tmr_setattr(tmr.port, &attr);
-	if ( err ){ return err; }
+	if ( err ){
+		return err;
+	}
 
 	action.prio = 0;
 	action.channel = SCHED_USECOND_TMR_RESET_OC;
 	action.o_events = MCU_EVENT_FLAG_MATCH;
 	action.handler.callback = usecond_overflow_event;
 	err = mcu_tmr_setaction(tmr.port, &action);
-	if (err ){ return -1; }
+	if (err ){
+		return -1;
+	}
 
 	//Turn the timer on
 	err = mcu_tmr_enable(tmr.port, 0);

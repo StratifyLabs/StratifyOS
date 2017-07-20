@@ -29,9 +29,7 @@ void exec_bootloader(void * args){
 }
 
 void boot_event(int event, void * args){
-	if( mcu_board_config.event != 0 ){
-		mcu_board_config.event(event, args);
-	}
+	mcu_board_execute_event_handler(event, args);
 }
 
 extern u32 _etext;
@@ -219,10 +217,6 @@ void init_hw(){
 
 	if ( *bootloader_start == boot_board_config.sw_req_value ){
 		dstr("Software bootloader request\n");
-	}
-
-	if( boot_board_config.o_flags & BOOT_BOARD_CONFIG_FLAG_HW_REQ_PULLDOWN ){
-		dstr("HW REQ PULLDOWN\n");
 	}
 
 

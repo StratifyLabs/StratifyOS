@@ -20,6 +20,13 @@
 
 #include "mcu/mcu.h"
 
+void mcu_board_execute_event_handler(int event, void * args){
+	if( mcu_board_config.event_handler != 0 ){
+		mcu_board_config.event_handler(event, args);
+	}
+}
+
+
 int mcu_execute_event_handler(mcu_event_handler_t * handler, u32 o_events, void * data){
 	int ret = 0;
 	mcu_event_t event;

@@ -142,11 +142,13 @@ void fifo_getinfo(fifo_info_t * info, const fifo_cfg_t * cfgp, fifo_state_t * st
 void fifo_data_received(const fifo_cfg_t * cfgp, fifo_state_t * state){
 	int bytes_read;
 
-	if( state->rop != NULL ){
+	if( state->rop != 0 ){
 		state->rop->nbyte = state->rop_len; //update the number of bytes read??
 		if( (bytes_read = fifo_read_buffer(cfgp, state, state->rop->buf)) > 0 ){
 			state->rop->nbyte = bytes_read;
-			mcu_execute_event_handler(&(state->rop->handler), MCU_EVENT_FLAG_DATA_READY, 0);
+			if( mcu_execute_event_handler(&(state->rop->handler), MCU_EVENT_FLAG_DATA_READY, 0) == 0 ){
+				state->rop = 0;
+			}
 		}
 	}
 }

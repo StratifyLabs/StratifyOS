@@ -109,7 +109,7 @@ typedef struct MCU_PACK {
 	u32 core_periph_freq;
 	u32 usb_max_packet_zero;
 	u32 o_flags;
-	void (*event)(int, void*);
+	void (*event_handler)(int, void*);
 	mcu_pin_t led;
 	mcu_pin_t debug_uart_pin_assignment[2];
 	mcu_pin_t usb_pin_assignment[USB_PIN_ASSIGNMENT_COUNT];
@@ -127,7 +127,7 @@ typedef struct MCU_PACK {
 
 extern const mcu_config_t mcu_config;
 
-void mcu_board_event(int event, void * args);
+void mcu_board_execute_event_handler(int event, void * args);
 
 int mcu_execute_event_handler(mcu_event_handler_t * handler, u32 o_events, void * data);
 

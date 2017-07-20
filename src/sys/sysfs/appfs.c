@@ -485,14 +485,21 @@ void priv_ioctl(void * args){
 	//INSTALL and CREATE only with with the special .install file
 	case I_APPFS_INSTALL:
 		a->ret = appfs_util_priv_writeinstall(a->cfg, h, attr);
+		break;
+
 	case I_APPFS_CREATE:
 		a->ret = appfs_util_priv_create(a->cfg, h, attr);
+		break;
 
 	//These calls work with the specific file name
 	case I_APPFS_FREE_RAM:
 		a->ret =  appfs_util_priv_free_ram(a->cfg, h);
+		break;
+
 	case I_APPFS_RECLAIM_RAM:
 		a->ret = appfs_util_priv_reclaim_ram(a->cfg, h);
+		break;
+
 	default:
 		errno = EINVAL;
 		break;

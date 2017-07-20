@@ -70,14 +70,14 @@ void priv_check_reset_source(void * args){
 void check_reset_source(void){
 	u32 src;
 	mcu_core_privcall(priv_check_reset_source, &src);
-	mcu_board_event(MCU_BOARD_CONFIG_EVENT_START_INIT, 0);
+	mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_START_INIT, 0);
 }
 
 void start_filesystem(void){
 	u32 started;
 	started = startup_fs();
 	mcu_debug("Started Filesystem Apps %ld\n", started);
-	mcu_board_event(MCU_BOARD_CONFIG_EVENT_START_FILESYSTEM, &started);
+	mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_START_FILESYSTEM, &started);
 }
 
 void * stratify_default_thread(void * arg){
@@ -85,14 +85,19 @@ void * stratify_default_thread(void * arg){
 	check_reset_source();
 
 	//Initialize the file systems
-	if ( init_fs() < 0 ){ mcu_board_event(MCU_BOARD_CONFIG_EVENT_CRITICAL, (void*)"init_fs"); }
+	if ( init_fs() < 0 ){
+		mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_CRITICAL, (void*)"init_fs");
+	}
 
 	start_filesystem();
 
+	mcu_debug("Open RTC\n");
 	open("/dev/rtc", O_RDWR);
 
-	mcu_board_event(MCU_BOARD_CONFIG_EVENT_START_LINK, 0);
+	mcu_debug("Board Event\n");
+	mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_START_LINK, 0);
 
+	mcu_debug("Start Link\n");
 	link_update(arg); 	//Run the link update thread--never returns
 
 	return NULL;

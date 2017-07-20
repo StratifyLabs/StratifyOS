@@ -99,7 +99,7 @@ int sched_prepare(){
 
 	if ( mcu_debug_init() ){
 		_mcu_cortexm_priv_disable_interrupts(NULL);
-		mcu_board_event(MCU_BOARD_CONFIG_EVENT_PRIV_FATAL, (void*)"dbgi");
+		mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_PRIV_FATAL, (void*)"dbgi");
 	}
 
 	mcu_debug("MCU Debug start\n");
@@ -124,7 +124,7 @@ int sched_prepare(){
 #if USE_MEMORY_PROTECTION > 0
 	if ( task_init_mpu(&_data, stratify_board_config.sys_memory_size) < 0 ){
 		sched_debug("Failed to initialize memory protection\n");
-		mcu_board_event(MCU_BOARD_CONFIG_EVENT_PRIV_FATAL, (void*)"tski");
+		mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_PRIV_FATAL, (void*)"tski");
 	}
 #endif
 

@@ -18,12 +18,6 @@
 #include "mcu/mcu.h"
 #include "mcu/debug.h"
 
-void mcu_board_event(int event, void * args){
-	if( mcu_board_config.event != 0 ){
-		mcu_board_config.event(event, args);
-	}
-}
-
 static int mcu_sync_io_complete(void * context, mcu_event_t * data);
 
 int mcu_sync_io_complete(void * context, mcu_event_t * data){

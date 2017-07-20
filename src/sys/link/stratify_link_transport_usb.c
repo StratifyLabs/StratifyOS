@@ -42,8 +42,10 @@ link_transport_phy_t stratify_link_transport_usb_open(const char * name, usbd_co
 
 	//open USB
 	mcu_debug("Open link-phy-usb\n");
+	errno = 0;
 	fd = open("/dev/link-phy-usb", O_RDWR);
 	if( fd < 0 ){
+		mcu_debug("Failed to open link-phy-usb (%d)\n", errno);
 		return LINK_PHY_ERROR;
 	}
 
@@ -54,6 +56,7 @@ link_transport_phy_t stratify_link_transport_usb_open(const char * name, usbd_co
 	usb_attr.o_flags = USB_FLAG_SET_DEVICE;
 	usb_attr.freq = mcu_board_config.core_osc_freq;
 	if( ioctl(fd, I_USB_SETATTR, &usb_attr) < 0 ){
+		mcu_debug("Failed to set USB attr\n");
 		return LINK_PHY_ERROR;
 	}
 

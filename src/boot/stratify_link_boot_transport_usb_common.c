@@ -42,7 +42,7 @@
 
 #define USB0_DEVFIFO_BUFFER_SIZE 64
 static char usb0_fifo_buffer[USB0_DEVFIFO_BUFFER_SIZE] MCU_SYS_MEM;
-const usbfifo_cfg_t stratify_link_boot_transport_usb_fifo_cfg = USBFIFO_DEVICE_CFG(0,
+const usbfifo_cfg_t stratify_link_boot_transport_usb_fifo_cfg = USBFIFO_HANDLE_CFG(
 		STRATIFY_LINK_TRANSPORT_USB_BULK_ENDPOINT,
 		STRATIFY_LINK_TRANSPORT_USB_BULK_ENDPOINT_SIZE,
 		usb0_fifo_buffer,

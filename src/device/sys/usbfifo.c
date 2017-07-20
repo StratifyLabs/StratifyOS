@@ -34,7 +34,7 @@ static int set_read_action(const devfs_handle_t * cfg, mcu_callback_t callback){
 	action.o_events = MCU_EVENT_FLAG_DATA_READY;
 	action.channel = cfgp->endpoint;
 	action.prio = 0;
-	if( mcu_usb_setaction(cfgp->port, &action) < 0 ){
+	if( mcu_usb_setaction(cfg->port, &action) < 0 ){
 		return -1;
 	}
 
@@ -54,16 +54,18 @@ static int data_received(void * context, mcu_event_t * data){
 	char buffer[cfgp->endpoint_size];
 
 	//check to see if USB was disconnected
-	if( mcu_usb_isconnected(cfgp->port, NULL) ){
+	if( mcu_usb_isconnected(cfg->port, NULL) ){
 
 		//read the endpoint directly
-		bytes_read = mcu_usb_rd_ep(cfgp->port, cfgp->endpoint, buffer);
+		bytes_read = mcu_usb_rd_ep(cfg->port, cfgp->endpoint, buffer);
 
+		//write the new bytes to the buffer
 		for(i=0; i < bytes_read; i++){
 			cfgp->fifo.buffer[ state->fifo.head ] = buffer[i];
 			fifo_inc_head(&(state->fifo), size);
 		}
 
+		//see if any functions are blocked waiting for data to arrive
 		fifo_data_received(&(cfgp->fifo), &(state->fifo));
 	}
 
@@ -71,8 +73,7 @@ static int data_received(void * context, mcu_event_t * data){
 }
 
 int usbfifo_open(const devfs_handle_t * cfg){
-	const usbfifo_cfg_t * cfgp = cfg->config;
-	return mcu_usb_open((const devfs_handle_t*)&(cfgp->port));
+	return mcu_usb_open(cfg);
 }
 
 int usbfifo_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
@@ -90,7 +91,7 @@ int usbfifo_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 		if( action->handler.callback == 0 ){
 			fifo_cancel_rop(&(state->fifo));
 		} else {
-			return mcu_usb_setaction(cfgp->port, ctl);
+			return mcu_usb_setaction(cfg->port, ctl);
 		}
 		return 0;
 	case I_FIFO_FLUSH:
@@ -110,7 +111,7 @@ int usbfifo_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 		state->fifo.rop = NULL;
 		//setup the device to write to the fifo when data arrives
 
-		if(  mcu_usb_setattr(cfgp->port, ctl) < 0 ){
+		if(  mcu_usb_setattr(cfg->port, ctl) < 0 ){
 			return -1;
 		}
 		/* no break */
@@ -125,9 +126,9 @@ int usbfifo_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 		if( set_read_action(cfg, NULL) < 0 ){
 			return -1;
 		}
-		return mcu_usb_close((const devfs_handle_t*)&(cfgp->port));
+		return mcu_usb_close(cfg);
 	default:
-		return mcu_usb_ioctl((const devfs_handle_t*)&(cfgp->port), request, ctl);
+		return mcu_usb_ioctl(cfg, request, ctl);
 	}
 	return 0;
 }
@@ -144,7 +145,7 @@ int usbfifo_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	wop->loc = 0x80 | cfgp->endpoint;
 
 	//Writing to the USB FIFO is not buffered, it just writes the USB HW directly
-	return mcu_usb_write((const devfs_handle_t*)&(cfgp->port), wop);
+	return mcu_usb_write(cfg, wop);
 }
 
 int usbfifo_close(const devfs_handle_t * cfg){
