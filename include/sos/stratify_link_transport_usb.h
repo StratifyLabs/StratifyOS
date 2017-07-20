@@ -96,7 +96,8 @@ int stratify_link_transport_usb_close(link_transport_phy_t * handle);
 void stratify_link_transport_usb_wait(int msec);
 void stratify_link_transport_usb_flush(link_transport_phy_t handle);
 void stratify_link_transport_usb_notify(const void * buf, int nbyte);
-int stratify_link_transport_usbd_cdc_if_req(void * context, int event);
+
+int stratify_link_usbd_cdc_event_handler(void * context, mcu_event_t * event);
 
 //provided for the link device fifo
 //USBFIFO_DEVICE("link-phy-usb", &stratify_link_transport_usb_fifo_cfg, &stratify_link_transport_usb_fifo_state, 0666, USER_ROOT, GROUP_ROOT),

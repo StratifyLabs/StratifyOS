@@ -55,13 +55,7 @@ const usbd_control_constants_t stratify_link_boot_transport_usb_constants = {
 		.device =  &stratify_link_boot_transport_usb_dev_desc,
 		.config = &stratify_link_boot_transport_usb_cfg_desc,
 		.string = &stratify_link_boot_transport_usb_string_desc,
-		.feature_event = 0,
-		.configure_event = 0,
-		.interface_event = 0,
-		.adc_if_req = 0,
-		.msc_if_req = 0,
-		.cdc_if_req = stratify_link_transport_usbd_cdc_if_req,
-		.hid_if_req = 0
+		.class_event_handler = stratify_link_usbd_cdc_event_handler
 };
 
 

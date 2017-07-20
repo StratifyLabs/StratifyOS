@@ -22,6 +22,8 @@
 
 #include "mcu/usbd/control.h"
 
+int usbd_standard_request_setup_handler(usbd_control_t * context);
+
 u32 usbd_standard_request_set_interface(usbd_control_t * context);
 u32 usbd_standard_request_get_interface(usbd_control_t * context);
 void * usbd_control_add_ptr(usbd_control_t * context, void * ptr, u32 n);

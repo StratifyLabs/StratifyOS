@@ -26,7 +26,7 @@
 #include "mcu/usbd/control.h"
 #include "mcu/usbd/cdc.h"
 #include "mcu/core.h"
-#include "mcu/debug.h"
+#include "mcu/boot_debug.h"
 #include "mcu/sys.h"
 
 #include "sos/stratify_link_transport_usb.h"
@@ -43,6 +43,7 @@
 #define STRATIFY_VCP1_DATA_INTERFACE 3
 
 
+static int cdc_event_handler(usbd_control_t * context, mcu_event_t * event);
 
 
 static char usb0_fifo_buffer[USB0_DEVFIFO_BUFFER_SIZE] MCU_SYS_MEM;
@@ -58,13 +59,7 @@ const usbd_control_constants_t stratify_link_transport_usb_constants = {
 		.device =  &stratify_link_transport_usb_dev_desc,
 		.config = &stratify_link_transport_usb_cfg_desc,
 		.string = &stratify_link_transport_usb_string_desc,
-		.feature_event = 0,
-		.configure_event = 0,
-		.interface_event = 0,
-		.adc_if_req = 0,
-		.msc_if_req = 0,
-		.cdc_if_req = stratify_link_transport_usbd_cdc_if_req,
-		.hid_if_req = 0
+		.class_event_handler = stratify_link_usbd_cdc_event_handler,
 };
 
 
@@ -294,33 +289,51 @@ const struct stratify_link_transport_usb_string_t stratify_link_transport_usb_st
 		.wLANGID = 0x0409, //English
 		.manufacturer = usbd_assign_string(STRATIFY_LINK_TRANSPORT_USB_DESC_MANUFACTURER_SIZE, STRATIFY_LINK_TRANSPORT_USB_DESC_MANUFACTURER_STRING),
 		.product = usbd_assign_string(STRATIFY_LINK_TRANSPORT_USB_DESC_PRODUCT_SIZE, STRATIFY_LINK_TRANSPORT_USB_DESC_PRODUCT_STRING),
-		.serial = usbd_assign_string(STRATIFY_LINK_TRANSPORT_USB_DESC_SERIAL_SIZE, 0)
-		, //dynamically load SN based on silicon
+		.serial = usbd_assign_string(STRATIFY_LINK_TRANSPORT_USB_DESC_SERIAL_SIZE, 0), //dynamically load SN based on silicon
 		.vcp0 = usbd_assign_string(STRATIFY_LINK_TRANSPORT_USB_DESC_VCP_0_SIZE, STRATIFY_LINK_TRANSPORT_USB_DESC_VCP_0),
 		.vcp1 = usbd_assign_string(STRATIFY_LINK_TRANSPORT_USB_DESC_VCP_1_SIZE, STRATIFY_LINK_TRANSPORT_USB_DESC_VCP_1)
 };
 
-
-int stratify_link_transport_usbd_cdc_if_req(void * object, int event){
-	u32 rate = 12000000;
+int stratify_link_usbd_cdc_event_handler(void * object, mcu_event_t * event){
 	usbd_control_t * context = object;
 
-	if ( (context->setup_pkt.wIndex.b[0] == 0) || (context->setup_pkt.wIndex.b[0] == 1) ||
-			(context->setup_pkt.wIndex.b[0] == 2) || (context->setup_pkt.wIndex.b[0] == 3) ) { //! \todo The wIndex should equal the CDC interface number
+	//if this is a class request check the CDC interfaces
+	if ( usbd_control_setup_request_type(context) == USBD_REQUEST_TYPE_CLASS ){
+		return cdc_event_handler(context, event);
+	}
 
-		if ( (event & MCU_EVENT_FLAG_SETUP) ){
+	return 0;
+}
+
+
+int cdc_event_handler(usbd_control_t * context, mcu_event_t * event){
+	u32 rate = 12000000;
+	u32 o_events = event->o_events;
+	int iface = usbd_control_setup_interface(context);
+
+	dstr("if req:"); dhex(context->setup_pkt.bRequest); dstr("\n");
+
+	if( (iface == 0) || (iface == 1) || (iface == 2) || (iface == 3) ){
+
+		if ( (o_events & MCU_EVENT_FLAG_SETUP) ){
+			dstr("setup\n");
 			switch(context->setup_pkt.bRequest){
 			case USBD_CDC_REQUEST_SET_LINE_CODING:
+			case USBD_CDC_REQUEST_SEND_ENCAPSULATED_COMMAND:
+				context->data.dptr = context->buf;
+				usbd_control_datain_stage(context);
+				return 1;
 			case USBD_CDC_REQUEST_SET_COMM_FEATURE:
 			case USBD_CDC_REQUEST_SEND_BREAK:
-			case USBD_CDC_REQUEST_SEND_ENCAPSULATED_COMMAND:
 				//need to receive information from the host
 				context->data.dptr = context->buf;
-				usbd_control_statusin_stage(context);
+				usbd_control_statusin_stage(context); //data out stage?
 				return 1;
+
 			case USBD_CDC_REQUEST_SET_CONTROL_LINE_STATE:
 				usbd_control_statusin_stage(context);
 				return 1;
+
 			case USBD_CDC_REQUEST_GET_LINE_CODING:
 				context->data.dptr = context->buf;
 
@@ -332,28 +345,36 @@ int stratify_link_transport_usbd_cdc_if_req(void * object, int event){
 				context->buf[4] =  0; //stop bits 1
 				context->buf[5] =  0; //no parity
 				context->buf[6] =  8; //8 data bits
-
-				usbd_control_statusin_stage(context);
+				usbd_control_datain_stage(context);
 				return 1;
+
 			case USBD_CDC_REQUEST_CLEAR_COMM_FEATURE:
 				usbd_control_statusin_stage(context);
 				return 1;
+
 			case USBD_CDC_REQUEST_GET_COMM_FEATURE:
 				context->data.dptr = context->buf;
 				//copy data to dev_std_buf
 				usbd_control_statusin_stage(context);
 				return 1;
+
 			case USBD_CDC_REQUEST_GET_ENCAPSULATED_RESPONSE:
 				context->data.dptr = context->buf;
 				//copy data to dev_std_buf
 				usbd_control_statusin_stage(context);
 				return 1;
+
 			default:
 				return 0;
 			}
-		} else if ( event & MCU_EVENT_FLAG_DATA_READY ){
+
+		} else if ( o_events & MCU_EVENT_FLAG_DATA_READY ){
+			dstr("data out\n");
+
 			switch(context->setup_pkt.bRequest){
 			case USBD_CDC_REQUEST_SET_LINE_CODING:
+				//line coding info is available in context->buf
+
 			case USBD_CDC_REQUEST_SET_CONTROL_LINE_STATE:
 			case USBD_CDC_REQUEST_SET_COMM_FEATURE:
 			case USBD_CDC_REQUEST_SEND_ENCAPSULATED_COMMAND:

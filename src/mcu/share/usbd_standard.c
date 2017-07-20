@@ -68,6 +68,81 @@ char htoc(int nibble){
 	}
 }
 
+int usbd_standard_request_setup_handler(usbd_control_t * context){
+	switch (context->setup_pkt.bRequest) {
+
+	case USBD_REQUEST_STANDARD_GET_STATUS:
+		if ( usdd_standard_request_get_status(context) ) {
+			usbd_control_datain_stage(context);
+			return 1;
+		}
+		break;
+
+	case USBD_REQUEST_STANDARD_CLEAR_FEATURE:
+		if ( usbd_standard_request_set_clr_feature(context, 0) ) {
+			usbd_control_statusin_stage(context);
+			return 1;
+		}
+		break;
+
+	case USBD_REQUEST_STANDARD_SET_FEATURE:
+		if ( usbd_standard_request_set_clr_feature(context, 1) ) {
+			usbd_control_statusin_stage(context);
+			return 1;
+		}
+		break;
+
+	case USBD_REQUEST_STANDARD_SET_ADDRESS:
+		if ( usbd_standard_request_set_address(context) ) {
+			usbd_control_statusin_stage(context);
+			return 1;
+		}
+		break;
+
+	case USBD_REQUEST_STANDARD_GET_DESCRIPTOR:
+		if ( usbd_standard_request_get_descriptor(context) ) {
+			usbd_control_datain_stage(context);
+			return 1;
+		}
+		break;
+
+	case USBD_REQUEST_STANDARD_GET_CONFIGURATION:
+		if ( usbd_standard_request_get_config(context) ) {
+			usbd_control_datain_stage(context);
+			return 1;
+		}
+		break;
+
+	case USBD_REQUEST_STANDARD_SET_CONFIGURATION:
+		if ( usbd_standard_request_set_config(context) ) {
+			usbd_control_statusin_stage(context);
+			return 1;
+		}
+
+		break;
+
+	case USBD_REQUEST_STANDARD_GET_INTERFACE:
+		if ( usbd_standard_request_get_interface(context) ) {
+			usbd_control_datain_stage(context);
+			return 1;
+		}
+		break;
+
+	case USBD_REQUEST_STANDARD_SET_INTERFACE:
+		if ( usbd_standard_request_set_interface(context) ) {
+			usbd_control_statusin_stage(context);
+			return 1;
+		}
+		break;
+
+	case USBD_REQUEST_STANDARD_SET_DESCRIPTOR:
+	default:
+		break;
+	}
+
+	return 0;
+}
+
 
 u32 usdd_standard_request_get_status(usbd_control_t * context) {
 	u32 i;

@@ -44,17 +44,12 @@ typedef struct {
 	const void * const device;
 	const void * const config;
 	const void * const string;
-	int (* const setup_event)(void * context, mcu_event_t * event);
-	void (*const feature_event)(void * context);
-	void (*const configure_event)(void * context);
-	void (*const interface_event)(void * context);
-	int (*adc_if_req)(void * context, int event);
-	int (*msc_if_req)(void * context, int event);
-	int (*cdc_if_req)(void * context, int event);
-	int (*hid_if_req)(void * context, int event);
+	int (* const class_event_handler)(void * context, mcu_event_t * event);
 } usbd_control_constants_t;
 
 #define MCU_CORE_USB_MAX_PACKET_ZERO_VALUE 64
+
+#define USBD_CONTROL_DATAOUT_BUF_SIZE 256
 
 typedef struct {
   u8 * dptr;
@@ -81,9 +76,26 @@ int usbd_control_handler(void * context, mcu_event_t * data);
 
 void usbd_control_handler_setup_stage(usbd_control_t * context);
 void usbd_control_datain_stage(usbd_control_t * context) MCU_NEVER_INLINE;
+
 void usbd_control_dataout_stage (usbd_control_t * context);
 void usbd_control_statusin_stage(usbd_control_t * context);
 void usbd_control_statusout_stage (usbd_control_t * context);
+
+static inline int usbd_control_setup_request_type(usbd_control_t * context){
+	return context->setup_pkt.bmRequestType.bitmap_t.type;
+}
+
+static inline int usbd_control_setup_interface(usbd_control_t * context){
+	return context->setup_pkt.wIndex.b[0];
+}
+
+static inline int usbd_control_setup_request(usbd_control_t * context){
+	return context->setup_pkt.bRequest;
+}
+
+static inline int usbd_control_setup_request_direction(usbd_control_t * context){
+	return context->setup_pkt.bmRequestType.bitmap_t.dir;
+}
 
 
 char htoc(int nibble);

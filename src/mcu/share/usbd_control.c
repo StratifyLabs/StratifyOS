@@ -57,138 +57,50 @@ int usbd_control_handler(void * context_object, mcu_event_t * usb_event /*! Call
 
 
 	if ( o_events & MCU_EVENT_FLAG_SETUP ){
+		//read the setup packet
 		usbd_control_handler_setup_stage(context);
 	}
 
-	if( context->constants->setup_event != 0 ){
-		if( context->constants->setup_event(context_object, usb_event) != 0 ){
-			return 1;
-		}
-	}
-
 	if ( o_events & MCU_EVENT_FLAG_SETUP ){
-		if ( context->setup_pkt.bmRequestType.bitmap_t.type == USBD_REQUEST_STANDARD){
-			switch (context->setup_pkt.bRequest) {
-
-			case USBD_REQUEST_STANDARD_GET_STATUS:
-				if (!usdd_standard_request_get_status(context)) {
-					stall(context); return 1;
-				}
-				usbd_control_datain_stage(context);
-				break;
-
-			case USBD_REQUEST_STANDARD_CLEAR_FEATURE:
-				if (!usbd_standard_request_set_clr_feature(context, 0)) {
-					stall(context); return 1;
-				}
-				usbd_control_statusin_stage(context);
-				break;
-
-			case USBD_REQUEST_STANDARD_SET_FEATURE:
-				if (!usbd_standard_request_set_clr_feature(context, 1)) {
-					stall(context); return 1;
-				}
-				usbd_control_statusin_stage(context);
-				break;
-
-			case USBD_REQUEST_STANDARD_SET_ADDRESS:
-				if (!usbd_standard_request_set_address(context)) {
-					stall(context); return 1;
-				}
-				usbd_control_statusin_stage(context);
-				break;
-
-			case USBD_REQUEST_STANDARD_GET_DESCRIPTOR:
-				if (!usbd_standard_request_get_descriptor(context)) {
-					stall(context);
-					return 1;
-				}
-				usbd_control_datain_stage(context);
-				break;
-
-			case USBD_REQUEST_STANDARD_SET_DESCRIPTOR:
-				mcu_usb_stallep(context->constants->port, (void*)0x00);
-				context->data.nbyte = 0;
-				break;
-
-			case USBD_REQUEST_STANDARD_GET_CONFIGURATION:
-				if (!usbd_standard_request_get_config(context)) {
-					stall(context);
-					return 1;
-				}
-				usbd_control_datain_stage(context);
-				break;
-
-			case USBD_REQUEST_STANDARD_SET_CONFIGURATION:
-				if (!usbd_standard_request_set_config(context)) {
-					stall(context); return 1;
-				}
-				usbd_control_statusin_stage(context);
-
-				break;
-
-			case USBD_REQUEST_STANDARD_GET_INTERFACE:
-
-				if (!usbd_standard_request_get_interface(context)) {
-					stall(context); return 1;
-				}
-				usbd_control_datain_stage(context);
-				break;
-
-			case USBD_REQUEST_STANDARD_SET_INTERFACE:
-				if (!usbd_standard_request_set_interface(context)) {
-					stall(context); return 1;
-				}
-				usbd_control_statusin_stage(context);
-
-				break;
-			default:
+		if (usbd_control_setup_request_type(context) == USBD_REQUEST_STANDARD){
+			if( usbd_standard_request_setup_handler(context) == 0 ){
 				stall(context);
 				return 1;
 			}
 
-
 		} else {
+
+			//a setup event that is not a standard request may be handled by the callback
+			if( context->constants->class_event_handler != 0 ){
+				if( context->constants->class_event_handler(context_object, usb_event) != 0 ){
+					return 1;
+				}
+			}
+
 			stall(context);
 			return 1;
 		}
 
 	} else if ( o_events & MCU_EVENT_FLAG_DATA_READY ){ //Data out stage
-		if (context->setup_pkt.bmRequestType.bitmap_t.dir == USBD_REQUEST_TYPE_DIRECTION_HOST_TO_DEVICE) {
-
+		if (usbd_control_setup_request_direction(context) == USBD_REQUEST_TYPE_DIRECTION_HOST_TO_DEVICE) {
 			if (context->data.nbyte) {
-
 				usbd_control_dataout_stage(context);
 				if (context->data.nbyte == 0){
 
-					switch (context->setup_pkt.bmRequestType.bitmap_t.type) {
-
-					case USBD_REQUEST_STANDARD:
+					if (usbd_control_setup_request_type(context) == USBD_REQUEST_STANDARD){
 						stall(context);
 						return 1;
-
-					case USBD_REQUEST_TYPE_CLASS:
-						if (1){
-
-							switch (context->setup_pkt.bmRequestType.bitmap_t.recipient) {
-
-							case USBD_REQUEST_TYPE_RECIPIENT_INTERFACE:
-								if ( context->constants->msc_if_req(context, 0) ) return 1;
-								if ( context->constants->cdc_if_req(context, 0) ) return 1;
-								if ( context->constants->hid_if_req(context, 0) ) return 1;
-
-							case USBD_REQUEST_TYPE_RECIPIENT_DEVICE:
-							case USBD_REQUEST_TYPE_RECIPIENT_ENDPOINT:
-
-							default:
-								stall(context);
-								return 1;
-							}
-							break;
-						}
-						break;
 					}
 
+					//a setup event that is not a standard request may be handled by the callback
+					if( context->constants->class_event_handler != 0 ){
+						if( context->constants->class_event_handler(context_object, usb_event) != 0 ){
+							return 1;
+						}
+					} else {
+						stall(context);
+						return 1;
+					}
 				}
 			}
 		} else {
@@ -196,7 +108,7 @@ int usbd_control_handler(void * context_object, mcu_event_t * usb_event /*! Call
 		}
 
 	} else if ( o_events & MCU_EVENT_FLAG_WRITE_COMPLETE ){
-		if (context->setup_pkt.bmRequestType.bitmap_t.dir == USBD_REQUEST_TYPE_DIRECTION_DEVICE_TO_HOST) {
+		if (usbd_control_setup_request_direction(context) == USBD_REQUEST_TYPE_DIRECTION_DEVICE_TO_HOST) {
 			usbd_control_datain_stage(context);
 		} else {
 			if (context->addr & USBD_ENDPOINT_ADDRESS_IN) {
@@ -242,8 +154,7 @@ void usbd_control_datain_stage(usbd_control_t * context) {
 }
 
 
-/*! \details
- */
+
 void usbd_control_dataout_stage(usbd_control_t * context){
 	u32 nbyte;
 	nbyte = mcu_usb_rd_ep(context->constants->port, 0x00, context->data.dptr);
@@ -252,14 +163,12 @@ void usbd_control_dataout_stage(usbd_control_t * context){
 }
 
 
-/*! \details
- */
+//send a zero length packet
 void usbd_control_statusin_stage (usbd_control_t * context){
 	mcu_usb_wr_ep(context->constants->port, 0x80, NULL, 0);
 }
 
-/*! \details
- */
+//receive a zero length packet
 void usbd_control_statusout_stage (usbd_control_t * context){
 	mcu_usb_rd_ep(context->constants->port, 0x00, context->buf);
 }
