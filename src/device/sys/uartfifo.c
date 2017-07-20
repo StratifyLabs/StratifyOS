@@ -48,7 +48,7 @@ static int data_received(void * context, mcu_event_t * data){
 	cfgp = cfg->config;
 	state = cfg->state;
 
-	while( mcu_uart_getbyte(cfgp->port, &c) == 0 ){
+	while( mcu_uart_get(cfgp->port, &c) == 0 ){
 		cfgp->fifo.buffer[ state->fifo.head ] = c;
 		fifo_inc_head(&(state->fifo), cfgp->fifo.size);
 	}

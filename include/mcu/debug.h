@@ -37,8 +37,6 @@ extern "C" {
 #include "uart.h"
 
 
-#define MCU_DEBUG_PORT 0
-
 #if !defined ___debug
 #define mcu_debug_init() 0
 #define mcu_priv_write_debug_uart(x)

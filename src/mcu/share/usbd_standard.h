@@ -20,7 +20,7 @@
 #ifndef USBD_STANDARD_H_
 #define USBD_STANDARD_H_
 
-#include "mcu/usbd_control.h"
+#include "mcu/usbd/control.h"
 
 u32 usbd_standard_request_set_interface(usbd_control_t * context);
 u32 usbd_standard_request_get_interface(usbd_control_t * context);

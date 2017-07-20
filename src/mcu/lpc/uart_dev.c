@@ -388,7 +388,17 @@ int mcu_uart_setaction(int port, void * ctl){
 	return 0;
 }
 
-int mcu_uart_clear(int port, void * ctl){
+int mcu_uart_put(int port, void * ctl){
+	char c = (u32)ctl;
+	LPC_UART_Type * uart_regs = uart_regs_table[port];
+	while( (uart_regs->LSR & ULSR_THRE) == 0 ){
+		; //wait for transmitter to be free
+	}
+	uart_regs->THR = c;
+	while( (uart_regs->LSR & ULSR_THRE) == 0 ){
+		; //wait for transmitter to be free
+	}
+
 	return 0;
 }
 
@@ -401,7 +411,7 @@ int mcu_uart_flush(int port, void * ctl){
 }
 
 
-int mcu_uart_getbyte(int port, void * ctl){
+int mcu_uart_get(int port, void * ctl){
 	char * dest;
 	LPC_UART_Type * uart_regs = uart_regs_table[port];
 	if( uart_regs->LSR & ULSR_RDR ){ //check to see if a byte is available

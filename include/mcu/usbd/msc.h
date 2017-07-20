@@ -30,8 +30,8 @@
 
 /*! \file */
 
-#ifndef USBD_MSC_H_
-#define USBD_MSC_H_
+#ifndef MCU_USBD_MSC_H_
+#define MCU_USBD_MSC_H_
 
 
 //! \todo add an init function
@@ -52,6 +52,6 @@
 
 
 
-#endif /* USBD_MSC_H_ */
+#endif /* MCU_USBD_MSC_H_ */
 
 /*! @} */

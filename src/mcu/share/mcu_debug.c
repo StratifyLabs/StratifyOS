@@ -32,12 +32,12 @@
 char mcu_debug_buffer[MCU_DEBUG_BUFFER_SIZE];
 
 int mcu_debug_init(){
-	int port;
 	uart_attr_t attr;
+	devfs_handle_t handle;
 
 	//Open the debugging UART
-	port = MCU_DEBUG_PORT;
-	if( mcu_uart_open((devfs_handle_t*)&port) < 0 ){
+	handle.port = mcu_board_config.debug_uart_port;
+	if( mcu_uart_open(&handle) < 0 ){
 		return -1;
 	}
 
@@ -48,40 +48,19 @@ int mcu_debug_init(){
 	attr.o_flags = UART_FLAG_IS_PARITY_NONE | UART_FLAG_IS_STOP1;
 	attr.width = 8;
 
-	return mcu_uart_setattr(port, &attr);
-}
-
-static int write_done(void * context, mcu_event_t * data){
-	int * busy = (int*)context;
-	*busy = 0;
-	return 0;
+	return mcu_uart_setattr(handle.port, &attr);
 }
 
 
 void mcu_priv_write_debug_uart(void * args){
 	int nbyte;
-	int err;
-	volatile int busy;
-	devfs_async_t wop;
-	int port = MCU_DEBUG_PORT;
-	wop.loc = 0;
-	wop.buf = mcu_debug_buffer;
-	wop.nbyte = 0;
-	wop.handler.callback = write_done;
-	wop.handler.context = (void*)&busy;
-	nbyte = strlen(mcu_debug_buffer);
-	wop.nbyte = nbyte;
-	busy = 1;
+	int i;
+	nbyte = strnlen(mcu_debug_buffer, MCU_DEBUG_BUFFER_SIZE);
 
-	if ( (err = mcu_uart_write((devfs_handle_t*)&port, &wop)) == 0 ){
-		while(busy == 1){
-			;
-		}
-	} else {
-		if( err < 0 ){
-			while(1);
-		}
+	for(i=0; i < nbyte; i++){
+		mcu_uart_put(mcu_board_config.debug_uart_port, (void*)(u32)mcu_debug_buffer[i]);
 	}
+
 }
 
 #endif

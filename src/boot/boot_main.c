@@ -11,7 +11,7 @@
 #include "mcu/pio.h"
 #include "mcu/usb.h"
 #include "mcu/debug.h"
-#include "mcu/usbd_control.h"
+#include "mcu/usbd/control.h"
 #include "mcu/boot_debug.h"
 #include "boot_link.h"
 #include "boot_config.h"

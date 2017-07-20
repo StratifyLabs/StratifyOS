@@ -27,15 +27,13 @@ extern int _mcu_uart_dev_powered_on(int port);
 extern int _mcu_uart_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop);
 extern int _mcu_uart_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop);
 
-extern int _mcu_3_uart_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop);
-extern int _mcu_3_uart_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop);
 
 int (* const uart_ioctl_func_table[I_MCU_TOTAL + I_UART_TOTAL])(int, void*) = {
 		mcu_uart_getinfo,
 		mcu_uart_setattr,
 		mcu_uart_setaction,
-		mcu_uart_clear,
-		mcu_uart_getbyte,
+		mcu_uart_get,
+		mcu_uart_put,
 		mcu_uart_flush
 };
 

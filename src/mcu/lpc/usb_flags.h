@@ -119,7 +119,7 @@ typedef struct MCU_PACK {
   uint8_t  bmAttributes;
   uint16_t wMaxPacketSize;
   uint8_t  bInterval;
-} mcu_usb_ep_desc_t;
+} mcu_usbd_endpoint_descriptor_t;
 
 
 

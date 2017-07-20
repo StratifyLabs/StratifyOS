@@ -23,16 +23,16 @@
 #include "sys/ioctl.h"
 #include "mcu/mcu.h"
 #include "mcu/usb.h"
+#include "mcu/boot_debug.h"
 #include "mcu/debug.h"
 #include "mcu/sys.h"
-#include "mcu/usbd_control.h"
+#include "mcu/usbd/control.h"
 #include "usbd_standard.h"
 
 
 static void stall(usbd_control_t * context){
-	mcu_usb_stallep(context->constants->port, (void*)(USB_ENDPOINT_IN|0x00));
+	mcu_usb_stallep(context->constants->port, (void*)(USBD_ENDPOINT_ADDRESS_IN|0x00));
 	context->data.nbyte = 0;
-	USBD_DEBUG(0x8000);
 }
 
 void usbd_control_priv_init(void * args){
@@ -55,11 +55,8 @@ int usbd_control_handler(void * context_object, mcu_event_t * usb_event /*! Call
 	u32 o_events = usb_event->o_events;
 	usbd_control_t * context = context_object;
 
-	USBD_DEBUG(0x1000);
-
 
 	if ( o_events & MCU_EVENT_FLAG_SETUP ){
-		USBD_DEBUG(0x2000);
 		usbd_control_handler_setup_stage(context);
 	}
 
@@ -71,45 +68,37 @@ int usbd_control_handler(void * context_object, mcu_event_t * usb_event /*! Call
 
 	if ( o_events & MCU_EVENT_FLAG_SETUP ){
 		if ( context->setup_pkt.bmRequestType.bitmap_t.type == USBD_REQUEST_STANDARD){
-			USBD_DEBUG(0x4000);
 			switch (context->setup_pkt.bRequest) {
 
-			case USBD_REQUEST_GET_STATUS:
-				USBD_DEBUG(0x10000);
+			case USBD_REQUEST_STANDARD_GET_STATUS:
 				if (!usdd_standard_request_get_status(context)) {
 					stall(context); return 1;
 				}
 				usbd_control_datain_stage(context);
 				break;
 
-			case USBD_REQUEST_CLEAR_FEATURE:
-				USBD_DEBUG(0x20000);
+			case USBD_REQUEST_STANDARD_CLEAR_FEATURE:
 				if (!usbd_standard_request_set_clr_feature(context, 0)) {
 					stall(context); return 1;
 				}
 				usbd_control_statusin_stage(context);
-				context->constants->feature_event(context);
 				break;
 
-			case USBD_REQUEST_SET_FEATURE:
-				USBD_DEBUG(0x40000);
+			case USBD_REQUEST_STANDARD_SET_FEATURE:
 				if (!usbd_standard_request_set_clr_feature(context, 1)) {
 					stall(context); return 1;
 				}
 				usbd_control_statusin_stage(context);
-				context->constants->feature_event(context);
 				break;
 
-			case USBD_REQUEST_SET_ADDRESS:
-				USBD_DEBUG(0x80000);
+			case USBD_REQUEST_STANDARD_SET_ADDRESS:
 				if (!usbd_standard_request_set_address(context)) {
 					stall(context); return 1;
 				}
 				usbd_control_statusin_stage(context);
 				break;
 
-			case USBD_REQUEST_GET_DESCRIPTOR:
-				USBD_DEBUG(0x100000);
+			case USBD_REQUEST_STANDARD_GET_DESCRIPTOR:
 				if (!usbd_standard_request_get_descriptor(context)) {
 					stall(context);
 					return 1;
@@ -117,14 +106,12 @@ int usbd_control_handler(void * context_object, mcu_event_t * usb_event /*! Call
 				usbd_control_datain_stage(context);
 				break;
 
-			case USBD_REQUEST_SET_DESCRIPTOR:
-				USBD_DEBUG(0x200000);
+			case USBD_REQUEST_STANDARD_SET_DESCRIPTOR:
 				mcu_usb_stallep(context->constants->port, (void*)0x00);
 				context->data.nbyte = 0;
 				break;
 
-			case USBD_REQUEST_GET_CONFIGURATION:
-				USBD_DEBUG(0x400000);
+			case USBD_REQUEST_STANDARD_GET_CONFIGURATION:
 				if (!usbd_standard_request_get_config(context)) {
 					stall(context);
 					return 1;
@@ -132,35 +119,27 @@ int usbd_control_handler(void * context_object, mcu_event_t * usb_event /*! Call
 				usbd_control_datain_stage(context);
 				break;
 
-			case USBD_REQUEST_SET_CONFIGURATION:
-				USBD_DEBUG(0x800000);
+			case USBD_REQUEST_STANDARD_SET_CONFIGURATION:
 				if (!usbd_standard_request_set_config(context)) {
 					stall(context); return 1;
 				}
 				usbd_control_statusin_stage(context);
 
-				//execute the configure event callback so that the class can handle the change
-				context->constants->configure_event(context);
-
 				break;
 
-			case USBD_REQUEST_GET_INTERFACE:
-				USBD_DEBUG(0x1000000);
+			case USBD_REQUEST_STANDARD_GET_INTERFACE:
+
 				if (!usbd_standard_request_get_interface(context)) {
 					stall(context); return 1;
 				}
 				usbd_control_datain_stage(context);
 				break;
 
-			case USBD_REQUEST_SET_INTERFACE:
-				USBD_DEBUG(0x2000000);
+			case USBD_REQUEST_STANDARD_SET_INTERFACE:
 				if (!usbd_standard_request_set_interface(context)) {
 					stall(context); return 1;
 				}
 				usbd_control_statusin_stage(context);
-
-				//execute the interface event callback so that the class can handle the change
-				context->constants->interface_event(context);
 
 				break;
 			default:
@@ -168,13 +147,14 @@ int usbd_control_handler(void * context_object, mcu_event_t * usb_event /*! Call
 				return 1;
 			}
 
+
 		} else {
 			stall(context);
 			return 1;
 		}
 
 	} else if ( o_events & MCU_EVENT_FLAG_DATA_READY ){ //Data out stage
-		if (context->setup_pkt.bmRequestType.bitmap_t.dir == USBD_REQUEST_HOST_TO_DEVICE) {
+		if (context->setup_pkt.bmRequestType.bitmap_t.dir == USBD_REQUEST_TYPE_DIRECTION_HOST_TO_DEVICE) {
 
 			if (context->data.nbyte) {
 
@@ -187,19 +167,18 @@ int usbd_control_handler(void * context_object, mcu_event_t * usb_event /*! Call
 						stall(context);
 						return 1;
 
-					case USBD_REQUEST_CLASS:
+					case USBD_REQUEST_TYPE_CLASS:
 						if (1){
 
 							switch (context->setup_pkt.bmRequestType.bitmap_t.recipient) {
 
-							case USBD_REQUEST_TO_INTERFACE:
-								if ( context->constants->adc_if_req(context, 0) ) return 1;
+							case USBD_REQUEST_TYPE_RECIPIENT_INTERFACE:
 								if ( context->constants->msc_if_req(context, 0) ) return 1;
 								if ( context->constants->cdc_if_req(context, 0) ) return 1;
 								if ( context->constants->hid_if_req(context, 0) ) return 1;
 
-							case USBD_REQUEST_TO_DEVICE:
-							case USBD_REQUEST_TO_ENDPOINT:
+							case USBD_REQUEST_TYPE_RECIPIENT_DEVICE:
+							case USBD_REQUEST_TYPE_RECIPIENT_ENDPOINT:
 
 							default:
 								stall(context);
@@ -217,14 +196,11 @@ int usbd_control_handler(void * context_object, mcu_event_t * usb_event /*! Call
 		}
 
 	} else if ( o_events & MCU_EVENT_FLAG_WRITE_COMPLETE ){
-		USBD_DEBUG(0x4000000);
-		if (context->setup_pkt.bmRequestType.bitmap_t.dir == USBD_REQUEST_DEVICE_TO_HOST) {
+		if (context->setup_pkt.bmRequestType.bitmap_t.dir == USBD_REQUEST_TYPE_DIRECTION_DEVICE_TO_HOST) {
 			usbd_control_datain_stage(context);
 		} else {
-			USBD_DEBUG(0x8000000);
-			if (context->addr & USB_ENDPOINT_IN) {
+			if (context->addr & USBD_ENDPOINT_ADDRESS_IN) {
 				context->addr &= 0x7F;
-				USBD_DEBUG(0x10000000);
 				mcu_usb_setaddr(context->constants->port, (void*)((int)context->addr));
 			}
 		}

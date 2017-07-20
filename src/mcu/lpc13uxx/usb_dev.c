@@ -465,8 +465,8 @@ void usb_cfg(int port, uint32_t cfg){
 }
 
 void usb_cfg_ep(int port, void * ep_desc){
-	//mcu_usb_ep_desc_t * ep_ptr;
-	//ep_ptr = (mcu_usb_ep_desc_t*)ep_desc;
+	//mcu_usbd_endpoint_descriptor_t * ep_ptr;
+	//ep_ptr = (mcu_usbd_endpoint_descriptor_t*)ep_desc;
 	//num = calc_ep_addr(ep_ptr->bEndpointAddress);
 	//LPC_USB->ReEp |= (1 << num);
 	//LPC_USB->EpInd = num;

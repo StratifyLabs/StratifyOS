@@ -22,24 +22,25 @@ limitations under the License.
 #include "mcu/usbfifo.h"
 #include "sos/link/link.h"
 #include "sos/link/link_transport.h"
-#include "mcu/usbd_control.h"
+#include "mcu/usbd/control.h"
+#include "mcu/usbd/cdc.h"
 
 /* \details This structure defines the USB descriptors.  This
  * value is read over the control channel by the host to configure
  * the device.
  */
 typedef struct MCU_PACK {
-	usb_cfg_desc_t cfg /* The configuration descriptor */;
-	usb_desc_vcp_t vcp0;
-	usb_desc_vcp_t vcp1;
+	usbd_configuration_descriptor_t cfg /* The configuration descriptor */;
+	usbd_cdc_configuration_descriptor_t vcp0;
+	usbd_cdc_configuration_descriptor_t vcp1;
 	u8 terminator  /* A null terminator used by the driver (required) */;
-} stratify_link_transport_usb_cfg_desc_t;
+} stratify_link_transport_usbd_configuration_descriptor_t;
 
 typedef struct MCU_PACK {
-	usb_cfg_desc_t cfg /* The configuration descriptor */;
-	usb_desc_vcp_t vcp0;
+	usbd_configuration_descriptor_t cfg /* The configuration descriptor */;
+	usbd_cdc_configuration_descriptor_t vcp0;
 	u8 terminator  /* A null terminator used by the driver (required) */;
-} stratify_link_boot_transport_usb_cfg_desc_t;
+} stratify_link_boot_transport_usbd_configuration_descriptor_t;
 
 
 #define STRATIFY_LINK_TRANSPORT_USB_DESC_MANUFACTURER_SIZE 13
@@ -75,16 +76,16 @@ struct MCU_PACK stratify_link_transport_usb_string_t {
 	u8 bLength;
 	u8 bDescriptorType;
 	u16 wLANGID;
-	usb_declare_string(STRATIFY_LINK_TRANSPORT_USB_DESC_MANUFACTURER_SIZE) manufacturer;
-	usb_declare_string(STRATIFY_LINK_TRANSPORT_USB_DESC_PRODUCT_SIZE) product;
-	usb_declare_string(STRATIFY_LINK_TRANSPORT_USB_DESC_SERIAL_SIZE) serial;
-	usb_declare_string(STRATIFY_LINK_TRANSPORT_USB_DESC_VCP_0_SIZE) vcp0;
-	usb_declare_string(STRATIFY_LINK_TRANSPORT_USB_DESC_VCP_1_SIZE) vcp1;
+	usbd_declare_string(STRATIFY_LINK_TRANSPORT_USB_DESC_MANUFACTURER_SIZE) manufacturer;
+	usbd_declare_string(STRATIFY_LINK_TRANSPORT_USB_DESC_PRODUCT_SIZE) product;
+	usbd_declare_string(STRATIFY_LINK_TRANSPORT_USB_DESC_SERIAL_SIZE) serial;
+	usbd_declare_string(STRATIFY_LINK_TRANSPORT_USB_DESC_VCP_0_SIZE) vcp0;
+	usbd_declare_string(STRATIFY_LINK_TRANSPORT_USB_DESC_VCP_1_SIZE) vcp1;
 };
 
 //replace these to customize the USB device descriptors
-extern const usb_dev_desc_t stratify_link_transport_usb_dev_desc MCU_WEAK;
-extern const stratify_link_transport_usb_cfg_desc_t stratify_link_transport_usb_cfg_desc MCU_WEAK;
+extern const usbd_device_descriptor_t stratify_link_transport_usb_dev_desc MCU_WEAK;
+extern const stratify_link_transport_usbd_configuration_descriptor_t stratify_link_transport_usb_cfg_desc MCU_WEAK;
 extern const struct stratify_link_transport_usb_string_t stratify_link_transport_usb_string_desc MCU_WEAK;
 extern const usbd_control_constants_t stratify_link_transport_usb_constants;
 
@@ -95,7 +96,7 @@ int stratify_link_transport_usb_close(link_transport_phy_t * handle);
 void stratify_link_transport_usb_wait(int msec);
 void stratify_link_transport_usb_flush(link_transport_phy_t handle);
 void stratify_link_transport_usb_notify(const void * buf, int nbyte);
-int stratify_link_transport_usb_cdc_if_req(void * context, int event);
+int stratify_link_transport_usbd_cdc_if_req(void * context, int event);
 
 //provided for the link device fifo
 //USBFIFO_DEVICE("link-phy-usb", &stratify_link_transport_usb_fifo_cfg, &stratify_link_transport_usb_fifo_state, 0666, USER_ROOT, GROUP_ROOT),
@@ -103,8 +104,8 @@ extern const usbfifo_cfg_t stratify_link_transport_usb_fifo_cfg;
 extern usbfifo_state_t stratify_link_transport_usb_fifo_state MCU_SYS_MEM;
 
 //replace these to customize the USB device descriptors
-extern const usb_dev_desc_t stratify_link_boot_transport_usb_dev_desc MCU_WEAK;
-extern const stratify_link_boot_transport_usb_cfg_desc_t stratify_link_boot_transport_usb_cfg_desc MCU_WEAK;
+extern const usbd_device_descriptor_t stratify_link_boot_transport_usb_dev_desc MCU_WEAK;
+extern const stratify_link_boot_transport_usbd_configuration_descriptor_t stratify_link_boot_transport_usb_cfg_desc MCU_WEAK;
 extern const struct stratify_link_transport_usb_string_t stratify_link_boot_transport_usb_string_desc MCU_WEAK;
 extern const usbd_control_constants_t stratify_link_boot_transport_usb_constants;
 

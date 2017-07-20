@@ -144,10 +144,6 @@ typedef struct MCU_PACK {
 #define I_UART_SETATTR _IOCTLW(UART_IOC_IDENT_CHAR, I_MCU_SETATTR, uart_attr_t)
 #define I_UART_SETACTION _IOCTLW(UART_IOC_IDENT_CHAR, I_MCU_SETACTION, mcu_action_t)
 
-/*! \brief This request clears the receive buffer.
- */
-#define I_UART_CLEAR _IOCTL(UART_IOC_IDENT_CHAR, I_MCU_TOTAL + 0)
-
 /*! \brief See details below.
  * \details This gets a single byte from the UART.  The request returns
  * -1 if no bytes are available to get.  Otherwise, 0 is returned and the character
@@ -157,13 +153,30 @@ typedef struct MCU_PACK {
  * #include <dev/uart.h>
  *
  * char c;
- * if ( ioctl(uart_fd, I_UART_GETBYTE, &c) == 0 ){
+ * if ( ioctl(uart_fd, I_UART_GET, &c) == 0 ){
  * 	//one byte from the UART was written to c
  * }
  *
  * \endcode
  */
-#define I_UART_GETBYTE _IOCTLR(UART_IOC_IDENT_CHAR, I_MCU_TOTAL + 1, char)
+#define I_UART_GET _IOCTLR(UART_IOC_IDENT_CHAR, I_MCU_TOTAL + 0, char)
+
+/*! \brief See details below.
+ * \details This gets a single byte from the UART.  The request returns
+ * -1 if no bytes are available to get.  Otherwise, 0 is returned and the character
+ * is written to the ctl argument.
+ * Example:
+ * \code
+ * #include <dev/uart.h>
+ *
+ * char c = 'j';
+ * if ( ioctl(uart_fd, I_UART_PUT, c) == 0 ){
+ * 	//one byte from the UART was written to c
+ * }
+ *
+ * \endcode
+ */
+#define I_UART_PUT _IOCTL(UART_IOC_IDENT_CHAR, I_MCU_TOTAL + 1)
 
 /*! \brief See details below.
  * \details This flushes all incoming bytes from the buffer.

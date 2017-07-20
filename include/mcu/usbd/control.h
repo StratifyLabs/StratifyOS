@@ -25,14 +25,14 @@
  *
  */
 
-#ifndef USBD_H_
-#define USBD_H_
+#ifndef MCU_USBD_CONTROL_H_
+#define MCU_USBD_CONTROL_H_
 
 #include "sos/dev/usb.h"
 #include "mcu/types.h"
 
-#include "usbd_defs.h"
-#include "usbd_typedefs.h"
+#include "defines.h"
+#include "typedefs.h"
 
 //#define USBD_PORT 0
 #define USBD_ALT_SETTING_SIZE 16
@@ -62,7 +62,7 @@ typedef struct {
 } usbd_control_data_t;
 
 typedef struct MCU_PACK {
-	usb_setup_pkt_t setup_pkt;
+	usbd_setup_packet_t setup_pkt;
 	usbd_control_data_t data;
 	u16 status;
 	u8 addr;
@@ -76,9 +76,8 @@ typedef struct MCU_PACK {
 	const usbd_control_constants_t * constants;
 } usbd_control_t;
 
-int usbd_control_handler(void * context, mcu_event_t * data);
 void usbd_control_priv_init(void * context);
-
+int usbd_control_handler(void * context, mcu_event_t * data);
 
 void usbd_control_handler_setup_stage(usbd_control_t * context);
 void usbd_control_datain_stage(usbd_control_t * context) MCU_NEVER_INLINE;
@@ -91,6 +90,6 @@ char htoc(int nibble);
 
 
 
-#endif /* USB_DEVICE_H_ */
+#endif /* MCU_USBD_CONTROL_H_ */
 
 /*! @} */

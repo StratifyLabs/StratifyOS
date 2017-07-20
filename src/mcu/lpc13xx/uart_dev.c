@@ -293,7 +293,7 @@ int mcu_uart_flush(int port, void * ctl){
 }
 
 
-int mcu_uart_getbyte(int port, void * ctl){
+int mcu_uart_get(int port, void * ctl){
 	char * dest;
 	LPC_UART_Type * uart_regs = uart_regs_table[port];
 	if( uart_regs->LSR & ULSR_RDR ){ //check to see if a byte is available

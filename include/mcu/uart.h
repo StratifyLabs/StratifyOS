@@ -46,18 +46,12 @@ int mcu_uart_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_PRIV_COD
 int mcu_uart_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
 int mcu_uart_close(const devfs_handle_t * cfg) MCU_PRIV_CODE;
 
-int mcu_3_uart_open(const devfs_handle_t * cfg) MCU_PRIV_CODE;
-int mcu_3_uart_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_PRIV_CODE;
-int mcu_3_uart_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_PRIV_CODE;
-int mcu_3_uart_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
-int mcu_3_uart_close(const devfs_handle_t * cfg) MCU_PRIV_CODE;
-
 int mcu_uart_getinfo(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_uart_setattr(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_uart_setaction(int port, void * ctl) MCU_PRIV_CODE;
 
-int mcu_uart_clear(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_uart_getbyte(int port, void * ctl) MCU_PRIV_CODE;
+int mcu_uart_get(int port, void * ctl) MCU_PRIV_CODE;
+int mcu_uart_put(int port, void * ctl) MCU_PRIV_CODE;
 int mcu_uart_flush(int port, void * ctl) MCU_PRIV_CODE;
 
 #ifdef __cplusplus

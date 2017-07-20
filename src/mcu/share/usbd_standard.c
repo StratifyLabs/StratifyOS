@@ -20,12 +20,13 @@
 #include "mcu/usb.h"
 #include "mcu/core.h"
 #include "mcu/mcu.h"
+#include "mcu/boot_debug.h"
 #include "usbd_standard.h"
 
-#define USBD_EP_MASK (USB_ENDPOINT_IN|(mcu_config.usb_logical_endpoint_count-1))
+#define USBD_EP_MASK (USBD_ENDPOINT_ADDRESS_IN|(mcu_config.usb_logical_endpoint_count-1))
 
 static int usb_dev_decode_ep(usbd_control_t * context, int ep){
-	if ( ep & USB_ENDPOINT_IN ){
+	if ( ep & USBD_ENDPOINT_ADDRESS_IN ){
 		return ((ep << mcu_config.usb_logical_endpoint_count) << (ep & (mcu_config.usb_logical_endpoint_count-1)));
 	} else {
 		return (1<<ep);
@@ -74,11 +75,11 @@ u32 usdd_standard_request_get_status(usbd_control_t * context) {
 
 	u16 * bufp = (u16*)context->buf;
 	switch (context->setup_pkt.bmRequestType.bitmap_t.recipient){
-	case USBD_REQUEST_TO_DEVICE:
+	case USBD_REQUEST_TYPE_RECIPIENT_DEVICE:
 		context->data.dptr = (u8 *)&context->status;
 		break;
 
-	case USBD_REQUEST_TO_INTERFACE:
+	case USBD_REQUEST_TYPE_RECIPIENT_INTERFACE:
 		if ((context->cfg != 0) && (context->setup_pkt.wIndex.b[0] < context->num_interfaces)) {
 			*bufp = 0;
 			context->data.dptr = context->buf;
@@ -87,7 +88,7 @@ u32 usdd_standard_request_get_status(usbd_control_t * context) {
 		}
 		break;
 
-	case USBD_REQUEST_TO_ENDPOINT:
+	case USBD_REQUEST_TYPE_RECIPIENT_ENDPOINT:
 		i = context->setup_pkt.wIndex.b[0] & USBD_EP_MASK;
 		j = usb_dev_decode_ep(context, i);
 		if (((context->cfg != 0) || ((i & (mcu_config.usb_logical_endpoint_count-1)) == 0)) && (context->ep_mask & j)) {
@@ -111,26 +112,26 @@ u32 usbd_standard_request_set_clr_feature(usbd_control_t * context, u32 sc) {
 
 	switch (context->setup_pkt.bmRequestType.bitmap_t.recipient) {
 
-	case USBD_REQUEST_TO_DEVICE:
-		if (context->setup_pkt.wValue.w == USB_FEATURE_REMOTE_WAKEUP) {
+	case USBD_REQUEST_TYPE_RECIPIENT_DEVICE:
+		if (context->setup_pkt.wValue.w == USBD_REQUEST_STANDARD_FEATURE_REMOTE_WAKEUP) {
 			if (sc) {
-				context->status |=  USB_GETSTATUS_REMOTE_WAKEUP;
+				context->status |=  USBD_REQUEST_STANDARD_STATUS_REMOTE_WAKEUP;
 			} else {
-				context->status &= ~USB_GETSTATUS_REMOTE_WAKEUP;
+				context->status &= ~USBD_REQUEST_STANDARD_STATUS_REMOTE_WAKEUP;
 			}
 		} else {
 			return 0;
 		}
 		break;
 
-	case USBD_REQUEST_TO_INTERFACE:
+	case USBD_REQUEST_TYPE_RECIPIENT_INTERFACE:
 		return 0;
 
-	case USBD_REQUEST_TO_ENDPOINT:
+	case USBD_REQUEST_TYPE_RECIPIENT_ENDPOINT:
 		i = context->setup_pkt.wIndex.b[0] & USBD_EP_MASK;
 		j = usb_dev_decode_ep(context, i);
 		if ((context->cfg != 0) && ((i & (mcu_config.usb_logical_endpoint_count-1)) != 0) && (context->ep_mask & j)) {
-			if (context->setup_pkt.wValue.w == USB_FEATURE_ENDPOINT_STALL) {
+			if (context->setup_pkt.wValue.w == USBD_REQUEST_STANDARD_FEATURE_ENDPOINT_STALL) {
 				if (sc) {
 					mcu_usb_stallep(context->constants->port, (void*)i);
 					context->ep_halt |=  j;
@@ -160,8 +161,8 @@ u32 usbd_standard_request_set_address (usbd_control_t * context) {
 
 	switch (context->setup_pkt.bmRequestType.bitmap_t.recipient) {
 
-	case USBD_REQUEST_TO_DEVICE:
-		context->addr = USB_ENDPOINT_IN | context->setup_pkt.wValue.b[0];
+	case USBD_REQUEST_TYPE_RECIPIENT_DEVICE:
+		context->addr = USBD_ENDPOINT_ADDRESS_IN | context->setup_pkt.wValue.b[0];
 		break;
 
 	default:
@@ -174,7 +175,7 @@ u32 usbd_standard_request_get_config (usbd_control_t * context) {
 
 	switch (context->setup_pkt.bmRequestType.bitmap_t.recipient) {
 
-	case USBD_REQUEST_TO_DEVICE:
+	case USBD_REQUEST_TYPE_RECIPIENT_DEVICE:
 		context->data.dptr = &context->cfg;
 		break;
 
@@ -187,21 +188,21 @@ u32 usbd_standard_request_get_config (usbd_control_t * context) {
 u32 usbd_standard_request_set_config (usbd_control_t * context) {
 	u32 i;
 	u32 j;
-	usb_common_desc_t *dptr;
+	usbd_common_descriptor_t *dptr;
 	u8 alt_setting = 0;
 
-	if(context->setup_pkt.bmRequestType.bitmap_t.recipient == USBD_REQUEST_TO_DEVICE){
+	if(context->setup_pkt.bmRequestType.bitmap_t.recipient == USBD_REQUEST_TYPE_RECIPIENT_DEVICE){
 
 		if ( context->setup_pkt.wValue.b[0] ) {
-			dptr = (usb_common_desc_t*)context->constants->config;
-			while (dptr->bLength) {
+			dptr = (usbd_common_descriptor_t*)context->constants->config;
+			while(dptr->bLength) {
 
-				switch (dptr->bDescriptorType) {
+				switch(dptr->bDescriptorType) {
 
-				case USB_CONFIGURATION_DESCRIPTOR_TYPE:
-					if (((usb_cfg_desc_t *)dptr)->bConfigurationValue == context->setup_pkt.wValue.b[0]) {
+				case USBD_DESCRIPTOR_TYPE_CONFIGURATION:
+					if (((usbd_configuration_descriptor_t *)dptr)->bConfigurationValue == context->setup_pkt.wValue.b[0]) {
 						context->cfg = context->setup_pkt.wValue.b[0];
-						context->num_interfaces = ((usb_cfg_desc_t *)dptr)->bNumInterfaces;
+						context->num_interfaces = ((usbd_configuration_descriptor_t *)dptr)->bNumInterfaces;
 						for (i = 0; i < USBD_ALT_SETTING_SIZE; i++) {
 							context->alt_setting[i] = 0;
 						}
@@ -210,32 +211,33 @@ u32 usbd_standard_request_set_config (usbd_control_t * context) {
 								mcu_usb_disableep(context->constants->port, (void*)i);
 							}
 							if (context->ep_mask & ((1 << mcu_config.usb_logical_endpoint_count) << i)) {
-								mcu_usb_disableep(context->constants->port, (void*)(i|USB_ENDPOINT_IN));
+								mcu_usb_disableep(context->constants->port, (void*)(i|USBD_ENDPOINT_ADDRESS_IN));
 							}
 						}
 						usbd_control_init_ep(context);
 						mcu_usb_configure(context->constants->port, (void*)true);
 
-						if (((usb_cfg_desc_t *)dptr)->bmAttributes & USB_CONFIG_POWERED_MASK) {
-							context->status |=  USB_GETSTATUS_SELF_POWERED;
+						if (((usbd_configuration_descriptor_t *)dptr)->bmAttributes & USBD_CONFIGURATION_ATTRIBUTES_POWERED_MASK) {
+							context->status |=  USBD_REQUEST_STANDARD_STATUS_SELF_POWERED;
 						} else {
-							context->status &= ~USB_GETSTATUS_SELF_POWERED;
+							context->status &= ~USBD_REQUEST_STANDARD_STATUS_SELF_POWERED;
 						}
 					} else {
-						dptr = usbd_control_add_ptr(context, dptr,((usb_cfg_desc_t *)dptr)->wTotalLength);
+						//jump to the next configuration
+						dptr = usbd_control_add_ptr(context, dptr,((usbd_configuration_descriptor_t *)dptr)->wTotalLength);
 						continue;
 					}
 					break;
 
-				case USB_INTERFACE_DESCRIPTOR_TYPE:
-					alt_setting = ((usb_interface_desc_t *)dptr)->bAlternateSetting;
+				case USBD_DESCRIPTOR_TYPE_INTERFACE:
+					alt_setting = ((usbd_interface_descriptor_t *)dptr)->bAlternateSetting;
 					break;
 
 
 					//enable all the endpoints in the configuration
-				case USB_ENDPOINT_DESCRIPTOR_TYPE:
+				case USBD_DESCRIPTOR_TYPE_ENDPOINT:
 					if( alt_setting == 0 ){ //when setting the config, use default alt setting of 0
-						i = ((usb_ep_desc_t *)dptr)->bEndpointAddress & USBD_EP_MASK;
+						i = ((usbd_endpoint_descriptor_t *)dptr)->bEndpointAddress & USBD_EP_MASK;
 						j = usb_dev_decode_ep(context, i);
 						context->ep_mask |= j;
 						mcu_usb_cfgep(context->constants->port, dptr);
@@ -249,14 +251,14 @@ u32 usbd_standard_request_set_config (usbd_control_t * context) {
 				dptr = usbd_control_add_ptr(context, dptr, dptr->bLength);
 			}
 		} else {
-			//configuration zero disables all USB configurations
+			//configuration zero disables all USB configurations -- enter addressed state
 			context->cfg = 0;
 			for (i = 1; i < mcu_config.usb_logical_endpoint_count; i++) {
 				if (context->ep_mask & (1 << i)) {
 					mcu_usb_disableep(context->constants->port, (void*)i);
 				}
 				if (context->ep_mask & ((1 << mcu_config.usb_logical_endpoint_count) << i)) {
-					mcu_usb_disableep(context->constants->port, (void*)(i|USB_ENDPOINT_IN));
+					mcu_usb_disableep(context->constants->port, (void*)(i|USBD_ENDPOINT_ADDRESS_IN));
 				}
 			}
 			usbd_control_init_ep(context);
@@ -267,14 +269,14 @@ u32 usbd_standard_request_set_config (usbd_control_t * context) {
 			return 0;
 		}
 
-		return true;
+		return 1;
 	}
 	return 0;
 }
 
 u32 usbd_standard_request_get_interface(usbd_control_t * context) {
 
-	if( context->setup_pkt.bmRequestType.bitmap_t.recipient == USBD_REQUEST_TO_INTERFACE) {
+	if( context->setup_pkt.bmRequestType.bitmap_t.recipient == USBD_REQUEST_TYPE_RECIPIENT_INTERFACE) {
 		if ((context->cfg != 0) && (context->setup_pkt.wIndex.b[0] < context->num_interfaces)) {
 			context->data.dptr = context->alt_setting + context->setup_pkt.wIndex.b[0];
 		} else {
@@ -294,9 +296,9 @@ u32 usbd_standard_request_set_interface(usbd_control_t * context){
 	u32 i;
 	u32 j;
 	u32 ret;
-	usb_common_desc_t *dptr;
+	usbd_common_descriptor_t *dptr;
 
-	if (context->setup_pkt.bmRequestType.bitmap_t.recipient == USBD_REQUEST_TO_INTERFACE) {
+	if (context->setup_pkt.bmRequestType.bitmap_t.recipient == USBD_REQUEST_TYPE_RECIPIENT_INTERFACE) {
 
 		if (context->cfg == 0){
 			//configuration has not been set -- can't operate on the interface
@@ -304,22 +306,22 @@ u32 usbd_standard_request_set_interface(usbd_control_t * context){
 		}
 
 		ret = 0;
-		dptr  = (usb_common_desc_t *)context->constants->config;
+		dptr  = (usbd_common_descriptor_t *)context->constants->config;
 
 		while (dptr->bLength) {
 			switch (dptr->bDescriptorType) {
 
-			case USB_CONFIGURATION_DESCRIPTOR_TYPE:
-				if (((usb_cfg_desc_t *)dptr)->bConfigurationValue != context->cfg) {
+			case USBD_DESCRIPTOR_TYPE_CONFIGURATION:
+				if (((usbd_configuration_descriptor_t *)dptr)->bConfigurationValue != context->cfg) {
 					//if this isn't the right configuration, jump to the next configuration
-					dptr = usbd_control_add_ptr(context, dptr, ((usb_cfg_desc_t *)dptr)->wTotalLength);
+					dptr = usbd_control_add_ptr(context, dptr, ((usbd_configuration_descriptor_t *)dptr)->wTotalLength);
 					continue;
 				}
 				break;
 
-			case USB_INTERFACE_DESCRIPTOR_TYPE:
-				interface_number = ((usb_interface_desc_t *)dptr)->bInterfaceNumber;
-				alternate_setting = ((usb_interface_desc_t *)dptr)->bAlternateSetting;
+			case USBD_DESCRIPTOR_TYPE_INTERFACE:
+				interface_number = ((usbd_interface_descriptor_t *)dptr)->bInterfaceNumber;
+				alternate_setting = ((usbd_interface_descriptor_t *)dptr)->bAlternateSetting;
 				mask = 0;
 				if ((interface_number == context->setup_pkt.wIndex.b[0]) && (alternate_setting == context->setup_pkt.wValue.b[0])) {
 					ret = true;
@@ -332,9 +334,9 @@ u32 usbd_standard_request_set_interface(usbd_control_t * context){
 				}
 				break;
 
-			case USB_ENDPOINT_DESCRIPTOR_TYPE:
+			case USBD_DESCRIPTOR_TYPE_ENDPOINT:
 				if (interface_number == context->setup_pkt.wIndex.b[0]) {
-					i = ((usb_ep_desc_t *)dptr)->bEndpointAddress & USBD_EP_MASK;
+					i = ((usbd_endpoint_descriptor_t *)dptr)->bEndpointAddress & USBD_EP_MASK;
 					j = usb_dev_decode_ep(context, i);
 					if (alternate_setting == context->setup_pkt.wValue.b[0]) {
 						context->ep_mask |=  j;
@@ -366,23 +368,24 @@ u32 usbd_standard_request_set_interface(usbd_control_t * context){
 u32 usbd_standard_request_get_descriptor(usbd_control_t * context) {
 	union {
 		u8  * b;
-		const usb_string_desc_t * cstr;
-		usb_string_desc_t * str;
-		const usb_cfg_desc_t * cfg;
+		const usbd_string_descriptor_t * cstr;
+		usbd_string_descriptor_t * str;
+		const usbd_configuration_descriptor_t * cfg;
 	} ptr;
+
 	u32 len;
 	u32 i;
 
-	if( context->setup_pkt.bmRequestType.bitmap_t.recipient == USBD_REQUEST_TO_DEVICE) {
-		switch (context->setup_pkt.wValue.b[1]) {
+	if( context->setup_pkt.bmRequestType.bitmap_t.recipient == USBD_REQUEST_TYPE_RECIPIENT_DEVICE) {
+		switch (context->setup_pkt.wValue.b[1]){
 
-		case USB_DEVICE_DESCRIPTOR_TYPE:
+		case USBD_DESCRIPTOR_TYPE_DEVICE:
 			//give the device descriptor
 			context->data.dptr = (u8 * const)context->constants->device;
-			len = sizeof(usb_dev_desc_t);
+			len = sizeof(usbd_device_descriptor_t);
 			break;
 
-		case USB_CONFIGURATION_DESCRIPTOR_TYPE:
+		case USBD_DESCRIPTOR_TYPE_CONFIGURATION:
 			//give the entire configuration
 			ptr.cfg = context->constants->config;
 			for (i = 0; i != context->setup_pkt.wValue.b[0]; i++) {
@@ -397,7 +400,7 @@ u32 usbd_standard_request_get_descriptor(usbd_control_t * context) {
 			len = ptr.cfg->wTotalLength;
 			break;
 
-		case USB_STRING_DESCRIPTOR_TYPE:
+		case USBD_DESCRIPTOR_TYPE_STRING:
 			//give the string
 			ptr.cstr = context->constants->string;
 			for (i = 0; i != context->setup_pkt.wValue.b[0]; i++) {
@@ -416,7 +419,7 @@ u32 usbd_standard_request_get_descriptor(usbd_control_t * context) {
 				//generate the string from the device serial number
 				ptr.b = context->buf;
 				ptr.str->bLength = 32*2 + 2;
-				ptr.str->bDescriptorType = USB_STRING_DESCRIPTOR_TYPE;
+				ptr.str->bDescriptorType = USBD_DESCRIPTOR_TYPE_STRING;
 				usbd_control_get_serialno( &(ptr.str->bString) );
 				len = ptr.str->bLength;
 				context->data.dptr = context->buf;

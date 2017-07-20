@@ -26,10 +26,10 @@
  *
  */
 
-#ifndef USB_TYPEDEFS_H_
-#define USB_TYPEDEFS_H_
+#ifndef MCU_USBD_TYPEDEFS_H_
+#define MCU_USBD_TYPEDEFS_H_
 
-#include "types.h"
+#include "mcu/types.h"
 
 typedef union MCU_PACK {
 	u16 w;
@@ -43,15 +43,15 @@ typedef union MCU_PACK {
 		u8 dir:1;
 	} bitmap_t;
 	u8 b;
-} usb_req_t;
+} usbd_request_t;
 
 typedef struct MCU_PACK {
-	usb_req_t bmRequestType;
+	usbd_request_t bmRequestType;
 	u8 bRequest;
 	u16_union_t wValue;
 	u16_union_t wIndex;
 	u16 wLength;
-} usb_setup_pkt_t;
+} usbd_setup_packet_t;
 
 typedef struct MCU_PACK {
 	u8 bLength;
@@ -60,7 +60,7 @@ typedef struct MCU_PACK {
 	u8 bmAttributes;
 	u16 wMaxPacketSize;
 	u8 bInterval;
-} usb_ep_desc_t;
+} usbd_endpoint_descriptor_t;
 
 typedef struct MCU_PACK {
 	u8 bLength;
@@ -72,7 +72,7 @@ typedef struct MCU_PACK {
 	u8 bInterfaceSubClass;
 	u8 bInterfaceProtocol;
 	u8 iInterface;
-} usb_interface_desc_t;
+} usbd_interface_descriptor_t;
 
 typedef struct MCU_PACK {
 	u8 bLength;
@@ -89,7 +89,7 @@ typedef struct MCU_PACK {
 	u8 iProduct;
 	u8 iSerialNumber;
 	u8 bNumConfigurations;
-} usb_dev_desc_t;
+} usbd_device_descriptor_t;
 
 typedef struct MCU_PACK {
 	u8 bLength;
@@ -101,7 +101,7 @@ typedef struct MCU_PACK {
 	u8 bMaxPacketSize;
 	u8 bNumConfigurations;
 	u8 bReserved;
-} usb_dev_qual_desc_t;
+} usbd_qualifier_descriptor_t;
 
 typedef struct MCU_PACK {
 	u8 bLength;
@@ -112,90 +112,19 @@ typedef struct MCU_PACK {
 	u8 iConfiguration;
 	u8 bmAttributes;
 	u8 bMaxPower;
-} usb_cfg_desc_t;
+} usbd_configuration_descriptor_t;
 
 typedef struct MCU_PACK {
 	u8 bLength;
 	u8 bDescriptorType;
 	u16 * bString;
 	void * next;
-} usb_string_desc_t;
+} usbd_string_descriptor_t;
 
 typedef struct MCU_PACK {
 	u8 bLength;
 	u8 bDescriptorType;
-}usb_common_desc_t;
-
-typedef struct MCU_PACK {
-	u8 bLength;
-	u8 bDescriptorType;
-	u8 bDescriptorSubType;
-	u16 bcdCDC;
-} usb_dev_cdc_header_t;
-
-typedef struct MCU_PACK {
-	u8 bFunctionLength;
-	u8 bDescriptorType;
-	u8 bDescriptorSubType;
-	u8 bmCapabilities;
-} usb_dev_cdc_acm_t;
-
-typedef struct MCU_PACK {
-	u8 bFunctionLength;
-	u8 bDescriptorType;
-	u8 bDescriptorSubType;
-	u8 bMasterInterface;
-	u8 bSlaveInterface;
-} usb_dev_cdc_uniondescriptor_t;
-
-typedef struct MCU_PACK {
-	u8 bFunctionLength;
-	u8 bDescriptorType;
-	u8 bDescriptorSubType;
-	u8 bmCapabilities;
-	u8 bDataInterface;
-} usb_dev_cdc_callmanagement_t;
-
-
-typedef struct MCU_PACK {
-	u8 bFunctionLength;
-	u8 bDescriptorType;
-	u8 bDescriptorSubType;
-	u8 bEntityId;
-	u8 bExtensionCode;
-	u8 iName;
-	u8 bChildId[];
-} usb_dev_cdc_extensionunit_t;
-
-typedef struct MCU_PACK {
-	usb_dev_cdc_header_t header;
-	usb_dev_cdc_acm_t acm;
-	usb_dev_cdc_uniondescriptor_t union_descriptor;
-	usb_dev_cdc_callmanagement_t call_management;
-} usb_cdc_acm_interface_t;
-
-typedef struct MCU_PACK {
-	usb_dev_cdc_header_t header;
-	usb_dev_cdc_acm_t acm;
-	usb_dev_cdc_callmanagement_t call_management;
-} usb_cdc_acm_interface_alt_t;
-
-typedef struct MCU_PACK {
-	u8 bmRequestType;
-	u8 bNotification;
-	u16 wValue;
-	u16 wIndex;
-	u16 wLength;
-} usb_cdc_acm_notification_t;
-
-typedef struct MCU_PACK {
-	u8 bmRequestType;
-	u8 bRequest;
-	u16 wValue;
-	u16 wIndex;
-	u16 wLength;
-	u16 serial_state;
-} usb_cdc_acm_notification_serialstate_t;
+} usbd_common_descriptor_t;
 
 typedef struct MCU_PACK {
 	u8 bLength;
@@ -206,50 +135,14 @@ typedef struct MCU_PACK {
 	u8 bFunctionSubClass;
 	u8 bFunctionProtocol;
 	u8 iFunction;
-} usb_dev_interface_assocation_t;
-
-typedef struct MCU_PACK {
-	usb_dev_interface_assocation_t if_asso;
-	usb_interface_desc_t ifcontrol /* The interface descriptor */;
-	usb_cdc_acm_interface_t acm /*! The CDC ACM Class descriptor */;
-	usb_ep_desc_t control /* Endpoint:  Interrupt out for control packets */;
-	usb_interface_desc_t ifdata /* The interface descriptor */;
-	usb_ep_desc_t data_out /* Endpoint:  Bulk out */;
-	usb_ep_desc_t data_in /* Endpoint:  Bulk in */;
-} usb_desc_vcp_t;
-
-typedef struct MCU_PACK {
-	u16 bcdDevice;
-	u16 idProduct;
-	u16 idVendor;
-	u16 bcdDFU;
-	char ucDfuSignature[3];
-	u8 bLength;
-	uint32_t dwCRC;
-} usb_dev_dfu_file_suffix_t;
-
-typedef struct MCU_PACK {
-	u8 bLength;
-	u8 bDescriptorType;
-	u8 bmAttributes;
-	u16 wDetachTimeOut;
-	u16 wTransferSize;
-	u16 bcdDFUVersion;
-} usb_dev_dfu_func_desc_t;
-
-typedef struct MCU_PACK {
-	u8 bStatus;
-	u8 bwPollTimeout[3];
-	u8 bState;
-	u8 iString;
-} usb_dev_dfu_status_t;
+} usbd_interface_assocation_t;
 
 
 
 /*! \details This macro function allows the user to declare a USB string
  * data structure.
  */
-#define usb_declare_string(len) struct \
+#define usbd_declare_string(len) struct \
 		MCU_PACK { \
 	u8 bLength; \
 	u8 bDescriptorType; \
@@ -262,12 +155,12 @@ typedef struct MCU_PACK {
  * \param len The number of characters in the string.
  * \param ... Comma separated characters (e.g. 'E','x','a','m','p','l','e')
  */
-#define usb_assign_string(len, ...) { \
+#define usbd_assign_string(len, ...) { \
 		.bLength = len*2+2, \
-		.bDescriptorType = USB_STRING_DESCRIPTOR_TYPE, \
+		.bDescriptorType = USBD_DESCRIPTOR_TYPE_STRING, \
 		.string = { __VA_ARGS__ } }
 
 
-#endif /* USB_TYPEDEFS_H_ */
+#endif /* MCU_USBD_TYPEDEFS_H_ */
 
 /*! @} */

@@ -26,14 +26,10 @@
 #include "mcu/cortexm.h"
 #include "mcu/core.h"
 #include "mcu/debug.h"
+#include "mcu/boot_debug.h"
 
 
 #if MCU_USB_PORTS > 0
-
-#ifdef MCU_DEBUG
-volatile u32 usbdev_stat;
-#define USBD_DEBUG_INIT() (usbdev_stat = 0)
-#endif
 
 static u32 usb_irq_mask;
 static usb_attr_t usb_ctl;
@@ -112,7 +108,6 @@ u32 usb_sie_rd_cmd_dat (u32 cmd){
 
 void _mcu_usb_dev_power_on(int port){
 	if ( usb_local.ref_count == 0 ){
-		USBD_DEBUG_INIT();
 		//Set callbacks to NULL
 		usb_local.connected = 0;
 		clear_callbacks();
@@ -420,8 +415,8 @@ void usb_wakeup(int port){
 }
 
 void usb_set_addr(int port, u32 addr){
-	usb_sie_wr_cmd_dat(USB_SIE_CMD_SET_ADDR, USB_SIE_DAT_WR_BYTE(DEV_EN | addr)); /* Don't wait for next */
-	usb_sie_wr_cmd_dat(USB_SIE_CMD_SET_ADDR, USB_SIE_DAT_WR_BYTE(DEV_EN | addr)); /*  Setup Status Phase */
+	usb_sie_wr_cmd_dat(USB_SIE_CMD_SET_ADDR, USB_SIE_DAT_WR_BYTE(DEV_EN | addr)); // Don't wait for next
+	usb_sie_wr_cmd_dat(USB_SIE_CMD_SET_ADDR, USB_SIE_DAT_WR_BYTE(DEV_EN | addr)); //  Setup Status Phase
 }
 
 void usb_cfg(int port, u32 cfg){
@@ -430,8 +425,8 @@ void usb_cfg(int port, u32 cfg){
 
 void usb_cfg_ep(int port, void * ep_desc){
 	u32 num;
-	mcu_usb_ep_desc_t * ep_ptr;
-	ep_ptr = (mcu_usb_ep_desc_t*)ep_desc;
+	mcu_usbd_endpoint_descriptor_t * ep_ptr;
+	ep_ptr = (mcu_usbd_endpoint_descriptor_t*)ep_desc;
 	num = calc_ep_addr(ep_ptr->bEndpointAddress);
 	LPC_USB->ReEp |= (1 << num);
 	LPC_USB->EpInd = num;
@@ -534,27 +529,22 @@ void _mcu_core_usb0_isr(){
 	u32 tmp;
 	int i;
 
-	USBD_DEBUG(0x01);
 	device_interrupt_status = LPC_USB->DevIntSt;     //Device interrupt status
 	if (device_interrupt_status & ERR_INT){ //Error interrupt
-		USBD_DEBUG(0x02);
 		tmp = usb_sie_rd_cmd_dat(USB_SIE_CMD_RD_ERR_STAT);
 		mcu_execute_event_handler(&(usb_local.special_event_handler), MCU_EVENT_FLAG_ERROR, 0);
 		LPC_USB->DevIntClr = ERR_INT;
 	}
 
 	if (device_interrupt_status & FRAME_INT){ //start of frame
-		USBD_DEBUG(0x04);
 		mcu_execute_event_handler(&(usb_local.special_event_handler), MCU_EVENT_FLAG_SOF, 0);
 		LPC_USB->DevIntClr = FRAME_INT;
 	}
 
 	if (device_interrupt_status & DEV_STAT_INT){ //Status interrupt (Reset, suspend/resume or connect)
-		USBD_DEBUG(0x08);
 		_mcu_cortexm_delay_us(100);
 		tmp = usb_sie_rd_cmd_dat(USB_SIE_CMD_GET_DEV_STAT);
 		if (tmp & DEV_RST){
-			USBD_DEBUG(0x10);
 			//mcu_usb_reset(0, NULL);
 			usb_local.connected = 1;
 			usb_local.write_pending = 0;
@@ -563,7 +553,6 @@ void _mcu_core_usb0_isr(){
 		}
 
 		if ( tmp == 0x0D ){
-			USBD_DEBUG(0x20);
 			usb_local.connected = 0;
 			for(i = 1; i < DEV_USB_LOGICAL_ENDPOINT_COUNT; i++){
 				mcu_execute_event_handler(&(usb_local.read[i]), MCU_EVENT_FLAG_CANCELED, 0);
@@ -572,17 +561,14 @@ void _mcu_core_usb0_isr(){
 		}
 
 		if (tmp & DEV_CON_CH){
-			USBD_DEBUG(0x40);
 			mcu_execute_event_handler(&(usb_local.special_event_handler), MCU_EVENT_FLAG_POWER, 0);
 		}
 
 		if (tmp & DEV_SUS_CH){
 			if (tmp & DEV_SUS){
-				USBD_DEBUG(0x80);
 				usb_local.connected = 0;
 				mcu_execute_event_handler(&(usb_local.special_event_handler), MCU_EVENT_FLAG_SUSPEND, 0);
 			} else {
-				USBD_DEBUG(0x100);
 				usb_local.connected = 1;
 				mcu_execute_event_handler(&(usb_local.special_event_handler), MCU_EVENT_FLAG_RESUME, 0);
 			}
@@ -608,11 +594,11 @@ void slow_ep_int(){
 	episr = LPC_USB->EpIntSt;
 	usb_event_t event;
 
-	USBD_DEBUG(0x200);
 
 	for (phy_ep = 0; phy_ep < USB_EP_NUM; phy_ep++){
 
 		if (episr & (1 << phy_ep)){
+			//dstr("i:"); dhex(phy_ep); dstr("\n");
 			//Calculate the logical endpoint value (associated with the USB Spec)
 			log_ep = phy_ep >> 1;
 			event.epnum = log_ep;
@@ -627,8 +613,6 @@ void slow_ep_int(){
 			//Check for endpoint 0
 			if ((phy_ep & 1) == 0){ //These are the OUT endpoints
 
-				USBD_DEBUG(0x400);
-
 				//Check for a setup packet
 				if ( (phy_ep == 0) && (tmp & EP_SEL_STP) ){
 					mcu_execute_event_handler(&(usb_local.read[0]), MCU_EVENT_FLAG_SETUP, &event);
@@ -637,7 +621,6 @@ void slow_ep_int(){
 					mcu_execute_event_handler(&(usb_local.read[log_ep]), MCU_EVENT_FLAG_DATA_READY, &event);
 				}
 			} else {  //These are the IN endpoints
-				USBD_DEBUG(0x800);
 
 				event.epnum |= 0x80;
 				usb_local.write_pending &= ~(1<<log_ep);

@@ -23,22 +23,21 @@
 #include "mcu/mcu.h"
 #include "sos/dev/usb.h"
 #include "mcu/usbfifo.h"
-#include "mcu/usbd_control.h"
-#include "mcu/usbd_cdc.h"
+#include "mcu/usbd/control.h"
+#include "mcu/usbd/cdc.h"
 #include "mcu/core.h"
 #include "mcu/debug.h"
 #include "mcu/sys.h"
 
 #include "sos/stratify_link_transport_usb.h"
 
-#define LINK_USB_VID 0x20A0
-#define LINK_USB_PID 0x41D5
+#define STRATIFY_USBD_VID 0x20A0
+#define STRATIFY_USBD_PID 0x41D5
 
-#ifndef LINK_USBD_PORT
-#define LINK_USBD_PORT 0
-#endif
+#define STRATIFY_REQUIRED_CURRENT 500
 
-#define LINK_REQD_CURRENT 500
+#define STRATIFY_VCP0_INTERFACE 0
+#define STRATIFY_VCP0_DATA_INTERFACE 1
 
 
 #define USB0_DEVFIFO_BUFFER_SIZE 64
@@ -61,7 +60,7 @@ const usbd_control_constants_t stratify_link_boot_transport_usb_constants = {
 		.interface_event = 0,
 		.adc_if_req = 0,
 		.msc_if_req = 0,
-		.cdc_if_req = stratify_link_transport_usb_cdc_if_req,
+		.cdc_if_req = stratify_link_transport_usbd_cdc_if_req,
 		.hid_if_req = 0
 };
 
@@ -72,16 +71,16 @@ const usbd_control_constants_t stratify_link_boot_transport_usb_constants = {
  * All other values should be unchanged.
  *
  */
-const usb_dev_desc_t stratify_link_boot_transport_usb_dev_desc MCU_WEAK = {
-		.bLength = sizeof(usb_dev_desc_t),
-		.bDescriptorType = USB_DEVICE_DESCRIPTOR_TYPE,
+const usbd_device_descriptor_t stratify_link_boot_transport_usb_dev_desc MCU_WEAK = {
+		.bLength = sizeof(usbd_device_descriptor_t),
+		.bDescriptorType = USBD_DESCRIPTOR_TYPE_DEVICE,
 		.bcdUSB = 0x0200,
-		.bDeviceClass = USB_DEVICE_CLASS_COMMUNICATIONS,
+		.bDeviceClass = USBD_DEVICE_CLASS_COMMUNICATIONS,
 		.bDeviceSubClass = 0,
 		.bDeviceProtocol = 0,
 		.bMaxPacketSize = MCU_CORE_USB_MAX_PACKET_ZERO_VALUE,
-		.idVendor = LINK_USB_VID,
-		.idProduct = LINK_USB_PID,
+		.idVendor = STRATIFY_USBD_VID,
+		.idProduct = STRATIFY_USBD_PID,
 		.bcdDevice = 0x260,
 		.iManufacturer = 1,
 		.iProduct = 2,
@@ -89,60 +88,60 @@ const usb_dev_desc_t stratify_link_boot_transport_usb_dev_desc MCU_WEAK = {
 		.bNumConfigurations = 1
 };
 
-const stratify_link_boot_transport_usb_cfg_desc_t stratify_link_boot_transport_usb_cfg_desc MCU_WEAK = {
+const stratify_link_boot_transport_usbd_configuration_descriptor_t stratify_link_boot_transport_usb_cfg_desc MCU_WEAK = {
 
 		.cfg = {
-				.bLength = sizeof(usb_cfg_desc_t),
-				.bDescriptorType = USB_CONFIGURATION_DESCRIPTOR_TYPE,
+				.bLength = sizeof(usbd_configuration_descriptor_t),
+				.bDescriptorType = USBD_DESCRIPTOR_TYPE_CONFIGURATION,
 
-				.wTotalLength = sizeof(stratify_link_boot_transport_usb_cfg_desc_t)-1, //exclude the zero terminator
+				.wTotalLength = sizeof(stratify_link_boot_transport_usbd_configuration_descriptor_t)-1, //exclude the zero terminator
 				.bNumInterfaces = 0x02,
 				.bConfigurationValue = 0x01,
 				.iConfiguration = 0x03,
-				.bmAttributes = USB_CONFIG_BUS_POWERED,
-				.bMaxPower = USB_CONFIG_POWER_MA( LINK_REQD_CURRENT )
+				.bmAttributes = USBD_CONFIGURATION_ATTRIBUTES_BUS_POWERED,
+				.bMaxPower = USBD_CONFIGURATION_MAX_POWER_MA( STRATIFY_REQUIRED_CURRENT )
 		},
 
 		.vcp0 = {
 
-				.if_asso = {
-						.bLength = sizeof(usb_dev_interface_assocation_t),
-						.bDescriptorType = USB_INTERFACE_ASSOCIATION_DESCRIPTOR_TYPE,
-						.bFirstInterface = 0,
+				.interface_association = {
+						.bLength = sizeof(usbd_interface_assocation_t),
+						.bDescriptorType = USBD_DESCRIPTOR_TYPE_INTERFACE_ASSOCIATION,
+						.bFirstInterface = STRATIFY_VCP0_INTERFACE,
 						.bInterfaceCount = 2,
-						.bFunctionClass = USB_INTERFACE_CLASS_COMMUNICATIONS,
-						.bFunctionSubClass = USB_INTERFACE_SUBCLASS_ACM,
-						.bFunctionProtocol = USB_INTERFACE_PROTOCOL_V25TER,
+						.bFunctionClass = USBD_INTERFACE_CLASS_COMMUNICATIONS,
+						.bFunctionSubClass = USBD_CDC_INTERFACE_SUBCLASS_ACM,
+						.bFunctionProtocol = USBD_CDC_INTERFACE_PROTOCOL_V25TER,
 						.iFunction = 0x04,
 				},
 
-				.ifcontrol = {
-						.bLength = sizeof(usb_interface_desc_t),
-						.bDescriptorType = USB_INTERFACE_DESCRIPTOR_TYPE,
-						.bInterfaceNumber = 0x00,
+				.interface_control = {
+						.bLength = sizeof(usbd_interface_descriptor_t),
+						.bDescriptorType = USBD_DESCRIPTOR_TYPE_INTERFACE,
+						.bInterfaceNumber = STRATIFY_VCP0_INTERFACE,
 						.bAlternateSetting = 0x00,
 						.bNumEndpoints = 0x01,
-						.bInterfaceClass = USB_INTERFACE_CLASS_COMMUNICATIONS,
-						.bInterfaceSubClass = USB_INTERFACE_SUBCLASS_ACM,
-						.bInterfaceProtocol = USB_INTERFACE_PROTOCOL_V25TER,
+						.bInterfaceClass = USBD_INTERFACE_CLASS_COMMUNICATIONS,
+						.bInterfaceSubClass = USBD_CDC_INTERFACE_SUBCLASS_ACM,
+						.bInterfaceProtocol = USBD_CDC_INTERFACE_PROTOCOL_V25TER,
 						.iInterface = 0x04
 				},
 
 				.acm = {
-						.header.bLength = sizeof(usb_dev_cdc_header_t),
+						.header.bFunctionLength = sizeof(usbd_cdc_header_functional_descriptor_t),
 						.header.bDescriptorType = 0x24,
 						.header.bDescriptorSubType = 0x00,
 						.header.bcdCDC = 0x0110,
-						.acm.bFunctionLength = sizeof(usb_dev_cdc_acm_t),
+						.acm.bFunctionLength = sizeof(usbd_cdc_abstract_control_model_functional_descriptor_t),
 						.acm.bDescriptorType = 0x24,
 						.acm.bDescriptorSubType = 0x02, //ACM descriptor subtype
 						.acm.bmCapabilities = 0x06, //support for SERIAL_STATE
-						.union_descriptor.bFunctionLength = sizeof(usb_dev_cdc_uniondescriptor_t),
+						.union_descriptor.bFunctionLength = sizeof(usbd_cdc_union_functional_descriptor_t),
 						.union_descriptor.bDescriptorType = 0x24,
 						.union_descriptor.bDescriptorSubType = 0x06, //union descriptor subtype
 						.union_descriptor.bMasterInterface = 0x00, //control interface
 						.union_descriptor.bSlaveInterface = 0x01, //data interface
-						.call_management.bFunctionLength = sizeof(usb_dev_cdc_callmanagement_t),
+						.call_management.bFunctionLength = sizeof(usbd_cdc_call_management_functional_descriptor_t),
 						.call_management.bDescriptorType = 0x24,
 						.call_management.bDescriptorSubType = 0x01, //call management subtype
 						.call_management.bmCapabilities = 0x03, //call management handled
@@ -150,40 +149,40 @@ const stratify_link_boot_transport_usb_cfg_desc_t stratify_link_boot_transport_u
 				},
 
 				.control = {
-						.bLength= sizeof(usb_ep_desc_t),
-						.bDescriptorType=USB_ENDPOINT_DESCRIPTOR_TYPE,
+						.bLength= sizeof(usbd_endpoint_descriptor_t),
+						.bDescriptorType=USBD_DESCRIPTOR_TYPE_ENDPOINT,
 						.bEndpointAddress=STRATIFY_LINK_TRANSPORT_USB_INTIN,
-						.bmAttributes=USB_ENDPOINT_TYPE_INTERRUPT,
+						.bmAttributes=USBD_ENDPOINT_ATTRIBUTES_TYPE_INTERRUPT,
 						.wMaxPacketSize=16,
 						.bInterval=2
 				},
 
-				.ifdata = {
-						.bLength = sizeof(usb_interface_desc_t),
-						.bDescriptorType = USB_INTERFACE_DESCRIPTOR_TYPE,
-						.bInterfaceNumber = 0x01,
+				.interface_data = {
+						.bLength = sizeof(usbd_interface_descriptor_t),
+						.bDescriptorType = USBD_DESCRIPTOR_TYPE_INTERFACE,
+						.bInterfaceNumber = STRATIFY_VCP0_DATA_INTERFACE,
 						.bAlternateSetting = 0x00,
 						.bNumEndpoints = 0x02,
-						.bInterfaceClass = USB_INTERFACE_CLASS_COMMUNICATIONS_DATA,
-						.bInterfaceSubClass = USB_INTERFACE_SUBCLASS_ACM,
-						.bInterfaceProtocol = USB_INTERFACE_PROTOCOL_V25TER,
+						.bInterfaceClass = USBD_INTERFACE_CLASS_COMMUNICATIONS_DATA,
+						.bInterfaceSubClass = USBD_CDC_INTERFACE_SUBCLASS_ACM,
+						.bInterfaceProtocol = USBD_CDC_INTERFACE_PROTOCOL_V25TER,
 						.iInterface = 0x04
 				},
 
 				.data_out = {
-						.bLength= sizeof(usb_ep_desc_t),
-						.bDescriptorType=USB_ENDPOINT_DESCRIPTOR_TYPE,
+						.bLength= sizeof(usbd_endpoint_descriptor_t),
+						.bDescriptorType=USBD_DESCRIPTOR_TYPE_ENDPOINT,
 						.bEndpointAddress=STRATIFY_LINK_TRANSPORT_USB_BULK_ENDPOINT_OUT,
-						.bmAttributes=USB_ENDPOINT_TYPE_BULK,
+						.bmAttributes=USBD_ENDPOINT_ATTRIBUTES_TYPE_BULK,
 						.wMaxPacketSize=STRATIFY_LINK_TRANSPORT_USB_BULK_ENDPOINT_SIZE,
 						.bInterval=1
 				},
 
 				.data_in = {
-						.bLength= sizeof(usb_ep_desc_t),
-						.bDescriptorType=USB_ENDPOINT_DESCRIPTOR_TYPE,
+						.bLength= sizeof(usbd_endpoint_descriptor_t),
+						.bDescriptorType=USBD_DESCRIPTOR_TYPE_ENDPOINT,
 						.bEndpointAddress=STRATIFY_LINK_TRANSPORT_USB_BULK_ENDPOINT_IN,
-						.bmAttributes=USB_ENDPOINT_TYPE_BULK,
+						.bmAttributes=USBD_ENDPOINT_ATTRIBUTES_TYPE_BULK,
 						.wMaxPacketSize=STRATIFY_LINK_TRANSPORT_USB_BULK_ENDPOINT_SIZE,
 						.bInterval=1
 				}
@@ -204,12 +203,12 @@ const stratify_link_boot_transport_usb_cfg_desc_t stratify_link_boot_transport_u
  */
 const struct stratify_link_transport_usb_string_t stratify_link_boot_transport_usb_string_desc MCU_WEAK = {
 		.bLength = 4,
-		.bDescriptorType = USB_STRING_DESCRIPTOR_TYPE,
+		.bDescriptorType = USBD_DESCRIPTOR_TYPE_STRING,
 		.wLANGID = 0x0409, //English
-		.manufacturer = usb_assign_string(STRATIFY_LINK_TRANSPORT_USB_DESC_MANUFACTURER_SIZE, STRATIFY_LINK_TRANSPORT_USB_DESC_MANUFACTURER_STRING),
-		.product = usb_assign_string(STRATIFY_LINK_TRANSPORT_USB_DESC_PRODUCT_SIZE, STRATIFY_LINK_TRANSPORT_USB_DESC_PRODUCT_STRING),
-		.serial = usb_assign_string(STRATIFY_LINK_TRANSPORT_USB_DESC_SERIAL_SIZE, 0)
+		.manufacturer = usbd_assign_string(STRATIFY_LINK_TRANSPORT_USB_DESC_MANUFACTURER_SIZE, STRATIFY_LINK_TRANSPORT_USB_DESC_MANUFACTURER_STRING),
+		.product = usbd_assign_string(STRATIFY_LINK_TRANSPORT_USB_DESC_PRODUCT_SIZE, STRATIFY_LINK_TRANSPORT_USB_DESC_PRODUCT_STRING),
+		.serial = usbd_assign_string(STRATIFY_LINK_TRANSPORT_USB_DESC_SERIAL_SIZE, 0)
 		, //dynamically load SN based on silicon
-		.vcp0 = usb_assign_string(STRATIFY_LINK_TRANSPORT_USB_DESC_VCP_0_SIZE, STRATIFY_LINK_TRANSPORT_USB_DESC_VCP_0),
-		.vcp1 = usb_assign_string(STRATIFY_LINK_TRANSPORT_USB_DESC_VCP_1_SIZE, STRATIFY_LINK_TRANSPORT_USB_DESC_VCP_1)
+		.vcp0 = usbd_assign_string(STRATIFY_LINK_TRANSPORT_USB_DESC_VCP_0_SIZE, STRATIFY_LINK_TRANSPORT_USB_DESC_VCP_0),
+		.vcp1 = usbd_assign_string(STRATIFY_LINK_TRANSPORT_USB_DESC_VCP_1_SIZE, STRATIFY_LINK_TRANSPORT_USB_DESC_VCP_1)
 };

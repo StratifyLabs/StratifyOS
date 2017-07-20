@@ -113,6 +113,7 @@ typedef struct MCU_PACK {
 	mcu_pin_t led;
 	mcu_pin_t debug_uart_pin_assignment[2];
 	mcu_pin_t usb_pin_assignment[USB_PIN_ASSIGNMENT_COUNT];
+	u8 debug_uart_port;
 	u8 resd;
 } mcu_board_config_t;
 

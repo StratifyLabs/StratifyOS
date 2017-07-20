@@ -31,10 +31,10 @@
 /*! \file */
 
 
-#ifndef USBD_HID_H_
-#define USBD_HID_H_
+#ifndef MCU_USBD_HID_H_
+#define MCU_USBD_HID_H_
 
-#include <mcu/types.h>
+#include "mcu/types.h"
 
 /* HID Subclass Codes */
 #define HID_SUBCLASS_NONE               0x00
@@ -376,7 +376,7 @@ typedef struct MCU_PACK {
 	uint8_t  bCountryCode;
 	uint8_t  bNumDescriptors;
 	usb_dev_hid_desc_entry_t entry0;
-} usb_dev_hid_desc_t;
+} usb_dev_hid_descriptor_t;
 
 
 
@@ -391,4 +391,4 @@ uint32_t usb_dev_hid_get_protocol();
 uint32_t usb_dev_hid_set_protocol();
 
 
-#endif  /* USBD_HID_H_ */
+#endif  /* MCU_USBD_HID_H_ */

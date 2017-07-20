@@ -31,15 +31,15 @@
 typedef struct MCU_PACK {
 	const void * buf;
 	uint32_t ctrl;
-} enet_desc_t;
+} enet_descriptor_t;
 
 typedef struct {
 	mcu_event_handler_t write;
 	mcu_event_handler_t read;
 	enet_attr_t attr;
 	uint8_t ref_count;
-	enet_desc_t tx_desc;
-	enet_desc_t rx_desc;
+	enet_descriptor_t tx_desc;
+	enet_descriptor_t rx_desc;
 	uint32_t tx_status;
 	uint32_t rx_status;
 } enet_local_t;
