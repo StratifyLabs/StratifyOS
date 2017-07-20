@@ -36,7 +36,6 @@
 #ifndef SOS_DEV_BOOTLOADER_H_
 #define SOS_DEV_BOOTLOADER_H_
 
-#include <stdint.h>
 
 #include "mcu/types.h"
 #include "sos/link/link_transport.h"
@@ -68,26 +67,6 @@ typedef struct MCU_PACK {
 
 typedef bootloader_info_t bootloader_attr_t;
 
-/*! \brief Bootloader attributes.
- * \details This structure contains the attributes for the bootloader.
- */
-typedef struct MCU_PACK {
-	u32 version /*! \brief The bootloader version */;
-	u32 serialno[4] /*! \brief The device serial number */;
-	u32 startaddr /*! \brief The start address of the target program (read-only) */;
-} bootloader_attr_14x_t;
-
-
-/*! \brief Bootloader attributes.
- * \details This structure contains the attributes for the bootloader.
- */
-typedef struct MCU_PACK {
-	u32 code_size /*! \brief The number of bytes occupied by the bootloader (so the OS knows not to erase the bootloader) */;
-	void (*exec)(void * args) /*! \brief Execute the bootlaoder */;
-	void (*usbd_control_priv_init)(void * context) /*! \brief Use this to handle standard USB packet is using same USB setup as bootloader */;
-	void (*event)(int, void*) /*! \brief Invoke the board events (encryption, decryption, custom code) */;
-} bootloader_api_t;
-
 
 
 /*! \brief This is the size of a bootloader flash page.
@@ -104,49 +83,6 @@ typedef struct MCU_PACK {
 	u8 buf[BOOTLOADER_WRITEPAGESIZE] /*! \brief A buffer for writing to the flash */;
 } bootloader_writepage_t;
 
-enum {
-	BOOT_BOARD_CONFIG_FLAG_HW_REQ_ACTIVE_HIGH = (1<<0),
-};
-
-typedef struct {
-	int abort;
-	int bytes;
-	int increment;
-	int total;
-} boot_event_flash_t;
-
-typedef struct {
-	void * dest;
-	const void * src;
-	const char * key;
-} boot_event_crypt_t;
-
-enum {
-	BOOT_EVENT_FATAL /*! Called on a Fatal Error */,
-	BOOT_EVENT_CRITICAL /*! Called on a critical error */,
-	BOOT_EVENT_START /*! Called when the device starts executing code and before checking for a bootloader request */,
-	BOOT_EVENT_INIT /*! Called when the bootloader is initializing */,
-	BOOT_EVENT_RESET /*! Called when the link protocol calls for a reset */,
-	BOOT_EVENT_RESET_BOOTLOADER /*! Called when the link protocol calls for a bootloader reset */,
-	BOOT_EVENT_READ_SERIALNO /*! Called when the link protocol reads the serial number */,
-	BOOT_EVENT_FLASH_READ /*! Called when the link protocol reads the flash */,
-	BOOT_EVENT_FLASH_WRITE /*! Called when the link protocol writes the flash */,
-	BOOT_EVENT_FLASH_ERASE /*! Called when the link protocol erases the flash */,
-	BOOT_EVENT_ENCRYPT /*! Called when the bootloader needs something encrypted */,
-	BOOT_EVENT_DECRYPT /*! Called when the bootloader needs something decrypted */,
-	BOOT_EVENT_TOTAL
-};
-
-
-typedef struct MCU_PACK {
-	u32 sw_req_loc;
-	u32 sw_req_value;
-	u32 program_start_addr;
-	mcu_pin_t hw_req;
-	u16 flags;
-	link_transport_driver_t * link_transport_driver;
-	u32 id;
-} bootloader_board_config_t;
 
 
 /*! \brief See below for details.

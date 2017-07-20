@@ -20,7 +20,7 @@
 #include "mcu/cortexm.h"
 #include "mcu/mcu.h"
 #include "mcu/debug.h"
-#include "sos/dev/bootloader.h"
+#include "mcu/bootloader.h"
 
 static void core_init();
 static const char sys_proc_name[] = "sys";

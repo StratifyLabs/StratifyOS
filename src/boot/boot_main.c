@@ -126,18 +126,43 @@ void run_bootloader(){
 int check_run_app(){
 	//! \todo Check to see if end of text is less than app program start
 	u32 * bootloader_start = (u32*)boot_board_config.sw_req_loc;
-
+	u32 hw_req_value;
+	pio_attr_t pio_attr;
 	if ( (uint32_t)stack_ptr == 0xFFFFFFFF ){
 		//code is not valid
 		*bootloader_start = 0;
 		return 0;
 	}
 
+	pio_attr.o_pinmask = (1<<boot_board_config.hw_req.pin);
+
+	if( boot_board_config.o_flags & BOOT_BOARD_CONFIG_FLAG_HW_REQ_PULLUP ){
+		pio_attr.o_flags = PIO_FLAG_IS_PULLUP | PIO_FLAG_SET_INPUT | PIO_FLAG_IS_DIRONLY;
+		mcu_pio_setattr(boot_board_config.hw_req.port, &pio_attr);
+	} else if( boot_board_config.o_flags & BOOT_BOARD_CONFIG_FLAG_HW_REQ_PULLDOWN ){
+		pio_attr.o_flags = PIO_FLAG_IS_PULLDOWN | PIO_FLAG_SET_INPUT | PIO_FLAG_IS_DIRONLY;
+		mcu_pio_setattr(boot_board_config.hw_req.port, &pio_attr);
+	}
+
 	_mcu_cortexm_delay_us(500);
 
+	hw_req_value = ((mcu_pio_get(boot_board_config.hw_req.port, 0) & pio_attr.o_pinmask) != 0);
+
+	if( boot_board_config.o_flags & BOOT_BOARD_CONFIG_FLAG_HW_REQ_ACTIVE_HIGH ){
+		if( hw_req_value ){ //pin is high and pin is active high
+			*bootloader_start = 0;
+			return 0;
+		}
+	} else { //request is active low
+		if( hw_req_value == 0 ){ //pin is active low
+			*bootloader_start = 0;
+			return 0;
+		}
+	}
+
 	if ( !(mcu_pio_get(boot_board_config.hw_req.port, 0) & (1<<boot_board_config.hw_req.pin)) ){
-		*bootloader_start = 0;
-		return 0;
+		//*bootloader_start = 0;
+		//return 0;
 	}
 
 	if ( *bootloader_start == boot_board_config.sw_req_value ){

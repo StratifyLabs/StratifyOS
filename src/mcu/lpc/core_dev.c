@@ -19,7 +19,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include "mcu/cortexm.h"
-#include "sos/dev/bootloader.h"
+#include "mcu/bootloader.h"
 #include "mcu/core.h"
 
 #include "mcu/debug.h"

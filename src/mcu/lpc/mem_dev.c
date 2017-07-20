@@ -24,7 +24,7 @@
 #include "mcu/debug.h"
 #include "mcu/core.h"
 #include "mcu/wdt.h"
-#include "sos/dev/bootloader.h"
+#include "mcu/bootloader.h"
 
 
 extern u32 _text;
