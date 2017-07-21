@@ -23,7 +23,7 @@
 
 /*! \file */
 
-#include "sos/stratify.h"
+#include "sos/sos.h"
 #include "config.h"
 #include "mcu/mcu.h"
 #include "mcu/cortexm.h"
@@ -41,7 +41,7 @@ int _main(){
 		while(1){ mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_PRIV_FATAL, 0); }
 	}
 
-	if ( sched_start(stratify_board_config.start, 10) < 0 ){
+	if ( sched_start(sos_board_config.start, 10) < 0 ){
 		_mcu_cortexm_priv_disable_interrupts(NULL);
 		while(1){ mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_PRIV_FATAL, 0); }
 	}

@@ -32,7 +32,7 @@
 
 #include "sys/syscalls/process/process_start.h"
 
-#include "sos/stratify.h"
+#include "sos/sos.h"
 #include "mcu/flash.h"
 #include "mcu/debug.h"
 

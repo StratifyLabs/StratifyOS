@@ -20,7 +20,7 @@
 
 #include <errno.h>
 #include <limits.h>
-#include "sos/stratify.h"
+#include "sos/sos.h"
 
 #include "mcu/mcu.h"
 #include "mcu/mpu.h"

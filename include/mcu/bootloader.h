@@ -27,10 +27,10 @@
  * \details This structure contains the attributes for the bootloader.
  */
 typedef struct MCU_PACK {
-	u32 code_size /*! \brief The number of bytes occupied by the bootloader (so the OS knows not to erase the bootloader) */;
-	void (*exec)(void * args) /*! \brief Execute the bootlaoder */;
-	void (*usbd_control_priv_init)(void * context) /*! \brief Use this to handle standard USB packet is using same USB setup as bootloader */;
-	void (*event)(int, void*) /*! \brief Invoke the board events (encryption, decryption, custom code) */;
+	u32 code_size /*! The number of bytes occupied by the bootloader (so the OS knows not to erase the bootloader) */;
+	void (*exec)(void * args) /*! Execute the bootlaoder */;
+	void (*usbd_control_priv_init)(void * context) /*! Use this to handle standard USB packet is using same USB setup as bootloader */;
+	void (*event)(int, void*) /*! Invoke the board events (encryption, decryption, custom code) */;
 } bootloader_api_t;
 
 

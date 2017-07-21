@@ -156,7 +156,7 @@ extern u32 __gnu_h2f_ieee();
 #include "semaphore.h"
 #include "mqueue.h"
 #include "aio.h"
-#include "sos/stratify.h"
+#include "sos/sos.h"
 #include "mcu/sys.h"
 #include "sos/dev/sys.h"
 #include "mcu/core.h"

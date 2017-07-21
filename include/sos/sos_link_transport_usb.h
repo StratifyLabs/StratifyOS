@@ -34,13 +34,13 @@ typedef struct MCU_PACK {
 	usbd_cdc_configuration_descriptor_t vcp0;
 	usbd_cdc_configuration_descriptor_t vcp1;
 	u8 terminator  /* A null terminator used by the driver (required) */;
-} stratify_link_transport_usbd_configuration_descriptor_t;
+} sos_link_transport_usb_dual_vcp_configuration_descriptor_t;
 
 typedef struct MCU_PACK {
 	usbd_configuration_descriptor_t cfg /* The configuration descriptor */;
 	usbd_cdc_configuration_descriptor_t vcp0;
 	u8 terminator  /* A null terminator used by the driver (required) */;
-} stratify_link_boot_transport_usbd_configuration_descriptor_t;
+} sos_link_transport_usb_configuration_descriptor_t;
 
 
 #define STRATIFY_LINK_TRANSPORT_USB_DESC_MANUFACTURER_SIZE 13
@@ -72,7 +72,7 @@ typedef struct MCU_PACK {
  * \details This structure defines the USB strings structure which includes
  * a string for the manufacturer, product, and serial number.
  */
-struct MCU_PACK stratify_link_transport_usb_string_t {
+struct MCU_PACK sos_link_transport_usb_string_t {
 	u8 bLength;
 	u8 bDescriptorType;
 	u16 wLANGID;
@@ -84,41 +84,41 @@ struct MCU_PACK stratify_link_transport_usb_string_t {
 };
 
 //replace these to customize the USB device descriptors
-extern const usbd_device_descriptor_t stratify_link_transport_usb_dev_desc MCU_WEAK;
-extern const stratify_link_transport_usbd_configuration_descriptor_t stratify_link_transport_usb_cfg_desc MCU_WEAK;
-extern const struct stratify_link_transport_usb_string_t stratify_link_transport_usb_string_desc MCU_WEAK;
-extern const usbd_control_constants_t stratify_link_transport_usb_constants;
+extern const usbd_device_descriptor_t sos_link_transport_usb_dual_vcp_dev_desc MCU_WEAK;
+extern const sos_link_transport_usb_dual_vcp_configuration_descriptor_t sos_link_transport_usb_dual_vcp_cfg_desc MCU_WEAK;
+extern const struct sos_link_transport_usb_string_t sos_link_transport_usb_dual_vcp_string_desc MCU_WEAK;
+extern const usbd_control_constants_t sos_link_transport_usb_dual_vcp_constants;
 
-link_transport_phy_t stratify_link_transport_usb_open(const char * name, usbd_control_t * context);
-int stratify_link_transport_usb_read(link_transport_phy_t, void * buf, int nbyte);
-int stratify_link_transport_usb_write(link_transport_phy_t, const void * buf, int nbyte);
-int stratify_link_transport_usb_close(link_transport_phy_t * handle);
-void stratify_link_transport_usb_wait(int msec);
-void stratify_link_transport_usb_flush(link_transport_phy_t handle);
-void stratify_link_transport_usb_notify(const void * buf, int nbyte);
+link_transport_phy_t sos_link_transport_usb_open(const char * name, usbd_control_t * context);
+int sos_link_transport_usb_read(link_transport_phy_t, void * buf, int nbyte);
+int sos_link_transport_usb_write(link_transport_phy_t, const void * buf, int nbyte);
+int sos_link_transport_usb_close(link_transport_phy_t * handle);
+void sos_link_transport_usb_wait(int msec);
+void sos_link_transport_usb_flush(link_transport_phy_t handle);
+void sos_link_transport_usb_notify(const void * buf, int nbyte);
 
-int stratify_link_usbd_cdc_event_handler(void * context, mcu_event_t * event);
+int sos_link_usbd_cdc_event_handler(void * context, mcu_event_t * event);
 
 //provided for the link device fifo
-//USBFIFO_DEVICE("link-phy-usb", &stratify_link_transport_usb_fifo_cfg, &stratify_link_transport_usb_fifo_state, 0666, USER_ROOT, GROUP_ROOT),
-extern const usbfifo_cfg_t stratify_link_transport_usb_fifo_cfg;
-extern usbfifo_state_t stratify_link_transport_usb_fifo_state MCU_SYS_MEM;
+//DEVFS_HANDLE("link-phy-usb", 0, &sos_link_transport_usb_fifo_cfg, &sos_link_transport_usb_fifo_state, 0666, USER_ROOT, GROUP_ROOT),
+extern const usbfifo_cfg_t sos_link_transport_usb_fifo_cfg;
+extern usbfifo_state_t sos_link_transport_usb_fifo_state MCU_SYS_MEM;
 
 //replace these to customize the USB device descriptors
-extern const usbd_device_descriptor_t stratify_link_boot_transport_usb_dev_desc MCU_WEAK;
-extern const stratify_link_boot_transport_usbd_configuration_descriptor_t stratify_link_boot_transport_usb_cfg_desc MCU_WEAK;
-extern const struct stratify_link_transport_usb_string_t stratify_link_boot_transport_usb_string_desc MCU_WEAK;
-extern const usbd_control_constants_t stratify_link_boot_transport_usb_constants;
+extern const usbd_device_descriptor_t sos_link_transport_usb_dev_desc MCU_WEAK;
+extern const sos_link_transport_usb_configuration_descriptor_t sos_link_transport_usb_cfg_desc MCU_WEAK;
+extern const struct sos_link_transport_usb_string_t sos_link_transport_usb_string_desc MCU_WEAK;
+extern const usbd_control_constants_t sos_link_transport_usb_constants;
 
-link_transport_phy_t stratify_link_boot_transport_usb_open(const char * name, usbd_control_t * context);
-int stratify_link_boot_transport_usb_read(link_transport_phy_t, void * buf, int nbyte);
-int stratify_link_boot_transport_usb_write(link_transport_phy_t, const void * buf, int nbyte);
-int stratify_link_boot_transport_usb_close(link_transport_phy_t * handle);
-void stratify_link_boot_transport_usb_wait(int msec);
-void stratify_link_boot_transport_usb_flush(link_transport_phy_t handle);
+link_transport_phy_t boot_link_transport_usb_open(const char * name, usbd_control_t * context);
+int boot_link_transport_usb_read(link_transport_phy_t, void * buf, int nbyte);
+int boot_link_transport_usb_write(link_transport_phy_t, const void * buf, int nbyte);
+int boot_link_transport_usb_close(link_transport_phy_t * handle);
+void boot_link_transport_usb_wait(int msec);
+void boot_link_transport_usb_flush(link_transport_phy_t handle);
 
-extern const usbfifo_cfg_t stratify_link_boot_transport_usb_fifo_cfg;
-extern usbfifo_state_t stratify_link_boot_transport_usb_fifo_state MCU_SYS_MEM;
+extern const usbfifo_cfg_t sos_link_transport_usb_fifo_cfg;
+extern usbfifo_state_t sos_link_transport_usb_fifo_state MCU_SYS_MEM;
 
 
 #endif /* STRATIFY_LINK_TRANSPORT_USB_H_ */

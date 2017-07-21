@@ -428,7 +428,7 @@ void powerdown(int seconds);
  * that are designed to auto-run.  It can be completely replaced so
  * that users can customize the startup sequence.
  */
-void * stratify_default_thread(void * arg);
+void * sos_default_thread(void * arg);
 
 /*! \details Format the filesystem that is mounted at \a path.
  * \return Zero on success
@@ -576,8 +576,8 @@ typedef struct {
  */
 int signal_callback(void * context, mcu_event_t * data);
 
-void stratify_trace_event(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len);
-void stratify_trace_event_addr_tid(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len, u32 addr, int tid);
+void sos_trace_event(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len);
+void sos_trace_event_addr_tid(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len, u32 addr, int tid);
 
 #define STFY_SCHED_TIMEVAL_SECONDS 2048
 #define STFY_USECOND_PERIOD (1000000UL * STFY_SCHED_TIMEVAL_SECONDS)
@@ -621,23 +621,22 @@ typedef struct MCU_PACK {
 	const char * sys_id /*! System ID (globally unique cloud identifier for board) */;
 	int sys_memory_size /*! Memory size reserved for the system */;
 	int o_sys_flags /*! System flags */;
-	void * (*start)(void*) /*! The start routine (when in doubt use stratify_default_thread()) */;
-	void * start_args /*! Arguments passed to the start routine (for  stratify_default_thread() use a pointer to the link transport driver) */;
-	void (*notify_write)(const void * buf, int nbyte) /*! Function used for trace */;
-	const stratify_socket_api_t * socket_api /*! Socket API (zero if sockets are not supported) */;
-} stratify_board_config_t;
+	void * (*start)(void*) /*! The start routine (when in doubt use sos_default_thread()) */;
+	void * start_args /*! Arguments passed to the start routine (for  sos_default_thread() use a pointer to the link transport driver) */;
+	const sos_socket_api_t * socket_api /*! Socket API (zero if sockets are not supported) */;
+} sos_board_config_t;
 
 #define STRATIFY_DEFAULT_START_STACK_SIZE 2048
 
 //must be provided by board support package
-extern volatile sched_task_t stratify_sched_table[];
-extern task_t stratify_task_table[];
-extern const stratify_board_config_t stratify_board_config;
+extern volatile sched_task_t sos_sched_table[];
+extern task_t sos_task_table[];
+extern const sos_board_config_t sos_board_config;
 
-void stratify_led_startup();
-void stratify_led_priv_on(void * args);
-void stratify_led_priv_off(void * args);
-void stratify_led_priv_error(void * args);
+void sos_led_startup();
+void sos_led_priv_on(void * args);
+void sos_led_priv_off(void * args);
+void sos_led_priv_error(void * args);
 
 #endif
 

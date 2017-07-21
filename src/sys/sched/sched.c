@@ -95,8 +95,8 @@ void scheduler(){
 	set_uart_priority();
 
 	//This interval needs to be long enough to allow for flash writes
-	if( (stratify_board_config.o_sys_flags & SYS_FLAGS_DISABLE_WDT) == 0 ){
-		mcu_wdt_init(WDT_MODE_INTERRUPT|WDT_MODE_CLK_SRC_MAIN, SCHED_RR_DURATION * 10 * stratify_board_config.task_total + 5);
+	if( (sos_board_config.o_sys_flags & SYS_FLAGS_DISABLE_WDT) == 0 ){
+		mcu_wdt_init(WDT_MODE_INTERRUPT|WDT_MODE_CLK_SRC_MAIN, SCHED_RR_DURATION * 10 * sos_board_config.task_total + 5);
 	}
 
 	if ( sched_prepare() ){  //this starts memory protection
@@ -134,7 +134,7 @@ int check_faults(){
 	if ( sched_fault.fault.num != 0 ){
 		//Trace the fault -- and output on debug
 		sched_fault_build_trace_string(buffer);
-		stratify_trace_event_addr_tid(
+		sos_trace_event_addr_tid(
 				POSIX_TRACE_FATAL,
 				buffer, strlen(buffer),
 				(uint32_t)sched_fault.fault.pc + 1,
@@ -147,7 +147,7 @@ int check_faults(){
 		strcpy(buffer, "ADDR 0x");
 		htoa(hex_buffer, (uint32_t)sched_fault.fault.addr);
 		strcat(buffer, hex_buffer);
-		stratify_trace_event_addr_tid(
+		sos_trace_event_addr_tid(
 				POSIX_TRACE_MESSAGE,
 				buffer, strlen(buffer),
 				(uint32_t)sched_fault.fault.pc + 1,
@@ -157,7 +157,7 @@ int check_faults(){
 
 
 		strcpy(buffer, "Caller");
-		stratify_trace_event_addr_tid(
+		sos_trace_event_addr_tid(
 				POSIX_TRACE_MESSAGE,
 				buffer, strlen(buffer),
 				(uint32_t)sched_fault.fault.caller,
@@ -167,7 +167,7 @@ int check_faults(){
 
 
 		strcpy(buffer, "ISR PC");
-		stratify_trace_event_addr_tid(
+		sos_trace_event_addr_tid(
 				POSIX_TRACE_MESSAGE,
 				buffer, strlen(buffer),
 				(u32)sched_fault.fault.handler_pc + 1,
@@ -177,7 +177,7 @@ int check_faults(){
 
 
 		strcpy(buffer, "ISR Caller");
-		stratify_trace_event_addr_tid(
+		sos_trace_event_addr_tid(
 				POSIX_TRACE_MESSAGE,
 				buffer, strlen(buffer),
 				(uint32_t)sched_fault.fault.handler_caller,
@@ -274,12 +274,12 @@ int sched_get_highest_priority_blocked(void * block_object){
 	new_thread = -1;
 	for(i=1; i < task_get_total(); i++){
 		if ( task_enabled(i) ){
-			if ( (stratify_sched_table[i].block_object == block_object) && ( !sched_active_asserted(i) ) ){
+			if ( (sos_sched_table[i].block_object == block_object) && ( !sched_active_asserted(i) ) ){
 				//it's waiting for the block -- give the block to the highest priority and waiting longest
-				if( !sched_stopped_asserted(i) && (stratify_sched_table[i].attr.schedparam.sched_priority > priority) ){
+				if( !sched_stopped_asserted(i) && (sos_sched_table[i].attr.schedparam.sched_priority > priority) ){
 					//! \todo Find the task that has been waiting the longest time
 					new_thread = i;
-					priority = stratify_sched_table[i].attr.schedparam.sched_priority;
+					priority = sos_sched_table[i].attr.schedparam.sched_priority;
 				}
 			}
 		}
@@ -293,11 +293,11 @@ int sched_priv_unblock_all(void * block_object, int unblock_type){
 	priority = SCHED_LOWEST_PRIORITY - 1;
 	for(i=1; i < task_get_total(); i++){
 		if ( task_enabled(i) ){
-			if ( (stratify_sched_table[i].block_object == block_object) && ( !sched_active_asserted(i) ) ){
+			if ( (sos_sched_table[i].block_object == block_object) && ( !sched_active_asserted(i) ) ){
 				//it's waiting for the semaphore -- give the semaphore to the highest priority and waiting longest
 				sched_priv_assert_active(i, unblock_type);
-				if( !sched_stopped_asserted(i) && (stratify_sched_table[i].attr.schedparam.sched_priority > priority)  ){
-					priority = stratify_sched_table[i].attr.schedparam.sched_priority;
+				if( !sched_stopped_asserted(i) && (sos_sched_table[i].attr.schedparam.sched_priority > priority)  ){
+					priority = sos_sched_table[i].attr.schedparam.sched_priority;
 				}
 			}
 		}
@@ -310,9 +310,9 @@ int start_first_thread(){
 	pthread_attr_t attr;
 	int err;
 
-	init = stratify_sched_table[0].init;
+	init = sos_sched_table[0].init;
 
-	attr.stacksize = stratify_board_config.start_stack_size;
+	attr.stacksize = sos_board_config.start_stack_size;
 	attr.stackaddr = malloc(attr.stacksize);
 	if ( attr.stackaddr == NULL ){
 		errno = ENOMEM;
@@ -327,7 +327,7 @@ int start_first_thread(){
 	attr.schedparam.sched_priority = 21; //not the default priority
 
 	err = sched_new_thread(init,
-			stratify_board_config.start_args,
+			sos_board_config.start_args,
 			attr.stackaddr,
 			attr.stacksize,
 			&attr);

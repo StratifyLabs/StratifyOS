@@ -19,7 +19,7 @@
 
 #include <unistd.h>
 #include "../unistd/unistd_flags.h"
-#include "sos/stratify.h"
+#include "sos/sos.h"
 #include "sys/socket.h"
 
 //int close(int s);
@@ -30,76 +30,76 @@
 
 
 int accept(int s, struct sockaddr *addr, socklen_t *addrlen){
-	return stratify_board_config.socket_api->accept(s & ~FILDES_SOCKET_FLAG, addr, addrlen);
+	return sos_board_config.socket_api->accept(s & ~FILDES_SOCKET_FLAG, addr, addrlen);
 }
 
 int bind(int s, const struct sockaddr *name, socklen_t namelen){
-	return stratify_board_config.socket_api->bind(s & ~FILDES_SOCKET_FLAG, name, namelen);
+	return sos_board_config.socket_api->bind(s & ~FILDES_SOCKET_FLAG, name, namelen);
 }
 
 int shutdown(int s, int how){
-	return stratify_board_config.socket_api->shutdown(s & ~FILDES_SOCKET_FLAG, how);
+	return sos_board_config.socket_api->shutdown(s & ~FILDES_SOCKET_FLAG, how);
 }
 
 int getpeername(int s, struct sockaddr *name, socklen_t *namelen){
-	return stratify_board_config.socket_api->getpeername(s & ~FILDES_SOCKET_FLAG, name, namelen);
+	return sos_board_config.socket_api->getpeername(s & ~FILDES_SOCKET_FLAG, name, namelen);
 }
 
 
 int getsockname(int s, struct sockaddr *name, socklen_t *namelen){
-	return stratify_board_config.socket_api->getsockname(s & ~FILDES_SOCKET_FLAG, name, namelen);
+	return sos_board_config.socket_api->getsockname(s & ~FILDES_SOCKET_FLAG, name, namelen);
 }
 
 
 int getsockopt(int s, int level, int optname, void *optval, socklen_t *optlen){
-	return stratify_board_config.socket_api->getsockopt(s & ~FILDES_SOCKET_FLAG, level, optname, optval, optlen);
+	return sos_board_config.socket_api->getsockopt(s & ~FILDES_SOCKET_FLAG, level, optname, optval, optlen);
 }
 
 
 int setsockopt(int s, int level, int optname, const void *optval, socklen_t optlen){
-	return stratify_board_config.socket_api->setsockopt(s & ~FILDES_SOCKET_FLAG, level, optname, optval, optlen);
+	return sos_board_config.socket_api->setsockopt(s & ~FILDES_SOCKET_FLAG, level, optname, optval, optlen);
 }
 
 
 int connect(int s, const struct sockaddr *name, socklen_t namelen){
-	return stratify_board_config.socket_api->connect(s & ~FILDES_SOCKET_FLAG, name, namelen);
+	return sos_board_config.socket_api->connect(s & ~FILDES_SOCKET_FLAG, name, namelen);
 }
 
 
 int listen(int s, int backlog){
-	return stratify_board_config.socket_api->listen(s & ~FILDES_SOCKET_FLAG, backlog);
+	return sos_board_config.socket_api->listen(s & ~FILDES_SOCKET_FLAG, backlog);
 }
 
 
 int recv(int s, void *mem, size_t len, int flags){
-	return stratify_board_config.socket_api->recv(s & ~FILDES_SOCKET_FLAG, mem, len, flags);
+	return sos_board_config.socket_api->recv(s & ~FILDES_SOCKET_FLAG, mem, len, flags);
 }
 
 
 int recvfrom(int s, void *mem, size_t len, int flags, struct sockaddr *from, socklen_t *fromlen){
-	return stratify_board_config.socket_api->recvfrom(s & ~FILDES_SOCKET_FLAG, mem, len, flags, from, fromlen);
+	return sos_board_config.socket_api->recvfrom(s & ~FILDES_SOCKET_FLAG, mem, len, flags, from, fromlen);
 }
 
 
 int send(int s, const void *dataptr, size_t size, int flags){
-	return stratify_board_config.socket_api->send(s & ~FILDES_SOCKET_FLAG, dataptr, size, flags);
+	return sos_board_config.socket_api->send(s & ~FILDES_SOCKET_FLAG, dataptr, size, flags);
 }
 
 
 int sendmsg(int s, const struct msghdr *message, int flags){
-	return stratify_board_config.socket_api->sendmsg(s & ~FILDES_SOCKET_FLAG, message, flags);
+	return sos_board_config.socket_api->sendmsg(s & ~FILDES_SOCKET_FLAG, message, flags);
 }
 
 
 int sendto(int s, const void *dataptr, size_t size, int flags,
 		const struct sockaddr *to, socklen_t tolen){
-	return stratify_board_config.socket_api->sendto(s & ~FILDES_SOCKET_FLAG, dataptr, size, flags, to, tolen);
+	return sos_board_config.socket_api->sendto(s & ~FILDES_SOCKET_FLAG, dataptr, size, flags, to, tolen);
 }
 
 
 int socket(int domain, int type, int protocol){
 	int s;
-	s = stratify_board_config.socket_api->socket(domain, type, protocol);
+	s = sos_board_config.socket_api->socket(domain, type, protocol);
 	if( s < 0 ){
 		return -1;
 	}
@@ -108,15 +108,15 @@ int socket(int domain, int type, int protocol){
 
 
 int writev(int s, const struct iovec *iov, int iovcnt){
-	return stratify_board_config.socket_api->writev(s & ~FILDES_SOCKET_FLAG, iov, iovcnt);
+	return sos_board_config.socket_api->writev(s & ~FILDES_SOCKET_FLAG, iov, iovcnt);
 }
 
 
 int select(int maxfdp1, fd_set *readset, fd_set *writeset, fd_set *exceptset, struct timeval *timeout){
-	return stratify_board_config.socket_api->select(maxfdp1, readset, writeset, exceptset, timeout);
+	return sos_board_config.socket_api->select(maxfdp1, readset, writeset, exceptset, timeout);
 }
 
-const stratify_socket_api_t lwip_socket_api = {
+const sos_socket_api_t lwip_socket_api = {
 		.accept = lwip_accept,
 		.bind = lwip_bind,
 		.shutdown = lwip_shutdown,

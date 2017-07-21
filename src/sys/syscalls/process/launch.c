@@ -25,7 +25,7 @@
 #include <errno.h>
 
 #include "sos/fs/sysfs.h"
-#include "sos/stratify.h"
+#include "sos/sos.h"
 #include "process_start.h"
 #include "../../sched/sched_flags.h"
 #include "../../sysfs/appfs.h"

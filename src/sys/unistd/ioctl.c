@@ -30,7 +30,7 @@
 #include <errno.h>
 #include <stdarg.h>
 #include "unistd_flags.h"
-#include "sos/stratify.h"
+#include "sos/sos.h"
 #include "mcu/core.h"
 #include "mcu/sys.h"
 
@@ -65,8 +65,8 @@ int ioctl(int fildes, int request, ...) {
 	}
 
 	if( fildes & FILDES_SOCKET_FLAG ){
-		if( stratify_board_config.socket_api != 0 ){
-			return stratify_board_config.socket_api->ioctl(fildes, request, ctl);
+		if( sos_board_config.socket_api != 0 ){
+			return sos_board_config.socket_api->ioctl(fildes, request, ctl);
 		}
 		errno = EBADF;
 		return -1;

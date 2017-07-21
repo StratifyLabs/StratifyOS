@@ -86,9 +86,9 @@ typedef struct MCU_PACK {
 			struct timeval *timeout);
 	int (*ioctl)(int s, long cmd, void *argp);
 	int (*fcntl)(int s, int cmd, int val);
-} stratify_socket_api_t;
+} sos_socket_api_t;
 
-extern const stratify_socket_api_t lwip_socket_api;
+extern const sos_socket_api_t lwip_socket_api;
 
 
 

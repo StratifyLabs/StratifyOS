@@ -29,7 +29,7 @@
 #include "unistd_fs.h"
 #include "unistd_flags.h"
 #include "mcu/debug.h"
-#include "sos/stratify.h"
+#include "sos/sos.h"
 
 /*! \details This function closes the file associated
  * with the specified descriptor.
@@ -51,8 +51,8 @@ int _close(int fildes) {
 	}
 
 	if( fildes & FILDES_SOCKET_FLAG ){
-		if( stratify_board_config.socket_api != 0 ){
-			return stratify_board_config.socket_api->close(fildes);
+		if( sos_board_config.socket_api != 0 ){
+			return sos_board_config.socket_api->close(fildes);
 		}
 		errno = EBADF;
 		return -1;

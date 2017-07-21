@@ -17,7 +17,7 @@
 #define STRATIFY_SYMBOLS_TABLE_H_
 
 #include "mcu/types.h"
-#include "sos/stratify.h"
+#include "sos/sos.h"
 
 #include "defines.h"
 
@@ -574,7 +574,7 @@ u32 const symbols_table[] = {
 		(u32)sg_api,
 		(u32)son_api,
 		(u32)kernel_request,
-		(u32)stratify_trace_event,
+		(u32)sos_trace_event,
 		1
 };
 

@@ -119,7 +119,7 @@ void priv_cond_signal(void * args){
 	int id = *((int*)args);
 	sched_priv_assert_active(id, SCHED_UNBLOCK_COND);
 	if( !sched_stopped_asserted(id) ){
-		sched_priv_update_on_wake( stratify_sched_table[id].priority );
+		sched_priv_update_on_wake( sos_sched_table[id].priority );
 	}
 }
 
@@ -159,13 +159,13 @@ void priv_cond_wait(void  * args){
 	if ( argsp->mutex->pthread == task_get_current() ){
 		//First unlock the mutex
 		//Restore the priority to the task that is unlocking the mutex
-		stratify_sched_table[task_get_current()].priority = stratify_sched_table[task_get_current()].attr.schedparam.sched_priority;
+		sos_sched_table[task_get_current()].priority = sos_sched_table[task_get_current()].attr.schedparam.sched_priority;
 
 		if ( new_thread != -1 ){
 			argsp->mutex->pthread = new_thread;
 			argsp->mutex->pid = task_get_pid(new_thread);
 			argsp->mutex->lock = 1;
-			stratify_sched_table[new_thread].priority = argsp->mutex->prio_ceiling;
+			sos_sched_table[new_thread].priority = argsp->mutex->prio_ceiling;
 			sched_priv_assert_active(new_thread, SCHED_UNBLOCK_MUTEX);
 		} else {
 			argsp->mutex->lock = 0;

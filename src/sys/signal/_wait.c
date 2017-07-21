@@ -124,8 +124,8 @@ void priv_check_for_zombie_child(void * args){
 						if( SIGCHLD_ASSERTED() ){
 							if( num_zombies == 0 ){
 								p->tid = i;
-								p->status = stratify_sched_table[i].exit_status;
-								stratify_sched_table[i].flags = 0;
+								p->status = sos_sched_table[i].exit_status;
+								sos_sched_table[i].flags = 0;
 								task_priv_del(i);
 							}
 							num_zombies++;

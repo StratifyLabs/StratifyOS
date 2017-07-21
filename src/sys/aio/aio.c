@@ -275,14 +275,14 @@ static int aio_data_transfer_callback(struct aiocb * aiocbp, const void * ignore
 
 	if( task_enabled(tid) ){ //if task is no longer enabled (don't do anything)
 		if ( sched_aiosuspend_asserted(tid) ){
-			p = (priv_suspend_t*)stratify_sched_table[tid].block_object;
+			p = (priv_suspend_t*)sos_sched_table[tid].block_object;
 
 			if ( p->block_on_all == false ){
 				for(i=0; i < p->nent; i++){
 					if ( aiocbp == p->list[i] ){ //If this is true the thread is blocked on the operation that is currently completing
 						sched_priv_assert_active(tid, SCHED_UNBLOCK_AIO);
 						if( !sched_stopped_asserted(tid) ){
-							sched_priv_update_on_wake(stratify_sched_table[tid].priority);
+							sched_priv_update_on_wake(sos_sched_table[tid].priority);
 						}
 						break;
 					}
@@ -299,7 +299,7 @@ static int aio_data_transfer_callback(struct aiocb * aiocbp, const void * ignore
 				if( wakeup == true ){
 					sched_priv_assert_active(tid, SCHED_UNBLOCK_AIO);
 					if( !sched_stopped_asserted(tid) ){
-						sched_priv_update_on_wake(stratify_sched_table[tid].priority);
+						sched_priv_update_on_wake(sos_sched_table[tid].priority);
 					}
 				}
 			}
@@ -335,7 +335,7 @@ void priv_device_data_transfer(void * args){
 		p->ret = p->device->driver.write(&p->device->handle, &p->aiocbp->op);
 	}
 
-	stratify_sched_table[task_get_current()].block_object = NULL;
+	sos_sched_table[task_get_current()].block_object = NULL;
 
 	_mcu_cortexm_priv_enable_interrupts(NULL);
 

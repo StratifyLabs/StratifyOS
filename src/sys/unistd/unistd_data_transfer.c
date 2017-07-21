@@ -69,17 +69,17 @@ int priv_data_transfer_callback(void * context, mcu_event_t * event){
 	new_priority = -1;
 	if ( (uint32_t)args->op.tid < task_get_total() ){
 		if ( sched_inuse_asserted(args->op.tid) && !sched_stopped_asserted(args->op.tid) ){ //check to see if the process terminated or stopped
-			new_priority = stratify_sched_table[args->op.tid].priority;
+			new_priority = sos_sched_table[args->op.tid].priority;
 		}
 	}
 
 	//check to see if any tasks are waiting for this device
 	for(i = 1; i < task_get_total(); i++){
 		if ( task_enabled(i) && sched_inuse_asserted(i) ){
-			if ( stratify_sched_table[i].block_object == (args->handle + args->read) ){
+			if ( sos_sched_table[i].block_object == (args->handle + args->read) ){
 				sched_priv_assert_active(i, SCHED_UNBLOCK_TRANSFER);
-				if( !sched_stopped_asserted(i) && (stratify_sched_table[i].priority > new_priority) ){
-					new_priority = stratify_sched_table[i].priority;
+				if( !sched_stopped_asserted(i) && (sos_sched_table[i].priority > new_priority) ){
+					new_priority = sos_sched_table[i].priority;
 				}
 			}
 		}
@@ -100,7 +100,7 @@ void priv_check_op_complete(void * args){
 			if ( (p->op.nbyte >= 0) //wait for the operation to complete or for data to arrive
 			){
 				//Block waiting for the operation to complete or new data to be ready
-				stratify_sched_table[ task_get_current() ].block_object = (void*)p->handle + p->read;
+				sos_sched_table[ task_get_current() ].block_object = (void*)p->handle + p->read;
 				//switch tasks until a signal becomes available
 				sched_priv_update_on_sleep();
 			}

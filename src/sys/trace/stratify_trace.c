@@ -20,39 +20,37 @@
 
 #include <errno.h>
 
-#include "sos/stratify.h"
-#include "sos/stratify_link_transport_usb.h"
+#include "sos/sos.h"
+#include "sos/sos_link_transport_usb.h"
 #include "mcu/task.h"
 #include "mcu/core.h"
 #include "sos/link/link.h"
 #include "mcu/mpu.h"
 
-static void stratify_trace_event_addr(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len, u32 addr);
+static void sos_trace_event_addr(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len, u32 addr);
 
-void stratify_priv_trace_event(void * info){
+void sos_priv_trace_event(void * info){
 	link_notify_posix_trace_event_t notify;
 	memcpy(&(notify.info), info, sizeof(link_posix_trace_event_info_t));
 	notify.id = LINK_NOTIFY_ID_POSIX_TRACE_EVENT;
-	stratify_board_config.notify_write(&notify, sizeof(link_notify_posix_trace_event_t));
+	//sos_board_config.notify_write(&notify, sizeof(link_notify_posix_trace_event_t));
 }
 
-void stratify_trace_event(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len){
+void sos_trace_event(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len){
 	register u32 lr asm("lr");
-	stratify_trace_event_addr(event_id, data_ptr, data_len, lr);
+	sos_trace_event_addr(event_id, data_ptr, data_len, lr);
 }
 
-void stratify_trace_event_addr(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len, u32 addr){
-	stratify_trace_event_addr_tid(event_id, data_ptr, data_len, addr, task_get_current());
+void sos_trace_event_addr(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len, u32 addr){
+	sos_trace_event_addr_tid(event_id, data_ptr, data_len, addr, task_get_current());
 }
 
-void stratify_trace_event_addr_tid(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len, u32 addr, int tid){
+void sos_trace_event_addr_tid(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len, u32 addr, int tid){
 	//record event id and in-calling processes trace stream
 	struct timespec spec;
 	link_posix_trace_event_info_t event_info;
 
-	if( stratify_board_config.notify_write == 0 ){
-		return;
-	}
+	return;
 
 	//convert the address using the task memory location
 	//check if addr is part of kernel or app
@@ -61,7 +59,7 @@ void stratify_trace_event_addr_tid(link_trace_event_id_t event_id, const void * 
 		addr = addr - 1;
 	} else {
 		//app
-		addr = addr - (u32)mpu_addr((u32)stratify_task_table[tid].mem.code.addr) - 1 + 0xDE000000;
+		addr = addr - (u32)mpu_addr((u32)sos_task_table[tid].mem.code.addr) - 1 + 0xDE000000;
 	}
 
 	event_info.posix_event_id = event_id;
@@ -78,7 +76,7 @@ void stratify_trace_event_addr_tid(link_trace_event_id_t event_id, const void * 
 	event_info.posix_timestamp_tv_sec = spec.tv_sec;
 	event_info.posix_timestamp_tv_nsec = spec.tv_nsec;
 
-	mcu_core_privcall(stratify_priv_trace_event, &event_info);
+	mcu_core_privcall(sos_priv_trace_event, &event_info);
 
 }
 

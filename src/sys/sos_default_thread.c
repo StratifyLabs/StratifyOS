@@ -26,7 +26,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include "sos/stratify.h"
+#include "sos/sos.h"
 #include "sos/fs/sysfs.h"
 #include "config.h"
 #include "mcu/debug.h"
@@ -80,7 +80,7 @@ void start_filesystem(void){
 	mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_START_FILESYSTEM, &started);
 }
 
-void * stratify_default_thread(void * arg){
+void * sos_default_thread(void * arg){
 
 	check_reset_source();
 

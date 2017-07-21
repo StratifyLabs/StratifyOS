@@ -25,7 +25,7 @@
 #include <errno.h>
 #include <stdbool.h>
 #include <sys/fcntl.h>
-#include "sos/stratify.h"
+#include "sos/sos.h"
 #include "mcu/cortexm.h"
 #include "mcu/core.h"
 #include "mcu/debug.h"

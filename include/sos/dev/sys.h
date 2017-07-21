@@ -232,15 +232,15 @@ typedef struct MCU_PACK {
 #define I_SYS_SUDO _IOCTLW(SYS_IOC_CHAR, 5, sys_sudo_t)
 
 /*! \brief See below for details.
- * \details This copies the stratify_board_config_t data that is set by the
+ * \details This copies the sos_board_config_t data that is set by the
  * board support package.
  * \code
- * stratify_board_config_t config;
+ * sos_board_config_t config;
  * ioctl(core_fd, I_SYS_GETBOARDCONFIG, &config);
  * \endcode
  *
  */
-#define I_SYS_GETBOARDCONFIG _IOCTLR(SYS_IOC_CHAR, 6, stratify_board_config_t)
+#define I_SYS_GETBOARDCONFIG _IOCTLR(SYS_IOC_CHAR, 6, sos_board_config_t)
 
 #define I_SYS_TOTAL 6
 

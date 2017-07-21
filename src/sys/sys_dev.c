@@ -54,17 +54,17 @@ int sys_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 	case  I_SYS_GETINFO:
 		memset(sys, 0, sizeof(sys_attr_t));
 		strncpy(sys->kernel_version, VERSION, 7);
-		strncpy(sys->sys_version, stratify_board_config.sys_version, 7);
+		strncpy(sys->sys_version, sos_board_config.sys_version, 7);
 		strncpy(sys->arch, ARCH, 15);
 		sys->security = 0;
 		sys->signature = symbols_table[0];
 		sys->cpu_freq = _mcu_core_getclock();
-		sys->sys_mem_size = stratify_board_config.sys_memory_size;
-		sys->flags = stratify_board_config.o_sys_flags;
-		strncpy(sys->id, stratify_board_config.sys_id, PATH_MAX-1);
-		strncpy(sys->stdin_name, stratify_board_config.stdin_dev, NAME_MAX-1);
-		strncpy(sys->stdout_name, stratify_board_config.stdout_dev, NAME_MAX-1);
-		strncpy(sys->name, stratify_board_config.sys_name, NAME_MAX-1);
+		sys->sys_mem_size = sos_board_config.sys_memory_size;
+		sys->flags = sos_board_config.o_sys_flags;
+		strncpy(sys->id, sos_board_config.sys_id, PATH_MAX-1);
+		strncpy(sys->stdin_name, sos_board_config.stdin_dev, NAME_MAX-1);
+		strncpy(sys->stdout_name, sos_board_config.stdout_dev, NAME_MAX-1);
+		strncpy(sys->name, sos_board_config.sys_name, NAME_MAX-1);
 		_mcu_core_getserialno(&(sys->serial));
 		sys->hardware_id = (u32)_mcu_core_hardware_id;
 		return 0;
@@ -72,7 +72,7 @@ int sys_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 		return read_task(ctl);
 
 	case I_SYS_GETID:
-		memcpy(id->id, stratify_board_config.sys_id, PATH_MAX-1);
+		memcpy(id->id, sos_board_config.sys_id, PATH_MAX-1);
 		return 0;
 	case I_SYS_KILL:
 		for(i = 1; i < task_get_total(); i++){
@@ -95,7 +95,7 @@ int sys_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 				killattr->si_sigcode,
 				killattr->si_sigvalue, 1);
 	case I_SYS_GETBOARDCONFIG:
-		memcpy(ctl, &stratify_board_config, sizeof(stratify_board_config));
+		memcpy(ctl, &sos_board_config, sizeof(sos_board_config));
 		return 0;
 	default:
 		break;
@@ -125,11 +125,11 @@ int read_task(sys_taskattr_t * task){
 			task->is_enabled = 1;
 			task->pid = task_get_pid( task->tid );
 			task->timer = task_priv_gettime(task->tid);
-			task->mem_loc = (uint32_t)stratify_sched_table[task->tid].attr.stackaddr;
-			task->mem_size = stratify_sched_table[task->tid].attr.stacksize;
+			task->mem_loc = (uint32_t)sos_sched_table[task->tid].attr.stackaddr;
+			task->mem_size = sos_sched_table[task->tid].attr.stacksize;
 			task->stack_ptr = (uint32_t)task_table[task->tid].sp;
-			task->prio = stratify_sched_table[task->tid].priority;
-			task->prio_ceiling = stratify_sched_table[task->tid].attr.schedparam.sched_priority;
+			task->prio = sos_sched_table[task->tid].priority;
+			task->prio_ceiling = sos_sched_table[task->tid].attr.schedparam.sched_priority;
 			task->is_active = (sched_active_asserted(task->tid) != 0) | ((sched_stopped_asserted(task->tid != 0)<<1));
 			task->is_thread = task_isthread_asserted( task->tid );
 

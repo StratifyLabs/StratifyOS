@@ -17,7 +17,7 @@
 #include "mcu/debug.h"
 #include "mcu/boot_debug.h"
 
-#include "sos/stratify_link_transport_usb.h"
+#include "sos/sos_link_transport_usb.h"
 
 #define USBDEV_PORT 0
 
@@ -28,7 +28,7 @@ static char rd_buffer[BUF_SIZE];
 static int rd_tail;
 static int rd_head;
 
-link_transport_phy_t stratify_link_boot_transport_usb_open(const char * name, usbd_control_t * control){
+link_transport_phy_t boot_link_transport_usb_open(const char * name, usbd_control_t * control){
 	usb_attr_t usb_attr;
 
 	dstr("OPEN USB\n");
@@ -58,7 +58,7 @@ link_transport_phy_t stratify_link_boot_transport_usb_open(const char * name, us
 	return 0;
 }
 
-int stratify_link_boot_transport_usb_write(link_transport_phy_t handle, const void * buf, int nbyte){
+int boot_link_transport_usb_write(link_transport_phy_t handle, const void * buf, int nbyte){
 	int ret;
 	ret = mcu_sync_io(&usb_dev, mcu_usb_write, STRATIFY_LINK_TRANSPORT_USB_BULK_ENDPOINT_IN, buf, nbyte, O_RDWR);
 	return ret;
@@ -98,7 +98,7 @@ static int write_buffer(const char * src, int nbyte){
 	return i; //number of bytes written
 }
 
-int stratify_link_boot_transport_usb_read(link_transport_phy_t handle, void * buf, int nbyte){
+int boot_link_transport_usb_read(link_transport_phy_t handle, void * buf, int nbyte){
 	int ret;
 	int bytes_read;
 	char buffer[STRATIFY_LINK_TRANSPORT_ENDPOINT_SIZE];
@@ -116,16 +116,16 @@ int stratify_link_boot_transport_usb_read(link_transport_phy_t handle, void * bu
 	return nbyte;
 }
 
-int stratify_link_boot_transport_usb_close(link_transport_phy_t * handle){
+int boot_link_transport_usb_close(link_transport_phy_t * handle){
 	return mcu_usb_close(&usb_dev);
 }
 
-void stratify_link_boot_transport_usb_wait(int msec){
+void boot_link_transport_usb_wait(int msec){
 	int i;
 	for(i = 0; i < msec; i++){
 		_mcu_cortexm_delay_us(1000);
 	}
 }
 
-void stratify_link_boot_transport_usb_flush(link_transport_phy_t handle){}
+void boot_link_transport_usb_flush(link_transport_phy_t handle){}
 

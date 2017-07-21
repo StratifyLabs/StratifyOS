@@ -25,7 +25,7 @@
 
 #include  "unistd_fs.h"
 #include  "unistd_flags.h"
-#include "sos/stratify.h"
+#include "sos/sos.h"
 
 /*! \details This function reads \a nbyte bytes from \a fildes to the memory
  * location pointed to by \a buf.
@@ -76,8 +76,8 @@ int _read(int fildes, void *buf, size_t nbyte){
 	}
 
 	if( fildes & FILDES_SOCKET_FLAG ){
-		if( stratify_board_config.socket_api != 0 ){
-			return stratify_board_config.socket_api->read(fildes, buf, nbyte);
+		if( sos_board_config.socket_api != 0 ){
+			return sos_board_config.socket_api->read(fildes, buf, nbyte);
 		}
 		errno = EBADF;
 		return -1;

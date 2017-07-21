@@ -30,13 +30,13 @@ limitations under the License.
 #include "mcu/usb.h"
 #include "mcu/debug.h"
 #include "mcu/sys.h"
-#include "sos/stratify_link_transport_usb.h"
+#include "sos/sos_link_transport_usb.h"
 
 
 static devfs_async_t notify_op;
 
 
-link_transport_phy_t stratify_link_transport_usb_open(const char * name, usbd_control_t * context){
+link_transport_phy_t sos_link_transport_usb_open(const char * name, usbd_control_t * context){
 	link_transport_phy_t fd;
 	usb_attr_t usb_attr;
 
@@ -67,13 +67,13 @@ link_transport_phy_t stratify_link_transport_usb_open(const char * name, usbd_co
 	return fd;
 }
 
-int stratify_link_transport_usb_write(link_transport_phy_t handle, const void * buf, int nbyte){
+int sos_link_transport_usb_write(link_transport_phy_t handle, const void * buf, int nbyte){
 	int ret;
 	ret = write(handle, buf, nbyte);
 	return ret;
 }
 
-void stratify_link_transport_usb_notify(const void * buf, int nbyte){
+void sos_link_transport_usb_notify(const void * buf, int nbyte){
 	devfs_handle_t usb;
 	usb.port = STRATIFY_LINK_TRANSPORT_USB_PORT;
 
@@ -88,27 +88,27 @@ void stratify_link_transport_usb_notify(const void * buf, int nbyte){
 	mcu_usb_write(&usb, &notify_op);
 }
 
-int stratify_link_transport_usb_read(link_transport_phy_t handle, void * buf, int nbyte){
+int sos_link_transport_usb_read(link_transport_phy_t handle, void * buf, int nbyte){
 	int ret;
 	errno = 0;
 	ret = read(handle, buf, nbyte);
 	return ret;
 }
 
-int stratify_link_transport_usb_close(link_transport_phy_t * handle){
+int sos_link_transport_usb_close(link_transport_phy_t * handle){
 	link_transport_phy_t fd = *handle;
 	*handle = -1;
 	return close(fd);
 }
 
-void stratify_link_transport_usb_wait(int msec){
+void sos_link_transport_usb_wait(int msec){
 	int i;
 	for(i = 0; i < msec; i++){
 		usleep(1000);
 	}
 }
 
-void stratify_link_transport_usb_flush(link_transport_phy_t handle){
+void sos_link_transport_usb_flush(link_transport_phy_t handle){
 	ioctl(handle, I_FIFO_FLUSH);
 }
 

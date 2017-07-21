@@ -32,7 +32,7 @@
 #include "mcu/task.h"
 #include "mcu/debug.h"
 #include "mcu/core.h"
-#include "sos/stratify.h"
+#include "sos/sos.h"
 #include "trace.h"
 #include "sched.h"
 
@@ -76,38 +76,38 @@ extern volatile i8 sched_status_changed;
 extern volatile sched_fault_t sched_fault;
 
 static inline int sched_active_asserted(int id) MCU_ALWAYS_INLINE;
-int sched_active_asserted(int id){ return stratify_sched_table[id].flags & (1<< SCHED_TASK_FLAGS_ACTIVE); };
+int sched_active_asserted(int id){ return sos_sched_table[id].flags & (1<< SCHED_TASK_FLAGS_ACTIVE); };
 
 static inline int sched_sync_asserted(int id) MCU_ALWAYS_INLINE;
-int sched_sync_asserted(int id){ return stratify_sched_table[id].flags & (1<< SCHED_TASK_FLAGS_PRIV_SYNC); };
+int sched_sync_asserted(int id){ return sos_sched_table[id].flags & (1<< SCHED_TASK_FLAGS_PRIV_SYNC); };
 
 
 static inline int sched_inuse_asserted(int id) MCU_ALWAYS_INLINE;
-int sched_inuse_asserted(int id){ return stratify_sched_table[id].flags & (1<< SCHED_TASK_FLAGS_INUSE); };
+int sched_inuse_asserted(int id){ return sos_sched_table[id].flags & (1<< SCHED_TASK_FLAGS_INUSE); };
 
 static inline int sched_waitchild_asserted(int id) MCU_ALWAYS_INLINE;
-int sched_waitchild_asserted(int id){ return stratify_sched_table[id].flags & (1<< SCHED_TASK_FLAGS_WAITCHILD); };
+int sched_waitchild_asserted(int id){ return sos_sched_table[id].flags & (1<< SCHED_TASK_FLAGS_WAITCHILD); };
 
 static inline int sched_sigcaught_asserted(int id) MCU_ALWAYS_INLINE;
-int sched_sigcaught_asserted(int id){ return stratify_sched_table[id].flags & (1<< SCHED_TASK_FLAGS_SIGCAUGHT); };
+int sched_sigcaught_asserted(int id){ return sos_sched_table[id].flags & (1<< SCHED_TASK_FLAGS_SIGCAUGHT); };
 
 static inline int sched_aiosuspend_asserted(int id) MCU_ALWAYS_INLINE;
-int sched_aiosuspend_asserted(int id){ return stratify_sched_table[id].flags & (1<< SCHED_TASK_FLAGS_AIOSUSPEND); };
+int sched_aiosuspend_asserted(int id){ return sos_sched_table[id].flags & (1<< SCHED_TASK_FLAGS_AIOSUSPEND); };
 
 static inline int sched_listiosuspend_asserted(int id) MCU_ALWAYS_INLINE;
-int sched_listiosuspend_asserted(int id){ return stratify_sched_table[id].flags & (1<< SCHED_TASK_FLAGS_LISTIOSUSPEND); };
+int sched_listiosuspend_asserted(int id){ return sos_sched_table[id].flags & (1<< SCHED_TASK_FLAGS_LISTIOSUSPEND); };
 
 static inline int sched_stopped_asserted(int id) MCU_ALWAYS_INLINE;
-int sched_stopped_asserted(int id){ return stratify_sched_table[id].flags & (1<< SCHED_TASK_FLAGS_STOPPED); };
+int sched_stopped_asserted(int id){ return sos_sched_table[id].flags & (1<< SCHED_TASK_FLAGS_STOPPED); };
 
 static inline int sched_zombie_asserted(int id) MCU_ALWAYS_INLINE;
-int sched_zombie_asserted(int id){ return stratify_sched_table[id].flags & (1<< SCHED_TASK_FLAGS_ZOMBIE); };
+int sched_zombie_asserted(int id){ return sos_sched_table[id].flags & (1<< SCHED_TASK_FLAGS_ZOMBIE); };
 
 static inline int sched_get_priority(int id) MCU_ALWAYS_INLINE;
-int sched_get_priority(int id){ return stratify_sched_table[id].priority; };
+int sched_get_priority(int id){ return sos_sched_table[id].priority; };
 
 static inline trace_id_t sched_get_trace_id(int id) MCU_ALWAYS_INLINE;
-trace_id_t sched_get_trace_id(int id){ return stratify_sched_table[id].trace_id; };
+trace_id_t sched_get_trace_id(int id){ return sos_sched_table[id].trace_id; };
 
 
 static inline int sched_get_current_priority() MCU_ALWAYS_INLINE;
@@ -119,12 +119,12 @@ inline int sched_status_change_asserted(){
 }
 
 static inline volatile int sched_get_unblock_type(int id) MCU_ALWAYS_INLINE;
-volatile int sched_get_unblock_type(int id){ return stratify_sched_table[id].flags & SCHED_TASK_FLAGS_UNBLOCK_MASK; };
+volatile int sched_get_unblock_type(int id){ return sos_sched_table[id].flags & SCHED_TASK_FLAGS_UNBLOCK_MASK; };
 
 static inline void sched_priv_set_unblock_type(int id, sched_unblock_type_t unblock_type) MCU_ALWAYS_INLINE;
 void sched_priv_set_unblock_type(int id, sched_unblock_type_t unblock_type){
-	stratify_sched_table[id].flags &= ~SCHED_TASK_FLAGS_UNBLOCK_MASK;
-	stratify_sched_table[id].flags |= unblock_type;
+	sos_sched_table[id].flags &= ~SCHED_TASK_FLAGS_UNBLOCK_MASK;
+	sos_sched_table[id].flags |= unblock_type;
 };
 
 void sched_priv_update_on_sleep();

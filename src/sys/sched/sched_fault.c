@@ -18,7 +18,7 @@
  */
 
 #include <string.h>
-#include "sos/stratify.h"
+#include "sos/sos.h"
 #include "sched_flags.h"
 
 void sched_fault_build_trace_string(char * dest){

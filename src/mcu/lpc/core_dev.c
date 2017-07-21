@@ -58,7 +58,6 @@ int mcu_core_setattr(int port, void * arg){
 	core_attr_t * attr = arg;
 	u32 o_flags = attr->o_flags;
 
-
 	if( o_flags & CORE_FLAG_SET_CLKOUT ){
 		enable_clock_out(o_flags, attr->freq);
 	}

@@ -17,7 +17,7 @@
  * 
  */
 
-#include "sos/stratify.h"
+#include "sos/sos.h"
 #include <sys/unistd.h>
 #include <unistd.h>
 

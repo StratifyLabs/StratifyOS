@@ -23,7 +23,7 @@
 #include "sos/dev/bootloader.h"
 #include "link_flags.h"
 
-static int reset_device(link_transport_mdriver_t * driver, bool invoke_bootloader);
+static int reset_device(link_transport_mdriver_t * driver, int invoke_bootloader);
 
 int link_bootloader_attr(link_transport_mdriver_t * driver, bootloader_attr_t * attr, uint32_t id){
 	if( link_ioctl(driver, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_GETINFO, attr) < 0 ){
@@ -81,15 +81,14 @@ int link_reset(link_transport_mdriver_t * driver){
 		driver->dev.close(&(driver->dev.handle));
 	} else {
 		link_debug(LINK_DEBUG_MESSAGE, "reset device with /dev/core");
-		return reset_device(driver, false);
+		return reset_device(driver, 0);
 	}
 	return 0;
 }
 
-int reset_device(link_transport_mdriver_t * driver, bool invoke_bootloader){
+int reset_device(link_transport_mdriver_t * driver, int invoke_bootloader){
 	//use "/dev/core" to reset
 	int fd;
-	link_op_t op;
 	core_attr_t attr;
 
 	fd = link_open(driver, "/dev/core", LINK_O_RDWR);
@@ -97,28 +96,26 @@ int reset_device(link_transport_mdriver_t * driver, bool invoke_bootloader){
 		return -1;
 	}
 
-	op.ioctl.cmd = LINK_CMD_IOCTL;
-	op.ioctl.fildes = fd;
-	op.ioctl.arg = (size_t)NULL;
 
-	if( invoke_bootloader == false ){
+	if( invoke_bootloader == 0 ){
 		link_debug(LINK_DEBUG_MESSAGE, "Try to reset");
-		op.ioctl.request = I_CORE_SETATTR;
 		attr.o_flags = CORE_FLAG_EXEC_RESET;
-
 	} else {
 		link_debug(LINK_DEBUG_MESSAGE, "Try to invoke bootloader");
-		op.ioctl.request = I_CORE_SETATTR;
 		attr.o_flags = CORE_FLAG_EXEC_INVOKE_BOOTLOADER;
 	}
 
-	link_transport_masterwrite(driver, &op, sizeof(link_ioctl_t));
+	if( link_ioctl(driver, fd, I_CORE_SETATTR, &attr) < 0 ){
+		return -1;
+	}
+
+	//since the device has been reset -- close the handle
 	driver->dev.close(&(driver->dev.handle));
 	return 0;
 }
 
 int link_resetbootloader(link_transport_mdriver_t * driver){
-	return reset_device(driver, true);
+	return reset_device(driver, 1);
 }
 
 int link_eraseflash(link_transport_mdriver_t * driver){

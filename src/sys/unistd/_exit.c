@@ -87,7 +87,7 @@ void priv_stop_threads(int * send_signal){
 	int options = exec_options();
 
 	//set the exit status
-	stratify_sched_table[task_get_current()].exit_status = *send_signal;
+	sos_sched_table[task_get_current()].exit_status = *send_signal;
 
 	//Kill all other threads in process
 	tmp = task_get_pid( task_get_current() );
@@ -95,7 +95,7 @@ void priv_stop_threads(int * send_signal){
 	for(i=1; i < task_get_total(); i++){
 		if ( task_get_pid(i) == tmp ){
 			if ( i != task_get_current() ){
-				stratify_sched_table[i].flags = 0;
+				sos_sched_table[i].flags = 0;
 				task_priv_del(i);
 			}
 		}
@@ -131,7 +131,7 @@ void priv_stop_threads(int * send_signal){
 		*send_signal = false;
 	} else if( *send_signal == true ){
 		//assert the zombie flags
-		stratify_sched_table[task_get_current()].flags |= (1<< SCHED_TASK_FLAGS_ZOMBIE);
+		sos_sched_table[task_get_current()].flags |= (1<< SCHED_TASK_FLAGS_ZOMBIE);
 
 		//send a signal to the parent process
 		tmp = task_get_pid( task_get_parent( task_get_current() ) );
@@ -146,7 +146,7 @@ void priv_stop_threads(int * send_signal){
 						i,
 						SIGCHLD,
 						SI_USER,
-						stratify_sched_table[task_get_current()].exit_status,
+						sos_sched_table[task_get_current()].exit_status,
 						0) < 0 ){
 					*send_signal = false;
 					return;
@@ -172,7 +172,7 @@ int exec_options(){
 void priv_zombie_process(int * signal_sent){
 	if ( *signal_sent == false ){
 		//discard this thread immediately
-		stratify_sched_table[task_get_current()].flags = 0;
+		sos_sched_table[task_get_current()].flags = 0;
 		task_priv_del(task_get_current());
 	} else {
 		//the parent is waiting -- set this thread to a zombie thread

@@ -44,14 +44,14 @@ static int start_single();
 int sched_init(){
 
 #if SINGLE_TASK == 0
-	task_total = stratify_board_config.task_total;
-	task_table = stratify_task_table;
+	task_total = sos_board_config.task_total;
+	task_table = sos_task_table;
 
 	sched_current_priority = SCHED_LOWEST_PRIORITY - 1;
 	sched_status_changed = 0;
 
 	memset((void*)task_table, 0, sizeof(task_t) * task_total);
-	memset((void*)stratify_sched_table, 0, sizeof(sched_task_t) * task_total);
+	memset((void*)sos_sched_table, 0, sizeof(sched_task_t) * task_total);
 
 	//Do basic init of task 0 so that memory allocation can happen before the scheduler starts
 	task_table[0].reent = _impure_ptr;
@@ -69,16 +69,16 @@ int sched_start(void * (*init)(void*), int priority){
 
 #if SINGLE_TASK == 0
 
-	stratify_sched_table[0].init = init;
-	stratify_sched_table[0].priority = priority;
-	stratify_sched_table[0].attr.stackaddr = &_data;
-	stratify_sched_table[0].attr.stacksize = stratify_board_config.sys_memory_size;
+	sos_sched_table[0].init = init;
+	sos_sched_table[0].priority = priority;
+	sos_sched_table[0].attr.stackaddr = &_data;
+	sos_sched_table[0].attr.stacksize = sos_board_config.sys_memory_size;
 
 	//Start the scheduler in a new thread
 	if ( task_init(SCHED_RR_DURATION,
 			scheduler, //run the scheduler
 			NULL, //Let the task init function figure out where the stack needs to be and the heap size
-			stratify_board_config.sys_memory_size)
+			sos_board_config.sys_memory_size)
 	){
 		return -1;
 	}
@@ -88,7 +88,7 @@ int sched_start(void * (*init)(void*), int priority){
 	//Enter thread mode
 	task_init_single(start_single,
 			NULL,
-			stratify_board_config.sys_memory_size);
+			sos_board_config.sys_memory_size);
 #endif
 	//Program never gets to this point
 	return -1;
@@ -122,7 +122,7 @@ int sched_prepare(){
 
 
 #if USE_MEMORY_PROTECTION > 0
-	if ( task_init_mpu(&_data, stratify_board_config.sys_memory_size) < 0 ){
+	if ( task_init_mpu(&_data, sos_board_config.sys_memory_size) < 0 ){
 		sched_debug("Failed to initialize memory protection\n");
 		mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_PRIV_FATAL, (void*)"tski");
 	}

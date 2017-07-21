@@ -17,11 +17,11 @@
  *
  */
 
-#include "sos/stratify.h"
+#include "sos/sos.h"
 #include "mcu/core.h"
 #include "mcu/pio.h"
 
-void stratify_led_startup(){
+void sos_led_startup(){
 	int i;
 	int duty;
 	const int factor = 10;
@@ -29,23 +29,23 @@ void stratify_led_startup(){
 	if( mcu_board_config.led.port != 255 ){
 		for(i=0; i < 100; i++){
 			duty = i*factor;
-			mcu_core_privcall(stratify_led_priv_on, 0);
+			mcu_core_privcall(sos_led_priv_on, 0);
 			usleep(duty);
-			mcu_core_privcall(stratify_led_priv_off, 0);
+			mcu_core_privcall(sos_led_priv_off, 0);
 			usleep(100*factor - duty);
 		}
 
 		for(i=0; i < 100; i++){
 			duty = i*factor;
-			mcu_core_privcall(stratify_led_priv_on, 0);
+			mcu_core_privcall(sos_led_priv_on, 0);
 			usleep(100*factor - duty);
-			mcu_core_privcall(stratify_led_priv_off, 0);
+			mcu_core_privcall(sos_led_priv_off, 0);
 			usleep(duty);
 		}
 	}
 }
 
-void stratify_led_priv_on(void * args){
+void sos_led_priv_on(void * args){
 	if( mcu_board_config.led.port != 255 ){
 		pio_attr_t attr;
 		attr.o_pinmask = (1<<mcu_board_config.led.pin);
@@ -59,7 +59,7 @@ void stratify_led_priv_on(void * args){
 	}
 }
 
-void stratify_led_priv_off(void * args){
+void sos_led_priv_off(void * args){
 	if( mcu_board_config.led.port != 255 ){
 		pio_attr_t attr;
 		attr.o_flags = PIO_FLAG_SET_INPUT | PIO_FLAG_IS_DIRONLY;
@@ -68,11 +68,11 @@ void stratify_led_priv_off(void * args){
 	}
 }
 
-void stratify_led_priv_error(void * args){
+void sos_led_priv_error(void * args){
 	while(1){
-		stratify_led_priv_on(0);
+		sos_led_priv_on(0);
 		_mcu_cortexm_delay_ms(50);
-		stratify_led_priv_off(0);
+		sos_led_priv_off(0);
 		_mcu_cortexm_delay_ms(50);
 	}
 }

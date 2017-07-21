@@ -1,6 +1,6 @@
 
-#include "sos/symbols/symbols.h"
-#include "sos/symbols/symbols_table.h"
+#include "sos/symbols.h"
+#include "sos/symbols/table.h"
 
 char __aeabi_unwind_cpp_pr0[0];
 

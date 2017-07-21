@@ -16,6 +16,8 @@
 #define VERSION "3.0.0"
 #endif
 
+#define BCD_VERSION 0x300
+
 /*! @} */
 
 #include <stdint.h>

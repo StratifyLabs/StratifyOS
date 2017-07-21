@@ -256,9 +256,6 @@ int fifo_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	if( bytes_read > 0 ){
 		//see if anything needs to write the FIFO
 		data_transmitted(cfg);
-		if( cfgp->notify_on_read ){
-			cfgp->notify_on_read(bytes_read);
-		}
 	}
 
 
@@ -285,8 +282,6 @@ int fifo_write_local(const fifo_cfg_t * cfgp, fifo_state_t * state, devfs_async_
 			state->wop_len = wop->nbyte;
 			wop->nbyte = 0;
 		}
-	} else if( (bytes_written > 0) && (cfgp->notify_on_write != 0) ){
-		cfgp->notify_on_write(bytes_written);
 	}
 
 	return bytes_written;

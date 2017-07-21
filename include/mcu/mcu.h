@@ -96,10 +96,10 @@ enum {
 	MCU_BOARD_CONFIG_EVENT_WARNING /*! Event is called when something isn't quite right but things should basically still work. Args is a c string */,
 	MCU_BOARD_CONFIG_EVENT_MESSAGE /*! Event is called when a message is available. Args is a c string */,
 
-	//These are used with stratify_default_thread
-	MCU_BOARD_CONFIG_EVENT_START_INIT /*! Called with stratify_default_thread(). Args is a pointer to u8 which is the reset type */,
-	MCU_BOARD_CONFIG_EVENT_START_FILESYSTEM /*! Called with stratify_default_thread() when filesystem starts. Args is a pointer to u32 which says how many processes started */,
-	MCU_BOARD_CONFIG_EVENT_START_LINK /*! Called with stratify_default_thread(), when link starts.  Args is null */,
+	//These are used with sos_default_thread
+	MCU_BOARD_CONFIG_EVENT_START_INIT /*! Called with sos_default_thread(). Args is a pointer to u8 which is the reset type */,
+	MCU_BOARD_CONFIG_EVENT_START_FILESYSTEM /*! Called with sos_default_thread() when filesystem starts. Args is a pointer to u32 which says how many processes started */,
+	MCU_BOARD_CONFIG_EVENT_START_LINK /*! Called with sos_default_thread(), when link starts.  Args is null */,
 	MCU_BOARD_CONFIG_EVENT_TOTAL
 };
 

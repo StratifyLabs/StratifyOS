@@ -26,7 +26,7 @@
 #include  "unistd_fs.h"
 #include  "unistd_flags.h"
 #include "mcu/debug.h"
-#include "sos/stratify.h"
+#include "sos/sos.h"
 
 
 /*! \details This function writes \a nbyte bytes \a fildes  from the memory
@@ -71,8 +71,8 @@ int _write(int fildes, const void *buf, size_t nbyte) {
 	}
 
 	if( fildes & FILDES_SOCKET_FLAG ){
-		if( stratify_board_config.socket_api != 0 ){
-			return stratify_board_config.socket_api->write(fildes, buf, nbyte);
+		if( sos_board_config.socket_api != 0 ){
+			return sos_board_config.socket_api->write(fildes, buf, nbyte);
 		}
 		errno = EBADF;
 		return -1;

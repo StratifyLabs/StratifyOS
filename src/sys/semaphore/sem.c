@@ -283,10 +283,10 @@ int sem_close(sem_t *sem){
 
 void priv_sem_post(void * args){
 	int id = *((int*)args);
-	stratify_sched_table[id].block_object = NULL;
+	sos_sched_table[id].block_object = NULL;
 	sched_priv_assert_active(id, SCHED_UNBLOCK_SEMAPHORE);
 	if( !sched_stopped_asserted(id) ){
-		sched_priv_update_on_wake( stratify_sched_table[id].priority );
+		sched_priv_update_on_wake( sos_sched_table[id].priority );
 	}
 }
 
@@ -444,7 +444,7 @@ int sem_unlink(const char *name){
 void priv_sem_wait(void * args){
 	sem_t * sem = (sem_t*)args;
 
-	stratify_sched_table[ task_get_current() ].block_object = args;
+	sos_sched_table[ task_get_current() ].block_object = args;
 
 	if ( sem->value <= 0){
 		//task must be blocked until the semaphore is available
