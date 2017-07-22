@@ -80,7 +80,7 @@ typedef struct {
 typedef struct {
 	uint8_t write_ep;
 	uint8_t read_ep;
-} tty_cfg_t;
+} tty_config_t;
 
 #ifdef __cplusplus
 }

@@ -20,65 +20,87 @@
 #include <errno.h>
 #include <stddef.h>
 #include "mcu/pio.h"
-#include "mcu/sys.h"
-#include "sos/dev/sys.h"
+#include "mcu/led.h"
 
 #include "mcu/debug.h"
 
-/*
+static void led_setattr(const devfs_handle_t * handle, const led_attr_t * attr);
 
-int led_open(const devfs_handle_t * cfg){
+int led_open(const devfs_handle_t * handle){
 	return 0;
 }
 
-int led_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
-	led_req_t * req = ctl;
-	mcu_pin_t port_pin;
-	pio_attr_t req_attr;
-	if( request == I_LED_SET ){
-		if ( req->loc > 3 ){
-			errno = EINVAL;
-			return -1;
-		}
+int led_ioctl(const devfs_handle_t * handle, int request, void * ctl){
+	led_info_t * info = ctl;
+	switch(request){
+	case I_LED_GETINFO:
+		info->o_flags = LED_FLAG_ENABLE | LED_FLAG_DISABLE | LED_FLAG_INIT;
+		info->o_events = 0;
+		break;
 
-		port_pin = cfg->pcfg.pio[req->loc];
+	case I_LED_SETATTR:
+		led_setattr(handle, ctl);
+		break;
 
-		if ( req->on != 0 ){
-			req_attr.o_pinmask = (1<<port_pin.pin);
-			req_attr.mode = PIO_FLAG_SET_OUTPUT;
-			mcu_pio_setattr(port_pin.port, &req_attr);
-			if ( cfg->pin_assign == LED_ACTIVE_LOW ){
-				mcu_pio_clrmask(port_pin.port, (void*)(1<<port_pin.pin));
-			} else {
-				mcu_pio_setmask(port_pin.port, (void*)(1<<port_pin.pin));
-			}
-		} else {
-			req_attr.o_pinmask = (1<<port_pin.pin);
-			req_attr.mode = PIO_FLAG_SET_INPUT;
-			mcu_pio_setattr(port_pin.port, &req_attr);
-			if ( cfg->pin_assign == LED_ACTIVE_LOW ){
-				mcu_pio_setmask(port_pin.port, (void*)(1<<port_pin.pin));
-			} else {
-				mcu_pio_clrmask(port_pin.port, (void*)(1<<port_pin.pin));
-			}
-		}
+	case I_LED_SETACTION:
+		errno = ENOTSUP;
+		return -1;
+
+	default:
+		errno = EINVAL;
+		return -1;
 
 	}
+
 	return 0;
 }
 
-int led_read(const devfs_handle_t * cfg, devfs_async_t * rop){
+int led_read(const devfs_handle_t * handle, devfs_async_t * rop){
 	errno = ENOTSUP;
 	return -1;
 }
 
-int led_write(const devfs_handle_t * cfg, devfs_async_t * wop){
+int led_write(const devfs_handle_t * handle, devfs_async_t * wop){
 	errno = ENOTSUP;
 	return -1;
 }
 
-int led_close(const devfs_handle_t * cfg){
+int led_close(const devfs_handle_t * handle){
 	return 0;
 }
-*/
+
+void led_setattr(const devfs_handle_t * handle, const led_attr_t * attr){
+	const led_config_t * config = handle->config;
+	u32 o_flags = attr->o_flags;
+	mcu_pin_t p = config->pin;
+
+	if( o_flags & LED_FLAG_INIT ){
+		//initialize the pin
+		pio_attr_t pio_attr;
+		pio_attr.o_flags = PIO_FLAG_SET_OUTPUT;
+		pio_attr.o_pinmask = (1<<p.pin);
+		mcu_pio_setattr(p.port, &pio_attr);
+	}
+
+	if( o_flags & LED_FLAG_ENABLE ){
+
+		if( config->o_flags & LED_CONFIG_FLAG_IS_ACTIVE_HIGH ){
+			mcu_pio_setmask(p.port, (void*)(1<<p.pin));
+		} else {
+			mcu_pio_clrmask(p.port, (void*)(1<<p.pin));
+		}
+
+	} else if( o_flags & LED_FLAG_DISABLE ){
+
+		if( config->o_flags & LED_CONFIG_FLAG_IS_ACTIVE_HIGH ){
+			mcu_pio_clrmask(p.port, (void*)(1<<p.pin));
+		} else {
+			mcu_pio_setmask(p.port, (void*)(1<<p.pin));
+		}
+	}
+
+	//set brightness is not supported by this driver
+
+}
+
 

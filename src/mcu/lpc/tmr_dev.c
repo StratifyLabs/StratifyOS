@@ -152,9 +152,10 @@ int mcu_tmr_setattr(int port, void * ctl){
 			}
 		}
 
-		for(i=0; i < TMR_PIN_ASSIGNMENT_COUNT; i++){
-			if( mcu_is_port_valid(attr->pin_assignment[i].port) ){
-				if ( _mcu_core_set_pinsel_func(attr->pin_assignment[i].port, attr->pin_assignment[i].pin, CORE_PERIPH_TMR, port) ){
+		for(i=0; i < MCU_PIN_ASSIGNMENT_COUNT(tmr_pin_assignment_t); i++){
+			const mcu_pin_t * pin = mcu_pin_at(&(attr->pin_assignment), i);
+			if( mcu_is_port_valid(pin->port) ){
+				if ( _mcu_core_set_pinsel_func(pin->port, pin->pin, CORE_PERIPH_TMR, port) ){
 					return -1;  //pin failed to allocate as a UART pin
 				}
 			}

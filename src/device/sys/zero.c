@@ -20,7 +20,7 @@
 #include <errno.h>
 #include <stddef.h>
 #include <string.h>
-#include "mcu/sys.h"
+#include "mcu/zero.h"
 
 
 int zero_open(const devfs_handle_t * cfg){

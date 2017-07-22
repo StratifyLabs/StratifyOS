@@ -77,8 +77,15 @@ typedef struct MCU_PACK {
 #define SPI_PIN_ASSIGNMENT_COUNT 4
 
 typedef struct MCU_PACK {
+	mcu_pin_t miso;
+	mcu_pin_t mosi;
+	mcu_pin_t sck;
+	mcu_pin_t cs;
+} spi_pin_assignment_t;
+
+typedef struct MCU_PACK {
 	u32 o_flags;
-	mcu_pin_t pin_assignment[SPI_PIN_ASSIGNMENT_COUNT];
+	spi_pin_assignment_t pin_assignment;
 	u32 freq;
 	u8 width;
 } spi_attr_t;

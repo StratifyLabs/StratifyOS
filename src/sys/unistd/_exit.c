@@ -32,7 +32,6 @@
 #include "sos/fs/sysfs.h"
 
 #include "mcu/mpu.h"
-#include "sos/link/link.h"
 #include "../sched/sched_flags.h"
 #include "../signal/sig_local.h"
 

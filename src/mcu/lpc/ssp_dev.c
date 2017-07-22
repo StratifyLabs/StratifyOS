@@ -192,18 +192,19 @@ int mcu_ssp_setattr(int port, void * ctl){
 			cr0 |= (1<<5);
 		}
 
-		for(i=0; i < SPI_PIN_ASSIGNMENT_COUNT; i++){
-			if( mcu_is_port_valid(attr->pin_assignment[i].port) ){
+		for(i=0; i < MCU_PIN_ASSIGNMENT_COUNT(spi_pin_assignment_t); i++){
+			const mcu_pin_t * pin = mcu_pin_at(&(attr->pin_assignment), i);
+			if( mcu_is_port_valid(pin->port) ){
 #ifdef LPCXX7X_8X
-				if( attr->pin_assignment[i].port == 0 ){
-					if( (attr->pin_assignment[i].pin == 7) ||
-							(attr->pin_assignment[i].pin == 8) ||
-							(attr->pin_assignment[i].pin == 9) ){
-						enable_pin(attr->pin_assignment[i].port,attr->pin_assignment[i].pin);
+				if( pin->port == 0 ){
+					if( (pin->pin == 7) ||
+							(pin->pin == 8) ||
+							(pin->pin == 9) ){
+						enable_pin(pin->port,pin->pin);
 					}
 				}
 #endif
-				if ( _mcu_core_set_pinsel_func(attr->pin_assignment[i].port, attr->pin_assignment[i].pin, CORE_PERIPH_SSP, port) ){
+				if ( _mcu_core_set_pinsel_func(pin->port, pin->pin, CORE_PERIPH_SSP, port) ){
 					return -1;  //faile to set pin function
 				}
 			}

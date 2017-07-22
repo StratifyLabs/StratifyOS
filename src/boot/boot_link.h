@@ -42,7 +42,7 @@
 #define BOOT_LINK_H_
 
 #include "sos/fs/devfs.h"
-#include "sos/link/link.h"
+#include "sos/link.h"
 #include "mcu/usbd/typedefs.h"
 #include "mcu/boot_debug.h"
 

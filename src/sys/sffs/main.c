@@ -65,7 +65,7 @@ void diags(){
 #define NUM_TESTS 5
 
 open_file_t open_file;
-const sffs_cfg_t ccfg = {
+const sffs_config_t ccfg = {
 		.open_file = &open_file,
 		.dev_cfg = NULL,
 		.devfs = (void*)1,

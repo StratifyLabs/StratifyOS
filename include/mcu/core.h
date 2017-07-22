@@ -117,8 +117,6 @@ int _mcu_core_sleep(core_sleep_t level /*! The sleep type */);
  * \note  The respective periph_open()
  * function will configure the correct function for the pin without the need to call
  * core_set_pinsel_func().
- * It is only necessary to use this function if the pin_assign
- * value is set to \ref MCU_GPIO_CFG_USER.
  *
  */
 int _mcu_core_set_pinsel_func(int gpio_port /*! The GPIO port number */,
@@ -157,7 +155,7 @@ int mcu_core_setclkdivide(int port, void * arg) MCU_PRIV_CODE;
 int mcu_core_getmcuboardconfig(int port, void * arg) MCU_PRIV_CODE;
 void _mcu_core_set_nvic_priority(int irq, int prio) MCU_PRIV_CODE;
 
-int mcu_core_set_pin_assignment(const mcu_pin_t * pin_assignement, int count, int periph, int periph_port);
+int mcu_core_set_pin_assignment(const void * pin_assignement, int count, int periph, int periph_port);
 
 
 

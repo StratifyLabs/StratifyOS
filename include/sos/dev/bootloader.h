@@ -38,7 +38,7 @@
 
 
 #include "mcu/types.h"
-#include "sos/link/link_transport.h"
+#include "sos/link/transport.h"
 
 #ifdef __cplusplus
 extern "C" {

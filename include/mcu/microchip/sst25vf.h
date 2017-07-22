@@ -37,7 +37,7 @@ typedef struct {
 	mcu_pin_t wp /*! Write protect pin */;
 	mcu_pin_t miso /*! The write complete pin */;
 	u32 size /*! The size of the memory on the device */;
-} sst25vf_cfg_t;
+} sst25vf_config_t;
 
 typedef struct {
 	const char * buf;
@@ -65,59 +65,6 @@ int sst25vf_ssp_ioctl(const devfs_handle_t * cfg, int request, void * ctl);
 int sst25vf_ssp_read(const devfs_handle_t * cfg, devfs_async_t * rop);
 int sst25vf_ssp_write(const devfs_handle_t * cfg, devfs_async_t * wop);
 int sst25vf_ssp_close(const devfs_handle_t * cfg);
-
-
-#define SST25VF_DEVICE(device_name, port_number, pin_assign_value, cs_port_value, cs_pin_value, bitrate_value, cfg_ptr, state_ptr, mode_value, uid_value, gid_value) { \
-		.name = device_name, \
-		DEVFS_MODE(mode_value, uid_value, gid_value, S_IFBLK), \
-		DEVFS_DRIVER(sst25vf), \
-		.handle.port = port_number, \
-		.handle.state = state_ptr, \
-		.handle.config = cfg_ptr \
-}
-
-#define SST25VF_SSP_DEVICE(device_name, port_number, pin_assign_value, cs_port_value, cs_pin_value, bitrate_value, cfg_ptr, state_ptr, mode_value, uid_value, gid_value) { \
-		.name = device_name, \
-		DEVFS_MODE(mode_value, uid_value, gid_value, S_IFBLK), \
-		DEVFS_DRIVER(sst25vf_ssp), \
-		.handle.port = port_number, \
-		.handle.state = state_ptr, \
-		.handle.config = cfg_ptr \
-}
-
-/*
- * 		.cfg.pin_assign = pin_assign_value, \
-		.cfg.pcfg.spi.mode = SPI_ATTR_MODE0, \
-		.cfg.pcfg.spi.cs.port = cs_port_value, \
-		.cfg.pcfg.spi.cs.pin = cs_pin_value, \
-		.cfg.pcfg.spi.width = 8, \
-		.cfg.pcfg.spi.format = SPI_ATTR_FORMAT_SPI, \
-		.cfg.bitrate = bitrate_value, \
- */
-
-
-#define SST25VF_TMR_DEVICE(device_name, port_number, pin_assign_value, cs_port_value, cs_pin_value, bitrate_value, cfg_ptr, state_ptr, mode_value, uid_value, gid_value) { \
-		.name = device_name, \
-		DEVFS_MODE(mode_value, uid_value, gid_value, S_IFBLK), \
-		DEVFS_DRIVER(sst25vf_tmr), \
-		.handle.port = port_number, \
-		.handle.state = state_ptr, \
-		.handle.config = cfg_ptr \
-}
-
-#define SST25VF_DEVICE_CFG(cs_port, cs_pin, hold_port, hold_pin, wp_port, wp_pin, miso_port, miso_pin, device_size, bitrate) { \
-		.attr.o_flags = (SPI_FLAG_MASTER | SPI_FLAG_MODE0 | SPI_FLAG_FORMAT_SPI), \
-		.attr.freq = bitrate, \
-		.cs.port = cs_port, \
-		.cs.pin = cs_pin, \
-		.hold.port = hold_port, \
-		.hold.pin = hold_pin, \
-		.wp.port = wp_port, \
-		.wp.pin = wp_pin, \
-		.miso.port = miso_port, \
-		.miso.pin = miso_pin, \
-		.size = (device_size) \
-}
 
 
 

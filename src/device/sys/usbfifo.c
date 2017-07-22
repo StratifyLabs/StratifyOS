@@ -20,7 +20,6 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <stddef.h>
-#include "sos/dev/usbfifo.h"
 #include "mcu/usbfifo.h"
 #include "mcu/usb.h"
 #include "mcu/debug.h"
@@ -28,7 +27,7 @@
 
 static int set_read_action(const devfs_handle_t * cfg, mcu_callback_t callback){
 	mcu_action_t action;
-	const usbfifo_cfg_t * cfgp = cfg->config;
+	const usbfifo_config_t * cfgp = cfg->config;
 	action.handler.callback = callback;
 	action.handler.context = (void*)cfg;
 	action.o_events = MCU_EVENT_FLAG_DATA_READY;
@@ -45,7 +44,7 @@ static int data_received(void * context, mcu_event_t * data){
 	int i;
 	int bytes_read;
 	const devfs_handle_t * cfg;
-	const usbfifo_cfg_t * cfgp;
+	const usbfifo_config_t * cfgp;
 	usbfifo_state_t * state;
 	cfg = context;
 	cfgp = cfg->config;
@@ -79,7 +78,7 @@ int usbfifo_open(const devfs_handle_t * cfg){
 int usbfifo_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 	fifo_info_t * info = ctl;
 	mcu_action_t * action = ctl;
-	const usbfifo_cfg_t * cfgp = cfg->config;
+	const usbfifo_config_t * cfgp = cfg->config;
 	usbfifo_state_t * state = cfg->state;
 	mcu_event_t event;
 	switch(request){
@@ -135,13 +134,13 @@ int usbfifo_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 
 
 int usbfifo_read(const devfs_handle_t * cfg, devfs_async_t * rop){
-	const usbfifo_cfg_t * cfgp = cfg->config;
+	const usbfifo_config_t * cfgp = cfg->config;
 	usbfifo_state_t * state = cfg->state;
 	return fifo_read_local(&(cfgp->fifo), &(state->fifo), rop);
 }
 
 int usbfifo_write(const devfs_handle_t * cfg, devfs_async_t * wop){
-	const usbfifo_cfg_t * cfgp = cfg->config;
+	const usbfifo_config_t * cfgp = cfg->config;
 	wop->loc = 0x80 | cfgp->endpoint;
 
 	//Writing to the USB FIFO is not buffered, it just writes the USB HW directly

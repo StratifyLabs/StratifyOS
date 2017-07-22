@@ -23,7 +23,9 @@
 #include "sos/sos.h"
 
 #include "mcu/mcu.h"
+#include "mcu/mcu.h"
 #include "mcu/mpu.h"
+#include "mcu/mem.h"
 #include "mcu/task.h"
 #include "mcu/core.h"
 #include "appfs_local.h"

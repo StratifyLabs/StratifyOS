@@ -262,7 +262,11 @@ int mcu_uart_setattr(int port, void * ctl){
 	}
 
 
-	if( mcu_core_set_pin_assignment(attr->pin_assignment, UART_PIN_ASSIGNMENT_COUNT, CORE_PERIPH_UART, port) < 0 ){
+	if( mcu_core_set_pin_assignment(
+			&(attr->pin_assignment),
+			MCU_PIN_ASSIGNMENT_COUNT(uart_pin_assignment_t),
+			CORE_PERIPH_UART,
+			port) < 0 ){
 		return -1;
 	}
 

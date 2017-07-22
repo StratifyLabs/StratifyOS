@@ -121,6 +121,13 @@ typedef struct MCU_PACK {
 	u32 o_events /*! Events supported by this driver */;
 } uart_info_t;
 
+typedef struct MCU_PACK {
+	mcu_pin_t tx;
+	mcu_pin_t rx;
+	mcu_pin_t rts;
+	mcu_pin_t cts;
+} uart_pin_assignment_t;
+
 /*! \brief UART Attribute Data Structure
  * \details This structure defines how the control structure
  * for opening or reconfiguring the UART port.
@@ -128,7 +135,7 @@ typedef struct MCU_PACK {
 typedef struct MCU_PACK {
 	u32 o_flags;
 	u32 freq;
-	mcu_pin_t pin_assignment[UART_PIN_ASSIGNMENT_COUNT];
+	uart_pin_assignment_t pin_assignment;
 	u8 width;
 } uart_attr_t;
 

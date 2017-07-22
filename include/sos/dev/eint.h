@@ -101,8 +101,10 @@ typedef struct MCU_PACK {
 	u32 value /*! Value of the pin (zero or non-zero) */;
 } eint_info_t;
 
-#define EINT_PIN_ASSIGNMENT_COUNT 4
 
+typedef struct MCU_PACK {
+	mcu_pin_t channel[4];
+} eint_pin_assignment_t;
 
 /*! \brief External Interrupt Attribute Data Structure
  * \details This data structure is used for
@@ -110,7 +112,7 @@ typedef struct MCU_PACK {
  */
 typedef struct MCU_PACK {
 	u32 o_flags /*! Set the attibutes (use PIO_FLAG values) */;
-	mcu_pin_t pin_assignment[EINT_PIN_ASSIGNMENT_COUNT];
+	eint_pin_assignment_t pin_assignment;
 } eint_attr_t;
 
 /*! \brief IOCTL request to get info.

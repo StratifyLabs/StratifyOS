@@ -36,7 +36,7 @@
 #include "mcu/flash.h"
 #include "mcu/debug.h"
 
-#include "sos/link/link.h"
+#include "sos/link.h"
 
 #include "trace.h"
 

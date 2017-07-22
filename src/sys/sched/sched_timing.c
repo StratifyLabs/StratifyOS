@@ -31,7 +31,7 @@
 #include "mcu/rtc.h"
 #include "mcu/debug.h"
 
-static volatile uint32_t sched_usecond_counter MCU_SYS_MEM;
+static volatile u32 sched_usecond_counter MCU_SYS_MEM;
 
 static int usecond_overflow_event(void * context, mcu_event_t * data);
 static int open_usecond_tmr();
@@ -45,22 +45,22 @@ int sched_timing_init(){
 	return 0;
 }
 
-uint32_t sched_seconds_to_clocks(int seconds){
-	return (uint32_t)_mcu_core_getclock() * (uint32_t)seconds;
+u32 sched_seconds_to_clocks(int seconds){
+	return (u32)_mcu_core_getclock() * (u32)seconds;
 }
 
-uint32_t sched_useconds_to_clocks(int useconds){
-	return (uint32_t)(sos_board_config.clk_usec_mult * useconds);
+u32 sched_useconds_to_clocks(int useconds){
+	return (u32)(sos_board_config.clk_usec_mult * useconds);
 }
 
-uint32_t sched_nanoseconds_to_clocks(int nanoseconds){
-	return (uint32_t)nanoseconds * 1024 / sos_board_config.clk_nsec_div;
+u32 sched_nanoseconds_to_clocks(int nanoseconds){
+	return (u32)nanoseconds * 1024 / sos_board_config.clk_nsec_div;
 }
 
 void sched_priv_timedblock(void * block_object, struct sched_timeval * abs_time){
 	int id;
 	mcu_channel_t chan_req;
-	uint32_t now;
+	u32 now;
 	bool time_sleep;
 
 	//Initialization
@@ -85,7 +85,7 @@ void sched_priv_timedblock(void * block_object, struct sched_timeval * abs_time)
 			}
 
 			//See if abs_time is in the past
-			now = (uint32_t)mcu_tmr_get(sos_board_config.clk_usecond_tmr, NULL);
+			now = (u32)mcu_tmr_get(sos_board_config.clk_usecond_tmr, NULL);
 			if( abs_time->tv_usec > (now+40) ){ //needs to be enough in the future to allow the OC to be set before the timer passes it
 				mcu_tmr_setoc(sos_board_config.clk_usecond_tmr, &chan_req);
 				time_sleep = true;
@@ -129,7 +129,7 @@ void sched_convert_timeval(struct timeval * t, const struct sched_timeval * tv){
 
 void sched_priv_get_realtime(struct sched_timeval * tv){
 	tv->tv_sec = sched_usecond_counter;
-	tv->tv_usec = (uint32_t)mcu_tmr_get(sos_board_config.clk_usecond_tmr, NULL);
+	tv->tv_usec = (u32)mcu_tmr_get(sos_board_config.clk_usecond_tmr, NULL);
 }
 
 int usecond_overflow_event(void * context, mcu_event_t * data){
@@ -141,12 +141,12 @@ int usecond_overflow_event(void * context, mcu_event_t * data){
 int priv_usecond_match_event(void * context, mcu_event_t * data){
 #if SINGLE_TASK == 0
 	int i;
-	uint32_t next;
-	uint32_t tmp;
+	u32 next;
+	u32 tmp;
 	int new_priority;
 	mcu_channel_t chan_req;
-	static const uint32_t overflow = (STFY_USECOND_PERIOD);
-	uint32_t current_match;
+	static const u32 overflow = (STFY_USECOND_PERIOD);
+	u32 current_match;
 
 	//Initialize variables
 	chan_req.loc = SCHED_USECOND_TMR_SLEEP_OC;
@@ -208,7 +208,7 @@ int open_usecond_tmr(){
 	memset(&attr, 0, sizeof(tmr_attr_t));
 	attr.freq = 1000000;
 	attr.o_flags = TMR_FLAG_SET_TIMER | TMR_FLAG_IS_CLKSRC_CPU;
-	memset(&attr.pin_assignment, 0xff, sizeof(mcu_pin_t)*TMR_PIN_ASSIGNMENT_COUNT);
+	memset(&attr.pin_assignment, 0xff, sizeof(tmr_pin_assignment_t));
 
 	err = mcu_tmr_setattr(tmr.port, &attr);
 	if ( err ){

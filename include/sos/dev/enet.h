@@ -79,6 +79,10 @@ enum {
  */
 typedef mcu_action_t enet_action_t;
 
+typedef struct MCU_PACK {
+	mcu_pin_t tx;
+} enet_pin_assignment_t;
+
 /*! \brief External Interrupt Attribute Data Structure
  * \details This data structure is used for
  * controlling external interrupt IO peripherals.

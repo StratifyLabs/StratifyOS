@@ -156,7 +156,10 @@ int mcu_i2s_setattr(int port, void * ctl){
 	i2s_regs->TXMODE = 0; //transmitter is typical with no MCLK
 	i2s_regs->RXMODE = (1<<2); //share WS and bit clock with TX block
 
-	if( mcu_core_set_pin_assignment(attr->pin_assignment, I2S_PIN_ASSIGNMENT_COUNT, CORE_PERIPH_I2S, port) < 0 ){
+	if( mcu_core_set_pin_assignment(&(attr->pin_assignment),
+			MCU_PIN_ASSIGNMENT_COUNT(i2s_pin_assignment_t),
+			CORE_PERIPH_I2S,
+			port) < 0 ){
 		return -1;
 	}
 

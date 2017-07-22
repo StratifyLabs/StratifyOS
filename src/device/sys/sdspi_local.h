@@ -8,7 +8,7 @@
 #ifndef SD_SPI_H_
 #define SD_SPI_H_
 
-#include "mcu/types.h"
+#include "mcu/sd.h"
 #include "sos/dev/drive.h"
 
 #define SDSPI_IOC_IDENT_CHAR 'S'

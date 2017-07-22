@@ -31,7 +31,7 @@
 #include "config.h"
 #include "mcu/debug.h"
 #include "mcu/pio.h"
-#include "sos/link/link.h"
+#include "sos/link.h"
 
 extern void * link_update(void * args);
 

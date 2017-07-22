@@ -46,8 +46,8 @@ typedef struct {
 typedef struct {
 	int endpoint /*! The USB endpoint number to read */;
 	int endpoint_size /*! The USB endpoint data size */;
-	fifo_cfg_t fifo;
-} usbfifo_cfg_t;
+	fifo_config_t fifo;
+} usbfifo_config_t;
 
 int usbfifo_open(const devfs_handle_t * cfg);
 int usbfifo_ioctl(const devfs_handle_t * cfg, int request, void * ctl);

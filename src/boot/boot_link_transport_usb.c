@@ -5,7 +5,7 @@
 #include <sys/fcntl.h>
 #include <unistd.h>
 #include "mcu/cortexm.h"
-#include "sos/link/link.h"
+#include "sos/link.h"
 #include "mcu/mcu.h"
 #include "sos/dev/usb.h"
 #include "mcu/usbfifo.h"
@@ -17,7 +17,7 @@
 #include "mcu/debug.h"
 #include "mcu/boot_debug.h"
 
-#include "sos/sos_link_transport_usb.h"
+#include "sos/link/transport_usb.h"
 
 #define USBDEV_PORT 0
 
@@ -28,22 +28,15 @@ static char rd_buffer[BUF_SIZE];
 static int rd_tail;
 static int rd_head;
 
-link_transport_phy_t boot_link_transport_usb_open(const char * name, usbd_control_t * control){
-	usb_attr_t usb_attr;
+link_transport_phy_t boot_link_transport_usb_open(const char * name, usbd_control_t * control, const usb_attr_t * usb_attr){
 
 	dstr("OPEN USB\n");
 	//open USB
 	_mcu_cortexm_delay_ms(250);
 	mcu_usb_open(&usb_dev);
 
-	dstr("USB OPEN\n");
-
-	//set USB attributes
-	memcpy(usb_attr.pin_assignment, mcu_board_config.usb_pin_assignment, sizeof(mcu_pin_t)*USB_PIN_ASSIGNMENT_COUNT);
-	usb_attr.o_flags = USB_FLAG_SET_DEVICE;
-	usb_attr.freq = mcu_board_config.core_osc_freq;
 	dstr("SET USB ATTR\n");
-	if( mcu_usb_setattr(usb_dev.port, &usb_attr) < 0 ){
+	if( mcu_usb_setattr(usb_dev.port, (void*)usb_attr) < 0 ){
 		dstr("FAILED TO SET USB ATTR\n");
 	}
 

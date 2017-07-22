@@ -103,11 +103,13 @@ typedef struct MCU_PACK {
 	u32 o_events /*! Bitmask of supported events */;
 } pwm_info_t;
 
-#define PWM_PIN_ASSIGNMENT_COUNT 4
+typedef struct MCU_PACK {
+	mcu_pin_t channel[4];
+} pwm_pin_assignment_t;
 
 typedef struct MCU_PACK {
 	u32 o_flags;
-	mcu_pin_t pin_assignment[PWM_PIN_ASSIGNMENT_COUNT];
+	pwm_pin_assignment_t pin_assignment;
 	u32 freq /*! \brief The PWM timer frequency (target value on write, actual value on read); The period is the "top" member divided by "freq" */;
 	u32 top /*! \brief The top value of the PWM counter */;
 } pwm_attr_t;

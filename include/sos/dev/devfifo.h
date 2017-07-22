@@ -77,7 +77,7 @@ typedef struct {
 	int req_getbyte /*! \brief The request used to get a byte from the device */;
 	int req_setaction /*! \brief The request to set the action */;
 	int event /*! \brief The event to trigger on */;
-} devfifo_cfg_t;
+} devfifo_config_t;
 
 
 #endif /* SOS_DEV_DEVFIFO_H_ */

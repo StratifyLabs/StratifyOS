@@ -84,7 +84,7 @@ int sffs_unmount(const void * cfg){
 
 int sffs_ismounted(const void * cfg){
 	//check to see if device file descriptor is open
-	const sffs_cfg_t * cfgp = cfg;
+	const sffs_config_t * cfgp = cfg;
 	if( cfgp->open_file->handle == 0 ){
 		return 0;
 	}
@@ -93,7 +93,7 @@ int sffs_ismounted(const void * cfg){
 
 int sffs_init(const void * cfg){
 	cl_snlist_item_t bad_serialno;
-	const sffs_cfg_t * cfgp = cfg;
+	const sffs_config_t * cfgp = cfg;
 	int err;
 	int tmp;
 	int bad_files;
@@ -172,7 +172,7 @@ int sffs_init(const void * cfg){
 
 int sffs_mkfs(const void * cfg){
 	int ret;
-	const sffs_cfg_t * cfgp = cfg;
+	const sffs_config_t * cfgp = cfg;
 	lock_sffs();
 	ret = 0;
 	cfgp->open_file->fs = cfgp->devfs;

@@ -1,4 +1,4 @@
-/* Copyright 2011-2016 Tyler Gilbert; 
+/* Copyright 2011-2016 Tyler Gilbert;
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -13,32 +13,32 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
-#include <errno.h>
-#include <stddef.h>
-#include "mcu/null.h"
+
+#ifndef MCU_LED_H_
+#define MCU_LED_H_
+
+#include "sos/dev/led.h"
+#include "sos/fs/devfs.h"
 
 
-int null_open(const devfs_handle_t * cfg){
-	return 0;
-}
+enum {
+	LED_CONFIG_FLAG_IS_ACTIVE_HIGH = (1<<0),
+};
 
-int null_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
-	return 0;
-}
+typedef struct MCU_PACK {
+	u32 o_flags;
+	mcu_pin_t pin;
+} led_config_t;
 
-int null_read(const devfs_handle_t * cfg, devfs_async_t * rop){
-	return -1;
-}
+int led_open(const devfs_handle_t * cfg);
+int led_ioctl(const devfs_handle_t * cfg, int request, void * ctl);
+int led_read(const devfs_handle_t * cfg, devfs_async_t * rop);
+int led_write(const devfs_handle_t * cfg, devfs_async_t * wop);
+int led_close(const devfs_handle_t * cfg);
 
-int null_write(const devfs_handle_t * cfg, devfs_async_t * wop){
-	return wop->nbyte;
-}
 
-int null_close(const devfs_handle_t * cfg){
-	return 0;
-}
-
+#endif /* MCU_LED_H_ */

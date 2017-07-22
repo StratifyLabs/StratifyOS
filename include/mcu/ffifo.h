@@ -47,7 +47,7 @@ typedef struct MCU_PACK {
 	char * buffer /*! \brief A pointer to the buffer */;
 	void (*notify_on_read)(int nbyte) /*! Callback for when frame is read */;
 	void (*notify_on_write)(int nbyte) /*! Callback for when frame is written */;
-} ffifo_cfg_t;
+} ffifo_config_t;
 
 int ffifo_open(const devfs_handle_t * cfg);
 int ffifo_ioctl(const devfs_handle_t * cfg, int request, void * ctl);
@@ -56,11 +56,11 @@ int ffifo_write(const devfs_handle_t * cfg, devfs_async_t * wop);
 int ffifo_close(const devfs_handle_t * cfg);
 
 
-char * ffifo_get_frame(const ffifo_cfg_t * cfgp, u16 frame);
+char * ffifo_get_frame(const ffifo_config_t * cfgp, u16 frame);
 
 //helper functions for implementing FIFOs
 void ffifo_flush(ffifo_state_t * state);
-void ffifo_getinfo(ffifo_info_t * info, const ffifo_cfg_t * cfgp, ffifo_state_t * state);
+void ffifo_getinfo(ffifo_info_t * info, const ffifo_config_t * cfgp, ffifo_state_t * state);
 
 void ffifo_inc_head(ffifo_state_t * state, u16 count);
 void ffifo_inc_tail(ffifo_state_t * state, u16 count);
@@ -78,25 +78,16 @@ void ffifo_set_notify_write(ffifo_state_t * state, int value);
 int ffifo_is_overflow(ffifo_state_t * state);
 void ffifo_set_overflow(ffifo_state_t * state, int value);
 
-int ffifo_read_buffer(const ffifo_cfg_t * cfgp, ffifo_state_t * state, char * buf, int len);
-int ffifo_write_buffer(const ffifo_cfg_t * cfgp, ffifo_state_t * state, const char * buf, int len);
+int ffifo_read_buffer(const ffifo_config_t * cfgp, ffifo_state_t * state, char * buf, int len);
+int ffifo_write_buffer(const ffifo_config_t * cfgp, ffifo_state_t * state, const char * buf, int len);
 
-void ffifo_data_transmitted(const ffifo_cfg_t * cfgp, ffifo_state_t * state);
-void ffifo_data_received(const ffifo_cfg_t * cfgp, ffifo_state_t * state);
-int ffifo_write_local(const ffifo_cfg_t * cfgp, ffifo_state_t * state, devfs_async_t * wop);
-int ffifo_read_local(const ffifo_cfg_t * cfgp, ffifo_state_t * state, devfs_async_t * rop);
+void ffifo_data_transmitted(const ffifo_config_t * cfgp, ffifo_state_t * state);
+void ffifo_data_received(const ffifo_config_t * cfgp, ffifo_state_t * state);
+int ffifo_write_local(const ffifo_config_t * cfgp, ffifo_state_t * state, devfs_async_t * wop);
+int ffifo_read_local(const ffifo_config_t * cfgp, ffifo_state_t * state, devfs_async_t * rop);
 
 void ffifo_cancel_rop(ffifo_state_t * state);
 
-#define FFIFO_DEVICE(device_name, cfg_ptr, state_ptr, mode_value, uid_value, gid_value) { \
-		.name = device_name, \
-		DEVFS_MODE(mode_value, uid_value, gid_value, S_IFCHR), \
-		DEVFS_DRIVER(ffifo), \
-		.cfg.state = state_ptr, \
-		.cfg.dcfg = cfg_ptr \
-}
-
-#define FFIFO_DEVICE_CFG(buf, fcount, fsize, read_notify, write_notify) { .buffer = buf, .count = fcount, .frame_size = fsize, .notify_on_read = read_notify, .notify_on_write = write_notify }
 
 
 

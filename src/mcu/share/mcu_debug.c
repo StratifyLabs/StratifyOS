@@ -32,7 +32,6 @@
 char mcu_debug_buffer[MCU_DEBUG_BUFFER_SIZE];
 
 int mcu_debug_init(){
-	uart_attr_t attr;
 	devfs_handle_t handle;
 
 	//Open the debugging UART
@@ -41,14 +40,16 @@ int mcu_debug_init(){
 		return -1;
 	}
 
-	memset(attr.pin_assignment, 0xff, UART_PIN_ASSIGNMENT_COUNT*sizeof(mcu_pin_t));
-	attr.pin_assignment[0] = mcu_board_config.debug_uart_pin_assignment[0];
-	attr.pin_assignment[1] = mcu_board_config.debug_uart_pin_assignment[1];
+	/*
+	memset(&attr.pin_assignment, 0xff, sizeof(uart_pin_assignment_t));
+	attr.pin_assignment.rx = mcu_board_config.debug_uart_pin_assignment.rx;
+	attr.pin_assignment.tx = mcu_board_config.debug_uart_pin_assignment.tx;
 	attr.freq = 115200;
 	attr.o_flags = UART_FLAG_IS_PARITY_NONE | UART_FLAG_IS_STOP1;
 	attr.width = 8;
+	*/
 
-	return mcu_uart_setattr(handle.port, &attr);
+	return mcu_uart_setattr(handle.port, (void*)&mcu_board_config.debug_uart_attr);
 }
 
 

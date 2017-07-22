@@ -175,9 +175,10 @@ int mcu_adc_setattr(int port, void * ctl){
 		attr->freq = ADC_MAX_FREQ;
 	}
 
-	for(i=0; i < ADC_PIN_ASSIGNMENT_COUNT; i++){
-		if( mcu_is_port_valid(attr->pin_assignment[i].port) ){
-			if ( enable_pin(attr->pin_assignment[i].port, attr->pin_assignment[i].pin, 0) ){
+	for(i=0; i < MCU_PIN_ASSIGNMENT_COUNT(adc_pin_assignment_t); i++){
+		const mcu_pin_t * pin = mcu_pin_at(&(attr->pin_assignment), i);
+		if( mcu_is_port_valid(pin->port) ){
+			if ( enable_pin(pin->port, pin->pin, 0) ){
 				return -1;  //pin failed to allocate as a UART pin
 			}
 		}

@@ -41,7 +41,6 @@
 #include <stdbool.h>
 
 #include "sos/dev/pio.h"
-#include "sos/fs/devfs.h"
 
 /*! @} */
 
@@ -58,10 +57,15 @@
 
 #include "mcu/types.h"
 #include "sos/dev/usb.h"
+#include "sos/dev/uart.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#if !defined __link
+
+#include "sos/fs/devfs.h"
 
 
 //These values are defined in the linker script
@@ -83,6 +87,24 @@ int mcu_sync_io(const devfs_handle_t * cfg,
 		const void * buf,
 		int nbyte,
 		int flags);
+
+typedef struct MCU_PACK {
+	u16 irq_total;
+	u16 irq_middle_prio;
+	u16 usb_logical_endpoint_count;
+} mcu_config_t;
+
+extern const mcu_config_t mcu_config;
+
+void mcu_board_execute_event_handler(int event, void * args);
+
+int mcu_execute_event_handler(mcu_event_handler_t * handler, u32 o_events, void * data);
+
+static inline const mcu_pin_t * mcu_pin_at(const void * start, int i){
+	const mcu_pin_t * p = (const mcu_pin_t *)start;
+	return p+i;
+}
+#endif
 
 enum {
 	MCU_BOARD_CONFIG_FLAG_LED_ACTIVE_HIGH = (1<<0)
@@ -111,25 +133,13 @@ typedef struct MCU_PACK {
 	u32 o_flags;
 	void (*event_handler)(int, void*);
 	mcu_pin_t led;
-	mcu_pin_t debug_uart_pin_assignment[2];
-	mcu_pin_t usb_pin_assignment[USB_PIN_ASSIGNMENT_COUNT];
 	u8 debug_uart_port;
+	uart_attr_t debug_uart_attr;
 	u8 resd;
 } mcu_board_config_t;
 
 extern const mcu_board_config_t mcu_board_config;
 
-typedef struct MCU_PACK {
-	u16 irq_total;
-	u16 irq_middle_prio;
-	u16 usb_logical_endpoint_count;
-} mcu_config_t;
-
-extern const mcu_config_t mcu_config;
-
-void mcu_board_execute_event_handler(int event, void * args);
-
-int mcu_execute_event_handler(mcu_event_handler_t * handler, u32 o_events, void * data);
 
 #ifdef __cplusplus
 }

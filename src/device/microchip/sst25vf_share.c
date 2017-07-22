@@ -29,12 +29,12 @@
 
 
 void sst25vf_share_assert_cs(const devfs_handle_t * cfg){
-	const sst25vf_cfg_t * config = cfg->config;
+	const sst25vf_config_t * config = cfg->config;
 	mcu_pio_clrmask(config->cs.port, (void*)(ssize_t)(1<<config->cs.pin));
 }
 
 void sst25vf_share_deassert_cs(const devfs_handle_t * cfg){
-	const sst25vf_cfg_t * config = cfg->config;
+	const sst25vf_config_t * config = cfg->config;
 	mcu_pio_setmask(config->cs.port, (void*)(ssize_t)(1<<config->cs.pin));
 }
 

@@ -70,13 +70,20 @@ typedef struct MCU_PACK {
 
 #define USB_PIN_ASSIGNMENT_COUNT 4
 
+typedef struct MCU_PACK {
+	mcu_pin_t dp;
+	mcu_pin_t dm;
+	mcu_pin_t id;
+	mcu_pin_t vbus;
+} usb_pin_assignment_t;
+
 /*! \brief USB Attribute Data Structure
  * \details This defines the USB IOCTL data structure.
  *
  */
 typedef struct MCU_PACK {
 	u32 o_flags /*! Configuration flags */;
-	mcu_pin_t pin_assignment[USB_PIN_ASSIGNMENT_COUNT] /*! Pin assignments */;
+	usb_pin_assignment_t pin_assignment /*! Pin assignments */;
 	u32 freq /*! \brief The crystal oscillator frequency */;
 } usb_attr_t;
 

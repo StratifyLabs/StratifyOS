@@ -16,7 +16,7 @@
 
 #include "config.h"
 
-#include "sos/link/link.h"
+#include "sos/link.h"
 #include "sos/fs/devfs.h"
 #include "mcu/task.h"
 #include "mcu/debug.h"

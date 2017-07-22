@@ -21,10 +21,10 @@
 #include <errno.h>
 
 #include "sos/sos.h"
-#include "sos/sos_link_transport_usb.h"
+#include "sos/link/transport_usb.h"
 #include "mcu/task.h"
 #include "mcu/core.h"
-#include "sos/link/link.h"
+#include "sos/link.h"
 #include "mcu/mpu.h"
 
 static void sos_trace_event_addr(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len, u32 addr);

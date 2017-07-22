@@ -27,7 +27,7 @@
 
 static int set_read_action(const devfs_handle_t * cfg, mcu_callback_t callback){
 	mcu_action_t action;
-	const devfifo_cfg_t * cfgp = cfg->config;
+	const devfifo_config_t * cfgp = cfg->config;
 	const devfs_device_t * device = cfgp->dev;
 
 	action.handler.callback = callback;
@@ -56,7 +56,7 @@ static void inc_head(devfifo_state_t * state, int size){
 	}
 }
 
-static int read_buffer(const devfifo_cfg_t * cfgp, devfifo_state_t * state, devfs_async_t * rop){
+static int read_buffer(const devfifo_config_t * cfgp, devfifo_state_t * state, devfs_async_t * rop){
 	int i;
 	for(i=0; i < state->len; i++){
 		if ( state->head == state->tail ){ //check for data in the fifo buffer
@@ -77,7 +77,7 @@ static int data_received(void * context, mcu_event_t * data){
 	int bytes_read;
 	const devfs_handle_t * cfg;
 	cfg = context;
-	const devfifo_cfg_t * cfgp = cfg->config;
+	const devfifo_config_t * cfgp = cfg->config;
 	devfifo_state_t * state = cfg->state;
 	const devfs_device_t * device = cfgp->dev;
 
@@ -100,7 +100,7 @@ static int data_received(void * context, mcu_event_t * data){
 }
 
 int devfifo_open(const devfs_handle_t * cfg){
-	const devfifo_cfg_t * cfgp = cfg->config;
+	const devfifo_config_t * cfgp = cfg->config;
 	devfifo_state_t * state = cfg->state;
 	const devfs_device_t * device = cfgp->dev;
 	state->head = 0;
@@ -121,7 +121,7 @@ int devfifo_open(const devfs_handle_t * cfg){
 
 int devfifo_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 	devfifo_attr_t * attr = ctl;
-	const devfifo_cfg_t * cfgp = cfg->config;
+	const devfifo_config_t * cfgp = cfg->config;
 	devfifo_state_t * state = cfg->state;
 	const devfs_device_t * device = cfgp->dev;
 
@@ -142,7 +142,7 @@ int devfifo_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 
 
 int devfifo_read(const devfs_handle_t * cfg, devfs_async_t * rop){
-	const devfifo_cfg_t * cfgp = cfg->config;
+	const devfifo_config_t * cfgp = cfg->config;
 	devfifo_state_t * state = cfg->state;
 
 	int bytes_read;
@@ -169,14 +169,14 @@ int devfifo_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 }
 
 int devfifo_write(const devfs_handle_t * cfg, devfs_async_t * wop){
-	const devfifo_cfg_t * cfgp = cfg->config;
+	const devfifo_config_t * cfgp = cfg->config;
 	const devfs_device_t * device = cfgp->dev;
 
 	return device->driver.write(&(device->handle), wop);
 }
 
 int devfifo_close(const devfs_handle_t * cfg){
-	const devfifo_cfg_t * cfgp = cfg->config;
+	const devfifo_config_t * cfgp = cfg->config;
 	const devfs_device_t * device = cfgp->dev;
 
 	//clear the callback for the device

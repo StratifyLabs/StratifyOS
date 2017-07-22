@@ -19,7 +19,7 @@
 
 #include <errno.h>
 #include <stddef.h>
-#include "mcu/sys.h"
+#include "mcu/urandom.h"
 
 
 int urandom_open(const devfs_handle_t * cfg){

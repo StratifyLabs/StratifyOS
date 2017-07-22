@@ -15,13 +15,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 */
-#ifndef STRATIFY_LINK_TRANSPORT_USB_H_
-#define STRATIFY_LINK_TRANSPORT_USB_H_
+#ifndef SOS_LINK_TRANSPORT_USB_H_
+#define SOS_LINK_TRANSPORT_USB_H_
 
-
+#include "transport.h"
 #include "mcu/usbfifo.h"
-#include "sos/link/link.h"
-#include "sos/link/link_transport.h"
 #include "mcu/usbd/control.h"
 #include "mcu/usbd/cdc.h"
 
@@ -89,19 +87,18 @@ extern const sos_link_transport_usb_dual_vcp_configuration_descriptor_t sos_link
 extern const struct sos_link_transport_usb_string_t sos_link_transport_usb_dual_vcp_string_desc MCU_WEAK;
 extern const usbd_control_constants_t sos_link_transport_usb_dual_vcp_constants;
 
-link_transport_phy_t sos_link_transport_usb_open(const char * name, usbd_control_t * context);
+link_transport_phy_t sos_link_transport_usb_open(const char * name, usbd_control_t * context, const usb_attr_t * usb_attr);
 int sos_link_transport_usb_read(link_transport_phy_t, void * buf, int nbyte);
 int sos_link_transport_usb_write(link_transport_phy_t, const void * buf, int nbyte);
 int sos_link_transport_usb_close(link_transport_phy_t * handle);
 void sos_link_transport_usb_wait(int msec);
 void sos_link_transport_usb_flush(link_transport_phy_t handle);
-void sos_link_transport_usb_notify(const void * buf, int nbyte);
 
 int sos_link_usbd_cdc_event_handler(void * context, mcu_event_t * event);
 
 //provided for the link device fifo
 //DEVFS_HANDLE("link-phy-usb", 0, &sos_link_transport_usb_fifo_cfg, &sos_link_transport_usb_fifo_state, 0666, USER_ROOT, GROUP_ROOT),
-extern const usbfifo_cfg_t sos_link_transport_usb_fifo_cfg;
+extern const usbfifo_config_t sos_link_transport_usb_fifo_cfg;
 extern usbfifo_state_t sos_link_transport_usb_fifo_state MCU_SYS_MEM;
 
 //replace these to customize the USB device descriptors
@@ -110,15 +107,15 @@ extern const sos_link_transport_usb_configuration_descriptor_t sos_link_transpor
 extern const struct sos_link_transport_usb_string_t sos_link_transport_usb_string_desc MCU_WEAK;
 extern const usbd_control_constants_t sos_link_transport_usb_constants;
 
-link_transport_phy_t boot_link_transport_usb_open(const char * name, usbd_control_t * context);
+link_transport_phy_t boot_link_transport_usb_open(const char * name, usbd_control_t * context, const usb_attr_t * usb_attr);
 int boot_link_transport_usb_read(link_transport_phy_t, void * buf, int nbyte);
 int boot_link_transport_usb_write(link_transport_phy_t, const void * buf, int nbyte);
 int boot_link_transport_usb_close(link_transport_phy_t * handle);
 void boot_link_transport_usb_wait(int msec);
 void boot_link_transport_usb_flush(link_transport_phy_t handle);
 
-extern const usbfifo_cfg_t sos_link_transport_usb_fifo_cfg;
+extern const usbfifo_config_t sos_link_transport_usb_fifo_cfg;
 extern usbfifo_state_t sos_link_transport_usb_fifo_state MCU_SYS_MEM;
 
 
-#endif /* STRATIFY_LINK_TRANSPORT_USB_H_ */
+#endif /* SOS_LINK_TRANSPORT_USB_H_ */

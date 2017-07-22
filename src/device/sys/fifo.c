@@ -90,7 +90,7 @@ void fifo_set_overflow(fifo_state_t * state, int value){
 	}
 }
 
-int fifo_read_buffer(const fifo_cfg_t * cfgp, fifo_state_t * state, char * buf){
+int fifo_read_buffer(const fifo_config_t * cfgp, fifo_state_t * state, char * buf){
 	int i;
 	u16 size = cfgp->size;
 	for(i=0; i < state->rop_len; i++){
@@ -106,7 +106,7 @@ int fifo_read_buffer(const fifo_cfg_t * cfgp, fifo_state_t * state, char * buf){
 }
 
 
-int fifo_write_buffer(const fifo_cfg_t * cfgp, fifo_state_t * state, const char * buf){
+int fifo_write_buffer(const fifo_config_t * cfgp, fifo_state_t * state, const char * buf){
 	int i;
 	int size = cfgp->size;
 	int writeblock = fifo_is_writeblock(state);
@@ -128,7 +128,7 @@ void fifo_flush(fifo_state_t * state){
 }
 
 
-void fifo_getinfo(fifo_info_t * info, const fifo_cfg_t * cfgp, fifo_state_t * state){
+void fifo_getinfo(fifo_info_t * info, const fifo_config_t * cfgp, fifo_state_t * state){
 	info->size = cfgp->size - 1;
 	if( state->head >= state->tail ){
 		info->used = state->head - state->tail;
@@ -139,7 +139,7 @@ void fifo_getinfo(fifo_info_t * info, const fifo_cfg_t * cfgp, fifo_state_t * st
 	fifo_set_overflow(state, 0);
 }
 
-void fifo_data_received(const fifo_cfg_t * cfgp, fifo_state_t * state){
+void fifo_data_received(const fifo_config_t * cfgp, fifo_state_t * state){
 	int bytes_read;
 
 	if( state->rop != 0 ){
@@ -162,7 +162,7 @@ void fifo_cancel_rop(fifo_state_t * state){
 
 static int data_transmitted(const devfs_handle_t * cfg){
 	int bytes_written;
-	const fifo_cfg_t * cfgp = cfg->config;
+	const fifo_config_t * cfgp = cfg->config;
 	fifo_state_t * state = cfg->state;
 
 	if( state->wop != NULL ){
@@ -181,7 +181,7 @@ static int data_transmitted(const devfs_handle_t * cfg){
 
 
 int fifo_open(const devfs_handle_t * cfg){
-	//const fifo_cfg_t * cfgp = cfg->config;
+	//const fifo_config_t * cfgp = cfg->config;
 	//fifo_state_t * state = cfg->state;
 	return 0;
 }
@@ -189,7 +189,7 @@ int fifo_open(const devfs_handle_t * cfg){
 int fifo_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 	fifo_attr_t * attr = ctl;
 	fifo_info_t * info = ctl;
-	const fifo_cfg_t * cfgp = cfg->config;
+	const fifo_config_t * cfgp = cfg->config;
 	fifo_state_t * state = cfg->state;
 	switch(request){
 	case I_FIFO_GETINFO:
@@ -223,7 +223,7 @@ int fifo_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 }
 
 
-int fifo_read_local(const fifo_cfg_t * cfgp, fifo_state_t * state, devfs_async_t * rop){
+int fifo_read_local(const fifo_config_t * cfgp, fifo_state_t * state, devfs_async_t * rop){
 	int bytes_read;
 
 	if ( state->rop != NULL ){
@@ -248,7 +248,7 @@ int fifo_read_local(const fifo_cfg_t * cfgp, fifo_state_t * state, devfs_async_t
 }
 
 int fifo_read(const devfs_handle_t * cfg, devfs_async_t * rop){
-	const fifo_cfg_t * cfgp = cfg->config;
+	const fifo_config_t * cfgp = cfg->config;
 	fifo_state_t * state = cfg->state;
 	int bytes_read;
 
@@ -263,7 +263,7 @@ int fifo_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	return bytes_read;
 }
 
-int fifo_write_local(const fifo_cfg_t * cfgp, fifo_state_t * state, devfs_async_t * wop){
+int fifo_write_local(const fifo_config_t * cfgp, fifo_state_t * state, devfs_async_t * wop){
 	int bytes_written;
 
 	if ( state->wop != NULL ){
@@ -288,7 +288,7 @@ int fifo_write_local(const fifo_cfg_t * cfgp, fifo_state_t * state, devfs_async_
 }
 
 int fifo_write(const devfs_handle_t * cfg, devfs_async_t * wop){
-	const fifo_cfg_t * cfgp = cfg->config;
+	const fifo_config_t * cfgp = cfg->config;
 	fifo_state_t * state = cfg->state;
 	int bytes_written;
 

@@ -33,7 +33,7 @@ int sst25vf_tmr_open(const devfs_handle_t * cfg){
 	int err;
 	u8 status;
 	pio_attr_t attr;
-	const sst25vf_cfg_t * config = cfg->config;
+	const sst25vf_config_t * config = cfg->config;
 
 	/*
 	spi_attr_t spi_cfg;
@@ -100,7 +100,7 @@ static void complete_spi_read(const devfs_handle_t * cfg, mcu_event_t ignore){
 
 int sst25vf_tmr_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	sst25vf_state_t * state = (sst25vf_state_t*)cfg->state;
-	const sst25vf_cfg_t * dcfg = (const sst25vf_cfg_t *)(cfg->config);
+	const sst25vf_config_t * dcfg = (const sst25vf_config_t *)(cfg->config);
 	state->handler.callback = rop->handler.callback;
 	state->handler.context = rop->handler.context;
 	rop->handler.context = (void*)cfg;
@@ -123,7 +123,7 @@ int sst25vf_tmr_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 
 void continue_spi_write(const devfs_handle_t * cfg, uint32_t ignore){
 	sst25vf_state_t * state = (sst25vf_state_t *)cfg->state;
-	const sst25vf_cfg_t * sst_cfg = (sst25vf_cfg_t*)cfg->config;
+	const sst25vf_config_t * sst_cfg = (sst25vf_config_t*)cfg->config;
 	mcu_action_t action;
 	uint8_t * addrp;
 	//should be called 10 us after complete_spi_write() executes
@@ -174,7 +174,7 @@ void complete_spi_write(const devfs_handle_t * cfg, uint32_t ignore){
 	uint32_t tval;
 	mcu_action_t action;
 	mcu_channel_t channel;
-	sst25vf_cfg_t * sst_cfg = (sst25vf_cfg_t*)cfg->config;
+	sst25vf_config_t * sst_cfg = (sst25vf_config_t*)cfg->config;
 
 	sst25vf_share_deassert_cs(cfg);
 
@@ -243,7 +243,7 @@ int sst25vf_tmr_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 }
 
 int sst25vf_tmr_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
-	sst25vf_cfg_t * sst_cfg = (sst25vf_cfg_t*)cfg->config;
+	sst25vf_config_t * sst_cfg = (sst25vf_config_t*)cfg->config;
 	switch(request){
 	case I_DRIVE_PROTECT:
 		sst25vf_share_global_protect(cfg);

@@ -108,7 +108,11 @@ int mcu_dac_setattr(int port, void * ctl){
 		attr->freq = DAC_MAX_FREQ;
 	}
 
-	if( mcu_core_set_pin_assignment(attr->pin_assignment, DAC_PIN_ASSIGNMENT_COUNT, CORE_PERIPH_DAC, port) < 0 ){
+	if( mcu_core_set_pin_assignment(
+			&(attr->pin_assignment),
+			MCU_PIN_ASSIGNMENT_COUNT(dac_pin_assignment_t),
+			CORE_PERIPH_DAC,
+			port) < 0 ){
 		return -1;
 	}
 

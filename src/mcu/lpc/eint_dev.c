@@ -117,11 +117,12 @@ int mcu_eint_setattr(int port, void * ctl){
 
 	pattr.o_flags = attr->o_flags;
 	int i;
-	for(i=0; i < EINT_PIN_ASSIGNMENT_COUNT; i++){
-		if( mcu_is_port_valid(attr->pin_assignment[i].port) ){
-			pattr.o_pinmask = 1<<attr->pin_assignment[i].pin;
-			mcu_pio_setattr(attr->pin_assignment[i].port, &pattr);
-			if ( _mcu_core_set_pinsel_func(attr->pin_assignment[i].port, attr->pin_assignment[i].pin, CORE_PERIPH_EINT, port) ){
+	for(i=0; i < MCU_PIN_ASSIGNMENT_COUNT(eint_pin_assignment_t); i++){
+		const mcu_pin_t * pin = mcu_pin_at(&(attr->pin_assignment), i);
+		if( mcu_is_port_valid(pin->port) ){
+			pattr.o_pinmask = 1<<pin->pin;
+			mcu_pio_setattr(pin->port, &pattr);
+			if ( _mcu_core_set_pinsel_func(pin->port, pin->pin, CORE_PERIPH_EINT, port) ){
 				return -1;  //pin failed to allocate as a UART pin
 			}
 		}

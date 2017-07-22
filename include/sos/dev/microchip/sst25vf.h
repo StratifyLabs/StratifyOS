@@ -37,7 +37,7 @@
  * #include <hwpl.h>
  *
  * sst25vf_state_t sst25vf_state MCU_SYS_MEM;
- * const sst25vf_cfg_t sst25vf_cfg = SST25VF_DEVICE_CFG(-1, 0, -1, 0, 0, 17, 4*1024*1024); //4MB part
+ * const sst25vf_config_t sst25vf_cfg = SST25VF_DEVICE_CFG(-1, 0, -1, 0, 0, 17, 4*1024*1024); //4MB part
  *
  * const device_t devices[DEVICES_TOTAL+1] = {
  * 	...

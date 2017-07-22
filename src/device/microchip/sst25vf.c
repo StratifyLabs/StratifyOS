@@ -31,7 +31,7 @@ int sst25vf_open(const devfs_handle_t * cfg){
 	uint8_t status;
 	pio_attr_t pio_attr;
 	sst25vf_state_t * state = (sst25vf_state_t*)cfg->state;
-	const sst25vf_cfg_t * config = cfg->config;
+	const sst25vf_config_t * config = cfg->config;
 
 	/*
 	spi_attr_t spi_cfg;
@@ -101,7 +101,7 @@ static int complete_spi_read(const devfs_handle_t * cfg, uint32_t ignore){
 
 int sst25vf_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	sst25vf_state_t * state = (sst25vf_state_t*)cfg->state;
-	const sst25vf_cfg_t * dcfg = (const sst25vf_cfg_t *)(cfg->config);
+	const sst25vf_config_t * dcfg = (const sst25vf_config_t *)(cfg->config);
 	state->handler.callback = rop->handler.callback;
 	state->handler.context = rop->handler.context;
 	rop->handler.context = (void*)cfg;
@@ -187,7 +187,7 @@ int continue_spi_write(const devfs_handle_t * cfg, uint32_t ignore){
 
 int complete_spi_write(const devfs_handle_t * cfg, uint32_t ignore){
 	mcu_action_t action;
-	sst25vf_cfg_t * sst_cfg = (sst25vf_cfg_t*)cfg->config;
+	sst25vf_config_t * sst_cfg = (sst25vf_config_t*)cfg->config;
 	sst25vf_state_t * state = (sst25vf_state_t*)cfg->state;
 
 
@@ -215,7 +215,7 @@ int sst25vf_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	int err;
 	uint8_t *addrp;
 	sst25vf_state_t * state = (sst25vf_state_t*)cfg->state;
-	//sst25vf_cfg_t * sst_cfg = (sst25vf_cfg_t*)cfg->config;
+	//sst25vf_config_t * sst_cfg = (sst25vf_config_t*)cfg->config;
 
 	if( state->prot == 1 ){
 		errno = EROFS;
@@ -274,7 +274,7 @@ int sst25vf_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 }
 
 int sst25vf_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
-	sst25vf_cfg_t * sst_cfg = (sst25vf_cfg_t*)cfg->config;
+	sst25vf_config_t * sst_cfg = (sst25vf_config_t*)cfg->config;
 	sst25vf_state_t * state = (sst25vf_state_t*)cfg->state;
 	drive_info_t * attr;
 

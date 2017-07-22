@@ -94,11 +94,13 @@ typedef struct MCU_PACK {
 	u32 freq;
 } dac_info_t;
 
-#define DAC_PIN_ASSIGNMENT_COUNT 4
+typedef struct MCU_PACK {
+	mcu_pin_t channel[4];
+} dac_pin_assignment_t;
 
 typedef struct MCU_PACK {
 	u32 o_flags;
-	mcu_pin_t pin_assignment[DAC_PIN_ASSIGNMENT_COUNT];
+	dac_pin_assignment_t pin_assignment;
 	u32 freq;
 } dac_attr_t;
 

@@ -220,14 +220,15 @@ int mcu_i2c_setattr(int port, void * ctl){
 			internal_pullup = 0;
 		}
 
-		for(i=0; i < 2; i++){
-			if( mcu_is_port_valid(attr->pin_assignment[i].port) ){
+		for(i=0; i < MCU_PIN_ASSIGNMENT_COUNT(i2c_pin_assignment_t); i++){
+			const mcu_pin_t * pin = mcu_pin_at(&(attr->pin_assignment), i);
+			if( mcu_is_port_valid(pin->port) ){
 
-				enable_opendrain_pin(attr->pin_assignment[i].port,
-						attr->pin_assignment[i].pin, internal_pullup);
+				enable_opendrain_pin(pin->port,
+						pin->pin, internal_pullup);
 
 
-				if ( _mcu_core_set_pinsel_func(attr->pin_assignment[i].port, attr->pin_assignment[i].pin, CORE_PERIPH_I2C, port) ){
+				if ( _mcu_core_set_pinsel_func(pin->port, pin->pin, CORE_PERIPH_I2C, port) ){
 					return -1;  //pin failed to allocate as a UART pin
 				}
 			}

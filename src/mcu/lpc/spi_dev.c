@@ -137,7 +137,11 @@ int mcu_spi_setattr(int port, void * ctl){
 			return -1;
 		}
 
-		if( mcu_core_set_pin_assignment(attr->pin_assignment, SPI_PIN_ASSIGNMENT_COUNT, CORE_PERIPH_SPI, port) < 0 ){
+		if( mcu_core_set_pin_assignment(
+				&(attr->pin_assignment),
+				MCU_PIN_ASSIGNMENT_COUNT(spi_pin_assignment_t),
+				CORE_PERIPH_SPI,
+				port) < 0 ){
 			return -1;
 		}
 

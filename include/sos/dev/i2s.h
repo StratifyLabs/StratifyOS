@@ -70,12 +70,19 @@ typedef struct MCU_PACK {
 	u32 freq /*! The I2S audio frequency */;
 } i2s_info_t;
 
-#define I2S_PIN_ASSIGNMENT_COUNT 5
+
+typedef struct MCU_PACK {
+	mcu_pin_t lrck;
+	mcu_pin_t bck;
+	mcu_pin_t tx;
+	mcu_pin_t rx;
+	mcu_pin_t mclk;
+} i2s_pin_assignment_t;
 
 typedef struct MCU_PACK {
 	u32 o_flags  /*! Flag bitmask */;
 	u32 freq /*! The I2S audio frequency */;
-	mcu_pin_t pin_assignment[I2S_PIN_ASSIGNMENT_COUNT] /*! The pin assignement values */;
+	i2s_pin_assignment_t pin_assignment /*! The pin assignement values */;
 	u8 width;
 	u32 mclk_mult /*! The I2S mclk multiplier value */;
 } i2s_attr_t;

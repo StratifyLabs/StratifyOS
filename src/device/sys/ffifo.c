@@ -25,7 +25,7 @@
 #include "mcu/ffifo.h"
 
 
-char * ffifo_get_frame(const ffifo_cfg_t * cfgp, u16 frame){
+char * ffifo_get_frame(const ffifo_config_t * cfgp, u16 frame){
 	return cfgp->buffer + frame * cfgp->frame_size;
 }
 
@@ -94,7 +94,7 @@ void ffifo_set_overflow(ffifo_state_t * state, int value){
 	}
 }
 
-int ffifo_read_buffer(const ffifo_cfg_t * cfgp, ffifo_state_t * state, char * buf, int len){
+int ffifo_read_buffer(const ffifo_config_t * cfgp, ffifo_state_t * state, char * buf, int len){
 	int i;
 	u16 count = cfgp->count;
 	u16 frame_size = cfgp->frame_size;
@@ -112,7 +112,7 @@ int ffifo_read_buffer(const ffifo_cfg_t * cfgp, ffifo_state_t * state, char * bu
 }
 
 
-int ffifo_write_buffer(const ffifo_cfg_t * cfgp, ffifo_state_t * state, const char * buf, int len){
+int ffifo_write_buffer(const ffifo_config_t * cfgp, ffifo_state_t * state, const char * buf, int len){
 	int i;
 	u16 count = cfgp->count;
 	u16 frame_size = cfgp->frame_size;
@@ -135,7 +135,7 @@ void ffifo_flush(ffifo_state_t * state){
 	ffifo_set_overflow(state, 0);
 }
 
-void ffifo_getinfo(ffifo_info_t * info, const ffifo_cfg_t * cfgp, ffifo_state_t * state){
+void ffifo_getinfo(ffifo_info_t * info, const ffifo_config_t * cfgp, ffifo_state_t * state){
 	info->count = cfgp->count;
 	info->frame_size = cfgp->frame_size;
 
@@ -151,7 +151,7 @@ void ffifo_getinfo(ffifo_info_t * info, const ffifo_cfg_t * cfgp, ffifo_state_t 
 }
 
 
-void ffifo_data_received(const ffifo_cfg_t * cfgp, ffifo_state_t * state){
+void ffifo_data_received(const ffifo_config_t * cfgp, ffifo_state_t * state){
 	int bytes_read;
 
 	if( state->rop != NULL ){
@@ -170,7 +170,7 @@ void ffifo_cancel_rop(ffifo_state_t * state){
 }
 
 
-void ffifo_data_transmitted(const ffifo_cfg_t * cfgp, ffifo_state_t * state){
+void ffifo_data_transmitted(const ffifo_config_t * cfgp, ffifo_state_t * state){
 	int bytes_written;
 	if( state->wop != NULL ){
 		if( (bytes_written = ffifo_write_buffer(cfgp, state, state->wop->buf_const, state->wop_len)) > 0 ){
@@ -186,7 +186,7 @@ void ffifo_data_transmitted(const ffifo_cfg_t * cfgp, ffifo_state_t * state){
 
 
 int ffifo_open(const devfs_handle_t * cfg){
-	//const ffifo_cfg_t * cfgp = cfg->config;
+	//const ffifo_config_t * cfgp = cfg->config;
 	//ffifo_state_t * state = cfg->state;
 	return 0;
 }
@@ -194,7 +194,7 @@ int ffifo_open(const devfs_handle_t * cfg){
 int ffifo_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 	ffifo_attr_t * attr = ctl;
 	ffifo_info_t * info = ctl;
-	const ffifo_cfg_t * cfgp = cfg->config;
+	const ffifo_config_t * cfgp = cfg->config;
 	ffifo_state_t * state = cfg->state;
 	switch(request){
 	case I_FFIFO_GETINFO:
@@ -226,7 +226,7 @@ int ffifo_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 
 
 
-int ffifo_read_local(const ffifo_cfg_t * cfgp, ffifo_state_t * state, devfs_async_t * rop){
+int ffifo_read_local(const ffifo_config_t * cfgp, ffifo_state_t * state, devfs_async_t * rop){
 	int bytes_read;
 
 	if ( state->rop != NULL ){
@@ -256,7 +256,7 @@ int ffifo_read_local(const ffifo_cfg_t * cfgp, ffifo_state_t * state, devfs_asyn
 }
 
 int ffifo_read(const devfs_handle_t * cfg, devfs_async_t * rop){
-	const ffifo_cfg_t * cfgp = cfg->config;
+	const ffifo_config_t * cfgp = cfg->config;
 	ffifo_state_t * state = cfg->state;
 	int bytes_read;
 
@@ -274,7 +274,7 @@ int ffifo_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	return bytes_read;
 }
 
-int ffifo_write_local(const ffifo_cfg_t * cfgp, ffifo_state_t * state, devfs_async_t * wop){
+int ffifo_write_local(const ffifo_config_t * cfgp, ffifo_state_t * state, devfs_async_t * wop){
 	int bytes_written;
 
 	if ( state->wop != NULL ){
@@ -306,7 +306,7 @@ int ffifo_write_local(const ffifo_cfg_t * cfgp, ffifo_state_t * state, devfs_asy
 }
 
 int ffifo_write(const devfs_handle_t * cfg, devfs_async_t * wop){
-	const ffifo_cfg_t * cfgp = cfg->config;
+	const ffifo_config_t * cfgp = cfg->config;
 	ffifo_state_t * state = cfg->state;
 	int bytes_written;
 

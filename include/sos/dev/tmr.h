@@ -90,11 +90,13 @@ typedef struct MCU_PACK {
 	u32 freq;
 } tmr_info_t;
 
-#define TMR_PIN_ASSIGNMENT_COUNT 4
+typedef struct MCU_PACK {
+	mcu_pin_t channel[4];
+} tmr_pin_assignment_t;
 
 typedef struct MCU_PACK {
 	u32 o_flags;
-	mcu_pin_t pin_assignment[TMR_PIN_ASSIGNMENT_COUNT];
+	tmr_pin_assignment_t pin_assignment;
 	u32 freq;
 	u32 top /*! If this value is non-zero, the timer will reset when it matchs this value */;
 	mcu_channel_t channel;

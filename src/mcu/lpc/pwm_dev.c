@@ -140,13 +140,18 @@ int mcu_pwm_setattr(int port, void * ctl){
 
 	//Configure the GPIO
 
-	if( mcu_core_set_pin_assignment(attr->pin_assignment, PWM_PIN_ASSIGNMENT_COUNT, CORE_PERIPH_PWM, port) < 0 ){
+	if( mcu_core_set_pin_assignment(
+			&(attr->pin_assignment),
+			MCU_PIN_ASSIGNMENT_COUNT(pwm_pin_assignment_t),
+			CORE_PERIPH_PWM,
+			port) < 0 ){
 		return -1;
 	}
 
 	enabled_channels = 0;
-	for(i=0; i < PWM_PIN_ASSIGNMENT_COUNT; i++){
-		if( mcu_is_port_valid(attr->pin_assignment[i].port) ){
+	for(i=0; i < MCU_PIN_ASSIGNMENT_COUNT(pwm_pin_assignment_t); i++){
+		const mcu_pin_t * pin = mcu_pin_at(&(attr->pin_assignment), i);
+		if( mcu_is_port_valid(pin->port) ){
 //need a table to convert port/pin to channel
 
 

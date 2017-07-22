@@ -151,12 +151,13 @@ int mcu_core_setclkdivide(int port, void * arg){
 	return 0;
 }
 
-int mcu_core_set_pin_assignment(const mcu_pin_t * pin_assignment, int count, int periph, int periph_port){
+int mcu_core_set_pin_assignment(const void * pin_assignment, int count, int periph, int periph_port){
 	int i;
 	for(i=0; i < count; i++){
-		if( mcu_is_port_valid(pin_assignment[i].port) ){
-			if ( _mcu_core_set_pinsel_func(pin_assignment[i].port, pin_assignment[i].pin, periph, periph_port) ){
-				return -1;  //pin failed to allocate as a UART pin
+		const mcu_pin_t * pin = mcu_pin_at(pin_assignment, i);
+		if( mcu_is_port_valid(pin->port) ){
+			if ( _mcu_core_set_pinsel_func(pin->port, pin->pin, periph, periph_port) ){
+				return -1;
 			}
 		}
 	}

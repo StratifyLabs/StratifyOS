@@ -30,15 +30,15 @@ int tty_usbbulk_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 }
 
 int tty_usbbulk_write(const devfs_handle_t * cfg, devfs_async_t * wop){
-	const tty_cfg_t * dcfg;
-	dcfg = (const tty_cfg_t*)cfg->config;
+	const tty_config_t * dcfg;
+	dcfg = (const tty_config_t*)cfg->config;
 	wop->loc = dcfg->write_ep;
 	return mcu_usb_write(cfg, wop);
 }
 
 int tty_usbbulk_read(const devfs_handle_t * cfg, devfs_async_t * rop){ //The stdio is read by the USB connection
-	const tty_cfg_t * dcfg;
-	dcfg = (const tty_cfg_t*)cfg->config;
+	const tty_config_t * dcfg;
+	dcfg = (const tty_config_t*)cfg->config;
 	rop->loc = dcfg->read_ep;
 	return mcu_usb_read(cfg, rop);
 }

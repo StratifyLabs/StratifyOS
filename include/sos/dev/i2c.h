@@ -140,8 +140,13 @@ typedef union {
 } i2c_slave_addr_t;
 
 typedef struct MCU_PACK {
+	mcu_pin_t sda;
+	mcu_pin_t scl;
+} i2c_pin_assignment_t;
+
+typedef struct MCU_PACK {
 	u32 o_flags /*! Attribute flags */;
-	mcu_pin_t pin_assignment[2] /*! The pin assignment */;
+	i2c_pin_assignment_t pin_assignment /*! The pin assignment */;
 	u32 freq /*! The bit frequency */;
 	i2c_slave_addr_t slave_addr[2] /*! Slave address */;
 	u32 size /*! Memory size when setting up slave */;

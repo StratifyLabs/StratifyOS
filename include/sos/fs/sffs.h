@@ -40,7 +40,7 @@ typedef struct {
 	open_file_t * open_file;
 	const char name[NAME_MAX];
 	sffs_state_t * state;
-} sffs_cfg_t;
+} sffs_config_t;
 
 
 int sffs_init(const void * cfg); //initialize the filesystem
@@ -65,7 +65,7 @@ int sffs_stat(const void * cfg, const char * path, struct stat * stat);
 int sffs_unmount(const void * cfg);
 int sffs_ismounted(const void * cfg);
 
-#define SFFS(mount_loc_name, cfgp, access_mode) { \
+#define SFFS_MOUNT(mount_loc_name, cfgp, access_mode) { \
 		.mount_path = mount_loc_name, \
 		.access = access_mode, \
 		.mount = sffs_init, \
@@ -74,12 +74,12 @@ int sffs_ismounted(const void * cfg);
 		.startup = SYSFS_NOTSUP, \
 		.mkfs = sffs_mkfs, \
 		.open = sffs_open, \
-		.priv_read = NULL, \
-		.priv_write = NULL, \
+		.read_async = NULL, \
+		.write_async = NULL, \
 		.read = sffs_read, \
 		.write = sffs_write, \
 		.close = sffs_close, \
-		.priv_ioctl = SYSFS_NOTSUP, \
+		.ioctl = SYSFS_NOTSUP, \
 		.rename = SYSFS_NOTSUP, \
 		.unlink = sffs_unlink, \
 		.mkdir = SYSFS_NOTSUP, \

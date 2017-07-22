@@ -26,11 +26,9 @@
 #include "mcu/core.h"
 #include "mcu/debug.h"
 #include "mcu/wdt.h"
-#include "sos/fs/devfs.h"
 
 #include "mcu/sys.h"
 #include "mcu/core.h"
-#include "sos/dev/drive.h"
 #include "sdspi_local.h"
 #include "mcu/task.h"
 
@@ -67,12 +65,12 @@ static int _sdspi_transfer(const devfs_handle_t * cfg, const uint8_t * data_out,
 static int _sdspi_try_read(const devfs_handle_t * cfg, int first);
 
 static void _sdspi_deassert_cs(const devfs_handle_t * cfg){
-	const sdspi_cfg_t * config = cfg->config;
+	const sdspi_config_t * config = cfg->config;
 	mcu_pio_setmask(config->cs.port, (void*)(ssize_t)(1<<config->cs.pin));
 }
 
 static void _sdspi_assert_cs(const devfs_handle_t * cfg){
-	const sdspi_cfg_t * config = cfg->config;
+	const sdspi_config_t * config = cfg->config;
 	mcu_pio_clrmask(config->cs.port, (void*)(ssize_t)(1<<config->cs.pin));
 }
 
@@ -83,7 +81,7 @@ int sdspi_open(const devfs_handle_t * cfg){
 	int err;
 	pio_attr_t attr;
 	//sdspi_state_t * state = (sdspi_state_t*)cfg->state;
-	const sdspi_cfg_t * config = cfg->config;
+	const sdspi_config_t * config = cfg->config;
 
 	/*
 	spi_attr_t spi_cfg;
@@ -345,9 +343,9 @@ int sdspi_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 }
 
 int sdspi_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
-	//sdspi_cfg_t * sst_cfg = (sdspi_cfg_t*)cfg->config;
+	//sdspi_config_t * sst_cfg = (sdspi_config_t*)cfg->config;
 	sdspi_state_t * state = (sdspi_state_t*)cfg->state;
-	const sdspi_cfg_t * config = cfg->config;
+	const sdspi_config_t * config = cfg->config;
 	drive_info_t * attr = ctl;
 	drive_erase_block_t * deb = ctl;
 	drive_erase_block_t debs;

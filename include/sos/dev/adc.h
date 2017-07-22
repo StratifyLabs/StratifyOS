@@ -73,12 +73,14 @@ typedef struct MCU_PACK {
 	u32 freq /*! The maximum frequency */;
 } adc_info_t;
 
-#define ADC_PIN_ASSIGNMENT_COUNT 4
 
+typedef struct MCU_PACK {
+	mcu_pin_t channel[4];
+} adc_pin_assignment_t;
 
 typedef struct MCU_PACK {
 	u32 o_flags;
-	mcu_pin_t pin_assignment[ADC_PIN_ASSIGNMENT_COUNT];
+	adc_pin_assignment_t pin_assignment;
 	u32 freq;
 } adc_attr_t;
 

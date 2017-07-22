@@ -20,7 +20,7 @@
 #include <sys/fcntl.h>
 #include <unistd.h>
 #include "config.h"
-#include "sos/link/link.h"
+#include "sos/link.h"
 #include "mcu/mcu.h"
 #include "sos/dev/usb.h"
 #include "mcu/usbfifo.h"
@@ -30,7 +30,7 @@
 #include "mcu/debug.h"
 #include "mcu/sys.h"
 
-#include "sos/sos_link_transport_usb.h"
+#include "sos/link/transport_usb.h"
 
 #define STRATIFY_USBD_VID 0x20A0
 #define STRATIFY_USBD_PID 0x41D5
@@ -44,7 +44,7 @@ static int cdc_event_handler(usbd_control_t * context, mcu_event_t * event);
 
 #define USB0_DEVFIFO_BUFFER_SIZE 64
 static char usb0_fifo_buffer[USB0_DEVFIFO_BUFFER_SIZE] MCU_SYS_MEM;
-const usbfifo_cfg_t sos_link_transport_usb_fifo_cfg = USBFIFO_HANDLE_CFG(
+const usbfifo_config_t sos_link_transport_usb_fifo_cfg = USBFIFO_HANDLE_CFG(
 		STRATIFY_LINK_TRANSPORT_USB_BULK_ENDPOINT,
 		STRATIFY_LINK_TRANSPORT_USB_BULK_ENDPOINT_SIZE,
 		usb0_fifo_buffer,

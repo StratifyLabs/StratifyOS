@@ -35,12 +35,12 @@
 
 
 int sffs_dev_getlist_block(const void * cfg){
-	const sffs_cfg_t * cfgp = cfg;
+	const sffs_config_t * cfgp = cfg;
 	return cfgp->state->list_block;
 }
 
 void sffs_dev_setlist_block(const void * cfg, int list_block){
-	const sffs_cfg_t * cfgp = cfg;
+	const sffs_config_t * cfgp = cfg;
 	cfgp->state->list_block = list_block;
 }
 
@@ -49,17 +49,17 @@ void sffs_dev_setdelay_mutex(pthread_mutex_t * mutex){
 }
 
 int sffs_dev_getserialno(const void * cfg){
-	const sffs_cfg_t * cfgp = cfg;
+	const sffs_config_t * cfgp = cfg;
 	return cfgp->state->serialno;
 }
 
 void sffs_dev_setserialno(const void * cfg, int serialno){
-	const sffs_cfg_t * cfgp = cfg;
+	const sffs_config_t * cfgp = cfg;
 	cfgp->state->serialno = serialno;
 }
 
 int sffs_dev_open(const void * cfg){
-	const sffs_cfg_t * cfgp = cfg;
+	const sffs_config_t * cfgp = cfg;
 
 	cfgp->open_file->flags = O_RDWR;
 	cfgp->open_file->loc = 0;
@@ -83,7 +83,7 @@ int sffs_dev_write(const void * cfg, int loc, const void * buf, int nbyte){
 	int ret;
 	//int i;
 	char buffer[nbyte];
-	const sffs_cfg_t * cfgp = cfg;
+	const sffs_config_t * cfgp = cfg;
 	if ( cfgp->open_file->fs == NULL ){
 		errno = EIO;
 		return -1;
@@ -105,7 +105,7 @@ int sffs_dev_write(const void * cfg, int loc, const void * buf, int nbyte){
 }
 
 int sffs_dev_read(const void * cfg, int loc, void * buf, int nbyte){
-	const sffs_cfg_t * cfgp = cfg;
+	const sffs_config_t * cfgp = cfg;
 	if ( cfgp->open_file->fs == NULL ){
 		errno = EIO;
 		return -1;
@@ -116,7 +116,7 @@ int sffs_dev_read(const void * cfg, int loc, void * buf, int nbyte){
 
 
 int sffs_dev_erase(const void * cfg){
-	const sffs_cfg_t * cfgp = cfg;
+	const sffs_config_t * cfgp = cfg;
 	if ( cfgp->open_file->fs == NULL ){
 		errno = EIO;
 		return -1;
@@ -133,7 +133,7 @@ int sffs_dev_erase(const void * cfg){
 }
 
 int sffs_dev_erasesection(const void * cfg, int loc){
-	const sffs_cfg_t * cfgp;
+	const sffs_config_t * cfgp;
 	int usec;
 	cfgp = cfg;
 	if ( cfgp->open_file->fs == NULL ){
@@ -152,7 +152,7 @@ int sffs_dev_erasesection(const void * cfg, int loc){
 }
 
 int sffs_dev_close(const void * cfg){
-	const sffs_cfg_t * cfgp = cfg;
+	const sffs_config_t * cfgp = cfg;
 	return cfgp->devfs->close(
 			cfgp->devfs->cfg,
 			&(cfgp->open_file->handle));

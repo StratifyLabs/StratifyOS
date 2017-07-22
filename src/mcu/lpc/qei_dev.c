@@ -92,7 +92,10 @@ int mcu_qei_setattr(int port, void * ctl){
 			return -1 - offsetof(qei_attr_t, velocity_freq);
 		}
 
-		if( mcu_core_set_pin_assignment(attr->pin_assignment, QEI_PIN_ASSIGNMENT_COUNT, CORE_PERIPH_QEI, port) < 0 ){
+		if( mcu_core_set_pin_assignment(&(attr->pin_assignment),
+				MCU_PIN_ASSIGNMENT_COUNT(qei_pin_assignment_t),
+				CORE_PERIPH_QEI,
+				port) < 0 ){
 			errno = EINVAL;
 			return -1 - offsetof(qei_attr_t, pin_assignment);
 		}

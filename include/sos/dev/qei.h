@@ -67,7 +67,11 @@ typedef enum {
 	QEI_FLAG_IS_RESET_POS_ONINDEX /*! Reset the position on the next index pulse */ = (1<<9)
 } qei_flag_t;
 
-#define QEI_PIN_ASSIGNMENT_COUNT 3
+typedef struct MCU_PACK {
+	mcu_pin_t a;
+	mcu_pin_t b;
+	mcu_pin_t idx;
+} qei_pin_assignment_t;
 
 /*! \brief QEI IO Attributes
  * \details This structure defines how the control structure
@@ -75,7 +79,7 @@ typedef enum {
  */
 typedef struct MCU_PACK {
 	u32 o_flags;
-	mcu_pin_t pin_assignment[QEI_PIN_ASSIGNMENT_COUNT];
+	qei_pin_assignment_t pin_assignment;
 	u32 freq;
 	u32 top /*! Maximum value */;
 	u32 velocity_freq;

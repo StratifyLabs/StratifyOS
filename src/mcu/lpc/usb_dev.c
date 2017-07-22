@@ -162,16 +162,21 @@ int mcu_usb_setattr(int port, void * ctl){
 	usb_local.write_pending = 0;
 
 
-	if( mcu_core_set_pin_assignment(attr->pin_assignment, USB_PIN_ASSIGNMENT_COUNT, CORE_PERIPH_USB, port) < 0 ){
+	if( mcu_core_set_pin_assignment(
+			&(attr->pin_assignment),
+			MCU_PIN_ASSIGNMENT_COUNT(usb_pin_assignment_t),
+			CORE_PERIPH_USB,
+			port) < 0 ){
 		return -1;
 	}
 
 	//Configure the IO
-	for(i=0; i < USB_PIN_ASSIGNMENT_COUNT; i++){
-		if( mcu_is_port_valid(attr->pin_assignment[i].port) ){
+	for(i=0; i < MCU_PIN_ASSIGNMENT_COUNT(usb_pin_assignment_t); i++){
+		const mcu_pin_t * pin = mcu_pin_at(&(attr->pin_assignment), i);
+		if( mcu_is_port_valid(pin->port) ){
 #ifdef LPCXX7X_8X
 			LPC_USB->StCtrl &= ~0x03;
-			if( attr->pin_assignment[i].pin == 31 ){
+			if( pin->pin == 31 ){
 				LPC_USB->StCtrl |= 0x03;
 			}
 			LPC_USB->USBClkCtrl &= ~(1<<3); //disable portsel clock
