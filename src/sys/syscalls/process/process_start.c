@@ -98,13 +98,13 @@ int process_start(const char *path_arg,
 		return -1;
 	}
 
-	mem.code.addr = startup.exec.code_start;
+	mem.code.addr = (void*)startup.exec.code_start;
 	mem.code.size = startup.exec.code_size;
-	mem.data.addr = startup.exec.ram_start;
+	mem.data.addr = (void*)startup.exec.ram_start;
 	mem.data.size = startup.exec.ram_size;
 
 	//check to see if the process is already running
-	if( !reent_is_free(startup.exec.ram_start) ){
+	if( !reent_is_free((void*)startup.exec.ram_start) ){
 		errno = ENOTSUP;
 		close(fd);
 		return -1;
@@ -121,10 +121,10 @@ int process_start(const char *path_arg,
 	}
 	strcpy(process_path, path_arg);
 
-	err = sched_new_process(startup.exec.startup,
+	err = sched_new_process((void*)startup.exec.startup,
 			process_path,
 			&mem,
-			startup.exec.ram_start);
+			(void*)startup.exec.ram_start);
 
 	mcu_debug("process_start:returned %d\n", err);
 

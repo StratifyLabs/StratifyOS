@@ -50,11 +50,11 @@ u32 sched_seconds_to_clocks(int seconds){
 }
 
 u32 sched_useconds_to_clocks(int useconds){
-	return (u32)(sos_board_config.clk_usec_mult * useconds);
+	return (u32)(SCHED_CLK_USEC_MULT * useconds);
 }
 
 u32 sched_nanoseconds_to_clocks(int nanoseconds){
-	return (u32)nanoseconds * 1024 / sos_board_config.clk_nsec_div;
+	return (u32)nanoseconds * 1024 / SCHED_CLK_NSEC_DIV;
 }
 
 void sched_priv_timedblock(void * block_object, struct sched_timeval * abs_time){

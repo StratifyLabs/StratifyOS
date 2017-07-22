@@ -165,18 +165,18 @@ int appfs_startup(const void * cfg){
 	for(i=0; i < attr.flash_pages; i++){
 		if (appfs_util_getfileinfo(&info, dev, i, MEM_PAGEINFO_TYPE_FLASH, NULL) == APPFS_MEMPAGETYPE_USER ){
 			if ( (appfs_util_isexecutable(&info.fileinfo) == true) &&
-					(info.fileinfo.exec.options & APPFS_EXEC_OPTIONS_STARTUP) ){
+					(info.fileinfo.exec.o_flags & APPFS_FLAG_IS_STARTUP) ){
 
 				//start the process
-				mem.code.addr = info.fileinfo.exec.code_start;
+				mem.code.addr = (void*)info.fileinfo.exec.code_start;
 				mem.code.size = info.fileinfo.exec.code_size;
-				mem.data.addr = info.fileinfo.exec.ram_start;
+				mem.data.addr = (void*)info.fileinfo.exec.ram_start;
 				mem.data.size = info.fileinfo.exec.ram_size;
 
-				if ( sched_new_process(info.fileinfo.exec.startup,
+				if ( sched_new_process((void*)info.fileinfo.exec.startup,
 						0,
 						&mem,
-						info.fileinfo.exec.ram_start) >= 0 ){
+						(void*)info.fileinfo.exec.ram_start) >= 0 ){
 					started++;
 					mcu_debug("Started %s\n", info.fileinfo.hdr.name);
 				} else {
@@ -454,7 +454,7 @@ int appfs_close(const void* cfg, void ** handle){
 }
 
 int appfs_opendir(const void* cfg, void ** handle, const char * path){
-	if ( strcmp(path, "") == 0 ){
+	if ( strncmp(path, "", PATH_MAX) == 0 ){
 		*handle = (void*)0;
 	} else if ( strcmp(path, "flash") == 0 ){
 		*handle = (void*)1;
@@ -474,11 +474,15 @@ void priv_ioctl(void * args){
 	appfs_handle_t * h = a->handle;
 	int request = a->request;
 	appfs_installattr_t * attr;
+	appfs_file_t * f;
+
+	appfs_info_t * info;
 	void * ctl = a->ctl;
 	a->ret = -1;
 
 	mcu_wdt_reset();
 
+	info = ctl;
 	attr = ctl;
 	switch( request ){
 
@@ -491,13 +495,22 @@ void priv_ioctl(void * args){
 		a->ret = appfs_util_priv_create(a->cfg, h, attr);
 		break;
 
-	//These calls work with the specific file name
+	//These calls work with the specific applications
 	case I_APPFS_FREE_RAM:
 		a->ret =  appfs_util_priv_free_ram(a->cfg, h);
 		break;
 
 	case I_APPFS_RECLAIM_RAM:
 		a->ret = appfs_util_priv_reclaim_ram(a->cfg, h);
+		break;
+
+	case I_APPFS_GETINFO:
+		f = appfs_util_getfile(h);
+		info->mode = f->hdr.mode;
+		info->o_flags = f->exec.o_flags;
+		info->signature = f->exec.signature;
+		info->version = f->hdr.version;
+		info->ram_size = f->exec.ram_size;
 		break;
 
 	default:
@@ -527,7 +540,7 @@ static int readdir_mem(const void* cfg, int loc, struct dirent * entry, int type
 		return -1;
 	}
 
-	strcpy(entry->d_name, args.fileinfo.hdr.name);
+	strncpy(entry->d_name, args.fileinfo.hdr.name, NAME_MAX);
 	entry->d_ino = loc;
 	return 0;
 }
@@ -536,13 +549,13 @@ static int readdir_mem(const void* cfg, int loc, struct dirent * entry, int type
 static int readdir_root(const void * cfg, int loc, struct dirent * entry){
 	switch(loc){
 	case 0:
-		strcpy(entry->d_name, ".install");
+		strncpy(entry->d_name, ".install", NAME_MAX);
 		break;
 	case 1:
-		strcpy(entry->d_name, "flash");
+		strncpy(entry->d_name, "flash", NAME_MAX);
 		break;
 	case 2:
-		strcpy(entry->d_name, "ram");
+		strncpy(entry->d_name, "ram", NAME_MAX);
 		break;
 	default:
 		return -1;

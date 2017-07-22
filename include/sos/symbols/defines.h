@@ -14,8 +14,8 @@
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>. */
 
-#ifndef STRATIFY_SYMBOLS_TABLE_DEFINES_H_
-#define STRATIFY_SYMBOLS_TABLE_DEFINES_H_
+#ifndef SOS_SYMBOLS_TABLE_DEFINES_H_
+#define SOS_SYMBOLS_TABLE_DEFINES_H_
 
 #if SYMBOLS_IGNORE_MATH_F != 0
 #define asinhf 0
@@ -426,4 +426,4 @@
 #endif
 
 
-#endif /* STRATIFY_SYMBOLS_TABLE_DEFINES_H_ */
+#endif /* SOS_SYMBOLS_TABLE_DEFINES_H_ */

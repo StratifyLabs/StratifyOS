@@ -31,6 +31,14 @@ typedef struct {
 
 typedef appfs_installattr_t appfs_createattr_t;
 
+typedef struct MCU_PACK {
+	u16 mode;
+	u16 version;
+	u32 ram_size;
+	u32 o_flags;
+	u32 signature;
+} appfs_info_t;
+
 //Install an executable in RAM or Flash
 #define I_APPFS_INSTALL _IOCTLW('a', 0, appfs_installattr_t)
 
@@ -38,36 +46,41 @@ typedef appfs_installattr_t appfs_createattr_t;
 #define I_APPFS_CREATE _IOCTLW('a', 1, appfs_createattr_t)
 #define I_APPFS_FREE_RAM _IOCTL('a', 2)
 #define I_APPFS_RECLAIM_RAM _IOCTL('a', 3)
+#define I_APPFS_GETINFO _IOCTLR('a',4,appfs_info_t)
 
 #define APPFS_CREATE_SIGNATURE 0x12345678
 
-#define LINK_APPFS_EXEC_OPTIONS_FLASH (1<<0)
-#define LINK_APPFS_EXEC_OPTIONS_STARTUP (1<<1) //if set executes on boot
-#define LINK_APPFS_EXEC_OPTIONS_ROOT (1<<3) //run as root
-#define LINK_APPFS_EXEC_OPTIONS_REPLACE (1<<4) //replace (default is to duplicate)
-#define LINK_APPFS_EXEC_OPTIONS_ORPHAN (1<<5) //calling process wont' be parent
-#define LINK_APPFS_EXEC_OPTIONS_UNIQUE (1<<6) //install with a unique name in the flash or RAM
+enum {
+	APPFS_FLAG_IS_FLASH = (1<<0),
+	APPFS_FLAG_IS_STARTUP = (1<<1), //if set executes on boot
+	APPFS_FLAG_IS_ROOT = (1<<3), //run as root
+	APPFS_FLAG_IS_REPLACE = (1<<4), //replace (default is to duplicate)
+	APPFS_FLAG_IS_ORPHAN = (1<<5), //calling process wont' be parent
+	APPFS_FLAG_IS_UNIQUE = (1<<6) //install with a unique name in the flash or RAM
+};
 
-typedef struct {
+
+typedef struct MCU_PACK {
 	u32 startup /*! The startup routine */;
 	u32 code_start /*! The start of memory */;
 	u32 code_size /*! The size of the code section */;
 	u32 ram_start /*! The start of memory */;
 	u32 ram_size /*! The size of  memory (total RAM for process) */;
 	u32 data_size /*! Size of "data" section */;
-	u32 options /*! A pointer to the re-entrancy structure */;
+	u32 o_flags /*! Installation options */;
 	u32 signature /*! must be valid to execute the file */;
-} link_appfs_exec_t; //32 bytes
+} appfs_exec_t; //32 bytes
 
-typedef struct {
+typedef struct MCU_PACK {
 	char name[LINK_NAME_MAX] /*! The name of the process or file (must be specially written to the binary) */;
-	u32 mode;
-} link_appfs_hdr_t;  //28 bytes
+	u16 mode /*! Access mode */;
+	u16 version /*! BCD 0xMMmm version (e.g, 1.2 is 0x00010002) */;
+} appfs_header_t;  //28 bytes
 
 typedef struct {
-	link_appfs_hdr_t hdr;
-	link_appfs_exec_t exec;
-} link_appfs_file_t;
+	appfs_header_t hdr;
+	appfs_exec_t exec;
+} appfs_file_t;
 
 
 

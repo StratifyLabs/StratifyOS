@@ -32,28 +32,28 @@
 
 #include "sos/link/transport_usb.h"
 
-#define STRATIFY_USBD_VID 0x20A0
-#define STRATIFY_USBD_PID 0x41D5
+#define SOS_USBD_VID 0x20A0
+#define SOS_USBD_PID 0x41D5
 
-#define STRATIFY_REQUIRED_CURRENT 500
+#define SOS_REQUIRED_CURRENT 500
 
-#define STRATIFY_VCP0_INTERFACE 0
-#define STRATIFY_VCP0_DATA_INTERFACE 1
+#define SOS_VCP0_INTERFACE 0
+#define SOS_VCP0_DATA_INTERFACE 1
 
 static int cdc_event_handler(usbd_control_t * context, mcu_event_t * event);
 
 #define USB0_DEVFIFO_BUFFER_SIZE 64
 static char usb0_fifo_buffer[USB0_DEVFIFO_BUFFER_SIZE] MCU_SYS_MEM;
 const usbfifo_config_t sos_link_transport_usb_fifo_cfg = USBFIFO_HANDLE_CFG(
-		STRATIFY_LINK_TRANSPORT_USB_BULK_ENDPOINT,
-		STRATIFY_LINK_TRANSPORT_USB_BULK_ENDPOINT_SIZE,
+		SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT,
+		SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT_SIZE,
 		usb0_fifo_buffer,
 		USB0_DEVFIFO_BUFFER_SIZE);
 usbfifo_state_t sos_link_transport_usb_fifo_state MCU_SYS_MEM;
 
 
 const usbd_control_constants_t sos_link_transport_usb_constants = {
-		.port = STRATIFY_LINK_TRANSPORT_USB_PORT,
+		.port = SOS_LINK_TRANSPORT_USB_PORT,
 		.device =  &sos_link_transport_usb_dev_desc,
 		.config = &sos_link_transport_usb_cfg_desc,
 		.string = &sos_link_transport_usb_string_desc,
@@ -75,8 +75,8 @@ const usbd_device_descriptor_t sos_link_transport_usb_dev_desc MCU_WEAK = {
 		.bDeviceSubClass = 0,
 		.bDeviceProtocol = 0,
 		.bMaxPacketSize = MCU_CORE_USB_MAX_PACKET_ZERO_VALUE,
-		.idVendor = STRATIFY_USBD_VID,
-		.idProduct = STRATIFY_USBD_PID,
+		.idVendor = SOS_USBD_VID,
+		.idProduct = SOS_USBD_PID,
 		.bcdDevice = BCD_VERSION,
 		.iManufacturer = 1,
 		.iProduct = 2,
@@ -95,7 +95,7 @@ const sos_link_transport_usb_configuration_descriptor_t sos_link_transport_usb_c
 				.bConfigurationValue = 0x01,
 				.iConfiguration = 0x03,
 				.bmAttributes = USBD_CONFIGURATION_ATTRIBUTES_BUS_POWERED,
-				.bMaxPower = USBD_CONFIGURATION_MAX_POWER_MA( STRATIFY_REQUIRED_CURRENT )
+				.bMaxPower = USBD_CONFIGURATION_MAX_POWER_MA( SOS_REQUIRED_CURRENT )
 		},
 
 		.vcp0 = {
@@ -103,7 +103,7 @@ const sos_link_transport_usb_configuration_descriptor_t sos_link_transport_usb_c
 				.interface_association = {
 						.bLength = sizeof(usbd_interface_assocation_t),
 						.bDescriptorType = USBD_DESCRIPTOR_TYPE_INTERFACE_ASSOCIATION,
-						.bFirstInterface = STRATIFY_VCP0_INTERFACE,
+						.bFirstInterface = SOS_VCP0_INTERFACE,
 						.bInterfaceCount = 2,
 						.bFunctionClass = USBD_INTERFACE_CLASS_COMMUNICATIONS,
 						.bFunctionSubClass = USBD_CDC_INTERFACE_SUBCLASS_ACM,
@@ -114,7 +114,7 @@ const sos_link_transport_usb_configuration_descriptor_t sos_link_transport_usb_c
 				.interface_control = {
 						.bLength = sizeof(usbd_interface_descriptor_t),
 						.bDescriptorType = USBD_DESCRIPTOR_TYPE_INTERFACE,
-						.bInterfaceNumber = STRATIFY_VCP0_INTERFACE,
+						.bInterfaceNumber = SOS_VCP0_INTERFACE,
 						.bAlternateSetting = 0x00,
 						.bNumEndpoints = 0x01,
 						.bInterfaceClass = USBD_INTERFACE_CLASS_COMMUNICATIONS,
@@ -147,7 +147,7 @@ const sos_link_transport_usb_configuration_descriptor_t sos_link_transport_usb_c
 				.control = {
 						.bLength= sizeof(usbd_endpoint_descriptor_t),
 						.bDescriptorType=USBD_DESCRIPTOR_TYPE_ENDPOINT,
-						.bEndpointAddress=STRATIFY_LINK_TRANSPORT_USB_INTIN,
+						.bEndpointAddress=SOS_LINK_TRANSPORT_USB_INTIN,
 						.bmAttributes=USBD_ENDPOINT_ATTRIBUTES_TYPE_INTERRUPT,
 						.wMaxPacketSize=16,
 						.bInterval=2
@@ -156,7 +156,7 @@ const sos_link_transport_usb_configuration_descriptor_t sos_link_transport_usb_c
 				.interface_data = {
 						.bLength = sizeof(usbd_interface_descriptor_t),
 						.bDescriptorType = USBD_DESCRIPTOR_TYPE_INTERFACE,
-						.bInterfaceNumber = STRATIFY_VCP0_DATA_INTERFACE,
+						.bInterfaceNumber = SOS_VCP0_DATA_INTERFACE,
 						.bAlternateSetting = 0x00,
 						.bNumEndpoints = 0x02,
 						.bInterfaceClass = USBD_INTERFACE_CLASS_COMMUNICATIONS_DATA,
@@ -168,18 +168,18 @@ const sos_link_transport_usb_configuration_descriptor_t sos_link_transport_usb_c
 				.data_out = {
 						.bLength= sizeof(usbd_endpoint_descriptor_t),
 						.bDescriptorType=USBD_DESCRIPTOR_TYPE_ENDPOINT,
-						.bEndpointAddress=STRATIFY_LINK_TRANSPORT_USB_BULK_ENDPOINT_OUT,
+						.bEndpointAddress=SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT_OUT,
 						.bmAttributes=USBD_ENDPOINT_ATTRIBUTES_TYPE_BULK,
-						.wMaxPacketSize=STRATIFY_LINK_TRANSPORT_USB_BULK_ENDPOINT_SIZE,
+						.wMaxPacketSize=SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT_SIZE,
 						.bInterval=1
 				},
 
 				.data_in = {
 						.bLength= sizeof(usbd_endpoint_descriptor_t),
 						.bDescriptorType=USBD_DESCRIPTOR_TYPE_ENDPOINT,
-						.bEndpointAddress=STRATIFY_LINK_TRANSPORT_USB_BULK_ENDPOINT_IN,
+						.bEndpointAddress=SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT_IN,
 						.bmAttributes=USBD_ENDPOINT_ATTRIBUTES_TYPE_BULK,
-						.wMaxPacketSize=STRATIFY_LINK_TRANSPORT_USB_BULK_ENDPOINT_SIZE,
+						.wMaxPacketSize=SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT_SIZE,
 						.bInterval=1
 				}
 		},
@@ -201,12 +201,12 @@ const struct sos_link_transport_usb_string_t sos_link_transport_usb_string_desc 
 		.bLength = 4,
 		.bDescriptorType = USBD_DESCRIPTOR_TYPE_STRING,
 		.wLANGID = 0x0409, //English
-		.manufacturer = usbd_assign_string(STRATIFY_LINK_TRANSPORT_USB_DESC_MANUFACTURER_SIZE, STRATIFY_LINK_TRANSPORT_USB_DESC_MANUFACTURER_STRING),
-		.product = usbd_assign_string(STRATIFY_LINK_TRANSPORT_USB_DESC_PRODUCT_SIZE, STRATIFY_LINK_TRANSPORT_USB_DESC_PRODUCT_STRING),
-		.serial = usbd_assign_string(STRATIFY_LINK_TRANSPORT_USB_DESC_SERIAL_SIZE, 0)
+		.manufacturer = usbd_assign_string(SOS_LINK_TRANSPORT_USB_DESC_MANUFACTURER_SIZE, SOS_LINK_TRANSPORT_USB_DESC_MANUFACTURER_STRING),
+		.product = usbd_assign_string(SOS_LINK_TRANSPORT_USB_DESC_PRODUCT_SIZE, SOS_LINK_TRANSPORT_USB_DESC_PRODUCT_STRING),
+		.serial = usbd_assign_string(SOS_LINK_TRANSPORT_USB_DESC_SERIAL_SIZE, 0)
 		, //dynamically load SN based on silicon
-		.vcp0 = usbd_assign_string(STRATIFY_LINK_TRANSPORT_USB_DESC_VCP_0_SIZE, STRATIFY_LINK_TRANSPORT_USB_DESC_VCP_0),
-		.vcp1 = usbd_assign_string(STRATIFY_LINK_TRANSPORT_USB_DESC_VCP_1_SIZE, STRATIFY_LINK_TRANSPORT_USB_DESC_VCP_1)
+		.vcp0 = usbd_assign_string(SOS_LINK_TRANSPORT_USB_DESC_VCP_0_SIZE, SOS_LINK_TRANSPORT_USB_DESC_VCP_0),
+		.vcp1 = usbd_assign_string(SOS_LINK_TRANSPORT_USB_DESC_VCP_1_SIZE, SOS_LINK_TRANSPORT_USB_DESC_VCP_1)
 };
 
 int sos_link_usbd_cdc_event_handler(void * object, mcu_event_t * event){

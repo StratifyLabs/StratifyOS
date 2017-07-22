@@ -2,18 +2,18 @@
 
 
 
-
-
-
-
-
+#if defined __armv7m
+#define __CORTEX_M 3
+#else
+#define __CORTEX_M 4
+#endif
 
 
 
 
 #define LINK_ADDR (0xDEFF8001 + (__LINE__ - 16) * 4)
 
-.global _signature; _signature = 0x00000300;
+.global _signature; _signature = 0x00000300 + __CORTEX_M;
 .global __cxa_pure_virtual; __cxa_pure_virtual = LINK_ADDR;
 .global mcu_core_privcall; mcu_core_privcall = LINK_ADDR;
 .global task_priv_set_stackguard; task_priv_set_stackguard = LINK_ADDR;

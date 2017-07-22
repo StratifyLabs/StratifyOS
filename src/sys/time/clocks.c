@@ -35,7 +35,7 @@
 
 #define CLOCK_PROCESS_FLAG (1<<31)
 static s32 convert_clocks_to_nanoseconds(s32 clocks);
-static void task_timer_to_timespec(struct timespec * tp, uint64_t task_timer);
+static void task_timer_to_timespec(struct timespec * tp, u64 task_timer);
 
 
 /*! \details This function is not supported.
@@ -59,7 +59,7 @@ int clock_getcpuclockid(pid_t pid, clockid_t *clock_id){
  *
  */
 int clock_gettime(clockid_t id, struct timespec * tp){
-	uint64_t task_timer;
+	u64 task_timer;
 	div_t d;
 	struct sched_timeval sched_time;
 	int pid;
@@ -107,15 +107,15 @@ int clock_gettime(clockid_t id, struct timespec * tp){
 
 int32_t convert_clocks_to_nanoseconds(int32_t clocks){
 	uint64_t tmp;
-	tmp = (uint64_t)clocks * sos_board_config.clk_nsec_div + 512;
-	return (uint32_t)(tmp / 1024);
+	tmp = (u64)clocks * SCHED_CLK_NSEC_DIV + 512;
+	return (u32)(tmp / 1024);
 }
 
-void task_timer_to_timespec(struct timespec * tp, uint64_t task_timer){
-	uint64_t nanosec;
+void task_timer_to_timespec(struct timespec * tp, u64 task_timer){
+	u64 nanosec;
 	ldiv_t divide;
 	divide = ldiv(task_timer, _mcu_core_getclock());
-	nanosec = divide.rem * sos_board_config.clk_nsec_div;
+	nanosec = divide.rem * SCHED_CLK_NSEC_DIV;
 	tp->tv_sec = divide.quot;
 	tp->tv_nsec = nanosec;
 }

@@ -298,9 +298,13 @@ static int find_free(const devfs_device_t * dev, int type, int size){
 }
 */
 
+const appfs_file_t * appfs_util_getfile(appfs_handle_t * h){
+	return (appfs_file_t *)h->type.reg.beg_addr;
+}
+
 int appfs_util_priv_free_ram(const devfs_device_t * dev, appfs_handle_t * h){
 	priv_load_fileinfo_t args;
-	link_appfs_file_t * f;
+	const appfs_file_t * f;
 
 	if( h->is_install != 0 ){
 		errno = EBADF;
@@ -308,7 +312,7 @@ int appfs_util_priv_free_ram(const devfs_device_t * dev, appfs_handle_t * h){
 	}
 
 	//the RAM info is stored in flash
-	f = (link_appfs_file_t *)h->type.reg.beg_addr;
+	f = appfs_util_getfile(h);
 
 	args.pageinfo.addr = f->exec.ram_start;
 	args.pageinfo.type = MEM_PAGEINFO_TYPE_QUERY;
@@ -327,7 +331,7 @@ int appfs_util_priv_free_ram(const devfs_device_t * dev, appfs_handle_t * h){
 
 int appfs_util_priv_reclaim_ram(const devfs_device_t * dev, appfs_handle_t * h){
 	priv_load_fileinfo_t args;
-	link_appfs_file_t * f;
+	const appfs_file_t * f;
 	size_t s;
 	size_t page_num;
 
@@ -337,7 +341,7 @@ int appfs_util_priv_reclaim_ram(const devfs_device_t * dev, appfs_handle_t * h){
 	}
 
 	//the RAM info is store in flash
-	f = (link_appfs_file_t *)h->type.reg.beg_addr;
+	f = appfs_util_getfile(h);
 
 	args.pageinfo.addr = f->exec.ram_start;
 	args.pageinfo.type = MEM_PAGEINFO_TYPE_QUERY;
@@ -419,7 +423,7 @@ int appfs_util_priv_create(const devfs_device_t * dev, appfs_handle_t * h, appfs
 		dest->hdr.mode = 0444;
 
 		//check the options
-		dest->exec.options = APPFS_EXEC_OPTIONS_FLASH;
+		dest->exec.o_flags = APPFS_FLAG_IS_FLASH;
 		type = MEM_PAGEINFO_TYPE_FLASH;
 
 		//find space for the code
@@ -431,12 +435,12 @@ int appfs_util_priv_create(const devfs_device_t * dev, appfs_handle_t * h, appfs
 
 		//remove the header for read only flash files
 		dest->exec.startup = 0;
-		dest->exec.code_start = (void*)code_start_addr;
-		dest->exec.ram_start = (void*)0;
+		dest->exec.code_start = code_start_addr;
+		dest->exec.ram_start = 0;
 		dest->exec.ram_size = 0;
 		dest->exec.data_size = 0;
-		dest->exec.options = 0;
-		dest->exec.startup = (void*)0;
+		dest->exec.o_flags = 0;
+		dest->exec.startup = 0;
 
 		h->type.install.code_start = (u32)code_start_addr;
 		h->type.install.code_size = dest->exec.code_size;
@@ -520,7 +524,7 @@ int appfs_util_priv_writeinstall(const devfs_device_t * dev, appfs_handle_t * h,
 		}
 
 		//check the options
-		if ( (src.file->exec.options) & APPFS_EXEC_OPTIONS_FLASH ){
+		if ( (src.file->exec.o_flags) & APPFS_FLAG_IS_FLASH ){
 			//This should be installed in flash
 			type = MEM_PAGEINFO_TYPE_FLASH;
 		} else {
@@ -537,7 +541,7 @@ int appfs_util_priv_writeinstall(const devfs_device_t * dev, appfs_handle_t * h,
 			return -1;
 		}
 
-		if ( !((src.file->exec.options) & APPFS_EXEC_OPTIONS_FLASH) ){ //for RAM app's mark the RAM usage
+		if ( !((src.file->exec.o_flags) & APPFS_FLAG_IS_FLASH) ){ //for RAM app's mark the RAM usage
 			//mark the range as SYS
 			appfs_ram_setrange(appfs_ram_usagetable,
 					code_page,
@@ -554,7 +558,7 @@ int appfs_util_priv_writeinstall(const devfs_device_t * dev, appfs_handle_t * h,
 		ram_page = 0;
 		data_start_addr = find_protectable_free(dev, MEM_PAGEINFO_TYPE_RAM, ram_size, &ram_page);
 		if( data_start_addr == -1 ){
-			if ( !((src.file->exec.options) & APPFS_EXEC_OPTIONS_FLASH) ){ //for RAM app's mark the RAM usage
+			if ( !((src.file->exec.o_flags) & APPFS_FLAG_IS_FLASH) ){ //for RAM app's mark the RAM usage
 				//free the code section
 				appfs_ram_setrange(appfs_ram_usagetable,
 						code_page,
@@ -578,9 +582,9 @@ int appfs_util_priv_writeinstall(const devfs_device_t * dev, appfs_handle_t * h,
 				ram_size,
 				APPFS_MEMPAGETYPE_SYS);
 
-		dest.file.exec.code_start = (void*)code_start_addr;
-		dest.file.exec.ram_start = (void*)data_start_addr;
-		dest.file.exec.startup = (void*)translate_value((u32)dest.file.exec.startup,
+		dest.file.exec.code_start = code_start_addr;
+		dest.file.exec.ram_start = data_start_addr;
+		dest.file.exec.startup = translate_value((u32)dest.file.exec.startup,
 				h->type.install.rewrite_mask,
 				h->type.install.code_start,
 				h->type.install.data_start,
@@ -645,7 +649,7 @@ int appfs_priv_ram_setusage(int page, int size, int type){
 	return 0;
 }
 
-int appfs_util_getflashpagetype(appfs_hdr_t * info){
+int appfs_util_getflashpagetype(appfs_header_t * info){
 	int len;
 	int i;
 	len = strnlen(info->name, NAME_MAX-2);
@@ -670,7 +674,7 @@ int appfs_util_getflashpagetype(appfs_hdr_t * info){
 	return APPFS_MEMPAGETYPE_USER;
 }
 
-int appfs_util_getpagetype(appfs_hdr_t * info, int page, int type){
+int appfs_util_getpagetype(appfs_header_t * info, int page, int type){
 	if ( type == MEM_PAGEINFO_TYPE_FLASH ){
 		return appfs_util_getflashpagetype(info);
 	}
@@ -686,16 +690,12 @@ int get_hdrinfo(appfs_file_t * file, int page, int type){
 	case APPFS_MEMPAGETYPE_SYS:
 		strcpy(file->hdr.name, ".sys");
 		strcat(file->hdr.name, hex_num);
-		//file->hdr.uid = 0;
-		//file->hdr.gid = 0;
 		file->hdr.mode = S_IFREG;
 		memset(&(file->exec), 0, sizeof(appfs_exec_t));
 		break;
 	case APPFS_MEMPAGETYPE_FREE:
 		strcpy(file->hdr.name, ".free");
 		strcat(file->hdr.name, hex_num);
-		//file->hdr.uid = 0;
-		//file->hdr.gid = 0;
 		file->hdr.mode = S_IFREG;
 		memset(&(file->exec), 0, sizeof(appfs_exec_t));
 		break;

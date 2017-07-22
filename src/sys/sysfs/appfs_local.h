@@ -69,8 +69,8 @@ typedef struct {
 
 
 //page utilities
-int appfs_util_getpagetype(appfs_hdr_t * info, int page, int type);
-int appfs_util_getflashpagetype(appfs_hdr_t * info);
+int appfs_util_getpagetype(appfs_header_t * info, int page, int type);
+int appfs_util_getflashpagetype(appfs_header_t * info);
 
 //file utilities
 int appfs_util_lookupname(const void * cfg, const char * path, priv_load_fileinfo_t * args, int type, int * size);
@@ -84,6 +84,8 @@ int appfs_util_priv_reclaim_ram(const devfs_device_t * dev, appfs_handle_t * h) 
 int appfs_util_getfileinfo(priv_load_fileinfo_t * info, const devfs_device_t * dev, int page, int type, int * size);
 int appfs_util_erasepages(const devfs_device_t * dev, int start_page, int end_page);
 int appfs_util_getpageinfo(const devfs_device_t * dev, mem_pageinfo_t * pageinfo);
+
+const appfs_file_t * appfs_util_getfile(appfs_handle_t * h);
 
 //ram access
 #define APPFS_RAM_PAGES ((DEVICE_MAX_RAM-DEVICE_SYS_RAM)/DEVICE_RAM_PAGE_SIZE)

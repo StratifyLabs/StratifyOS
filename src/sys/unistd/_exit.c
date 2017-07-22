@@ -38,7 +38,7 @@
 static void priv_stop_threads(int * send_signal) MCU_PRIV_EXEC_CODE;
 static void priv_zombie_process(int * signal_sent) MCU_PRIV_EXEC_CODE;
 
-int exec_options();
+static int get_exec_flags();
 
 /*! \details This function causes the calling process
  * to exit with the specified exit code.
@@ -83,7 +83,7 @@ void priv_stop_threads(int * send_signal){
 	int i;
 	int tmp;
 	struct _reent * parent_reent;
-	int options = exec_options();
+	int options = get_exec_flags();
 
 	//set the exit status
 	sos_sched_table[task_get_current()].exit_status = *send_signal;
@@ -121,7 +121,7 @@ void priv_stop_threads(int * send_signal){
 	}
 
 	//ORPHAN nevers sends a signal to parent and never becomes a zombie process
-	if( options & LINK_APPFS_EXEC_OPTIONS_ORPHAN ){
+	if( options & APPFS_FLAG_IS_ORPHAN ){
 		*send_signal = false;
 	}
 
@@ -161,11 +161,11 @@ void priv_stop_threads(int * send_signal){
 
 }
 
-int exec_options(){
-	link_appfs_file_t * hdr;
+int get_exec_flags(){
+	appfs_file_t * hdr;
 	//check to see if the app should discard itself
-	hdr = (link_appfs_file_t *)mpu_addr((uint32_t)task_table[task_get_current()].mem.code.addr);
-	return hdr->exec.options;
+	hdr = (appfs_file_t *)mpu_addr((uint32_t)task_table[task_get_current()].mem.code.addr);
+	return hdr->exec.o_flags;
 }
 
 void priv_zombie_process(int * signal_sent){

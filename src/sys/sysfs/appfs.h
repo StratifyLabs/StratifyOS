@@ -17,33 +17,7 @@
 #ifndef APPFS_H_
 #define APPFS_H_
 
-#include <stdbool.h>
-#include <mcu/types.h>
-
-#define APPFS_EXEC_OPTIONS_FLASH (1<<0)
-#define APPFS_EXEC_OPTIONS_RAM (0<<0)
-#define APPFS_EXEC_OPTIONS_STARTUP (1<<1) //if set executes on boot
-
-typedef struct {
-	void (*startup)(char * path_arg) /*! The startup routine */;
-	void * code_start /*! The start of memory */;
-	u32 code_size /*! The size of the code section */;
-	void * ram_start /*! The start of memory */;
-	s32 ram_size /*! The size of  memory (total RAM for process)*/;
-	s32 data_size /*! Number of initialized bytes */;
-	u32 options /*! must be valid to execute the file */;
-	u32 signature /*! The kernel signature used for the build */;
-} appfs_exec_t; //32 bytes
-
-typedef struct {
-	char name[NAME_MAX] /*! The name of the process or file (must be specially written to the binary) */;
-	mode_t mode;
-} appfs_hdr_t;  //28 bytes
-
-typedef struct {
-	appfs_hdr_t hdr;
-	appfs_exec_t exec;
-} appfs_file_t;
+#include "sos/dev/appfs.h"
 
 bool appfs_util_isexecutable(const appfs_file_t * info);
 

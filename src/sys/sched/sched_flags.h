@@ -255,6 +255,9 @@ void scheduler();
 
 void sched_priv_set_delaymutex(void * args) MCU_PRIV_EXEC_CODE;
 
+#define SCHED_CLK_NSEC_DIV ((u32)((u64)1024 * 1000000000 / mcu_board_config.core_cpu_freq))
+#define SCHED_CLK_USEC_MULT ((u32)(mcu_board_config.core_cpu_freq / 1000000))
+
 
 
 #endif /* SCHED_FLAGS_H_ */

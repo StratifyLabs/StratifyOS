@@ -365,12 +365,12 @@
 
 /*! @} */
 
-#ifndef STRATIFY_H_
-#define STRATIFY_H_
+#ifndef SOS_H_
+#define SOS_H_
 
-#define STRATIFY_VERSION_2_1_0 (0x00020100)
-#define STRATIFY_VERSION_2_2_0 (0x00020200)
-#define STRATIFY_VERSION (STRATIFY_VERSION_2_2_0)
+#define SOS_VERSION_2_1_0 (0x00020100)
+#define SOS_VERSION_2_2_0 (0x00020200)
+#define SOS_VERSION (SOS_VERSION_2_2_0)
 
 //Standard libraries
 #include <stdio.h>
@@ -453,11 +453,11 @@ int unmount(const char * path);
 /*! \details Launch an application from a data file system.
  *
  * The options are:
- * - LINK_APPFS_EXEC_OPTIONS_REPLACE
- * - LINK_APPFS_EXEC_OPTIONS_FLASH
- * - LINK_APPFS_EXEC_OPTIONS_STARTUP (only with LINK_APPFS_EXEC_OPTIONS_FLASH)
- * - LINK_APPFS_EXEC_OPTIONS_REPLACE
- * - LINK_APPFS_EXEC_OPTIONS_ORPHAN
+ * - APPFS_FLAG_IS_REPLACE
+ * - APPFS_FLAG_IS_FLASH
+ * - APPFS_FLAG_IS_STARTUP (only with APPFS_FLAG_IS_FLASH)
+ * - APPFS_FLAG_IS_REPLACE
+ * - APPFS_FLAG_IS_ORPHAN
  *
  * Here is an example of launching a new application:
  * \code
@@ -467,7 +467,7 @@ int unmount(const char * path);
  * int status;
  * char exec_path[PATH_MAX];
  *
- * p = launch("/home/HelloWorld", exec_path, 0, LINK_APPFS_EXEC_OPTIONS_FLASH, 0, 0, 0);
+ * p = launch("/home/HelloWorld", exec_path, 0, APPFS_FLAG_IS_FLASH, 0, 0, 0);
  *
  * wait(&status); //wait until hello world is done running
  * unlink(exec_path); //delete the installed image (or just leave it there to run again)
@@ -610,9 +610,7 @@ typedef struct {
 typedef struct MCU_PACK {
 	u8 clk_usecond_tmr /*! tmr used for usecond counter */;
 	u8 task_total /*! Total number of supported tasks */;
-	u16 start_stack_size /*! Stack size of the first thread (when in doubt use STRATIFY_DEFAULT_START_STACK_SIZE) */;
-	u32 clk_usec_mult;
-	u32 clk_nsec_div;
+	u16 start_stack_size /*! Stack size of the first thread (when in doubt use SOS_DEFAULT_START_STACK_SIZE) */;
 	const char * stdin_dev /*! Device used for standard input */;
 	const char * stdout_dev /*! Device used for standard output */;
 	const char * stderr_dev /*! Device used for standard error */;
@@ -626,7 +624,7 @@ typedef struct MCU_PACK {
 	const sos_socket_api_t * socket_api /*! Socket API (zero if sockets are not supported) */;
 } sos_board_config_t;
 
-#define STRATIFY_DEFAULT_START_STACK_SIZE 2048
+#define SOS_DEFAULT_START_STACK_SIZE 2048
 
 //must be provided by board support package
 extern volatile sched_task_t sos_sched_table[];
@@ -644,6 +642,6 @@ void sos_led_priv_error(void * args);
 }
 #endif
 
-#endif /*  STRATIFY_H_ */
+#endif /*  SOS_H_ */
 
 /*! @} */

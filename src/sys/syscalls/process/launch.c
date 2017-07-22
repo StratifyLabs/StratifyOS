@@ -55,7 +55,7 @@ int launch(const char * path,
 		}
 	}
 
-	if( options & LINK_APPFS_EXEC_OPTIONS_REPLACE ){
+	if( options & APPFS_FLAG_IS_REPLACE ){
 		//kill the process if it is running (or abort)
 
 		//delete the image and re-install

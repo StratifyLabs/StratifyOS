@@ -43,7 +43,7 @@ int install(const char * path,
 	int image_fd;
 	int bytes_read;
 	int bytes_cumm;
-	link_appfs_file_t * hdr;
+	appfs_file_t * hdr;
 	appfs_installattr_t attr;
 	struct stat st;
 	char name[NAME_MAX];
@@ -78,16 +78,16 @@ int install(const char * path,
 			bytes_cumm += attr.nbyte;
 
 			if( attr.loc == 0 ){
-				hdr = (link_appfs_file_t*)attr.buffer;
+				hdr = (appfs_file_t*)attr.buffer;
 				strcpy(name, sysfs_getfilename(path,0));
 				//update the header for the image to be installed
-				if( options & LINK_APPFS_EXEC_OPTIONS_UNIQUE ){
+				if( options & APPFS_FLAG_IS_UNIQUE ){
 					snprintf(hdr->hdr.name, NAME_MAX-1, "%s%X", name, launch_count);
 					launch_count++;
 				} else {
 					strcpy(hdr->hdr.name, name);
 				}
-				hdr->exec.options = options;
+				hdr->exec.o_flags = options;
 				if( ram_size > 0 ){
 					hdr->exec.ram_size = ram_size;
 				}
@@ -117,7 +117,7 @@ int install(const char * path,
 	close(install_fd);
 
 	if( exec_path ){
-		if( options & LINK_APPFS_EXEC_OPTIONS_FLASH ){
+		if( options & APPFS_FLAG_IS_FLASH ){
 			snprintf(exec_path, PATH_MAX-1, "/app/flash/%s", name);
 		} else {
 			snprintf(exec_path, PATH_MAX-1, "/app/ram/%s", name);

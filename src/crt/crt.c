@@ -32,13 +32,14 @@ struct _reent global_impure_data = _REENT_INIT(global_impure_data);
 const appfs_file_t startup_data __attribute__ ((section(".startup"))) = {
 		.hdr.name = "",
 		.hdr.mode = 0777,
-		.exec.startup = crt,
-		.exec.code_start = &_text,
+		.hdr.version = 0x0000,
+		.exec.startup = (u32)crt,
+		.exec.code_start = (u32)&_text,
 		.exec.code_size = (u32)&_text_size,
-		.exec.ram_start = &_data,
+		.exec.ram_start = (u32)&_data,
 		.exec.ram_size = (int)&_app_ram_size,
 		.exec.data_size = (int)&_data_size,
-		.exec.options = APPFS_EXEC_OPTIONS_FLASH,
+		.exec.o_flags = APPFS_FLAG_IS_FLASH,
 		.exec.signature = (u32)&_signature
 };
 

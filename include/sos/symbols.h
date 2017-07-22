@@ -17,8 +17,8 @@
  *
  */
 
-#ifndef STRATIFY_SYMBOLS_H_
-#define STRATIFY_SYMBOLS_H_
+#ifndef SOS_SYMBOLS_H_
+#define SOS_SYMBOLS_H_
 
 #include "mcu/types.h"
 
@@ -196,4 +196,4 @@ extern char ** const crt_import_argv(int argc, char * const argv[]);
 #define SYMBOL_IGNORE 0
 
 
-#endif /* STRATIFY_SYMBOLS_H_ */
+#endif /* SOS_SYMBOLS_H_ */
