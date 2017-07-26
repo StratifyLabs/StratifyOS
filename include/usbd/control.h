@@ -28,6 +28,7 @@
 #ifndef MCU_USBD_CONTROL_H_
 #define MCU_USBD_CONTROL_H_
 
+#include "sos/fs/devfs.h"
 #include "sos/dev/usb.h"
 #include "mcu/types.h"
 

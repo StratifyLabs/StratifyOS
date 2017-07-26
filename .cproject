@@ -247,6 +247,7 @@
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/link_common"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/mcu/share"/>
 						<entry excluding="sffs/tests.c|sffs/test_file.c|sffs/tests.h|sffs/main.c|sffs/sffs_diag.h|sffs/sffs_diag.c|sffs/sysfs.c|sffs/configure.ac|sffs/sim_dev.c|sffs/Makefile.am|sffs/sim_device.h|sffs/test_dir.c" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/sys"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/usbd"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -768,6 +769,7 @@
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/link_common"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/mcu/share"/>
 						<entry excluding="sffs/test_file.c|sffs/tests.c|sffs/tests.h|sffs/main.c|sffs/configure.ac|sffs/sysfs.c|sffs/sffs_diag.c|sffs/sffs_diag.h|sffs/Makefile.am|sffs/sim_dev.c|sffs/sim_device.h|sffs/test_dir.c" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/sys"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/usbd"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -977,6 +979,7 @@
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/link_common"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/mcu/share"/>
 						<entry excluding="sffs/tests.c|sffs/test_file.c|sffs/tests.h|sffs/main.c|sffs/sffs_diag.h|sffs/sffs_diag.c|sffs/sysfs.c|sffs/configure.ac|sffs/sim_dev.c|sffs/Makefile.am|sffs/sim_device.h|sffs/test_dir.c" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/sys"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/usbd"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -1189,6 +1192,7 @@
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/link_common"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/mcu/share"/>
 						<entry excluding="sffs/test_file.c|sffs/tests.c|sffs/tests.h|sffs/main.c|sffs/configure.ac|sffs/sffs_diag.c|sffs/sffs_diag.h|sffs/sysfs.c|sffs/Makefile.am|sffs/sim_dev.c|sffs/sim_device.h|sffs/test_dir.c" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/sys"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/usbd"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

@@ -8,6 +8,7 @@ RM := rm -rf
 
 # All of the sources participating in the build are defined here
 -include sources.mk
+-include src/usbd/subdir.mk
 -include src/sys/unistd/subdir.mk
 -include src/sys/trace/subdir.mk
 -include src/sys/time/subdir.mk

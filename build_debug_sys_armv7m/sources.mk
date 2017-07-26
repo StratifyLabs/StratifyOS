@@ -50,4 +50,5 @@ src/sys/termios \
 src/sys/time \
 src/sys/trace \
 src/sys/unistd \
+src/usbd \
 
