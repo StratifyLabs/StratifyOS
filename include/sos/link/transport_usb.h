@@ -19,9 +19,9 @@ limitations under the License.
 #define SOS_LINK_TRANSPORT_USB_H_
 
 #include "transport.h"
-#include "mcu/usbfifo.h"
-#include "mcu/usbd/control.h"
-#include "mcu/usbd/cdc.h"
+#include "device/usbfifo.h"
+#include "usbd/control.h"
+#include "usbd/cdc.h"
 
 /* \details This structure defines the USB descriptors.  This
  * value is read over the control channel by the host to configure

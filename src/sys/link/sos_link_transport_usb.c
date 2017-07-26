@@ -23,12 +23,12 @@ limitations under the License.
 #include "sos/link.h"
 #include "mcu/mcu.h"
 #include "sos/dev/usb.h"
-#include "mcu/usbfifo.h"
-#include "mcu/usbd/control.h"
+#include "device/usbfifo.h"
+#include "usbd/control.h"
 #include "mcu/core.h"
 #include "mcu/usb.h"
 #include "mcu/debug.h"
-#include "mcu/sys.h"
+#include "device/sys.h"
 #include "sos/link/transport_usb.h"
 
 static int open_pio(mcu_pin_t pin, int active_high){
@@ -75,25 +75,25 @@ link_transport_phy_t sos_link_transport_usb_open(const char * name,
 	context->handle = &(constants->handle);
 
 	//open USB
-	mcu_debug("Open link-phy-usb\n");
+	mcu_debug_user_printf("Open link-phy-usb\n");
 	errno = 0;
 	fd = open("/dev/link-phy-usb", O_RDWR);
 	if( fd < 0 ){
-		mcu_debug("Failed to open link-phy-usb (%d)\n", errno);
+		mcu_debug_user_printf("Failed to open link-phy-usb (%d)\n", errno);
 		return LINK_PHY_ERROR;
 	}
 
 	//set USB attributes
-	mcu_debug("Set USB attr fd:%d\n", fd);
+	mcu_debug_user_printf("Set USB attr fd:%d\n", fd);
 
 	if( ioctl(fd, I_USB_SETATTR, usb_attr) < 0 ){
-		mcu_debug("Failed to set USB attr\n");
+		mcu_debug_user_printf("Failed to set USB attr\n");
 		return LINK_PHY_ERROR;
 	}
 
-	mcu_debug("USB Dev Init\n");
+	mcu_debug_user_printf("USB Dev Init\n");
 	//initialize USB device
-	mcu_core_privcall(usbd_control_priv_init, context);
+	cortexm_svcall(usbd_control_priv_init, context);
 
 	if( usb_up_active_high ){
 		ioctl(pio_fd, I_PIO_SETMASK, (void*)(1<<usb_up_pin.pin));

@@ -26,7 +26,7 @@
 #include "sos/sos.h"
 #include "config.h"
 #include "mcu/mcu.h"
-#include "mcu/cortexm.h"
+#include "cortexm/cortexm.h"
 
 #include "sched/sched_flags.h"
 
@@ -37,16 +37,16 @@ int _main(){
 	init_hw();
 
 	if ( sched_init() < 0 ){ //Initialize the data used for the scheduler
-		mcu_cortexm_priv_disable_interrupts(NULL);
+		cortexm_disable_interrupts(NULL);
 		while(1){ mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_PRIV_FATAL, 0); }
 	}
 
 	if ( sched_start(sos_board_config.start, 10) < 0 ){
-		mcu_cortexm_priv_disable_interrupts(NULL);
+		cortexm_disable_interrupts(NULL);
 		while(1){ mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_PRIV_FATAL, 0); }
 	}
 
-	mcu_cortexm_priv_disable_interrupts(NULL);
+	cortexm_disable_interrupts(NULL);
 	while(1){ mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_PRIV_FATAL, 0); }
 	return 0;
 }
@@ -58,7 +58,7 @@ int _main(){
 void init_hw(){
 	mcu_core_initclock(1);
 	mcu_fault_init();
-	mcu_cortexm_priv_enable_interrupts(NULL); //Enable the interrupts
+	cortexm_enable_interrupts(NULL); //Enable the interrupts
 }
 
 int kernel_request(int request, void * data){

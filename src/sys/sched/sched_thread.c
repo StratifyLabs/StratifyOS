@@ -86,7 +86,7 @@ int sched_new_thread(void *(*p)(void*)  /*! The function to execute for the task
 		args.id = id;
 		args.attr = attr;
 		args.stackguard = (void*)((uint32_t)mem_addr + sizeof(struct _reent));
-		mcu_core_privcall((core_privcall_t)priv_activate_thread, &args);
+		cortexm_svcall((cortexm_svcall_t)priv_activate_thread, &args);
 	}
 	return id;
 }
@@ -118,7 +118,7 @@ void priv_activate_thread(priv_activate_thread_t * args){
 	sched_priv_assert_active(id, 0);
 	sched_priv_assert_inuse(id);
 #if USE_MEMORY_PROTECTION > 0
-	task_priv_set_stackguard(id, args->stackguard, SCHED_DEFAULT_STACKGUARD_SIZE);
+	task_root_set_stackguard(id, args->stackguard, SCHED_DEFAULT_STACKGUARD_SIZE);
 #endif
 	sched_priv_update_on_wake(sos_sched_table[id].priority);
 }
@@ -141,14 +141,14 @@ void cleanup_thread(void * status){
 	if ( detach_state == PTHREAD_CREATE_JOINABLE ){
 		args.status = (int)status;
 		do {
-			mcu_core_privcall(priv_wait_joined, &args);
+			cortexm_svcall(priv_wait_joined, &args);
 		} while(args.joined == 0);
 	}
 
 	//Free all memory associated with this thread
 	malloc_free_task_r(_REENT, task_get_current() );
 	free( sos_sched_table[task_get_current()].attr.stackaddr ); //free the stack address
-	mcu_core_privcall(priv_cleanup, &args.joined);
+	cortexm_svcall(priv_cleanup, &args.joined);
 }
 
 void priv_wait_joined(void * args){
@@ -187,7 +187,7 @@ void priv_cleanup(void * args){
 	}
 
 	sos_sched_table[task_get_current()].flags = 0;
-	task_priv_del(task_get_current());
+	task_root_del(task_get_current());
 	sched_priv_update_on_sleep();
 }
 

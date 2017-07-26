@@ -98,11 +98,11 @@ int sched_start(void * (*init)(void*), int priority){
 int sched_prepare(){
 
 	if ( mcu_debug_init() ){
-		mcu_cortexm_priv_disable_interrupts(NULL);
+		cortexm_disable_interrupts(NULL);
 		mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_PRIV_FATAL, (void*)"dbgi");
 	}
 
-	mcu_debug("MCU Debug start\n");
+	mcu_debug_user_printf("MCU Debug start\n");
 
 #if SCHED_USECOND_TMR_SLEEP_OC > -1
 	if ( sched_timing_init() ){
@@ -110,7 +110,7 @@ int sched_prepare(){
 	}
 #endif
 
-	mcu_debug("Load MCU Faults\n");
+	mcu_debug_user_printf("Load MCU Faults\n");
 
 
 
@@ -118,7 +118,7 @@ int sched_prepare(){
 	//Load any possible faults from the last reset
 	mcu_fault_load((fault_t*)&sched_fault.fault);
 
-	mcu_debug("Init MPU\n");
+	mcu_debug_user_printf("Init MPU\n");
 
 
 #if USE_MEMORY_PROTECTION > 0
@@ -128,7 +128,7 @@ int sched_prepare(){
 	}
 #endif
 
-	mcu_cortexm_priv_set_unprivileged_mode(); //Enter unpriv mode
+	cortexm_set_unprivileged_mode(); //Enter unpriv mode
 	return 0;
 }
 

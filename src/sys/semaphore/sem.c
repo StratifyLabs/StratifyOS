@@ -313,7 +313,7 @@ int sem_post(sem_t *sem){
 	new_thread = sched_get_highest_priority_blocked(sem);
 
 	if ( new_thread != -1 ){
-		mcu_core_privcall(priv_sem_post, &new_thread);
+		cortexm_svcall(priv_sem_post, &new_thread);
 	}
 
 	return 0;
@@ -350,7 +350,7 @@ int sem_timedwait(sem_t * sem, const struct timespec * abs_timeout){
 	args.sem = sem;
 	sched_convert_timespec(&args.interval, abs_timeout);
 
-	mcu_core_privcall(priv_sem_timedwait, &args);
+	cortexm_svcall(priv_sem_timedwait, &args);
 
 	//Check for a timeout or a lock
 	if ( sched_get_unblock_type(task_get_current()) == SCHED_UNBLOCK_SLEEP){
@@ -393,7 +393,7 @@ int sem_trywait(sem_t *sem){
 
 	args.sem = sem;
 
-	mcu_core_privcall(priv_sem_trywait, &args);
+	cortexm_svcall(priv_sem_trywait, &args);
 
 	return args.ret;
 }
@@ -468,7 +468,7 @@ int sem_wait(sem_t *sem){
 		return -1;
 	}
 
-	mcu_core_privcall(priv_sem_wait, sem);
+	cortexm_svcall(priv_sem_wait, sem);
 	return 0;
 }
 

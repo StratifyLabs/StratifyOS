@@ -17,7 +17,7 @@
  * 
  */
 
-#include "mcu/mpu.h"
+#include "cortexm/mpu.h"
 #include "appfs_local.h"
 
 uint32_t appfs_ram_usagetable[APPFS_RAM_USAGE_WORDS] MCU_SYS_MEM;

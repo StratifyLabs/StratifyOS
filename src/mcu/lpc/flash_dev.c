@@ -18,7 +18,7 @@
  */
 
 #include <errno.h>
-#include "mcu/cortexm.h"
+#include "cortexm/cortexm.h"
 #include "mcu/flash.h"
 #include "mcu/core.h"
 
@@ -117,9 +117,9 @@ int mcu_flash_erasepage(const devfs_handle_t * handle, void * ctl){
 		return 0;
 	}
 
-	mcu_cortexm_priv_disable_interrupts(NULL);
+	cortexm_disable_interrupts(NULL);
 	err = mcu_lpc_flash_erase_page((u32)ctl);
-	mcu_cortexm_priv_enable_interrupts(NULL);
+	cortexm_enable_interrupts(NULL);
 	if ( err < 0 ){
 		errno = EIO;
 	}

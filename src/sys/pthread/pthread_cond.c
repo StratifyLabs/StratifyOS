@@ -111,7 +111,7 @@ int pthread_cond_broadcast(pthread_cond_t *cond){
 	}
 
 	//wake all tasks blocking on cond
-	mcu_core_privcall(priv_cond_broadcast, cond);
+	cortexm_svcall(priv_cond_broadcast, cond);
 	return 0;
 }
 
@@ -145,7 +145,7 @@ int pthread_cond_signal(pthread_cond_t *cond){
 	new_thread = sched_get_highest_priority_blocked(cond);
 
 	if ( new_thread != -1 ){
-		mcu_core_privcall(priv_cond_signal, &new_thread);
+		cortexm_svcall(priv_cond_signal, &new_thread);
 	}
 
 	return 0;
@@ -219,7 +219,7 @@ int pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex){
 
 	//release the mutex and block on the cond
 	args.new_thread = sched_get_highest_priority_blocked(mutex);
-	mcu_core_privcall(priv_cond_wait, &args);
+	cortexm_svcall(priv_cond_wait, &args);
 
 	if ( args.ret == -1 ){
 		errno = EPERM;
@@ -284,7 +284,7 @@ int pthread_cond_timedwait(pthread_cond_t *cond, pthread_mutex_t *mutex, const s
 
 	//release the mutex and block on the cond
 	args.new_thread = sched_get_highest_priority_blocked(mutex);
-	mcu_core_privcall(priv_cond_wait, &args);
+	cortexm_svcall(priv_cond_wait, &args);
 
 	if ( args.ret == -1 ){
 		errno = EPERM;

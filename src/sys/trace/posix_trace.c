@@ -21,8 +21,8 @@
 #include <string.h>
 
 #include "mcu/mcu.h"
-#include "mcu/task.h"
-#include "mcu/mpu.h"
+#include "cortexm/task.h"
+#include "cortexm/mpu.h"
 #include "mcu/core.h"
 #include <fcntl.h>
 #include "../sched/sched_flags.h"
@@ -200,7 +200,7 @@ int posix_trace_create(pid_t pid, const trace_attr_t * attr, trace_id_t * id){
 	pid_t tmp_pid;
 	tmp_pid = pid;
 	//check to see if there are any tasks with the target ID -- if not, don't create the trace
-	mcu_core_privcall(priv_count_trace_id, &tmp_pid);
+	cortexm_svcall(priv_count_trace_id, &tmp_pid);
 	if( tmp_pid == 0 ){
 		errno = ESRCH;
 		return -1;
@@ -243,7 +243,7 @@ int posix_trace_create(pid_t pid, const trace_attr_t * attr, trace_id_t * id){
 
 	args.id = *id;
 	args.ret = 0;
-	mcu_core_privcall(priv_set_trace_id, &args);
+	cortexm_svcall(priv_set_trace_id, &args);
 
 	return 0;
 }
@@ -541,7 +541,7 @@ int posix_trace_shutdown(trace_id_t id){
 	if( is_invalid(id) ){ return -1; }
 
 	args.id = id;
-	mcu_core_privcall(priv_shutdown_trace_id, &args);
+	cortexm_svcall(priv_shutdown_trace_id, &args);
 	mq_discard(id->mq);
 	memset(id, 0, sizeof(trace_id_handle_t));
 	return 0;

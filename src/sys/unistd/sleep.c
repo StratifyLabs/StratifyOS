@@ -45,7 +45,7 @@ unsigned int sleep(unsigned int seconds /*! The number of seconds to sleep */){
 			interval.tv_sec = d.quot;
 			interval.tv_usec = d.rem;
 		}
-		mcu_core_privcall(priv_sleep, &interval);
+		cortexm_svcall(priv_sleep, &interval);
 	}
 	return 0;
 }

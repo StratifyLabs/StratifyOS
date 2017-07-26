@@ -47,36 +47,36 @@ void priv_check_reset_source(void * args){
 	mcu_core_getinfo(0, &info);
 
 	if( info.o_flags & CORE_FLAG_IS_RESET_SOFTWARE ){
-		mcu_priv_debug("soft rst\n");
+		mcu_debug_printf("soft rst\n");
 		*src = CORE_FLAG_IS_RESET_SOFTWARE;
 	} else if( info.o_flags & CORE_FLAG_IS_RESET_POR ){
-		mcu_priv_debug("por rst\n");
+		mcu_debug_printf("por rst\n");
 		*src = CORE_FLAG_IS_RESET_POR;
 	} else if( info.o_flags & CORE_FLAG_IS_RESET_EXTERNAL ){
-		mcu_priv_debug("ext rst\n");
+		mcu_debug_printf("ext rst\n");
 		*src = CORE_FLAG_IS_RESET_EXTERNAL;
 	} else if( info.o_flags & CORE_FLAG_IS_RESET_WDT ){
-		mcu_priv_debug("wdt rst\n");
+		mcu_debug_printf("wdt rst\n");
 		*src = CORE_FLAG_IS_RESET_WDT;
 	} else if( info.o_flags & CORE_FLAG_IS_RESET_BOR ){
-		mcu_priv_debug("bor rst\n");
+		mcu_debug_printf("bor rst\n");
 		*src = CORE_FLAG_IS_RESET_BOR;
 	} else if( info.o_flags & CORE_FLAG_IS_RESET_SYSTEM ){
-		mcu_priv_debug("sys rst\n");
+		mcu_debug_printf("sys rst\n");
 		*src = CORE_FLAG_IS_RESET_SYSTEM;
 	}
 }
 
 void check_reset_source(void){
 	u32 src;
-	mcu_core_privcall(priv_check_reset_source, &src);
+	cortexm_svcall(priv_check_reset_source, &src);
 	mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_START_INIT, 0);
 }
 
 void start_filesystem(void){
 	u32 started;
 	started = startup_fs();
-	mcu_debug("Started Filesystem Apps %ld\n", started);
+	mcu_debug_user_printf("Started Filesystem Apps %ld\n", started);
 	mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_START_FILESYSTEM, &started);
 }
 
@@ -91,13 +91,13 @@ void * sos_default_thread(void * arg){
 
 	start_filesystem();
 
-	mcu_debug("Open RTC\n");
+	mcu_debug_user_printf("Open RTC\n");
 	open("/dev/rtc", O_RDWR);
 
-	mcu_debug("Board Event\n");
+	mcu_debug_user_printf("Board Event\n");
 	mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_START_LINK, 0);
 
-	mcu_debug("Start Link\n");
+	mcu_debug_user_printf("Start Link\n");
 	link_update(arg); 	//Run the link update thread--never returns
 
 	return NULL;
@@ -108,9 +108,9 @@ int init_fs(){
 	int i;
 	i = 0;
 	while( sysfs_isterminator(&sysfs_list[i]) == false ){
-		mcu_debug("init %s\n", sysfs_list[i].mount_path);
+		mcu_debug_user_printf("init %s\n", sysfs_list[i].mount_path);
 		if ( sysfs_list[i].mount( sysfs_list[i].cfg ) < 0 ){
-			mcu_debug("failed to init\n");
+			mcu_debug_user_printf("failed to init\n");
 		}
 		i++;
 	}

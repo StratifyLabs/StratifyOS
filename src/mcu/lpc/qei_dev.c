@@ -19,7 +19,7 @@
 
 #include <errno.h>
 #include "mcu/qei.h"
-#include "mcu/cortexm.h"
+#include "cortexm/cortexm.h"
 #include "mcu/core.h"
 
 #if MCU_QEI_PORTS > 0
@@ -37,7 +37,7 @@ void mcu_qei_dev_power_on(const devfs_handle_t * handle){
 	int port = handle->port;
 	if ( qei_local[port].ref_count == 0 ){
 		mcu_lpc_core_enable_pwr(PCQEI);
-		mcu_cortexm_priv_enable_irq((void*)(u32)(qei_irqs[port]));
+		cortexm_enable_irq((void*)(u32)(qei_irqs[port]));
 	}
 	qei_local[port].ref_count++;
 }
@@ -46,7 +46,7 @@ void mcu_qei_dev_power_off(const devfs_handle_t * handle){
 	int port = handle->port;
 	if ( qei_local[port].ref_count > 0 ){
 		if ( qei_local[port].ref_count == 1 ){
-			mcu_cortexm_priv_disable_irq((void*)(u32)(qei_irqs[port]));
+			cortexm_disable_irq((void*)(u32)(qei_irqs[port]));
 			mcu_lpc_core_disable_pwr(PCQEI);
 		}
 		qei_local[port].ref_count--;
@@ -147,14 +147,14 @@ int mcu_qei_setaction(const devfs_handle_t * handle, void * ctl){
 		regs->IES = (1<<4);
 	}
 
-	if( mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
+	if( cortexm_validate_callback(action->handler.callback) < 0 ){
 		return -1;
 	}
 
 	qei_local[port].handler.callback = action->handler.callback;
 	qei_local[port].handler.context = action->handler.context;
 
-	mcu_cortexm_set_irq_prio(qei_irqs[port], action->prio);
+	cortexm_set_irq_prio(qei_irqs[port], action->prio);
 
 
 	return 0;
@@ -162,7 +162,7 @@ int mcu_qei_setaction(const devfs_handle_t * handle, void * ctl){
 
 int mcu_qei_dev_read(const devfs_handle_t * handle, devfs_async_t * rop){
 	const int port = handle->port;
-	if( mcu_cortexm_priv_validate_callback(rop->handler.callback) < 0 ){
+	if( cortexm_validate_callback(rop->handler.callback) < 0 ){
 		return -1;
 	}
 

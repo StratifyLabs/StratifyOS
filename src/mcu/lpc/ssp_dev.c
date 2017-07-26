@@ -17,7 +17,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
-#include "mcu/cortexm.h"
+#include "cortexm/cortexm.h"
 #include "mcu/spi.h"
 #include "mcu/pio.h"
 #include "ssp_flags.h"
@@ -53,9 +53,11 @@ static u8 const ssp_irqs[MCU_SSP_PORTS] = MCU_SSP_IRQS;
 static void enable_pin(int pio_port, int pio_pin) MCU_PRIV_CODE;
 void enable_pin(int pio_port, int pio_pin){
 	pio_attr_t pattr;
+	devfs_handle_t handle;
 	pattr.o_pinmask = (1<<pio_pin);
 	pattr.o_flags = PIO_FLAG_SET_OUTPUT;
-	mcu_pio_setattr(pio_port, &pattr);
+	handle.port = pio_port;
+	mcu_pio_setattr(&handle, &pattr);
 }
 #endif
 
@@ -63,7 +65,7 @@ void mcu_ssp_dev_power_on(const devfs_handle_t * handle){
 	int port = handle->port;
 	if ( ssp_local[port].ref_count == 0 ){
 
-		mcu_cortexm_priv_enable_irq((void*)(u32)(ssp_irqs[port]));
+		cortexm_enable_irq((void*)(u32)(ssp_irqs[port]));
 
 		switch(port){
 		case 0:
@@ -92,7 +94,7 @@ void mcu_ssp_dev_power_off(const devfs_handle_t * handle){
 	if ( ssp_local[port].ref_count > 0 ){
 		if ( ssp_local[port].ref_count == 1 ){
 
-			mcu_cortexm_priv_disable_irq((void*)(u32)(ssp_irqs[port]));
+			cortexm_disable_irq((void*)(u32)(ssp_irqs[port]));
 
 			switch(port){
 			case 0:
@@ -255,14 +257,14 @@ int mcu_ssp_setaction(const devfs_handle_t * handle, void * ctl){
 		return 0;
 	}
 
-	if( mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
+	if( cortexm_validate_callback(action->handler.callback) < 0 ){
 		return -1;
 	}
 
 	ssp_local[port].handler.callback = action->handler.callback;
 	ssp_local[port].handler.context = action->handler.context;
 
-	mcu_cortexm_set_irq_prio(ssp_irqs[port], action->prio);
+	cortexm_set_irq_prio(ssp_irqs[port], action->prio);
 
 
 	return 0;
@@ -375,7 +377,7 @@ int ssp_port_transfer(const devfs_handle_t * handle, int is_read, devfs_async_t 
 	}
 	ssp_local[port].size = size;
 
-	if( mcu_cortexm_priv_validate_callback(dop->handler.callback) < 0 ){
+	if( cortexm_validate_callback(dop->handler.callback) < 0 ){
 		return -1;
 	}
 

@@ -26,7 +26,7 @@
 #include <pthread.h>
 
 #include "mcu/core.h"
-#include "mcu/task.h"
+#include "cortexm/task.h"
 
 #define SCHED_DEFAULT_STACKGUARD_SIZE 32
 extern void (*_ctors)();

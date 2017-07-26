@@ -31,7 +31,7 @@
 #include <errno.h>
 #include "sos/fs/sysfs.h"
 
-#include "mcu/mpu.h"
+#include "cortexm/mpu.h"
 #include "../sched/sched_flags.h"
 #include "../signal/sig_local.h"
 
@@ -70,11 +70,11 @@ void _exit(int __status){
 	__status = (send_signal << 8) | tmp;
 	send_signal = __status;
 
-	mcu_core_privcall((core_privcall_t)priv_stop_threads, &send_signal);
+	cortexm_svcall((cortexm_svcall_t)priv_stop_threads, &send_signal);
 
 	while(1){ //if the process turns in to a zombie it should resume zombie mode if it receives a signal
 		//This process will be a zombie process until it is disabled by the parent
-		mcu_core_privcall((core_privcall_t)priv_zombie_process, &send_signal);
+		cortexm_svcall((cortexm_svcall_t)priv_zombie_process, &send_signal);
 	}
 }
 
@@ -95,7 +95,7 @@ void priv_stop_threads(int * send_signal){
 		if ( task_get_pid(i) == tmp ){
 			if ( i != task_get_current() ){
 				sos_sched_table[i].flags = 0;
-				task_priv_del(i);
+				task_root_del(i);
 			}
 		}
 	}
@@ -172,7 +172,7 @@ void priv_zombie_process(int * signal_sent){
 	if ( *signal_sent == false ){
 		//discard this thread immediately
 		sos_sched_table[task_get_current()].flags = 0;
-		task_priv_del(task_get_current());
+		task_root_del(task_get_current());
 	} else {
 		//the parent is waiting -- set this thread to a zombie thread
 		sched_priv_deassert_inuse(task_get_current());

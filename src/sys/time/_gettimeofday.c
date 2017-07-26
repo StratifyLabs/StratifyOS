@@ -59,7 +59,7 @@ void gettimeofday_sched(struct timeval * ptimeval){
 	struct sched_timeval tv;
 	div_t d;
 	struct timeval tmp;
-	mcu_core_privcall((core_privcall_t)sched_priv_get_realtime, &tv);
+	cortexm_svcall((cortexm_svcall_t)sched_priv_get_realtime, &tv);
 
 	//Convert the sched_timeval to a timeval struct
 	d = div(tv.tv_usec, 1000000);

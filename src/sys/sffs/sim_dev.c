@@ -57,7 +57,7 @@ void sffs_dev_setserialno(const void * cfg, int serialno){
 }
 
 void sffs_dev_setdelay_mutex(pthread_mutex_t * mutex){
-	//mcu_core_privcall(set_delay_mutex, mutex);
+	//cortexm_svcall(set_delay_mutex, mutex);
 }
 
 void sffs_sys_seteuid(int uid){

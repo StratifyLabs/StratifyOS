@@ -26,7 +26,7 @@
 #include <stdbool.h>
 #include <sys/fcntl.h>
 #include "sos/sos.h"
-#include "mcu/cortexm.h"
+#include "cortexm/cortexm.h"
 #include "mcu/core.h"
 #include "mcu/debug.h"
 #include "mcu/flash.h"
@@ -286,7 +286,7 @@ void boot_link_cmd_reset(link_transport_driver_t * driver, link_data_t * args){
 	driver->close(&(driver->handle));
 	dfu_sw_req = (u32*)boot_board_config.sw_req_loc;
 	*dfu_sw_req = 0;
-	mcu_cortexm_priv_reset(NULL);
+	cortexm_reset(NULL);
 	//the program never arrives here
 }
 
@@ -296,7 +296,7 @@ void boot_link_cmd_reset_bootloader(link_transport_driver_t * driver, link_data_
 	driver->close(&(driver->handle));
 	dfu_sw_req = (u32*)boot_board_config.sw_req_loc;
 	*dfu_sw_req = boot_board_config.sw_req_value;
-	mcu_cortexm_priv_reset(NULL);
+	cortexm_reset(NULL);
 	//the program never arrives here
 }
 

@@ -1,8 +1,20 @@
-/*
- * crt_sys.c
+/* Copyright 2011-2017 Tyler Gilbert;
+ * This file is part of Stratify OS.
  *
- *  Created on: Jan 23, 2014
- *      Author: tgil
+ * Stratify OS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Stratify OS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
  */
 
 
@@ -12,8 +24,8 @@
 
 #include "../sched/sched_flags.h"
 #include "mcu/core.h"
-#include "mcu/mpu.h"
-#include "mcu/task.h"
+#include "cortexm/mpu.h"
+#include "cortexm/task.h"
 #include "mcu/debug.h"
 
 typedef struct {
@@ -53,7 +65,7 @@ void crt_load_data(void * global_reent, int code_size, int data_size){
 	priv_load_data_t args;
 	args.code_size = code_size;
 	args.data_size = data_size;
-	mcu_core_privcall(priv_load_data, &args);
+	cortexm_svcall(priv_load_data, &args);
 }
 
 char ** const crt_import_argv(char * path_arg, int * argc){

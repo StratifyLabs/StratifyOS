@@ -18,7 +18,7 @@
 //#include "config.h"
 #include <errno.h>
 #include <fcntl.h>
-#include "mcu/cortexm.h"
+#include "cortexm/cortexm.h"
 #include "mcu/bootloader.h"
 #include "mcu/core.h"
 
@@ -107,16 +107,16 @@ int mcu_core_execsleep(int port, void * arg){
 
 int mcu_core_reset(int port, void * arg){
 	//delay first
-	mcu_cortexm_delay_us(20*1000);
-	mcu_cortexm_priv_reset(NULL);
+	cortexm_delay_us(20*1000);
+	cortexm_reset(NULL);
 	//doesn't arrive here
 	return 0;
 }
 
 int mcu_core_invokebootloader(int port, void * arg){
-	mcu_cortexm_delay_us(500*1000);
+	cortexm_delay_us(500*1000);
 	bootloader_api_t api;
-	mcu_core_priv_bootloader_api(&api);
+	mcu_core_get_bootloader_api(&api);
 	api.exec(0);
 	return 0;
 }
@@ -257,7 +257,7 @@ void mcu_core_set_nvic_priority(int irq, int prio){
 	NVIC_SetPriority((IRQn_Type)irq, prio);
 }
 
-void mcu_core_priv_bootloader_api(void * args){
+void mcu_core_get_bootloader_api(void * args){
 	void * ptr;
 	memcpy(&ptr, (void*)(36), sizeof(void*)); //get pointer to boot api
 	memcpy(args, ptr, sizeof(bootloader_api_t)); //copy boot api

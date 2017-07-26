@@ -19,7 +19,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
-#include "mcu/cortexm.h"
+#include "cortexm/cortexm.h"
 #include "mcu/uart.h"
 #include "mcu/pio.h"
 #include "mcu/debug.h"
@@ -175,7 +175,7 @@ void mcu_uart_dev_power_off(const devfs_handle_t * handle){
 
 	if ( uart_local[port].ref_count > 0 ){
 		if ( uart_local[port].ref_count == 1 ){
-			mcu_cortexm_priv_disable_irq((void*)(u32)(uart_irqs[port]));
+			cortexm_disable_irq((void*)(u32)(uart_irqs[port]));
 			switch(port){
 			case 0:
 #if defined __lpc13uxx
@@ -218,7 +218,16 @@ int mcu_uart_dev_is_powered(const devfs_handle_t * handle){
 }
 
 int mcu_uart_getinfo(const devfs_handle_t * handle, void * ctl){
-	memcpy(ctl, &(uart_local[handle->port].attr), sizeof(uart_attr_t));
+
+	uart_info_t * info = ctl;
+
+	info->o_flags = UART_FLAG_IS_PARITY_NONE |
+			UART_FLAG_IS_PARITY_ODD |
+			UART_FLAG_IS_PARITY_EVEN |
+			UART_FLAG_IS_STOP1 |
+			UART_FLAG_IS_STOP2 |
+			UART_FLAG_IS_DEFAULT_PIN_ASSIGNMENT;
+
 	return 0;
 }
 
@@ -229,9 +238,19 @@ int mcu_uart_setattr(const devfs_handle_t * handle, void * ctl){
 	uint8_t lcr;
 	uint32_t f_div;
 	LPC_UART_Type * uart_regs;
+	const uart_config_t * config = handle->config;
 	u32 o_flags;
-	uart_attr_t * attr = (uart_attr_t*)ctl;
+	const uart_attr_t * attr = (const uart_attr_t*)ctl;
+	const uart_pin_assignment_t * pin_assignment;
 	int port = handle->port;
+
+	if( attr == 0 ){
+		attr = &(config->attr);
+		if( attr == 0 ){
+			errno = EINVAL;
+			return -1;
+		}
+	}
 
 	uart_regs = uart_regs_table[port];
 	o_flags = attr->o_flags;
@@ -266,9 +285,14 @@ int mcu_uart_setattr(const devfs_handle_t * handle, void * ctl){
 		lcr |= ULCR_PAR_ODD;
 	}
 
+	if( (o_flags & UART_FLAG_IS_DEFAULT_PIN_ASSIGNMENT) && config ){
+		pin_assignment = &(config->attr.pin_assignment);
+	} else {
+		pin_assignment = &(attr->pin_assignment);
+	}
 
 	if( mcu_core_set_pin_assignment(
-			&(attr->pin_assignment),
+			pin_assignment,
 			MCU_PIN_ASSIGNMENT_COUNT(uart_pin_assignment_t),
 			CORE_PERIPH_UART,
 			port) < 0 ){
@@ -278,7 +302,7 @@ int mcu_uart_setattr(const devfs_handle_t * handle, void * ctl){
 
 
 	//! \todo Error check the width
-	mcu_cortexm_priv_disable_irq((void*)(u32)(uart_irqs[port]));
+	cortexm_disable_irq((void*)(u32)(uart_irqs[port]));
 
 	uart_regs->RBR;
 	uart_regs->IIR;
@@ -317,7 +341,7 @@ int mcu_uart_setattr(const devfs_handle_t * handle, void * ctl){
 	//! \todo need to store actual baud rate not target baud rate
 	//uart_local[port].attr.baudrate = ctl_ptr->baudrate;
 
-	mcu_cortexm_priv_enable_irq((void*)(u32)(uart_irqs[port]));
+	cortexm_enable_irq((void*)(u32)(uart_irqs[port]));
 
 	return 0;
 }
@@ -372,7 +396,7 @@ int mcu_uart_setaction(const devfs_handle_t * handle, void * ctl){
 
 	} else {
 
-		if( mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
+		if( cortexm_validate_callback(action->handler.callback) < 0 ){
 			return -1;
 		}
 
@@ -393,7 +417,7 @@ int mcu_uart_setaction(const devfs_handle_t * handle, void * ctl){
 		}
 	}
 
-	mcu_cortexm_set_irq_prio(uart_irqs[port], action->prio);
+	cortexm_set_irq_prio(uart_irqs[port], action->prio);
 
 
 	return 0;
@@ -487,7 +511,7 @@ int mcu_uart_dev_read(const devfs_handle_t * handle, devfs_async_t * rop){
 			errno = EAGAIN;
 			len = -1;
 		} else {
-			if( mcu_cortexm_priv_validate_callback(rop->handler.callback) < 0 ){
+			if( cortexm_validate_callback(rop->handler.callback) < 0 ){
 				return -1;
 			}
 
@@ -525,7 +549,7 @@ int mcu_uart_dev_write(const devfs_handle_t * handle, devfs_async_t * wop){
 	uart_regs->TER = 0; //disable the transmitter
 	write_tx_data(port);
 
-	if( mcu_cortexm_priv_validate_callback(wop->handler.callback) < 0 ){
+	if( cortexm_validate_callback(wop->handler.callback) < 0 ){
 		return -1;
 	}
 

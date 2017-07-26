@@ -19,7 +19,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
-#include "mcu/cortexm.h"
+#include "cortexm/cortexm.h"
 #include "mcu/dac.h"
 #include "mcu/debug.h"
 #include "mcu/core.h"
@@ -144,7 +144,7 @@ int mcu_dac_setaction(const devfs_handle_t * handle, void * ctl){
 		}
 	}
 
-	if( mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
+	if( cortexm_validate_callback(action->handler.callback) < 0 ){
 		return -1;
 	}
 
@@ -164,7 +164,7 @@ int mcu_dac_dma_setaction(const devfs_handle_t * handle, void * ctl){
 		}
 	}
 
-	if( mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
+	if( cortexm_validate_callback(action->handler.callback) < 0 ){
 		return -1;
 	}
 
@@ -210,7 +210,7 @@ int mcu_dac_dma_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	LPC_DAC->CTRL = DAC_CTRL_DMA_ENA|DAC_CTRL_CNT_ENA|DAC_CTRL_DBUF_ENA;
 	wop->nbyte = (wop->nbyte) & ~0x3;
 
-	if( mcu_cortexm_priv_validate_callback(wop->handler.callback) < 0 ){
+	if( cortexm_validate_callback(wop->handler.callback) < 0 ){
 		return -1;
 	}
 
@@ -241,7 +241,7 @@ int mcu_dac_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	//LPC_DAC->CTRL = DAC_CTRL_DMA_ENA|DAC_CTRL_CNT_ENA|DAC_CTRL_DBUF_ENA;
 	wop->nbyte = (wop->nbyte) & ~0x3;
 
-	if( mcu_cortexm_priv_validate_callback(wop->handler.callback) < 0 ){
+	if( cortexm_validate_callback(wop->handler.callback) < 0 ){
 		return -1;
 	}
 

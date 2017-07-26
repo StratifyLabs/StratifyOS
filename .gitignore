@@ -1,15 +1,6 @@
-/build_release_mcu_lpc17xx/
-/build_release_mcu_lpc407x_8x/
-/build_release_crt_armv7m/
-/build_release_crt_armv7em_fpu/
-/build_release_sys_armv7em_fpu/
-/build_release_sys_armv7m/
-/build_debug_mcu_lpc17xx/
-/build_debug_mcu_lpc407x_8x/
-/build_debug_sys_arm7em_fpu/
-/build_debug_sys_armv7m/
-/build_release_link/
-/build_release_mcu_lpc43xx/
-/build_release_mcu_lpc82x/
+*.a
+*.d
+*.o
+
 
 *.user

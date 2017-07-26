@@ -142,9 +142,9 @@ int sffs_init(const void * cfg){
 
 	if ( err == -1 ){
 		//failed to find initial serial numbers so no other access is allowed
-		mcu_debug("Failed to init SFFS\n");
+		mcu_debug_user_printf("Failed to init SFFS\n");
 		sffs_mkfs(cfg);
-		mcu_debug("Format complete\n");
+		mcu_debug_user_printf("Format complete\n");
 
 		cfgp->open_file->fs = NULL;
 		return -1;

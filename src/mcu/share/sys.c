@@ -17,7 +17,7 @@
  *
  */
 
-#include "mcu/sys.h"
+#include "device/sys.h"
 
 
 extern const uint32_t * mcu_core_vector_table[];

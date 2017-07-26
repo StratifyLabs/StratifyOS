@@ -18,7 +18,7 @@
  */
 #include <errno.h>
 #include <fcntl.h>
-#include "mcu/cortexm.h"
+#include "cortexm/cortexm.h"
 #include "mcu/spi.h"
 #include "mcu/pio.h"
 #include "spi_flags.h"
@@ -53,7 +53,7 @@ void mcu_spi_dev_power_on(const devfs_handle_t * handle){
 	int port = handle->port;
 	if ( spi_local[port].ref_count == 0 ){
 		mcu_lpc_core_enable_pwr(PCSPI);
-		mcu_cortexm_priv_enable_irq((void*)(u32)(spi_irqs[port]));
+		cortexm_enable_irq((void*)(u32)(spi_irqs[port]));
 		spi_local[port].duplex_mem = NULL;
 		spi_local[port].handler.callback = NULL;
 	}
@@ -65,7 +65,7 @@ void mcu_spi_dev_power_off(const devfs_handle_t * handle){
 	int port = handle->port;
 	if ( spi_local[port].ref_count > 0 ){
 		if ( spi_local[port].ref_count == 1 ){
-			mcu_cortexm_priv_disable_irq((void*)(u32)(spi_irqs[port]));
+			cortexm_disable_irq((void*)(u32)(spi_irqs[port]));
 			mcu_lpc_core_disable_pwr(PCSPI);
 		}
 		spi_local[port].ref_count--;
@@ -188,7 +188,7 @@ int mcu_spi_setaction(const devfs_handle_t * handle, void * ctl){
 
 
 	spi_local[port].handler = action->handler;
-	mcu_cortexm_set_irq_prio(spi_irqs[port], action->prio);
+	cortexm_set_irq_prio(spi_irqs[port], action->prio);
 
 	return 0;
 }

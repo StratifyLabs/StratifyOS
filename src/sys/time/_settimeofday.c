@@ -73,7 +73,7 @@ static int settimeofday_rtc(const struct timeval * tp);
 int _settimeofday(const struct timeval * tp, const struct timezone * tzp) {
 	settimeofday_rtc(tp);
 	//also, set the simulated time
-	mcu_core_privcall(priv_set_time, (void*)tp);
+	cortexm_svcall(priv_set_time, (void*)tp);
 
 	return 0;
 }

@@ -113,7 +113,7 @@ int list_update(const void * cfg, sffs_list_t * list, block_t prev_block){
 		return -1;
 	}
 	list_hdr = (sffs_list_hdr_t*)list->block_data.data;
-	//mcu_debug("loaded %d (prev:%d next:%d) 0x%X %d\n", list->current_block, list_hdr->prev, list_hdr->next, list->block_data.hdr.type, list->block_data.hdr.serialno);
+	//mcu_debug_user_printf("loaded %d (prev:%d next:%d) 0x%X %d\n", list->current_block, list_hdr->prev, list_hdr->next, list->block_data.hdr.type, list->block_data.hdr.serialno);
 	if( (prev_block != list_hdr->prev) || (list_typeisvalid(list->block_data.hdr.type) == false) ){ //this check makes sure the list is consistent
 		sffs_error("list has an error\n");
 		return -1;
@@ -264,7 +264,7 @@ int sffs_list_append(const void * cfg, sffs_list_t * list, uint8_t type, void * 
 	} else {
 		next_block = list_add_block(cfg, list->block_data.hdr.serialno, type, list->current_block);
 		sffs_debug(DEBUG_LEVEL, "link block to block %d->%d\n", list->current_block, next_block);
-		//mcu_debug("link block to block %d->%d\n", list->current_block, next_block);
+		//mcu_debug_user_printf("link block to block %d->%d\n", list->current_block, next_block);
 		dev_addr = get_item_addr(cfg, next_block, 0, list->item_size);
 	}
 
@@ -373,7 +373,7 @@ block_t sffs_list_consolidate(const void * cfg,
 					//save the current block to the disk
 					new_list->hdr.next = sffs_block_alloc(cfg, serialno, new_current_block, type | BLOCK_TYPE_LINKED_LIST_FLAG);
 					sffs_debug(DEBUG_LEVEL, "save block %d (prev:%d, next:%d)\n", new_current_block, new_list->hdr.prev, new_list->hdr.next);
-					//mcu_debug("save block %d (prev:%d, next:%d)\n", new_current_block, new_list->hdr.prev, new_list->hdr.next);
+					//mcu_debug_user_printf("save block %d (prev:%d, next:%d)\n", new_current_block, new_list->hdr.prev, new_list->hdr.next);
 					if ( sffs_block_save(cfg, new_current_block, &new_sffs_block_data) < 0 ){
 						sffs_error("failed to save block %d\n", new_current_block);
 						return -1;

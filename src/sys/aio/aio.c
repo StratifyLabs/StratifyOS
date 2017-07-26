@@ -28,7 +28,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <signal.h>
-#include "mcu/cortexm.h"
+#include "cortexm/cortexm.h"
 #include "mcu/debug.h"
 #include "aio.h"
 #include "../unistd/unistd_flags.h"
@@ -137,7 +137,7 @@ void priv_suspend(void * args){
 	} else {
 		suspend = false;
 	}
-	mcu_cortexm_priv_disable_interrupts(NULL); //no switching until the transfer is started
+	cortexm_disable_interrupts(NULL); //no switching until the transfer is started
 	for(i = 0; i < p->nent; i++ ){
 		if (p->list[i] != NULL ){
 
@@ -163,7 +163,7 @@ void priv_suspend(void * args){
 	}
 
 	//enable interrupts
-	mcu_cortexm_priv_enable_interrupts(NULL);
+	cortexm_enable_interrupts(NULL);
 
 }
 
@@ -176,7 +176,7 @@ static int suspend(struct aiocb *const list[], int nent, const struct timespec *
 	args.nent = nent;
 	args.block_on_all = block_on_all; //only block on one or block on all
 	sched_convert_timespec(&args.abs_timeout, timeout);
-	mcu_core_privcall(priv_suspend, &args);
+	cortexm_svcall(priv_suspend, &args);
 
 	if( args.nent == -1 ){
 		return 0; //one of the AIO's in the list has already completed
@@ -326,7 +326,7 @@ static int aio_data_transfer_callback(struct aiocb * aiocbp, const void * ignore
 void priv_device_data_transfer(void * args){
 	priv_aio_transfer_t * p = (priv_aio_transfer_t*)args;
 
-	mcu_cortexm_priv_disable_interrupts(NULL); //no switching until the transfer is started
+	cortexm_disable_interrupts(NULL); //no switching until the transfer is started
 	//set the device callback for the read/write op
 	if ( p->read == true ){
 		//Read operation
@@ -337,7 +337,7 @@ void priv_device_data_transfer(void * args){
 
 	sos_sched_table[task_get_current()].block_object = NULL;
 
-	mcu_cortexm_priv_enable_interrupts(NULL);
+	cortexm_enable_interrupts(NULL);
 
 	if ( p->ret == 0 ){
 		if( p->aiocbp->op.nbyte > 0 ){
@@ -376,7 +376,7 @@ int aio_data_transfer(struct aiocb * aiocbp){
 	args.aiocbp->op.handler.callback = (mcu_callback_t)aio_data_transfer_callback;
 	args.aiocbp->op.handler.context = aiocbp;
 	args.aiocbp->aio_nbytes = -1; //means status is in progress
-	mcu_core_privcall(priv_device_data_transfer, &args);
+	cortexm_svcall(priv_device_data_transfer, &args);
 	return args.ret;
 }
 

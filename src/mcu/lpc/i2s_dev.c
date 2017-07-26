@@ -20,7 +20,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <limits.h>
-#include "mcu/cortexm.h"
+#include "cortexm/cortexm.h"
 #include "mcu/i2s.h"
 #include "mcu/debug.h"
 #include "mcu/core.h"
@@ -73,7 +73,7 @@ void mcu_i2s_dev_power_on(const devfs_handle_t * handle){
 			mcu_lpc_core_enable_pwr(PCI2S);
 			break;
 		}
-		mcu_cortexm_priv_enable_irq((void*)(u32)(i2s_irqs[port]));
+		cortexm_enable_irq((void*)(u32)(i2s_irqs[port]));
 		i2s_local[port].rx.handler.callback = NULL;
 		i2s_local[port].tx.handler.callback = NULL;
 		i2s_local[port].rx.bufp = 0;
@@ -86,7 +86,7 @@ void mcu_i2s_dev_power_off(const devfs_handle_t * handle){
 	int port = handle->port;
 	if ( i2s_local[port].ref_count > 0 ){
 		if ( i2s_local[port].ref_count == 1 ){
-			mcu_cortexm_priv_disable_irq((void*)(u32)(i2s_irqs[port]));
+			cortexm_disable_irq((void*)(u32)(i2s_irqs[port]));
 			switch(port){
 			case 0:
 				mcu_lpc_core_disable_pwr(PCI2S);
@@ -237,7 +237,7 @@ int mcu_i2s_setaction(const devfs_handle_t * handle, void * ctl){
 			exec_callback(&i2s_local[port].rx, MCU_EVENT_FLAG_CANCELED);
 		}
 
-		if( mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
+		if( cortexm_validate_callback(action->handler.callback) < 0 ){
 			return -1;
 		}
 
@@ -252,7 +252,7 @@ int mcu_i2s_setaction(const devfs_handle_t * handle, void * ctl){
 			exec_callback(&i2s_local[port].tx, MCU_EVENT_FLAG_CANCELED);
 		}
 
-		if( mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
+		if( cortexm_validate_callback(action->handler.callback) < 0 ){
 			return -1;
 		}
 
@@ -261,7 +261,7 @@ int mcu_i2s_setaction(const devfs_handle_t * handle, void * ctl){
 
 	}
 
-	mcu_cortexm_set_irq_prio(i2s_irqs[port], action->prio);
+	cortexm_set_irq_prio(i2s_irqs[port], action->prio);
 
 
 	return 0;
@@ -340,7 +340,7 @@ int mcu_i2s_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	i2s_local[port].tx.len = wop->nbyte/4;
 
 	//Check the local buffer for bytes that are immediately available
-	if( mcu_cortexm_priv_validate_callback(wop->handler.callback) < 0 ){
+	if( cortexm_validate_callback(wop->handler.callback) < 0 ){
 		return -1;
 	}
 
@@ -401,7 +401,7 @@ int mcu_i2s_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 
 	} else if( len != nsamples ){
 		//for blocking operations wait until the entire buffer is read then call the callback
-		if( mcu_cortexm_priv_validate_callback(rop->handler.callback) < 0 ){
+		if( cortexm_validate_callback(rop->handler.callback) < 0 ){
 			return -1;
 		}
 

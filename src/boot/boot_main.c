@@ -5,13 +5,13 @@
 #include "mcu/mcu.h"
 #include "sos/dev/usb.h"
 #include "sos/fs/devfs.h"
-#include "mcu/cortexm.h"
+#include "cortexm/cortexm.h"
 #include "mcu/core.h"
 #include "mcu/uart.h"
 #include "mcu/pio.h"
 #include "mcu/usb.h"
 #include "mcu/debug.h"
-#include "mcu/usbd/control.h"
+#include "usbd/control.h"
 #include "mcu/boot_debug.h"
 #include "boot_link.h"
 #include "boot_config.h"
@@ -57,7 +57,7 @@ void run_bootloader();
 void delay_ms(int ms){
 	int i;
 	for(i=0; i < ms; i++){
-		mcu_cortexm_delay_us(1000);
+		cortexm_delay_us(1000);
 	}
 }
 
@@ -145,7 +145,7 @@ int check_run_app(){
 		mcu_pio_setattr(&hw_req_handle, &pio_attr);
 	}
 
-	mcu_cortexm_delay_us(500);
+	cortexm_delay_us(500);
 
 	hw_req_value = ((mcu_pio_get(&hw_req_handle, 0) & pio_attr.o_pinmask) != 0);
 
@@ -179,14 +179,14 @@ int check_run_app(){
 static int debug_write_func(const void * buf, int nbyte){
 	memset(mcu_debug_buffer, 0, MCU_DEBUG_BUFFER_SIZE);
 	memcpy(mcu_debug_buffer, buf, nbyte);
-	mcu_priv_write_debug_uart(NULL);
+	mcu_debug_write_uart(NULL);
 	return nbyte;
 }
 #endif
 
 void init_hw(){
 	mcu_core_initclock(1);
-	mcu_cortexm_priv_enable_interrupts(NULL); //Enable the interrupts
+	cortexm_enable_interrupts(NULL); //Enable the interrupts
 
 	delay_ms(50);
 

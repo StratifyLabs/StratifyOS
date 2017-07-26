@@ -103,23 +103,23 @@ void scheduler(){
 		mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_FATAL, (void*)"sprep");
 	}
 
-	mcu_debug("Start first thread\n");
+	mcu_debug_user_printf("Start first thread\n");
 	if ( start_first_thread() ){
 		sched_debug("Start first thread failed\n");
 		mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_FATAL, (void*)"strt1t");
 	}
 
 	while(1){
-		mcu_core_privcall(mcu_wdt_priv_reset, NULL);
+		cortexm_svcall(mcu_wdt_priv_reset, NULL);
 		check_faults(); //check to see if a fault needs to be logged
-		mcu_core_privcall(priv_check_sleep_mode, &do_sleep);
+		cortexm_svcall(priv_check_sleep_mode, &do_sleep);
 
 		//Sleep when nothing else is going on
 		if ( do_sleep ){
-			mcu_core_sleep(CORE_SLEEP);
+			mcu_core_user_sleep(CORE_SLEEP);
 		} else {
 			//Otherwise switch to the active task
-			mcu_core_privcall(task_priv_switch_context, NULL);
+			cortexm_svcall(task_root_switch_context, NULL);
 		}
 	}
 }
@@ -141,7 +141,7 @@ int check_faults(){
 				sched_fault.tid);
 
 		usleep(2000);
-		mcu_debug("%s\n", buffer);
+		mcu_debug_user_printf("%s\n", buffer);
 
 		char hex_buffer[9];
 		strcpy(buffer, "ADDR 0x");
@@ -152,7 +152,7 @@ int check_faults(){
 				buffer, strlen(buffer),
 				(uint32_t)sched_fault.fault.pc + 1,
 				sched_fault.tid);
-		mcu_debug("ADDR 0x%lX %ld\n", (u32)sched_fault.fault.pc + 1, sched_fault.tid);
+		mcu_debug_user_printf("ADDR 0x%lX %ld\n", (u32)sched_fault.fault.pc + 1, sched_fault.tid);
 		usleep(2000);
 
 
@@ -162,7 +162,7 @@ int check_faults(){
 				buffer, strlen(buffer),
 				(uint32_t)sched_fault.fault.caller,
 				sched_fault.tid);
-		mcu_debug("Caller 0x%lX %ld\n", (u32)sched_fault.fault.caller, sched_fault.tid);
+		mcu_debug_user_printf("Caller 0x%lX %ld\n", (u32)sched_fault.fault.caller, sched_fault.tid);
 		usleep(2000);
 
 
@@ -172,7 +172,7 @@ int check_faults(){
 				buffer, strlen(buffer),
 				(u32)sched_fault.fault.handler_pc + 1,
 				sched_fault.tid);
-		mcu_debug("ISR PC 0x%lX %ld\n", (u32)sched_fault.fault.handler_pc+1, sched_fault.tid);
+		mcu_debug_user_printf("ISR PC 0x%lX %ld\n", (u32)sched_fault.fault.handler_pc+1, sched_fault.tid);
 		usleep(2000);
 
 
@@ -182,10 +182,10 @@ int check_faults(){
 				buffer, strlen(buffer),
 				(uint32_t)sched_fault.fault.handler_caller,
 				sched_fault.tid);
-		mcu_debug("ISR Caller 0x%lX %ld\n", (u32)sched_fault.fault.handler_caller, sched_fault.tid);
+		mcu_debug_user_printf("ISR Caller 0x%lX %ld\n", (u32)sched_fault.fault.handler_caller, sched_fault.tid);
 		usleep(2000);
 
-		mcu_core_privcall(priv_fault_logged, NULL);
+		cortexm_svcall(priv_fault_logged, NULL);
 
 	}
 
@@ -224,7 +224,7 @@ void sched_priv_update_on_stopped(){
 	if ( new_priority >= SCHED_LOWEST_PRIORITY ){
 		sched_priv_update_on_wake(new_priority);
 	} else {
-		task_priv_switch_context(NULL);
+		task_root_switch_context(NULL);
 	}
 }
 
@@ -259,7 +259,7 @@ void sched_priv_update_on_wake(int new_priority){
 	}
 
 	if ( switch_context == true ){
-		task_priv_switch_context(NULL);
+		task_root_switch_context(NULL);
 	}
 }
 

@@ -66,7 +66,7 @@ int usleep(useconds_t useconds){
 		} else {
 			//clocks is greater than 4800 -- there is time to change to another task
 			useconds -= (600 / tmp);
-			mcu_core_privcall(priv_usleep, &useconds);
+			cortexm_svcall(priv_usleep, &useconds);
 		}
 	} else {
 		errno = EINVAL;

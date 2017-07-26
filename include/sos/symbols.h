@@ -157,7 +157,7 @@ extern u32 __gnu_h2f_ieee();
 #include "mqueue.h"
 #include "aio.h"
 #include "sos/sos.h"
-#include "mcu/sys.h"
+#include "device/sys.h"
 #include "sos/dev/sys.h"
 #include "mcu/core.h"
 #include "mcu/adc.h"
@@ -173,7 +173,8 @@ extern u32 __gnu_h2f_ieee();
 #include "mcu/pio.h"
 #include "mcu/qei.h"
 #include "mcu/tmr.h"
-#include "mcu/task.h"
+#include "cortexm/task.h"
+#include "cortexm/cortexm.h"
 
 extern void __cxa_pure_virtual();
 void __cxa_atexit();

@@ -22,10 +22,10 @@
 
 #include "sos/sos.h"
 #include "sos/link/transport_usb.h"
-#include "mcu/task.h"
+#include "cortexm/task.h"
 #include "mcu/core.h"
 #include "sos/link.h"
-#include "mcu/mpu.h"
+#include "cortexm/mpu.h"
 
 static void sos_trace_event_addr(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len, u32 addr);
 
@@ -76,7 +76,7 @@ void sos_trace_event_addr_tid(link_trace_event_id_t event_id, const void * data_
 	event_info.posix_timestamp_tv_sec = spec.tv_sec;
 	event_info.posix_timestamp_tv_nsec = spec.tv_nsec;
 
-	mcu_core_privcall(sos_priv_trace_event, &event_info);
+	cortexm_svcall(sos_priv_trace_event, &event_info);
 
 }
 

@@ -120,7 +120,7 @@ void signal_handler(int tid, int si_signo, int si_sigcode, union sigval sig_valu
 		}
 
 		if ( si_signo == SIGCHLD ){
-			mcu_debug("ASSERT SIGCHLD\n");
+			mcu_debug_user_printf("ASSERT SIGCHLD\n");
 			SIGCHLD_ASSERT();
 		}
 
@@ -233,7 +233,7 @@ void stop_action(int signo, int flags){
 	}
 
 	//Set the status of the process to WSTOPPED
-	mcu_core_privcall(priv_stoppid, NULL);
+	cortexm_svcall(priv_stoppid, NULL);
 
 }
 
@@ -244,7 +244,7 @@ void continue_action(int signo, int flags){
 	}
 
 	//Set the status of the process to WCONTINUED
-	mcu_core_privcall(priv_contpid, NULL);
+	cortexm_svcall(priv_contpid, NULL);
 }
 
 void ignore_action(int signo, int flags){

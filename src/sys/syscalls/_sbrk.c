@@ -31,7 +31,7 @@
 #include <reent.h>
 
 #include "mcu/mcu.h"
-#include "mcu/task.h"
+#include "cortexm/task.h"
 #include "mcu/core.h"
 
 
@@ -64,7 +64,7 @@ void * _sbrk_r(struct _reent * reent_ptr, ptrdiff_t incr){
 
 	//adjust the location of the stack guard -- always 32 bytes for processes
 #if USE_MEMORY_PROTECTION > 0
-	mcu_core_privcall(priv_update_guard, base + size + incr);
+	cortexm_svcall(priv_update_guard, base + size + incr);
 #endif
 
 	reent_ptr->procmem_base->size += incr;
@@ -75,7 +75,7 @@ void * _sbrk_r(struct _reent * reent_ptr, ptrdiff_t incr){
 void priv_update_guard(void * args){
 	int tid;
 	tid = task_get_thread_zero( task_get_pid(task_get_current() ) );
-	task_priv_set_stackguard(tid, args, SCHED_DEFAULT_STACKGUARD_SIZE);
+	task_root_set_stackguard(tid, args, SCHED_DEFAULT_STACKGUARD_SIZE);
 }
 #endif
 

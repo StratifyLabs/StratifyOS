@@ -23,12 +23,12 @@
 #include "sos/link.h"
 #include "mcu/mcu.h"
 #include "sos/dev/usb.h"
-#include "mcu/usbfifo.h"
-#include "mcu/usbd/control.h"
-#include "mcu/usbd/cdc.h"
+#include "device/usbfifo.h"
+#include "usbd/control.h"
+#include "usbd/cdc.h"
 #include "mcu/core.h"
 #include "mcu/boot_debug.h"
-#include "mcu/sys.h"
+#include "device/sys.h"
 
 #include "sos/link/transport_usb.h"
 

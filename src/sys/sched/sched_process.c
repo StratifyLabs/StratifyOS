@@ -62,7 +62,7 @@ int sched_new_process(void (*p)(char *)  /*! The startup function (crt()) */,
 		//update the scheduler table using a privileged call
 		args.tid = tid;
 		args.mem = mem;
-		mcu_core_privcall((core_privcall_t)priv_init_sched_task, &args);
+		cortexm_svcall((cortexm_svcall_t)priv_init_sched_task, &args);
 	} else {
 		return -1;
 	}
@@ -95,7 +95,7 @@ void priv_init_sched_task(init_sched_task_t * task){
 	sched_priv_update_on_wake( sos_sched_table[id].priority );
 	stackguard = (uint32_t)task->mem->data.addr + task->mem->data.size - 128;
 #if USE_MEMORY_PROTECTION > 0
-	task_priv_set_stackguard(id, (void*)stackguard, SCHED_DEFAULT_STACKGUARD_SIZE);
+	task_root_set_stackguard(id, (void*)stackguard, SCHED_DEFAULT_STACKGUARD_SIZE);
 #endif
 
 	//Items inherited from parent process

@@ -4,14 +4,14 @@
 #include <stdbool.h>
 #include <sys/fcntl.h>
 #include <unistd.h>
-#include "mcu/cortexm.h"
+#include "cortexm/cortexm.h"
 #include "sos/link.h"
 #include "mcu/mcu.h"
 #include "sos/dev/usb.h"
-#include "mcu/usbfifo.h"
-#include "mcu/usbd/control.h"
-#include "mcu/usbd/cdc.h"
-#include "mcu/cortexm.h"
+#include "device/usbfifo.h"
+#include "usbd/control.h"
+#include "usbd/cdc.h"
+#include "cortexm/cortexm.h"
 #include "mcu/core.h"
 #include "mcu/usb.h"
 #include "mcu/pio.h"
@@ -61,7 +61,7 @@ link_transport_phy_t boot_link_transport_usb_open(const char * name,
 
 	dstr("OPEN USB\n");
 	//open USB
-	mcu_cortexm_delay_ms(250);
+	cortexm_delay_ms(250);
 	mcu_usb_open(&usb_dev);
 
 
@@ -153,7 +153,7 @@ int boot_link_transport_usb_close(link_transport_phy_t * handle){
 void boot_link_transport_usb_wait(int msec){
 	int i;
 	for(i = 0; i < msec; i++){
-		mcu_cortexm_delay_us(1000);
+		cortexm_delay_us(1000);
 	}
 }
 

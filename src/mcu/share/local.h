@@ -2,7 +2,7 @@
 
 #include <errno.h>
 #include "mcu/debug.h"
-#include "mcu/sys.h"
+#include "device/sys.h"
 #include "sos/fs/devfs.h"
 
 

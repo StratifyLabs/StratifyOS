@@ -133,7 +133,7 @@ typedef struct MCU_PACK {
 
 #define MCU_ALWAYS_INLINE
 
-#define mcu_debug(...) printf(__VA_ARGS__)
+#define mcu_debug_user_printf(...) printf(__VA_ARGS__)
 
 #else
 #include "mcu/debug.h"

@@ -19,7 +19,7 @@
 
 #include <errno.h>
 #include <stdbool.h>
-#include "mcu/cortexm.h"
+#include "cortexm/cortexm.h"
 #include "mcu/tmr.h"
 #include "mcu/core.h"
 
@@ -82,7 +82,7 @@ void mcu_tmr_dev_power_on(const devfs_handle_t * handle){
 			mcu_lpc_core_enable_pwr(PCTIM3);
 			break;
 		}
-		mcu_cortexm_priv_enable_irq((void*)(u32)(tmr_irqs[port]));
+		cortexm_enable_irq((void*)(u32)(tmr_irqs[port]));
 	}
 	m_tmr_local[port].ref_count++;
 }
@@ -93,7 +93,7 @@ void mcu_tmr_dev_power_off(const devfs_handle_t * handle){
 	if ( m_tmr_local[port].ref_count > 0 ){
 		if ( m_tmr_local[port].ref_count == 1 ){
 			clear_actions(port);
-			mcu_cortexm_priv_disable_irq((void*)(u32)(tmr_irqs[port]));
+			cortexm_disable_irq((void*)(u32)(tmr_irqs[port]));
 			switch(port){
 			case 0:
 				mcu_lpc_core_disable_pwr(PCTIM0);
@@ -333,7 +333,7 @@ int mcu_tmr_dev_write(const devfs_handle_t * handle, devfs_async_t * wop){
 	action->handler.callback = wop->handler.callback;
 	action->handler.context = wop->handler.context;
 
-	mcu_cortexm_set_irq_prio(tmr_irqs[port], action->prio);
+	cortexm_set_irq_prio(tmr_irqs[port], action->prio);
 
 	return mcu_tmr_setaction(handle, action);
 }
@@ -369,7 +369,7 @@ int mcu_tmr_dev_read(const devfs_handle_t * handle, devfs_async_t * rop){
 	int port = handle->port;
 	int chan = rop->loc;
 
-	if( mcu_cortexm_priv_validate_callback(rop->handler.callback) < 0 ){
+	if( cortexm_validate_callback(rop->handler.callback) < 0 ){
 		return -1;
 	}
 

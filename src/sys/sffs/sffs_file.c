@@ -26,7 +26,7 @@
 #include <unistd.h>
 #include <errno.h>
 #ifndef __SIM__
-#include "mcu/cortexm.h"
+#include "cortexm/cortexm.h"
 #endif
 
 
@@ -145,7 +145,7 @@ int sffs_file_finishread(const void * cfg, cl_handle_t * handle){
 	}
 
 	if ( handle->op->handler.callback != NULL ){
-		mcu_core_privcall((core_privcall_t)execute_callback, handle);
+		cortexm_svcall((cortexm_svcall_t)execute_callback, handle);
 	}
 
 	return 0;
@@ -212,7 +212,7 @@ int sffs_file_finishwrite(const void * cfg, cl_handle_t * handle){
 	}
 
 	if ( handle->op->handler.callback != NULL ){
-		mcu_core_privcall((core_privcall_t)execute_callback, handle);
+		cortexm_svcall((cortexm_svcall_t)execute_callback, handle);
 	}
 	return 0;
 }

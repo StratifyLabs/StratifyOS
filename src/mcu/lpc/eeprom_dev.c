@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include <errno.h>
-#include "mcu/cortexm.h"
+#include "cortexm/cortexm.h"
 #include "mcu/eeprom.h"
 #include "mcu/debug.h"
 #include "mcu/core.h"
@@ -43,7 +43,7 @@ LPC_EEPROM_Type * const eeprom_regs[MCU_EEPROM_PORTS] = MCU_EEPROM_REGS;
 u8 const eeprom_irqs[MCU_EEPROM_PORTS] = MCU_EEPROM_IRQS;
 
 
-static void exec_callback(const devfs_handle_t * handle, u32 o_flags, void * data);
+static void exec_callback(int port, u32 o_flags, void * data);
 
 static int calc_offset(int loc){
 	return loc % MCU_EEPROM_PAGE_SIZE;
@@ -55,6 +55,7 @@ static int calc_page(int loc){
 
 
 void mcu_eeprom_dev_power_on(const devfs_handle_t * handle){
+	int port = handle->port;
 	uint8_t phase[3];
 	int cpu_mhz;
 	LPC_EEPROM_Type * regs = eeprom_regs[port];
@@ -63,7 +64,7 @@ void mcu_eeprom_dev_power_on(const devfs_handle_t * handle){
 
 		//enable the interrupt
 		if( eeprom_irqs[port] != 0xFF ){
-			mcu_cortexm_priv_enable_irq((void*)(u32)(eeprom_irqs[port]));
+			cortexm_enable_irq((void*)(u32)(eeprom_irqs[port]));
 		}
 
 		//initialize the EEPROM clock
@@ -82,12 +83,13 @@ void mcu_eeprom_dev_power_on(const devfs_handle_t * handle){
 }
 
 void mcu_eeprom_dev_power_off(const devfs_handle_t * handle){
+	int port = handle->port;
 	LPC_EEPROM_Type * regs = eeprom_regs[port];
 
 	if ( eeprom_local[port].ref_count > 0 ){
 		if ( eeprom_local[port].ref_count == 1 ){
 			//disable the interrupt
-			mcu_cortexm_priv_disable_irq((void*)(u32)(eeprom_irqs[port]));
+			cortexm_disable_irq((void*)(u32)(eeprom_irqs[port]));
 
 			//power down
 			regs->PWRDWN = 1;
@@ -98,6 +100,7 @@ void mcu_eeprom_dev_power_off(const devfs_handle_t * handle){
 }
 
 int mcu_eeprom_dev_is_powered(const devfs_handle_t * handle){
+	int port = handle->port;
 	LPC_EEPROM_Type * regs = eeprom_regs[port];
 	return ( regs->PWRDWN & (1<<0) ) == 0;
 }
@@ -113,6 +116,7 @@ int mcu_eeprom_setattr(const devfs_handle_t * handle, void * ctl){
 }
 
 int mcu_eeprom_setaction(const devfs_handle_t * handle, void * ctl){
+	int port = handle->port;
 	mcu_action_t * action = (mcu_action_t *)ctl;
 	if( action->handler.callback == 0 ){
 		if( eeprom_local[port].buf != 0 ){
@@ -120,7 +124,7 @@ int mcu_eeprom_setaction(const devfs_handle_t * handle, void * ctl){
 		}
 	}
 
-	if( mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
+	if( cortexm_validate_callback(action->handler.callback) < 0 ){
 		return -1;
 	}
 
@@ -130,8 +134,8 @@ int mcu_eeprom_setaction(const devfs_handle_t * handle, void * ctl){
 }
 
 
-int mcu_eeprom_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
-	int port = cfg->port;
+int mcu_eeprom_dev_write(const devfs_handle_t * handle, devfs_async_t * wop){
+	int port = handle->port;
 	if ( wop->nbyte == 0 ){
 		return 0;
 	}
@@ -156,7 +160,7 @@ int mcu_eeprom_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	eeprom_local[port].page = calc_page(wop->loc);
 	eeprom_local[port].offset = calc_offset(wop->loc);
 
-	if( mcu_cortexm_priv_validate_callback(wop->handler.callback) < 0 ){
+	if( cortexm_validate_callback(wop->handler.callback) < 0 ){
 		return -1;
 	}
 
@@ -192,8 +196,8 @@ int mcu_eeprom_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 
 }
 
-int mcu_eeprom_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
-	int port = cfg->port;
+int mcu_eeprom_dev_read(const devfs_handle_t * handle, devfs_async_t * rop){
+	int port = handle->port;
 
 	if ( rop->nbyte == 0 ){
 		return 0;
@@ -248,7 +252,7 @@ int mcu_eeprom_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	return rop->nbyte;
 }
 
-void exec_callback(const devfs_handle_t * handle, u32 o_flags, void * data){
+void exec_callback(int port, u32 o_flags, void * data){
 	LPC_EEPROM_Type * regs = eeprom_regs[port];
 	eeprom_local[port].buf = 0;
 	regs->INTENCLR = (1<<26)|(1<<28); //disable the interrupts

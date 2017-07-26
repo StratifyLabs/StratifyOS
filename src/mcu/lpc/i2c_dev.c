@@ -19,7 +19,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
-#include "mcu/cortexm.h"
+#include "cortexm/cortexm.h"
 #include "mcu/i2c.h"
 #include "mcu/debug.h"
 #include "mcu/core.h"
@@ -154,7 +154,7 @@ void mcu_i2c_dev_power_on(const devfs_handle_t * handle){
 		}
 		memset(&(i2c_local[port].master), 0, sizeof(i2c_local_transfer_t));
 		memset(&(i2c_local[port].slave), 0, sizeof(i2c_local_slave_t));
-		mcu_cortexm_priv_enable_irq((void*)(u32)(i2c_irqs[port]));
+		cortexm_enable_irq((void*)(u32)(i2c_irqs[port]));
 	}
 	i2c_local[port].ref_count++;
 }
@@ -170,7 +170,7 @@ void mcu_i2c_dev_power_off(const devfs_handle_t * handle){
 			i2c_regs->ADR1 = 0;
 			i2c_regs->ADR2 = 0;
 			i2c_regs->ADR3 = 0;
-			mcu_cortexm_priv_disable_irq((void*)(u32)(i2c_irqs[port]));
+			cortexm_disable_irq((void*)(u32)(i2c_irqs[port]));
 			switch(port){
 			case 0:
 				mcu_lpc_core_disable_pwr(PCI2C0);
@@ -347,7 +347,7 @@ int mcu_i2c_setaction(const devfs_handle_t * handle, void * ctl){
 	mcu_action_t * action = (mcu_action_t*)ctl;
 	int port = handle->port;
 
-	mcu_cortexm_set_irq_prio(i2c_irqs[port], action->prio);
+	cortexm_set_irq_prio(i2c_irqs[port], action->prio);
 
 	if( action->handler.callback == 0 ){
 		i2c_local[port].slave.handler.callback = 0;
@@ -355,7 +355,7 @@ int mcu_i2c_setaction(const devfs_handle_t * handle, void * ctl){
 		return 0;
 	}
 
-	if( mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
+	if( cortexm_validate_callback(action->handler.callback) < 0 ){
 		return -1;
 	}
 
@@ -660,7 +660,7 @@ int i2c_transfer(const devfs_handle_t * handle, int op, devfs_async_t * dop){
 	i2c_local[port].state = I2C_STATE_START;
 
 
-	if( mcu_cortexm_priv_validate_callback(dop->handler.callback) < 0 ){
+	if( cortexm_validate_callback(dop->handler.callback) < 0 ){
 		errno = EPERM;
 		return -1;
 	}

@@ -25,7 +25,7 @@
 
 #include <sys/types.h>
 #include "mcu/mcu.h"
-#include "mcu/task.h"
+#include "cortexm/task.h"
 
 /*! \details This function returns the process ID of the parent process.
  * \return The process ID of the caller's parent process.

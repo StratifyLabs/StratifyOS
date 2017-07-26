@@ -17,7 +17,7 @@
  * 
  */
 
-#include "mcu/cortexm.h"
+#include "cortexm/cortexm.h"
 #include "mcu/mcu.h"
 #include "mcu/debug.h"
 #include "mcu/bootloader.h"
@@ -420,7 +420,7 @@ void core_init(){
 
 void mcu_core_reset_handler(){
 	core_init();
-	mcu_cortexm_priv_set_vector_table_addr((void*)mcu_core_vector_table);
+	cortexm_set_vector_table_addr((void*)mcu_core_vector_table);
 	_main(); //This function should never return
 	while(1);
 }

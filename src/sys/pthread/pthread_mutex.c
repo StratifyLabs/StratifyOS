@@ -212,7 +212,7 @@ int pthread_mutex_unlock(pthread_mutex_t *mutex){
 	}
 
 	args.mutex = mutex;  //The Mutex
-	mcu_core_privcall((core_privcall_t)priv_mutex_unlock, &args);
+	cortexm_svcall((cortexm_svcall_t)priv_mutex_unlock, &args);
 #endif
 	return 0;
 }
@@ -288,10 +288,10 @@ int mutex_trylock(pthread_mutex_t *mutex, bool trylock, const struct timespec * 
 	args.mutex = mutex;
 	args.trylock = trylock;
 	sched_convert_timespec(&args.abs_timeout, abs_timeout);
-	mcu_core_privcall((core_privcall_t)priv_mutex_trylock, &args);
+	cortexm_svcall((cortexm_svcall_t)priv_mutex_trylock, &args);
 	if( args.ret == -2 ){
 		while( (sched_get_unblock_type(args.id) == SCHED_UNBLOCK_SIGNAL)  ){
-			mcu_core_privcall((core_privcall_t)priv_mutex_unblocked, &args);
+			cortexm_svcall((cortexm_svcall_t)priv_mutex_unblocked, &args);
 		}
 	}
 
@@ -305,7 +305,7 @@ int pthread_mutex_force_unlock(pthread_mutex_t *mutex){
 		if ( mutex->pid == getpid() && (mutex->lock != 0) ){
 			args.id = mutex->pthread; //Current owner of the mutex
 			args.mutex = mutex;  //The Mutex
-			mcu_core_privcall((core_privcall_t)priv_mutex_unlock, &args);
+			cortexm_svcall((cortexm_svcall_t)priv_mutex_unlock, &args);
 		}
 	}
 

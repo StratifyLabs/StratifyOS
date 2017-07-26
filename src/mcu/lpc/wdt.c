@@ -19,9 +19,9 @@
 
 #include "mcu/arch.h"
 #include "mcu/wdt.h"
-#include "mcu/cortexm.h"
+#include "cortexm/cortexm.h"
 #include "mcu/core.h"
-#include "mcu/fault.h"
+#include "cortexm/fault.h"
 
 
 #define WDEN (1<<0)
@@ -68,7 +68,7 @@ int mcu_wdt_init(int mode, int interval){
 #endif
 
 		NVIC_SetPriority(WDT_IRQn, 2);
-		mcu_cortexm_priv_enable_irq((void*)WDT_IRQn);
+		cortexm_enable_irq((void*)WDT_IRQn);
 	}
 
 	//Set the interval

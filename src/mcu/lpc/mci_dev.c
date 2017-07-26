@@ -19,7 +19,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
-#include "mcu/cortexm.h"
+#include "cortexm/cortexm.h"
 #include "mcu/mci.h"
 #include "mcu/pio.h"
 #include "mcu/debug.h"
@@ -32,7 +32,7 @@
 
 static LPC_MCI_Type * const mci_regs_table[MCU_MCI_PORTS] = MCU_MCI_REGS;
 
-static void exec_callback(const devfs_handle_t * handle, void * data);
+static void exec_callback(int port, void * data);
 
 
 static int mcu_mci_write_fifo(LPC_MCI_Type * regs, uint32_t * src, int nbyte);
@@ -58,18 +58,20 @@ mci_attr_t mci_local_attr[MCU_MCI_PORTS] MCU_SYS_MEM;
 mci_local_t mci_local[MCU_MCI_PORTS] MCU_SYS_MEM;
 
 void mcu_mci_dev_power_on(const devfs_handle_t * handle){
+	int port = handle->port;
 	if ( mci_local[port].ref_count == 0 ){
 		mcu_lpc_core_enable_pwr(PCMCI);
-		mcu_cortexm_priv_enable_irq((void*)MCI_IRQn);
+		cortexm_enable_irq((void*)MCI_IRQn);
 		mci_local[port].handler.callback = NULL;
 	}
 	mci_local[port].ref_count++;
 }
 
 void mcu_mci_dev_power_off(const devfs_handle_t * handle){
+	int port = handle->port;
 	if ( mci_local[port].ref_count > 0 ){
 		if ( mci_local[port].ref_count == 1 ){
-			mcu_cortexm_priv_disable_irq((void*)MCI_IRQn);
+			cortexm_disable_irq((void*)MCI_IRQn);
 			mcu_lpc_core_enable_pwr(PCMCI);
 		}
 		mci_local[port].ref_count--;
@@ -77,15 +79,18 @@ void mcu_mci_dev_power_off(const devfs_handle_t * handle){
 }
 
 int mcu_mci_dev_is_powered(const devfs_handle_t * handle){
+	int port = handle->port;
 	return ( mci_local[port].ref_count != 0 );
 }
 
 int mcu_mci_getinfo(const devfs_handle_t * handle, void * ctl){
+	int port = handle->port;
 	memcpy(ctl, &(mci_local_attr[port]), sizeof(mci_attr_t));
 	return 0;
 }
 
 int mcu_mci_setattr(const devfs_handle_t * handle, void * ctl){
+	int port = handle->port;
 	mci_attr_t * attr = ctl;
 	LPC_MCI_Type * regs = mci_regs_table[port];
 
@@ -152,13 +157,14 @@ int mcu_mci_setattr(const devfs_handle_t * handle, void * ctl){
 
 
 int mcu_mci_setaction(const devfs_handle_t * handle, void * ctl){
+	int port = handle->port;
 	mcu_action_t * action = (mcu_action_t*)ctl;
 	if( action->handler.callback == 0 ){
 
 
 	}
 
-	if( mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
+	if( cortexm_validate_callback(action->handler.callback) < 0 ){
 		return -1;
 	}
 
@@ -206,7 +212,7 @@ void mcu_mci0_isr(int port) {
 	exec_callback(port, 0);
 }
 
-void exec_callback(const devfs_handle_t * handle, void * data){
+void exec_callback(int port, void * data){
 	/*
 	mci_local[port].state |= I2C_DONE_FLAG;
 	if ( mci_local[port].err != 0 ){

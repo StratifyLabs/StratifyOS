@@ -26,7 +26,7 @@
 #include "config.h"
 #include <sys/types.h>
 #include "mcu/mcu.h"
-#include "mcu/task.h"
+#include "cortexm/task.h"
 
 /*! \details This function returns the process ID of the calling process.
  * \return The process ID of the caller.

@@ -45,7 +45,7 @@
 #define SERIAL_NUM_WIDTH 3
 
 #define LINK_DEBUG 0
-#define link_debug(...) do { if ( LINK_DEBUG == 1 ){ mcu_debug("%s:", __func__); mcu_debug(__VA_ARGS__); } } while(0)
+#define link_debug(...) do { if ( LINK_DEBUG == 1 ){ mcu_debug_user_printf("%s:", __func__); mcu_debug_user_printf(__VA_ARGS__); } } while(0)
 
 static int read_device(link_transport_driver_t * driver, int fildes, int size);
 static int write_device(link_transport_driver_t * driver, int fildes, int size);
@@ -122,20 +122,20 @@ void * link_update(void * arg){
 	data.op.cmd = 0;
 	err = 0;
 
-	mcu_debug("Open link driver\n");
+	mcu_debug_user_printf("Open link driver\n");
 	if( (driver->handle = driver->open(NULL, 0)) == LINK_PHY_ERROR){
-		mcu_debug("failed to init phy\n");
+		mcu_debug_user_printf("failed to init phy\n");
 		return 0;
 	}
 
-	mcu_debug("start link update\n");
+	mcu_debug_user_printf("start link update\n");
 	while(1){
 
 		//Wait for data to arrive on the link transport device
 		while( 1 ){
 
 			if ( (err = link_transport_slaveread(driver, &packet_data, LINK_MAX_TRANSFER_SIZE, NULL, NULL)) <= 0 ){
-				mcu_debug("slave read error %d\n", err);
+				mcu_debug_user_printf("slave read error %d\n", err);
 				driver->flush(driver->handle);
 				continue;
 			}
@@ -165,7 +165,7 @@ void * link_update(void * arg){
 
 	}
 
-	mcu_debug("Link quit\n");
+	mcu_debug_user_printf("Link quit\n");
 	return NULL;
 }
 
@@ -193,7 +193,7 @@ void priv_get_serialno(void * dest){
 void link_cmd_readserialno(link_transport_driver_t * driver, link_data_t * args){
 	char serialno[LINK_PACKET_DATA_SIZE];
 	memset(serialno, 0, LINK_PACKET_DATA_SIZE);
-	mcu_core_privcall(priv_get_serialno, serialno);
+	cortexm_svcall(priv_get_serialno, serialno);
 
 	args->reply.err = strlen(serialno);
 	args->reply.err_number = 0;

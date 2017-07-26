@@ -25,7 +25,7 @@
 
 #include "config.h"
 #include "sos/fs/devfs.h"
-#include "mcu/task.h"
+#include "cortexm/task.h"
 #include "mcu/debug.h"
 #include "sos/fs/sysfs.h"
 #include "../../sched/sched_flags.h"
@@ -49,7 +49,7 @@ int install(const char * path,
 	char name[NAME_MAX];
 
 	if( stat(path, &st) < 0 ){
-		mcu_debug("Can't find path %s\n", path);
+		mcu_debug_user_printf("Can't find path %s\n", path);
 		return -1;
 	}
 

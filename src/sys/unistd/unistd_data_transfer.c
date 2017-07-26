@@ -176,7 +176,7 @@ int device_data_transfer(open_file_t * open_file, void * buf, int nbyte, int rea
 		args.op.nbyte = nbyte;
 
 		//This transfers the data
-		mcu_core_privcall(priv_device_data_transfer, (void*)&args);
+		cortexm_svcall(priv_device_data_transfer, (void*)&args);
 
 		//We arrive here if the data is done transferring or there is no data to transfer and O_NONBLOCK is set
 		//or if there was an error
@@ -192,7 +192,7 @@ int device_data_transfer(open_file_t * open_file, void * buf, int nbyte, int rea
 			}
 
 			//check again if the op is complete
-			mcu_core_privcall(priv_check_op_complete, (void*)&args);
+			cortexm_svcall(priv_check_op_complete, (void*)&args);
 		}
 
 
@@ -220,7 +220,7 @@ int device_data_transfer(open_file_t * open_file, void * buf, int nbyte, int rea
 		} else if ( args.ret < 0 ){
 			//there was an error starting the operation (such as EAGAIN)
 			if( args.ret == -101010 ){
-				errno = ENXIO; //this is a rare/strange error where mcu_core_privcall fails to run properly
+				errno = ENXIO; //this is a rare/strange error where cortexm_svcall fails to run properly
 			}
 			return args.ret;
 		}

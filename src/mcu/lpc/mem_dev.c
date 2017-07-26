@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include <errno.h>
-#include "mcu/cortexm.h"
+#include "cortexm/cortexm.h"
 #include "mcu/mem.h"
 #include "mcu/debug.h"
 #include "mcu/core.h"
@@ -151,9 +151,9 @@ int mcu_mem_erasepage(const devfs_handle_t * handle, void * ctl){
 		return -1;
 	}
 
-	mcu_cortexm_priv_disable_interrupts(NULL);
+	cortexm_disable_interrupts(NULL);
 	err = mcu_lpc_flash_erase_page((u32)ctl);
-	mcu_cortexm_priv_enable_interrupts(NULL);
+	cortexm_enable_interrupts(NULL);
 	if ( err < 0 ){
 		errno = EIO;
 		return -1;
@@ -328,7 +328,7 @@ int blank_check(int loc, int nbyte){
 
 int get_last_boot_page(){
 	bootloader_api_t api;
-	mcu_core_priv_bootloader_api(&api);
+	mcu_core_get_bootloader_api(&api);
 
 	if( api.code_size > 0 ){ //zero means there is not bootloader installed
 		return get_flash_page(api.code_size);

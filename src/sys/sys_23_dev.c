@@ -25,13 +25,13 @@
 
 #include "config.h"
 #include <errno.h>
-#include "mcu/sys.h"
+#include "device/sys.h"
 #include "mcu/core.h"
-#include "mcu/sys.h"
+#include "device/sys.h"
 #include "mcu/debug.h"
 #include "sched/sched_flags.h"
 #include "signal/sig_local.h"
-#include "mcu/sys.h"
+#include "device/sys.h"
 #include "symbols.h"
 
 

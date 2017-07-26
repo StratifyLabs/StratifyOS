@@ -56,10 +56,10 @@ typedef struct {
 } device_t;
 
 
-typedef void (*core_privcall_t)(void*);
+typedef void (*cortexm_svcall_t)(void*);
 
-static inline void mcu_core_privcall(core_privcall_t call, void * args);
-void mcu_core_privcall(void (*call)(void*), void * args){
+static inline void cortexm_svcall(cortexm_svcall_t call, void * args);
+void cortexm_svcall(void (*call)(void*), void * args){
 	call(args);
 }
 

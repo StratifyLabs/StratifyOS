@@ -45,7 +45,7 @@ void sffs_dev_setlist_block(const void * cfg, int list_block){
 }
 
 void sffs_dev_setdelay_mutex(pthread_mutex_t * mutex){
-	mcu_core_privcall(sched_priv_set_delaymutex, mutex);
+	cortexm_svcall(sched_priv_set_delaymutex, mutex);
 }
 
 int sffs_dev_getserialno(const void * cfg){
@@ -72,7 +72,7 @@ int sffs_dev_open(const void * cfg){
 			cfgp->name,
 			O_RDWR,
 			0) < 0 ){
-		mcu_debug("Failed to open device\n");
+		mcu_debug_user_printf("Failed to open device\n");
 				return -1;
 			}
 
@@ -91,7 +91,7 @@ int sffs_dev_write(const void * cfg, int loc, const void * buf, int nbyte){
 	cfgp->open_file->loc = loc;
 	ret = u_write(cfgp->open_file, buf, nbyte);
 	if( ret != nbyte ){
-		//mcu_debug("Only wrote %d bytes\n", ret);
+		//mcu_debug_user_printf("Only wrote %d bytes\n", ret);
 		return -1;
 	}
 	memset(buffer, 0, nbyte);

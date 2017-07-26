@@ -24,7 +24,7 @@
 #include <sys/stat.h>
 #endif
 
-#include "ioctl.h"
+#include "sos/ioctl.h"
 
 typedef uint8_t u8;
 typedef int8_t s8;

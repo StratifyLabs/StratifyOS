@@ -20,7 +20,7 @@
 #include <stddef.h>
 #include <errno.h>
 #include <fcntl.h>
-#include "mcu/cortexm.h"
+#include "cortexm/cortexm.h"
 #include "mcu/adc.h"
 #include "mcu/core.h"
 #include "mcu/pio.h"
@@ -63,7 +63,7 @@ void mcu_adc_dev_power_on(const devfs_handle_t * handle){
 	LPC_ADC_Type * regs = adc_regs[port];
 	if ( adc_local[port].ref_count == 0 ){
 		mcu_lpc_core_enable_pwr(PCADC);
-		mcu_cortexm_priv_enable_irq((void*)(u32)(adc_irqs[port]));
+		cortexm_enable_irq((void*)(u32)(adc_irqs[port]));
 		regs->INTEN = 0;
 		memset(&adc_local, 0, sizeof(adc_local_t));
 #if defined __lpc13xx || defined __lpc13uxx
@@ -83,7 +83,7 @@ void mcu_adc_dev_power_off(const devfs_handle_t * handle){
 	if ( adc_local[port].ref_count > 0 ){
 		if ( adc_local[port].ref_count == 1 ){
 			regs->CR = 0; //reset the control -- clear the PDN bit
-			mcu_cortexm_priv_disable_irq((void*)(u32)(adc_irqs[port]));
+			cortexm_disable_irq((void*)(u32)(adc_irqs[port]));
 			mcu_lpc_core_disable_pwr(PCADC);
 		}
 		adc_local[port].ref_count--;
@@ -110,7 +110,7 @@ int mcu_adc_dev_read(const devfs_handle_t * handle, devfs_async_t * rop){
 		return -1;
 	}
 
-	if( mcu_cortexm_priv_validate_callback(rop->handler.callback) < 0 ){
+	if( cortexm_validate_callback(rop->handler.callback) < 0 ){
 		return -1;
 	}
 
@@ -223,14 +223,14 @@ int mcu_adc_setaction(const devfs_handle_t * handle, void * ctl){
 		}
 	}
 
-	if( mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
+	if( cortexm_validate_callback(action->handler.callback) < 0 ){
 		return -1;
 	}
 
 	adc_local[port].handler.callback = action->handler.callback;
 	adc_local[port].handler.context = action->handler.context;
 
-	mcu_cortexm_set_irq_prio(adc_irqs[port], action->prio);
+	cortexm_set_irq_prio(adc_irqs[port], action->prio);
 
 	return 0;
 }

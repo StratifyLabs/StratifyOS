@@ -31,7 +31,7 @@
 #include <signal.h>
 #include <stdlib.h>
 #include "mcu/mcu.h"
-#include "mcu/task.h"
+#include "cortexm/task.h"
 
 #include "../sched/sched_flags.h"
 
@@ -85,7 +85,7 @@ int sigwait(const sigset_t * set, int * sig){
 		}
 
 		//Block until a signal arrives
-		mcu_core_privcall(signal_priv_wait, NULL);
+		cortexm_svcall(signal_priv_wait, NULL);
 
 	} while(1);
 
@@ -123,7 +123,7 @@ int sigtimedwait(const sigset_t * set,
 			}
 		}
 		//block the thread until a signal arrives
-		mcu_core_privcall(signal_priv_wait, &abs_timeout);
+		cortexm_svcall(signal_priv_wait, &abs_timeout);
 
 		//Check to see if a non-blocked signal was caught --executed by user function
 		if ( sched_sigcaught_asserted(task_get_current()) ){ //! \todo the sigcault flag should not be in a protected area of memory
@@ -167,7 +167,7 @@ int sigwaitinfo(const sigset_t *set, siginfo_t *info){
 			}
 		}
 		//block the thread until a signal arrives
-		mcu_core_privcall(signal_priv_wait, NULL);
+		cortexm_svcall(signal_priv_wait, NULL);
 
 		//Check to see if a non-blocked signal was caught --executed by user function
 		if ( sched_sigcaught_asserted(task_get_current()) ){

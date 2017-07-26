@@ -145,7 +145,7 @@ int devfs_open(const void * cfg, void ** handle, const char * path, int flags, i
 	//Check to see if the device is in the list
 	args.device = load(list, path);
 	if ( args.device != NULL ){
-		mcu_core_privcall(priv_open_device, &args);
+		cortexm_svcall(priv_open_device, &args);
 		if ( args.err < 0 ){
 			return args.err;
 		}
@@ -201,7 +201,7 @@ int devfs_ioctl(const void * cfg, void * handle, int request, void * ctl){
 	args.request = request;
 	args.ctl = ctl;
 	args.err = 0;
-	mcu_cortexm_svcall(ioctl_priv, &args);
+	cortexm_svcall(ioctl_priv, &args);
 	return args.err;
 }
 
@@ -220,7 +220,7 @@ int devfs_close(const void * cfg, void ** handle){
 	priv_args_t args;
 	args.err = 0;
 	args.device = *handle;
-	mcu_core_privcall(priv_devfs_close, &args);
+	cortexm_svcall(priv_devfs_close, &args);
 	*handle = NULL;
 	return args.err;
 }

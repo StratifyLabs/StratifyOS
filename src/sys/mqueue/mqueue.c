@@ -927,7 +927,7 @@ int block_on_mq(void * block, const struct timespec * abs_timeout){
 		}
 	}
 	sched_convert_timespec(&args.abs_timeout, abs_timeout);
-	mcu_core_privcall(priv_block_on_mq, &args);
+	cortexm_svcall(priv_block_on_mq, &args);
 	if ( sched_get_unblock_type( task_get_current() ) == SCHED_UNBLOCK_SLEEP ){
 		errno = ETIMEDOUT;
 		return -1;
@@ -948,7 +948,7 @@ void check_for_blocked_task(void * block){
 	int new_thread;
 	new_thread = sched_get_highest_priority_blocked(block);
 	if ( new_thread != -1 ){
-		mcu_core_privcall(priv_wake_blocked, &new_thread);
+		cortexm_svcall(priv_wake_blocked, &new_thread);
 	} else {
 		//See if any tasks need to be notified if a message was just sent
 	}

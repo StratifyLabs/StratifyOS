@@ -19,11 +19,11 @@
 
 #include <errno.h>
 #include <fcntl.h>
-#include "mcu/cortexm.h"
+#include "cortexm/cortexm.h"
 #include "mcu/usb.h"
 #include "mcu/pio.h"
 #include "usb_flags.h"
-#include "mcu/cortexm.h"
+#include "cortexm/cortexm.h"
 #include "mcu/core.h"
 #include "mcu/debug.h"
 #include "mcu/boot_debug.h"
@@ -122,7 +122,7 @@ void mcu_usb_dev_power_on(const devfs_handle_t * handle){
 void mcu_usb_dev_power_off(const devfs_handle_t * handle){
 	if ( usb_local.ref_count > 0 ){
 		if ( usb_local.ref_count == 1 ){
-			mcu_cortexm_priv_disable_irq((void*)(USB_IRQn));  //Enable the USB interrupt
+			cortexm_disable_irq((void*)(USB_IRQn));  //Enable the USB interrupt
 			LPC_USB->USBClkCtrl = 0x0; //turn off dev clk en and AHB clk en
 			while( LPC_USB->USBClkCtrl != 0 ){}
 			mcu_lpc_core_disable_pwr(PCUSB);
@@ -189,7 +189,7 @@ int mcu_usb_setattr(const devfs_handle_t * handle, void * ctl){
 
 	usb_irq_mask = DEV_STAT_INT | EP_FAST_INT | EP_SLOW_INT;
 
-	mcu_cortexm_priv_enable_irq((void*)USB_IRQn);  //Enable the USB interrupt
+	cortexm_enable_irq((void*)USB_IRQn);  //Enable the USB interrupt
 	mcu_usb_reset(0, NULL);
 	usb_set_addr(0,0);
 	return 0;
@@ -214,7 +214,7 @@ int mcu_usb_setaction(const devfs_handle_t * handle, void * ctl){
 	int log_ep;
 	int ret = -1;
 
-	mcu_cortexm_set_irq_prio(USB_IRQn, action->prio);
+	cortexm_set_irq_prio(USB_IRQn, action->prio);
 	log_ep = action->channel & ~0x80;
 
 	if( action->channel & 0x80 ){
@@ -233,8 +233,8 @@ int mcu_usb_setaction(const devfs_handle_t * handle, void * ctl){
 
 	if ( (log_ep < DEV_USB_LOGICAL_ENDPOINT_COUNT)  ){
 		if( action->o_events & MCU_EVENT_FLAG_DATA_READY ){
-			//mcu_cortexm_priv_enable_interrupts(NULL);
-			if( mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
+			//cortexm_enable_interrupts(NULL);
+			if( cortexm_validate_callback(action->handler.callback) < 0 ){
 				return -1;
 			}
 
@@ -244,7 +244,7 @@ int mcu_usb_setaction(const devfs_handle_t * handle, void * ctl){
 		}
 
 		if( action->o_events & MCU_EVENT_FLAG_WRITE_COMPLETE ){
-			if( mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
+			if( cortexm_validate_callback(action->handler.callback) < 0 ){
 				return -1;
 			}
 
@@ -329,7 +329,7 @@ int mcu_usb_dev_read(const devfs_handle_t * handle, devfs_async_t * rop){
 		rop->nbyte = 0;
 		if ( !(rop->flags & O_NONBLOCK) ){
 			//If this is a blocking call, set the callback and context
-			if( mcu_cortexm_priv_validate_callback(rop->handler.callback) < 0 ){
+			if( cortexm_validate_callback(rop->handler.callback) < 0 ){
 				return -1;
 			}
 
@@ -365,7 +365,7 @@ int mcu_usb_dev_write(const devfs_handle_t * handle, devfs_async_t * wop){
 
 	usb_local.write_pending |= (1<<ep);
 
-	if( mcu_cortexm_priv_validate_callback(wop->handler.callback) < 0 ){
+	if( cortexm_validate_callback(wop->handler.callback) < 0 ){
 		return -1;
 	}
 
@@ -546,7 +546,7 @@ void mcu_core_usb0_isr(){
 	}
 
 	if (device_interrupt_status & DEV_STAT_INT){ //Status interrupt (Reset, suspend/resume or connect)
-		mcu_cortexm_delay_us(100);
+		cortexm_delay_us(100);
 		tmp = usb_sie_rd_cmd_dat(USB_SIE_CMD_GET_DEV_STAT);
 		if (tmp & DEV_RST){
 			//mcu_usb_reset(0, NULL);

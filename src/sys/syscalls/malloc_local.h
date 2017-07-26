@@ -32,7 +32,7 @@
 #include <signal.h>
 #include <string.h>
 #include "mcu/mcu.h"
-#include "mcu/task.h"
+#include "cortexm/task.h"
 
 
 #define MALLOC_DATA_SIZE (MALLOC_CHUNK_SIZE - (sizeof(uint32_t)*2))

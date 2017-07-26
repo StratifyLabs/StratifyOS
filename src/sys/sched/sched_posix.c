@@ -168,7 +168,7 @@ int sched_setparam(pid_t pid, const struct sched_param * param){
 	}
 
 	args.param = param;
-	mcu_core_privcall(priv_set_scheduling_param, &args);
+	cortexm_svcall(priv_set_scheduling_param, &args);
 	return 0;
 }
 
@@ -201,7 +201,7 @@ int sched_setscheduler(pid_t pid, int policy, const struct sched_param * param){
 
 		args.policy = policy;
 		args.param = param;
-		mcu_core_privcall(priv_set_scheduling_param, &args);
+		cortexm_svcall(priv_set_scheduling_param, &args);
 		return 0;
 	default:
 		errno = EINVAL;
@@ -215,7 +215,7 @@ int sched_setscheduler(pid_t pid, int policy, const struct sched_param * param){
  * \return Zero
  */
 int sched_yield(){
-	mcu_core_privcall(task_priv_switch_context, NULL);
+	cortexm_svcall(task_root_switch_context, NULL);
 	return 0;
 }
 

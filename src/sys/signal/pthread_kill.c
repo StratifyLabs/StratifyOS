@@ -27,7 +27,7 @@
 
 #include "config.h"
 #include "mcu/mcu.h"
-#include "mcu/task.h"
+#include "cortexm/task.h"
 #include "mcu/debug.h"
 #include <pthread.h>
 #include <signal.h>
@@ -59,7 +59,7 @@ void signal_priv_check_stack(void * args){
 		sp = (uint32_t)task_table[tid].sp;
 	} else {
 		//read the current stack pointer
-		mcu_cortexm_priv_get_thread_stack_ptr(&sp);
+		cortexm_get_thread_stack_ptr(&sp);
 	}
 
 	if( (sp - task_interrupt_stacksize() - (8*SCHED_DEFAULT_STACKGUARD_SIZE)) < //stackguard * 8 gives the handler a little bit of memory
@@ -102,13 +102,13 @@ int signal_priv_forward(int send_tid, int tid, int si_signo, int si_sigcode, int
 
 				intr.tid = tid;
 				intr.handler = (task_interrupt_handler_t)signal_forward_handler;
-				intr.sync_callback = (core_privcall_t)signal_priv_activate;
+				intr.sync_callback = (cortexm_svcall_t)signal_priv_activate;
 				intr.sync_callback_arg = &tid;
 				intr.arg[0] = send_tid;
 				intr.arg[1] = si_signo;
 				intr.arg[2] = si_sigcode;
 				intr.arg[3] = sig_value;
-				task_priv_interrupt(&intr);
+				task_root_interrupt(&intr);
 			} else {
 				return -1;
 			}
@@ -146,13 +146,13 @@ int signal_priv_send(int send_tid, int tid, int si_signo, int si_sigcode, int si
 
 				intr.tid = tid;
 				intr.handler = (task_interrupt_handler_t)signal_handler;
-				intr.sync_callback = (core_privcall_t)signal_priv_activate;
+				intr.sync_callback = (cortexm_svcall_t)signal_priv_activate;
 				intr.sync_callback_arg = &tid;
 				intr.arg[0] = send_tid;
 				intr.arg[1] = si_signo;
 				intr.arg[2] = si_sigcode;
 				intr.arg[3] = sig_value;
-				task_priv_interrupt(&intr);
+				task_root_interrupt(&intr);
 			} else {
 				errno = EINVAL;
 				return -1;
@@ -196,7 +196,7 @@ int signal_send(int tid, int si_signo, int si_sigcode, int sig_value){
 
 		if ( si_signo < SCHED_NUM_SIGNALS ){
 			check_stack = tid;
-			mcu_core_privcall(signal_priv_check_stack, &check_stack);
+			cortexm_svcall(signal_priv_check_stack, &check_stack);
 			if( check_stack < 0 ){
 				errno = ENOMEM;
 				return -1;
@@ -204,7 +204,7 @@ int signal_send(int tid, int si_signo, int si_sigcode, int sig_value){
 
 			intr.tid = tid;
 			intr.handler = (task_interrupt_handler_t)signal_handler;
-			intr.sync_callback = (core_privcall_t)signal_priv_activate;
+			intr.sync_callback = (cortexm_svcall_t)signal_priv_activate;
 			intr.sync_callback_arg = &tid;
 			intr.arg[0] = task_get_current();
 			intr.arg[1] = si_signo;

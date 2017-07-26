@@ -103,7 +103,7 @@ int hibernate(int seconds){
 	if ( seconds > 0 ){
 		set_alarm(seconds);
 	}
-	mcu_core_privcall(priv_hibernate, &seconds);
+	cortexm_svcall(priv_hibernate, &seconds);
 	return 0;
 }
 
@@ -113,7 +113,7 @@ void powerdown(int seconds){
 		set_alarm(seconds);
 	}
 
-	mcu_core_privcall(priv_powerdown, NULL);
+	cortexm_svcall(priv_powerdown, NULL);
 }
 
 /*! @} */

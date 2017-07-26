@@ -27,11 +27,11 @@
 #include <errno.h>
 #include "sos/dev/sys.h"
 #include "mcu/core.h"
-#include "mcu/sys.h"
+#include "device/sys.h"
 #include "mcu/debug.h"
 #include "sched/sched_flags.h"
 #include "signal/sig_local.h"
-#include "mcu/sys.h"
+#include "device/sys.h"
 #include "symbols.h"
 
 extern void mcu_core_hardware_id();
@@ -124,7 +124,7 @@ int read_task(sys_taskattr_t * task){
 		if ( task_enabled( task->tid )){
 			task->is_enabled = 1;
 			task->pid = task_get_pid( task->tid );
-			task->timer = task_priv_gettime(task->tid);
+			task->timer = task_root_gettime(task->tid);
 			task->mem_loc = (uint32_t)sos_sched_table[task->tid].attr.stackaddr;
 			task->mem_size = sos_sched_table[task->tid].attr.stacksize;
 			task->stack_ptr = (uint32_t)task_table[task->tid].sp;

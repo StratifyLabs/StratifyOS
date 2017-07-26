@@ -1,8 +1,20 @@
-/*
- * sst25vf_local.h
+/* Copyright 2011-2016 Tyler Gilbert;
+ * This file is part of Stratify OS.
  *
- *  Created on: Dec 26, 2012
- *      Author: tgil
+ * Stratify OS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Stratify OS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
  */
 
 #ifndef SST25VF_LOCAL_H_
@@ -13,8 +25,7 @@
 #include "mcu/pio.h"
 #include "mcu/spi.h"
 #include "mcu/debug.h"
-#include "sos/dev/microchip/sst25vf.h"
-#include "mcu/microchip/sst25vf.h"
+#include "device/microchip/sst25vf.h"
 
 #define SST25VF_CHIP_ERASE_TIME (75*1000)
 #define SST25VF_BLOCK_ERASE_TIME (30*1000)

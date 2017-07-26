@@ -28,8 +28,8 @@
 #include <sys/time.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include "mcu/fault.h"
-#include "mcu/task.h"
+#include "cortexm/fault.h"
+#include "cortexm/task.h"
 #include "mcu/debug.h"
 #include "mcu/core.h"
 #include "sos/sos.h"
@@ -250,8 +250,8 @@ int sched_prepare();
 void scheduler();
 
 #define SCHED_DEBUG 0
-#define sched_debug(...) do { if ( SCHED_DEBUG == 1 ){ mcu_debug("%s:", __func__); mcu_debug(__VA_ARGS__); } } while(0)
-#define sched_priv_debug(...) do { if ( SCHED_DEBUG == 1 ){ mcu_priv_debug("%s:", __func__); mcu_priv_debug(__VA_ARGS__); } } while(0)
+#define sched_debug(...) do { if ( SCHED_DEBUG == 1 ){ mcu_debug_user_printf("%s:", __func__); mcu_debug_user_printf(__VA_ARGS__); } } while(0)
+#define sched_priv_debug(...) do { if ( SCHED_DEBUG == 1 ){ mcu_debug_printf("%s:", __func__); mcu_debug_printf(__VA_ARGS__); } } while(0)
 
 void sched_priv_set_delaymutex(void * args) MCU_PRIV_EXEC_CODE;
 

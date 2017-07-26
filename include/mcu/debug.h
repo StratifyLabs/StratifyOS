@@ -31,7 +31,7 @@ extern "C" {
 #endif
 
 
-#include "mcu/cortexm.h"
+#include "cortexm/cortexm.h"
 #include "mcu/core.h"
 #include "sos/fs/devfs.h"
 #include "uart.h"
@@ -39,49 +39,28 @@ extern "C" {
 
 #if !defined ___debug
 #define mcu_debug_init() 0
-#define mcu_priv_write_debug_uart(x)
-#define mcu_debug(...)
-#define mcu_priv_debug(...)
-#define mcu_debug_irq(...)
-#define USBD_DEBUG_INIT()
-#define USBD_STAT() 0
-#define USBD_DEBUG(x)
+#define mcu_debug_write_uart(x)
+#define mcu_debug_user_printf(...)
+#define mcu_debug_printf(...)
 #else
 #define MCU_DEBUG 1
 int mcu_debug_init();
-void mcu_priv_write_debug_uart(void * args);
+void mcu_debug_write_uart(void * args);
 
 #define MCU_DEBUG_BUFFER_SIZE 256
 extern char mcu_debug_buffer[MCU_DEBUG_BUFFER_SIZE];
 
 //UART debugging
-#define mcu_debug(...) do { \
+#define mcu_debug_user_printf(...) do { \
 	siprintf(mcu_debug_buffer, __VA_ARGS__); \
-	mcu_core_privcall(mcu_priv_write_debug_uart, NULL); \
+	cortexm_svcall(mcu_debug_write_uart, NULL); \
 } while(0)
 
-#define mcu_priv_debug(...) do { \
+#define mcu_debug_printf(...) do { \
 	siprintf(mcu_debug_buffer, __VA_ARGS__); \
-	mcu_priv_write_debug_uart(NULL); \
+	mcu_debug_write_uart(NULL); \
 } while(0)
 
-#define mcu_debug_irq(...) do { \
-	int bytes; \
-	devfs_async_t op; \
-	DEVFS_DEVICE_t periph; \
-	siprintf(mcu_debug_buffer, __VA_ARGS__); \
-	bytes = strlen(mcu_debug_buffer); \
-	periph.port = MCU_DEBUG_PORT; \
-	op.buf = mcu_debug_buffer; \
-	op.nbyte = bytes; \
-	op.handler.callback = NULL; \
-	mcu_uart_write((const devfs_handle_t *)&periph, &op); \
-} while(0)
-
-extern volatile u32 usbdev_stat;
-#define USBD_STAT() (usbdev_stat)
-
-#define USBD_DEBUG(x) (usbdev_stat |= x)
 
 #endif
 

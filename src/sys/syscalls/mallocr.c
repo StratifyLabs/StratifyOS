@@ -68,7 +68,7 @@ malloc_chunk_t * find_free_chunk(malloc_chunk_t * chunk, uint32_t num_chunks){
 
 
 	//No block found to fit size
-	//mcu_debug("No chunk to fit (0x%X %d 0x%X)\n", chunk, chunk->num_chunks, chunk->signature);
+	//mcu_debug_user_printf("No chunk to fit (0x%X %d 0x%X)\n", chunk, chunk->num_chunks, chunk->signature);
 	return NULL;
 }
 
@@ -100,8 +100,8 @@ void cleanup_memory(malloc_chunk_t * chunk){
 	while( next->num_chunks != 0 ){
 		current_free = malloc_chunk_is_free(current);
 		next_free = malloc_chunk_is_free(next);
-		//mcu_debug("CC:0x%X %d %d\n", (int)current, current->num_chunks, current_free);
-		//mcu_debug("NC:0x%X %d %d\n", (int)next, next->num_chunks, next_free);
+		//mcu_debug_user_printf("CC:0x%X %d %d\n", (int)current, current->num_chunks, current_free);
+		//mcu_debug_user_printf("NC:0x%X %d %d\n", (int)next, next->num_chunks, next_free);
 
 		if ( next_free == -1 ){
 			return;
@@ -196,7 +196,7 @@ void _free_r(struct _reent * reent_ptr, void * addr){
 		return;
 	}
 
-	//mcu_debug("f:%d 0x%X\n", _getpid(), addr);
+	//mcu_debug_user_printf("f:%d 0x%X\n", _getpid(), addr);
 	malloc_set_chunk_free(chunk);
 	cleanup_memory((malloc_chunk_t *)&(reent_ptr->procmem_base->base));
 	__malloc_unlock(reent_ptr);
@@ -210,10 +210,10 @@ int get_more_memory(struct _reent * reent_ptr){
 		return -1;
 	} else {
 		chunk->num_chunks = MALLOC_SBRK_JUMP_SIZE / MALLOC_CHUNK_SIZE;
-		//mcu_debug("MC:0x%X (%d)\n", (int)chunk, chunk->num_chunks);
+		//mcu_debug_user_printf("MC:0x%X (%d)\n", (int)chunk, chunk->num_chunks);
 		malloc_set_chunk_free(chunk);
 		set_last_chunk(chunk + chunk->num_chunks); //mark the last block
-		//mcu_debug("LC:%d:0x%X\n", chunk_is_free(chunk + chunk->num_chunks), chunk + chunk->num_chunks);
+		//mcu_debug_user_printf("LC:%d:0x%X\n", chunk_is_free(chunk + chunk->num_chunks), chunk + chunk->num_chunks);
 	}
 	return 0;
 }
@@ -285,7 +285,7 @@ void * _malloc_r(struct _reent * reent_ptr, size_t size){
 
 	__malloc_unlock(reent_ptr);
 
-	//mcu_debug("a:%d 0x%X %d 0x%X 0x%X\n", _getpid(), alloc, size, reent_ptr, _GLOBAL_REENT);
+	//mcu_debug_user_printf("a:%d 0x%X %d 0x%X 0x%X\n", _getpid(), alloc, size, reent_ptr, _GLOBAL_REENT);
 
 
 	return alloc;
@@ -342,7 +342,7 @@ void malloc_process_fault(void * loc){
 }
 
 void show_seg_fault(void * loc){
-	//mcu_debug("\nSegmentation Fault\n");
+	//mcu_debug_user_printf("\nSegmentation Fault\n");
 	char buffer[32];
 	char hex_buffer[9];
 #if SINGLE_TASK == 0

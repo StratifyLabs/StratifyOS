@@ -19,9 +19,9 @@
 
 #include <errno.h>
 #include <fcntl.h>
-#include "mcu/cortexm.h"
+#include "cortexm/cortexm.h"
 #include "mcu/pwm.h"
-#include "mcu/cortexm.h"
+#include "cortexm/cortexm.h"
 #include "mcu/core.h"
 #include "mcu/debug.h"
 
@@ -56,12 +56,12 @@ void mcu_pwm_dev_power_on(const devfs_handle_t * handle){
 #ifdef LPCXX7X_8X
 		case 0:
 			mcu_lpc_core_enable_pwr(PCPWM0);
-			mcu_cortexm_priv_enable_irq((void*)PWM0_IRQn);
+			cortexm_enable_irq((void*)PWM0_IRQn);
 			break;
 #endif
 		case 1:
 			mcu_lpc_core_enable_pwr(PCPWM1);
-			mcu_cortexm_priv_enable_irq((void*)(u32)(pwm_irqs[port]));
+			cortexm_enable_irq((void*)(u32)(pwm_irqs[port]));
 			break;
 		}
 
@@ -76,12 +76,12 @@ void mcu_pwm_dev_power_off(const devfs_handle_t * handle){
 			switch(port){
 #ifdef LPCXX7X_8X
 			case 0:
-				mcu_cortexm_priv_disable_irq((void*)(PWM0_IRQn));
+				cortexm_disable_irq((void*)(PWM0_IRQn));
 				mcu_lpc_core_disable_pwr(PCPWM0);
 				break;
 #endif
 			case 1:
-				mcu_cortexm_priv_disable_irq((void*)(u32)(pwm_irqs[port]));
+				cortexm_disable_irq((void*)(u32)(pwm_irqs[port]));
 				mcu_lpc_core_disable_pwr(PCPWM1);
 				break;
 
@@ -197,14 +197,14 @@ int mcu_pwm_setaction(const devfs_handle_t * handle, void * ctl){
 	}
 
 
-	if( mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
+	if( cortexm_validate_callback(action->handler.callback) < 0 ){
 		return -1;
 	}
 
 	pwm_local[port].handler.callback = action->handler.callback;
 	pwm_local[port].handler.context = action->handler.context;
 
-	mcu_cortexm_set_irq_prio(pwm_irqs[port], action->prio);
+	cortexm_set_irq_prio(pwm_irqs[port], action->prio);
 
 	//need to decode the event
 	return 0;
@@ -254,7 +254,7 @@ int mcu_pwm_dev_write(const devfs_handle_t * handle, devfs_async_t * wop){
 	regs->MCR |= (1<<0); //enable the interrupt
 	pwm_local[port].chan = wop->loc;
 
-	if( mcu_cortexm_priv_validate_callback(wop->handler.callback) < 0 ){
+	if( cortexm_validate_callback(wop->handler.callback) < 0 ){
 		return -1;
 	}
 

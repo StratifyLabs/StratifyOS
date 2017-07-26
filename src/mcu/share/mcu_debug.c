@@ -44,7 +44,7 @@ int mcu_debug_init(){
 }
 
 
-void mcu_priv_write_debug_uart(void * args){
+void mcu_debug_write_uart(void * args){
 	int nbyte;
 	int i;
 	devfs_handle_t handle;

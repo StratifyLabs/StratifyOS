@@ -24,11 +24,11 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include <fcntl.h>
-#include "mcu/task.h"
+#include "cortexm/task.h"
 #include "mcu/core.h"
 #include "mcu/mem.h"
 #include "mcu/wdt.h"
-#include "mcu/mpu.h"
+#include "cortexm/mpu.h"
 #include "mcu/debug.h"
 #include "appfs_local.h"
 #include "../sched/sched_flags.h"
@@ -145,7 +145,7 @@ int appfs_init(const void * cfg){
 					APPFS_MEMPAGETYPE_SYS);
 		}
 	}
-	mcu_core_privcall(appfs_ram_priv_saveusage, buf);
+	cortexm_svcall(appfs_ram_priv_saveusage, buf);
 	return 0;
 }
 
@@ -178,9 +178,9 @@ int appfs_startup(const void * cfg){
 						&mem,
 						(void*)info.fileinfo.exec.ram_start) >= 0 ){
 					started++;
-					mcu_debug("Started %s\n", info.fileinfo.hdr.name);
+					mcu_debug_user_printf("Started %s\n", info.fileinfo.hdr.name);
 				} else {
-					mcu_debug("Failed to start %s\n", info.fileinfo.hdr.name);
+					mcu_debug_user_printf("Failed to start %s\n", info.fileinfo.hdr.name);
 				}
 
 			}
@@ -526,7 +526,7 @@ int appfs_ioctl(const void * cfg, void * handle, int request, void * ctl){
 	args.handle = handle;
 	args.request = request;
 	args.ctl = ctl;
-	mcu_cortexm_svcall(priv_ioctl, &args);
+	cortexm_svcall(priv_ioctl, &args);
 	return args.ret;
 
 }

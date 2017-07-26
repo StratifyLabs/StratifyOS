@@ -58,8 +58,8 @@ void mcu_fault_event_handler(fault_t * fault){
 
 #if MCU_DEBUG
 		sched_fault_build_string(mcu_debug_buffer);
-		mcu_priv_write_debug_uart(NULL);
-		mcu_cortexm_delay_ms(200);
+		mcu_debug_write_uart(NULL);
+		cortexm_delay_ms(200);
 #endif
 
 #if 0
@@ -86,11 +86,11 @@ void mcu_fault_event_handler(fault_t * fault){
 
 				if( task_isthread_asserted(i) == 0 ){
 					//reset the stack of the processes main task
-					task_priv_resetstack(i);
+					task_root_resetstack(i);
 					//send the kill signal
 					if( signal_priv_send(0, i, SIGKILL, 0, 0, 0) < 0 ){
 						//kill manually -- for example, if the target task doesn't have enough memory to accept SIGKILL
-						task_priv_del(i);
+						task_root_del(i);
 						sched_priv_update_on_sleep();
 					}
 					break;

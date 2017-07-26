@@ -100,7 +100,7 @@ int pthread_setschedparam(pthread_t thread,
 		args.tid = thread;
 		args.policy = policy;
 		args.param = param;
-		mcu_core_privcall(priv_set_scheduling_param, &args);
+		cortexm_svcall(priv_set_scheduling_param, &args);
 		return 0;
 	}
 

@@ -18,7 +18,7 @@
  */
 
 #include "mcu/mcu.h"
-#include "mcu/cortexm.h"
+#include "cortexm/cortexm.h"
 #include "mcu/core.h"
 
 #if MCU_DMA_CHANNELS > 0
@@ -36,7 +36,7 @@ void mcu_dma_init(int mode){
 	//Enable the controller
 	LPC_GPDMA->CONFIG = (1<<0);
 	//Enable the interrupts
-	mcu_cortexm_priv_enable_irq((void*)DMA_IRQn);
+	cortexm_enable_irq((void*)DMA_IRQn);
 }
 
 void mcu_dma_exit(){
@@ -112,7 +112,7 @@ int mcu_dma_transferlist(int operation,
 	channel_regs->CLLI = (u32)linked_list->next;
 
 	//Set the callback value
-	if( mcu_cortexm_priv_validate_callback(callback) < 0 ){
+	if( cortexm_validate_callback(callback) < 0 ){
 		return -1;
 	}
 

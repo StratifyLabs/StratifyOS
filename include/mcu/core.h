@@ -65,11 +65,12 @@ int mcu_core_getmcuboardconfig(const devfs_handle_t * handle, void * arg) MCU_PR
 //below are undocumented calls that can be made by BSPs but aren't accessible to applications
 static inline int mcu_core_getclock() MCU_ALWAYS_INLINE;
 int mcu_core_getclock(){ return mcu_board_config.core_cpu_freq; }
-void mcu_core_priv_bootloader_api(void * args) MCU_PRIV_CODE;
+
+void mcu_core_get_bootloader_api(void * args) MCU_PRIV_CODE;
 void mcu_core_set_nvic_priority(int irq, int prio) MCU_PRIV_CODE;
-int mcu_core_set_pin_assignment(const void * pin_assignement, int count, int periph, int periph_port);
-void mcu_core_setclock(int fclk, int fosc);
-int mcu_core_initclock(int div);
+int mcu_core_set_pin_assignment(const void * pin_assignement, int count, int periph, int periph_port) MCU_PRIV_CODE;
+void mcu_core_setclock(int fclk, int fosc) MCU_PRIV_CODE;
+int mcu_core_initclock(int div) MCU_PRIV_CODE;
 void mcu_core_setclockinternal(int fclk) MCU_PRIV_CODE;
 void mcu_core_setclock_main_12mhz_72mhz() MCU_PRIV_CODE;
 int mcu_core_setusbclock(int fosc /*! The oscillator frequency */) MCU_PRIV_CODE;
@@ -84,8 +85,8 @@ typedef enum {
 } core_sleep_t;
 
 
-int mcu_core_sleep(core_sleep_t level);
-void mcu_set_sleep_mode(int * level);
+int mcu_core_user_sleep(core_sleep_t level);
+void mcu_set_sleep_mode(int * level) MCU_PRIV_CODE;
 int mcu_core_execsleep(int port, void * arg) MCU_PRIV_CODE;
 int mcu_core_reset(int port, void * arg) MCU_PRIV_CODE;
 int mcu_core_set_pinsel_func(int gpio_port, int pin, core_periph_t function, int periph_port) MCU_PRIV_CODE;

@@ -25,14 +25,14 @@
 
 #include "config.h"
 
-#include "mcu/ioctl.h"
+#include "sos/ioctl.h"
 #include "mcu/mcu.h"
 #include <errno.h>
 #include <stdarg.h>
 #include "unistd_flags.h"
 #include "sos/sos.h"
 #include "mcu/core.h"
-#include "mcu/sys.h"
+#include "device/sys.h"
 
 
 /*! \details This function performs a control request on the device

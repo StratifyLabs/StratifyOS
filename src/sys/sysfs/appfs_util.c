@@ -24,9 +24,9 @@
 
 #include "mcu/mcu.h"
 #include "mcu/mcu.h"
-#include "mcu/mpu.h"
+#include "cortexm/mpu.h"
 #include "mcu/mem.h"
-#include "mcu/task.h"
+#include "cortexm/task.h"
 #include "mcu/core.h"
 #include "appfs_local.h"
 #include "mcu/debug.h"
@@ -80,7 +80,7 @@ int appfs_util_erasepages(const devfs_device_t * dev, int start_page, int end_pa
 	args.dev = dev;
 	args.start_page = start_page;
 	args.end_page = end_page;
-	mcu_core_privcall(priv_op_erase_pages, &args);
+	cortexm_svcall(priv_op_erase_pages, &args);
 	return 0;
 }
 
@@ -637,7 +637,7 @@ int appfs_ram_setusage(int page, int size, int type){
 	u32 buf[APPFS_RAM_USAGE_WORDS];
 	memcpy(buf, appfs_ram_usagetable, APPFS_RAM_USAGE_BYTES);
 	appfs_ram_setrange(buf, page, size, type);
-	mcu_core_privcall(appfs_ram_priv_saveusage, buf);
+	cortexm_svcall(appfs_ram_priv_saveusage, buf);
 	return 0;
 }
 
@@ -747,7 +747,7 @@ int appfs_util_getfileinfo(priv_load_fileinfo_t * info, const devfs_device_t * d
 	info->dev = dev;
 	info->pageinfo.num = page;
 	info->pageinfo.type = type;
-	mcu_core_privcall(appfs_util_privloadfileinfo, info);
+	cortexm_svcall(appfs_util_privloadfileinfo, info);
 	if ( info->ret < 0 ){
 		return -1;
 	}

@@ -35,8 +35,8 @@ u32 const symbols_table[] = {
 		//The first position is the signature
 		(u32)0x00000300 + __CORTEX_M,
 		(u32)__cxa_pure_virtual,
-		(u32)mcu_core_privcall,
-		(u32)task_priv_set_stackguard,
+		(u32)cortexm_svcall,
+		(u32)task_root_set_stackguard,
 		(u32)realloc,
 		(u32)&_global_impure_ptr,
 		(u32)&_impure_ptr,

@@ -18,7 +18,7 @@
  */
 
 #include <errno.h>
-#include "mcu/cortexm.h"
+#include "cortexm/cortexm.h"
 #include "mcu/debug.h"
 #include "mcu/pio.h"
 #include "mcu/core.h"
@@ -175,7 +175,7 @@ int mcu_pio_setaction(const devfs_handle_t * handle, void * ctl){
 	}
 
 	if ( port == 0 ){
-		if( mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
+		if( cortexm_validate_callback(action->handler.callback) < 0 ){
 			return -1;
 		}
 
@@ -183,7 +183,7 @@ int mcu_pio_setaction(const devfs_handle_t * handle, void * ctl){
 		m_pio0_local.handler.context = action->handler.context;
 		LPC_GPIOINT->IO0IntClr = -1; //clear pending interrupts
 	} else if ( port == 2 ){
-		if( mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
+		if( cortexm_validate_callback(action->handler.callback) < 0 ){
 			return -1;
 		}
 
@@ -198,12 +198,12 @@ int mcu_pio_setaction(const devfs_handle_t * handle, void * ctl){
 
 #ifdef LPCXX7X_8X
 	//This is the interrupt for GPIO0 and GPIO2
-	mcu_cortexm_priv_enable_irq((void*)GPIO_IRQn);
-	mcu_cortexm_set_irq_prio(GPIO_IRQn, action->prio);
+	cortexm_enable_irq((void*)GPIO_IRQn);
+	cortexm_set_irq_prio(GPIO_IRQn, action->prio);
 #else
 	//This is the interrupt for GPIO0 and GPIO2 (shared with EINT3)
-	mcu_cortexm_priv_enable_irq((void*)EINT3_IRQn);
-	mcu_cortexm_set_irq_prio(EINT3_IRQn, action->prio);
+	cortexm_enable_irq((void*)EINT3_IRQn);
+	cortexm_set_irq_prio(EINT3_IRQn, action->prio);
 #endif
 
 	return 0;

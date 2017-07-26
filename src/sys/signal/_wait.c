@@ -52,7 +52,7 @@ pid_t waitpid(pid_t pid, int *stat_loc, int options){
 		args.tid = 0;
 		args.pid = pid;
 		if ( !(options & WNOHANG) ){
-			mcu_core_privcall(priv_wait_child, &args);
+			cortexm_svcall(priv_wait_child, &args);
 			//sleep here and wait for the signal to arrive
 		}
 
@@ -61,7 +61,7 @@ pid_t waitpid(pid_t pid, int *stat_loc, int options){
 		if( args.tid == 0 ){
 			if( SIGCHLD_ASSERTED() ){
 				//signal has arrived -- check again for the zombie
-				mcu_core_privcall(priv_check_for_zombie_child, &args);
+				cortexm_svcall(priv_check_for_zombie_child, &args);
 			} else if ( !(options & WNOHANG) ){
 				errno = EINTR;
 				return -1;
@@ -126,7 +126,7 @@ void priv_check_for_zombie_child(void * args){
 								p->tid = i;
 								p->status = sos_sched_table[i].exit_status;
 								sos_sched_table[i].flags = 0;
-								task_priv_del(i);
+								task_root_del(i);
 							}
 							num_zombies++;
 						}

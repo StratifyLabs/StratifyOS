@@ -380,8 +380,8 @@
 #include <pthread.h>
 #include "mcu/mcu.h"
 #include "mcu/types.h"
-#include "mcu/task.h"
-#include "mcu/fault.h"
+#include "cortexm/task.h"
+#include "cortexm/fault.h"
 
 #if defined __link
 #include <posix/trace.h>

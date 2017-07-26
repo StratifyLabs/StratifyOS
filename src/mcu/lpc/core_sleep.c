@@ -19,7 +19,7 @@
 
 #include "mcu/mcu.h"
 #include "core_flags.h"
-#include "mcu/cortexm.h"
+#include "cortexm/cortexm.h"
 #include "mcu/core.h"
 
 
@@ -28,7 +28,7 @@ extern void mcu_set_sleep_mode(int * level);
 extern LPC_GPDMACH_Type * mcu_dma_get_channel(uint32_t chan);
 #endif
 
-int mcu_core_sleep(core_sleep_t level){
+int mcu_core_user_sleep(core_sleep_t level){
 
 #ifdef __lpc17xx__
 	int tmp;
@@ -58,7 +58,7 @@ int mcu_core_sleep(core_sleep_t level){
 	}
 #endif
 
-	mcu_core_privcall((core_privcall_t)mcu_set_sleep_mode, &level);
+	cortexm_svcall((cortexm_svcall_t)mcu_set_sleep_mode, &level);
 	if ( level < 0 ){
 		return level;
 	}

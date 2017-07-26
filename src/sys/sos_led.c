@@ -29,17 +29,17 @@ void sos_led_startup(){
 	if( mcu_board_config.led.port != 255 ){
 		for(i=0; i < 100; i++){
 			duty = i*factor;
-			mcu_core_privcall(sos_led_priv_on, 0);
+			cortexm_svcall(sos_led_priv_on, 0);
 			usleep(duty);
-			mcu_core_privcall(sos_led_priv_off, 0);
+			cortexm_svcall(sos_led_priv_off, 0);
 			usleep(100*factor - duty);
 		}
 
 		for(i=0; i < 100; i++){
 			duty = i*factor;
-			mcu_core_privcall(sos_led_priv_on, 0);
+			cortexm_svcall(sos_led_priv_on, 0);
 			usleep(100*factor - duty);
-			mcu_core_privcall(sos_led_priv_off, 0);
+			cortexm_svcall(sos_led_priv_off, 0);
 			usleep(duty);
 		}
 	}
@@ -75,9 +75,9 @@ void sos_led_priv_off(void * args){
 void sos_led_priv_error(void * args){
 	while(1){
 		sos_led_priv_on(0);
-		mcu_cortexm_delay_ms(50);
+		cortexm_delay_ms(50);
 		sos_led_priv_off(0);
-		mcu_cortexm_delay_ms(50);
+		cortexm_delay_ms(50);
 	}
 }
 

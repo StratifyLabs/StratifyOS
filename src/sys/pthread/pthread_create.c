@@ -138,7 +138,7 @@ int pthread_join(pthread_t thread, void ** value_ptr){
 
 
 			do {
-				mcu_core_privcall(priv_join_thread, &thread);
+				cortexm_svcall(priv_join_thread, &thread);
 				if ( thread < 0 ){
 					errno = ESRCH;
 					return -1;
