@@ -115,18 +115,18 @@ enum {
 
 
 
-static inline void _mcu_lpc_core_enable_pwr(int periph) MCU_ALWAYS_INLINE;
-static inline void _mcu_lpc_core_disable_pwr(int periph) MCU_ALWAYS_INLINE;
-static inline int _mcu_lpc_core_pwr_enabled(int periph) MCU_ALWAYS_INLINE;
+static inline void mcu_lpc_core_enable_pwr(int periph) MCU_ALWAYS_INLINE;
+static inline void mcu_lpc_core_disable_pwr(int periph) MCU_ALWAYS_INLINE;
+static inline int mcu_lpc_core_pwr_enabled(int periph) MCU_ALWAYS_INLINE;
 
 #if !defined __lpc43xx
-void _mcu_lpc_core_enable_pwr(int periph){ LPC_SC->PCONP |= (1<<periph); }
-void _mcu_lpc_core_disable_pwr(int periph){ LPC_SC->PCONP &= ~(1<<periph); }
-int _mcu_lpc_core_pwr_enabled(int periph){ return (LPC_SC->PCONP & (1<<periph)); }
+void mcu_lpc_core_enable_pwr(int periph){ LPC_SC->PCONP |= (1<<periph); }
+void mcu_lpc_core_disable_pwr(int periph){ LPC_SC->PCONP &= ~(1<<periph); }
+int mcu_lpc_core_pwr_enabled(int periph){ return (LPC_SC->PCONP & (1<<periph)); }
 #else
-void _mcu_lpc_core_enable_pwr(int periph){  }
-void _mcu_lpc_core_disable_pwr(int periph){  }
-int _mcu_lpc_core_pwr_enabled(int periph){ return 0; }
+void mcu_lpc_core_enable_pwr(int periph){  }
+void mcu_lpc_core_disable_pwr(int periph){  }
+int mcu_lpc_core_pwr_enabled(int periph){ return 0; }
 #endif
 
 

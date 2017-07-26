@@ -32,7 +32,7 @@
 
 static LPC_MCI_Type * const mci_regs_table[MCU_MCI_PORTS] = MCU_MCI_REGS;
 
-static void exec_callback(int port, void * data);
+static void exec_callback(const devfs_handle_t * handle, void * data);
 
 
 static int mcu_mci_write_fifo(LPC_MCI_Type * regs, uint32_t * src, int nbyte);
@@ -57,35 +57,35 @@ typedef struct {
 mci_attr_t mci_local_attr[MCU_MCI_PORTS] MCU_SYS_MEM;
 mci_local_t mci_local[MCU_MCI_PORTS] MCU_SYS_MEM;
 
-void _mcu_mci_dev_power_on(int port){
+void mcu_mci_dev_power_on(const devfs_handle_t * handle){
 	if ( mci_local[port].ref_count == 0 ){
-		_mcu_lpc_core_enable_pwr(PCMCI);
-		_mcu_cortexm_priv_enable_irq((void*)MCI_IRQn);
+		mcu_lpc_core_enable_pwr(PCMCI);
+		mcu_cortexm_priv_enable_irq((void*)MCI_IRQn);
 		mci_local[port].handler.callback = NULL;
 	}
 	mci_local[port].ref_count++;
 }
 
-void _mcu_mci_dev_power_off(int port){
+void mcu_mci_dev_power_off(const devfs_handle_t * handle){
 	if ( mci_local[port].ref_count > 0 ){
 		if ( mci_local[port].ref_count == 1 ){
-			_mcu_cortexm_priv_disable_irq((void*)MCI_IRQn);
-			_mcu_lpc_core_enable_pwr(PCMCI);
+			mcu_cortexm_priv_disable_irq((void*)MCI_IRQn);
+			mcu_lpc_core_enable_pwr(PCMCI);
 		}
 		mci_local[port].ref_count--;
 	}
 }
 
-int _mcu_mci_dev_powered_on(int port){
+int mcu_mci_dev_is_powered(const devfs_handle_t * handle){
 	return ( mci_local[port].ref_count != 0 );
 }
 
-int mcu_mci_getinfo(int port, void * ctl){
+int mcu_mci_getinfo(const devfs_handle_t * handle, void * ctl){
 	memcpy(ctl, &(mci_local_attr[port]), sizeof(mci_attr_t));
 	return 0;
 }
 
-int mcu_mci_setattr(int port, void * ctl){
+int mcu_mci_setattr(const devfs_handle_t * handle, void * ctl){
 	mci_attr_t * attr = ctl;
 	LPC_MCI_Type * regs = mci_regs_table[port];
 
@@ -114,18 +114,18 @@ int mcu_mci_setattr(int port, void * ctl){
 	//setup the pin selection
 	switch(attr->pin_assign){
 	case 1:
-		_mcu_core_set_pinsel_func(1, 5, CORE_PERIPH_MCI, port); //SD_PWR
+		mcu_core_set_pinsel_func(1, 5, CORE_PERIPH_MCI, port); //SD_PWR
 		/* no break */
 	case 0:
 		//use pins with port 1
-		_mcu_core_set_pinsel_func(1,  6, CORE_PERIPH_MCI, port); //SD_DAT0
+		mcu_core_set_pinsel_func(1,  6, CORE_PERIPH_MCI, port); //SD_DAT0
 		if( attr->mode & (MCI_MODE_WIDEBUS) ){
-			_mcu_core_set_pinsel_func(1,  7, CORE_PERIPH_MCI, port); //SD_DAT1
-			_mcu_core_set_pinsel_func(1, 11, CORE_PERIPH_MCI, port); //SD_DAT2
-			_mcu_core_set_pinsel_func(1, 12, CORE_PERIPH_MCI, port); //SD_DAT3
+			mcu_core_set_pinsel_func(1,  7, CORE_PERIPH_MCI, port); //SD_DAT1
+			mcu_core_set_pinsel_func(1, 11, CORE_PERIPH_MCI, port); //SD_DAT2
+			mcu_core_set_pinsel_func(1, 12, CORE_PERIPH_MCI, port); //SD_DAT3
 		}
-		_mcu_core_set_pinsel_func(1,  2, CORE_PERIPH_MCI, port); //SD_CLK
-		_mcu_core_set_pinsel_func(1,  3, CORE_PERIPH_MCI, port); //SD_CMD
+		mcu_core_set_pinsel_func(1,  2, CORE_PERIPH_MCI, port); //SD_CLK
+		mcu_core_set_pinsel_func(1,  3, CORE_PERIPH_MCI, port); //SD_CMD
 		break;
 	case 3:
 		//use the alternate setting with SD PWR
@@ -151,14 +151,14 @@ int mcu_mci_setattr(int port, void * ctl){
 }
 
 
-int mcu_mci_setaction(int port, void * ctl){
+int mcu_mci_setaction(const devfs_handle_t * handle, void * ctl){
 	mcu_action_t * action = (mcu_action_t*)ctl;
 	if( action->handler.callback == 0 ){
 
 
 	}
 
-	if( _mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
+	if( mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
 		return -1;
 	}
 
@@ -173,7 +173,7 @@ static int mcu_mci_write_fifo(LPC_MCI_Type * regs, uint32_t * src, int nbyte){
 }
 
 
-int _mcu_mci_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
+int mcu_mci_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	int port = cfg->port;
 	LPC_MCI_Type * regs = mci_regs_table[port];
 
@@ -197,16 +197,16 @@ int _mcu_mci_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	return -1;
 }
 
-int _mcu_mci_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
+int mcu_mci_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	return -1;
 }
 
 
-void _mcu_mci0_isr(int port) {
+void mcu_mci0_isr(int port) {
 	exec_callback(port, 0);
 }
 
-void exec_callback(int port, void * data){
+void exec_callback(const devfs_handle_t * handle, void * data){
 	/*
 	mci_local[port].state |= I2C_DONE_FLAG;
 	if ( mci_local[port].err != 0 ){

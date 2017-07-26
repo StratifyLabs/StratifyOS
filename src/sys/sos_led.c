@@ -48,13 +48,15 @@ void sos_led_startup(){
 void sos_led_priv_on(void * args){
 	if( mcu_board_config.led.port != 255 ){
 		pio_attr_t attr;
+		devfs_handle_t handle;
+		handle.port = mcu_board_config.led.port;
 		attr.o_pinmask = (1<<mcu_board_config.led.pin);
 		attr.o_flags = PIO_FLAG_SET_OUTPUT | PIO_FLAG_IS_DIRONLY;
-		mcu_pio_setattr(mcu_board_config.led.port, &attr);
+		mcu_pio_setattr(&handle, &attr);
 		if( mcu_board_config.o_flags & MCU_BOARD_CONFIG_FLAG_LED_ACTIVE_HIGH ){
-			mcu_pio_setmask(mcu_board_config.led.port, (void*)(1<<mcu_board_config.led.pin));
+			mcu_pio_setmask(&handle, (void*)(1<<mcu_board_config.led.pin));
 		} else {
-			mcu_pio_clrmask(mcu_board_config.led.port, (void*)(1<<mcu_board_config.led.pin));
+			mcu_pio_clrmask(&handle, (void*)(1<<mcu_board_config.led.pin));
 		}
 	}
 }
@@ -62,18 +64,20 @@ void sos_led_priv_on(void * args){
 void sos_led_priv_off(void * args){
 	if( mcu_board_config.led.port != 255 ){
 		pio_attr_t attr;
+		devfs_handle_t handle;
+		handle.port = mcu_board_config.led.port;
 		attr.o_flags = PIO_FLAG_SET_INPUT | PIO_FLAG_IS_DIRONLY;
 		attr.o_pinmask = (1<<mcu_board_config.led.pin);
-		mcu_pio_setattr(mcu_board_config.led.port, &attr);
+		mcu_pio_setattr(&handle, &attr);
 	}
 }
 
 void sos_led_priv_error(void * args){
 	while(1){
 		sos_led_priv_on(0);
-		_mcu_cortexm_delay_ms(50);
+		mcu_cortexm_delay_ms(50);
 		sos_led_priv_off(0);
-		_mcu_cortexm_delay_ms(50);
+		mcu_cortexm_delay_ms(50);
 	}
 }
 

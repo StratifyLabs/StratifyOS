@@ -116,7 +116,7 @@ void scheduler(){
 
 		//Sleep when nothing else is going on
 		if ( do_sleep ){
-			_mcu_core_sleep(CORE_SLEEP);
+			mcu_core_sleep(CORE_SLEEP);
 		} else {
 			//Otherwise switch to the active task
 			mcu_core_privcall(task_priv_switch_context, NULL);

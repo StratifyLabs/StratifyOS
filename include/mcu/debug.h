@@ -68,7 +68,7 @@ extern char mcu_debug_buffer[MCU_DEBUG_BUFFER_SIZE];
 #define mcu_debug_irq(...) do { \
 	int bytes; \
 	devfs_async_t op; \
-	DEVFS_HANDLE_t periph; \
+	DEVFS_DEVICE_t periph; \
 	siprintf(mcu_debug_buffer, __VA_ARGS__); \
 	bytes = strlen(mcu_debug_buffer); \
 	periph.port = MCU_DEBUG_PORT; \

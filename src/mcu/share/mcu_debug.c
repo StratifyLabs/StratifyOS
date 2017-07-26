@@ -40,26 +40,19 @@ int mcu_debug_init(){
 		return -1;
 	}
 
-	/*
-	memset(&attr.pin_assignment, 0xff, sizeof(uart_pin_assignment_t));
-	attr.pin_assignment.rx = mcu_board_config.debug_uart_pin_assignment.rx;
-	attr.pin_assignment.tx = mcu_board_config.debug_uart_pin_assignment.tx;
-	attr.freq = 115200;
-	attr.o_flags = UART_FLAG_IS_PARITY_NONE | UART_FLAG_IS_STOP1;
-	attr.width = 8;
-	*/
-
-	return mcu_uart_setattr(handle.port, (void*)&mcu_board_config.debug_uart_attr);
+	return mcu_uart_setattr(&handle, (void*)&mcu_board_config.debug_uart_attr);
 }
 
 
 void mcu_priv_write_debug_uart(void * args){
 	int nbyte;
 	int i;
+	devfs_handle_t handle;
+	handle.port = mcu_board_config.debug_uart_port;
 	nbyte = strnlen(mcu_debug_buffer, MCU_DEBUG_BUFFER_SIZE);
 
 	for(i=0; i < nbyte; i++){
-		mcu_uart_put(mcu_board_config.debug_uart_port, (void*)(u32)mcu_debug_buffer[i]);
+		mcu_uart_put(&handle, (void*)(u32)mcu_debug_buffer[i]);
 	}
 
 }

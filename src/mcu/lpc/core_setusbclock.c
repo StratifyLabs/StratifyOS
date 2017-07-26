@@ -22,7 +22,7 @@
 #include "core_flags.h"
 
 
-int _mcu_core_setusbclock(int fosc /*! The oscillator frequency (between 10 and 25MHz) */){
+int mcu_core_setusbclock(int fosc /*! The oscillator frequency (between 10 and 25MHz) */){
 #ifdef __lpc17xx
 	uint16_t m_mult;
 	uint32_t fcco;

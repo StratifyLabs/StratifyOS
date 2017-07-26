@@ -34,6 +34,7 @@ int sst25vf_tmr_open(const devfs_handle_t * cfg){
 	u8 status;
 	pio_attr_t attr;
 	const sst25vf_config_t * config = cfg->config;
+	devfs_handle_t pio_handle;
 
 	/*
 	spi_attr_t spi_cfg;
@@ -56,7 +57,8 @@ int sst25vf_tmr_open(const devfs_handle_t * cfg){
 	sst25vf_share_deassert_cs(cfg);
 	attr.o_pinmask = (1<<config->cs.pin);
 	attr.o_flags = PIO_FLAG_SET_OUTPUT | PIO_FLAG_IS_DIRONLY;
-	mcu_pio_setattr(config->cs.port, &attr);
+	pio_handle.port = config->cs.port;
+	mcu_pio_setattr(&pio_handle, &attr);
 
 	sst25vf_share_write_disable(cfg);
 
@@ -98,12 +100,12 @@ static void complete_spi_read(const devfs_handle_t * cfg, mcu_event_t ignore){
 	//}
 }
 
-int sst25vf_tmr_read(const devfs_handle_t * cfg, devfs_async_t * rop){
-	sst25vf_state_t * state = (sst25vf_state_t*)cfg->state;
-	const sst25vf_config_t * dcfg = (const sst25vf_config_t *)(cfg->config);
+int sst25vf_tmr_read(const devfs_handle_t * handle, devfs_async_t * rop){
+	sst25vf_state_t * state = (sst25vf_state_t*)handle->state;
+	const sst25vf_config_t * dcfg = (const sst25vf_config_t *)(handle->config);
 	state->handler.callback = rop->handler.callback;
 	state->handler.context = rop->handler.context;
-	rop->handler.context = (void*)cfg;
+	rop->handler.context = (void*)handle;
 	rop->handler.callback = (mcu_callback_t)complete_spi_read;
 
 	if ( rop->loc >= dcfg->size ){
@@ -114,10 +116,10 @@ int sst25vf_tmr_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 		rop->nbyte = dcfg->size - rop->loc; //update the bytes read to not go past the end of the disk
 	}
 
-	sst25vf_share_assert_cs(cfg);
-	sst25vf_share_write_opcode_addr(cfg, SST25VF_INS_RD_HS, rop->loc);
-	mcu_spi_swap(cfg->port, NULL); //dummy byte output
-	return mcu_spi_read(cfg, rop);
+	sst25vf_share_assert_cs(handle);
+	sst25vf_share_write_opcode_addr(handle, SST25VF_INS_RD_HS, rop->loc);
+	mcu_spi_swap(handle, NULL); //dummy byte output
+	return mcu_spi_read(handle, rop);
 }
 
 
@@ -126,6 +128,8 @@ void continue_spi_write(const devfs_handle_t * cfg, uint32_t ignore){
 	const sst25vf_config_t * sst_cfg = (sst25vf_config_t*)cfg->config;
 	mcu_action_t action;
 	uint8_t * addrp;
+	devfs_handle_t tmr_handle;
+	tmr_handle.port = sst_cfg->miso.port;
 	//should be called 10 us after complete_spi_write() executes
 
 	//Disable the TMR interrupt
@@ -134,9 +138,9 @@ void continue_spi_write(const devfs_handle_t * cfg, uint32_t ignore){
 	action.o_events = MCU_EVENT_FLAG_NONE;
 	action.channel = sst_cfg->miso.pin;
 	action.prio = 0;
-	mcu_tmr_disable(sst_cfg->miso.port, 0);
-	mcu_tmr_setaction(sst_cfg->miso.port, &action);
-	mcu_tmr_enable(sst_cfg->miso.port, 0);
+	mcu_tmr_disable(&tmr_handle, 0);
+	mcu_tmr_setaction(&tmr_handle, &action);
+	mcu_tmr_enable(&tmr_handle, 0);
 
 
 	if( state->nbyte > 0 ){
@@ -175,6 +179,8 @@ void complete_spi_write(const devfs_handle_t * cfg, uint32_t ignore){
 	mcu_action_t action;
 	mcu_channel_t channel;
 	sst25vf_config_t * sst_cfg = (sst25vf_config_t*)cfg->config;
+	devfs_handle_t tmr_handle;
+	tmr_handle.port = sst_cfg->miso.port;
 
 	sst25vf_share_deassert_cs(cfg);
 
@@ -188,17 +194,17 @@ void complete_spi_write(const devfs_handle_t * cfg, uint32_t ignore){
 	channel.loc = sst_cfg->miso.pin;
 
 	//turn the timer off
-	mcu_tmr_disable(sst_cfg->miso.port, 0);
-	mcu_tmr_setaction(sst_cfg->miso.port, &action);
-	tval = mcu_tmr_get(sst_cfg->miso.port, NULL);
+	mcu_tmr_disable(&tmr_handle, 0);
+	mcu_tmr_setaction(&tmr_handle, &action);
+	tval = mcu_tmr_get(&tmr_handle, NULL);
 	channel.value = tval + 20;
 	if( channel.value > (1000000*2048) ){
 		channel.value -= (1000000*2048);
 	}
-	mcu_tmr_setoc(sst_cfg->miso.port, &channel);
+	mcu_tmr_setoc(&tmr_handle, &channel);
 
 	//everything is set; turn the timer back on
-	mcu_tmr_enable(sst_cfg->miso.port, 0);
+	mcu_tmr_enable(&tmr_handle, 0);
 }
 
 int sst25vf_tmr_write(const devfs_handle_t * cfg, devfs_async_t * wop){

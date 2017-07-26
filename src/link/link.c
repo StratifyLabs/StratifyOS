@@ -302,7 +302,7 @@ char * link_new_device_list(link_transport_mdriver_t * driver, int max){
 	int cnt;
 	int err;
 	int sys_fd;
-	sys_attr_t sys_attr;
+	sys_info_t sys_info;
 
 	sn_list = malloc(max*LINK_MAX_SN_SIZE);
 	if( sn_list == NULL ){
@@ -337,13 +337,13 @@ char * link_new_device_list(link_transport_mdriver_t * driver, int max){
 				} else {
 					sys_fd = link_open(driver, "/dev/sys", LINK_O_RDWR);
 					if( sys_fd >= 0 ){
-						if( link_ioctl(driver, sys_fd, I_SYS_GETINFO, &sys_attr) == 0 ){
-							//now add the sys_attr to the string list
-							sys_attr.name[LINK_NAME_MAX-1] = 0;  //make sure these are zero terminated
-							sys_attr.kernel_version[7] = 0;
+						if( link_ioctl(driver, sys_fd, I_SYS_GETINFO, &sys_info) == 0 ){
+							//now add the sys_info to the string list
+							sys_info.name[LINK_NAME_MAX-1] = 0;  //make sure these are zero terminated
+							sys_info.kernel_version[7] = 0;
 							sprintf(entry, "%s:%s:%s",
-									sys_attr.name,
-									sys_attr.kernel_version,
+									sys_info.name,
+									sys_info.kernel_version,
 									serialno);
 						}
 						link_close(driver, sys_fd);

@@ -59,7 +59,7 @@ void mcu_fault_event_handler(fault_t * fault){
 #if MCU_DEBUG
 		sched_fault_build_string(mcu_debug_buffer);
 		mcu_priv_write_debug_uart(NULL);
-		_mcu_cortexm_delay_ms(200);
+		mcu_cortexm_delay_ms(200);
 #endif
 
 #if 0

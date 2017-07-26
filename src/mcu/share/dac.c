@@ -21,13 +21,13 @@
 #include "mcu/dac.h"
 
 //These functions are device specific
-extern void _mcu_dac_dev_power_on(int port);
-extern void _mcu_dac_dev_power_off(int port);
-extern int _mcu_dac_dev_powered_on(int port);
-extern int _mcu_dac_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop);
+extern void mcu_dac_dev_power_on(const devfs_handle_t * handle);
+extern void mcu_dac_dev_power_off(const devfs_handle_t * handle);
+extern int mcu_dac_dev_is_powered(const devfs_handle_t * handle);
+extern int mcu_dac_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop);
 
 
-int (* const dac_ioctl_func_table[I_MCU_TOTAL + I_DAC_TOTAL])(int, void*) = {
+int (* const dac_ioctl_func_table[I_MCU_TOTAL + I_DAC_TOTAL])(const devfs_handle_t*, void*) = {
 		mcu_dac_getinfo,
 		mcu_dac_setattr,
 		mcu_dac_setaction,
@@ -38,15 +38,15 @@ int (* const dac_ioctl_func_table[I_MCU_TOTAL + I_DAC_TOTAL])(int, void*) = {
 
 int mcu_dac_open(const devfs_handle_t * cfg){
 	return mcu_open(cfg,
-			_mcu_dac_dev_powered_on,
-			_mcu_dac_dev_power_on);
+			mcu_dac_dev_is_powered,
+			mcu_dac_dev_power_on);
 }
 
 int mcu_dac_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 	return mcu_ioctl(cfg,
 			request,
 			ctl,
-			_mcu_dac_dev_powered_on,
+			mcu_dac_dev_is_powered,
 			dac_ioctl_func_table,
 			I_MCU_TOTAL + I_DAC_TOTAL);
 }
@@ -61,13 +61,13 @@ int mcu_dac_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 
 int mcu_dac_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	return mcu_write(cfg, wop,
-			_mcu_dac_dev_powered_on,
-			_mcu_dac_dev_write);
+			mcu_dac_dev_is_powered,
+			mcu_dac_dev_write);
 
 }
 
 int mcu_dac_close(const devfs_handle_t * cfg){
-	return mcu_close(cfg, _mcu_dac_dev_powered_on, _mcu_dac_dev_power_off);
+	return mcu_close(cfg, mcu_dac_dev_is_powered, mcu_dac_dev_power_off);
 }
 
 

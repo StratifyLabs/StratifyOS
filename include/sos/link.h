@@ -131,7 +131,7 @@ int link_settime(link_transport_mdriver_t * driver, struct link_tm * t);
 int link_gettime(link_transport_mdriver_t * driver, struct link_tm * t);
 
 int link_kill_pid(link_transport_mdriver_t * driver, int pid, int signo);
-int link_get_sys_attr(link_transport_mdriver_t * driver, sys_attr_t * sys_attr);
+int link_get_sys_info(link_transport_mdriver_t * driver, sys_info_t * sys_info);
 
 
 int link_isbootloader(link_transport_mdriver_t * driver);

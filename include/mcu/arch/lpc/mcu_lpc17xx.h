@@ -243,9 +243,9 @@ typedef lpc17xx_tmr_action_channel_t tmr_action_channel_t;
 #define MCU_CORE_BOOTLOADER_LOC 0x10002000
 #define MCU_CORE_BOOTLOADER_VALUE 0x55AA55AA
 
-int _mcu_lpc_flash_write_page(int page, void * addr, const void * src, int size);
-int _mcu_lpc_flash_erase_page(int page);
-int _mcu_lpc_flash_get_serialno(uint32_t * dest);
+int mcu_lpc_flash_write_page(int page, void * addr, const void * src, int size);
+int mcu_lpc_flash_erase_page(int page);
+int mcu_lpc_flash_get_serialno(uint32_t * dest);
 
 #define IAP_ADDRESS 0x1FFF1FF1
 

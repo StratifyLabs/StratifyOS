@@ -52,8 +52,8 @@ int mcu_fault_load(fault_t * fault){
 	return fault_dev_load(fault);
 }
 
-void _mcu_core_hardfault_handler() MCU_WEAK;
-void _mcu_core_hardfault_handler(){
+void mcu_core_hardfault_handler() MCU_WEAK;
+void mcu_core_hardfault_handler(){
 	register hw_stack_frame_t * handler_stack;
 	asm volatile ("MRS %0, msp\n\t" : "=r" (handler_stack) );
 	register u32 fault_status;
@@ -67,7 +67,7 @@ void _mcu_core_hardfault_handler(){
 void hardfault_handler(u32 fault_status, hw_stack_frame_t * handler_stack){
 	hw_stack_frame_t * stack;
 	fault_t fault;
-	_mcu_cortexm_priv_get_thread_stack_ptr( &stack );
+	mcu_cortexm_priv_get_thread_stack_ptr( &stack );
 
 	fault.addr = (void*)0xFFFFFFFF;
 	fault.num = MCU_FAULT_HARD_UNKNOWN;
@@ -103,7 +103,7 @@ void hardfault_handler(u32 fault_status, hw_stack_frame_t * handler_stack){
 
 
 
-void _mcu_core_wdt_isr(){
+void mcu_core_wdt_isr(){
 	register void * handler_stack;
 	asm volatile ("MRS %0, msp\n\t" : "=r" (handler_stack) );
 
@@ -113,7 +113,7 @@ void _mcu_core_wdt_isr(){
 void wdtfault_handler(hw_stack_frame_t * handler_stack){
 	fault_t fault;
 	hw_stack_frame_t * stack;
-	_mcu_cortexm_priv_get_thread_stack_ptr( &stack );
+	mcu_cortexm_priv_get_thread_stack_ptr( &stack );
 
 	fault.num = MCU_FAULT_WDT;
 	fault.addr = (void*)-1;
@@ -127,8 +127,8 @@ void wdtfault_handler(hw_stack_frame_t * handler_stack){
 	mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_PRIV_FATAL, 0);
 }
 
-void _mcu_core_memfault_handler() MCU_WEAK;
-void _mcu_core_memfault_handler(){
+void mcu_core_memfault_handler() MCU_WEAK;
+void mcu_core_memfault_handler(){
 	register void * handler_stack;
 	asm volatile ("MRS %0, msp\n\t" : "=r" (handler_stack) );
 	register u32 status;
@@ -140,7 +140,7 @@ void _mcu_core_memfault_handler(){
 void memfault_handler(u32 mem_status, hw_stack_frame_t * handler_stack){
 	fault_t fault;
 	hw_stack_frame_t * stack;
-	_mcu_cortexm_priv_get_thread_stack_ptr( &stack );
+	mcu_cortexm_priv_get_thread_stack_ptr( &stack );
 
 	fault.addr = stack;
 	fault.num = MCU_FAULT_MEM_UNKNOWN;
@@ -179,8 +179,8 @@ void memfault_handler(u32 mem_status, hw_stack_frame_t * handler_stack){
 
 }
 
-void _mcu_core_busfault_handler() MCU_WEAK;
-void _mcu_core_busfault_handler(){
+void mcu_core_busfault_handler() MCU_WEAK;
+void mcu_core_busfault_handler(){
 	register void * handler_stack;
 	asm volatile ("MRS %0, msp\n\t" : "=r" (handler_stack) );
 	register u32 status;
@@ -192,7 +192,7 @@ void _mcu_core_busfault_handler(){
 void busfault_handler(u32 bus_status, hw_stack_frame_t * handler_stack){
 	fault_t fault;
 	hw_stack_frame_t * stack;
-	_mcu_cortexm_priv_get_thread_stack_ptr( &stack );	//Clear the fault
+	mcu_cortexm_priv_get_thread_stack_ptr( &stack );	//Clear the fault
 
 	fault.addr = (void*)0xFFFFFFFF;
 	fault.num = MCU_FAULT_BUS_UNKNOWN;
@@ -233,8 +233,8 @@ void busfault_handler(u32 bus_status, hw_stack_frame_t * handler_stack){
 	mcu_fault_event_handler(&fault);
 }
 
-void _mcu_core_usagefault_handler() MCU_WEAK;
-void _mcu_core_usagefault_handler(){
+void mcu_core_usagefault_handler() MCU_WEAK;
+void mcu_core_usagefault_handler(){
 	register void * handler_stack;
 	asm volatile ("MRS %0, msp\n\t" : "=r" (handler_stack) );
 	register u32 status;
@@ -247,7 +247,7 @@ void usagefault_handler(u32 usage_status, hw_stack_frame_t * handler_stack){
 	//Clear the fault
 	fault_t fault;
 	hw_stack_frame_t * stack;
-	_mcu_cortexm_priv_get_thread_stack_ptr( &stack );
+	mcu_cortexm_priv_get_thread_stack_ptr( &stack );
 
 	fault.addr = (void*)0xFFFFFFFF;
 	fault.num = MCU_FAULT_USAGE_UNKNOWN;

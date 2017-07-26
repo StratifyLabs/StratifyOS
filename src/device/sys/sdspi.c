@@ -62,26 +62,33 @@ static int _sdspi_read_data(const devfs_handle_t * cfg, void * data, int nbyte, 
 
 static int _sdspi_transfer(const devfs_handle_t * cfg, const uint8_t * data_out, uint8_t * data_in, int nbyte);
 
-static int _sdspi_try_read(const devfs_handle_t * cfg, int first);
+static int _sdspi_try_read(const devfs_handle_t * handle, int first);
 
-static void _sdspi_deassert_cs(const devfs_handle_t * cfg){
-	const sdspi_config_t * config = cfg->config;
-	mcu_pio_setmask(config->cs.port, (void*)(ssize_t)(1<<config->cs.pin));
+static void _sdspi_deassert_cs(const devfs_handle_t * handle){
+	const sdspi_config_t * config = handle->config;
+	devfs_handle_t pio_handle;
+	pio_handle.port = config->cs.port;
+
+	mcu_pio_setmask(&pio_handle, (void*)(ssize_t)(1<<config->cs.pin));
 }
 
-static void _sdspi_assert_cs(const devfs_handle_t * cfg){
-	const sdspi_config_t * config = cfg->config;
-	mcu_pio_clrmask(config->cs.port, (void*)(ssize_t)(1<<config->cs.pin));
+static void _sdspi_assert_cs(const devfs_handle_t * handle){
+	const sdspi_config_t * config = handle->config;
+	devfs_handle_t pio_handle;
+	pio_handle.port = config->cs.port;
+	mcu_pio_clrmask(&pio_handle, (void*)(ssize_t)(1<<config->cs.pin));
 }
 
-static void _sdspi_state_callback(const devfs_handle_t * cfg, int err, int nbyte);
+static void _sdspi_state_callback(const devfs_handle_t * handle, int err, int nbyte);
 
 
-int sdspi_open(const devfs_handle_t * cfg){
+int sdspi_open(const devfs_handle_t * handle){
 	int err;
 	pio_attr_t attr;
 	//sdspi_state_t * state = (sdspi_state_t*)cfg->state;
-	const sdspi_config_t * config = cfg->config;
+	const sdspi_config_t * config = handle->config;
+	devfs_handle_t pio_handle;
+	pio_handle.port = config->cs.port;
 
 	/*
 	spi_attr_t spi_cfg;
@@ -92,27 +99,27 @@ int sdspi_open(const devfs_handle_t * cfg){
 	spi_cfg.bitrate = cfg->bitrate;
 	spi_cfg.master = SPI_ATTR_MASTER;
 	*/
-	err = mcu_spi_open(cfg);
+	err = mcu_spi_open(handle);
 	if ( err < 0 ){
 		return err;
 	}
 
-	if( (err = mcu_spi_ioctl(cfg, I_SPI_SETATTR, (void*)&(config->attr))) < 0 ){
+	if( (err = mcu_spi_ioctl(handle, I_SPI_SETATTR, (void*)&(config->attr))) < 0 ){
 		return err;
 	}
 
-	_sdspi_deassert_cs(cfg);
+	_sdspi_deassert_cs(handle);
 	attr.o_pinmask = (1<<config->cs.pin);
 	attr.o_flags = PIO_FLAG_SET_OUTPUT | PIO_FLAG_IS_DIRONLY;
-	mcu_pio_setattr(config->cs.port, &attr);
+	mcu_pio_setattr(&pio_handle, &attr);
 
 	//The device is ready to use
 	return 0;
 }
 
 
-void _sdspi_state_callback(const devfs_handle_t * cfg, int err, int nbyte){
-	sdspi_state_t * state = ((devfs_handle_t *)cfg)->state;
+void _sdspi_state_callback(const devfs_handle_t * handle, int err, int nbyte){
+	sdspi_state_t * state = handle->state;
 	if( state->handler.callback ){
 		*(state->nbyte) = nbyte;
 		if( nbyte < 0 ){
@@ -124,10 +131,10 @@ void _sdspi_state_callback(const devfs_handle_t * cfg, int err, int nbyte){
 	}
 }
 
-static int continue_spi_read(void * cfg, mcu_event_t * ignore){
+static int continue_spi_read(void * handle, mcu_event_t * ignore){
 	//data has been read -- complete the operation
 	int err = 0;
-	sdspi_state_t * state = ((devfs_handle_t *)cfg)->state;
+	sdspi_state_t * state = ((const devfs_handle_t*)handle)->state;
 	u16 checksum;
 	u16 checksum_calc;
 
@@ -136,19 +143,19 @@ static int continue_spi_read(void * cfg, mcu_event_t * ignore){
 		state->timeout++;
 		if( state->timeout > 5000 ){
 			//failed to read the data
-			_sdspi_deassert_cs(cfg);
+			_sdspi_deassert_cs(handle);
 
-			_sdspi_state_callback(cfg, EIO, -2);
+			_sdspi_state_callback(handle, EIO, -2);
 			return 0;
 		}
 
 		//try again to try the start of the data
-		return _sdspi_try_read(cfg, 0);
+		return _sdspi_try_read(handle, 0);
 
 	} else {
 		//the read is complete
 
-		_sdspi_transfer(cfg, 0, state->cmd, CMD_FRAME_SIZE); //gobble up the CRC
+		_sdspi_transfer(handle, 0, state->cmd, CMD_FRAME_SIZE); //gobble up the CRC
 		checksum = (state->cmd[0] << 8) + state->cmd[1];
 		checksum_calc = crc16(0x0000, (const uint8_t *)state->buf, (size_t)*(state->nbyte));
 		if( checksum != checksum_calc ){
@@ -157,14 +164,14 @@ static int continue_spi_read(void * cfg, mcu_event_t * ignore){
 		}
 
 		//execute the callback
-		_sdspi_state_callback(cfg, err, *(state->nbyte));
+		_sdspi_state_callback(handle, err, *(state->nbyte));
 	}
 
 	return 0;
 }
 
-int _sdspi_try_read(const devfs_handle_t * cfg, int first){
-	sdspi_state_t * state = cfg->state;
+int _sdspi_try_read(const devfs_handle_t * handle, int first){
+	sdspi_state_t * state = handle->state;
 	state->count = _sdspi_parse_data((uint8_t*)state->buf, *(state->nbyte), -1, SDSPI_START_BLOCK_TOKEN, state->cmd);
 	if( state->count >= 0 ){
 		state->op.nbyte = *(state->nbyte) - state->count;
@@ -173,25 +180,25 @@ int _sdspi_try_read(const devfs_handle_t * cfg, int first){
 		state->op.nbyte = CMD_FRAME_SIZE;
 		state->op.buf = state->cmd;
 	}
-	state->op.handler.context = (void*)cfg;
+	state->op.handler.context = (void*)handle;
 	state->op.handler.callback = continue_spi_read;
 
 
 	if( first != 0 ){
 		//send the command for the first time
-		return mcu_spi_read(cfg, &(state->op));
+		return mcu_spi_read(handle, &(state->op));
 	}
 
-	if( mcu_spi_read(cfg, &(state->op)) != 0 ){
-		_sdspi_state_callback(cfg, EINVAL, -5);
+	if( mcu_spi_read(handle, &(state->op)) != 0 ){
+		_sdspi_state_callback(handle, EINVAL, -5);
 		return 0;
 	}
 	return 1;
 }
 
-int sdspi_read(const devfs_handle_t * cfg, devfs_async_t * rop){
+int sdspi_read(const devfs_handle_t * handle, devfs_async_t * rop){
 	//first write the header command
-	sdspi_state_t * state = cfg->state;
+	sdspi_state_t * state = handle->state;
 	sdspi_r1_t r1;
 	u32 loc;
 
@@ -200,7 +207,7 @@ int sdspi_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 		return -1;
 	}
 
-	if( _sdspi_busy(cfg) != 0 ){
+	if( _sdspi_busy(handle) != 0 ){
 		errno = EBUSY;
 		return -1;
 	}
@@ -212,13 +219,13 @@ int sdspi_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	state->timeout = 0;
 	state->op.tid = rop->tid;
 
-	if( _sdspi_is_sdsc(cfg) ){
+	if( _sdspi_is_sdsc(handle) ){
 		loc = rop->loc*BLOCK_SIZE;
 	} else {
 		loc = rop->loc;
 	}
 
-	r1 = _sdspi_cmd_r1(cfg, SDSPI_CMD17_READ_SINGLE_BLOCK, loc, state->cmd);
+	r1 = _sdspi_cmd_r1(handle, SDSPI_CMD17_READ_SINGLE_BLOCK, loc, state->cmd);
 	if( r1.u8 != 0x00 ){
 		if( (r1.param_error) ){
 			errno = EINVAL;
@@ -249,14 +256,14 @@ int sdspi_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 		return -6;
 	}
 
-	_sdspi_assert_cs(cfg);
-	_mcu_cortexm_delay_us(LONG_DELAY);
+	_sdspi_assert_cs(handle);
+	mcu_cortexm_delay_us(LONG_DELAY);
 
-	return _sdspi_try_read(cfg, 1);
+	return _sdspi_try_read(handle, 1);
 }
 
-static int continue_spi_write(void * cfg, mcu_event_t * ignore){
-	sdspi_state_t * state = ((const devfs_handle_t *)cfg)->state;
+static int continue_spi_write(void * handle, mcu_event_t * ignore){
+	sdspi_state_t * state = ((const devfs_handle_t *)handle)->state;
 
 	uint16_t checksum;
 
@@ -269,24 +276,24 @@ static int continue_spi_write(void * cfg, mcu_event_t * ignore){
 	state->cmd[2] = 0xFF;
 	state->cmd[3] = 0xFF;
 	state->cmd[4] = 0xFF;
-	_sdspi_transfer(cfg, state->cmd, state->cmd, 5); //send dummy CRC
-	_sdspi_deassert_cs(cfg);
+	_sdspi_transfer(handle, state->cmd, state->cmd, 5); //send dummy CRC
+	_sdspi_deassert_cs(handle);
 
 	if( (state->cmd[2] & 0x1F) == 0x05 ){
 		//data was accepted
-		_sdspi_state_callback(cfg, 0, *(state->nbyte));
+		_sdspi_state_callback(handle, 0, *(state->nbyte));
 	} else {
 		//data was not accepted
-		_sdspi_state_callback(cfg, EIO, -1);
+		_sdspi_state_callback(handle, EIO, -1);
 	}
 
 	return 0;
 }
 
 
-int sdspi_write(const devfs_handle_t * cfg, devfs_async_t * wop){
+int sdspi_write(const devfs_handle_t * handle, devfs_async_t * wop){
 
-	sdspi_state_t * state = cfg->state;
+	sdspi_state_t * state = handle->state;
 	sdspi_r1_t r1;
 	u32 loc;
 
@@ -297,7 +304,7 @@ int sdspi_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	}
 
 	//check to see if device is busy
-	if( _sdspi_busy(cfg) != 0 ){
+	if( _sdspi_busy(handle) != 0 ){
 		errno = EBUSY;
 		return -1;
 	}
@@ -308,13 +315,13 @@ int sdspi_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	state->buf = wop->buf;
 	state->timeout = 0;
 
-	if( _sdspi_is_sdsc(cfg) ){
+	if( _sdspi_is_sdsc(handle) ){
 		loc = wop->loc*BLOCK_SIZE;
 	} else {
 		loc = wop->loc;
 	}
 
-	r1 = _sdspi_cmd_r1(cfg, SDSPI_CMD24_WRITE_SINGLE_BLOCK, loc, state->cmd);
+	r1 = _sdspi_cmd_r1(handle, SDSPI_CMD24_WRITE_SINGLE_BLOCK, loc, state->cmd);
 	if( r1.u8 != 0x00 ){
 		if( (r1.addr_error) || (r1.param_error) ){
 			errno = EINVAL;
@@ -329,23 +336,23 @@ int sdspi_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	state->cmd[0] = 0xFF;  //busy byte
 	state->cmd[1] = SDSPI_START_BLOCK_TOKEN;
 
-	_sdspi_assert_cs(cfg);
-	_mcu_cortexm_delay_us(LONG_DELAY);
-	_sdspi_transfer(cfg, state->cmd, 0, 2);
+	_sdspi_assert_cs(handle);
+	mcu_cortexm_delay_us(LONG_DELAY);
+	_sdspi_transfer(handle, state->cmd, 0, 2);
 
 	state->op.nbyte = wop->nbyte;
 	state->op.buf = wop->buf;
-	state->op.handler.context = (void*)cfg;
+	state->op.handler.context = (void*)handle;
 	state->op.handler.callback = continue_spi_write;
 	state->op.tid = wop->tid;
 
-	return mcu_spi_write(cfg, &(state->op));
+	return mcu_spi_write(handle, &(state->op));
 }
 
-int sdspi_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
+int sdspi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 	//sdspi_config_t * sst_cfg = (sdspi_config_t*)cfg->config;
-	sdspi_state_t * state = (sdspi_state_t*)cfg->state;
-	const sdspi_config_t * config = cfg->config;
+	sdspi_state_t * state = (sdspi_state_t*)handle->state;
+	const sdspi_config_t * config = handle->config;
 	drive_info_t * attr = ctl;
 	drive_erase_block_t * deb = ctl;
 	drive_erase_block_t debs;
@@ -395,25 +402,25 @@ int sdspi_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 		memcpy(&spi_attr, &(config->attr), sizeof(spi_attr_t));
 		spi_attr.freq = 400000;
 
-		if( mcu_spi_setattr(cfg->port, &spi_attr) < 0 ){
+		if( mcu_spi_setattr(handle, &spi_attr) < 0 ){
 			mcu_priv_debug("Attr\n");
 			return -2;
 		}
 
 
-		_mcu_cortexm_delay_us(500);
+		mcu_cortexm_delay_us(500);
 
 		//init sequence
 		//apply at least 74 init clocks with DI and CS high
-		_sdspi_deassert_cs(cfg);
-		_mcu_cortexm_delay_us(LONG_DELAY);
-		_sdspi_transfer(cfg, 0, 0, CMD_FRAME_SIZE*6);
-		_mcu_cortexm_delay_us(LONG_DELAY);
+		_sdspi_deassert_cs(handle);
+		mcu_cortexm_delay_us(LONG_DELAY);
+		_sdspi_transfer(handle, 0, 0, CMD_FRAME_SIZE*6);
+		mcu_cortexm_delay_us(LONG_DELAY);
 
 
-		_mcu_cortexm_delay_us(500);
+		mcu_cortexm_delay_us(500);
 
-		resp.r1 = _sdspi_cmd_r1(cfg, SDSPI_CMD0_GO_IDLE_STATE, 0, 0);
+		resp.r1 = _sdspi_cmd_r1(handle, SDSPI_CMD0_GO_IDLE_STATE, 0, 0);
 		if( resp.r1.start == 1 ){
 			errno = EIO;
 			mcu_priv_debug("GO IDLE\n");
@@ -427,7 +434,7 @@ int sdspi_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 		}
 
 		//send CMD8
-		resp.r3 = _sdspi_cmd_r3(cfg, SDSPI_CMD8_SEND_IF_COND, 0x01AA);
+		resp.r3 = _sdspi_cmd_r3(handle, SDSPI_CMD8_SEND_IF_COND, 0x01AA);
 		if( resp.r3.r1.u8 != 0x01 ){
 			errno = EIO;
 			mcu_priv_debug("NO IF COND\n");
@@ -435,12 +442,12 @@ int sdspi_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 		}
 
 		//disable write protection (SD Cards only)
-		resp.r1 = _sdspi_cmd_r1(cfg, SDSPI_CMD28_SET_WRITE_PROT, 0, 0);
+		resp.r1 = _sdspi_cmd_r1(handle, SDSPI_CMD28_SET_WRITE_PROT, 0, 0);
 		if( resp.r1.u8 == 0x01 ){
 			state->flags |= FLAG_SDSC;
 
 			//set block len
-			resp.r1 = _sdspi_cmd_r1(cfg, SDSPI_CMD16_SET_BLOCKLEN, BLOCK_SIZE, 0);
+			resp.r1 = _sdspi_cmd_r1(handle, SDSPI_CMD16_SET_BLOCKLEN, BLOCK_SIZE, 0);
 			if( resp.r1.u8 != 0x01 ){
 				errno = EIO;
 				mcu_priv_debug("NO 16 BLOCK LEN\n");
@@ -449,7 +456,7 @@ int sdspi_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 		}
 
 		//enable checksums
-		resp.r1 = _sdspi_cmd_r1(cfg, SDSPI_CMD59_CRC_ON_OFF, 0xFFFFFFFF, 0);
+		resp.r1 = _sdspi_cmd_r1(handle, SDSPI_CMD59_CRC_ON_OFF, 0xFFFFFFFF, 0);
 		if( resp.r1.u8 != 0x01 ){
 			errno = EIO;
 			mcu_priv_debug("NO 59\n");
@@ -461,14 +468,14 @@ int sdspi_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 		const int timeout_value = 2000;
 
 		do {
-			resp.r1 = _sdspi_cmd_r1(cfg, SDSPI_CMD55_APP_CMD, 0, 0);  //send 55
+			resp.r1 = _sdspi_cmd_r1(handle, SDSPI_CMD55_APP_CMD, 0, 0);  //send 55
 			if( resp.r1.u8 != 0x01 ){
 				errno = EIO;
 				mcu_priv_debug("NO 55\n");
 				return -7;
 			}
 
-			resp.r1 = _sdspi_cmd_r1(cfg, SDSPI_ACMD41_SD_SEND_OP_COND, 1<<30, 0);  //indicate that HC is supported
+			resp.r1 = _sdspi_cmd_r1(handle, SDSPI_ACMD41_SD_SEND_OP_COND, 1<<30, 0);  //indicate that HC is supported
 			if( (resp.r1.u8 != 0x01) && (resp.r1.u8 != 0x00) ){  //this takes awhile to return to zero
 				errno = EIO;
 				mcu_priv_debug("HC?\n");
@@ -486,15 +493,15 @@ int sdspi_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 		}
 
 		memcpy(&spi_attr, &(config->attr), sizeof(spi_attr_t));
-		if( mcu_spi_setattr(cfg->port, &spi_attr) < 0 ){
+		if( mcu_spi_setattr(handle, &spi_attr) < 0 ){
 			mcu_priv_debug("BITRATE\n");
 			return -10;
 		}
 
-		_sdspi_assert_cs(cfg);
-		_mcu_cortexm_delay_us(LONG_DELAY);
-		_sdspi_transfer(cfg, 0, 0, CMD_FRAME_SIZE);
-		_sdspi_deassert_cs(cfg);
+		_sdspi_assert_cs(handle);
+		mcu_cortexm_delay_us(LONG_DELAY);
+		_sdspi_transfer(handle, 0, 0, CMD_FRAME_SIZE);
+		_sdspi_deassert_cs(handle);
 
 		mcu_priv_debug("INIT SUCCESS 0x%lX\n", state->flags);
 
@@ -507,33 +514,33 @@ int sdspi_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 		/* no break */
 	case I_DRIVE_ERASEBLOCKS:
 		//erase blocks in a sequence
-		if( _sdspi_busy(cfg) != 0 ){
+		if( _sdspi_busy(handle) != 0 ){
 			errno = EBUSY;
 			return -1;
 		}
-		return _sdspi_erase_blocks(cfg, deb->start, deb->end);
+		return _sdspi_erase_blocks(handle, deb->start, deb->end);
 
 	case I_DRIVE_BUSY:
-		return _sdspi_busy(cfg);
+		return _sdspi_busy(handle);
 
 	case I_DRIVE_GETINFO:
 
-		if( _sdspi_busy(cfg) != 0 ){
+		if( _sdspi_busy(handle) != 0 ){
 			errno = EBUSY;
 			return -1;
 		}
 
-		_sdspi_assert_cs(cfg);
-		_mcu_cortexm_delay_us(LONG_DELAY);
-		_sdspi_transfer(cfg, 0, 0, CMD_FRAME_SIZE);
-		_sdspi_deassert_cs(cfg);
+		_sdspi_assert_cs(handle);
+		mcu_cortexm_delay_us(LONG_DELAY);
+		_sdspi_transfer(handle, 0, 0, CMD_FRAME_SIZE);
+		_sdspi_deassert_cs(handle);
 
 		//Write block size and address are fixed to BLOCK_SIZE
 		attr->address_size = BLOCK_SIZE;
 		attr->write_block_size = attr->address_size;
 
 		//This is from CSD C_Size and TRANS_SPEED
-		if( _sdspi_csd(cfg, buffer) < 0 ){
+		if( _sdspi_csd(handle, buffer) < 0 ){
 			errno = EIO;
 			return -1;
 		}
@@ -542,7 +549,7 @@ int sdspi_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 		uint32_t c_size;
 		uint32_t c_mult;
 
-		if( _sdspi_is_sdsc(cfg) ){
+		if( _sdspi_is_sdsc(handle) ){
 			c_size = (((buffer[6] & 0x03) << 10) + (buffer[7] << 2) + (buffer[8] >> 6));
 			c_mult = 1<<(((buffer[9] & 0x03) << 1) + (buffer[10] >> 7) + 2);
 			block_len = 1 << (buffer[5] & 0x0F);
@@ -554,7 +561,7 @@ int sdspi_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 		attr->bitrate = 25*1000000;  //TRAN_SPEED should always be 25MHz
 
 		//need to read Status to get AU_Size, ERASE_SIZE, ERASE_TIMEOUT
-		if( _sdspi_status(cfg, buffer) < 0 ){
+		if( _sdspi_status(handle, buffer) < 0 ){
 			errno = EIO;
 			return -2;
 		}
@@ -572,7 +579,7 @@ int sdspi_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 		return 0;
 
 	default:
-		return mcu_spi_ioctl(cfg, request, ctl);
+		return mcu_spi_ioctl(handle, request, ctl);
 	}
 	return 0;
 }
@@ -620,8 +627,8 @@ int _sdspi_erase_blocks(const devfs_handle_t * cfg, uint32_t block_num, uint32_t
 int _sdspi_busy(const devfs_handle_t * cfg){
 	uint8_t c;
 	_sdspi_assert_cs(cfg);
-	_mcu_cortexm_delay_us(LONG_DELAY);
-	c = mcu_spi_swap(cfg->port, (void*)0xFF);
+	mcu_cortexm_delay_us(LONG_DELAY);
+	c = mcu_spi_swap(cfg, (void*)0xFF);
 	_sdspi_deassert_cs(cfg);
 	return (c == 0x00);
 }
@@ -690,9 +697,9 @@ int _sdspi_send_cmd(const devfs_handle_t * cfg, uint8_t cmd, uint32_t arg, uint8
 	do {
 		//read the response
 		_sdspi_assert_cs(cfg);
-		_mcu_cortexm_delay_us(LONG_DELAY);
+		mcu_cortexm_delay_us(LONG_DELAY);
 		_sdspi_transfer(cfg, buffer, response, CMD_FRAME_SIZE);
-		_mcu_cortexm_delay_us(LONG_DELAY);
+		mcu_cortexm_delay_us(LONG_DELAY);
 		_sdspi_deassert_cs(cfg);
 
 		ret = 0;
@@ -742,7 +749,7 @@ int _sdspi_read_data(const devfs_handle_t * cfg, void * data, int nbyte, uint8_t
 	timeout = 0;
 	while( count < nbyte ){
 		_sdspi_assert_cs(cfg);
-		_mcu_cortexm_delay_us(LONG_DELAY);
+		mcu_cortexm_delay_us(LONG_DELAY);
 		if( count >= 0 ){
 			_sdspi_transfer(cfg, 0, (uint8_t*)data + count, nbyte - count);
 			count = nbyte;
@@ -760,7 +767,7 @@ int _sdspi_read_data(const devfs_handle_t * cfg, void * data, int nbyte, uint8_t
 	}
 
 	_sdspi_assert_cs(cfg);
-	_mcu_cortexm_delay_us(LONG_DELAY);
+	mcu_cortexm_delay_us(LONG_DELAY);
 	_sdspi_transfer(cfg, 0, response, CMD_FRAME_SIZE); //gobble up any checksum
 	_sdspi_deassert_cs(cfg);
 
@@ -774,14 +781,14 @@ int _sdspi_transfer(const devfs_handle_t * cfg, const uint8_t * data_out, uint8_
 	for(i=0; i < nbyte; i++){
 		if( data_out == 0 ){
 			if( data_in != 0 ){
-				data_in[i] = mcu_spi_swap(cfg->port, (void*)0xFF);
+				data_in[i] = mcu_spi_swap(cfg, (void*)0xFF);
 			} else {
-				mcu_spi_swap(cfg->port, (void*)0xFF);
+				mcu_spi_swap(cfg, (void*)0xFF);
 			}
 		} else if( data_in == 0) {
-			mcu_spi_swap(cfg->port, (void*)(ssize_t)data_out[i]);
+			mcu_spi_swap(cfg, (void*)(ssize_t)data_out[i]);
 		} else {
-			data_in[i] = mcu_spi_swap(cfg->port, (void*)(ssize_t)data_out[i]);
+			data_in[i] = mcu_spi_swap(cfg, (void*)(ssize_t)data_out[i]);
 		}
 	}
 	return nbyte;

@@ -33,29 +33,32 @@ static qei_local_t qei_local[MCU_QEI_PORTS] MCU_SYS_MEM;
 static LPC_QEI_Type * const qei_regs[MCU_QEI_PORTS] = MCU_QEI_REGS;
 static u8 const qei_irqs[MCU_QEI_PORTS] = MCU_QEI_IRQS;
 
-void _mcu_qei_dev_power_on(int port){
+void mcu_qei_dev_power_on(const devfs_handle_t * handle){
+	int port = handle->port;
 	if ( qei_local[port].ref_count == 0 ){
-		_mcu_lpc_core_enable_pwr(PCQEI);
-		_mcu_cortexm_priv_enable_irq((void*)(u32)(qei_irqs[port]));
+		mcu_lpc_core_enable_pwr(PCQEI);
+		mcu_cortexm_priv_enable_irq((void*)(u32)(qei_irqs[port]));
 	}
 	qei_local[port].ref_count++;
 }
 
-void _mcu_qei_dev_power_off(int port){
+void mcu_qei_dev_power_off(const devfs_handle_t * handle){
+	int port = handle->port;
 	if ( qei_local[port].ref_count > 0 ){
 		if ( qei_local[port].ref_count == 1 ){
-			_mcu_cortexm_priv_disable_irq((void*)(u32)(qei_irqs[port]));
-			_mcu_lpc_core_disable_pwr(PCQEI);
+			mcu_cortexm_priv_disable_irq((void*)(u32)(qei_irqs[port]));
+			mcu_lpc_core_disable_pwr(PCQEI);
 		}
 		qei_local[port].ref_count--;
 	}
 }
 
-int _mcu_qei_dev_powered_on(int port){
-	return _mcu_lpc_core_pwr_enabled(PCQEI);
+int mcu_qei_dev_is_powered(const devfs_handle_t * handle){
+	return mcu_lpc_core_pwr_enabled(PCQEI);
 }
 
-int mcu_qei_setattr(int port, void * ctl){
+int mcu_qei_setattr(const devfs_handle_t * handle, void * ctl){
+	int port = handle->port;
 
 	LPC_QEI_Type * regs = qei_regs[port];
 	const qei_attr_t * attr = ctl;
@@ -126,11 +129,12 @@ int mcu_qei_setattr(int port, void * ctl){
 	return 0;
 }
 
-int mcu_qei_getinfo(int port, void * ctl){
+int mcu_qei_getinfo(const devfs_handle_t * handle, void * ctl){
 	return 0;
 }
 
-int mcu_qei_setaction(int port, void * ctl){
+int mcu_qei_setaction(const devfs_handle_t * handle, void * ctl){
+	int port = handle->port;
 	LPC_QEI_Type * regs = qei_regs[port];
 
 	mcu_action_t * action = (mcu_action_t*)ctl;
@@ -143,22 +147,22 @@ int mcu_qei_setaction(int port, void * ctl){
 		regs->IES = (1<<4);
 	}
 
-	if( _mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
+	if( mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
 		return -1;
 	}
 
 	qei_local[port].handler.callback = action->handler.callback;
 	qei_local[port].handler.context = action->handler.context;
 
-	_mcu_cortexm_set_irq_prio(qei_irqs[port], action->prio);
+	mcu_cortexm_set_irq_prio(qei_irqs[port], action->prio);
 
 
 	return 0;
 }
 
-int _mcu_qei_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
-	const int port = cfg->port;
-	if( _mcu_cortexm_priv_validate_callback(rop->handler.callback) < 0 ){
+int mcu_qei_dev_read(const devfs_handle_t * handle, devfs_async_t * rop){
+	const int port = handle->port;
+	if( mcu_cortexm_priv_validate_callback(rop->handler.callback) < 0 ){
 		return -1;
 	}
 
@@ -167,25 +171,28 @@ int _mcu_qei_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	return 0;
 }
 
-int mcu_qei_get(int port, void * ctl){
+int mcu_qei_get(const devfs_handle_t * handle, void * ctl){
+	int port = handle->port;
 	LPC_QEI_Type * regs = qei_regs[port];
 
 	return regs->POS;
 }
 
-int mcu_qei_getvelocity(int port, void * ctl){
+int mcu_qei_getvelocity(const devfs_handle_t * handle, void * ctl){
+	int port = handle->port;
 	LPC_QEI_Type * regs = qei_regs[port];
 
 	return regs->CAP;
 }
 
-int mcu_qei_getindex(int port, void * ctl){
+int mcu_qei_getindex(const devfs_handle_t * handle, void * ctl){
+	int port = handle->port;
 	LPC_QEI_Type * regs = qei_regs[port];
 
 	return regs->INXCNT;
 }
 
-void _mcu_core_qei0_isr(){
+void mcu_core_qei0_isr(){
 	const int port = 0;
 	u32 o_events = 0;
 	LPC_QEI_Type * regs = qei_regs[port];

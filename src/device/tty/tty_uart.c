@@ -51,7 +51,7 @@ int tty_uart_open(const devfs_handle_t * cfg){
 	return 0;
 }
 
-int tty_uart_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
+int tty_uart_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 	uart_attr_t attr;
 	int tmp;
 	struct termios * p = (struct termios*)ctl;
@@ -107,7 +107,7 @@ int tty_uart_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 			attr.o_flags |= UART_FLAG_IS_PARITY_NONE;
 		}
 
-		return mcu_uart_setattr(cfg->port, &attr);
+		return mcu_uart_setattr(handle, &attr);
 
 		break;
 	}

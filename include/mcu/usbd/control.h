@@ -38,9 +38,8 @@
 #define USBD_ALT_SETTING_SIZE 16
 
 
-
 typedef struct {
-	const u8 port;
+	const devfs_handle_t handle;
 	const void * const device;
 	const void * const config;
 	const void * const string;
@@ -70,6 +69,7 @@ typedef struct MCU_PACK {
 	u8 buf[USBD_CONTROL_DATAOUT_BUF_SIZE];
 	u8 alt_setting[USBD_ALT_SETTING_SIZE];
 	const usbd_control_constants_t * constants;
+	const devfs_handle_t * handle;
 } usbd_control_t;
 
 void usbd_control_priv_init(void * context);

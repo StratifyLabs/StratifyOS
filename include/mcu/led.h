@@ -31,7 +31,7 @@ enum {
 
 typedef struct MCU_PACK {
 	u32 o_flags;
-	mcu_pin_t pin;
+	u32 pin;
 } led_config_t;
 
 int led_open(const devfs_handle_t * cfg);

@@ -47,7 +47,7 @@ static void usbd_control_get_serialno(void * dest){
 	} ptr;
 	int i, j;
 	ptr.w = (u16 *)dest;
-	_mcu_core_getserialno(&tmp);
+	mcu_core_getserialno(&tmp);
 	for(j=3; j >= 0; j--){
 		for(i=0; i < 8; i++){
 			ptr.b[0] = htoc((tmp.sn[j] >> 28) & 0x0F);
@@ -208,13 +208,13 @@ u32 usbd_standard_request_set_clr_feature(usbd_control_t * context, u32 sc) {
 		if ((context->cfg != 0) && ((i & (mcu_config.usb_logical_endpoint_count-1)) != 0) && (context->ep_mask & j)) {
 			if (context->setup_pkt.wValue.w == USBD_REQUEST_STANDARD_FEATURE_ENDPOINT_STALL) {
 				if (sc) {
-					mcu_usb_stallep(context->constants->port, (void*)i);
+					mcu_usb_stallep(context->handle, (void*)i);
 					context->ep_halt |=  j;
 				} else {
 					if ((context->ep_stall & j) != 0) {
 						return 1;
 					}
-					mcu_usb_unstallep(context->constants->port, (void*)i);
+					mcu_usb_unstallep(context->handle, (void*)i);
 					context->ep_halt &= ~j;
 				}
 			} else {
@@ -283,14 +283,14 @@ u32 usbd_standard_request_set_config (usbd_control_t * context) {
 						}
 						for (i = 1; i < mcu_config.usb_logical_endpoint_count; i++) {
 							if (context->ep_mask & (1 << i)) {
-								mcu_usb_disableep(context->constants->port, (void*)i);
+								mcu_usb_disableep(context->handle, (void*)i);
 							}
 							if (context->ep_mask & ((1 << mcu_config.usb_logical_endpoint_count) << i)) {
-								mcu_usb_disableep(context->constants->port, (void*)(i|USBD_ENDPOINT_ADDRESS_IN));
+								mcu_usb_disableep(context->handle, (void*)(i|USBD_ENDPOINT_ADDRESS_IN));
 							}
 						}
 						usbd_control_init_ep(context);
-						mcu_usb_configure(context->constants->port, (void*)true);
+						mcu_usb_configure(context->handle, (void*)true);
 
 						if (((usbd_configuration_descriptor_t *)dptr)->bmAttributes & USBD_CONFIGURATION_ATTRIBUTES_POWERED_MASK) {
 							context->status |=  USBD_REQUEST_STANDARD_STATUS_SELF_POWERED;
@@ -315,9 +315,9 @@ u32 usbd_standard_request_set_config (usbd_control_t * context) {
 						i = ((usbd_endpoint_descriptor_t *)dptr)->bEndpointAddress & USBD_EP_MASK;
 						j = usb_dev_decode_ep(context, i);
 						context->ep_mask |= j;
-						mcu_usb_cfgep(context->constants->port, dptr);
-						mcu_usb_enableep(context->constants->port, (void*)i);
-						mcu_usb_resetep(context->constants->port, (void*)i);
+						mcu_usb_cfgep(context->handle, dptr);
+						mcu_usb_enableep(context->handle, (void*)i);
+						mcu_usb_resetep(context->handle, (void*)i);
 					}
 					break;
 
@@ -330,14 +330,14 @@ u32 usbd_standard_request_set_config (usbd_control_t * context) {
 			context->cfg = 0;
 			for (i = 1; i < mcu_config.usb_logical_endpoint_count; i++) {
 				if (context->ep_mask & (1 << i)) {
-					mcu_usb_disableep(context->constants->port, (void*)i);
+					mcu_usb_disableep(context->handle, (void*)i);
 				}
 				if (context->ep_mask & ((1 << mcu_config.usb_logical_endpoint_count) << i)) {
-					mcu_usb_disableep(context->constants->port, (void*)(i|USBD_ENDPOINT_ADDRESS_IN));
+					mcu_usb_disableep(context->handle, (void*)(i|USBD_ENDPOINT_ADDRESS_IN));
 				}
 			}
 			usbd_control_init_ep(context);
-			mcu_usb_configure(context->constants->port, (void*)0);
+			mcu_usb_configure(context->handle, (void*)0);
 		}
 
 		if (context->cfg != context->setup_pkt.wValue.b[0]) {
@@ -416,14 +416,14 @@ u32 usbd_standard_request_set_interface(usbd_control_t * context){
 					if (alternate_setting == context->setup_pkt.wValue.b[0]) {
 						context->ep_mask |=  j;
 						context->ep_halt &= ~j;
-						mcu_usb_cfgep(context->constants->port, dptr);
-						mcu_usb_enableep(context->constants->port, (void*)i);
-						mcu_usb_resetep(context->constants->port, (void*)i);
+						mcu_usb_cfgep(context->handle, dptr);
+						mcu_usb_enableep(context->handle, (void*)i);
+						mcu_usb_resetep(context->handle, (void*)i);
 						mask |= j;
 					} else if ((alternate_setting == prev_interface_number) && ((mask & j) == 0)) {
 						context->ep_mask &= ~j;
 						context->ep_halt &= ~j;
-						mcu_usb_disableep(context->constants->port, (void*)i);
+						mcu_usb_disableep(context->handle, (void*)i);
 					}
 				}
 				break;

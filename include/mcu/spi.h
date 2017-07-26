@@ -40,6 +40,10 @@ typedef struct MCU_PACK {
 	u32 value;
 } spi_event_data_t;
 
+typedef struct MCU_PACK {
+	spi_attr_t attr; //default attributes
+} spi_config_t;
+
 int mcu_spi_open(const devfs_handle_t * cfg) MCU_PRIV_CODE;
 int mcu_spi_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_PRIV_CODE;
 int mcu_spi_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_PRIV_CODE;
@@ -52,10 +56,10 @@ int mcu3_spi_write(const devfs_handle_t * handle, devfs_async_t * wop) MCU_PRIV_
 int mcu3_spi_ioctl(const devfs_handle_t * handle, int request, void * ctl) MCU_PRIV_CODE;
 int mcu3_spi_close(const devfs_handle_t * handle) MCU_PRIV_CODE;
 
-int mcu_spi_getinfo(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_spi_setattr(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_spi_setaction(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_spi_swap(int port, void * ctl) MCU_PRIV_CODE;
+int mcu_spi_getinfo(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_spi_setattr(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_spi_setaction(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_spi_swap(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
 
 
 int mcu_ssp_open(const devfs_handle_t * cfg) MCU_PRIV_CODE;
@@ -63,10 +67,10 @@ int mcu_ssp_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_PRIV_CODE;
 int mcu_ssp_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_PRIV_CODE;
 int mcu_ssp_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
 int mcu_ssp_close(const devfs_handle_t * cfg) MCU_PRIV_CODE;
-int mcu_ssp_getinfo(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_ssp_setattr(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_ssp_setaction(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_ssp_swap(int port, void * ctl) MCU_PRIV_CODE;
+int mcu_ssp_getinfo(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_ssp_setattr(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_ssp_setaction(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_ssp_swap(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
 
 #ifdef __cplusplus
 }

@@ -69,16 +69,16 @@ int mcu_flash_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_PRI
 int mcu_flash_close(const devfs_handle_t * cfg) MCU_PRIV_CODE;
 
 
-int mcu_flash_getinfo(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_flash_setattr(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_flash_setaction(int port, void * ctl) MCU_PRIV_CODE;
+int mcu_flash_getinfo(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_flash_setattr(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_flash_setaction(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
 
-int mcu_flash_eraseaddr(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_flash_erasepage(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_flash_getpage(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_flash_getsize(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_flash_getpageinfo(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_flash_writepage(int port, void * ctl) MCU_PRIV_CODE;
+int mcu_flash_eraseaddr(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_flash_erasepage(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_flash_getpage(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_flash_getsize(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_flash_getpageinfo(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_flash_writepage(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
 
 #ifdef __cplusplus
 }

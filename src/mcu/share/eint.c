@@ -22,12 +22,12 @@
 
 
 //These functions are device specific
-extern void _mcu_eint_dev_power_on(int port);
-extern void _mcu_eint_dev_power_off(int port);
-extern int _mcu_eint_dev_powered_on(int port);
-extern int _mcu_eint_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop);
+extern void mcu_eint_dev_power_on(const devfs_handle_t * handle);
+extern void mcu_eint_dev_power_off(const devfs_handle_t * handle);
+extern int mcu_eint_dev_is_powered(const devfs_handle_t * handle);
+extern int mcu_eint_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop);
 
-int (* const eint_ioctl_func_table[I_MCU_TOTAL + I_EINT_TOTAL])(int, void*) = {
+int (* const eint_ioctl_func_table[I_MCU_TOTAL + I_EINT_TOTAL])(const devfs_handle_t*, void*) = {
 		mcu_eint_getinfo,
 		mcu_eint_setattr,
 		mcu_eint_setaction
@@ -35,15 +35,15 @@ int (* const eint_ioctl_func_table[I_MCU_TOTAL + I_EINT_TOTAL])(int, void*) = {
 
 int mcu_eint_open(const devfs_handle_t * cfg){
 	return mcu_open(cfg,
-			_mcu_eint_dev_powered_on,
-			_mcu_eint_dev_power_on);
+			mcu_eint_dev_is_powered,
+			mcu_eint_dev_power_on);
 }
 
 int mcu_eint_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 	return mcu_ioctl(cfg,
 			request,
 			ctl,
-			_mcu_eint_dev_powered_on,
+			mcu_eint_dev_is_powered,
 			eint_ioctl_func_table,
 			I_MCU_TOTAL + I_EINT_TOTAL);
 }
@@ -56,12 +56,12 @@ int mcu_eint_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 int mcu_eint_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	return mcu_write(cfg,
 			wop,
-			_mcu_eint_dev_powered_on,
-			_mcu_eint_dev_write);
+			mcu_eint_dev_is_powered,
+			mcu_eint_dev_write);
 }
 
 int mcu_eint_close(const devfs_handle_t * cfg){
-	return mcu_close(cfg, _mcu_eint_dev_powered_on, _mcu_eint_dev_power_off);
+	return mcu_close(cfg, mcu_eint_dev_is_powered, mcu_eint_dev_power_off);
 }
 
 

@@ -83,6 +83,13 @@ extern "C" {
 
 #define DAC_IOC_IDENT_CHAR 'd'
 
+enum {
+	DAC_FLAG_NONE = 0,
+	DAC_FLAG_IS_LEFT_JUSTIFIED = (1<<0),
+	DAC_FLAG_IS_RIGHT_JUSTIFIED = (1<<1),
+	DAC_FLAG_IS_DEFAULT_PIN_ASSIGNMENT = (1<<2)
+};
+
 typedef struct MCU_PACK {
 	u32 value;
 } dac_event_t;

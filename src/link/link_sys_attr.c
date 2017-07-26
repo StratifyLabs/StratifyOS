@@ -21,25 +21,25 @@
 #include "sos/dev/sys.h"
 #include "link_flags.h"
 
-static sys_attr_t convert_sys_23_attr(const sys_23_attr_t * sys_23_attr, const sys_id_t * id);
+static sys_info_t convert_sys_23_info(const sys_23_info_t * sys_23_info, const sys_id_t * id);
 
-int link_get_sys_attr(link_transport_mdriver_t * driver, sys_attr_t * sys_attr){
+int link_get_sys_info(link_transport_mdriver_t * driver, sys_info_t * sys_info){
 	int sys_fd;
 	sys_fd = link_open(driver, "/dev/sys", LINK_O_RDWR);
 	if( sys_fd >= 0 ){
 
-		memset(sys_attr, 0, sizeof(sys_attr_t));
-		if( link_ioctl(driver, sys_fd, I_SYS_GETINFO, sys_attr) < 0 ){
+		memset(sys_info, 0, sizeof(sys_info_t));
+		if( link_ioctl(driver, sys_fd, I_SYS_GETINFO, sys_info) < 0 ){
 			//this usually means there is a version mismatch between StratifyIO and StratifyOS
-			sys_23_attr_t sys_23_attr;
-			if( link_ioctl(driver, sys_fd, I_SYS_23_GETINFO, &sys_23_attr) < 0 ){
+			sys_23_info_t sys_23_info;
+			if( link_ioctl(driver, sys_fd, I_SYS_23_GETINFO, &sys_23_info) < 0 ){
 				//unknown version
 			} else {
 				sys_id_t sys_id;
 
 				memset(&sys_id, 0, LINK_PATH_MAX);
 				link_ioctl(driver, sys_fd, I_SYS_GETID, &sys_id);
-				*sys_attr = convert_sys_23_attr(&sys_23_attr, &sys_id);
+				*sys_info = convert_sys_23_info(&sys_23_info, &sys_id);
 			}
 		}
 
@@ -50,21 +50,21 @@ int link_get_sys_attr(link_transport_mdriver_t * driver, sys_attr_t * sys_attr){
 }
 
 
-sys_attr_t convert_sys_23_attr(const sys_23_attr_t * sys_23_attr, const sys_id_t * id){
-    sys_attr_t sys_attr;
-    memcpy(sys_attr.kernel_version, sys_23_attr->version, 8);
-    memcpy(sys_attr.sys_version, sys_23_attr->sys_version, 8);
-    memcpy(sys_attr.arch, sys_23_attr->arch, 8);
-    sys_attr.signature =  sys_23_attr->signature;
-    sys_attr.security =  sys_23_attr->security;
-    sys_attr.cpu_freq =  sys_23_attr->cpu_freq;
-    sys_attr.sys_mem_size =  sys_23_attr->cpu_freq;
-    memcpy(sys_attr.stdout_name, sys_23_attr->stdout_name, LINK_NAME_MAX);
-    memcpy(sys_attr.stdin_name, sys_23_attr->stdin_name, LINK_NAME_MAX);
-    memcpy(sys_attr.name, sys_23_attr->name, LINK_NAME_MAX);
-    memcpy(sys_attr.id, id, LINK_PATH_MAX);
-    memcpy(&sys_attr.serial, &sys_23_attr->serial, sizeof(mcu_sn_t));
-    sys_attr.flags =  sys_23_attr->flags;
+sys_info_t convert_sys_23_info(const sys_23_info_t * sys_23_info, const sys_id_t * id){
+    sys_info_t sys_info;
+    memcpy(sys_info.kernel_version, sys_23_info->version, 8);
+    memcpy(sys_info.sys_version, sys_23_info->sys_version, 8);
+    memcpy(sys_info.arch, sys_23_info->arch, 8);
+    sys_info.signature =  sys_23_info->signature;
+    sys_info.security =  sys_23_info->security;
+    sys_info.cpu_freq =  sys_23_info->cpu_freq;
+    sys_info.sys_mem_size =  sys_23_info->cpu_freq;
+    memcpy(sys_info.stdout_name, sys_23_info->stdout_name, LINK_NAME_MAX);
+    memcpy(sys_info.stdin_name, sys_23_info->stdin_name, LINK_NAME_MAX);
+    memcpy(sys_info.name, sys_23_info->name, LINK_NAME_MAX);
+    memcpy(sys_info.id, id, LINK_PATH_MAX);
+    memcpy(&sys_info.serial, &sys_23_info->serial, sizeof(mcu_sn_t));
+    sys_info.o_flags =  sys_23_info->o_flags;
 
-    return sys_attr;
+    return sys_info;
 }

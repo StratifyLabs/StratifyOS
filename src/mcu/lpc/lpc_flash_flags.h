@@ -77,7 +77,7 @@ enum {
 
 
 //Function is provided in ROM by linker
-void _mcu_iap_entry(unsigned param_tab[],unsigned result_tab[]);
+void mcu_iap_entry(unsigned param_tab[],unsigned result_tab[]);
 
 
 #endif /* IAP_H_ */

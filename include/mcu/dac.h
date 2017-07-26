@@ -33,17 +33,21 @@
 extern "C" {
 #endif
 
+typedef struct MCU_PACK {
+	dac_attr_t attr; //default attributes
+} dac_config_t;
+
 int mcu_dac_open(const devfs_handle_t * cfg) MCU_PRIV_CODE;
 int mcu_dac_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_PRIV_CODE;
 int mcu_dac_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_PRIV_CODE;
 int mcu_dac_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
 int mcu_dac_close(const devfs_handle_t * cfg) MCU_PRIV_CODE;
 
-int mcu_dac_getinfo(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_dac_setattr(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_dac_setaction(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_dac_get(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_dac_set(int port, void * ctl) MCU_PRIV_CODE;
+int mcu_dac_getinfo(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_dac_setattr(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_dac_setaction(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_dac_get(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_dac_set(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
 
 //DMA version of the driver
 int mcu_dac_dma_open(const devfs_handle_t * cfg) MCU_PRIV_CODE;
@@ -52,8 +56,8 @@ int mcu_dac_dma_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_PRIV_
 int mcu_dac_dma_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
 int mcu_dac_dma_close(const devfs_handle_t * cfg) MCU_PRIV_CODE;
 
-int mcu_dac_dma_setattr(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_dac_dma_setaction(int port, void * ctl) MCU_PRIV_CODE;
+int mcu_dac_dma_setattr(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_dac_dma_setaction(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
 
 
 #ifdef __cplusplus

@@ -18,46 +18,46 @@
 #include "mcu/adc.h"
 
 //These functions are device specific
-extern void _mcu_adc_dev_power_on(int port) MCU_PRIV_CODE;
-extern void _mcu_adc_dev_power_off(int port) MCU_PRIV_CODE;
-extern int _mcu_adc_dev_powered_on(int port) MCU_PRIV_CODE;
-extern int _mcu_adc_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_PRIV_CODE;
+extern void mcu_adc_dev_power_on(const devfs_handle_t * handle) MCU_PRIV_CODE;
+extern void mcu_adc_dev_power_off(const devfs_handle_t * handle) MCU_PRIV_CODE;
+extern int mcu_adc_dev_is_powered(const devfs_handle_t * handle) MCU_PRIV_CODE;
+extern int mcu_adc_dev_read(const devfs_handle_t * handle, devfs_async_t * rop) MCU_PRIV_CODE;
 
-int (* const adc_ioctl_func_table[I_MCU_TOTAL])(int, void*) = {
+int (* const adc_ioctl_func_table[I_MCU_TOTAL])(const devfs_handle_t*, void*) = {
 		mcu_adc_getinfo,
 		mcu_adc_setattr,
 		mcu_adc_setaction
 };
 
-int mcu_adc_open(const devfs_handle_t * cfg){
-	return mcu_open(cfg,
-			_mcu_adc_dev_powered_on,
-			_mcu_adc_dev_power_on);
+int mcu_adc_open(const devfs_handle_t * handle){
+	return mcu_open(handle,
+			mcu_adc_dev_is_powered,
+			mcu_adc_dev_power_on);
 }
 
-int mcu_adc_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
-	return mcu_ioctl(cfg,
+int mcu_adc_ioctl(const devfs_handle_t * handle, int request, void * ctl){
+	return mcu_ioctl(handle,
 			request,
 			ctl,
-			_mcu_adc_dev_powered_on,
+			mcu_adc_dev_is_powered,
 			adc_ioctl_func_table,
 			I_MCU_TOTAL);
 }
 
-int mcu_adc_read(const devfs_handle_t * cfg, devfs_async_t * rop){
-	return mcu_read(cfg,
+int mcu_adc_read(const devfs_handle_t * handle, devfs_async_t * rop){
+	return mcu_read(handle,
 			rop,
-			_mcu_adc_dev_powered_on,
-			_mcu_adc_dev_read);
+			mcu_adc_dev_is_powered,
+			mcu_adc_dev_read);
 }
 
-int mcu_adc_write(const devfs_handle_t * cfg, devfs_async_t * wop){
+int mcu_adc_write(const devfs_handle_t * handle, devfs_async_t * wop){
 	errno = ENOTSUP;
 	return -1;
 }
 
-int mcu_adc_close(const devfs_handle_t * cfg){
-	return mcu_close(cfg, _mcu_adc_dev_powered_on, _mcu_adc_dev_power_off);
+int mcu_adc_close(const devfs_handle_t * handle){
+	return mcu_close(handle, mcu_adc_dev_is_powered, mcu_adc_dev_power_off);
 }
 
 

@@ -41,22 +41,22 @@ int mcu_tmr_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_PRIV_
 int mcu_tmr_close(const devfs_handle_t * cfg) MCU_PRIV_CODE;
 
 
-int mcu_tmr_getinfo(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_tmr_setattr(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_tmr_setaction(int port, void * ctl) MCU_PRIV_CODE;
+int mcu_tmr_getinfo(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_tmr_setattr(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_tmr_setaction(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
 
-int mcu_tmrsimple_getinfo(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_tmrsimple_setattr(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_tmrsimple_setaction(int port, void * ctl) MCU_PRIV_CODE;
+int mcu_tmrsimple_getinfo(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_tmrsimple_setattr(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_tmrsimple_setaction(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
 
-int mcu_tmr_setoc(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_tmr_getoc(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_tmr_setic(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_tmr_getic(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_tmr_set(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_tmr_get(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_tmr_enable(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_tmr_disable(int port, void * ctl) MCU_PRIV_CODE;
+int mcu_tmr_setoc(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_tmr_getoc(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_tmr_setic(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_tmr_getic(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_tmr_set(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_tmr_get(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_tmr_enable(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_tmr_disable(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
 
 
 

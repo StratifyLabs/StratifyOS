@@ -43,7 +43,7 @@ LPC_EEPROM_Type * const eeprom_regs[MCU_EEPROM_PORTS] = MCU_EEPROM_REGS;
 u8 const eeprom_irqs[MCU_EEPROM_PORTS] = MCU_EEPROM_IRQS;
 
 
-static void exec_callback(int port, u32 o_flags, void * data);
+static void exec_callback(const devfs_handle_t * handle, u32 o_flags, void * data);
 
 static int calc_offset(int loc){
 	return loc % MCU_EEPROM_PAGE_SIZE;
@@ -54,7 +54,7 @@ static int calc_page(int loc){
 }
 
 
-void _mcu_eeprom_dev_power_on(int port){
+void mcu_eeprom_dev_power_on(const devfs_handle_t * handle){
 	uint8_t phase[3];
 	int cpu_mhz;
 	LPC_EEPROM_Type * regs = eeprom_regs[port];
@@ -63,7 +63,7 @@ void _mcu_eeprom_dev_power_on(int port){
 
 		//enable the interrupt
 		if( eeprom_irqs[port] != 0xFF ){
-			_mcu_cortexm_priv_enable_irq((void*)(u32)(eeprom_irqs[port]));
+			mcu_cortexm_priv_enable_irq((void*)(u32)(eeprom_irqs[port]));
 		}
 
 		//initialize the EEPROM clock
@@ -81,13 +81,13 @@ void _mcu_eeprom_dev_power_on(int port){
 	eeprom_local[port].ref_count++;
 }
 
-void _mcu_eeprom_dev_power_off(int port){
+void mcu_eeprom_dev_power_off(const devfs_handle_t * handle){
 	LPC_EEPROM_Type * regs = eeprom_regs[port];
 
 	if ( eeprom_local[port].ref_count > 0 ){
 		if ( eeprom_local[port].ref_count == 1 ){
 			//disable the interrupt
-			_mcu_cortexm_priv_disable_irq((void*)(u32)(eeprom_irqs[port]));
+			mcu_cortexm_priv_disable_irq((void*)(u32)(eeprom_irqs[port]));
 
 			//power down
 			regs->PWRDWN = 1;
@@ -97,22 +97,22 @@ void _mcu_eeprom_dev_power_off(int port){
 
 }
 
-int _mcu_eeprom_dev_powered_on(int port){
+int mcu_eeprom_dev_is_powered(const devfs_handle_t * handle){
 	LPC_EEPROM_Type * regs = eeprom_regs[port];
 	return ( regs->PWRDWN & (1<<0) ) == 0;
 }
 
 
-int mcu_eeprom_getinfo(int port, void * ctl){
+int mcu_eeprom_getinfo(const devfs_handle_t * handle, void * ctl){
 	eeprom_attr_t * attr = ctl;
 	attr->size = 4032;
 	return 0;
 }
-int mcu_eeprom_setattr(int port, void * ctl){
+int mcu_eeprom_setattr(const devfs_handle_t * handle, void * ctl){
 	return 0;
 }
 
-int mcu_eeprom_setaction(int port, void * ctl){
+int mcu_eeprom_setaction(const devfs_handle_t * handle, void * ctl){
 	mcu_action_t * action = (mcu_action_t *)ctl;
 	if( action->handler.callback == 0 ){
 		if( eeprom_local[port].buf != 0 ){
@@ -120,7 +120,7 @@ int mcu_eeprom_setaction(int port, void * ctl){
 		}
 	}
 
-	if( _mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
+	if( mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
 		return -1;
 	}
 
@@ -130,7 +130,7 @@ int mcu_eeprom_setaction(int port, void * ctl){
 }
 
 
-int _mcu_eeprom_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
+int mcu_eeprom_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	int port = cfg->port;
 	if ( wop->nbyte == 0 ){
 		return 0;
@@ -156,7 +156,7 @@ int _mcu_eeprom_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	eeprom_local[port].page = calc_page(wop->loc);
 	eeprom_local[port].offset = calc_offset(wop->loc);
 
-	if( _mcu_cortexm_priv_validate_callback(wop->handler.callback) < 0 ){
+	if( mcu_cortexm_priv_validate_callback(wop->handler.callback) < 0 ){
 		return -1;
 	}
 
@@ -192,7 +192,7 @@ int _mcu_eeprom_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 
 }
 
-int _mcu_eeprom_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
+int mcu_eeprom_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	int port = cfg->port;
 
 	if ( rop->nbyte == 0 ){
@@ -248,14 +248,14 @@ int _mcu_eeprom_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	return rop->nbyte;
 }
 
-void exec_callback(int port, u32 o_flags, void * data){
+void exec_callback(const devfs_handle_t * handle, u32 o_flags, void * data){
 	LPC_EEPROM_Type * regs = eeprom_regs[port];
 	eeprom_local[port].buf = 0;
 	regs->INTENCLR = (1<<26)|(1<<28); //disable the interrupts
 	mcu_execute_event_handler(&(eeprom_local[port].handler), o_flags, data);
 }
 
-void _mcu_core_eeprom0_isr(){
+void mcu_core_eeprom0_isr(){
 	const int port = 0;
 	LPC_EEPROM_Type * regs = eeprom_regs[port];
 	uint32_t status = regs->INTSTAT;

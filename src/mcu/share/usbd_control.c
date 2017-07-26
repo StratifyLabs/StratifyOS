@@ -31,7 +31,7 @@
 
 
 static void stall(usbd_control_t * context){
-	mcu_usb_stallep(context->constants->port, (void*)(USBD_ENDPOINT_ADDRESS_IN|0x00));
+	mcu_usb_stallep(context->handle, (void*)(USBD_ENDPOINT_ADDRESS_IN|0x00));
 	context->data.nbyte = 0;
 }
 
@@ -45,10 +45,10 @@ void usbd_control_priv_init(void * args){
 	action.handler.callback = usbd_control_handler;
 	action.o_events = MCU_EVENT_FLAG_DATA_READY | MCU_EVENT_FLAG_WRITE_COMPLETE;
 	action.prio = 0;
-	mcu_usb_setaction(context->constants->port, &action);
+	mcu_usb_setaction(context->handle, &action);
 
 
-	mcu_usb_attach(context->constants->port, NULL);
+	mcu_usb_attach(context->handle, NULL);
 }
 
 int usbd_control_handler(void * context_object, mcu_event_t * usb_event /*! Callback data */){
@@ -113,11 +113,11 @@ int usbd_control_handler(void * context_object, mcu_event_t * usb_event /*! Call
 		} else {
 			if (context->addr & USBD_ENDPOINT_ADDRESS_IN) {
 				context->addr &= 0x7F;
-				mcu_usb_setaddr(context->constants->port, (void*)((int)context->addr));
+				mcu_usb_setaddr(context->handle, (void*)((int)context->addr));
 			}
 		}
 	} else if( o_events & MCU_EVENT_FLAG_STALL ){
-		mcu_usb_unstallep(context->constants->port, (void*)(u32)((usb_event_t*)usb_event->data)->epnum);
+		mcu_usb_unstallep(context->handle, (void*)(u32)((usb_event_t*)usb_event->data)->epnum);
 	}
 
 	return 1;
@@ -133,7 +133,7 @@ void * usbd_control_add_ptr(usbd_control_t * context, void * ptr, u32 value){
 /*! \details This function reads the setup packet as part of the setup stage.
  */
 void usbd_control_handler_setup_stage(usbd_control_t * context){
-	mcu_usb_rd_ep(context->constants->port, 0x00, (uint8_t *)&(context->setup_pkt));
+	mcu_usb_rd_ep(context->handle, 0x00, (uint8_t *)&(context->setup_pkt));
 	context->data.nbyte = context->setup_pkt.wLength;
 	context->data.max = context->data.nbyte;
 }
@@ -147,7 +147,7 @@ void usbd_control_datain_stage(usbd_control_t * context) {
 	} else {
 		nbyte = context->data.nbyte;
 	}
-	nbyte = mcu_usb_wr_ep(context->constants->port, 0x80, context->data.dptr, nbyte);
+	nbyte = mcu_usb_wr_ep(context->handle, 0x80, context->data.dptr, nbyte);
 	context->data.dptr += nbyte;
 	context->data.nbyte -= nbyte;
 }
@@ -156,7 +156,7 @@ void usbd_control_datain_stage(usbd_control_t * context) {
 
 void usbd_control_dataout_stage(usbd_control_t * context){
 	u32 nbyte;
-	nbyte = mcu_usb_rd_ep(context->constants->port, 0x00, context->data.dptr);
+	nbyte = mcu_usb_rd_ep(context->handle, 0x00, context->data.dptr);
 	if( context->data.nbyte + MCU_CORE_USB_MAX_PACKET_ZERO_VALUE < context->data.max ){
 		context->data.dptr += nbyte;
 	}
@@ -166,12 +166,12 @@ void usbd_control_dataout_stage(usbd_control_t * context){
 
 //send a zero length packet
 void usbd_control_statusin_stage (usbd_control_t * context){
-	mcu_usb_wr_ep(context->constants->port, 0x80, NULL, 0);
+	mcu_usb_wr_ep(context->handle, 0x80, NULL, 0);
 }
 
 //receive a zero length packet
 void usbd_control_statusout_stage (usbd_control_t * context){
-	mcu_usb_rd_ep(context->constants->port, 0x00, context->buf);
+	mcu_usb_rd_ep(context->handle, 0x00, context->buf);
 }
 
 

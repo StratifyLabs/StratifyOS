@@ -72,30 +72,29 @@ int led_close(const devfs_handle_t * handle){
 void led_setattr(const devfs_handle_t * handle, const led_attr_t * attr){
 	const led_config_t * config = handle->config;
 	u32 o_flags = attr->o_flags;
-	mcu_pin_t p = config->pin;
 
 	if( o_flags & LED_FLAG_INIT ){
 		//initialize the pin
 		pio_attr_t pio_attr;
 		pio_attr.o_flags = PIO_FLAG_SET_OUTPUT;
-		pio_attr.o_pinmask = (1<<p.pin);
-		mcu_pio_setattr(p.port, &pio_attr);
+		pio_attr.o_pinmask = (1<<config->pin);
+		mcu_pio_setattr(handle, &pio_attr);
 	}
 
 	if( o_flags & LED_FLAG_ENABLE ){
 
 		if( config->o_flags & LED_CONFIG_FLAG_IS_ACTIVE_HIGH ){
-			mcu_pio_setmask(p.port, (void*)(1<<p.pin));
+			mcu_pio_setmask(handle, (void*)(1<<config->pin));
 		} else {
-			mcu_pio_clrmask(p.port, (void*)(1<<p.pin));
+			mcu_pio_clrmask(handle, (void*)(1<<config->pin));
 		}
 
 	} else if( o_flags & LED_FLAG_DISABLE ){
 
 		if( config->o_flags & LED_CONFIG_FLAG_IS_ACTIVE_HIGH ){
-			mcu_pio_clrmask(p.port, (void*)(1<<p.pin));
+			mcu_pio_clrmask(handle, (void*)(1<<config->pin));
 		} else {
-			mcu_pio_setmask(p.port, (void*)(1<<p.pin));
+			mcu_pio_setmask(handle, (void*)(1<<config->pin));
 		}
 	}
 

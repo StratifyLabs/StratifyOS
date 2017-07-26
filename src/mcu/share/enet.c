@@ -18,14 +18,14 @@
 #include "mcu/enet.h"
 
 //These functions are device specific
-extern void _mcu_enet_dev_power_on(int port);
-extern void _mcu_enet_dev_power_off(int port);
-extern int _mcu_enet_dev_powered_on(int port);
-extern int _mcu_enet_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop);
-extern int _mcu_enet_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop);
+extern void mcu_enet_dev_power_on(const devfs_handle_t * handle);
+extern void mcu_enet_dev_power_off(const devfs_handle_t * handle);
+extern int mcu_enet_dev_is_powered(const devfs_handle_t * handle);
+extern int mcu_enet_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop);
+extern int mcu_enet_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop);
 
 
-int (* const enet_ioctl_func_table[I_MCU_TOTAL + I_ENET_TOTAL])(int, void*) = {
+int (* const enet_ioctl_func_table[I_MCU_TOTAL + I_ENET_TOTAL])(const devfs_handle_t*, void*) = {
 		mcu_enet_getinfo,
 		mcu_enet_setattr,
 		mcu_enet_setaction,
@@ -34,15 +34,15 @@ int (* const enet_ioctl_func_table[I_MCU_TOTAL + I_ENET_TOTAL])(int, void*) = {
 
 int mcu_enet_open(const devfs_handle_t * cfg){
 	return mcu_open(cfg,
-			_mcu_enet_dev_powered_on,
-			_mcu_enet_dev_power_on);
+			mcu_enet_dev_is_powered,
+			mcu_enet_dev_power_on);
 }
 
 int mcu_enet_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 	return mcu_ioctl(cfg,
 			request,
 			ctl,
-			_mcu_enet_dev_powered_on,
+			mcu_enet_dev_is_powered,
 			enet_ioctl_func_table,
 			I_MCU_TOTAL + I_ENET_TOTAL);
 }
@@ -51,19 +51,19 @@ int mcu_enet_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 
 int mcu_enet_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	return mcu_read(cfg, rop,
-			_mcu_enet_dev_powered_on,
-			_mcu_enet_dev_read);
+			mcu_enet_dev_is_powered,
+			mcu_enet_dev_read);
 }
 
 int mcu_enet_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	return mcu_write(cfg, wop,
-			_mcu_enet_dev_powered_on,
-			_mcu_enet_dev_write);
+			mcu_enet_dev_is_powered,
+			mcu_enet_dev_write);
 
 }
 
 int mcu_enet_close(const devfs_handle_t * cfg){
-	return mcu_close(cfg, _mcu_enet_dev_powered_on, _mcu_enet_dev_power_off);
+	return mcu_close(cfg, mcu_enet_dev_is_powered, mcu_enet_dev_power_off);
 }
 
 

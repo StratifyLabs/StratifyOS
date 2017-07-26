@@ -58,8 +58,9 @@ extern "C" {
 
 
 typedef enum {
-	ADC_FLAG_LEFT_JUSTIFIED = (1<<0),
-	ADC_FLAG_RIGHT_JUSTIFIED = (1<<1)
+	ADC_FLAG_IS_LEFT_JUSTIFIED = (1<<0),
+	ADC_FLAG_IS_RIGHT_JUSTIFIED = (1<<1),
+	ADC_FLAG_IS_DEFAULT_PIN_ASSIGNMENT = (1<<2)
 } adc_flag_t;
 
 typedef struct MCU_PACK {

@@ -68,7 +68,7 @@ int mcu_wdt_init(int mode, int interval){
 #endif
 
 		NVIC_SetPriority(WDT_IRQn, 2);
-		_mcu_cortexm_priv_enable_irq((void*)WDT_IRQn);
+		mcu_cortexm_priv_enable_irq((void*)WDT_IRQn);
 	}
 
 	//Set the interval
@@ -106,7 +106,7 @@ int mcu_wdt_setinterval(int interval){
 		counts = (1000 * interval);
 		break;
 	case 1:
-		counts = ( (_mcu_core_getclock() / 1000) * interval + 2 ) / 4;
+		counts = ( (mcu_core_getclock() / 1000) * interval + 2 ) / 4;
 		break;
 	case 2:
 		counts = ( 8 * interval );

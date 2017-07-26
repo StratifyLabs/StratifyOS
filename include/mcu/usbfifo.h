@@ -56,15 +56,6 @@ int usbfifo_write(const devfs_handle_t * cfg, devfs_async_t * wop);
 int usbfifo_close(const devfs_handle_t * cfg);
 
 
-
-#define USBFIFO_HANDLE_CFG(target_endpoint, target_endpoint_size, target_buffer, buffer_size) { \
-	.endpoint = target_endpoint, \
-	.endpoint_size = target_endpoint_size, \
-	.fifo.buffer = target_buffer, \
-	.fifo.size = buffer_size, \
-}
-
-
 #endif /* DEV_USBFIFO_H_ */
 
 

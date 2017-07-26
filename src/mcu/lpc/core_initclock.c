@@ -328,7 +328,7 @@ static int mcu_core_initclock_dev(int fclk, int fosc, uint8_t clk_src, int pdiv)
 
 
 //requires mcu_core_osc_freq, mcu_board_config.core_cpu_freq, and mcu_board_config.core_periph_freq to be defined ext
-int _mcu_core_initclock(int div){
+int mcu_core_initclock(int div){
 	uint8_t clk_src = 0;
 	uint32_t fosc = mcu_board_config.core_osc_freq;
 	int pdiv = mcu_board_config.core_cpu_freq / mcu_board_config.core_periph_freq;

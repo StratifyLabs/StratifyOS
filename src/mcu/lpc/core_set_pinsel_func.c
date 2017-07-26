@@ -144,7 +144,7 @@ const pinsel_table_t pinsel_func_table[TOTAL_PINS] = {
 };
 
 
-int _mcu_core_set_pinsel_func(int gpio_port, int pin, core_periph_t function, int periph_port){
+int mcu_core_set_pinsel_func(int gpio_port, int pin, core_periph_t function, int periph_port){
 	int i;
 	int tmp;
 	pinsel_table_t entry;
@@ -371,7 +371,7 @@ const pinsel_table_t pinsel_func_table[TOTAL_PINS] = {
 
 
 
-int _mcu_core_set_pinsel_func(int gpio_port, int pin, core_periph_t function, int periph_port){
+int mcu_core_set_pinsel_func(int gpio_port, int pin, core_periph_t function, int periph_port){
 	int i;
 	pinsel_table_t pin_cfg;
 	int value;

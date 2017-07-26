@@ -56,7 +56,7 @@ int mcu_sync_io(const devfs_handle_t * cfg,
 	if( ret == 0 ){
 
 		while( done == 0 ){
-			//_mcu_core_sleep(CORE_SLEEP);
+			//mcu_core_sleep(CORE_SLEEP);
 		}
 		return op.nbyte;
 

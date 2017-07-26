@@ -130,7 +130,7 @@ void boot_link_cmd_readserialno(link_transport_driver_t * driver, link_data_t * 
 	memset(serialno, 0, LINK_PACKET_DATA_SIZE);
 
 
-	_mcu_core_getserialno((mcu_sn_t*)tmp);
+	mcu_core_getserialno((mcu_sn_t*)tmp);
 	for(j=3; j >= 0; j--){
 		for(i=0; i < 8; i++){
 			*p++ = htoc((tmp[j] >> 28) & 0x0F);
@@ -185,7 +185,7 @@ void boot_link_cmd_ioctl(link_transport_driver_t * driver, link_data_t * args){
 	case I_BOOTLOADER_GETINFO:
 		//write data to io_buf
 		attr.version = BCDVERSION;
-		_mcu_core_getserialno((mcu_sn_t*)(attr.serialno));
+		mcu_core_getserialno((mcu_sn_t*)(attr.serialno));
 
 		attr.startaddr = boot_board_config.program_start_addr;
 		attr.hardware_id = boot_board_config.id;
@@ -286,7 +286,7 @@ void boot_link_cmd_reset(link_transport_driver_t * driver, link_data_t * args){
 	driver->close(&(driver->handle));
 	dfu_sw_req = (u32*)boot_board_config.sw_req_loc;
 	*dfu_sw_req = 0;
-	_mcu_cortexm_priv_reset(NULL);
+	mcu_cortexm_priv_reset(NULL);
 	//the program never arrives here
 }
 
@@ -296,7 +296,7 @@ void boot_link_cmd_reset_bootloader(link_transport_driver_t * driver, link_data_
 	driver->close(&(driver->handle));
 	dfu_sw_req = (u32*)boot_board_config.sw_req_loc;
 	*dfu_sw_req = boot_board_config.sw_req_value;
-	_mcu_cortexm_priv_reset(NULL);
+	mcu_cortexm_priv_reset(NULL);
 	//the program never arrives here
 }
 

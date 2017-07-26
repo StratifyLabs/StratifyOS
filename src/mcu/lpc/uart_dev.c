@@ -133,30 +133,31 @@ u8 const uart_irqs[UART_PORTS] = MCU_UART_IRQS;
 static void exec_readcallback(int port, LPC_UART_Type * uart_regs, u32 o_events);
 static void exec_writecallback(int port, LPC_UART_Type * uart_regs, u32 o_events);
 
-void _mcu_uart_dev_power_on(int port){
+void mcu_uart_dev_power_on(const devfs_handle_t * handle){
+	int port = handle->port;
 	if ( uart_local[port].ref_count == 0 ){
 		switch(port){
 		case 0:
-			_mcu_lpc_core_enable_pwr(PCUART0);
+			mcu_lpc_core_enable_pwr(PCUART0);
 			break;
 #if MCU_UART_PORTS > 1
 		case 1:
-			_mcu_lpc_core_enable_pwr(PCUART1);
+			mcu_lpc_core_enable_pwr(PCUART1);
 			break;
 #endif
 #if MCU_UART_PORTS > 2
 		case 2:
-			_mcu_lpc_core_enable_pwr(PCUART2);
+			mcu_lpc_core_enable_pwr(PCUART2);
 			break;
 #endif
 #if MCU_UART_PORTS > 3
 		case 3:
-			_mcu_lpc_core_enable_pwr(PCUART3);
+			mcu_lpc_core_enable_pwr(PCUART3);
 			break;
 #endif
 #if MCU_UART_PORTS > 4
 		case 4:
-			_mcu_lpc_core_enable_pwr(PCUART4);
+			mcu_lpc_core_enable_pwr(PCUART4);
 			break;
 #endif
 		}
@@ -169,36 +170,38 @@ void _mcu_uart_dev_power_on(int port){
 
 }
 
-void _mcu_uart_dev_power_off(int port){
+void mcu_uart_dev_power_off(const devfs_handle_t * handle){
+	int port = handle->port;
+
 	if ( uart_local[port].ref_count > 0 ){
 		if ( uart_local[port].ref_count == 1 ){
-			_mcu_cortexm_priv_disable_irq((void*)(u32)(uart_irqs[port]));
+			mcu_cortexm_priv_disable_irq((void*)(u32)(uart_irqs[port]));
 			switch(port){
 			case 0:
 #if defined __lpc13uxx
 				LPC_SYSCON->UARTCLKDIV = 0;
 				LPC_SYSCON->SYSAHBCLKCTRL &= ~(SYSAHBCLKCTRL_UART);
 #endif
-				_mcu_lpc_core_disable_pwr(PCUART0);
+				mcu_lpc_core_disable_pwr(PCUART0);
 				break;
 #if MCU_UART_PORTS > 1
 			case 1:
-				_mcu_lpc_core_disable_pwr(PCUART1);
+				mcu_lpc_core_disable_pwr(PCUART1);
 				break;
 #endif
 #if MCU_UART_PORTS > 2
 			case 2:
-				_mcu_lpc_core_disable_pwr(PCUART2);
+				mcu_lpc_core_disable_pwr(PCUART2);
 				break;
 #endif
 #if MCU_UART_PORTS > 3
 			case 3:
-				_mcu_lpc_core_disable_pwr(PCUART3);
+				mcu_lpc_core_disable_pwr(PCUART3);
 				break;
 #endif
 #if MCU_UART_PORTS > 4
 			case 4:
-				_mcu_lpc_core_disable_pwr(PCUART4);
+				mcu_lpc_core_disable_pwr(PCUART4);
 				break;
 #endif
 
@@ -210,16 +213,16 @@ void _mcu_uart_dev_power_off(int port){
 	}
 }
 
-int _mcu_uart_dev_powered_on(int port){
-	return ( uart_local[port].ref_count != 0 );
+int mcu_uart_dev_is_powered(const devfs_handle_t * handle){
+	return ( uart_local[handle->port].ref_count != 0 );
 }
 
-int mcu_uart_getinfo(int port, void * ctl){
-	memcpy(ctl, &(uart_local[port].attr), sizeof(uart_attr_t));
+int mcu_uart_getinfo(const devfs_handle_t * handle, void * ctl){
+	memcpy(ctl, &(uart_local[handle->port].attr), sizeof(uart_attr_t));
 	return 0;
 }
 
-int mcu_uart_setattr(int port, void * ctl){
+int mcu_uart_setattr(const devfs_handle_t * handle, void * ctl){
 	uint32_t baud_rate;
 	uint8_t baud_low;
 	uint8_t baud_high;
@@ -228,6 +231,8 @@ int mcu_uart_setattr(int port, void * ctl){
 	LPC_UART_Type * uart_regs;
 	u32 o_flags;
 	uart_attr_t * attr = (uart_attr_t*)ctl;
+	int port = handle->port;
+
 	uart_regs = uart_regs_table[port];
 	o_flags = attr->o_flags;
 
@@ -273,7 +278,7 @@ int mcu_uart_setattr(int port, void * ctl){
 
 
 	//! \todo Error check the width
-	_mcu_cortexm_priv_disable_irq((void*)(u32)(uart_irqs[port]));
+	mcu_cortexm_priv_disable_irq((void*)(u32)(uart_irqs[port]));
 
 	uart_regs->RBR;
 	uart_regs->IIR;
@@ -312,7 +317,7 @@ int mcu_uart_setattr(int port, void * ctl){
 	//! \todo need to store actual baud rate not target baud rate
 	//uart_local[port].attr.baudrate = ctl_ptr->baudrate;
 
-	_mcu_cortexm_priv_enable_irq((void*)(u32)(uart_irqs[port]));
+	mcu_cortexm_priv_enable_irq((void*)(u32)(uart_irqs[port]));
 
 	return 0;
 }
@@ -339,8 +344,10 @@ static void exec_writecallback(int port, LPC_UART_Type * uart_regs, u32 o_events
 	}
 }
 
-int mcu_uart_setaction(int port, void * ctl){
+int mcu_uart_setaction(const devfs_handle_t * handle, void * ctl){
 	mcu_action_t * action = (mcu_action_t*)ctl;
+	int port = handle->port;
+
 	LPC_UART_Type * uart_regs = uart_regs_table[port];
 
 	if( action->handler.callback == 0 ){
@@ -365,7 +372,7 @@ int mcu_uart_setaction(int port, void * ctl){
 
 	} else {
 
-		if( _mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
+		if( mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
 			return -1;
 		}
 
@@ -386,14 +393,16 @@ int mcu_uart_setaction(int port, void * ctl){
 		}
 	}
 
-	_mcu_cortexm_set_irq_prio(uart_irqs[port], action->prio);
+	mcu_cortexm_set_irq_prio(uart_irqs[port], action->prio);
 
 
 	return 0;
 }
 
-int mcu_uart_put(int port, void * ctl){
+int mcu_uart_put(const devfs_handle_t * handle, void * ctl){
 	char c = (u32)ctl;
+	int port = handle->port;
+
 	LPC_UART_Type * uart_regs = uart_regs_table[port];
 	while( (uart_regs->LSR & ULSR_THRE) == 0 ){
 		; //wait for transmitter to be free
@@ -406,8 +415,9 @@ int mcu_uart_put(int port, void * ctl){
 	return 0;
 }
 
-int mcu_uart_flush(int port, void * ctl){
+int mcu_uart_flush(const devfs_handle_t * handle, void * ctl){
 	//char tmp;
+	int port = handle->port;
 	LPC_UART_Type * uart_regs = uart_regs_table[port];
 	uart_regs->RBR;
 	uart_regs->FCR = UFCR_RX_FIFO_RESET|UFCR_TX_FIFO_RESET;
@@ -415,8 +425,10 @@ int mcu_uart_flush(int port, void * ctl){
 }
 
 
-int mcu_uart_get(int port, void * ctl){
+int mcu_uart_get(const devfs_handle_t * handle, void * ctl){
 	char * dest;
+	int port = handle->port;
+
 	LPC_UART_Type * uart_regs = uart_regs_table[port];
 	if( uart_regs->LSR & ULSR_RDR ){ //check to see if a byte is available
 		dest = ctl;
@@ -426,9 +438,11 @@ int mcu_uart_get(int port, void * ctl){
 	return -1;
 }
 
-int mcu_uart_getall(int port, void * ctl){
+int mcu_uart_getall(const devfs_handle_t * handle, void * ctl){
 	char * dest;
 	int i;
+	int port = handle->port;
+
 	LPC_UART_Type * uart_regs = uart_regs_table[port];
 	dest = ctl;
 	i = 0;
@@ -443,13 +457,13 @@ int mcu_uart_getall(int port, void * ctl){
 
 
 
-int _mcu_uart_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
+int mcu_uart_dev_read(const devfs_handle_t * handle, devfs_async_t * rop){
 	int len;
 	int port;
 	LPC_UART_Type * uart_regs;
 
 	//grab the port and registers
-	port = DEVFS_GET_PORT(cfg);
+	port = handle->port;
 	uart_regs = uart_regs_table[port];
 
 	if ( uart_regs->IER & UIER_RBRIE ){
@@ -473,7 +487,7 @@ int _mcu_uart_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 			errno = EAGAIN;
 			len = -1;
 		} else {
-			if( _mcu_cortexm_priv_validate_callback(rop->handler.callback) < 0 ){
+			if( mcu_cortexm_priv_validate_callback(rop->handler.callback) < 0 ){
 				return -1;
 			}
 
@@ -485,10 +499,10 @@ int _mcu_uart_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	return len;
 }
 
-int _mcu_uart_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
+int mcu_uart_dev_write(const devfs_handle_t * handle, devfs_async_t * wop){
 	LPC_UART_Type * uart_regs;
 	int port;
-	port = DEVFS_GET_PORT(cfg);
+	port = handle->port;
 
 	//Grab the registers
 	uart_regs = uart_regs_table[port];
@@ -511,7 +525,7 @@ int _mcu_uart_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	uart_regs->TER = 0; //disable the transmitter
 	write_tx_data(port);
 
-	if( _mcu_cortexm_priv_validate_callback(wop->handler.callback) < 0 ){
+	if( mcu_cortexm_priv_validate_callback(wop->handler.callback) < 0 ){
 		return -1;
 	}
 
@@ -542,7 +556,7 @@ void write_tx_data(int port){
 	}
 }
 
-void _mcu_uart_isr(int port){
+void mcu_uart_isr(int port){
 	//first determine if this is a UART0 interrupt
 	LPC_UART_Type * uart_regs = uart_regs_table[port];
 
@@ -579,25 +593,25 @@ void _mcu_uart_isr(int port){
 	}
 }
 
-void _mcu_core_uart0_isr(){
-	_mcu_uart_isr(0);
+void mcu_core_uart0_isr(){
+	mcu_uart_isr(0);
 }
 
 #if MCU_UART_PORTS > 1
-void _mcu_core_uart1_isr(){
-	_mcu_uart_isr(1);
+void mcu_core_uart1_isr(){
+	mcu_uart_isr(1);
 }
 #endif
 
 #if MCU_UART_PORTS > 2
-void _mcu_core_uart2_isr(){
-	_mcu_uart_isr(2);
+void mcu_core_uart2_isr(){
+	mcu_uart_isr(2);
 }
 #endif
 
 #if MCU_UART_PORTS > 3
-void _mcu_core_uart3_isr(){
-	_mcu_uart_isr(3);
+void mcu_core_uart3_isr(){
+	mcu_uart_isr(3);
 }
 #endif
 

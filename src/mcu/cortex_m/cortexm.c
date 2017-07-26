@@ -45,18 +45,18 @@ static inline void _delay_us(uint32_t __us){
 	_delay_loop_1(__ticks);
 }
 
-void _mcu_cortexm_delay_us(u32 us){ _delay_us(us); }
-void _mcu_cortexm_delay_ms(u32 ms){ _delay_us(ms*1000); }
+void mcu_cortexm_delay_us(u32 us){ _delay_us(us); }
+void mcu_cortexm_delay_ms(u32 ms){ _delay_us(ms*1000); }
 
 
-void _mcu_cortexm_priv_set_unprivileged_mode(){
+void mcu_cortexm_priv_set_unprivileged_mode(){
 	register uint32_t control;
 	control = __get_CONTROL();
 	control |= 0x01;
 	__set_CONTROL(control);
 }
 
-void _mcu_cortexm_set_thread_mode(){
+void mcu_cortexm_set_thread_mode(){
 	register uint32_t control;
 	control = __get_CONTROL();
 	control |= 0x02;
@@ -73,7 +73,7 @@ void mcu_cortexm_svcall(cortexm_svcall_t call, void * args){
 	asm volatile("SVC 0\n");
 }
 
-void _mcu_core_svcall_handler(){
+void mcu_core_svcall_handler(){
 	register uint32_t * frame;
 	register core_privcall_t call;
 	register void * args;
@@ -83,50 +83,50 @@ void _mcu_core_svcall_handler(){
 	call(args);
 }
 
-int _mcu_cortexm_priv_validate_callback(mcu_callback_t callback){
+int mcu_cortexm_priv_validate_callback(mcu_callback_t callback){
 	return 0;
 }
 
-void _mcu_cortexm_priv_reset(void * args){
+void mcu_cortexm_priv_reset(void * args){
 	NVIC_SystemReset();
 }
 
-void _mcu_cortexm_priv_disable_irq(void * x){
+void mcu_cortexm_priv_disable_irq(void * x){
 	NVIC_DisableIRQ((IRQn_Type)x);
 }
 
-void _mcu_cortexm_priv_enable_irq(void * x){
+void mcu_cortexm_priv_enable_irq(void * x){
 	NVIC_EnableIRQ((IRQn_Type)x);
 }
 
-void _mcu_cortexm_priv_disable_interrupts(void * args){
+void mcu_cortexm_priv_disable_interrupts(void * args){
 	asm volatile ("cpsid i");
 }
 
-void _mcu_cortexm_priv_enable_interrupts(void * args){
+void mcu_cortexm_priv_enable_interrupts(void * args){
 	asm volatile ("cpsie i");
 }
 
-void _mcu_cortexm_priv_get_stack_ptr(void * ptr){
+void mcu_cortexm_priv_get_stack_ptr(void * ptr){
 	asm volatile ("MRS %0, msp\n\t" : "=r" (ptr) );
 }
 
-void _mcu_cortexm_priv_set_stack_ptr(void * ptr){
+void mcu_cortexm_priv_set_stack_ptr(void * ptr){
 	asm volatile ("MSR msp, %0\n\t" : : "r" (ptr) );
 }
 
-void _mcu_cortexm_priv_get_thread_stack_ptr(void * ptr){
+void mcu_cortexm_priv_get_thread_stack_ptr(void * ptr){
 	void ** ptrp = (void**)ptr;
 	void * result=NULL;
 	asm volatile ("MRS %0, psp\n\t" : "=r" (result) );
 	*ptrp = result;
 }
 
-void _mcu_cortexm_priv_set_thread_stack_ptr(void * ptr){
+void mcu_cortexm_priv_set_thread_stack_ptr(void * ptr){
 	asm volatile ("MSR psp, %0\n\t" : : "r" (ptr) );
 }
 
-int _mcu_cortexm_set_irq_prio(int irq, int prio){
+int mcu_cortexm_set_irq_prio(int irq, int prio){
 
 	prio = mcu_config.irq_middle_prio - prio;
 	if( prio < 1 ){
@@ -137,7 +137,7 @@ int _mcu_cortexm_set_irq_prio(int irq, int prio){
 		prio = mcu_config.irq_middle_prio*2-1;
 	}
 
-	_mcu_core_set_nvic_priority((IRQn_Type)irq, prio);
+	mcu_core_set_nvic_priority((IRQn_Type)irq, prio);
 
 	return 0;
 }

@@ -30,23 +30,23 @@ typedef struct {
 static dma_local_t dma_local[MCU_DMA_CHANNELS] MCU_SYS_MEM;
 static LPC_GPDMACH_Type * dma_regs[MCU_DMA_CHANNELS] = MCU_DMA_CHANNEL_REGS;
 
-void _mcu_dma_init(int mode){
+void mcu_dma_init(int mode){
 	//Power up the DMA
-	_mcu_lpc_core_enable_pwr(PCGPDMA);
+	mcu_lpc_core_enable_pwr(PCGPDMA);
 	//Enable the controller
 	LPC_GPDMA->CONFIG = (1<<0);
 	//Enable the interrupts
-	_mcu_cortexm_priv_enable_irq((void*)DMA_IRQn);
+	mcu_cortexm_priv_enable_irq((void*)DMA_IRQn);
 }
 
-void _mcu_dma_exit(){
+void mcu_dma_exit(){
 	//disable the DMA
 	LPC_GPDMA->CONFIG = 0;
 	//Power down the DMA
-	_mcu_lpc_core_disable_pwr(PCGPDMA);
+	mcu_lpc_core_disable_pwr(PCGPDMA);
 }
 
-int _mcu_dma_halttransfer(int chan){
+int mcu_dma_halttransfer(int chan){
 	LPC_GPDMACH_Type * channel_regs;
 	//Get the channel registers
 	if ( chan < 0 ){
@@ -63,7 +63,7 @@ int _mcu_dma_halttransfer(int chan){
 }
 
 
-void _mcu_core_dma_isr(){
+void mcu_core_dma_isr(){
 	int i;
 	//Execute the channel callbacks if they are available
 	for(i=0; i < MCU_DMA_CHANNELS; i++){
@@ -79,7 +79,7 @@ void _mcu_core_dma_isr(){
 	}
 }
 
-int _mcu_dma_transferlist(int operation,
+int mcu_dma_transferlist(int operation,
 		int chan,
 		dma_lli_t * linked_list,
 		mcu_callback_t callback,
@@ -112,7 +112,7 @@ int _mcu_dma_transferlist(int operation,
 	channel_regs->CLLI = (u32)linked_list->next;
 
 	//Set the callback value
-	if( _mcu_cortexm_priv_validate_callback(callback) < 0 ){
+	if( mcu_cortexm_priv_validate_callback(callback) < 0 ){
 		return -1;
 	}
 
@@ -136,7 +136,7 @@ int _mcu_dma_transferlist(int operation,
 	return chan;
 }
 
-int _mcu_dma_transfer(int operation,
+int mcu_dma_transfer(int operation,
 		int chan,
 		void * dest,
 		const void * src,
@@ -157,7 +157,7 @@ int _mcu_dma_transfer(int operation,
 		list.ctrl |= DMA_CTRL_ENABLE_TERMINAL_COUNT_INT;
 	}
 
-	return _mcu_dma_transferlist(operation, chan, &list, cb, context, dest_periph, src_periph);
+	return mcu_dma_transferlist(operation, chan, &list, cb, context, dest_periph, src_periph);
 }
 
 #endif

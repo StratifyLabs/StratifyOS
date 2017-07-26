@@ -54,7 +54,7 @@ int task_init_single(int (*initial_thread)(),
 	frame->psr = 0x21000000; //default PSR value
 
 	//enable use of PSP
-	_mcu_cortexm_priv_set_thread_stack_ptr( system_stack );
+	mcu_cortexm_priv_set_thread_stack_ptr( system_stack );
 
 	//Set the interrupt priorities
 	for(i=0; i <= mcu_config.irq_total; i++){
@@ -66,9 +66,9 @@ int task_init_single(int (*initial_thread)(),
 	NVIC_SetPriority(SVCall_IRQn, mcu_config.irq_middle_prio);
 
 	//Turn on the SYSTICK timer and point to an empty interrupt
-	_mcu_cortexm_enable_systick_irq();  //Enable context switching
+	mcu_cortexm_enable_systick_irq();  //Enable context switching
 
-	_mcu_cortexm_priv_set_stack_ptr( (void*)&_top_of_stack ); //reset the handler stack pointer
+	mcu_cortexm_priv_set_stack_ptr( (void*)&_top_of_stack ); //reset the handler stack pointer
 	task_priv_switch_context(NULL);
 
 	while(1);
@@ -79,8 +79,8 @@ void task_priv_switch_context(void * args){
 	SCB->ICSR |= (1<<28); //Force a pendSV interrupt
 }
 
-void _mcu_core_pendsv_handler() MCU_NAKED;
-void _mcu_core_pendsv_handler(){
+void mcu_core_pendsv_handler() MCU_NAKED;
+void mcu_core_pendsv_handler(){
 	//The value 0xFFFFFFFD is pushed
 #if __thumb2__ == 1
 	asm("mvn.w r0, #2\n\t");
@@ -97,7 +97,7 @@ void task_thread_stack_return(){
 }
 
 void system_reset(){
-	mcu_core_privcall(_mcu_cortexm_priv_reset, NULL);
+	mcu_core_privcall(mcu_cortexm_priv_reset, NULL);
 }
 
 int task_interrupt(task_interrupt_t * intr){
@@ -107,7 +107,7 @@ int task_interrupt(task_interrupt_t * intr){
 
 void task_restore(){}
 
-void _mcu_core_systick_handler(){
+void mcu_core_systick_handler(){
 
 }
 

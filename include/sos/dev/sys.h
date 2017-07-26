@@ -73,9 +73,9 @@ typedef struct MCU_PACK {
 	char name[LINK_NAME_MAX] /*!  Device Name */;
 	char id[LINK_PATH_MAX] /*!  Globally unique Cloud Kernel ID value */;
 	mcu_sn_t serial /*!  Device Serial number */;
-	u32 flags /*!  System flags */;
+	u32 o_flags /*!  System flags */;
 	u32 hardware_id /*! Hardware ID of the board */;
-} sys_26_attr_t;
+} sys_26_info_t;
 
 typedef struct MCU_PACK {
 	char version[8] /*!  The OS (kernel) Version */;
@@ -89,10 +89,10 @@ typedef struct MCU_PACK {
 	char stdin_name[LINK_NAME_MAX] /*!  Default value for the standard output */;
 	char name[LINK_NAME_MAX] /*!  Device Name */;
 	mcu_sn_t serial /*!  Device Serial number */;
-	u32 flags /*!  System flags */;
-} sys_23_attr_t;
+	u32 o_flags /*!  System flags */;
+} sys_23_info_t;
 
-typedef sys_26_attr_t sys_attr_t;
+typedef sys_26_info_t sys_info_t;
 
 typedef struct MCU_PACK {
 	char id[LINK_PATH_MAX] /*!  Globally unique Cloud Kernel ID value */;
@@ -168,10 +168,9 @@ typedef struct MCU_PACK {
  * \hideinitializer
  *
  */
-#define I_SYS_GETINFO _IOCTLR(SYS_IOC_CHAR, 0, sys_attr_t)
-#define I_SYS_26_GETINFO _IOCTLR(SYS_IOC_CHAR, 0, sys_26_attr_t)
-#define I_SYS_23_GETINFO _IOCTLR(SYS_IOC_CHAR, 0, sys_23_attr_t)
-#define I_SYS_ATTR I_SYS_GETINFO
+#define I_SYS_GETINFO _IOCTLR(SYS_IOC_CHAR, 0, sys_info_t)
+#define I_SYS_26_GETINFO _IOCTLR(SYS_IOC_CHAR, 0, sys_26_info_t)
+#define I_SYS_23_GETINFO _IOCTLR(SYS_IOC_CHAR, 0, sys_23_info_t)
 
 /*! \brief See below for details.
  * \details This request gets the information about the specified task.

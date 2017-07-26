@@ -49,9 +49,9 @@ int mcu_eeprom_write(const devfs_handle_t * cfg, devfs_async_t * wop);
 int mcu_eeprom_ioctl(const devfs_handle_t * cfg, int request, void * ctl);
 int mcu_eeprom_close(const devfs_handle_t * cfg);
 
-int mcu_eeprom_getinfo(int port, void * ctl);
-int mcu_eeprom_setattr(int port, void * ctl);
-int mcu_eeprom_setaction(int port, void * ctl);
+int mcu_eeprom_getinfo(const devfs_handle_t * handle, void * ctl);
+int mcu_eeprom_setattr(const devfs_handle_t * handle, void * ctl);
+int mcu_eeprom_setaction(const devfs_handle_t * handle, void * ctl);
 
 
 #ifdef __cplusplus

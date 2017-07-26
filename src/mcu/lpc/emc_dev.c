@@ -15,31 +15,31 @@
 LPC_EMC_Static_Type * const mcu_static_regs[MCU_EMC_CHANS] = MCU_EMC_STATIC_REGS;
 LPC_EMC_Dynamic_Type * const mcu_dynamic_regs[MCU_EMC_CHANS] = MCU_EMC_DYNAMIC_REGS;
 
-void _mcu_emc_dev_power_on(int port){
+void mcu_emc_dev_power_on(const devfs_handle_t * handle){
 
 	//turn on the clock
 
 	LPC_EMC->Control = 1;
-	_mcu_lpc_core_enable_pwr(PCEMC);
+	mcu_lpc_core_enable_pwr(PCEMC);
 
 }
 
-void _mcu_emc_dev_power_off(int port){
+void mcu_emc_dev_power_off(const devfs_handle_t * handle){
 	//EMC stays on after it has been enabled
 
-	//_mcu_lpc_core_disable_pwr(PCEMC);
+	//mcu_lpc_core_disable_pwr(PCEMC);
 }
 
-int _mcu_emc_dev_powered_on(int port){
-	return _mcu_lpc_core_pwr_enabled(PCEMC);
+int mcu_emc_dev_is_powered(const devfs_handle_t * handle){
+	return mcu_lpc_core_pwr_enabled(PCEMC);
 }
 
-int mcu_emc_getinfo(int port, void * ctl){
+int mcu_emc_getinfo(const devfs_handle_t * handle, void * ctl){
 	errno = ENOTSUP;
 	return -1;
 }
 
-int mcu_emc_setattr(int port, void * ctl){
+int mcu_emc_setattr(const devfs_handle_t * handle, void * ctl){
 	emc_attr_t * attr = (emc_attr_t*)ctl;
 	uint32_t tmp;
 	int width;
@@ -113,27 +113,27 @@ int mcu_emc_setattr(int port, void * ctl){
 		static_regs->StaticWaitWen = attr->wait_write_enable;
 		static_regs->StaticWaitWr = attr->wait_wr;
 
-		_mcu_core_set_pinsel_func(4,24,CORE_PERIPH_EMC,0); //OE
+		mcu_core_set_pinsel_func(4,24,CORE_PERIPH_EMC,0); //OE
 
 		if( attr->loc == 0 ){
-			_mcu_core_set_pinsel_func(4,30,CORE_PERIPH_EMC,0); //CS0
+			mcu_core_set_pinsel_func(4,30,CORE_PERIPH_EMC,0); //CS0
 			if( attr->mode & EMC_MODE_USEBLS ){
-				_mcu_core_set_pinsel_func(4,26,CORE_PERIPH_EMC,0); //BLS0
+				mcu_core_set_pinsel_func(4,26,CORE_PERIPH_EMC,0); //BLS0
 			}
 		} else if( attr->loc == 1 ){
-			_mcu_core_set_pinsel_func(4,31,CORE_PERIPH_EMC,0); //CS1
+			mcu_core_set_pinsel_func(4,31,CORE_PERIPH_EMC,0); //CS1
 			if( attr->mode & EMC_MODE_USEBLS ){
-				_mcu_core_set_pinsel_func(4,27,CORE_PERIPH_EMC,0); //BLS1
+				mcu_core_set_pinsel_func(4,27,CORE_PERIPH_EMC,0); //BLS1
 			}
 		} else if( attr->loc == 2 ){
-			_mcu_core_set_pinsel_func(2,14,CORE_PERIPH_EMC,0); //CS2
+			mcu_core_set_pinsel_func(2,14,CORE_PERIPH_EMC,0); //CS2
 			if( attr->mode & EMC_MODE_USEBLS ){
-				_mcu_core_set_pinsel_func(4,28,CORE_PERIPH_EMC,0); //BLS2
+				mcu_core_set_pinsel_func(4,28,CORE_PERIPH_EMC,0); //BLS2
 			}
 		} else if( attr->loc == 3 ){
-			_mcu_core_set_pinsel_func(2,15,CORE_PERIPH_EMC,0); //CS3
+			mcu_core_set_pinsel_func(2,15,CORE_PERIPH_EMC,0); //CS3
 			if( attr->mode & EMC_MODE_USEBLS ){
-				_mcu_core_set_pinsel_func(4,29,CORE_PERIPH_EMC,0); //BLS3
+				mcu_core_set_pinsel_func(4,29,CORE_PERIPH_EMC,0); //BLS3
 			}
 		}
 
@@ -154,7 +154,7 @@ int mcu_emc_setattr(int port, void * ctl){
 
 	//Initialize data bus pins
 	for(i=0; i < width; i++){
-		_mcu_core_set_pinsel_func(3,i,CORE_PERIPH_EMC,0);
+		mcu_core_set_pinsel_func(3,i,CORE_PERIPH_EMC,0);
 	}
 
 	//initialize addr bus pins
@@ -164,24 +164,24 @@ int mcu_emc_setattr(int port, void * ctl){
 	}
 
 	for(i=0; i < width; i++){
-		_mcu_core_set_pinsel_func(4,i,CORE_PERIPH_EMC,0);
+		mcu_core_set_pinsel_func(4,i,CORE_PERIPH_EMC,0);
 	}
 
 	if( attr->addr_width > 24 ){
-		_mcu_core_set_pinsel_func(5,0,CORE_PERIPH_EMC,0);
+		mcu_core_set_pinsel_func(5,0,CORE_PERIPH_EMC,0);
 	}
 
 	if( attr->addr_width > 25 ){
-		_mcu_core_set_pinsel_func(5,1,CORE_PERIPH_EMC,0);
+		mcu_core_set_pinsel_func(5,1,CORE_PERIPH_EMC,0);
 	}
 
-	_mcu_core_set_pinsel_func(4,25,CORE_PERIPH_EMC,0); //WE
+	mcu_core_set_pinsel_func(4,25,CORE_PERIPH_EMC,0); //WE
 
 
 	return 0;
 }
 
-int mcu_emc_setaction(int port, void * ctl){
+int mcu_emc_setaction(const devfs_handle_t * handle, void * ctl){
 	errno = ENOTSUP;
 	return -1;
 }

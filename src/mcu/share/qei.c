@@ -21,12 +21,12 @@
 #include "mcu/qei.h"
 
 //These functions are device specific
-extern void _mcu_qei_dev_power_on(int port);
-extern void _mcu_qei_dev_power_off(int port);
-extern int _mcu_qei_dev_powered_on(int port);
+extern void mcu_qei_dev_power_on(const devfs_handle_t * handle);
+extern void mcu_qei_dev_power_off(const devfs_handle_t * handle);
+extern int mcu_qei_dev_is_powered(const devfs_handle_t * handle);
 
 
-int (* const qei_ioctl_func_table[I_MCU_TOTAL + I_QEI_TOTAL])(int, void*) = {
+int (* const qei_ioctl_func_table[I_MCU_TOTAL + I_QEI_TOTAL])(const devfs_handle_t*, void*) = {
 		mcu_qei_getinfo,
 		mcu_qei_setattr,
 		mcu_qei_setaction,
@@ -37,15 +37,15 @@ int (* const qei_ioctl_func_table[I_MCU_TOTAL + I_QEI_TOTAL])(int, void*) = {
 
 int mcu_qei_open(const devfs_handle_t * cfg){
 	return mcu_open(cfg,
-			_mcu_qei_dev_powered_on,
-			_mcu_qei_dev_power_on);
+			mcu_qei_dev_is_powered,
+			mcu_qei_dev_power_on);
 }
 
 int mcu_qei_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 	return mcu_ioctl(cfg,
 			request,
 			ctl,
-			_mcu_qei_dev_powered_on,
+			mcu_qei_dev_is_powered,
 			qei_ioctl_func_table,
 			I_MCU_TOTAL + I_QEI_TOTAL);
 }
@@ -65,7 +65,7 @@ int mcu_qei_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 }
 
 int mcu_qei_close(const devfs_handle_t * cfg){
-	return mcu_close(cfg, _mcu_qei_dev_powered_on, _mcu_qei_dev_power_off);
+	return mcu_close(cfg, mcu_qei_dev_is_powered, mcu_qei_dev_power_off);
 }
 
 

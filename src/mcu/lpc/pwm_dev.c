@@ -49,18 +49,19 @@ static pwm_local_t pwm_local[MCU_PWM_PORTS] MCU_SYS_MEM;
 LPC_PWM_Type * const pwm_regs_table[MCU_PWM_PORTS] = MCU_PWM_REGS;
 u8 const pwm_irqs[MCU_PWM_PORTS] = MCU_PWM_IRQS;
 
-void _mcu_pwm_dev_power_on(int port){
+void mcu_pwm_dev_power_on(const devfs_handle_t * handle){
+	int port = handle->port;
 	if ( pwm_local[port].ref_count == 0 ){
 		switch(port){
 #ifdef LPCXX7X_8X
 		case 0:
-			_mcu_lpc_core_enable_pwr(PCPWM0);
-			_mcu_cortexm_priv_enable_irq((void*)PWM0_IRQn);
+			mcu_lpc_core_enable_pwr(PCPWM0);
+			mcu_cortexm_priv_enable_irq((void*)PWM0_IRQn);
 			break;
 #endif
 		case 1:
-			_mcu_lpc_core_enable_pwr(PCPWM1);
-			_mcu_cortexm_priv_enable_irq((void*)(u32)(pwm_irqs[port]));
+			mcu_lpc_core_enable_pwr(PCPWM1);
+			mcu_cortexm_priv_enable_irq((void*)(u32)(pwm_irqs[port]));
 			break;
 		}
 
@@ -68,19 +69,20 @@ void _mcu_pwm_dev_power_on(int port){
 	pwm_local[port].ref_count++;
 }
 
-void _mcu_pwm_dev_power_off(int port){
+void mcu_pwm_dev_power_off(const devfs_handle_t * handle){
+	int port = handle->port;
 	if ( pwm_local[port].ref_count > 0 ){
 		if ( pwm_local[port].ref_count == 1 ){
 			switch(port){
 #ifdef LPCXX7X_8X
 			case 0:
-				_mcu_cortexm_priv_disable_irq((void*)(PWM0_IRQn));
-				_mcu_lpc_core_disable_pwr(PCPWM0);
+				mcu_cortexm_priv_disable_irq((void*)(PWM0_IRQn));
+				mcu_lpc_core_disable_pwr(PCPWM0);
 				break;
 #endif
 			case 1:
-				_mcu_cortexm_priv_disable_irq((void*)(u32)(pwm_irqs[port]));
-				_mcu_lpc_core_disable_pwr(PCPWM1);
+				mcu_cortexm_priv_disable_irq((void*)(u32)(pwm_irqs[port]));
+				mcu_lpc_core_disable_pwr(PCPWM1);
 				break;
 
 			}
@@ -89,20 +91,22 @@ void _mcu_pwm_dev_power_off(int port){
 	}
 }
 
-int _mcu_pwm_dev_powered_on(int port){
+int mcu_pwm_dev_is_powered(const devfs_handle_t * handle){
+	int port = handle->port;
 	switch(port){
 #ifdef LPCXX7X_8X
 	case 0:
-		return _mcu_lpc_core_pwr_enabled(PCPWM0);
+		return mcu_lpc_core_pwr_enabled(PCPWM0);
 #endif
 	case 1:
-		return _mcu_lpc_core_pwr_enabled(PCPWM1);
+		return mcu_lpc_core_pwr_enabled(PCPWM1);
 	}
 	return 0;
 }
 
-int mcu_pwm_getinfo(int port, void * ctl){
+int mcu_pwm_getinfo(const devfs_handle_t * handle, void * ctl){
 	pwm_info_t * info = ctl;
+	int port = handle->port;
 
 #ifdef __lpc17xx
 	LPC_PWM_Type * regs = pwm_regs_table[port];
@@ -118,7 +122,8 @@ int mcu_pwm_getinfo(int port, void * ctl){
 	return 0;
 }
 
-int mcu_pwm_setattr(int port, void * ctl){
+int mcu_pwm_setattr(const devfs_handle_t * handle, void * ctl){
+	int port = handle->port;
 	//check the GPIO configuration
 	int i;
 	u32 tmp;
@@ -180,7 +185,8 @@ int mcu_pwm_setattr(int port, void * ctl){
 	return 0;
 }
 
-int mcu_pwm_setaction(int port, void * ctl){
+int mcu_pwm_setaction(const devfs_handle_t * handle, void * ctl){
+	int port = handle->port;
 	mcu_action_t * action = (mcu_action_t*)ctl;
 	LPC_PWM_Type * regs = pwm_regs_table[port];
 	if( action->handler.callback == 0 ){
@@ -191,20 +197,21 @@ int mcu_pwm_setaction(int port, void * ctl){
 	}
 
 
-	if( _mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
+	if( mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
 		return -1;
 	}
 
 	pwm_local[port].handler.callback = action->handler.callback;
 	pwm_local[port].handler.context = action->handler.context;
 
-	_mcu_cortexm_set_irq_prio(pwm_irqs[port], action->prio);
+	mcu_cortexm_set_irq_prio(pwm_irqs[port], action->prio);
 
 	//need to decode the event
 	return 0;
 }
 
-int mcu_pwm_set(int port, void * ctl){
+int mcu_pwm_set(const devfs_handle_t * handle, void * ctl){
+	int port = handle->port;
 	mcu_channel_t * writep = ctl;
 	LPC_PWM_Type * regs = pwm_regs_table[port];
 
@@ -226,8 +233,8 @@ int mcu_pwm_set(int port, void * ctl){
 }
 
 
-int _mcu_pwm_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
-	int port = cfg->port;
+int mcu_pwm_dev_write(const devfs_handle_t * handle, devfs_async_t * wop){
+	int port = handle->port;
 	LPC_PWM_Type * regs = pwm_regs_table[port];
 
 #ifdef __lpc17xx
@@ -247,7 +254,7 @@ int _mcu_pwm_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	regs->MCR |= (1<<0); //enable the interrupt
 	pwm_local[port].chan = wop->loc;
 
-	if( _mcu_cortexm_priv_validate_callback(wop->handler.callback) < 0 ){
+	if( mcu_cortexm_priv_validate_callback(wop->handler.callback) < 0 ){
 		return -1;
 	}
 
@@ -296,7 +303,7 @@ void exec_callback(int port, LPC_PWM_Type * regs, u32 o_events){
 }
 
 
-static void _mcu_core_pwm_isr(int port){
+static void mcu_core_pwm_isr(int port){
 	//Clear the interrupt flag
 	LPC_PWM_Type * regs = pwm_regs_table[port];
 
@@ -313,14 +320,14 @@ static void _mcu_core_pwm_isr(int port){
 }
 
 #ifdef LPCXX7X_8X
-void _mcu_core_pwm0_isr(){
-	_mcu_core_pwm_isr(0);
+void mcu_core_pwm0_isr(){
+	mcu_core_pwm_isr(0);
 }
 #endif
 
 //This will execute when MR0 overflows
-void _mcu_core_pwm1_isr(){
-	_mcu_core_pwm_isr(1);
+void mcu_core_pwm1_isr(){
+	mcu_core_pwm_isr(1);
 }
 
 #endif

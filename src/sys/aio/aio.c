@@ -137,7 +137,7 @@ void priv_suspend(void * args){
 	} else {
 		suspend = false;
 	}
-	_mcu_cortexm_priv_disable_interrupts(NULL); //no switching until the transfer is started
+	mcu_cortexm_priv_disable_interrupts(NULL); //no switching until the transfer is started
 	for(i = 0; i < p->nent; i++ ){
 		if (p->list[i] != NULL ){
 
@@ -163,7 +163,7 @@ void priv_suspend(void * args){
 	}
 
 	//enable interrupts
-	_mcu_cortexm_priv_enable_interrupts(NULL);
+	mcu_cortexm_priv_enable_interrupts(NULL);
 
 }
 
@@ -326,7 +326,7 @@ static int aio_data_transfer_callback(struct aiocb * aiocbp, const void * ignore
 void priv_device_data_transfer(void * args){
 	priv_aio_transfer_t * p = (priv_aio_transfer_t*)args;
 
-	_mcu_cortexm_priv_disable_interrupts(NULL); //no switching until the transfer is started
+	mcu_cortexm_priv_disable_interrupts(NULL); //no switching until the transfer is started
 	//set the device callback for the read/write op
 	if ( p->read == true ){
 		//Read operation
@@ -337,7 +337,7 @@ void priv_device_data_transfer(void * args){
 
 	sos_sched_table[task_get_current()].block_object = NULL;
 
-	_mcu_cortexm_priv_enable_interrupts(NULL);
+	mcu_cortexm_priv_enable_interrupts(NULL);
 
 	if ( p->ret == 0 ){
 		if( p->aiocbp->op.nbyte > 0 ){

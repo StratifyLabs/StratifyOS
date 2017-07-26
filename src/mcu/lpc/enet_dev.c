@@ -54,10 +54,11 @@ LPC_ETHERNET_Type * const enet_regs_table[MCU_ENET_PORTS] = MCU_ENET_REGS;
 
 u8 const enet_irqs[MCU_ENET_PORTS] = MCU_ENET_IRQS;
 
-void _mcu_enet_dev_power_on(int port){
+void mcu_enet_dev_power_on(const devfs_handle_t * handle){
+	int port = handle->port;
 	if ( enet_local[port].ref_count == 0 ){
-		_mcu_lpc_core_enable_pwr(PCENET);
-		_mcu_cortexm_priv_enable_irq((void*)(u32)(enet_irqs[port]));
+		mcu_lpc_core_enable_pwr(PCENET);
+		mcu_cortexm_priv_enable_irq((void*)(u32)(enet_irqs[port]));
 		enet_local[port].tx_desc.buf = NULL;
 		enet_local[port].rx_desc.buf = NULL;
 	}
@@ -66,11 +67,12 @@ void _mcu_enet_dev_power_on(int port){
 
 }
 
-void _mcu_enet_dev_power_off(int port){
+void mcu_enet_dev_power_off(const devfs_handle_t * handle){
+	int port = handle->port;
 	if ( enet_local[port].ref_count > 0 ){
 		if ( enet_local[port].ref_count == 1 ){
-			_mcu_cortexm_priv_disable_irq((void*)(u32)(enet_irqs[port]));
-			_mcu_lpc_core_disable_pwr(PCENET);
+			mcu_cortexm_priv_disable_irq((void*)(u32)(enet_irqs[port]));
+			mcu_lpc_core_disable_pwr(PCENET);
 			enet_local[port].tx_desc.buf = NULL;
 			enet_local[port].rx_desc.buf = NULL;
 		}
@@ -78,16 +80,19 @@ void _mcu_enet_dev_power_off(int port){
 	}
 }
 
-int _mcu_enet_dev_powered_on(int port){
+int mcu_enet_dev_is_powered(const devfs_handle_t * handle){
+	int port = handle->port;
 	return ( enet_local[port].ref_count != 0 );
 }
 
-int mcu_enet_getinfo(int port, void * ctl){
+int mcu_enet_getinfo(const devfs_handle_t * handle, void * ctl){
+	int port = handle->port;
 	memcpy(ctl, &(enet_local[port].attr), sizeof(enet_attr_t));
 	return 0;
 }
 
-int mcu_enet_setattr(int port, void * ctl){
+int mcu_enet_setattr(const devfs_handle_t * handle, void * ctl){
+	int port = handle->port;
 
 #if MCU_ENET_API == 1
 
@@ -100,16 +105,16 @@ int mcu_enet_setattr(int port, void * ctl){
 
 	//pin select
 	if( attr->pin_assign == 0 ){
-		_mcu_core_set_pinsel_func(1, 0, CORE_PERIPH_ENET, port);
-		_mcu_core_set_pinsel_func(1, 1, CORE_PERIPH_ENET, port);
-		_mcu_core_set_pinsel_func(1, 4, CORE_PERIPH_ENET, port);
-		_mcu_core_set_pinsel_func(1, 8, CORE_PERIPH_ENET, port);
-		_mcu_core_set_pinsel_func(1, 9, CORE_PERIPH_ENET, port);
-		_mcu_core_set_pinsel_func(1, 10, CORE_PERIPH_ENET, port);
-		_mcu_core_set_pinsel_func(1, 14, CORE_PERIPH_ENET, port);
-		_mcu_core_set_pinsel_func(1, 15, CORE_PERIPH_ENET, port);
-		_mcu_core_set_pinsel_func(1, 16, CORE_PERIPH_ENET, port);
-		_mcu_core_set_pinsel_func(1, 17, CORE_PERIPH_ENET, port);
+		mcu_core_set_pinsel_func(1, 0, CORE_PERIPH_ENET, port);
+		mcu_core_set_pinsel_func(1, 1, CORE_PERIPH_ENET, port);
+		mcu_core_set_pinsel_func(1, 4, CORE_PERIPH_ENET, port);
+		mcu_core_set_pinsel_func(1, 8, CORE_PERIPH_ENET, port);
+		mcu_core_set_pinsel_func(1, 9, CORE_PERIPH_ENET, port);
+		mcu_core_set_pinsel_func(1, 10, CORE_PERIPH_ENET, port);
+		mcu_core_set_pinsel_func(1, 14, CORE_PERIPH_ENET, port);
+		mcu_core_set_pinsel_func(1, 15, CORE_PERIPH_ENET, port);
+		mcu_core_set_pinsel_func(1, 16, CORE_PERIPH_ENET, port);
+		mcu_core_set_pinsel_func(1, 17, CORE_PERIPH_ENET, port);
 	}
 
 	regs->MAC1 = ENET_MAC1_PARF;
@@ -160,7 +165,7 @@ int mcu_enet_setattr(int port, void * ctl){
 }
 
 
-int mcu_enet_setaction(int port, void * ctl){
+int mcu_enet_setaction(const devfs_handle_t * handle, void * ctl){
 
 	//configure an action when a packet is sent or received
 
@@ -169,8 +174,8 @@ int mcu_enet_setaction(int port, void * ctl){
 
 
 
-int _mcu_enet_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
-	int port = cfg->port;
+int mcu_enet_dev_read(const devfs_handle_t * handle, devfs_async_t * rop){
+	int port = handle->port;
 
 	if( enet_local[port].rx_desc.buf != 0 ){
 		errno = EAGAIN;
@@ -185,7 +190,7 @@ int _mcu_enet_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	//setup the tx descriptor to transfer the packet
 	enet_local[port].rx_desc.buf = rop->buf;
 	enet_local[port].rx_desc.ctrl = ENET_RCTRL_SIZE(rop->nbyte) | ENET_RCTRL_INT;
-	if( _mcu_cortexm_priv_validate_callback(rop->handler.callback) < 0 ){
+	if( mcu_cortexm_priv_validate_callback(rop->handler.callback) < 0 ){
 		return -1;
 	}
 
@@ -208,8 +213,8 @@ int _mcu_enet_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	return 0;
 }
 
-int _mcu_enet_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
-	int port = cfg->port;
+int mcu_enet_dev_write(const devfs_handle_t * handle, devfs_async_t * wop){
+	int port = handle->port;
 
 
 
@@ -227,7 +232,7 @@ int _mcu_enet_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	enet_local[port].tx_desc.buf = wop->buf;
 	enet_local[port].tx_desc.ctrl = ENET_TCTRL_SIZE(wop->nbyte) | ENET_TCTRL_LAST | ENET_TCTRL_INT;
 
-	if( _mcu_cortexm_priv_validate_callback(wop->handler.callback) < 0 ){
+	if( mcu_cortexm_priv_validate_callback(wop->handler.callback) < 0 ){
 		return -1;
 	}
 
@@ -250,13 +255,13 @@ int _mcu_enet_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	return 0;
 }
 
-int mcu_enet_inittxpkt(int port, void * ctl){
+int mcu_enet_inittxpkt(const devfs_handle_t * handle, void * ctl){
 
 
 	return 0;
 }
 
-void _mcu_core_enet0_isr(int port){
+void mcu_core_enet0_isr(int port){
 
 	//check for a tx or an rx interrupt
 	if( 1 ){ //tx interrupt

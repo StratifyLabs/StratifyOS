@@ -46,13 +46,14 @@ static u8 const spi_irqs[MCU_SPI_PORTS] = MCU_SPI_IRQS;
 
 static void exec_callback(int port, u32 o_events);
 
-static int spi_port_transfer(int port, int is_read, devfs_async_t * dop);
+static int spi_port_transfer(const devfs_handle_t * handle, int is_read, devfs_async_t * dop);
 static int byte_swap(int port, int byte);
 
-void _mcu_spi_dev_power_on(int port){
+void mcu_spi_dev_power_on(const devfs_handle_t * handle){
+	int port = handle->port;
 	if ( spi_local[port].ref_count == 0 ){
-		_mcu_lpc_core_enable_pwr(PCSPI);
-		_mcu_cortexm_priv_enable_irq((void*)(u32)(spi_irqs[port]));
+		mcu_lpc_core_enable_pwr(PCSPI);
+		mcu_cortexm_priv_enable_irq((void*)(u32)(spi_irqs[port]));
 		spi_local[port].duplex_mem = NULL;
 		spi_local[port].handler.callback = NULL;
 	}
@@ -60,22 +61,24 @@ void _mcu_spi_dev_power_on(int port){
 
 }
 
-void _mcu_spi_dev_power_off(int port){
+void mcu_spi_dev_power_off(const devfs_handle_t * handle){
+	int port = handle->port;
 	if ( spi_local[port].ref_count > 0 ){
 		if ( spi_local[port].ref_count == 1 ){
-			_mcu_cortexm_priv_disable_irq((void*)(u32)(spi_irqs[port]));
-			_mcu_lpc_core_disable_pwr(PCSPI);
+			mcu_cortexm_priv_disable_irq((void*)(u32)(spi_irqs[port]));
+			mcu_lpc_core_disable_pwr(PCSPI);
 		}
 		spi_local[port].ref_count--;
 	}
 }
 
-int _mcu_spi_dev_powered_on(int port){
+int mcu_spi_dev_is_powered(const devfs_handle_t * handle){
+	int port = handle->port;
 	return ( spi_local[port].ref_count != 0 );
 }
 
 
-int mcu_spi_getinfo(int port, void * ctl){
+int mcu_spi_getinfo(const devfs_handle_t * handle, void * ctl){
 	spi_info_t * info = ctl;
 
 	//set flags
@@ -84,7 +87,8 @@ int mcu_spi_getinfo(int port, void * ctl){
 	return 0;
 }
 
-int mcu_spi_setattr(int port, void * ctl){
+int mcu_spi_setattr(const devfs_handle_t * handle, void * ctl){
+	int port = handle->port;
 	LPC_SPI_Type * regs = spi_regs[port];
 	uint32_t cr0, cpsr;
 	uint32_t tmp;
@@ -154,11 +158,13 @@ int mcu_spi_setattr(int port, void * ctl){
 	return 0;
 }
 
-int mcu_spi_swap(int port, void * ctl){
+int mcu_spi_swap(const devfs_handle_t * handle, void * ctl){
+	int port = handle->port;
 	return byte_swap(port, (int)ctl);
 }
 
-int mcu_spi_setduplex(int port, void * ctl){
+int mcu_spi_setduplex(const devfs_handle_t * handle, void * ctl){
+	int port = handle->port;
 	spi_local[port].duplex_mem = (void * volatile)ctl;
 	return 0;
 }
@@ -170,7 +176,8 @@ void exec_callback(int port, u32 o_events){
 	mcu_execute_event_handler(&(spi_local[port].handler), o_events, 0);
 }
 
-int mcu_spi_setaction(int port, void * ctl){
+int mcu_spi_setaction(const devfs_handle_t * handle, void * ctl){
+	int port = handle->port;
 	LPC_SPI_Type * regs = spi_regs[port];
 
 	mcu_action_t * action = (mcu_action_t*)ctl;
@@ -181,7 +188,7 @@ int mcu_spi_setaction(int port, void * ctl){
 
 
 	spi_local[port].handler = action->handler;
-	_mcu_cortexm_set_irq_prio(spi_irqs[port], action->prio);
+	mcu_cortexm_set_irq_prio(spi_irqs[port], action->prio);
 
 	return 0;
 }
@@ -194,15 +201,15 @@ int byte_swap(int port, int byte){
 	return regs->DR;
 }
 
-int _mcu_spi_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
-	return spi_port_transfer(cfg->port, 0, wop);
+int mcu_spi_dev_write(const devfs_handle_t * handle, devfs_async_t * wop){
+	return spi_port_transfer(handle, 0, wop);
 }
 
-int _mcu_spi_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
-	return spi_port_transfer(cfg->port, 1, rop);
+int mcu_spi_dev_read(const devfs_handle_t * handle, devfs_async_t * rop){
+	return spi_port_transfer(handle, 1, rop);
 }
 
-void _mcu_core_spi0_isr(){
+void mcu_core_spi0_isr(){
 	int tmp;
 	const int port = 0;
 	LPC_SPI_Type * regs = spi_regs[port];
@@ -237,7 +244,8 @@ void _mcu_core_spi0_isr(){
 	}
 }
 
-int spi_port_transfer(int port, int is_read, devfs_async_t * dop){
+int spi_port_transfer(const devfs_handle_t * handle, int is_read, devfs_async_t * dop){
+	int port = handle->port;
 	LPC_SPI_Type * regs = spi_regs[port];
 	int size;
 	size = dop->nbyte;

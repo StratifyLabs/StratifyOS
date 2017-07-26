@@ -27,7 +27,6 @@
 #define _MCU_PWM_H_
 
 #include "sos/dev/pwm.h"
-
 #include "sos/fs/devfs.h"
 
 #ifdef __cplusplus
@@ -38,16 +37,20 @@ typedef struct MCU_PACK {
 	u32 value;
 } pwm_event_data_t;
 
+typedef struct MCU_PACK {
+	pwm_attr_t attr; //default attributes
+} pwm_config_t;
+
 int mcu_pwm_open(const devfs_handle_t * cfg) MCU_PRIV_CODE;
 int mcu_pwm_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_PRIV_CODE;
 int mcu_pwm_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_PRIV_CODE;
 int mcu_pwm_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
 int mcu_pwm_close(const devfs_handle_t * cfg) MCU_PRIV_CODE;
 
-int mcu_pwm_getinfo(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_pwm_setattr(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_pwm_setaction(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_pwm_set(int port, void * ctl) MCU_PRIV_CODE;
+int mcu_pwm_getinfo(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_pwm_setattr(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_pwm_setaction(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_pwm_set(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
 
 #ifdef __cplusplus
 }

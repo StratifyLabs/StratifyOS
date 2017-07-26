@@ -22,13 +22,13 @@
 
 
 //These functions are device specific
-extern void flash_dev_power_on(int port);
-extern void flash_dev_power_off(int port);
-extern int flash_dev_powered_on(int port);
-extern int _mcu_flash_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop);
-extern int _mcu_flash_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop);
+extern void flash_dev_power_on(const devfs_handle_t * handle);
+extern void flash_dev_power_off(const devfs_handle_t * handle);
+extern int flash_dev_is_powered(const devfs_handle_t * handle);
+extern int mcu_flash_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop);
+extern int mcu_flash_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop);
 
-int (* const flash_ioctl_func_table[I_MCU_TOTAL + I_FLASH_TOTAL])(int, void*) = {
+int (* const flash_ioctl_func_table[I_MCU_TOTAL + I_FLASH_TOTAL])(const devfs_handle_t*, void*) = {
 		mcu_flash_getinfo,
 		mcu_flash_setattr,
 		mcu_flash_setaction,
@@ -42,7 +42,7 @@ int (* const flash_ioctl_func_table[I_MCU_TOTAL + I_FLASH_TOTAL])(int, void*) = 
 
 int mcu_flash_open(const devfs_handle_t * cfg){
 	return mcu_open(cfg,
-			flash_dev_powered_on,
+			flash_dev_is_powered,
 			flash_dev_power_on);
 }
 
@@ -50,7 +50,7 @@ int mcu_flash_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 	return mcu_ioctl(cfg,
 			request,
 			ctl,
-			flash_dev_powered_on,
+			flash_dev_is_powered,
 			flash_ioctl_func_table,
 			I_MCU_TOTAL + I_FLASH_TOTAL);
 }
@@ -60,8 +60,8 @@ int mcu_flash_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 
 int mcu_flash_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	return mcu_read(cfg, rop,
-			flash_dev_powered_on,
-			_mcu_flash_dev_read);
+			flash_dev_is_powered,
+			mcu_flash_dev_read);
 }
 
 
@@ -71,7 +71,7 @@ int mcu_flash_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 }
 
 int mcu_flash_close(const devfs_handle_t * cfg){
-	return mcu_close(cfg, flash_dev_powered_on, flash_dev_power_off);
+	return mcu_close(cfg, flash_dev_is_powered, flash_dev_power_off);
 }
 
 

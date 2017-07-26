@@ -39,24 +39,24 @@ static int get_last_bootloader_page(){
 	return ((int)(&_etext) + 4095)/4096;
 }
 
-void flash_dev_power_on(int port){}
-void flash_dev_power_off(int port){}
-int flash_dev_powered_on(int port){
+void flash_dev_power_on(const devfs_handle_t * handle){}
+void flash_dev_power_off(const devfs_handle_t * handle){}
+int flash_dev_is_powered(const devfs_handle_t * handle){
 	return 1;
 }
 
-int mcu_flash_getinfo(int port, void * ctl){
+int mcu_flash_getinfo(const devfs_handle_t * handle, void * ctl){
 	return 0;
 }
-int mcu_flash_setattr(int port, void * ctl){
-	return 0;
-}
-
-int mcu_flash_setaction(int port, void * ctl){
+int mcu_flash_setattr(const devfs_handle_t * handle, void * ctl){
 	return 0;
 }
 
-int mcu_flash_getpageinfo(int port, void * ctl){
+int mcu_flash_setaction(const devfs_handle_t * handle, void * ctl){
+	return 0;
+}
+
+int mcu_flash_getpageinfo(const devfs_handle_t * handle, void * ctl){
 	u32 size;
 	u32 addr;
 	flash_pageinfo_t * ctlp = (flash_pageinfo_t *)ctl;
@@ -72,7 +72,7 @@ int mcu_flash_getpageinfo(int port, void * ctl){
 }
 
 
-int mcu_flash_eraseaddr(int port, void * ctl){
+int mcu_flash_eraseaddr(const devfs_handle_t * handle, void * ctl){
 	int err;
 	int page;
 
@@ -83,7 +83,7 @@ int mcu_flash_eraseaddr(int port, void * ctl){
 	if ( ((u32)ctl < (u32)&_text) ||
 			((u32)ctl > ((u32)&_etext + data_size)) ){
 		page = get_page(ctl);
-		err = mcu_flash_erasepage(port, (void*)page);
+		err = mcu_flash_erasepage(handle, (void*)page);
 		return err;
 	}
 	errno = EROFS;
@@ -91,7 +91,7 @@ int mcu_flash_eraseaddr(int port, void * ctl){
 }
 
 
-int mcu_flash_erasepage(int port, void * ctl){
+int mcu_flash_erasepage(const devfs_handle_t * handle, void * ctl){
 	int err;
 	int addr;
 	int page_size;
@@ -117,20 +117,20 @@ int mcu_flash_erasepage(int port, void * ctl){
 		return 0;
 	}
 
-	_mcu_cortexm_priv_disable_interrupts(NULL);
-	err = _mcu_lpc_flash_erase_page((u32)ctl);
-	_mcu_cortexm_priv_enable_interrupts(NULL);
+	mcu_cortexm_priv_disable_interrupts(NULL);
+	err = mcu_lpc_flash_erase_page((u32)ctl);
+	mcu_cortexm_priv_enable_interrupts(NULL);
 	if ( err < 0 ){
 		errno = EIO;
 	}
 	return err;
 }
 
-int mcu_flash_getpage(int port, void * ctl){
+int mcu_flash_getpage(const devfs_handle_t * handle, void * ctl){
 	return get_page(ctl);
 }
 
-int mcu_flash_getsize(int port, void * ctl){
+int mcu_flash_getsize(const devfs_handle_t * handle, void * ctl){
 	return (int)&_flash_size;
 }
 
@@ -147,7 +147,7 @@ int blank_check(int loc, int nbyte){
 	return 0;
 }
 
-int mcu_flash_writepage(int port, void * ctl){
+int mcu_flash_writepage(const devfs_handle_t * handle, void * ctl){
 	int err;
 	int nbyte;
 	flash_writepage_t * wattr = ctl;
@@ -184,7 +184,7 @@ int mcu_flash_writepage(int port, void * ctl){
 	}
 
 
-	err = _mcu_lpc_flash_write_page(get_page((void*)wattr->addr), (void*)wattr->addr, wattr->buf, nbyte);
+	err = mcu_lpc_flash_write_page(get_page((void*)wattr->addr), (void*)wattr->addr, wattr->buf, nbyte);
 	if( err < 0 ){
 		errno = EIO;
 		return -1;
@@ -194,7 +194,7 @@ int mcu_flash_writepage(int port, void * ctl){
 
 }
 
-int _mcu_flash_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
+int mcu_flash_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 
 	if ( rop->loc >= (u32)&_flash_size ){
 		return -1;

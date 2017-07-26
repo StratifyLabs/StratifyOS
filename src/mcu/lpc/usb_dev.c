@@ -34,14 +34,14 @@
 static u32 usb_irq_mask;
 static usb_attr_t usb_ctl;
 static void usb_connect(u32 con);
-static inline void usb_cfg(int port, u32 cfg) MCU_ALWAYS_INLINE;
-static inline void usb_set_addr(int port, u32 addr) MCU_ALWAYS_INLINE;
-static inline void usb_reset_ep(int port, u32 endpoint_num) MCU_ALWAYS_INLINE;
-static inline void usb_enable_ep(int port, u32 endpoint_num) MCU_ALWAYS_INLINE;
-static inline void usb_disable_ep(int port, u32 endpoint_num) MCU_ALWAYS_INLINE;
-static inline void usb_set_stall_ep(int port, u32 endpoint_num) MCU_ALWAYS_INLINE;
-static inline void usb_clr_stall_ep(int port, u32 endpoint_num) MCU_ALWAYS_INLINE;
-static inline void usb_cfg_ep(int port, void * ep_desc) MCU_ALWAYS_INLINE;
+static inline void usb_cfg(const devfs_handle_t * handle, u32 cfg) MCU_ALWAYS_INLINE;
+static inline void usb_set_addr(const devfs_handle_t * handle, u32 addr) MCU_ALWAYS_INLINE;
+static inline void usb_reset_ep(const devfs_handle_t * handle, u32 endpoint_num) MCU_ALWAYS_INLINE;
+static inline void usb_enable_ep(const devfs_handle_t * handle, u32 endpoint_num) MCU_ALWAYS_INLINE;
+static inline void usb_disable_ep(const devfs_handle_t * handle, u32 endpoint_num) MCU_ALWAYS_INLINE;
+static inline void usb_set_stall_ep(const devfs_handle_t * handle, u32 endpoint_num) MCU_ALWAYS_INLINE;
+static inline void usb_clr_stall_ep(const devfs_handle_t * handle, u32 endpoint_num) MCU_ALWAYS_INLINE;
+static inline void usb_cfg_ep(const devfs_handle_t * handle, void * ep_desc) MCU_ALWAYS_INLINE;
 static inline void slow_ep_int() MCU_ALWAYS_INLINE;
 
 typedef struct {
@@ -106,46 +106,47 @@ u32 usb_sie_rd_cmd_dat (u32 cmd){
 	return usb_sie_rd_dat();
 }
 
-void _mcu_usb_dev_power_on(int port){
+void mcu_usb_dev_power_on(const devfs_handle_t * handle){
 	if ( usb_local.ref_count == 0 ){
 		//Set callbacks to NULL
 		usb_local.connected = 0;
 		clear_callbacks();
 		usb_local.special_event_handler.callback = 0;
-		_mcu_lpc_core_enable_pwr(PCUSB);
+		mcu_lpc_core_enable_pwr(PCUSB);
 		LPC_USB->USBClkCtrl = 0x12; //turn on dev clk en and AHB clk en
 		while( LPC_USB->USBClkCtrl != 0x12 ){}  //wait for clocks
 	}
 	usb_local.ref_count++;
 }
 
-void _mcu_usb_dev_power_off(int port){
+void mcu_usb_dev_power_off(const devfs_handle_t * handle){
 	if ( usb_local.ref_count > 0 ){
 		if ( usb_local.ref_count == 1 ){
-			_mcu_cortexm_priv_disable_irq((void*)(USB_IRQn));  //Enable the USB interrupt
+			mcu_cortexm_priv_disable_irq((void*)(USB_IRQn));  //Enable the USB interrupt
 			LPC_USB->USBClkCtrl = 0x0; //turn off dev clk en and AHB clk en
 			while( LPC_USB->USBClkCtrl != 0 ){}
-			_mcu_lpc_core_disable_pwr(PCUSB);
+			mcu_lpc_core_disable_pwr(PCUSB);
 		}
 		usb_local.ref_count--;
 	}
 }
 
-int _mcu_usb_dev_powered_on(int port){
-	if( _mcu_lpc_core_pwr_enabled(PCUSB) ){
+int mcu_usb_dev_is_powered(const devfs_handle_t * handle){
+	if( mcu_lpc_core_pwr_enabled(PCUSB) ){
 		return 1;
 	}
 	return 0;
 }
 
 
-int mcu_usb_getinfo(int port, void * ctl){
+int mcu_usb_getinfo(const devfs_handle_t * handle, void * ctl){
 	memcpy(ctl, &usb_ctl, sizeof(usb_attr_t));
 	return 0;
 }
 
-int mcu_usb_setattr(int port, void * ctl){
+int mcu_usb_setattr(const devfs_handle_t * handle, void * ctl){
 	usb_attr_t * attr = ctl;
+	int port = handle->port;
 	int i;
 
 	if ((attr->o_flags & USB_FLAG_SET_DEVICE) == 0){
@@ -154,7 +155,7 @@ int mcu_usb_setattr(int port, void * ctl){
 	}
 
 	//Start the USB clock
-	_mcu_core_setusbclock(attr->freq);
+	mcu_core_setusbclock(attr->freq);
 
 	memcpy(&usb_ctl, ctl, sizeof(usb_attr_t));
 
@@ -188,7 +189,7 @@ int mcu_usb_setattr(int port, void * ctl){
 
 	usb_irq_mask = DEV_STAT_INT | EP_FAST_INT | EP_SLOW_INT;
 
-	_mcu_cortexm_priv_enable_irq((void*)USB_IRQn);  //Enable the USB interrupt
+	mcu_cortexm_priv_enable_irq((void*)USB_IRQn);  //Enable the USB interrupt
 	mcu_usb_reset(0, NULL);
 	usb_set_addr(0,0);
 	return 0;
@@ -198,22 +199,22 @@ void usb_connect(u32 con){
 	usb_sie_wr_cmd_dat(USB_SIE_CMD_SET_DEV_STAT, USB_SIE_DAT_WR_BYTE(con ? DEV_CON : 0));
 }
 
-int mcu_usb_attach(int port, void * ctl){
+int mcu_usb_attach(const devfs_handle_t * handle, void * ctl){
 	usb_connect(1);
 	return 0;
 }
 
-int mcu_usb_detach(int port, void * ctl){
+int mcu_usb_detach(const devfs_handle_t * handle, void * ctl){
 	usb_connect(0);
 	return 0;
 }
 
-int mcu_usb_setaction(int port, void * ctl){
+int mcu_usb_setaction(const devfs_handle_t * handle, void * ctl){
 	mcu_action_t * action = (mcu_action_t*)ctl;
 	int log_ep;
 	int ret = -1;
 
-	_mcu_cortexm_set_irq_prio(USB_IRQn, action->prio);
+	mcu_cortexm_set_irq_prio(USB_IRQn, action->prio);
 	log_ep = action->channel & ~0x80;
 
 	if( action->channel & 0x80 ){
@@ -232,8 +233,8 @@ int mcu_usb_setaction(int port, void * ctl){
 
 	if ( (log_ep < DEV_USB_LOGICAL_ENDPOINT_COUNT)  ){
 		if( action->o_events & MCU_EVENT_FLAG_DATA_READY ){
-			//_mcu_cortexm_priv_enable_interrupts(NULL);
-			if( _mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
+			//mcu_cortexm_priv_enable_interrupts(NULL);
+			if( mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
 				return -1;
 			}
 
@@ -243,7 +244,7 @@ int mcu_usb_setaction(int port, void * ctl){
 		}
 
 		if( action->o_events & MCU_EVENT_FLAG_WRITE_COMPLETE ){
-			if( _mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
+			if( mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
 				return -1;
 			}
 
@@ -259,54 +260,54 @@ int mcu_usb_setaction(int port, void * ctl){
 	return ret;
 }
 
-int mcu_usb_configure(int port, void * ctl){
-	usb_cfg(port, (int)ctl);
+int mcu_usb_configure(const devfs_handle_t * handle, void * ctl){
+	usb_cfg(handle, (int)ctl);
 	return 0;
 }
 
-int mcu_usb_setaddr(int port, void * ctl){
-	usb_set_addr(port, (u32)ctl);
+int mcu_usb_setaddr(const devfs_handle_t * handle, void * ctl){
+	usb_set_addr(handle, (u32)ctl);
 	return 0;
 }
 
-int mcu_usb_resetep(int port, void * ctl){
-	usb_reset_ep(port, (u32)ctl);
+int mcu_usb_resetep(const devfs_handle_t * handle, void * ctl){
+	usb_reset_ep(handle, (u32)ctl);
 	return 0;
 }
 
-int mcu_usb_enableep(int port, void * ctl){
-	usb_enable_ep(port, (u32)ctl);
+int mcu_usb_enableep(const devfs_handle_t * handle, void * ctl){
+	usb_enable_ep(handle, (u32)ctl);
 	return 0;
 }
 
-int mcu_usb_disableep(int port, void * ctl){
-	usb_disable_ep(port, (u32)ctl);
+int mcu_usb_disableep(const devfs_handle_t * handle, void * ctl){
+	usb_disable_ep(handle, (u32)ctl);
 	return 0;
 }
 
-int mcu_usb_stallep(int port, void * ctl){
+int mcu_usb_stallep(const devfs_handle_t * handle, void * ctl){
 	int ep = (int)ctl;
-	usb_set_stall_ep(port, ep);
+	usb_set_stall_ep(handle, ep);
 	return 0;
 }
 
-int mcu_usb_unstallep(int port, void * ctl){
+int mcu_usb_unstallep(const devfs_handle_t * handle, void * ctl){
 	int ep = (int)ctl;
-	usb_clr_stall_ep(port, ep);
+	usb_clr_stall_ep(handle, ep);
 	return 0;
 }
 
-int mcu_usb_cfgep(int port, void * ctl){
-	usb_cfg_ep(port, ctl);
+int mcu_usb_cfgep(const devfs_handle_t * handle, void * ctl){
+	usb_cfg_ep(handle, ctl);
 	return 0;
 }
 
-int mcu_usb_seteventhandler(int port, void * ctl){
+int mcu_usb_seteventhandler(const devfs_handle_t * handle, void * ctl){
 	memcpy(&(usb_local.special_event_handler), ctl, sizeof(mcu_event_handler_t));
 	return 0;
 }
 
-int _mcu_usb_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
+int mcu_usb_dev_read(const devfs_handle_t * handle, devfs_async_t * rop){
 	int ret;
 	int loc = rop->loc;
 
@@ -328,7 +329,7 @@ int _mcu_usb_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 		rop->nbyte = 0;
 		if ( !(rop->flags & O_NONBLOCK) ){
 			//If this is a blocking call, set the callback and context
-			if( _mcu_cortexm_priv_validate_callback(rop->handler.callback) < 0 ){
+			if( mcu_cortexm_priv_validate_callback(rop->handler.callback) < 0 ){
 				return -1;
 			}
 
@@ -344,13 +345,11 @@ int _mcu_usb_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	return ret;
 }
 
-int _mcu_usb_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
+int mcu_usb_dev_write(const devfs_handle_t * handle, devfs_async_t * wop){
 	//Asynchronous write
 	int ep;
-	int port;
 	int loc = wop->loc;
 
-	port = DEVFS_GET_PORT(cfg);
 
 	ep = (loc & 0x7F);
 
@@ -366,7 +365,7 @@ int _mcu_usb_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 
 	usb_local.write_pending |= (1<<ep);
 
-	if( _mcu_cortexm_priv_validate_callback(wop->handler.callback) < 0 ){
+	if( mcu_cortexm_priv_validate_callback(wop->handler.callback) < 0 ){
 		return -1;
 	}
 
@@ -376,9 +375,9 @@ int _mcu_usb_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	wop->nbyte = mcu_usb_wr_ep(0, loc, wop->buf, wop->nbyte);
 
 	if ( wop->nbyte < 0 ){
-		usb_disable_ep( port, loc );
-		usb_reset_ep( port, loc );
-		usb_enable_ep( port, loc );
+		usb_disable_ep(handle, loc );
+		usb_reset_ep(handle, loc );
+		usb_enable_ep(handle, loc );
 		usb_local.write_pending &= ~(1<<ep);
 		return -2;
 	}
@@ -395,7 +394,7 @@ u32 calc_ep_addr (u32 endpoint_num){
 	return (val);
 }
 
-int mcu_usb_reset(int port, void * cfg){
+int mcu_usb_reset(const devfs_handle_t * handle, void * cfg){
 
 	//Set max packet size of phy ep 0
 	LPC_USB->EpInd = 0;
@@ -419,16 +418,16 @@ void usb_wakeup(int port){
 	usb_sie_wr_cmd_dat(USB_SIE_CMD_SET_DEV_STAT, USB_SIE_DAT_WR_BYTE(DEV_CON));
 }
 
-void usb_set_addr(int port, u32 addr){
+void usb_set_addr(const devfs_handle_t * handle, u32 addr){
 	usb_sie_wr_cmd_dat(USB_SIE_CMD_SET_ADDR, USB_SIE_DAT_WR_BYTE(DEV_EN | addr)); // Don't wait for next
 	usb_sie_wr_cmd_dat(USB_SIE_CMD_SET_ADDR, USB_SIE_DAT_WR_BYTE(DEV_EN | addr)); //  Setup Status Phase
 }
 
-void usb_cfg(int port, u32 cfg){
+void usb_cfg(const devfs_handle_t * handle, u32 cfg){
 	usb_sie_wr_cmd_dat(USB_SIE_CMD_CFG_DEV, USB_SIE_DAT_WR_BYTE(cfg ? CONF_DVICE : 0));
 }
 
-void usb_cfg_ep(int port, void * ep_desc){
+void usb_cfg_ep(const devfs_handle_t * handle, void * ep_desc){
 	u32 num;
 	mcu_usbd_endpoint_descriptor_t * ep_ptr;
 	ep_ptr = (mcu_usbd_endpoint_descriptor_t*)ep_desc;
@@ -440,35 +439,35 @@ void usb_cfg_ep(int port, void * ep_desc){
 	LPC_USB->DevIntClr = EP_RLZED_INT;
 }
 
-void usb_enable_ep(int port, u32 endpoint_num){
+void usb_enable_ep(const devfs_handle_t * handle, u32 endpoint_num){
 	usb_sie_wr_cmd_dat(USB_SIE_CMD_SET_EP_STAT(calc_ep_addr(endpoint_num)), USB_SIE_DAT_WR_BYTE(0));
 }
 
-void usb_disable_ep(int port, u32 endpoint_num){
+void usb_disable_ep(const devfs_handle_t * handle, u32 endpoint_num){
 	usb_sie_wr_cmd_dat(USB_SIE_CMD_SET_EP_STAT(calc_ep_addr(endpoint_num)), USB_SIE_DAT_WR_BYTE(EP_STAT_DA));
 }
 
-void usb_reset_ep(int port, u32 endpoint_num){
+void usb_reset_ep(const devfs_handle_t * handle, u32 endpoint_num){
 	usb_sie_wr_cmd_dat(USB_SIE_CMD_SET_EP_STAT(calc_ep_addr(endpoint_num)), USB_SIE_DAT_WR_BYTE(0));
 }
 
-void usb_set_stall_ep(int port, u32 endpoint_num){
+void usb_set_stall_ep(const devfs_handle_t * handle, u32 endpoint_num){
 	usb_sie_wr_cmd_dat(USB_SIE_CMD_SET_EP_STAT(calc_ep_addr(endpoint_num)), USB_SIE_DAT_WR_BYTE(EP_STAT_ST));
 }
 
-void usb_clr_stall_ep(int port, u32 endpoint_num){
+void usb_clr_stall_ep(const devfs_handle_t * handle, u32 endpoint_num){
 	usb_sie_wr_cmd_dat(USB_SIE_CMD_SET_EP_STAT(calc_ep_addr(endpoint_num)), USB_SIE_DAT_WR_BYTE(0));
 }
 
-int mcu_usb_isconnected(int port, void * ctl){
+int mcu_usb_isconnected(const devfs_handle_t * handle, void * ctl){
 	return usb_local.connected;
 }
 
-void usb_clr_ep_buf(int port, u32 endpoint_num){
+void usb_clr_ep_buf(const devfs_handle_t * handle, u32 endpoint_num){
 	usb_sie_wr_cmd_ep(endpoint_num, USB_SIE_CMD_CLR_BUF);
 }
 
-int mcu_usb_rd_ep(int port, u32 endpoint_num, void * dest){
+int mcu_usb_rd_ep(const devfs_handle_t * handle, u32 endpoint_num, void * dest){
 	u32 n;
 	u32 * ptr;
 	u32 size;
@@ -477,9 +476,9 @@ int mcu_usb_rd_ep(int port, u32 endpoint_num, void * dest){
 	LPC_USB->Ctrl = ((endpoint_num & 0x0F) << 2) | CTRL_RD_EN;
 
 	//There needs to be a delay between the time USBCtrl is set and reading USBRxPLen due to the difference in clocks
-	if ( _mcu_core_getclock() > 48000000 ){
+	if ( mcu_core_getclock() > 48000000 ){
 		int i;
-		for(i=0; i < _mcu_core_getclock()/4000000; i++){
+		for(i=0; i < mcu_core_getclock()/4000000; i++){
 			asm volatile("nop");
 		}
 	}
@@ -505,7 +504,7 @@ int mcu_usb_rd_ep(int port, u32 endpoint_num, void * dest){
 
 /*! \details
  */
-int mcu_usb_wr_ep(int port, u32 endpoint_num, const void * src, u32 size){
+int mcu_usb_wr_ep(const devfs_handle_t * handle, u32 endpoint_num, const void * src, u32 size){
 	u32 n;
 	u32 * ptr = (u32*)src;
 
@@ -529,7 +528,7 @@ int mcu_usb_wr_ep(int port, u32 endpoint_num, const void * src, u32 size){
 
 /*! \details This function services the USB interrupt request.
  */
-void _mcu_core_usb0_isr(){
+void mcu_core_usb0_isr(){
 	u32 device_interrupt_status;
 	u32 tmp;
 	int i;
@@ -547,7 +546,7 @@ void _mcu_core_usb0_isr(){
 	}
 
 	if (device_interrupt_status & DEV_STAT_INT){ //Status interrupt (Reset, suspend/resume or connect)
-		_mcu_cortexm_delay_us(100);
+		mcu_cortexm_delay_us(100);
 		tmp = usb_sie_rd_cmd_dat(USB_SIE_CMD_GET_DEV_STAT);
 		if (tmp & DEV_RST){
 			//mcu_usb_reset(0, NULL);

@@ -60,17 +60,17 @@ static int get_ram_page(int addr);
 static int get_ram_page_size(int page);
 static int get_ram_page_addr(int page);
 
-void _mcu_mem_dev_power_on(int port){}
-void _mcu_mem_dev_power_off(int port){}
-int _mcu_mem_dev_powered_on(int port){
+void mcu_mem_dev_power_on(const devfs_handle_t * handle){}
+void mcu_mem_dev_power_off(const devfs_handle_t * handle){}
+int mcu_mem_dev_is_powered(const devfs_handle_t * handle){
 	return 1;
 }
 
-int _mcu_mem_getsyspage(){
+int mcu_mem_getsyspage(){
 	return (SRAM_PAGES);
 }
 
-int mcu_mem_getinfo(int port, void * ctl){
+int mcu_mem_getinfo(const devfs_handle_t * handle, void * ctl){
 	mem_attr_t * attr = ctl;
 	attr->flash_pages = (u32)&_flash_pages;
 	attr->flash_size = FLASH_SIZE;
@@ -78,16 +78,16 @@ int mcu_mem_getinfo(int port, void * ctl){
 	attr->ram_size = (u32)&_sram_size + (u32)&_ahb_sram_size;
 	return 0;
 }
-int mcu_mem_setattr(int port, void * ctl){
+int mcu_mem_setattr(const devfs_handle_t * handle, void * ctl){
 	return 0;
 }
 
-int mcu_mem_setaction(int port, void * ctl){
+int mcu_mem_setaction(const devfs_handle_t * handle, void * ctl){
 	errno = ENOTSUP;
 	return -1;
 }
 
-int mcu_mem_getpageinfo(int port, void * ctl){
+int mcu_mem_getpageinfo(const devfs_handle_t * handle, void * ctl){
 	u32 size = 0;
 	int32_t addr = 0;
 	mem_pageinfo_t * ctlp = ctl;
@@ -136,7 +136,7 @@ int mcu_mem_getpageinfo(int port, void * ctl){
 
 
 
-int mcu_mem_erasepage(int port, void * ctl){
+int mcu_mem_erasepage(const devfs_handle_t * handle, void * ctl){
 	int err;
 	int addr;
 	int page;
@@ -151,9 +151,9 @@ int mcu_mem_erasepage(int port, void * ctl){
 		return -1;
 	}
 
-	_mcu_cortexm_priv_disable_interrupts(NULL);
-	err = _mcu_lpc_flash_erase_page((u32)ctl);
-	_mcu_cortexm_priv_enable_interrupts(NULL);
+	mcu_cortexm_priv_disable_interrupts(NULL);
+	err = mcu_lpc_flash_erase_page((u32)ctl);
+	mcu_cortexm_priv_enable_interrupts(NULL);
 	if ( err < 0 ){
 		errno = EIO;
 		return -1;
@@ -161,7 +161,7 @@ int mcu_mem_erasepage(int port, void * ctl){
 	return 0;
 }
 
-int mcu_mem_writepage(int port, void * ctl){
+int mcu_mem_writepage(const devfs_handle_t * handle, void * ctl){
 	int err;
 	int nbyte;
 	mem_writepage_t * wattr = ctl;
@@ -205,7 +205,7 @@ int mcu_mem_writepage(int port, void * ctl){
 	}
 
 
-	err = _mcu_lpc_flash_write_page(get_flash_page(wattr->addr), (void*)wattr->addr, wattr->buf, nbyte);
+	err = mcu_lpc_flash_write_page(get_flash_page(wattr->addr), (void*)wattr->addr, wattr->buf, nbyte);
 	if( err < 0 ){
 		errno = EIO;
 		return -1;
@@ -214,7 +214,7 @@ int mcu_mem_writepage(int port, void * ctl){
 	return wattr->nbyte;
 }
 
-int _mcu_mem_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
+int mcu_mem_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 
 	if ( is_ram(wop->loc, wop->nbyte) ){
 		memcpy((void*)wop->loc, wop->buf, wop->nbyte);
@@ -225,7 +225,7 @@ int _mcu_mem_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	return -1;
 }
 
-int _mcu_mem_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
+int mcu_mem_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	if ( (is_flash(rop->loc, rop->nbyte) ) ||
 			( is_ram(rop->loc, rop->nbyte) ) 	){
 		memcpy(rop->buf, (const void*)rop->loc, rop->nbyte);
@@ -328,7 +328,7 @@ int blank_check(int loc, int nbyte){
 
 int get_last_boot_page(){
 	bootloader_api_t api;
-	_mcu_core_priv_bootloader_api(&api);
+	mcu_core_priv_bootloader_api(&api);
 
 	if( api.code_size > 0 ){ //zero means there is not bootloader installed
 		return get_flash_page(api.code_size);

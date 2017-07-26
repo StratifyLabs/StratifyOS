@@ -22,16 +22,16 @@
 #include "mcu/tmr.h"
 
 //These functions are device specific
-extern void _mcu_tmr_dev_power_on(int port);
-extern void _mcu_tmr_dev_power_off(int port);
-extern int _mcu_tmr_dev_powered_on(int port);
+extern void mcu_tmr_dev_power_on(const devfs_handle_t * handle);
+extern void mcu_tmr_dev_power_off(const devfs_handle_t * handle);
+extern int mcu_tmr_dev_is_powered(const devfs_handle_t * handle);
 
-static int invalid_request(int port, void * ctl){
+static int invalid_request(const devfs_handle_t * handle, void * ctl){
 	errno = ENOTSUP;
 	return -1;
 }
 
-int (* const tmrsimple_ioctl_func_table[I_MCU_TOTAL + I_TMR_TOTAL])(int, void*) = {
+int (* const tmrsimple_ioctl_func_table[I_MCU_TOTAL + I_TMR_TOTAL])(const devfs_handle_t*, void*) = {
 		mcu_tmrsimple_getinfo,
 		mcu_tmrsimple_setattr,
 		mcu_tmrsimple_setaction,
@@ -46,15 +46,15 @@ int (* const tmrsimple_ioctl_func_table[I_MCU_TOTAL + I_TMR_TOTAL])(int, void*) 
 
 int mcu_tmrsimpleopen(const devfs_handle_t * cfg){
 	return mcu_open(cfg,
-			_mcu_tmr_dev_powered_on,
-			_mcu_tmr_dev_power_on);
+			mcu_tmr_dev_is_powered,
+			mcu_tmr_dev_power_on);
 }
 
 int mcu_tmrsimple_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 	return mcu_ioctl(cfg,
 			request,
 			ctl,
-			_mcu_tmr_dev_powered_on,
+			mcu_tmr_dev_is_powered,
 			tmrsimple_ioctl_func_table,
 			I_MCU_TOTAL + I_TMR_TOTAL);
 }
@@ -70,7 +70,7 @@ int mcu_tmrsimple_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 }
 
 int mcu_tmrsimple_close(const devfs_handle_t * cfg){
-	return mcu_close(cfg, _mcu_tmr_dev_powered_on, _mcu_tmr_dev_power_off);
+	return mcu_close(cfg, mcu_tmr_dev_is_powered, mcu_tmr_dev_power_off);
 }
 
 

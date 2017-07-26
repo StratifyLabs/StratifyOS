@@ -49,18 +49,21 @@ static u8 const adc_irqs[MCU_ADC_PORTS] = MCU_ADC_IRQS;
 static int enable_pin(int pio_port, int pio_pin, int adc_port) MCU_PRIV_CODE;
 int enable_pin(int pio_port, int pio_pin, int adc_port){
 	pio_attr_t pattr;
+	devfs_handle_t pio_handle;
+	pio_handle.port = pio_port;
 	pattr.o_pinmask = (1<<pio_pin);
 	pattr.o_flags = PIO_FLAG_SET_INPUT | PIO_FLAG_IS_FLOAT | PIO_FLAG_IS_ANALOG;
-	mcu_pio_setattr(pio_port, &pattr);
-	return _mcu_core_set_pinsel_func(pio_port,pio_pin,CORE_PERIPH_ADC,adc_port);
+	mcu_pio_setattr(&pio_handle, &pattr);
+	return mcu_core_set_pinsel_func(pio_port,pio_pin,CORE_PERIPH_ADC,adc_port);
 }
 
 
-void _mcu_adc_dev_power_on(int port){
+void mcu_adc_dev_power_on(const devfs_handle_t * handle){
+	int port = handle->port;
 	LPC_ADC_Type * regs = adc_regs[port];
 	if ( adc_local[port].ref_count == 0 ){
-		_mcu_lpc_core_enable_pwr(PCADC);
-		_mcu_cortexm_priv_enable_irq((void*)(u32)(adc_irqs[port]));
+		mcu_lpc_core_enable_pwr(PCADC);
+		mcu_cortexm_priv_enable_irq((void*)(u32)(adc_irqs[port]));
 		regs->INTEN = 0;
 		memset(&adc_local, 0, sizeof(adc_local_t));
 #if defined __lpc13xx || defined __lpc13uxx
@@ -73,26 +76,28 @@ void _mcu_adc_dev_power_on(int port){
 
 }
 
-void _mcu_adc_dev_power_off(int port){
+void mcu_adc_dev_power_off(const devfs_handle_t * handle){
+	int port = handle->port;
 	LPC_ADC_Type * regs = adc_regs[port];
 
 	if ( adc_local[port].ref_count > 0 ){
 		if ( adc_local[port].ref_count == 1 ){
 			regs->CR = 0; //reset the control -- clear the PDN bit
-			_mcu_cortexm_priv_disable_irq((void*)(u32)(adc_irqs[port]));
-			_mcu_lpc_core_disable_pwr(PCADC);
+			mcu_cortexm_priv_disable_irq((void*)(u32)(adc_irqs[port]));
+			mcu_lpc_core_disable_pwr(PCADC);
 		}
 		adc_local[port].ref_count--;
 	}
 }
 
-int _mcu_adc_dev_powered_on(int port){
+int mcu_adc_dev_is_powered(const devfs_handle_t * handle){
+	int port = handle->port;
 	return (adc_local[port].ref_count != 0);
 }
 
-int _mcu_adc_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
-	const int port = cfg->port;
-	LPC_ADC_Type * regs = adc_regs[cfg->port];
+int mcu_adc_dev_read(const devfs_handle_t * handle, devfs_async_t * rop){
+	const int port = handle->port;
+	LPC_ADC_Type * regs = adc_regs[port];
 
 	if ( (uint8_t)rop->loc > 7 ){
 		errno = EINVAL;
@@ -105,7 +110,7 @@ int _mcu_adc_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 		return -1;
 	}
 
-	if( _mcu_cortexm_priv_validate_callback(rop->handler.callback) < 0 ){
+	if( mcu_cortexm_priv_validate_callback(rop->handler.callback) < 0 ){
 		return -1;
 	}
 
@@ -131,8 +136,8 @@ void exec_callback(int port, u32 o_events){
 }
 
 //! \todo Should this use DMA instead of this interrupt?
-void _mcu_core_adc0_isr();
-void _mcu_core_adc0_isr(){
+void mcu_core_adc0_isr();
+void mcu_core_adc0_isr(){
 	const int port = 0;
 	LPC_ADC_Type * regs = adc_regs[0];
 
@@ -149,20 +154,21 @@ void _mcu_core_adc0_isr(){
 }
 
 
-int mcu_adc_getinfo(int port, void * ctl){
+int mcu_adc_getinfo(const devfs_handle_t * handle, void * ctl){
 	adc_info_t * info = ctl;
 
 	info->freq = ADC_MAX_FREQ;
-	info->o_flags = (ADC_FLAG_LEFT_JUSTIFIED|ADC_FLAG_RIGHT_JUSTIFIED);
+	info->o_flags = (ADC_FLAG_IS_LEFT_JUSTIFIED|ADC_FLAG_IS_RIGHT_JUSTIFIED);
 	info->resolution = 12;
 
 	return 0;
 }
 
-int mcu_adc_setattr(int port, void * ctl){
+int mcu_adc_setattr(const devfs_handle_t * handle, void * ctl){
+	int port = handle->port;
 	int i;
 	LPC_ADC_Type * regs = adc_regs[port];
-
+	//adc_pin_assignment_t * pin_assignment;
 	adc_attr_t * attr = ctl;
 	u16 clk_div;
 
@@ -173,6 +179,10 @@ int mcu_adc_setattr(int port, void * ctl){
 
 	if ( attr->freq > ADC_MAX_FREQ ){
 		attr->freq = ADC_MAX_FREQ;
+	}
+
+	if( attr->o_flags & ADC_FLAG_IS_DEFAULT_PIN_ASSIGNMENT ){
+
 	}
 
 	for(i=0; i < MCU_PIN_ASSIGNMENT_COUNT(adc_pin_assignment_t); i++){
@@ -202,7 +212,8 @@ int mcu_adc_setattr(int port, void * ctl){
 	return 0;
 }
 
-int mcu_adc_setaction(int port, void * ctl){
+int mcu_adc_setaction(const devfs_handle_t * handle, void * ctl){
+	int port = handle->port;
 	LPC_ADC_Type * regs = adc_regs[port];
 
 	mcu_action_t * action = (mcu_action_t*)ctl;
@@ -212,14 +223,14 @@ int mcu_adc_setaction(int port, void * ctl){
 		}
 	}
 
-	if( _mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
+	if( mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
 		return -1;
 	}
 
 	adc_local[port].handler.callback = action->handler.callback;
 	adc_local[port].handler.context = action->handler.context;
 
-	_mcu_cortexm_set_irq_prio(adc_irqs[port], action->prio);
+	mcu_cortexm_set_irq_prio(adc_irqs[port], action->prio);
 
 	return 0;
 }

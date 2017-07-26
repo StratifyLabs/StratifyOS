@@ -46,7 +46,7 @@ int sched_timing_init(){
 }
 
 u32 sched_seconds_to_clocks(int seconds){
-	return (u32)_mcu_core_getclock() * (u32)seconds;
+	return (u32)mcu_core_getclock() * (u32)seconds;
 }
 
 u32 sched_useconds_to_clocks(int useconds){
@@ -61,7 +61,9 @@ void sched_priv_timedblock(void * block_object, struct sched_timeval * abs_time)
 	int id;
 	mcu_channel_t chan_req;
 	u32 now;
+	devfs_handle_t tmr_handle;
 	bool time_sleep;
+	tmr_handle.port = sos_board_config.clk_usecond_tmr;
 
 	//Initialization
 	id = task_get_current();
@@ -75,23 +77,23 @@ void sched_priv_timedblock(void * block_object, struct sched_timeval * abs_time)
 
 		if(abs_time->tv_sec == sched_usecond_counter){
 
-			mcu_tmr_disable(sos_board_config.clk_usecond_tmr, 0);
+			mcu_tmr_disable(&tmr_handle, 0);
 
 			//Read the current OC value to see if it needs to be updated
 			chan_req.loc = SCHED_USECOND_TMR_SLEEP_OC;
-			mcu_tmr_getoc(sos_board_config.clk_usecond_tmr, &chan_req);
+			mcu_tmr_getoc(&tmr_handle, &chan_req);
 			if ( abs_time->tv_usec < chan_req.value ){
 				chan_req.value = abs_time->tv_usec;
 			}
 
 			//See if abs_time is in the past
-			now = (u32)mcu_tmr_get(sos_board_config.clk_usecond_tmr, NULL);
+			now = (u32)mcu_tmr_get(&tmr_handle, NULL);
 			if( abs_time->tv_usec > (now+40) ){ //needs to be enough in the future to allow the OC to be set before the timer passes it
-				mcu_tmr_setoc(sos_board_config.clk_usecond_tmr, &chan_req);
+				mcu_tmr_setoc(&tmr_handle, &chan_req);
 				time_sleep = true;
 			}
 
-			mcu_tmr_enable(sos_board_config.clk_usecond_tmr, 0);
+			mcu_tmr_enable(&tmr_handle, 0);
 
 
 		} else {
@@ -128,8 +130,10 @@ void sched_convert_timeval(struct timeval * t, const struct sched_timeval * tv){
 }
 
 void sched_priv_get_realtime(struct sched_timeval * tv){
+	devfs_handle_t tmr_handle;
+	tmr_handle.port = sos_board_config.clk_usecond_tmr;
 	tv->tv_sec = sched_usecond_counter;
-	tv->tv_usec = (u32)mcu_tmr_get(sos_board_config.clk_usecond_tmr, NULL);
+	tv->tv_usec = (u32)mcu_tmr_get(&tmr_handle, NULL);
 }
 
 int usecond_overflow_event(void * context, mcu_event_t * data){
@@ -139,7 +143,6 @@ int usecond_overflow_event(void * context, mcu_event_t * data){
 }
 
 int priv_usecond_match_event(void * context, mcu_event_t * data){
-#if SINGLE_TASK == 0
 	int i;
 	u32 next;
 	u32 tmp;
@@ -147,6 +150,8 @@ int priv_usecond_match_event(void * context, mcu_event_t * data){
 	mcu_channel_t chan_req;
 	static const u32 overflow = (STFY_USECOND_PERIOD);
 	u32 current_match;
+	devfs_handle_t tmr_handle;
+	tmr_handle.port = sos_board_config.clk_usecond_tmr;
 
 	//Initialize variables
 	chan_req.loc = SCHED_USECOND_TMR_SLEEP_OC;
@@ -154,8 +159,8 @@ int priv_usecond_match_event(void * context, mcu_event_t * data){
 	new_priority = SCHED_LOWEST_PRIORITY - 1;
 	next = overflow;
 
-	mcu_tmr_disable(sos_board_config.clk_usecond_tmr, 0);
-	current_match = mcu_tmr_get(sos_board_config.clk_usecond_tmr, NULL);
+	mcu_tmr_disable(&tmr_handle, 0);
+	current_match = mcu_tmr_get(&tmr_handle, NULL);
 
 	for(i=1; i < task_get_total(); i++){
 		if ( task_enabled(i) && !sched_active_asserted(i) ){ //enabled and inactive tasks only
@@ -180,13 +185,12 @@ int priv_usecond_match_event(void * context, mcu_event_t * data){
 	if ( next < overflow ){
 		chan_req.value = next;
 	}
-	mcu_tmr_setoc(sos_board_config.clk_usecond_tmr, &chan_req);
+	mcu_tmr_setoc(&tmr_handle, &chan_req);
 
 	sched_priv_update_on_wake(new_priority);
 
-	mcu_tmr_enable(sos_board_config.clk_usecond_tmr, 0);
+	mcu_tmr_enable(&tmr_handle, 0);
 
-#endif
 	return 1;
 }
 
@@ -196,9 +200,8 @@ int open_usecond_tmr(){
 	mcu_action_t action;
 	mcu_channel_t chan_req;
 	devfs_handle_t tmr;
-
-
 	tmr.port = sos_board_config.clk_usecond_tmr;
+
 	//Open the microsecond timer
 	err = mcu_tmr_open(&tmr);
 	if (err){
@@ -210,14 +213,14 @@ int open_usecond_tmr(){
 	attr.o_flags = TMR_FLAG_SET_TIMER | TMR_FLAG_IS_CLKSRC_CPU;
 	memset(&attr.pin_assignment, 0xff, sizeof(tmr_pin_assignment_t));
 
-	err = mcu_tmr_setattr(tmr.port, &attr);
+	err = mcu_tmr_setattr(&tmr, &attr);
 	if ( err ){
 		return err;
 	}
 
 
 	//Initialize the value of the timer to zero
-	err = mcu_tmr_set(tmr.port, (void*)0);
+	err = mcu_tmr_set(&tmr, (void*)0);
 	if (err){
 		return err;
 	}
@@ -225,14 +228,14 @@ int open_usecond_tmr(){
 	//Set the reset output compare value to reset the clock every 32 seconds
 	chan_req.loc = SCHED_USECOND_TMR_RESET_OC;
 	chan_req.value = STFY_USECOND_PERIOD; //overflow every SCHED_TIMEVAL_SECONDS seconds
-	err = mcu_tmr_setoc(tmr.port, &chan_req);
+	err = mcu_tmr_setoc(&tmr, &chan_req);
 	if (err){
 		return -1;
 	}
 
 	attr.channel.loc = SCHED_USECOND_TMR_RESET_OC;
 	attr.o_flags = TMR_FLAG_SET_CHANNEL | TMR_FLAG_IS_CHANNEL_RESET_ON_MATCH;
-	err = mcu_tmr_setattr(tmr.port, &attr);
+	err = mcu_tmr_setattr(&tmr, &attr);
 	if ( err ){
 		return err;
 	}
@@ -241,19 +244,19 @@ int open_usecond_tmr(){
 	action.channel = SCHED_USECOND_TMR_RESET_OC;
 	action.o_events = MCU_EVENT_FLAG_MATCH;
 	action.handler.callback = usecond_overflow_event;
-	err = mcu_tmr_setaction(tmr.port, &action);
+	err = mcu_tmr_setaction(&tmr, &action);
 	if (err ){
 		return -1;
 	}
 
 	//Turn the timer on
-	err = mcu_tmr_enable(tmr.port, 0);
+	err = mcu_tmr_enable(&tmr, 0);
 	if (err){ return -1; }
 
 	//This sets up the output compare unit used with the usleep() function
 	chan_req.loc = SCHED_USECOND_TMR_SLEEP_OC;
 	chan_req.value = STFY_USECOND_PERIOD + 1;
-	err = mcu_tmr_setoc(tmr.port, &chan_req);
+	err = mcu_tmr_setoc(&tmr, &chan_req);
 	if ( err ){
 		return -1;
 	}
@@ -261,7 +264,7 @@ int open_usecond_tmr(){
 	action.channel = SCHED_USECOND_TMR_SLEEP_OC;
 	action.o_events = MCU_EVENT_FLAG_MATCH;
 	action.handler.callback = priv_usecond_match_event;
-	err = mcu_tmr_setaction(tmr.port, &action);
+	err = mcu_tmr_setaction(&tmr, &action);
 	if ( err ){
 		return -1;
 	}

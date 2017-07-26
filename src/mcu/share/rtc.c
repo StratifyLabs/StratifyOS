@@ -21,11 +21,11 @@
 #include "mcu/rtc.h"
 
 //These functions are device specific
-extern void _mcu_rtc_dev_power_on(int port);
-extern void _mcu_rtc_dev_power_off(int port);
-extern int _mcu_rtc_dev_powered_on(int port);
+extern void mcu_rtc_dev_power_on(const devfs_handle_t * handle);
+extern void mcu_rtc_dev_power_off(const devfs_handle_t * handle);
+extern int mcu_rtc_dev_is_powered(const devfs_handle_t * handle);
 
-int (* const rtc_ioctl_func_table[I_MCU_TOTAL + I_RTC_TOTAL])(int, void*) = {
+int (* const rtc_ioctl_func_table[I_MCU_TOTAL + I_RTC_TOTAL])(const devfs_handle_t*, void*) = {
 		mcu_rtc_getinfo,
 		mcu_rtc_setattr,
 		mcu_rtc_setaction,
@@ -35,15 +35,15 @@ int (* const rtc_ioctl_func_table[I_MCU_TOTAL + I_RTC_TOTAL])(int, void*) = {
 
 int mcu_rtc_open(const devfs_handle_t * cfg){
 	return mcu_open(cfg,
-			_mcu_rtc_dev_powered_on,
-			_mcu_rtc_dev_power_on);
+			mcu_rtc_dev_is_powered,
+			mcu_rtc_dev_power_on);
 }
 
 int mcu_rtc_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 	return mcu_ioctl(cfg,
 			request,
 			ctl,
-			_mcu_rtc_dev_powered_on,
+			mcu_rtc_dev_is_powered,
 			rtc_ioctl_func_table,
 			I_MCU_TOTAL + I_RTC_TOTAL);
 }
@@ -59,7 +59,7 @@ int mcu_rtc_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 }
 
 int mcu_rtc_close(const devfs_handle_t * cfg){
-	return mcu_close(cfg, _mcu_rtc_dev_powered_on, _mcu_rtc_dev_power_off);
+	return mcu_close(cfg, mcu_rtc_dev_is_powered, mcu_rtc_dev_power_off);
 }
 
 

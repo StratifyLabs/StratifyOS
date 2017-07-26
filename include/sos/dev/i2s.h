@@ -49,7 +49,7 @@ typedef struct MCU_PACK {
 enum {
 	I2S_FLAG_IS_WIDTH_8 /*! I2S Word Width 8 bits */ = (1<<0),
 	I2S_FLAG_IS_WIDTH_16 /*! I2S Word Width 16 bits */ = (1<<1),
-	I2S_FLAG_IS_WIDTH_24 /*! I2S Word Width 16 bits */ = (1<<2),
+	I2S_FLAG_IS_WIDTH_24 /*! I2S Word Width 24 bits */ = (1<<2),
 	I2S_FLAG_IS_WIDTH_32 /*! I2S Word Width 32 bits */ = (1<<3),
 	I2S_FLAG_IS_MONO = (1<<4),
 	I2S_FLAG_IS_STEREO = (1<<5),
@@ -58,6 +58,7 @@ enum {
 	I2S_FLAG_IS_TRANSMITTER = (1<<8),
 	I2S_FLAG_IS_RECEIVER = (1<<9),
 	I2S_FLAG_IS_MCLK_ENABLED /*! Set this bit to enable the mclk output */ = (1<<12),
+	I2S_FLAG_IS_DEFAULT_PIN_ASSIGNMENT /*! Use default pin assignment (if available) */ = (1<<13)
 };
 
 /*! \brief I2S IO Attributes
@@ -76,15 +77,14 @@ typedef struct MCU_PACK {
 	mcu_pin_t bck;
 	mcu_pin_t tx;
 	mcu_pin_t rx;
-	mcu_pin_t mclk;
+	mcu_pin_t mck;
 } i2s_pin_assignment_t;
 
 typedef struct MCU_PACK {
 	u32 o_flags  /*! Flag bitmask */;
 	u32 freq /*! The I2S audio frequency */;
 	i2s_pin_assignment_t pin_assignment /*! The pin assignement values */;
-	u8 width;
-	u32 mclk_mult /*! The I2S mclk multiplier value */;
+	u32 mck_mult /*! The I2S mclk multiplier value */;
 } i2s_attr_t;
 
 /*! \brief This request gets the I2S attributes.

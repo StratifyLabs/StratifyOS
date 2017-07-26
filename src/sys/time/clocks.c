@@ -114,7 +114,7 @@ int32_t convert_clocks_to_nanoseconds(int32_t clocks){
 void task_timer_to_timespec(struct timespec * tp, u64 task_timer){
 	u64 nanosec;
 	ldiv_t divide;
-	divide = ldiv(task_timer, _mcu_core_getclock());
+	divide = ldiv(task_timer, mcu_core_getclock());
 	nanosec = divide.rem * SCHED_CLK_NSEC_DIV;
 	tp->tv_sec = divide.quot;
 	tp->tv_nsec = nanosec;

@@ -41,46 +41,46 @@ int mcu_pio_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_PRIV_CODE
 int mcu_pio_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
 int mcu_pio_close(const devfs_handle_t * cfg) MCU_PRIV_CODE;
 
-int mcu_pio_getinfo(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_pio_setattr(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_pio_setaction(int port, void * ctl) MCU_PRIV_CODE;
+int mcu_pio_getinfo(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_pio_setattr(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_pio_setaction(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
 
-int mcu_pio_setmask(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_pio_clrmask(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_pio_get(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_pio_set(int port, void * ctl) MCU_PRIV_CODE;
+int mcu_pio_setmask(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_pio_clrmask(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_pio_get(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_pio_set(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
 
 
 #ifndef __link
 
-static inline int _mcu_i2c_cfg_pio(int port, int pio_port, int scl_pin, int sda_pin) MCU_ALWAYS_INLINE MCU_PRIV_CODE;
-int _mcu_i2c_cfg_pio(int port, int pio_port, int scl_pin, int sda_pin){
-	if ( _mcu_core_set_pinsel_func(pio_port, sda_pin, CORE_PERIPH_I2C, port) ) return -1;  //Use pins for I2C
-	if ( _mcu_core_set_pinsel_func(pio_port, scl_pin, CORE_PERIPH_I2C, port) ) return -1;  //Use pins for I2C
+static inline int mcu_i2c_cfg_pio(const devfs_handle_t * handle, int pio_port, int scl_pin, int sda_pin) MCU_ALWAYS_INLINE MCU_PRIV_CODE;
+int mcu_i2c_cfg_pio(const devfs_handle_t * handle, int pio_port, int scl_pin, int sda_pin){
+	if ( mcu_core_set_pinsel_func(pio_port, sda_pin, CORE_PERIPH_I2C, handle->port) ) return -1;  //Use pins for I2C
+	if ( mcu_core_set_pinsel_func(pio_port, scl_pin, CORE_PERIPH_I2C, handle->port) ) return -1;  //Use pins for I2C
 	return 0;
 }
 
 
-static inline int _mcu_uart_cfg_pio(int port, int pio_port, int rx_pin, int tx_pin) MCU_ALWAYS_INLINE MCU_PRIV_CODE;
-int _mcu_uart_cfg_pio(int port, int pio_port, int rx_pin, int tx_pin){
-	if ( _mcu_core_set_pinsel_func(pio_port, rx_pin, CORE_PERIPH_UART, port) ) return -1;  //Use pin for UART
-	if ( _mcu_core_set_pinsel_func(pio_port, tx_pin, CORE_PERIPH_UART, port) ) return -1;  //Use pin for UART
+static inline int mcu_uart_cfg_pio(const devfs_handle_t * handle, int pio_port, int rx_pin, int tx_pin) MCU_ALWAYS_INLINE MCU_PRIV_CODE;
+int mcu_uart_cfg_pio(const devfs_handle_t * handle, int pio_port, int rx_pin, int tx_pin){
+	if ( mcu_core_set_pinsel_func(pio_port, rx_pin, CORE_PERIPH_UART, handle->port) ) return -1;  //Use pin for UART
+	if ( mcu_core_set_pinsel_func(pio_port, tx_pin, CORE_PERIPH_UART, handle->port) ) return -1;  //Use pin for UART
 	return 0;
 }
 
-static inline int _mcu_spi_cfg_pio(int port, int pio_port, int mosi_pin, int miso_pin, int sck_pin) MCU_ALWAYS_INLINE MCU_PRIV_CODE;
-int _mcu_spi_cfg_pio(int port, int pio_port, int mosi_pin, int miso_pin, int sck_pin){
-	if ( _mcu_core_set_pinsel_func(pio_port, mosi_pin, CORE_PERIPH_SPI, port) ) return -1;  //Use pin for SPI
-	if ( _mcu_core_set_pinsel_func(pio_port, miso_pin, CORE_PERIPH_SPI, port) ) return -1;  //Use pin for SPI
-	if ( _mcu_core_set_pinsel_func(pio_port, sck_pin, CORE_PERIPH_SPI, port) ) return -1;  //Use pin for SPI
+static inline int mcu_spi_cfg_pio(const devfs_handle_t * handle, int pio_port, int mosi_pin, int miso_pin, int sck_pin) MCU_ALWAYS_INLINE MCU_PRIV_CODE;
+int mcu_spi_cfg_pio(const devfs_handle_t * handle, int pio_port, int mosi_pin, int miso_pin, int sck_pin){
+	if ( mcu_core_set_pinsel_func(pio_port, mosi_pin, CORE_PERIPH_SPI, handle->port) ) return -1;  //Use pin for SPI
+	if ( mcu_core_set_pinsel_func(pio_port, miso_pin, CORE_PERIPH_SPI, handle->port) ) return -1;  //Use pin for SPI
+	if ( mcu_core_set_pinsel_func(pio_port, sck_pin, CORE_PERIPH_SPI, handle->port) ) return -1;  //Use pin for SPI
 	return 0;
 }
 
-static inline int _mcu_ssp_cfg_pio(int port, int pio_port, int mosi_pin, int miso_pin, int sck_pin) MCU_ALWAYS_INLINE MCU_PRIV_CODE;
-int _mcu_ssp_cfg_pio(int port, int pio_port, int mosi_pin, int miso_pin, int sck_pin){
-	if ( _mcu_core_set_pinsel_func(pio_port, mosi_pin, CORE_PERIPH_SSP, port) ) return -1;  //Use pin for SPI
-	if ( _mcu_core_set_pinsel_func(pio_port, miso_pin, CORE_PERIPH_SSP, port) ) return -1;  //Use pin for SPI
-	if ( _mcu_core_set_pinsel_func(pio_port, sck_pin, CORE_PERIPH_SSP, port) ) return -1;  //Use pin for SPI
+static inline int mcu_ssp_cfg_pio(const devfs_handle_t * handle, int pio_port, int mosi_pin, int miso_pin, int sck_pin) MCU_ALWAYS_INLINE MCU_PRIV_CODE;
+int mcu_ssp_cfg_pio(const devfs_handle_t * handle, int pio_port, int mosi_pin, int miso_pin, int sck_pin){
+	if ( mcu_core_set_pinsel_func(pio_port, mosi_pin, CORE_PERIPH_SSP, handle->port) ) return -1;  //Use pin for SPI
+	if ( mcu_core_set_pinsel_func(pio_port, miso_pin, CORE_PERIPH_SSP, handle->port) ) return -1;  //Use pin for SPI
+	if ( mcu_core_set_pinsel_func(pio_port, sck_pin, CORE_PERIPH_SSP, handle->port) ) return -1;  //Use pin for SPI
 	return 0;
 }
 

@@ -41,7 +41,7 @@ typedef struct {
 
 static ssp_local_t ssp_local[MCU_SSP_PORTS] MCU_SYS_MEM;
 
-static int ssp_port_transfer(int port, int is_read, devfs_async_t * dop);
+static int ssp_port_transfer(const devfs_handle_t * handle, int is_read, devfs_async_t * dop);
 static void ssp_fill_tx_fifo(int port, LPC_SSP_Type * regs);
 static void ssp_empty_rx_fifo(int port, LPC_SSP_Type * regs);
 static int byte_swap(int port, int byte);
@@ -59,23 +59,24 @@ void enable_pin(int pio_port, int pio_pin){
 }
 #endif
 
-void _mcu_ssp_dev_power_on(int port){
+void mcu_ssp_dev_power_on(const devfs_handle_t * handle){
+	int port = handle->port;
 	if ( ssp_local[port].ref_count == 0 ){
 
-		_mcu_cortexm_priv_enable_irq((void*)(u32)(ssp_irqs[port]));
+		mcu_cortexm_priv_enable_irq((void*)(u32)(ssp_irqs[port]));
 
 		switch(port){
 		case 0:
-			_mcu_lpc_core_enable_pwr(PCSSP0);
+			mcu_lpc_core_enable_pwr(PCSSP0);
 			break;
 
 		case 1:
-			_mcu_lpc_core_enable_pwr(PCSSP1);
+			mcu_lpc_core_enable_pwr(PCSSP1);
 			break;
 
 #if MCU_SSP_PORTS > 2
 		case 2:
-			_mcu_lpc_core_enable_pwr(PCSSP2);
+			mcu_lpc_core_enable_pwr(PCSSP2);
 			break;
 #endif
 		}
@@ -86,11 +87,12 @@ void _mcu_ssp_dev_power_on(int port){
 
 }
 
-void _mcu_ssp_dev_power_off(int port){
+void mcu_ssp_dev_power_off(const devfs_handle_t * handle){
+	int port = handle->port;
 	if ( ssp_local[port].ref_count > 0 ){
 		if ( ssp_local[port].ref_count == 1 ){
 
-			_mcu_cortexm_priv_disable_irq((void*)(u32)(ssp_irqs[port]));
+			mcu_cortexm_priv_disable_irq((void*)(u32)(ssp_irqs[port]));
 
 			switch(port){
 			case 0:
@@ -98,18 +100,18 @@ void _mcu_ssp_dev_power_off(int port){
 				LPC_SYSCON->SSP0CLKDIV = 0;
 				LPC_SYSCON->PRESETCTRL &= ~(1<<0);
 #endif
-				_mcu_lpc_core_disable_pwr(PCSSP0);
+				mcu_lpc_core_disable_pwr(PCSSP0);
 				break;
 			case 1:
 #if defined __lpc13uxx || __lpc13xx
 				LPC_SYSCON->SSP0CLKDIV = 0;
 				LPC_SYSCON->PRESETCTRL &= ~(1<<2);
 #endif
-				_mcu_lpc_core_disable_pwr(PCSSP1);
+				mcu_lpc_core_disable_pwr(PCSSP1);
 				break;
 #ifdef LPCXX7X_8X
 			case 2:
-				_mcu_lpc_core_disable_pwr(PCSSP2);
+				mcu_lpc_core_disable_pwr(PCSSP2);
 				break;
 #endif
 			}
@@ -118,12 +120,13 @@ void _mcu_ssp_dev_power_off(int port){
 	}
 }
 
-int _mcu_ssp_dev_powered_on(int port){
+int mcu_ssp_dev_is_powered(const devfs_handle_t * handle){
+	int port = handle->port;
 	return ( ssp_local[port].ref_count != 0 );
 }
 
 
-int mcu_ssp_getinfo(int port, void * ctl){
+int mcu_ssp_getinfo(const devfs_handle_t * handle, void * ctl){
 	spi_info_t * info = ctl;
 
 	//set flags
@@ -133,7 +136,8 @@ int mcu_ssp_getinfo(int port, void * ctl){
 	return 0;
 }
 
-int mcu_ssp_setattr(int port, void * ctl){
+int mcu_ssp_setattr(const devfs_handle_t * handle, void * ctl){
+	int port = handle->port;
 	LPC_SSP_Type * regs;
 	uint32_t cr0, cr1, cpsr;
 	uint32_t tmp;
@@ -204,7 +208,7 @@ int mcu_ssp_setattr(int port, void * ctl){
 					}
 				}
 #endif
-				if ( _mcu_core_set_pinsel_func(pin->port, pin->pin, CORE_PERIPH_SSP, port) ){
+				if ( mcu_core_set_pinsel_func(pin->port, pin->pin, CORE_PERIPH_SSP, port) ){
 					return -1;  //faile to set pin function
 				}
 			}
@@ -220,11 +224,13 @@ int mcu_ssp_setattr(int port, void * ctl){
 	return 0;
 }
 
-int mcu_ssp_swap(int port, void * ctl){
+int mcu_ssp_swap(const devfs_handle_t * handle, void * ctl){
+	int port = handle->port;
 	return byte_swap(port, (int)ctl);
 }
 
-int mcu_ssp_setduplex(int port, void * ctl){
+int mcu_ssp_setduplex(const devfs_handle_t * handle, void * ctl){
+	int port = handle->port;
 	ssp_local[port].duplex_mem = (void * volatile)ctl;
 	return 0;
 }
@@ -235,7 +241,8 @@ static void exec_callback(int port, LPC_SSP_Type * regs, u32 o_events){
 }
 
 
-int mcu_ssp_setaction(int port, void * ctl){
+int mcu_ssp_setaction(const devfs_handle_t * handle, void * ctl){
+	int port = handle->port;
 	mcu_action_t * action = (mcu_action_t*)ctl;
 	LPC_SSP_Type * regs;
 	regs = ssp_regs_table[port];
@@ -248,14 +255,14 @@ int mcu_ssp_setaction(int port, void * ctl){
 		return 0;
 	}
 
-	if( _mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
+	if( mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
 		return -1;
 	}
 
 	ssp_local[port].handler.callback = action->handler.callback;
 	ssp_local[port].handler.context = action->handler.context;
 
-	_mcu_cortexm_set_irq_prio(ssp_irqs[port], action->prio);
+	mcu_cortexm_set_irq_prio(ssp_irqs[port], action->prio);
 
 
 	return 0;
@@ -282,14 +289,12 @@ int byte_swap(int port, int byte){
 
 }
 
-int _mcu_ssp_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
-	int port = DEVFS_GET_PORT(cfg);
-	return ssp_port_transfer(port, 0, wop);
+int mcu_ssp_dev_write(const devfs_handle_t * handle, devfs_async_t * wop){
+	return ssp_port_transfer(handle, 0, wop);
 }
 
-int _mcu_ssp_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
-	int port = DEVFS_GET_PORT(cfg);
-	return ssp_port_transfer(port, 1, rop);
+int mcu_ssp_dev_read(const devfs_handle_t * handle, devfs_async_t * rop){
+	return ssp_port_transfer(handle, 1, rop);
 }
 
 void ssp_fill_tx_fifo(int port, LPC_SSP_Type * regs){
@@ -319,7 +324,7 @@ void ssp_empty_rx_fifo(int port, LPC_SSP_Type * regs){
 	}
 }
 
-void _mcu_core_ssp_isr(int port){
+void mcu_core_ssp_isr(int port){
 	LPC_SSP_Type * regs;
 	regs = ssp_regs_table[port];
 	regs->ICR |= (1<<SSPICR_RTIC);
@@ -330,22 +335,24 @@ void _mcu_core_ssp_isr(int port){
 	}
 }
 
-void _mcu_core_ssp0_isr(){
-	_mcu_core_ssp_isr(0);
+void mcu_core_ssp0_isr(){
+	mcu_core_ssp_isr(0);
 }
 
-void _mcu_core_ssp1_isr(){
-	_mcu_core_ssp_isr(1);
+void mcu_core_ssp1_isr(){
+	mcu_core_ssp_isr(1);
 }
 
-void _mcu_core_ssp2_isr(){
-	_mcu_core_ssp_isr(2);
+void mcu_core_ssp2_isr(){
+	mcu_core_ssp_isr(2);
 }
 
-int ssp_port_transfer(int port, int is_read, devfs_async_t * dop){
+int ssp_port_transfer(const devfs_handle_t * handle, int is_read, devfs_async_t * dop){
+	int port = handle->port;
 	int size;
 	LPC_SSP_Type * regs;
 	size = dop->nbyte;
+
 
 	regs = ssp_regs_table[port];
 
@@ -368,7 +375,7 @@ int ssp_port_transfer(int port, int is_read, devfs_async_t * dop){
 	}
 	ssp_local[port].size = size;
 
-	if( _mcu_cortexm_priv_validate_callback(dop->handler.callback) < 0 ){
+	if( mcu_cortexm_priv_validate_callback(dop->handler.callback) < 0 ){
 		return -1;
 	}
 

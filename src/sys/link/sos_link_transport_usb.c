@@ -31,8 +31,48 @@ limitations under the License.
 #include "mcu/sys.h"
 #include "sos/link/transport_usb.h"
 
-link_transport_phy_t sos_link_transport_usb_open(const char * name, usbd_control_t * context, const usb_attr_t * usb_attr){
+static int open_pio(mcu_pin_t pin, int active_high){
+	char path[PATH_MAX];
+	int fd;
+	pio_attr_t attr;
+
+	snprintf(path, PATH_MAX, "/dev/pio%d", pin.port);
+
+	fd = open(path, O_RDWR);
+	if( fd < 0 ){
+		return -1;
+	}
+
+	attr.o_pinmask = (1<<pin.pin);
+	if( active_high ){
+		ioctl(fd, I_PIO_CLRMASK, (void*)attr.o_pinmask);
+	} else {
+		ioctl(fd, I_PIO_SETMASK, (void*)attr.o_pinmask);
+	}
+	attr.o_flags = PIO_FLAG_SET_OUTPUT | PIO_FLAG_IS_DIRONLY;
+	ioctl(fd, I_PIO_SETATTR, &attr);
+
+
+	return fd;
+}
+
+link_transport_phy_t sos_link_transport_usb_open(const char * name,
+		usbd_control_t * context,
+		const usbd_control_constants_t * constants,
+		const usb_attr_t * usb_attr,
+		mcu_pin_t usb_up_pin,
+		int usb_up_active_high){
 	link_transport_phy_t fd;
+	int pio_fd;
+
+	pio_fd = open_pio(usb_up_pin, usb_up_active_high);
+	if( pio_fd < 0 ){
+		return LINK_PHY_ERROR;
+	}
+
+	memset(context, 0, sizeof(usbd_control_t));
+	context->constants = constants;
+	context->handle = &(constants->handle);
 
 	//open USB
 	mcu_debug("Open link-phy-usb\n");
@@ -46,9 +86,6 @@ link_transport_phy_t sos_link_transport_usb_open(const char * name, usbd_control
 	//set USB attributes
 	mcu_debug("Set USB attr fd:%d\n", fd);
 
-	//memcpy(&usb_attr.pin_assignment, &mcu_board_config.usb_pin_assignment, sizeof(usb_pin_assignment_t));
-	//usb_attr.o_flags = USB_FLAG_SET_DEVICE;
-	//usb_attr.freq = mcu_board_config.core_osc_freq;
 	if( ioctl(fd, I_USB_SETATTR, usb_attr) < 0 ){
 		mcu_debug("Failed to set USB attr\n");
 		return LINK_PHY_ERROR;
@@ -57,6 +94,14 @@ link_transport_phy_t sos_link_transport_usb_open(const char * name, usbd_control
 	mcu_debug("USB Dev Init\n");
 	//initialize USB device
 	mcu_core_privcall(usbd_control_priv_init, context);
+
+	if( usb_up_active_high ){
+		ioctl(pio_fd, I_PIO_SETMASK, (void*)(1<<usb_up_pin.pin));
+	} else {
+		ioctl(pio_fd, I_PIO_CLRMASK, (void*)(1<<usb_up_pin.pin));
+	}
+
+	close(pio_fd);
 
 	return fd;
 }

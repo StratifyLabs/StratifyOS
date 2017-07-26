@@ -44,15 +44,20 @@
 #define SOS_VCP1_DATA_INTERFACE 3
 
 static char usb0_fifo_buffer[USB0_DEVFIFO_BUFFER_SIZE] MCU_SYS_MEM;
-const usbfifo_config_t sos_link_transport_usb_fifo_cfg = USBFIFO_HANDLE_CFG(
-		SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT,
-		SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT_SIZE,
-		usb0_fifo_buffer,
-		USB0_DEVFIFO_BUFFER_SIZE);
+const usbfifo_config_t sos_link_transport_usb_fifo_cfg = {
+		.endpoint = SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT,
+		.endpoint_size = SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT_SIZE,
+		.fifo = {
+				.buffer = usb0_fifo_buffer,
+				.size = USB0_DEVFIFO_BUFFER_SIZE
+		}
+};
 usbfifo_state_t sos_link_transport_usb_fifo_state MCU_SYS_MEM;
 
 const usbd_control_constants_t sos_link_transport_usb_dual_vcp_constants = {
-		.port = SOS_LINK_TRANSPORT_USB_PORT,
+		.handle.port = SOS_LINK_TRANSPORT_USB_PORT,
+		.handle.config = 0,
+		.handle.state = 0,
 		.device =  &sos_link_transport_usb_dual_vcp_dev_desc,
 		.config = &sos_link_transport_usb_dual_vcp_cfg_desc,
 		.string = &sos_link_transport_usb_dual_vcp_string_desc,

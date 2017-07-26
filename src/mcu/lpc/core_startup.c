@@ -26,32 +26,32 @@ static void core_init();
 static const char sys_proc_name[] = "sys";
 extern int _main();
 
-const bootloader_api_t _mcu_core_bootloader_api MCU_WEAK;
-const bootloader_api_t _mcu_core_bootloader_api = {
+const bootloader_api_t mcu_core_bootloader_api MCU_WEAK;
+const bootloader_api_t mcu_core_bootloader_api = {
 		.code_size = 0,
 };
 
 
-void _mcu_core_hardware_id() MCU_ALIAS(_mcu_core_default_isr);
+void mcu_core_hardware_id() MCU_ALIAS(mcu_core_default_isr);
 
-void _mcu_core_reset_handler() __attribute__ ((section(".reset_vector")));
-void _mcu_core_nmi_isr() MCU_WEAK;
+void mcu_core_reset_handler() __attribute__ ((section(".reset_vector")));
+void mcu_core_nmi_isr() MCU_WEAK;
 int pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *attr) MCU_WEAK;
 
-void _mcu_core_hardfault_handler() MCU_WEAK;
-void _mcu_core_memfault_handler() MCU_WEAK;
-void _mcu_core_busfault_handler() MCU_WEAK;
-void _mcu_core_usagefault_handler() MCU_WEAK;
+void mcu_core_hardfault_handler() MCU_WEAK;
+void mcu_core_memfault_handler() MCU_WEAK;
+void mcu_core_busfault_handler() MCU_WEAK;
+void mcu_core_usagefault_handler() MCU_WEAK;
 
-void _mcu_core_default_isr() MCU_WEAK;
-void _mcu_core_os_handler() MCU_WEAK;
-void _mcu_core_svcall_handler();
-void _mcu_core_debugmon_handler() MCU_ALIAS(_mcu_core_os_handler);
-void _mcu_core_pendsv_handler();
-void _mcu_core_systick_handler();
+void mcu_core_default_isr() MCU_WEAK;
+void mcu_core_os_handler() MCU_WEAK;
+void mcu_core_svcall_handler();
+void mcu_core_debugmon_handler() MCU_ALIAS(mcu_core_os_handler);
+void mcu_core_pendsv_handler();
+void mcu_core_systick_handler();
 
-#define _DECLARE_ISR(name) void _mcu_core_##name##_isr() MCU_ALIAS(_mcu_core_default_isr)
-#define _ISR(name) _mcu_core_##name##_isr
+#define _DECLARE_ISR(name) void mcu_core_##name##_isr() MCU_ALIAS(mcu_core_default_isr)
+#define _ISR(name) mcu_core_##name##_isr
 
 #if defined __lpc43xx
 //ISR's -- weakly bound to default handler
@@ -208,24 +208,24 @@ _DECLARE_ISR(sw7); //40
  * address 0 (or wherever the text starts if there is another bootloader) in flash memory
  */
 
-void (* const _mcu_core_vector_table[])() __attribute__ ((section(".startup"))) = {
+void (* const mcu_core_vector_table[])() __attribute__ ((section(".startup"))) = {
 		// Core Level - CM3
 		(void*)&_top_of_stack,					// The initial stack pointer
-		_mcu_core_reset_handler,						// The reset handler
-		_mcu_core_nmi_isr,							// The NMI handler
-		_mcu_core_hardfault_handler,					// The hard fault handler
-		_mcu_core_memfault_handler,					// The MPU fault handler
-		_mcu_core_busfault_handler,					// The bus fault handler
-		_mcu_core_usagefault_handler,				// The usage fault handler
-		_mcu_core_hardware_id,					// Reserved -- this is the checksum addr for ISP programming 0x1C
+		mcu_core_reset_handler,						// The reset handler
+		mcu_core_nmi_isr,							// The NMI handler
+		mcu_core_hardfault_handler,					// The hard fault handler
+		mcu_core_memfault_handler,					// The MPU fault handler
+		mcu_core_busfault_handler,					// The bus fault handler
+		mcu_core_usagefault_handler,				// The usage fault handler
+		mcu_core_hardware_id,					// Reserved -- this is the checksum addr for ISP programming 0x1C
 		0,										// Reserved -- this is the hwpl security word 0x20
-		(void*)&_mcu_core_bootloader_api,		// Reserved -- this is the kernel signature checksum value 0x24
+		(void*)&mcu_core_bootloader_api,		// Reserved -- this is the kernel signature checksum value 0x24
 		0,										// Reserved
-		_mcu_core_svcall_handler,					// SVCall handler
-		_mcu_core_debugmon_handler,					// Debug monitor handler
+		mcu_core_svcall_handler,					// SVCall handler
+		mcu_core_debugmon_handler,					// Debug monitor handler
 		0,										// Reserved
-		_mcu_core_pendsv_handler,					// The PendSV handler
-		_mcu_core_systick_handler,					// The SysTick handler
+		mcu_core_pendsv_handler,					// The PendSV handler
+		mcu_core_systick_handler,					// The SysTick handler
 		//Non Cortex M3 interrupts
 
 #if defined __lpc43xx
@@ -377,8 +377,8 @@ void (* const _mcu_core_vector_table[])() __attribute__ ((section(".startup"))) 
 
 };
 
-void _mcu_core_getserialno(mcu_sn_t * serial_number){
-	_mcu_lpc_flash_get_serialno(serial_number->sn);
+void mcu_core_getserialno(mcu_sn_t * serial_number){
+	mcu_lpc_flash_get_serialno(serial_number->sn);
 }
 
 void core_init(){
@@ -418,24 +418,24 @@ void core_init(){
 #endif
 }
 
-void _mcu_core_reset_handler(){
+void mcu_core_reset_handler(){
 	core_init();
-	_mcu_cortexm_priv_set_vector_table_addr((void*)_mcu_core_vector_table);
+	mcu_cortexm_priv_set_vector_table_addr((void*)mcu_core_vector_table);
 	_main(); //This function should never return
 	while(1);
 }
 
 
-void _mcu_core_nmi_isr(){
+void mcu_core_nmi_isr(){
 	mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_PRIV_FATAL, 0);
 }
 
 
-void _mcu_core_os_handler(){
+void mcu_core_os_handler(){
 	return;
 }
 
-void _mcu_core_default_isr(){
+void mcu_core_default_isr(){
 	mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_PRIV_FATAL, 0);
 }
 

@@ -208,8 +208,8 @@ typedef struct MCU_PACK {
 #define MCU_SPI_MISOPIN0_PINASSIGN1 23
 #define MCU_SPI_SCKPIN0_PINASSIGN1 20
 
-int _mcu_lpc_flash_write_page(int page, void * addr, const void * src, int size);
-int _mcu_lpc_flash_erase_page(int page);
-int _mcu_lpc_flash_get_serialno(uint32_t * dest);
+int mcu_lpc_flash_write_page(int page, void * addr, const void * src, int size);
+int mcu_lpc_flash_erase_page(int page);
+int mcu_lpc_flash_get_serialno(uint32_t * dest);
 
 #endif /* LPCXX7X_8X_H_ */

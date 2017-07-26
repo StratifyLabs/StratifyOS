@@ -40,25 +40,25 @@ int sys_23_open(const devfs_handle_t * cfg){
 }
 
 int sys_23_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
-	sys_23_attr_t * sys = ctl;
+	sys_23_info_t * sys = ctl;
 
 	switch(request){
 	case I_SYS_GETINFO: //this will be the wrong version
 		break;
 	case I_SYS_23_GETINFO:
-		memset(sys, 0, sizeof(sys_23_attr_t));
+		memset(sys, 0, sizeof(sys_23_info_t));
 		strncpy(sys->version, VERSION, 7);
 		strncpy(sys->sys_version, sos_board_config.sys_version, 7);
 		strncpy(sys->arch, ARCH, 7);
 		sys->security = 0;
 		sys->signature = symbols_table[0];
-		sys->cpu_freq = _mcu_core_getclock();
+		sys->cpu_freq = mcu_core_getclock();
 		sys->sys_mem_size = sos_board_config.sys_memory_size;
-		sys->flags = sos_board_config.o_sys_flags;
+		sys->o_flags = sos_board_config.o_sys_flags;
 		strncpy(sys->stdin_name, sos_board_config.stdin_dev, NAME_MAX-1);
 		strncpy(sys->stdout_name, sos_board_config.stdout_dev, NAME_MAX-1);
 		strncpy(sys->name, sos_board_config.sys_name, NAME_MAX-1);
-		_mcu_core_getserialno(&(sys->serial));
+		mcu_core_getserialno(&(sys->serial));
 		return 0;
 	default:
 		return sys_ioctl(cfg, request, ctl);

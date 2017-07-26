@@ -64,46 +64,48 @@ void clear_actions(int port){
 	memset(m_tmr_local[port].handler, 0, (NUM_OCS+NUM_ICS)*sizeof(mcu_event_handler_t));
 }
 
-void _mcu_tmr_dev_power_on(int port){
+void mcu_tmr_dev_power_on(const devfs_handle_t * handle){
+	int port = handle->port;
 	if ( m_tmr_local[port].ref_count == 0 ){
 		clear_actions(port);
 		switch(port){
 		case 0:
-			_mcu_lpc_core_enable_pwr(PCTIM0);
+			mcu_lpc_core_enable_pwr(PCTIM0);
 			break;
 		case 1:
-			_mcu_lpc_core_enable_pwr(PCTIM1);
+			mcu_lpc_core_enable_pwr(PCTIM1);
 			break;
 		case 2:
-			_mcu_lpc_core_enable_pwr(PCTIM2);
+			mcu_lpc_core_enable_pwr(PCTIM2);
 			break;
 		case 3:
-			_mcu_lpc_core_enable_pwr(PCTIM3);
+			mcu_lpc_core_enable_pwr(PCTIM3);
 			break;
 		}
-		_mcu_cortexm_priv_enable_irq((void*)(u32)(tmr_irqs[port]));
+		mcu_cortexm_priv_enable_irq((void*)(u32)(tmr_irqs[port]));
 	}
 	m_tmr_local[port].ref_count++;
 }
 
 
-void _mcu_tmr_dev_power_off(int port){
+void mcu_tmr_dev_power_off(const devfs_handle_t * handle){
+	int port = handle->port;
 	if ( m_tmr_local[port].ref_count > 0 ){
 		if ( m_tmr_local[port].ref_count == 1 ){
 			clear_actions(port);
-			_mcu_cortexm_priv_disable_irq((void*)(u32)(tmr_irqs[port]));
+			mcu_cortexm_priv_disable_irq((void*)(u32)(tmr_irqs[port]));
 			switch(port){
 			case 0:
-				_mcu_lpc_core_disable_pwr(PCTIM0);
+				mcu_lpc_core_disable_pwr(PCTIM0);
 				break;
 			case 1:
-				_mcu_lpc_core_disable_pwr(PCTIM1);
+				mcu_lpc_core_disable_pwr(PCTIM1);
 				break;
 			case 2:
-				_mcu_lpc_core_disable_pwr(PCTIM2);
+				mcu_lpc_core_disable_pwr(PCTIM2);
 				break;
 			case 3:
-				_mcu_lpc_core_disable_pwr(PCTIM3);
+				mcu_lpc_core_disable_pwr(PCTIM3);
 				break;
 			}
 		}
@@ -111,12 +113,14 @@ void _mcu_tmr_dev_power_off(int port){
 	}
 }
 
-int _mcu_tmr_dev_powered_on(int port){
+int mcu_tmr_dev_is_powered(const devfs_handle_t * handle){
+	int port = handle->port;
 	return ( m_tmr_local[port].ref_count != 0);
 }
 
-int mcu_tmr_getinfo(int port, void * ctl){
+int mcu_tmr_getinfo(const devfs_handle_t * handle, void * ctl){
 	tmr_info_t * info = ctl;
+	int port = handle->port;
 
 	// set supported flags and events
 	info->freq = mcu_board_config.core_periph_freq / (tmr_regs_table[port]->PR+1);
@@ -125,8 +129,9 @@ int mcu_tmr_getinfo(int port, void * ctl){
 	return 0;
 }
 
-int mcu_tmr_setattr(int port, void * ctl){
+int mcu_tmr_setattr(const devfs_handle_t * handle, void * ctl){
 	LPC_TIM_Type * regs;
+	int port = handle->port;
 	regs = tmr_regs_table[port];
 	tmr_attr_t * attr = ctl;
 	int ctcr = 0;
@@ -155,7 +160,7 @@ int mcu_tmr_setattr(int port, void * ctl){
 		for(i=0; i < MCU_PIN_ASSIGNMENT_COUNT(tmr_pin_assignment_t); i++){
 			const mcu_pin_t * pin = mcu_pin_at(&(attr->pin_assignment), i);
 			if( mcu_is_port_valid(pin->port) ){
-				if ( _mcu_core_set_pinsel_func(pin->port, pin->pin, CORE_PERIPH_TMR, port) ){
+				if ( mcu_core_set_pinsel_func(pin->port, pin->pin, CORE_PERIPH_TMR, port) ){
 					return -1;  //pin failed to allocate as a UART pin
 				}
 			}
@@ -214,22 +219,25 @@ int mcu_tmr_setattr(int port, void * ctl){
 	return 0;
 }
 
-int mcu_tmr_enable(int port, void * ctl){
+int mcu_tmr_enable(const devfs_handle_t * handle, void * ctl){
 	LPC_TIM_Type * regs;
+	int port = handle->port;
 	regs = tmr_regs_table[port];
 	regs->TCR = 1;
 	return 0;
 }
 
-int mcu_tmr_disable(int port, void * ctl){
+int mcu_tmr_disable(const devfs_handle_t * handle, void * ctl){
 	LPC_TIM_Type * regs;
+	int port = handle->port;
 	regs = tmr_regs_table[port];
 	regs->TCR = 0;
 	return 0;
 }
 
-int mcu_tmr_setoc(int port, void * ctl){
+int mcu_tmr_setoc(const devfs_handle_t * handle, void * ctl){
 	LPC_TIM_Type * regs;
+	int port = handle->port;
 	regs = tmr_regs_table[port];
 	//Write the output compare value
 	mcu_channel_t * req = (mcu_channel_t*)ctl;
@@ -246,8 +254,9 @@ int mcu_tmr_setoc(int port, void * ctl){
 	return 0;
 }
 
-int mcu_tmr_getoc(int port, void * ctl){
+int mcu_tmr_getoc(const devfs_handle_t * handle, void * ctl){
 	LPC_TIM_Type * regs;
+	int port = handle->port;
 	regs = tmr_regs_table[port];
 	//Read the output compare channel
 	mcu_channel_t * req = (mcu_channel_t*)ctl;
@@ -263,8 +272,9 @@ int mcu_tmr_getoc(int port, void * ctl){
 	return 0;
 }
 
-int mcu_tmr_setic(int port, void * ctl){
+int mcu_tmr_setic(const devfs_handle_t * handle, void * ctl){
 	LPC_TIM_Type * regs;
+	int port = handle->port;
 	regs = tmr_regs_table[port];
 	unsigned int chan;
 	mcu_channel_t * req = (mcu_channel_t*)ctl;
@@ -281,8 +291,9 @@ int mcu_tmr_setic(int port, void * ctl){
 	return 0;
 }
 
-int mcu_tmr_getic(int port, void * ctl){
+int mcu_tmr_getic(const devfs_handle_t * handle, void * ctl){
 	LPC_TIM_Type * regs;
+	int port = handle->port;
 	unsigned int chan;
 	regs = tmr_regs_table[port];
 	mcu_channel_t * req = (mcu_channel_t*)ctl;
@@ -299,7 +310,7 @@ int mcu_tmr_getic(int port, void * ctl){
 	return 0;
 }
 
-int _mcu_tmr_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
+int mcu_tmr_dev_write(const devfs_handle_t * handle, devfs_async_t * wop){
 	int port;
 	mcu_action_t * action;
 	int chan;
@@ -310,7 +321,7 @@ int _mcu_tmr_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 		return -1;
 	}
 
-	port = cfg->port;
+	port = handle->port;
 	chan = action->channel;
 	if ( m_tmr_local[port].handler[chan].callback != 0 ){
 		//The interrupt is on -- port is busy
@@ -322,15 +333,16 @@ int _mcu_tmr_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	action->handler.callback = wop->handler.callback;
 	action->handler.context = wop->handler.context;
 
-	_mcu_cortexm_set_irq_prio(tmr_irqs[port], action->prio);
+	mcu_cortexm_set_irq_prio(tmr_irqs[port], action->prio);
 
-	return mcu_tmr_setaction(port, action);
+	return mcu_tmr_setaction(handle, action);
 }
 
 
-int mcu_tmr_setaction(int port, void * ctl){
+int mcu_tmr_setaction(const devfs_handle_t * handle, void * ctl){
 	mcu_action_t * action = (mcu_action_t*)ctl;
 	LPC_TIM_Type * regs;
+	int port = handle->port;
 	regs = tmr_regs_table[port];
 	u32 chan;
 	u32 event;
@@ -353,11 +365,11 @@ int mcu_tmr_setaction(int port, void * ctl){
 	return 0;
 }
 
-int _mcu_tmr_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
-	int port = DEVFS_GET_PORT(cfg);
+int mcu_tmr_dev_read(const devfs_handle_t * handle, devfs_async_t * rop){
+	int port = handle->port;
 	int chan = rop->loc;
 
-	if( _mcu_cortexm_priv_validate_callback(rop->handler.callback) < 0 ){
+	if( mcu_cortexm_priv_validate_callback(rop->handler.callback) < 0 ){
 		return -1;
 	}
 
@@ -366,15 +378,17 @@ int _mcu_tmr_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	return 0;
 }
 
-int mcu_tmr_set(int port, void * ctl){
+int mcu_tmr_set(const devfs_handle_t * handle, void * ctl){
 	LPC_TIM_Type * regs;
+	int port = handle->port;
 	regs = tmr_regs_table[port];
 	regs->TC = (uint32_t)ctl;
 	return 0;
 }
 
-int mcu_tmr_get(int port, void * ctl){
+int mcu_tmr_get(const devfs_handle_t * handle, void * ctl){
 	LPC_TIM_Type * regs;
+	int port = handle->port;
 	regs = tmr_regs_table[port];
 	return regs->TC;
 }
@@ -438,19 +452,19 @@ void tmr_isr(int port){
 #endif
 }
 
-void _mcu_core_tmr0_isr(){
+void mcu_core_tmr0_isr(){
 	tmr_isr(0);
 }
 
-void _mcu_core_tmr1_isr(){
+void mcu_core_tmr1_isr(){
 	tmr_isr(1);
 }
 
-void _mcu_core_tmr2_isr(){
+void mcu_core_tmr2_isr(){
 	tmr_isr(2);
 }
 
-void _mcu_core_tmr3_isr(){
+void mcu_core_tmr3_isr(){
 	tmr_isr(3);
 }
 

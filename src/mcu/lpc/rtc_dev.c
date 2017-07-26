@@ -60,7 +60,8 @@ static int set_alarm(int port, const rtc_attr_t * attr);
 static int get_alarm(int port, rtc_info_t * info);
 static int set_count_event(int port, u32 o_flags);
 
-void _mcu_rtc_dev_power_on(int port){
+void mcu_rtc_dev_power_on(const devfs_handle_t * handle){
+	int port = handle->port;
 	LPC_RTC_Type * regs = rtc_regs[port];
 	if ( rtc_local.ref_count == 0 ){
 		rtc_local.handler.callback = NULL;
@@ -69,7 +70,7 @@ void _mcu_rtc_dev_power_on(int port){
 	rtc_local.ref_count++;
 }
 
-void _mcu_rtc_dev_power_off(int port){
+void mcu_rtc_dev_power_off(const devfs_handle_t * handle){
 	//LPC_RTC_Type * regs = rtc_regs[port];
 	if ( rtc_local.ref_count > 0 ){
 		if ( rtc_local.ref_count == 1 ){
@@ -80,7 +81,8 @@ void _mcu_rtc_dev_power_off(int port){
 	}
 }
 
-int _mcu_rtc_dev_powered_on(int port){
+int mcu_rtc_dev_is_powered(const devfs_handle_t * handle){
+	int port = handle->port;
 	LPC_RTC_Type * regs = rtc_regs[port];
 
 	if ( regs->CCR & (CLKEN) ){
@@ -91,7 +93,8 @@ int _mcu_rtc_dev_powered_on(int port){
 }
 
 
-int mcu_rtc_getinfo(int port, void * ctl){
+int mcu_rtc_getinfo(const devfs_handle_t * handle, void * ctl){
+	int port = handle->port;
 	rtc_info_t * info = ctl;
 	info->o_flags = 0;
 	info->o_events = 0;
@@ -99,7 +102,8 @@ int mcu_rtc_getinfo(int port, void * ctl){
 	return 0;
 }
 
-int mcu_rtc_setattr(int port, void * ctl){
+int mcu_rtc_setattr(const devfs_handle_t * handle, void * ctl){
+	int port = handle->port;
 	rtc_attr_t * attr = ctl;
 	u32 o_flags = attr->o_flags;
 
@@ -124,20 +128,20 @@ int mcu_rtc_setattr(int port, void * ctl){
 	return 0;
 }
 
-int mcu_rtc_setaction(int port, void * ctl){
+int mcu_rtc_setaction(const devfs_handle_t * handle, void * ctl){
 	mcu_action_t * action = (mcu_action_t*)ctl;
-
-	if( _mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
+	int port = handle->port;
+	if( mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
 		return -1;
 	}
 
 	rtc_local.handler = action->handler;
 
-	_mcu_cortexm_set_irq_prio(rtc_irqs[port], action->prio);
+	mcu_cortexm_set_irq_prio(rtc_irqs[port], action->prio);
 	return 0;
 }
 
-int _mcu_rtc_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
+int mcu_rtc_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	errno = ENOTSUP;
 	return -1;
 }
@@ -148,10 +152,10 @@ int set_alarm(int port, const rtc_attr_t * attr){
 
 	if( o_flags & RTC_FLAG_ENABLE_ALARM ){
 
-		_mcu_cortexm_priv_enable_irq((void*)RTC_IRQn);
+		mcu_cortexm_priv_enable_irq((void*)RTC_IRQn);
 
 		//elevate prio to come out of hibernate
-		_mcu_cortexm_set_irq_prio(RTC_IRQn, 3);
+		mcu_cortexm_set_irq_prio(RTC_IRQn, 3);
 
 
 		regs->ASEC = attr->time.time.tm_sec;
@@ -201,14 +205,16 @@ int get_alarm(int port, rtc_info_t * info){
 	return 0;
 }
 
-int mcu_rtc_disablealarm(int port, void * ctl){
+int mcu_rtc_disablealarm(const devfs_handle_t * handle, void * ctl){
+	int port = handle->port;
 	LPC_RTC_Type * regs = rtc_regs[port];
 
 	regs->AMR = 0xFF;
 	return 0;
 }
 
-int mcu_rtc_set(int port, void * ctl){
+int mcu_rtc_set(const devfs_handle_t * handle, void * ctl){
+	int port = handle->port;
 	LPC_RTC_Type * regs = rtc_regs[port];
 
 	rtc_time_t * timep;
@@ -227,7 +233,8 @@ int mcu_rtc_set(int port, void * ctl){
 	return 0;
 }
 
-int mcu_rtc_get(int port, void * ctl){
+int mcu_rtc_get(const devfs_handle_t * handle, void * ctl){
+	int port = handle->port;
 	LPC_RTC_Type * regs = rtc_regs[port];
 
 	rtc_time_t * timep;
@@ -250,7 +257,7 @@ int mcu_rtc_get(int port, void * ctl){
 int set_count_event(int port, u32 o_flags){
 	LPC_RTC_Type * regs = rtc_regs[port];
 
-	_mcu_cortexm_priv_enable_irq((void*)RTC_IRQn);
+	mcu_cortexm_priv_enable_irq((void*)RTC_IRQn);
 
 	if( o_flags & RTC_FLAG_DISABLE_COUNT_EVENT ){
 		regs->CIIR = 0;
@@ -294,10 +301,12 @@ int set_count_event(int port, u32 o_flags){
 	return 0;
 }
 
-void _mcu_core_rtc0_isr(){
+void mcu_core_rtc0_isr(){
 	const int port = 0;
 	LPC_RTC_Type * regs = rtc_regs[port];
 	u32 o_events;
+	devfs_handle_t handle;
+	handle.port = port;
 	rtc_event_t event;
 	int flags;
 	flags = regs->ILR & 0x03;
@@ -310,7 +319,7 @@ void _mcu_core_rtc0_isr(){
 		o_events |= MCU_EVENT_FLAG_COUNT;
 	}
 
-	mcu_rtc_get(port, &event.time);
+	mcu_rtc_get(&handle, &event.time);
 	mcu_execute_event_handler(&(rtc_local.handler), o_events, &event);
 }
 

@@ -22,13 +22,13 @@
 
 
 //These functions are device specific
-extern void _mcu_mem_dev_power_on(int port);
-extern void _mcu_mem_dev_power_off(int port);
-extern int _mcu_mem_dev_powered_on(int port);
-extern int _mcu_mem_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop);
-extern int _mcu_mem_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop);
+extern void mcu_mem_dev_power_on(const devfs_handle_t * handle);
+extern void mcu_mem_dev_power_off(const devfs_handle_t * handle);
+extern int mcu_mem_dev_is_powered(const devfs_handle_t * handle);
+extern int mcu_mem_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop);
+extern int mcu_mem_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop);
 
-int (* const mem_ioctl_func_table[I_MCU_TOTAL + I_MEM_TOTAL])(int, void*) = {
+int (* const mem_ioctl_func_table[I_MCU_TOTAL + I_MEM_TOTAL])(const devfs_handle_t*, void*) = {
 		mcu_mem_getinfo,
 		mcu_mem_setattr,
 		mcu_mem_setaction,
@@ -39,35 +39,35 @@ int (* const mem_ioctl_func_table[I_MCU_TOTAL + I_MEM_TOTAL])(int, void*) = {
 
 int mcu_mem_open(const devfs_handle_t * cfg){
 	return mcu_open(cfg,
-			_mcu_mem_dev_powered_on,
-			_mcu_mem_dev_power_on);
+			mcu_mem_dev_is_powered,
+			mcu_mem_dev_power_on);
 }
 
 int mcu_mem_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 	return mcu_ioctl(cfg,
 			request,
 			ctl,
-			_mcu_mem_dev_powered_on,
+			mcu_mem_dev_is_powered,
 			mem_ioctl_func_table,
 			I_MCU_TOTAL + I_MEM_TOTAL);
 }
 
 int mcu_mem_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	return mcu_read(cfg, rop,
-			_mcu_mem_dev_powered_on,
-			_mcu_mem_dev_read);
+			mcu_mem_dev_is_powered,
+			mcu_mem_dev_read);
 }
 
 
 int mcu_mem_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	return mcu_write(cfg, wop,
-			_mcu_mem_dev_powered_on,
-			_mcu_mem_dev_write);
+			mcu_mem_dev_is_powered,
+			mcu_mem_dev_write);
 
 }
 
 int mcu_mem_close(const devfs_handle_t * cfg){
-	return mcu_close(cfg, _mcu_mem_dev_powered_on, _mcu_mem_dev_power_off);
+	return mcu_close(cfg, mcu_mem_dev_is_powered, mcu_mem_dev_power_off);
 }
 
 

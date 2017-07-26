@@ -46,14 +46,14 @@ int mcu_qei_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_PRIV_
 int mcu_qei_close(const devfs_handle_t * cfg) MCU_PRIV_CODE;
 
 
-int mcu_qei_getinfo(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_qei_setattr(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_qei_setaction(int port, void * ctl) MCU_PRIV_CODE;
+int mcu_qei_getinfo(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_qei_setattr(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_qei_setaction(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
 
-int mcu_qei_get(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_qei_getvelocity(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_qei_getindex(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_qei_reset(int port, void * ctl) MCU_PRIV_CODE;
+int mcu_qei_get(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_qei_getvelocity(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_qei_getindex(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_qei_reset(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
 
 #ifdef __cplusplus
 }

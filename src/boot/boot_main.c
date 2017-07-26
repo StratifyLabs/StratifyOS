@@ -34,7 +34,7 @@ void boot_event(int event, void * args){
 
 extern u32 _etext;
 
-const bootloader_api_t _mcu_core_bootloader_api = {
+const bootloader_api_t mcu_core_bootloader_api = {
 		.code_size = (u32)&_etext,
 		.exec = exec_bootloader,
 		.usbd_control_priv_init = usbd_control_priv_init,
@@ -57,7 +57,7 @@ void run_bootloader();
 void delay_ms(int ms){
 	int i;
 	for(i=0; i < ms; i++){
-		_mcu_cortexm_delay_us(1000);
+		mcu_cortexm_delay_us(1000);
 	}
 }
 
@@ -126,6 +126,8 @@ int check_run_app(){
 	u32 * bootloader_start = (u32*)boot_board_config.sw_req_loc;
 	u32 hw_req_value;
 	pio_attr_t pio_attr;
+	devfs_handle_t hw_req_handle;
+	hw_req_handle.port = boot_board_config.hw_req.port;
 
 	if ( (uint32_t)stack_ptr == 0xFFFFFFFF ){
 		//code is not valid
@@ -137,15 +139,15 @@ int check_run_app(){
 
 	if( boot_board_config.o_flags & BOOT_BOARD_CONFIG_FLAG_HW_REQ_PULLUP ){
 		pio_attr.o_flags = PIO_FLAG_SET_INPUT | PIO_FLAG_IS_PULLUP;
-		mcu_pio_setattr(boot_board_config.hw_req.port, &pio_attr);
+		mcu_pio_setattr(&hw_req_handle, &pio_attr);
 	} else if( boot_board_config.o_flags & BOOT_BOARD_CONFIG_FLAG_HW_REQ_PULLDOWN ){
 		pio_attr.o_flags = PIO_FLAG_SET_INPUT | PIO_FLAG_IS_PULLDOWN;
-		mcu_pio_setattr(boot_board_config.hw_req.port, &pio_attr);
+		mcu_pio_setattr(&hw_req_handle, &pio_attr);
 	}
 
-	_mcu_cortexm_delay_us(500);
+	mcu_cortexm_delay_us(500);
 
-	hw_req_value = ((mcu_pio_get(boot_board_config.hw_req.port, 0) & pio_attr.o_pinmask) != 0);
+	hw_req_value = ((mcu_pio_get(&hw_req_handle, 0) & pio_attr.o_pinmask) != 0);
 
 	if( boot_board_config.o_flags & BOOT_BOARD_CONFIG_FLAG_HW_REQ_ACTIVE_HIGH ){
 		if( hw_req_value ){ //pin is high and pin is active high
@@ -159,7 +161,7 @@ int check_run_app(){
 		}
 	}
 
-	if ( !(mcu_pio_get(boot_board_config.hw_req.port, 0) & (1<<boot_board_config.hw_req.pin)) ){
+	if ( !(mcu_pio_get(&hw_req_handle, 0) & (1<<boot_board_config.hw_req.pin)) ){
 		//*bootloader_start = 0;
 		//return 0;
 	}
@@ -183,35 +185,27 @@ static int debug_write_func(const void * buf, int nbyte){
 #endif
 
 void init_hw(){
-	mcu_action_t action;
-	_mcu_core_initclock(1);
-	_mcu_cortexm_priv_enable_interrupts(NULL); //Enable the interrupts
+	mcu_core_initclock(1);
+	mcu_cortexm_priv_enable_interrupts(NULL); //Enable the interrupts
 
 	delay_ms(50);
-
-	//This only needs to be enabled for debugging
-	action.handler.callback = 0;
-	action.handler.context = 0;
-	action.channel = 0;
-	action.prio = 128;
-	mcu_uart_setaction(0, &action);
-
-	action.prio = 1;
-	mcu_usb_setaction(0, &action);
 
 
 #ifdef DEBUG_BOOTLOADER
 	u32 * bootloader_start = (u32*)boot_board_config.sw_req_loc;
+	devfs_handle_t handle;
+	handle.port = boot_board_config.hw_req.port;
 	mcu_debug_init();
 	dsetmode(0);
 	dsetwritefunc(debug_write_func);
+
 	dstr("STARTING UP\n");
 
 	if ( (uint32_t)stack_ptr == 0xFFFFFFFF ){
 		dstr("Stack pointer is invalid\n");
 	}
 
-	if ( !(mcu_pio_get(boot_board_config.hw_req.port, 0) & (1<<boot_board_config.hw_req.pin)) ){
+	if ( !(mcu_pio_get(&handle, 0) & (1<<boot_board_config.hw_req.pin)) ){
 		dstr("Hardware bootloader request\n");
 	}
 
@@ -231,14 +225,16 @@ void init_hw(){
 void gled_on(){
 	if( mcu_board_config.led.port != 255 ){
 		pio_attr_t attr;
+		devfs_handle_t handle;
+		handle.port = mcu_board_config.led.port;
 		attr.o_pinmask = (1<<mcu_board_config.led.pin);
 		attr.o_flags = PIO_FLAG_SET_OUTPUT | PIO_FLAG_IS_DIRONLY;
-		mcu_pio_setattr(mcu_board_config.led.port, &attr);
+		mcu_pio_setattr(&handle, &attr);
 		if( mcu_board_config.o_flags & MCU_BOARD_CONFIG_FLAG_LED_ACTIVE_HIGH ){
 			//LED is active low
-			mcu_pio_setmask(mcu_board_config.led.port, (void*)attr.o_pinmask);
+			mcu_pio_setmask(&handle, (void*)attr.o_pinmask);
 		} else {
-			mcu_pio_clrmask(mcu_board_config.led.port, (void*)attr.o_pinmask);
+			mcu_pio_clrmask(&handle, (void*)attr.o_pinmask);
 		}
 	}
 }
@@ -249,16 +245,18 @@ void gled_on(){
 void gled_off(){
 	if( mcu_board_config.led.port != 255 ){
 		pio_attr_t attr;
+		devfs_handle_t handle;
+		handle.port = mcu_board_config.led.port;
 		attr.o_pinmask = (1<<mcu_board_config.led.pin);
 		attr.o_flags = PIO_FLAG_SET_INPUT | PIO_FLAG_IS_DIRONLY;
-		mcu_pio_setattr(mcu_board_config.led.port, &attr);
+		mcu_pio_setattr(&handle, &attr);
 	}
 }
 
-void _mcu_core_fault_handler(){}
-void _mcu_core_hardfault_handler(){}
-void _mcu_core_memfault_handler(){}
-void _mcu_core_busfault_handler(){}
-void _mcu_core_usagefault_handler(){}
+void mcu_core_fault_handler(){}
+void mcu_core_hardfault_handler(){}
+void mcu_core_memfault_handler(){}
+void mcu_core_busfault_handler(){}
+void mcu_core_usagefault_handler(){}
 
 /*! @} */

@@ -38,7 +38,8 @@ static pio_local_t m_pio2_local MCU_SYS_MEM;
 
 static int set_event(int port, int event, int pin);
 
-void _mcu_pio_dev_power_on(int port){
+void mcu_pio_dev_power_on(const devfs_handle_t * handle){
+	int port = handle->port;
 	if ( port == 0 ){
 		if ( m_pio0_local.ref_count == 0 ){
 			m_pio0_local.handler.callback = NULL;
@@ -52,7 +53,8 @@ void _mcu_pio_dev_power_on(int port){
 	}
 }
 
-void _mcu_pio_dev_power_off(int port){
+void mcu_pio_dev_power_off(const devfs_handle_t * handle){
+	int port = handle->port;
 
 	if ( port == 0 ){
 		if ( m_pio0_local.ref_count > 0 ){
@@ -71,7 +73,8 @@ void _mcu_pio_dev_power_off(int port){
 	}
 }
 
-int _mcu_pio_dev_powered_on(int port){
+int mcu_pio_dev_is_powered(const devfs_handle_t * handle){
+	int port = handle->port;
 	if ( port == 0 ){
 		if ( m_pio0_local.ref_count > 0 ){
 			return 1;
@@ -139,10 +142,8 @@ int set_event(int port, int event, int pin){
 }
 
 
-int _mcu_pio_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
-	int port;
+int mcu_pio_dev_write(const devfs_handle_t * handle, devfs_async_t * wop){
 	mcu_action_t * action;
-	port = cfg->port;
 
 	if( wop->nbyte != sizeof(mcu_action_t) ){
 		errno = EINVAL;
@@ -152,11 +153,12 @@ int _mcu_pio_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	action = (mcu_action_t*)wop->buf;
 	action->handler.callback = wop->handler.callback;
 	action->handler.context = wop->handler.context;
-	return mcu_pio_setaction(port, action);
+	return mcu_pio_setaction(handle, action);
 }
 
-int mcu_pio_setaction(int port, void * ctl){
+int mcu_pio_setaction(const devfs_handle_t * handle, void * ctl){
 	int err;
+	int port = handle->port;
 	mcu_action_t * action = (mcu_action_t*)ctl;
 
 	if( action->handler.callback == 0 ){
@@ -173,7 +175,7 @@ int mcu_pio_setaction(int port, void * ctl){
 	}
 
 	if ( port == 0 ){
-		if( _mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
+		if( mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
 			return -1;
 		}
 
@@ -181,7 +183,7 @@ int mcu_pio_setaction(int port, void * ctl){
 		m_pio0_local.handler.context = action->handler.context;
 		LPC_GPIOINT->IO0IntClr = -1; //clear pending interrupts
 	} else if ( port == 2 ){
-		if( _mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
+		if( mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
 			return -1;
 		}
 
@@ -196,27 +198,28 @@ int mcu_pio_setaction(int port, void * ctl){
 
 #ifdef LPCXX7X_8X
 	//This is the interrupt for GPIO0 and GPIO2
-	_mcu_cortexm_priv_enable_irq((void*)GPIO_IRQn);
-	_mcu_cortexm_set_irq_prio(GPIO_IRQn, action->prio);
+	mcu_cortexm_priv_enable_irq((void*)GPIO_IRQn);
+	mcu_cortexm_set_irq_prio(GPIO_IRQn, action->prio);
 #else
 	//This is the interrupt for GPIO0 and GPIO2 (shared with EINT3)
-	_mcu_cortexm_priv_enable_irq((void*)EINT3_IRQn);
-	_mcu_cortexm_set_irq_prio(EINT3_IRQn, action->prio);
+	mcu_cortexm_priv_enable_irq((void*)EINT3_IRQn);
+	mcu_cortexm_set_irq_prio(EINT3_IRQn, action->prio);
 #endif
 
 	return 0;
 }
 
 
-int mcu_pio_getinfo(int port, void * ctl){
+int mcu_pio_getinfo(const devfs_handle_t * handle, void * ctl){
 	//read the direction pin status
 	errno = ENOTSUP;
 	return -1;
 }
 
-int mcu_pio_setattr(int port, void * ctl){
+int mcu_pio_setattr(const devfs_handle_t * handle, void * ctl){
 	int i;
 	int mode;
+	int port = handle->port;
 	pio_attr_t * attr;
 	attr = ctl;
 #ifdef LPCXX7X_8X
@@ -259,7 +262,7 @@ int mcu_pio_setattr(int port, void * ctl){
 	for(i = 0; i < 32; i++){
 		if ( (1<<i) & (attr->o_pinmask) ){
 			regs_iocon = (u32*)LPC_IOCON + port*32 + i;
-			_mcu_core_set_pinsel_func(port, i, CORE_PERIPH_PIO, port); //set the pin to use GPIO
+			mcu_core_set_pinsel_func(port, i, CORE_PERIPH_PIO, port); //set the pin to use GPIO
 
 			if( attr->o_flags & PIO_FLAG_IS_OPENDRAIN ){
 				*regs_iocon |= (1<<10);
@@ -306,7 +309,7 @@ int mcu_pio_setattr(int port, void * ctl){
 	for(i = 0; i < 8*sizeof(pio_sample_t); i++){
 		if ( (1<<i) & attr->o_pinmask ){
 
-			_mcu_core_set_pinsel_func(port, i, CORE_PERIPH_PIO, 0); //set the pin to use GPIO
+			mcu_core_set_pinsel_func(port, i, CORE_PERIPH_PIO, 0); //set the pin to use GPIO
 
 			if( attr->o_flags & PIO_FLAG_IS_OPENDRAIN ){
 				regs_od[port] |= (1<<i);
@@ -325,24 +328,28 @@ int mcu_pio_setattr(int port, void * ctl){
 	return 0;
 }
 
-int mcu_pio_setmask(int port, void * ctl){
+int mcu_pio_setmask(const devfs_handle_t * handle, void * ctl){
+	int port = handle->port;
 	LPC_GPIO_Type * gpio_regs = (LPC_GPIO_Type *)LPC_GPIO0_BASE;
 	gpio_regs[port].SET=(int)ctl;
 	return 0;
 }
 
-int mcu_pio_clrmask(int port, void * ctl){
+int mcu_pio_clrmask(const devfs_handle_t * handle, void * ctl){
+	int port = handle->port;
 	LPC_GPIO_Type * gpio_regs = (LPC_GPIO_Type *)LPC_GPIO0_BASE;
 	gpio_regs[port].CLR=(int)ctl;
 	return 0;
 }
 
-int mcu_pio_get(int port, void * ctl){
+int mcu_pio_get(const devfs_handle_t * handle, void * ctl){
+	int port = handle->port;
 	LPC_GPIO_Type * gpio_regs = (LPC_GPIO_Type *)LPC_GPIO0_BASE;
 	return gpio_regs[port].PIN;
 }
 
-int mcu_pio_set(int port, void * ctl){
+int mcu_pio_set(const devfs_handle_t * handle, void * ctl){
+	int port = handle->port;
 	LPC_GPIO_Type * gpio_regs = (LPC_GPIO_Type *)LPC_GPIO0_BASE;
 	gpio_regs[port].PIN=(int)ctl;
 	return 0;
@@ -357,7 +364,7 @@ void exec_cancelled2(){
 }
 
 //On __lpc17xx The pio interrupts use the eint3 interrupt service routine -- this function should be called from there
-void _mcu_core_pio0_isr(){
+void mcu_core_pio0_isr(){
 	pio_event_t ev;
 
 	if ( LPC_GPIOINT->IntStatus & (1<<0) ){

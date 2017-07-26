@@ -24,37 +24,39 @@
 
 #include "mcu/debug.h"
 
-static u32 _mcu_core_get_reset_src();
+static u32 mcu_core_get_reset_src();
 static int enable_clock_out(int o_flags, int div);
-void _mcu_set_sleep_mode(int * level);
 static u32 mcu_core_reset_source = CORE_FLAG_IS_RESET_SOFTWARE;
 
-int mcu_core_setpinfunc(int port, void * arg){
+
+
+int mcu_core_setpinfunc(const devfs_handle_t * handle, void * arg){
 	core_pinfunc_t * argp = arg;
-	return _mcu_core_set_pinsel_func(argp->io.port,
+	return mcu_core_set_pinsel_func(argp->io.port,
 			argp->io.pin,
 			argp->periph_func,
 			argp->periph_port);
 }
 
-void _mcu_core_dev_power_on(int port){}
-void _mcu_core_dev_power_off(int port){}
-int _mcu_core_dev_powered_on(int port){ return 1; }
+void mcu_core_dev_power_on(const devfs_handle_t * handle){}
+void mcu_core_dev_power_off(const devfs_handle_t * handle){}
+int mcu_core_dev_is_powered(const devfs_handle_t * handle){ return 1; }
 
 
-int mcu_core_getinfo(int port, void * arg){
+int mcu_core_getinfo(const devfs_handle_t * handle, void * arg){
 	core_info_t * info = arg;
 	info->o_flags = 0;
 	info->freq = mcu_board_config.core_cpu_freq;
 	if( mcu_core_reset_source == CORE_FLAG_IS_RESET_SOFTWARE ){
-		mcu_core_reset_source = _mcu_core_get_reset_src();
+		mcu_core_reset_source = mcu_core_get_reset_src();
 	}
 
 	info->o_flags |= mcu_core_reset_source;
-	return _mcu_lpc_flash_get_serialno(info->serial_number);
+	return mcu_lpc_flash_get_serialno(info->serial_number);
 }
 
-int mcu_core_setattr(int port, void * arg){
+int mcu_core_setattr(const devfs_handle_t * handle, void * arg){
+	int port = handle->port;
 	core_attr_t * attr = arg;
 	u32 o_flags = attr->o_flags;
 
@@ -71,29 +73,29 @@ int mcu_core_setattr(int port, void * arg){
 	}
 
 	if( o_flags & CORE_FLAG_EXEC_SLEEP ){
-		mcu_core_sleep(port, (void*)CORE_SLEEP);
+		mcu_core_execsleep(port, (void*)CORE_SLEEP);
 	} else if( o_flags & CORE_FLAG_EXEC_DEEPSLEEP ){
-		mcu_core_sleep(port, (void*)CORE_DEEPSLEEP);
+		mcu_core_execsleep(port, (void*)CORE_DEEPSLEEP);
 	} else if( o_flags & CORE_FLAG_EXEC_DEEPSLEEP_STOP ){
-		mcu_core_sleep(port, (void*)CORE_DEEPSLEEP_STOP);
+		mcu_core_execsleep(port, (void*)CORE_DEEPSLEEP_STOP);
 	} else if( o_flags & CORE_FLAG_EXEC_DEEPSLEEP_STANDBY ){
-		mcu_core_sleep(port, (void*)CORE_DEEPSLEEP_STANDBY);
+		mcu_core_execsleep(port, (void*)CORE_DEEPSLEEP_STANDBY);
 	}
 
 
 	return 0;
 }
 
-int mcu_core_setaction(int port, void * arg){
+int mcu_core_setaction(const devfs_handle_t * handle, void * arg){
 	errno = ENOTSUP;
 	return -1;
 }
 
-int mcu_core_sleep(int port, void * arg){
+int mcu_core_execsleep(int port, void * arg){
 	int level;
 	level = (int)arg;
 
-	_mcu_set_sleep_mode(&level);
+	mcu_set_sleep_mode(&level);
 	if ( level < 0 ){
 		return level;
 	}
@@ -105,28 +107,28 @@ int mcu_core_sleep(int port, void * arg){
 
 int mcu_core_reset(int port, void * arg){
 	//delay first
-	_mcu_cortexm_delay_us(20*1000);
-	_mcu_cortexm_priv_reset(NULL);
+	mcu_cortexm_delay_us(20*1000);
+	mcu_cortexm_priv_reset(NULL);
 	//doesn't arrive here
 	return 0;
 }
 
 int mcu_core_invokebootloader(int port, void * arg){
-	_mcu_cortexm_delay_us(500*1000);
+	mcu_cortexm_delay_us(500*1000);
 	bootloader_api_t api;
-	_mcu_core_priv_bootloader_api(&api);
+	mcu_core_priv_bootloader_api(&api);
 	api.exec(0);
 	return 0;
 }
 
 
-int mcu_core_setclkout(int port, void * arg){
+int mcu_core_setclkout(const devfs_handle_t * handle, void * arg){
 	//core_clkout_t * clkout = arg;
 	//return
 	return 0;
 }
 
-int mcu_core_setclkdivide(int port, void * arg){
+int mcu_core_setclkdivide(const devfs_handle_t * handle, void * arg){
 
 #ifdef __lpc17xx
 	//the errata on the LPC17xx chips prevent this from working correctly
@@ -156,7 +158,7 @@ int mcu_core_set_pin_assignment(const void * pin_assignment, int count, int peri
 	for(i=0; i < count; i++){
 		const mcu_pin_t * pin = mcu_pin_at(pin_assignment, i);
 		if( mcu_is_port_valid(pin->port) ){
-			if ( _mcu_core_set_pinsel_func(pin->port, pin->pin, periph, periph_port) ){
+			if ( mcu_core_set_pinsel_func(pin->port, pin->pin, periph, periph_port) ){
 				return -1;
 			}
 		}
@@ -164,13 +166,13 @@ int mcu_core_set_pin_assignment(const void * pin_assignment, int count, int peri
 	return 0;
 }
 
-int mcu_core_getmcuboardconfig(int port, void * arg){
+int mcu_core_getmcuboardconfig(const devfs_handle_t * handle, void * arg){
 	memcpy(arg, &mcu_board_config, sizeof(mcu_board_config));
 	return 0;
 }
 
 
-void _mcu_set_sleep_mode(int * level){
+void mcu_set_sleep_mode(int * level){
 	SCB->SCR &= ~(1<<SCB_SCR_SLEEPDEEP_Pos);
 
 #if defined LPC_SC
@@ -196,7 +198,7 @@ void _mcu_set_sleep_mode(int * level){
 #endif
 }
 
-u32 _mcu_core_get_reset_src(){
+u32 mcu_core_get_reset_src(){
 	u32 src = CORE_FLAG_IS_RESET_SOFTWARE;
 	u32 src_reg;
 
@@ -246,16 +248,16 @@ int enable_clock_out(int o_flags, int div){
 	}
 #endif
 
-	_mcu_core_set_pinsel_func(1, 27, CORE_PERIPH_CORE, 0);
+	mcu_core_set_pinsel_func(1, 27, CORE_PERIPH_CORE, 0);
 	return 0;
 
 }
 
-void _mcu_core_set_nvic_priority(int irq, int prio){
+void mcu_core_set_nvic_priority(int irq, int prio){
 	NVIC_SetPriority((IRQn_Type)irq, prio);
 }
 
-void _mcu_core_priv_bootloader_api(void * args){
+void mcu_core_priv_bootloader_api(void * args){
 	void * ptr;
 	memcpy(&ptr, (void*)(36), sizeof(void*)); //get pointer to boot api
 	memcpy(args, ptr, sizeof(bootloader_api_t)); //copy boot api

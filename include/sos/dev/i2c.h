@@ -132,6 +132,7 @@ typedef enum {
 	I2C_FLAG_IS_SLAVE_PTR_16 /*! Use a 16-bit address pointer when accessing data (set automatically is size > 255) */ = (1<<13),
 	I2C_FLAG_RESET /*! Reset the state of the I2C */ = (1<<14),
 	I2C_FLAG_STRETCH_CLOCK = (1<<15),
+	I2C_FLAG_IS_DEFAULT_PIN_ASSIGNMENT = (1<<16)
 } i2c_flag_t;
 
 typedef union {

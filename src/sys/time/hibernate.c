@@ -43,7 +43,7 @@ static void priv_powerdown(void * args) MCU_PRIV_EXEC_CODE;
 static void priv_hibernate(void * args) MCU_PRIV_EXEC_CODE;
 
 void priv_powerdown(void * args){
-	mcu_core_sleep(0, (void*)CORE_DEEPSLEEP_STANDBY);
+	mcu_core_execsleep(0, (void*)CORE_DEEPSLEEP_STANDBY);
 }
 
 void priv_hibernate(void * args){
@@ -62,11 +62,11 @@ void priv_hibernate(void * args){
 	//The WDT only runs in hibernate on certain clock sources
 	mcu_wdt_priv_reset(NULL);
 
-	mcu_core_sleep(0, (void*)CORE_DEEPSLEEP);
+	mcu_core_execsleep(0, (void*)CORE_DEEPSLEEP);
 
 	//reinitialize the Clocks
-	_mcu_core_initclock(1); //Set the main clock
-	_mcu_core_setusbclock(mcu_board_config.core_osc_freq); //set the USB clock
+	mcu_core_initclock(1); //Set the main clock
+	mcu_core_setusbclock(mcu_board_config.core_osc_freq); //set the USB clock
 
 	//Set WDT to previous value (it only runs in deep sleep with certain clock sources)
 	mcu_wdt_priv_reset(NULL);

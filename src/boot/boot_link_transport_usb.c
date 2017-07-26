@@ -14,6 +14,7 @@
 #include "mcu/cortexm.h"
 #include "mcu/core.h"
 #include "mcu/usb.h"
+#include "mcu/pio.h"
 #include "mcu/debug.h"
 #include "mcu/boot_debug.h"
 
@@ -28,26 +29,62 @@ static char rd_buffer[BUF_SIZE];
 static int rd_tail;
 static int rd_head;
 
-link_transport_phy_t boot_link_transport_usb_open(const char * name, usbd_control_t * control, const usb_attr_t * usb_attr){
+link_transport_phy_t boot_link_transport_usb_open(const char * name,
+		usbd_control_t * context,
+		const usbd_control_constants_t * constants,
+		const usb_attr_t * usb_attr,
+		mcu_pin_t usb_up_pin,
+		int usb_up_active_high){
+
+	pio_attr_t pio_attr;
+	devfs_handle_t pio_handle;
+	pio_handle.port = usb_up_pin.port;
+
+	dstr("CONFIGURE UP PIN\n");
+
+
+	pio_attr.o_pinmask = (1<<usb_up_pin.pin);
+
+	if( usb_up_active_high ){
+		mcu_pio_clrmask(&pio_handle, (void*)(pio_attr.o_pinmask));
+	} else {
+		mcu_pio_setmask(&pio_handle, (void*)(pio_attr.o_pinmask));
+	}
+
+	mcu_pio_setmask(&pio_handle, (void*)(pio_attr.o_pinmask));
+	pio_attr.o_flags = PIO_FLAG_SET_OUTPUT | PIO_FLAG_IS_DIRONLY;
+	mcu_pio_setattr(&pio_handle, &pio_attr);
+
+	memset(context, 0, sizeof(usbd_control_t));
+	context->constants = constants;
+	context->handle = &(constants->handle);
 
 	dstr("OPEN USB\n");
 	//open USB
-	_mcu_cortexm_delay_ms(250);
+	mcu_cortexm_delay_ms(250);
 	mcu_usb_open(&usb_dev);
 
+
 	dstr("SET USB ATTR\n");
-	if( mcu_usb_setattr(usb_dev.port, (void*)usb_attr) < 0 ){
+	if( mcu_usb_setattr(&usb_dev, (void*)usb_attr) < 0 ){
 		dstr("FAILED TO SET USB ATTR\n");
 	}
 
 	dstr("USB ATTR SET\n");
 	//initialize USB device
-	usbd_control_priv_init(control);
+	usbd_control_priv_init(context);
 	dstr("USB CONNECT\n");
 
 
 	rd_tail = 0;
 	rd_head = 0;
+
+	if( usb_up_active_high ){
+		mcu_pio_setmask(&pio_handle, (void*)(pio_attr.o_pinmask));
+	} else {
+		mcu_pio_clrmask(&pio_handle, (void*)(pio_attr.o_pinmask));
+	}
+
 	return 0;
 }
 
@@ -116,7 +153,7 @@ int boot_link_transport_usb_close(link_transport_phy_t * handle){
 void boot_link_transport_usb_wait(int msec){
 	int i;
 	for(i = 0; i < msec; i++){
-		_mcu_cortexm_delay_us(1000);
+		mcu_cortexm_delay_us(1000);
 	}
 }
 

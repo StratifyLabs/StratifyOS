@@ -23,12 +23,12 @@
 #include "mcu/core.h"
 
 
-extern void _mcu_set_sleep_mode(int * level);
+extern void mcu_set_sleep_mode(int * level);
 #ifdef __lpc17xx__
-extern LPC_GPDMACH_Type * _mcu_dma_get_channel(uint32_t chan);
+extern LPC_GPDMACH_Type * mcu_dma_get_channel(uint32_t chan);
 #endif
 
-int _mcu_core_sleep(core_sleep_t level){
+int mcu_core_sleep(core_sleep_t level){
 
 #ifdef __lpc17xx__
 	int tmp;
@@ -38,7 +38,7 @@ int _mcu_core_sleep(core_sleep_t level){
 	//Wait for any DMA transactions on RAM to complete (AHB transactions are OK in idle but not deep sleep)
 	for(tmp = 0; tmp < DMA_MAX_CHANNEL; tmp++){
 		if ( LPC_GPDMA->EnbldChns & (1<<tmp) ){
-			channel_regs = _mcu_dma_get_channel(tmp);
+			channel_regs = mcu_dma_get_channel(tmp);
 			if ( level >= CORE_DEEPSLEEP ){
 				if ( (channel_regs->CDestAddr <= 0x10001FFF) ||
 						(channel_regs->CSrcAddr <= 0x10001FFF) ){
@@ -58,7 +58,7 @@ int _mcu_core_sleep(core_sleep_t level){
 	}
 #endif
 
-	mcu_core_privcall((core_privcall_t)_mcu_set_sleep_mode, &level);
+	mcu_core_privcall((core_privcall_t)mcu_set_sleep_mode, &level);
 	if ( level < 0 ){
 		return level;
 	}

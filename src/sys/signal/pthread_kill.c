@@ -59,7 +59,7 @@ void signal_priv_check_stack(void * args){
 		sp = (uint32_t)task_table[tid].sp;
 	} else {
 		//read the current stack pointer
-		_mcu_cortexm_priv_get_thread_stack_ptr(&sp);
+		mcu_cortexm_priv_get_thread_stack_ptr(&sp);
 	}
 
 	if( (sp - task_interrupt_stacksize() - (8*SCHED_DEFAULT_STACKGUARD_SIZE)) < //stackguard * 8 gives the handler a little bit of memory

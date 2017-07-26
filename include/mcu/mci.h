@@ -23,8 +23,8 @@
  * \ingroup DEV
  */
 
-#ifndef _mcu_mci_H_
-#define _mcu_mci_H_
+#ifndef mcu_mci_H_
+#define mcu_mci_H_
 
 
 #include "sos/dev/mci.h"
@@ -60,15 +60,15 @@ int mcu_mci_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_PRIV_
  */
 int mcu_mci_close(const devfs_handle_t * cfg) MCU_PRIV_CODE;
 
-int mcu_mci_getinfo(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_mci_setattr(int port, void * ctl) MCU_PRIV_CODE;
-int mcu_mci_setaction(int port, void * ctl) MCU_PRIV_CODE;
+int mcu_mci_getinfo(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_mci_setattr(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_mci_setaction(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
 
 #ifdef __cplusplus
 }
 #endif
 
 
-#endif /* _mcu_mci_H_ */
+#endif /* mcu_mci_H_ */
 
 /*! @} */

@@ -48,52 +48,33 @@ extern "C" {
 #endif
 
 
-/*! \details This function sets the main clock speed based on
- * the desired speed (fclk) and the given oscillator frequency (fosc).  This function rounds the target
- * frequency to the closest value achievable given any hardware limitations.
- *
- * \note This function is the de facto initialization routine for HWPL.  It should
- * be called before any other HWPL functions are called.
- *
- */
-void _mcu_core_setclock(int fclk /*! The target clock frequency */,
-		int fosc /*! The oscillator frequency (zero to use the internal oscillator) */ );
+int mcu_core_open(const devfs_handle_t * cfg) MCU_PRIV_CODE;
+int mcu_core_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_PRIV_CODE;
+int mcu_core_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_PRIV_CODE;
+int mcu_core_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
+int mcu_core_close(const devfs_handle_t * cfg) MCU_PRIV_CODE;
 
+int mcu_core_getinfo(const devfs_handle_t * handle, void * arg) MCU_PRIV_CODE;
+int mcu_core_setattr(const devfs_handle_t * handle, void * arg) MCU_PRIV_CODE;
+int mcu_core_setaction(const devfs_handle_t * handle, void * arg) MCU_PRIV_CODE;
+int mcu_core_setpinfunc(const devfs_handle_t * handle, void * arg) MCU_PRIV_CODE;
+int mcu_core_setclkout(const devfs_handle_t * handle, void * arg) MCU_PRIV_CODE;
+int mcu_core_setclkdivide(const devfs_handle_t * handle, void * arg) MCU_PRIV_CODE;
+int mcu_core_getmcuboardconfig(const devfs_handle_t * handle, void * arg) MCU_PRIV_CODE;
 
-/*! \brief Init the clock.
- *
- * \details This function inits the clock.  It assumes the following variables are
- * linked externally:
- * \code
- * extern const int mcu_core_osc_freq; //oscillator freq (0 if not present)
- * extern const int mcu_board_config.core_cpu_freq; //max CPU freq (before device)
- * extern const int mcu_board_config.core_periph_freq; //constant periph clock freq
- * \endcode
- * @param div Divider value from max (1,2,4,8)
- * @return Zero on success
- *
- */
-int _mcu_core_initclock(int div);
+//below are undocumented calls that can be made by BSPs but aren't accessible to applications
+static inline int mcu_core_getclock() MCU_ALWAYS_INLINE;
+int mcu_core_getclock(){ return mcu_board_config.core_cpu_freq; }
+void mcu_core_priv_bootloader_api(void * args) MCU_PRIV_CODE;
+void mcu_core_set_nvic_priority(int irq, int prio) MCU_PRIV_CODE;
+int mcu_core_set_pin_assignment(const void * pin_assignement, int count, int periph, int periph_port);
+void mcu_core_setclock(int fclk, int fosc);
+int mcu_core_initclock(int div);
+void mcu_core_setclockinternal(int fclk) MCU_PRIV_CODE;
+void mcu_core_setclock_main_12mhz_72mhz() MCU_PRIV_CODE;
+int mcu_core_setusbclock(int fosc /*! The oscillator frequency */) MCU_PRIV_CODE;
+int mcu_core_invokebootloader(int port, void * arg) MCU_PRIV_CODE;
 
-
-void _mcu_core_setclockinternal(int fclk) MCU_PRIV_CODE;
-
-//int mcu_core_setclock(int port, void * arg);
-
-/*! \details This sets the CPU block to 72Mhz assuming
- * a 12MHz clock is connected.
- */
-void _mcu_core_setclock_main_12mhz_72mhz() MCU_PRIV_CODE;
-
-/*! \details This function sets the USB clock speed to the required
- * value for USB operation on the device.  The target frequency is defined
- * by the MCU (usually 48MHz).  Most MCUs have limitations on what
- * oscillator frequencies are allowed to achieve the target frequency.
- *
- * \return Zero on success
- *
- */
-int _mcu_core_setusbclock(int fosc /*! The oscillator frequency */) MCU_PRIV_CODE;
 
 typedef enum {
 	CORE_SLEEP /*! Sleep mode */,
@@ -102,61 +83,13 @@ typedef enum {
 	CORE_DEEPSLEEP_STANDBY /*! Turn the device off (lose SRAM) */
 } core_sleep_t;
 
-/*! \details This function puts the MCU in sleep mode.
- */
-int _mcu_core_sleep(core_sleep_t level /*! The sleep type */);
 
-
-/*! \details This function writes the pin function select value.  When a pin can
- * have multiple functions (such as GPIO or UART RX), this function selects
- * what function the pin is to have.  This function is portable; however
- * the arguments of the function will invariably be different between
- * MCU architectures.
- *
- *
- * \note  The respective periph_open()
- * function will configure the correct function for the pin without the need to call
- * core_set_pinsel_func().
- *
- */
-int _mcu_core_set_pinsel_func(int gpio_port /*! The GPIO port number */,
-		int pin /*! The GPIO pin number */,
-		core_periph_t function /*! The peripheral to use */,
-		int periph_port /*! The peripheral port to use (e.g. 1 for UART1) */) MCU_PRIV_CODE;
-
-int mcu_core_setpinfunc(int port, void * arg) MCU_PRIV_CODE;
-
-void _mcu_core_getserialno(mcu_sn_t * serialno) MCU_PRIV_CODE;
-
-
-#ifndef __link
-static inline int _mcu_core_getclock() MCU_ALWAYS_INLINE;
-int _mcu_core_getclock(){ return mcu_board_config.core_cpu_freq; }
-#endif
-
-void _mcu_core_priv_bootloader_api(void * args) MCU_PRIV_CODE;
-
-
-int mcu_core_open(const devfs_handle_t * cfg) MCU_PRIV_CODE;
-int mcu_core_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_PRIV_CODE;
-int mcu_core_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_PRIV_CODE;
-int mcu_core_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
-int mcu_core_close(const devfs_handle_t * cfg) MCU_PRIV_CODE;
-
-int mcu_core_getinfo(int port, void * arg) MCU_PRIV_CODE;
-int mcu_core_setattr(int port, void * arg) MCU_PRIV_CODE;
-int mcu_core_setaction(int port, void * arg) MCU_PRIV_CODE;
-int mcu_core_setpinfunc(int port, void * arg) MCU_PRIV_CODE;
-int mcu_core_sleep(int port, void * arg) MCU_PRIV_CODE;
+int mcu_core_sleep(core_sleep_t level);
+void mcu_set_sleep_mode(int * level);
+int mcu_core_execsleep(int port, void * arg) MCU_PRIV_CODE;
 int mcu_core_reset(int port, void * arg) MCU_PRIV_CODE;
-int mcu_core_invokebootloader(int port, void * arg) MCU_PRIV_CODE;
-int mcu_core_setclkout(int port, void * arg) MCU_PRIV_CODE;
-int mcu_core_setclkdivide(int port, void * arg) MCU_PRIV_CODE;
-int mcu_core_getmcuboardconfig(int port, void * arg) MCU_PRIV_CODE;
-void _mcu_core_set_nvic_priority(int irq, int prio) MCU_PRIV_CODE;
-
-int mcu_core_set_pin_assignment(const void * pin_assignement, int count, int periph, int periph_port);
-
+int mcu_core_set_pinsel_func(int gpio_port, int pin, core_periph_t function, int periph_port) MCU_PRIV_CODE;
+void mcu_core_getserialno(mcu_sn_t * serialno) MCU_PRIV_CODE;
 
 
 

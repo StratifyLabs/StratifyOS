@@ -80,7 +80,7 @@ typedef struct {
 
 
 
-#define DEVFS_HANDLE(device_name, periph_name, handle_port, handle_config, handle_state, mode_value, uid_value, device_type) { \
+#define DEVFS_DEVICE(device_name, periph_name, handle_port, handle_config, handle_state, mode_value, uid_value, device_type) { \
 		.name = device_name, \
 		DEVFS_MODE(mode_value, uid_value, device_type), \
 		DEVFS_DRIVER(periph_name), \

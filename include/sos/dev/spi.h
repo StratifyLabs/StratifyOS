@@ -66,7 +66,8 @@ typedef enum {
 	SPI_FLAG_SET_MASTER = (1<<7) /*! SPI Master */,
 	SPI_FLAG_SET_SLAVE = (1<<8) /*! SPI Slave */,
 	SPI_FLAG_FULL_DUPLEX = (1<<9) /*! Full duplex mode (data is written first then read into the same buffer) */,
-	SPI_FLAG_HALF_DUPLEX = (1<<10) /*! Half duplex mode (default mode) */
+	SPI_FLAG_HALF_DUPLEX = (1<<10) /*! Half duplex mode (default mode) */,
+	SPI_FLAG_IS_DEFAULT_PIN_ASSIGNMENT /*! Use default pin assignment (if available) */ = (1<<11)
 } spi_flag_t;
 
 typedef struct MCU_PACK {

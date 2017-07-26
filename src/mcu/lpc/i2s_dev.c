@@ -32,7 +32,7 @@
 #define WRITE_OP 0
 #define READ_OP 1
 
-//__IO uint32_t * _mcu_get_iocon_regs(int port, int pin);
+//__IO uint32_t * mcu_get_iocon_regs(const devfs_handle_t * handle, int pin);
 
 static LPC_I2S_Type * const i2s_regs_table[MCU_I2S_PORTS] = MCU_I2S_REGS;
 static u8 const i2s_irqs[MCU_I2S_PORTS] = MCU_I2S_IRQS;
@@ -65,14 +65,15 @@ i2s_local_t i2s_local[MCU_I2S_PORTS] MCU_SYS_MEM;
 static void exec_callback(i2s_transfer_t * transfer, u32 o_events);
 
 
-void _mcu_i2s_dev_power_on(int port){
+void mcu_i2s_dev_power_on(const devfs_handle_t * handle){
+	int port = handle->port;
 	if ( i2s_local[port].ref_count == 0 ){
 		switch(port){
 		case 0:
-			_mcu_lpc_core_enable_pwr(PCI2S);
+			mcu_lpc_core_enable_pwr(PCI2S);
 			break;
 		}
-		_mcu_cortexm_priv_enable_irq((void*)(u32)(i2s_irqs[port]));
+		mcu_cortexm_priv_enable_irq((void*)(u32)(i2s_irqs[port]));
 		i2s_local[port].rx.handler.callback = NULL;
 		i2s_local[port].tx.handler.callback = NULL;
 		i2s_local[port].rx.bufp = 0;
@@ -81,13 +82,14 @@ void _mcu_i2s_dev_power_on(int port){
 	i2s_local[port].ref_count++;
 }
 
-void _mcu_i2s_dev_power_off(int port){
+void mcu_i2s_dev_power_off(const devfs_handle_t * handle){
+	int port = handle->port;
 	if ( i2s_local[port].ref_count > 0 ){
 		if ( i2s_local[port].ref_count == 1 ){
-			_mcu_cortexm_priv_disable_irq((void*)(u32)(i2s_irqs[port]));
+			mcu_cortexm_priv_disable_irq((void*)(u32)(i2s_irqs[port]));
 			switch(port){
 			case 0:
-				_mcu_lpc_core_disable_pwr(PCI2S);
+				mcu_lpc_core_disable_pwr(PCI2S);
 				break;
 			}
 		}
@@ -95,16 +97,19 @@ void _mcu_i2s_dev_power_off(int port){
 	}
 }
 
-int _mcu_i2s_dev_powered_on(int port){
+int mcu_i2s_dev_is_powered(const devfs_handle_t * handle){
+	int port = handle->port;
 	return ( i2s_local[port].ref_count != 0 );
 }
 
-int mcu_i2s_getinfo(int port, void * ctl){
+int mcu_i2s_getinfo(const devfs_handle_t * handle, void * ctl){
+	int port = handle->port;
 	memcpy(ctl, &(i2s_local_attr[port]), sizeof(i2s_attr_t));
 	return 0;
 }
 
-int mcu_i2s_setattr(int port, void * ctl){
+int mcu_i2s_setattr(const devfs_handle_t * handle, void * ctl){
+	int port = handle->port;
 	LPC_I2S_Type * i2s_regs = i2s_get_regs(port);
 	i2s_attr_t * attr = ctl;
 	u32 audio_reg = (1<<4); //start by holding the i2s in reset
@@ -180,7 +185,7 @@ int mcu_i2s_setattr(int port, void * ctl){
 	s32 err;
 	s32 tmp;
 
-	mclk = bitrate*attr->mclk_mult;
+	mclk = bitrate*attr->mck_mult;
 	core_clk = mcu_board_config.core_periph_freq;
 
 	min_x = 1;
@@ -204,7 +209,7 @@ int mcu_i2s_setattr(int port, void * ctl){
 	i2s_regs->TXRATE = min_y | (min_x<<8);
 
 	//now set bit clock which is TXRATE / (TX_BITRATE+1) up to 64
-	i2s_regs->TXBITRATE = attr->mclk_mult-1;
+	i2s_regs->TXBITRATE = attr->mck_mult-1;
 
 
 	i2s_regs->IRQ = (4<<8)|(4<<16); //set RX and TX depth triggers
@@ -215,14 +220,15 @@ int mcu_i2s_setattr(int port, void * ctl){
 
 
 	//later add support for DMA
-	//_mcu_dma_init(0);
+	//mcu_dma_init(0);
 
 
 	return 0;
 }
 
-int mcu_i2s_setaction(int port, void * ctl){
+int mcu_i2s_setaction(const devfs_handle_t * handle, void * ctl){
 	mcu_action_t * action = (mcu_action_t*)ctl;
+	int port = handle->port;
 
 
 	if( action->o_events & MCU_EVENT_FLAG_DATA_READY ){
@@ -231,7 +237,7 @@ int mcu_i2s_setaction(int port, void * ctl){
 			exec_callback(&i2s_local[port].rx, MCU_EVENT_FLAG_CANCELED);
 		}
 
-		if( _mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
+		if( mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
 			return -1;
 		}
 
@@ -246,7 +252,7 @@ int mcu_i2s_setaction(int port, void * ctl){
 			exec_callback(&i2s_local[port].tx, MCU_EVENT_FLAG_CANCELED);
 		}
 
-		if( _mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
+		if( mcu_cortexm_priv_validate_callback(action->handler.callback) < 0 ){
 			return -1;
 		}
 
@@ -255,20 +261,22 @@ int mcu_i2s_setaction(int port, void * ctl){
 
 	}
 
-	_mcu_cortexm_set_irq_prio(i2s_irqs[port], action->prio);
+	mcu_cortexm_set_irq_prio(i2s_irqs[port], action->prio);
 
 
 	return 0;
 }
 
-int mcu_i2s_mute(int port, void * ctl){
+int mcu_i2s_mute(const devfs_handle_t * handle, void * ctl){
+	int port = handle->port;
 	LPC_I2S_Type * i2s_regs = i2s_get_regs(port);
 	i2s_regs->DAO |= (1<<15);
 	return 0;
 
 }
 
-int mcu_i2s_unmute(int port, void * ctl){
+int mcu_i2s_unmute(const devfs_handle_t * handle, void * ctl){
+	int port = handle->port;
 	LPC_I2S_Type * i2s_regs = i2s_get_regs(port);
 	i2s_regs->DAO &= ~(1<<15);
 	return 0;
@@ -306,7 +314,7 @@ u8 write_tx_data(int port){
 	return level;
 }
 
-int _mcu_i2s_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
+int mcu_i2s_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	int port = DEVFS_GET_PORT(cfg);
 
 	//Grab the registers
@@ -332,7 +340,7 @@ int _mcu_i2s_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	i2s_local[port].tx.len = wop->nbyte/4;
 
 	//Check the local buffer for bytes that are immediately available
-	if( _mcu_cortexm_priv_validate_callback(wop->handler.callback) < 0 ){
+	if( mcu_cortexm_priv_validate_callback(wop->handler.callback) < 0 ){
 		return -1;
 	}
 
@@ -345,7 +353,7 @@ int _mcu_i2s_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 }
 
 
-int _mcu_i2s_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
+int mcu_i2s_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	int port = DEVFS_GET_PORT(cfg);
 	int nsamples;
 	int len;
@@ -393,7 +401,7 @@ int _mcu_i2s_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 
 	} else if( len != nsamples ){
 		//for blocking operations wait until the entire buffer is read then call the callback
-		if( _mcu_cortexm_priv_validate_callback(rop->handler.callback) < 0 ){
+		if( mcu_cortexm_priv_validate_callback(rop->handler.callback) < 0 ){
 			return -1;
 		}
 
@@ -408,7 +416,7 @@ int _mcu_i2s_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 }
 
 
-void _mcu_core_i2s0_isr(){
+void mcu_core_i2s0_isr(){
 	int port = 0;
 	LPC_I2S_Type * i2s_regs = i2s_get_regs(port);
 	if( i2s_local[port].rx.bufp ){

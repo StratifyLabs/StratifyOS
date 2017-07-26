@@ -87,7 +87,12 @@ extern const sos_link_transport_usb_dual_vcp_configuration_descriptor_t sos_link
 extern const struct sos_link_transport_usb_string_t sos_link_transport_usb_dual_vcp_string_desc MCU_WEAK;
 extern const usbd_control_constants_t sos_link_transport_usb_dual_vcp_constants;
 
-link_transport_phy_t sos_link_transport_usb_open(const char * name, usbd_control_t * context, const usb_attr_t * usb_attr);
+link_transport_phy_t sos_link_transport_usb_open(const char * name,
+		usbd_control_t * context,
+		const usbd_control_constants_t * constants,
+		const usb_attr_t * usb_attr,
+		mcu_pin_t usb_up_pin,
+		int usb_up_active_high);
 int sos_link_transport_usb_read(link_transport_phy_t, void * buf, int nbyte);
 int sos_link_transport_usb_write(link_transport_phy_t, const void * buf, int nbyte);
 int sos_link_transport_usb_close(link_transport_phy_t * handle);
@@ -97,7 +102,7 @@ void sos_link_transport_usb_flush(link_transport_phy_t handle);
 int sos_link_usbd_cdc_event_handler(void * context, mcu_event_t * event);
 
 //provided for the link device fifo
-//DEVFS_HANDLE("link-phy-usb", 0, &sos_link_transport_usb_fifo_cfg, &sos_link_transport_usb_fifo_state, 0666, USER_ROOT, GROUP_ROOT),
+//DEVFS_DEVICE("link-phy-usb", 0, &sos_link_transport_usb_fifo_cfg, &sos_link_transport_usb_fifo_state, 0666, USER_ROOT, GROUP_ROOT),
 extern const usbfifo_config_t sos_link_transport_usb_fifo_cfg;
 extern usbfifo_state_t sos_link_transport_usb_fifo_state MCU_SYS_MEM;
 
@@ -107,7 +112,12 @@ extern const sos_link_transport_usb_configuration_descriptor_t sos_link_transpor
 extern const struct sos_link_transport_usb_string_t sos_link_transport_usb_string_desc MCU_WEAK;
 extern const usbd_control_constants_t sos_link_transport_usb_constants;
 
-link_transport_phy_t boot_link_transport_usb_open(const char * name, usbd_control_t * context, const usb_attr_t * usb_attr);
+link_transport_phy_t boot_link_transport_usb_open(const char * name,
+		usbd_control_t * context,
+		const usbd_control_constants_t * constants,
+		const usb_attr_t * usb_attr,
+		mcu_pin_t usb_up_pin,
+		int usb_up_active_high);
 int boot_link_transport_usb_read(link_transport_phy_t, void * buf, int nbyte);
 int boot_link_transport_usb_write(link_transport_phy_t, const void * buf, int nbyte);
 int boot_link_transport_usb_close(link_transport_phy_t * handle);

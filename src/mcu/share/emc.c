@@ -22,12 +22,12 @@
 
 
 //These functions are device specific
-extern void _mcu_emc_dev_power_on(int port);
-extern void _mcu_emc_dev_power_off(int port);
-extern int _mcu_emc_dev_powered_on(int port);
+extern void mcu_emc_dev_power_on(const devfs_handle_t * handle);
+extern void mcu_emc_dev_power_off(const devfs_handle_t * handle);
+extern int mcu_emc_dev_is_powered(const devfs_handle_t * handle);
 
 
-int (* const emc_ioctl_func_table[I_MCU_TOTAL + I_EMC_TOTAL])(int, void*) = {
+int (* const emc_ioctl_func_table[I_MCU_TOTAL + I_EMC_TOTAL])(const devfs_handle_t*, void*) = {
 		mcu_emc_getinfo,
 		mcu_emc_setattr,
 		mcu_emc_setaction
@@ -35,15 +35,15 @@ int (* const emc_ioctl_func_table[I_MCU_TOTAL + I_EMC_TOTAL])(int, void*) = {
 
 int mcu_emc_open(const devfs_handle_t * cfg){
 	return mcu_open(cfg,
-			_mcu_emc_dev_powered_on,
-			_mcu_emc_dev_power_on);
+			mcu_emc_dev_is_powered,
+			mcu_emc_dev_power_on);
 }
 
 int mcu_emc_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 	return mcu_ioctl(cfg,
 			request,
 			ctl,
-			_mcu_emc_dev_powered_on,
+			mcu_emc_dev_is_powered,
 			emc_ioctl_func_table,
 			I_MCU_TOTAL + I_EMC_TOTAL);
 }
@@ -59,7 +59,7 @@ int mcu_emc_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 }
 
 int mcu_emc_close(const devfs_handle_t * cfg){
-	return mcu_close(cfg, _mcu_emc_dev_powered_on, _mcu_emc_dev_power_off);
+	return mcu_close(cfg, mcu_emc_dev_is_powered, mcu_emc_dev_power_off);
 }
 
 

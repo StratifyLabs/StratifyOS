@@ -22,7 +22,7 @@
 #include "mcu/arch.h"
 #include "mcu/core.h"
 
-int _mcu_lpc_flash_write_page(int page, void * addr, const void * src, int size){
+int mcu_lpc_flash_write_page(int page, void * addr, const void * src, int size){
 	iap_result_t result;
 	iap_op_t cmd;
 
@@ -44,7 +44,7 @@ int _mcu_lpc_flash_write_page(int page, void * addr, const void * src, int size)
 	cmd.sector.start = (unsigned long)page;
 	cmd.sector.end = (unsigned long)page;
 	//iap_entry_wrapper, &args);
-	_mcu_iap_entry((unsigned*)&cmd, (unsigned*)&result);
+	mcu_iap_entry((unsigned*)&cmd, (unsigned*)&result);
 
 	if (result.status != IAP_RESULT_CMD_SUCCESS){
 		return -1;
@@ -55,8 +55,8 @@ int _mcu_lpc_flash_write_page(int page, void * addr, const void * src, int size)
 	cmd.mem.src = (unsigned long)src;
 	cmd.mem.dest = (unsigned long)addr;
 	cmd.mem.size = (unsigned long)size;
-	cmd.mem.cpu_freq = _mcu_core_getclock() / 1000;
-	_mcu_iap_entry((unsigned*)&cmd, (unsigned*)&result);
+	cmd.mem.cpu_freq = mcu_core_getclock() / 1000;
+	mcu_iap_entry((unsigned*)&cmd, (unsigned*)&result);
 
 	if (result.status != IAP_RESULT_CMD_SUCCESS){
 		return -1;
@@ -64,29 +64,29 @@ int _mcu_lpc_flash_write_page(int page, void * addr, const void * src, int size)
 	return 0;
 }
 
-int _mcu_lpc_flash_erase_page(int page){
+int mcu_lpc_flash_erase_page(int page){
 	iap_result_t result;
 	iap_op_t cmd;
 	//prepare the sector
 	cmd.sector.cmd = IAP_CMD_PREPARE_SECTOR;
 	cmd.sector.start = page;
 	cmd.sector.end = page;
-	cmd.sector.cpu_freq = _mcu_core_getclock() / 1000;
-	_mcu_iap_entry((unsigned*)&cmd, (unsigned*)&result);
+	cmd.sector.cpu_freq = mcu_core_getclock() / 1000;
+	mcu_iap_entry((unsigned*)&cmd, (unsigned*)&result);
 	if (result.status != IAP_RESULT_CMD_SUCCESS){
 		return -1;
 	}
 
 	//Erase the sector (or page)
 	cmd.sector.cmd = IAP_CMD_ERASE_SECTOR;
-	_mcu_iap_entry((unsigned*)&cmd, (unsigned*)&result);
+	mcu_iap_entry((unsigned*)&cmd, (unsigned*)&result);
 	if (result.status != IAP_RESULT_CMD_SUCCESS){
 		return -1;
 	}
 	return 0;
 }
 
-int _mcu_lpc_flash_get_serialno(u32 * dest){
+int mcu_lpc_flash_get_serialno(u32 * dest){
 	iap_result_t result;
 	iap_op_t cmd;
 	//prepare the sector
@@ -95,7 +95,7 @@ int _mcu_lpc_flash_get_serialno(u32 * dest){
 	cmd.sector.end = 0;
 	cmd.sector.cpu_freq = 0;
 	memset(result.dummy, 0, 4*sizeof(int));
-	_mcu_iap_entry((unsigned*)&cmd, (unsigned*)&result);
+	mcu_iap_entry((unsigned*)&cmd, (unsigned*)&result);
 	if (result.status != IAP_RESULT_CMD_SUCCESS){
 		return -1;
 	}
@@ -103,7 +103,7 @@ int _mcu_lpc_flash_get_serialno(u32 * dest){
 	return 0;
 }
 
-void _mcu_iap_entry(unsigned param_tab[], unsigned result_tab[]){
+void mcu_iap_entry(unsigned param_tab[], unsigned result_tab[]){
     void (*iap)(unsigned [],unsigned []);
     iap = (void (*)(unsigned [],unsigned []))IAP_ADDRESS;
     iap(param_tab,result_tab);
