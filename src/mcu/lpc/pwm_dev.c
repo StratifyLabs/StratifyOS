@@ -106,9 +106,9 @@ int mcu_pwm_dev_is_powered(const devfs_handle_t * handle){
 
 int mcu_pwm_getinfo(const devfs_handle_t * handle, void * ctl){
 	pwm_info_t * info = ctl;
-	int port = handle->port;
 
 #ifdef __lpc17xx
+	int port = handle->port;
 	LPC_PWM_Type * regs = pwm_regs_table[port];
 	if( regs == 0 ){
 		errno = ENODEV;

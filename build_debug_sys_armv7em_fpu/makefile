@@ -64,24 +64,24 @@ endif
 # Add inputs and outputs from these tool invocations to the build variables 
 
 # All Target
-all: libStratifyOS.a
+all: libsos_sys_debug.a
 
 # Tool invocations
-libStratifyOS.a: $(OBJS) $(USER_OBJS)
+libsos_sys_debug.a: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: Cross GCC Archiver'
-	arm-none-eabi-ar -r  stratify_sys_debug.a $(OBJS) $(USER_OBJS) $(LIBS)
+	arm-none-eabi-ar -r  libsos_sys_debug.a $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 	$(MAKE) --no-print-directory post-build
 
 # Other Targets
 clean:
-	-$(RM) $(CC_DEPS)$(C++_DEPS)$(OBJS)$(C_UPPER_DEPS)$(CXX_DEPS)$(ARCHIVES)$(C_DEPS)$(CPP_DEPS) libStratifyOS.a
+	-$(RM) $(CC_DEPS)$(C++_DEPS)$(OBJS)$(C_UPPER_DEPS)$(CXX_DEPS)$(ARCHIVES)$(C_DEPS)$(CPP_DEPS) libsos_sys_debug.a
 	-@echo ' '
 
 post-build:
-	-/Users/tgil/git/StratifyOS/script/post-process.sh /Applications/StratifyLabs-SDK/Tools/gcc arm-none-eabi stratify sys armv7e-m fpu/fpv5-sp-d16 _debug
+	-/Users/tgil/git/StratifyOS/script/post-process.sh /Applications/StratifyLabs-SDK/Tools/gcc arm-none-eabi sos sys armv7e-m fpu/fpv5-sp-d16 _debug
 	-@echo ' '
 
 .PHONY: all clean dependents post-build
