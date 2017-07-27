@@ -71,6 +71,7 @@ typedef struct MCU_PACK {
 	u32 o_events /*! Events supported by this driver */;
 	u8 resolution /*! The number of bits supported by the ADC */;
 	u32 freq /*! The maximum frequency */;
+	u32 maximum /*! The maximum value returned by the ADC */;
 } adc_info_t;
 
 

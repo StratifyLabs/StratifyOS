@@ -176,8 +176,7 @@ int mcu_adc_setattr(const devfs_handle_t * handle, void * ctl){
 	}
 
 	if ( attr->freq == 0 ){
-		errno = EINVAL;
-		return -1 - offsetof(adc_attr_t, freq);
+		freq = ADC_MAX_FREQ;
 	}
 
 	freq = attr->freq;
