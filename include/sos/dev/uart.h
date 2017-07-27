@@ -106,7 +106,6 @@ typedef enum {
 	UART_FLAG_IS_PARITY_NONE /*! Indicates no parity */ = (1<<4),
 	UART_FLAG_IS_PARITY_ODD /*! Indicates odd parity */ = (1<<5),
 	UART_FLAG_IS_PARITY_EVEN /*! Indicates even parity */ = (1<<6),
-	UART_FLAG_IS_DEFAULT_PIN_ASSIGNMENT /*! Use default pin assignment (if available) */ = (1<<7)
 } uart_flag_t;
 
 

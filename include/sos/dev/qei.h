@@ -65,7 +65,6 @@ typedef enum {
 	QEI_FLAG_IS_RESET_VELOCITY /*! Reset the velocity */ = (1<<7),
 	QEI_FLAG_IS_RESET_INDEX /*! Reset the index count */ = (1<<8),
 	QEI_FLAG_IS_RESET_POS_ONINDEX /*! Reset the position on the next index pulse */ = (1<<9),
-	QEI_FLAG_IS_DEFAULT_PIN_ASSIGNMENT /*! Use default pin assignment (if available) */ = (1<<10)
 } qei_flag_t;
 
 typedef struct MCU_PACK {

@@ -50,15 +50,22 @@ static LPC_SSP_Type * const ssp_regs_table[MCU_SSP_PORTS] = MCU_SSP_REGS;
 static u8 const ssp_irqs[MCU_SSP_PORTS] = MCU_SSP_IRQS;
 
 #ifdef LPCXX7X_8X
-static void enable_pin(int pio_port, int pio_pin) MCU_PRIV_CODE;
-void enable_pin(int pio_port, int pio_pin){
-	pio_attr_t pattr;
-	devfs_handle_t handle;
-	pattr.o_pinmask = (1<<pio_pin);
-	pattr.o_flags = PIO_FLAG_SET_OUTPUT;
-	handle.port = pio_port;
-	mcu_pio_setattr(&handle, &pattr);
+static void enable_pin(const mcu_pin_t * pin, void * arg) MCU_PRIV_CODE;
+void enable_pin(const mcu_pin_t * pin, void * arg){
+	if( pin->port == 0 ){
+		if( (pin->pin == 7) || (pin->pin == 8) || (pin->pin == 9) ){
+			pio_attr_t pattr;
+			devfs_handle_t pio_handle;
+			pio_handle.config = 0;
+			pattr.o_pinmask = (1<<pin->pin);
+			pattr.o_flags = PIO_FLAG_SET_OUTPUT;
+			pio_handle.port = pin->port;
+			mcu_pio_setattr(&pio_handle, &pattr);
+		}
+	}
 }
+#else
+#define enable_pin 0
 #endif
 
 void mcu_ssp_dev_power_on(const devfs_handle_t * handle){
@@ -141,12 +148,16 @@ int mcu_ssp_getinfo(const devfs_handle_t * handle, void * ctl){
 int mcu_ssp_setattr(const devfs_handle_t * handle, void * ctl){
 	int port = handle->port;
 	LPC_SSP_Type * regs;
-	uint32_t cr0, cr1, cpsr;
-	uint32_t tmp;
-	spi_attr_t * attr = ctl;
+	u32 cr0, cr1, cpsr;
+	u32 tmp;
+
+	const spi_attr_t * attr = mcu_select_attr(handle, ctl);
+	if( attr == 0 ){
+		return -1;
+	}
+
 	u32 o_flags = attr->o_flags;
 	u32 mode;
-	int i;
 
 	regs = ssp_regs_table[port];
 
@@ -198,22 +209,12 @@ int mcu_ssp_setattr(const devfs_handle_t * handle, void * ctl){
 			cr0 |= (1<<5);
 		}
 
-		for(i=0; i < MCU_PIN_ASSIGNMENT_COUNT(spi_pin_assignment_t); i++){
-			const mcu_pin_t * pin = mcu_pin_at(&(attr->pin_assignment), i);
-			if( mcu_is_port_valid(pin->port) ){
-#ifdef LPCXX7X_8X
-				if( pin->port == 0 ){
-					if( (pin->pin == 7) ||
-							(pin->pin == 8) ||
-							(pin->pin == 9) ){
-						enable_pin(pin->port,pin->pin);
-					}
-				}
-#endif
-				if ( mcu_core_set_pinsel_func(pin->port, pin->pin, CORE_PERIPH_SSP, port) ){
-					return -1;  //faile to set pin function
-				}
-			}
+		if( mcu_set_pin_assignment(
+				&(attr->pin_assignment),
+				MCU_CONFIG_PIN_ASSIGNMENT(spi_config_t, handle),
+				MCU_PIN_ASSIGNMENT_COUNT(spi_pin_assignment_t),
+				CORE_PERIPH_SPI, port, enable_pin, 0) < 0 ){
+			return -1;
 		}
 
 		regs->CR0 = cr0;

@@ -94,7 +94,6 @@ extern "C" {
 typedef enum {
 	PWM_FLAG_IS_ACTIVE_HIGH = (1<<0),
 	PWM_FLAG_IS_ACTIVE_LOW = (1<<1),
-	PWM_FLAG_IS_DEFAULT_PIN_ASSIGNMENT /*! Use default pin assignment (if available) */ = (1<<2)
 } pwm_flag_t;
 
 

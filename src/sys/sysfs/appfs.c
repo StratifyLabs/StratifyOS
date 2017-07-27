@@ -488,29 +488,51 @@ void priv_ioctl(void * args){
 
 	//INSTALL and CREATE only with with the special .install file
 	case I_APPFS_INSTALL:
-		a->ret = appfs_util_priv_writeinstall(a->cfg, h, attr);
+		if( !h->is_install ){
+			errno = ENOTSUP;
+		} else {
+			a->ret = appfs_util_priv_writeinstall(a->cfg, h, attr);
+		}
 		break;
 
 	case I_APPFS_CREATE:
-		a->ret = appfs_util_priv_create(a->cfg, h, attr);
+		if( !h->is_install ){
+			errno = ENOTSUP;
+		} else {
+			a->ret = appfs_util_priv_create(a->cfg, h, attr);
+		}
+
 		break;
 
-	//These calls work with the specific applications
+		//These calls work with the specific applications
 	case I_APPFS_FREE_RAM:
-		a->ret =  appfs_util_priv_free_ram(a->cfg, h);
+		if( h->is_install ){
+			errno = ENOTSUP;
+		} else {
+			a->ret =  appfs_util_priv_free_ram(a->cfg, h);
+		}
 		break;
 
 	case I_APPFS_RECLAIM_RAM:
-		a->ret = appfs_util_priv_reclaim_ram(a->cfg, h);
+		if( h->is_install ){
+			errno = ENOTSUP;
+		} else {
+			a->ret = appfs_util_priv_reclaim_ram(a->cfg, h);
+		}
 		break;
 
 	case I_APPFS_GETINFO:
-		f = appfs_util_getfile(h);
-		info->mode = f->hdr.mode;
-		info->o_flags = f->exec.o_flags;
-		info->signature = f->exec.signature;
-		info->version = f->hdr.version;
-		info->ram_size = f->exec.ram_size;
+		if( h->is_install ){
+			errno = ENOTSUP;
+		} else {
+			f = appfs_util_getfile(h);
+			info->mode = f->hdr.mode;
+			info->o_flags = f->exec.o_flags;
+			info->signature = f->exec.signature;
+			info->version = f->hdr.version;
+			info->ram_size = f->exec.ram_size;
+			a->ret = 0;
+		}
 		break;
 
 	default:

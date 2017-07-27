@@ -201,6 +201,8 @@ int open_usecond_tmr(){
 	mcu_channel_t chan_req;
 	devfs_handle_t tmr;
 	tmr.port = sos_board_config.clk_usecond_tmr;
+	tmr.config = 0;
+	tmr.handle = 0;
 
 	//Open the microsecond timer
 	err = mcu_tmr_open(&tmr);
@@ -215,23 +217,21 @@ int open_usecond_tmr(){
 
 	err = mcu_tmr_setattr(&tmr, &attr);
 	if ( err ){
+		sos_led_priv_on(0);
+		while(1){}
 		return err;
 	}
 
 
 	//Initialize the value of the timer to zero
 	err = mcu_tmr_set(&tmr, (void*)0);
-	if (err){
-		return err;
-	}
+	if (err){ return err; }
 
 	//Set the reset output compare value to reset the clock every 32 seconds
 	chan_req.loc = SCHED_USECOND_TMR_RESET_OC;
 	chan_req.value = STFY_USECOND_PERIOD; //overflow every SCHED_TIMEVAL_SECONDS seconds
 	err = mcu_tmr_setoc(&tmr, &chan_req);
-	if (err){
-		return -1;
-	}
+	if(err){ return -1; }
 
 	attr.channel.loc = SCHED_USECOND_TMR_RESET_OC;
 	attr.o_flags = TMR_FLAG_SET_CHANNEL | TMR_FLAG_IS_CHANNEL_RESET_ON_MATCH;
@@ -257,9 +257,7 @@ int open_usecond_tmr(){
 	chan_req.loc = SCHED_USECOND_TMR_SLEEP_OC;
 	chan_req.value = STFY_USECOND_PERIOD + 1;
 	err = mcu_tmr_setoc(&tmr, &chan_req);
-	if ( err ){
-		return -1;
-	}
+	if ( err ){ return -1; }
 
 	action.channel = SCHED_USECOND_TMR_SLEEP_OC;
 	action.o_events = MCU_EVENT_FLAG_MATCH;

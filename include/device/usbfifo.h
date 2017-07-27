@@ -29,6 +29,7 @@
 #define DEV_USBFIFO_H_
 
 #include "sos/dev/usbfifo.h"
+#include "mcu/usb.h"
 #include "fifo.h"
 
 
@@ -44,6 +45,7 @@ typedef struct {
  *
  */
 typedef struct {
+	usb_config_t usb;
 	int endpoint /*! The USB endpoint number to read */;
 	int endpoint_size /*! The USB endpoint data size */;
 	fifo_config_t fifo;

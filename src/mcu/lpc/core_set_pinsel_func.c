@@ -144,14 +144,14 @@ const pinsel_table_t pinsel_func_table[TOTAL_PINS] = {
 };
 
 
-int mcu_core_set_pinsel_func(int gpio_port, int pin, core_periph_t function, int periph_port){
+int mcu_core_set_pinsel_func(const mcu_pin_t * pin, core_periph_t function, int periph_port){
 	int i;
 	int tmp;
 	pinsel_table_t entry;
 	int value = -1;
 	for(i = 0; i < TOTAL_PINS; i++){
 		tmp = pinsel_lookup_table[i];
-		if ( (gpio_port == GET_PORT(tmp)) && (pin == GET_PIN(tmp)) ){
+		if ( (pin->port == GET_PORT(tmp)) && (pin->pin == GET_PIN(tmp)) ){
 			//this is a valid pin
 			value = i;
 			break;
@@ -175,7 +175,7 @@ int mcu_core_set_pinsel_func(int gpio_port, int pin, core_periph_t function, int
 	if ( value < 0 ){
 		return -1;
 	}
-	core_wr_pinsel(gpio_port, pin, value);
+	core_wr_pinsel(pin->port, pin->pin, value);
 	return 0;
 }
 #endif
@@ -371,20 +371,20 @@ const pinsel_table_t pinsel_func_table[TOTAL_PINS] = {
 
 
 
-int mcu_core_set_pinsel_func(int gpio_port, int pin, core_periph_t function, int periph_port){
+int mcu_core_set_pinsel_func(const mcu_pin_t * pin, core_periph_t function, int periph_port){
 	int i;
 	pinsel_table_t pin_cfg;
 	int value;
 	int iocon_index;
 	__IO uint32_t * regs_iocon;
 
-	if( (gpio_port == 5) && (pin > 4) ){
+	if( (pin->port == 5) && (pin->pin > 4) ){
 		return -1;
-	} else if( pin > 31 ){
+	} else if( pin->pin > 31 ){
 		return -1;
 	}
 
-	iocon_index = gpio_port * 32 + pin;
+	iocon_index = pin->port * 32 + pin->pin;
 
 	pin_cfg = pinsel_func_table[iocon_index];
 	value = -1;

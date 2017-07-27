@@ -90,10 +90,15 @@ int mcu_spi_getinfo(const devfs_handle_t * handle, void * ctl){
 int mcu_spi_setattr(const devfs_handle_t * handle, void * ctl){
 	int port = handle->port;
 	LPC_SPI_Type * regs = spi_regs[port];
-	uint32_t cr0, cpsr;
-	uint32_t tmp;
-	spi_attr_t * attr = (spi_attr_t*)ctl;
+	u32 cr0, cpsr;
+	u32 tmp;
 	u32 mode;
+
+	const spi_attr_t * attr = mcu_select_attr(handle, ctl);
+	if( attr == 0 ){
+		return -1;
+	}
+
 	u32 o_flags = attr->o_flags;
 
 
@@ -141,11 +146,11 @@ int mcu_spi_setattr(const devfs_handle_t * handle, void * ctl){
 			return -1;
 		}
 
-		if( mcu_core_set_pin_assignment(
+		if( mcu_set_pin_assignment(
 				&(attr->pin_assignment),
+				MCU_CONFIG_PIN_ASSIGNMENT(spi_config_t, handle),
 				MCU_PIN_ASSIGNMENT_COUNT(spi_pin_assignment_t),
-				CORE_PERIPH_SPI,
-				port) < 0 ){
+				CORE_PERIPH_SPI, port, 0, 0) < 0 ){
 			return -1;
 		}
 

@@ -163,6 +163,8 @@ static inline mcu_pin_t mcu_pin(u8 port, u8 num){
 
 #define MCU_PIN_ASSIGNMENT_COUNT(type) (sizeof(type)/sizeof(mcu_pin_t))
 
+#define MCU_CONFIG_PIN_ASSIGNMENT(type, handle) (handle->config ? &(((type*)(handle->config))->attr.pin_assignment) : 0)
+
 
 typedef struct MCU_PACK {
 	u32 loc;

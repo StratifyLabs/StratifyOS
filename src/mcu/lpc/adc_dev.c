@@ -46,15 +46,15 @@ static void exec_callback(int port, u32 o_events) MCU_PRIV_CODE;
 static LPC_ADC_Type * const adc_regs[MCU_ADC_PORTS] = MCU_ADC_REGS;
 static u8 const adc_irqs[MCU_ADC_PORTS] = MCU_ADC_IRQS;
 
-static int enable_pin(int pio_port, int pio_pin, int adc_port) MCU_PRIV_CODE;
-int enable_pin(int pio_port, int pio_pin, int adc_port){
+static void enable_pin(const mcu_pin_t * pin, void * arg) MCU_PRIV_CODE;
+void enable_pin(const mcu_pin_t * pin, void * arg){
 	pio_attr_t pattr;
 	devfs_handle_t pio_handle;
-	pio_handle.port = pio_port;
-	pattr.o_pinmask = (1<<pio_pin);
+	pio_handle.config = 0;
+	pio_handle.port = pin->port;
+	pattr.o_pinmask = (1<<pin->pin);
 	pattr.o_flags = PIO_FLAG_SET_INPUT | PIO_FLAG_IS_FLOAT | PIO_FLAG_IS_ANALOG;
 	mcu_pio_setattr(&pio_handle, &pattr);
-	return mcu_core_set_pinsel_func(pio_port,pio_pin,CORE_PERIPH_ADC,adc_port);
 }
 
 
@@ -166,41 +166,40 @@ int mcu_adc_getinfo(const devfs_handle_t * handle, void * ctl){
 
 int mcu_adc_setattr(const devfs_handle_t * handle, void * ctl){
 	int port = handle->port;
-	int i;
 	LPC_ADC_Type * regs = adc_regs[port];
-	//adc_pin_assignment_t * pin_assignment;
-	adc_attr_t * attr = ctl;
 	u16 clk_div;
+	u32 freq;
+
+	const adc_attr_t * attr = mcu_select_attr(handle, ctl);
+	if( attr == 0 ){
+		return -1;
+	}
 
 	if ( attr->freq == 0 ){
 		errno = EINVAL;
 		return -1 - offsetof(adc_attr_t, freq);
 	}
 
+	freq = attr->freq;
 	if ( attr->freq > ADC_MAX_FREQ ){
-		attr->freq = ADC_MAX_FREQ;
+		freq = ADC_MAX_FREQ;
 	}
 
-	if( attr->o_flags & ADC_FLAG_IS_DEFAULT_PIN_ASSIGNMENT ){
-
-	}
-
-	for(i=0; i < MCU_PIN_ASSIGNMENT_COUNT(adc_pin_assignment_t); i++){
-		const mcu_pin_t * pin = mcu_pin_at(&(attr->pin_assignment), i);
-		if( mcu_is_port_valid(pin->port) ){
-			if ( enable_pin(pin->port, pin->pin, 0) ){
-				return -1;  //pin failed to allocate as a UART pin
-			}
-		}
+	if( mcu_set_pin_assignment(
+			&(attr->pin_assignment),
+			MCU_CONFIG_PIN_ASSIGNMENT(adc_config_t, handle),
+			MCU_PIN_ASSIGNMENT_COUNT(adc_pin_assignment_t),
+			CORE_PERIPH_ADC, port, enable_pin, 0) < 0 ){
+		return -1;
 	}
 
 
 	//Calculate the clock setting
 #ifdef __lpc17xx
-	clk_div = mcu_board_config.core_periph_freq/(attr->freq * 65);
+	clk_div = mcu_board_config.core_periph_freq/(freq * 65);
 #endif
 #ifdef LPCXX7X_8X
-	clk_div = mcu_board_config.core_periph_freq/(attr->freq * 31);
+	clk_div = mcu_board_config.core_periph_freq/(freq * 31);
 #endif
 	if ( clk_div > 0 ){
 		clk_div = clk_div - 1;

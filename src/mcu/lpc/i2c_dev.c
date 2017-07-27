@@ -87,20 +87,21 @@ typedef struct MCU_PACK {
 	i2c_local_slave_t slave;
 } i2c_local_t;
 
-static void enable_opendrain_pin(int pio_port, int pio_pin, int internal_pullup) MCU_PRIV_CODE;
-void enable_opendrain_pin(int pio_port, int pio_pin, int internal_pullup){
+static void enable_opendrain_pin(const mcu_pin_t * pin, void * internal_pullup) MCU_PRIV_CODE;
+void enable_opendrain_pin(const mcu_pin_t * pin, void * internal_pullup){
 	pio_attr_t pattr;
 	devfs_handle_t pio_handle;
-	pio_handle.port = pio_port;
-	pattr.o_pinmask = (1<<pio_pin);
-	pattr.o_flags = PIO_FLAG_SET_OUTPUT | PIO_FLAG_IS_OPENDRAIN | internal_pullup;
+	pio_handle.port = pin->port;
+	pio_handle.config = 0;
+	pattr.o_pinmask = (1<<pin->pin);
+	pattr.o_flags = PIO_FLAG_SET_OUTPUT | PIO_FLAG_IS_OPENDRAIN | (u32)internal_pullup;
 	mcu_pio_setattr(&pio_handle, &pattr);
 }
 
 static LPC_I2C_Type * const i2c_regs_table[MCU_I2C_PORTS] = MCU_I2C_REGS;
 static u8 const i2c_irqs[MCU_I2C_PORTS] = MCU_I2C_IRQS;
 static void set_master_done(LPC_I2C_Type * regs, int port, int error);
-static int set_slave_attr(const devfs_handle_t * handle, i2c_attr_t * attr);
+static int set_slave_attr(const devfs_handle_t * handle, const i2c_attr_t * attr);
 
 static void receive_byte(LPC_I2C_Type * regs, i2c_local_transfer_t * op);
 static void transmit_byte(LPC_I2C_Type * regs, i2c_local_transfer_t * op);
@@ -203,14 +204,17 @@ int mcu_i2c_getinfo(const devfs_handle_t * handle, void * ctl){
 }
 
 int mcu_i2c_setattr(const devfs_handle_t * handle, void * ctl){
-	LPC_I2C_Type * i2c_regs;
-	i2c_attr_t * attr = ctl;
-	u32 o_flags = attr->o_flags;
-	int count;
-	int i;
-	int internal_pullup;
 	int port = handle->port;
+	LPC_I2C_Type * i2c_regs;
+	int count;
+	int internal_pullup;
 
+	const i2c_attr_t * attr = mcu_select_attr(handle, ctl);
+	if( attr == 0 ){
+		return -1;
+	}
+
+	u32 o_flags = attr->o_flags;
 
 	//Check for a valid port
 	i2c_regs = i2c_regs_table[port];
@@ -227,19 +231,30 @@ int mcu_i2c_setattr(const devfs_handle_t * handle, void * ctl){
 			internal_pullup = 0;
 		}
 
+
+		if( mcu_set_pin_assignment(
+				&(attr->pin_assignment),
+				MCU_CONFIG_PIN_ASSIGNMENT(i2c_config_t, handle),
+				MCU_PIN_ASSIGNMENT_COUNT(i2c_pin_assignment_t),
+				CORE_PERIPH_I2C, port, enable_opendrain_pin, (void*)internal_pullup) < 0 ){
+			return -1;
+		}
+
+		/*
 		for(i=0; i < MCU_PIN_ASSIGNMENT_COUNT(i2c_pin_assignment_t); i++){
-			const mcu_pin_t * pin = mcu_pin_at(&(attr->pin_assignment), i);
+			const mcu_pin_t * pin = mcu_pin_at(&(attr->pin_assignment)), i);
 			if( mcu_is_port_valid(pin->port) ){
 
 				enable_opendrain_pin(pin->port,
 						pin->pin, internal_pullup);
 
 
-				if ( mcu_core_set_pinsel_func(pin->port, pin->pin, CORE_PERIPH_I2C, port) ){
+				if ( mcu_core_set_pinsel_func(pin, CORE_PERIPH_I2C, port) ){
 					return -1;  //pin failed to allocate as a UART pin
 				}
 			}
 		}
+		*/
 
 		i2c_regs->CONCLR = 0xFF;
 
@@ -272,7 +287,7 @@ int mcu_i2c_setattr(const devfs_handle_t * handle, void * ctl){
 }
 
 
-int set_slave_attr(const devfs_handle_t * handle, i2c_attr_t * attr){
+int set_slave_attr(const devfs_handle_t * handle, const i2c_attr_t * attr){
 	int port = handle->port;
 	LPC_I2C_Type * i2c_regs;
 	int gen_call = 0;

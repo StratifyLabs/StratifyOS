@@ -17,9 +17,8 @@
  *
  */
 
-
-#ifndef DEVICE_SD_H_
-#define DEVICE_SD_H_
+#ifndef DEVICE_SDSPI_H_
+#define DEVICE_SDSPI_H_
 
 #include "sos/dev/sd.h"
 #include "sos/dev/spi.h"
@@ -37,14 +36,13 @@ typedef struct {
 } sdspi_state_t;
 
 typedef struct {
-	spi_attr_t attr;
+	spi_config_t spi;
 	mcu_pin_t cs;
 	mcu_pin_t hold /*! \brief Hold Pin */;
 	mcu_pin_t wp /*! \brief Write protect pin */;
 	mcu_pin_t miso /*! \brief The write complete pin */;
 	uint32_t size /*! \brief The size of the memory on the device */;
 } sdspi_config_t;
-
 
 typedef struct MCU_PACK {
 	uint16_t r2;
@@ -63,4 +61,4 @@ int sdssp_write(const devfs_handle_t * handle, devfs_async_t * wop);
 int sdssp_close(const devfs_handle_t * handle);
 
 
-#endif /* DEVICE_SD_H_ */
+#endif /* DEVICE_SDSPI_H_ */

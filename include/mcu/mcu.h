@@ -104,6 +104,16 @@ static inline const mcu_pin_t * mcu_pin_at(const void * start, int i){
 	const mcu_pin_t * p = (const mcu_pin_t *)start;
 	return p+i;
 }
+
+const void * mcu_select_attr(const devfs_handle_t * handle, void * ctl);
+
+int mcu_set_pin_assignment(const void * attr_pin_assignment,
+		const void * config_pin_assignment,
+		int count,
+		int periph,
+		int periph_port,
+		void (*configure_pin)(const mcu_pin_t *, void *), void * arg) MCU_PRIV_CODE;
+
 #endif
 
 enum {

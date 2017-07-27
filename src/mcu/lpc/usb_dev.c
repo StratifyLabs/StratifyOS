@@ -76,6 +76,18 @@ static void usb_sie_wr_cmd_dat(u32 cmd, u32 val);
 static void usb_sie_wr_cmd_ep(u32 ep_num, u32 cmd);
 static u32 usb_sie_rd_cmd_dat(u32 cmd);
 
+#ifdef LPCXX7X_8X
+static void configure_pin(const mcu_pin_t * pin, void * arg){
+	LPC_USB->StCtrl &= ~0x03;
+	if( pin->pin == 31 ){
+		LPC_USB->StCtrl |= 0x03;
+	}
+	LPC_USB->USBClkCtrl &= ~(1<<3); //disable portsel clock
+}
+#else
+#define configure_pin 0
+#endif
+
 
 void usb_sie_wr_cmd(u32 cmd){
 	LPC_USB->DevIntClr = CCEMTY_INT | CDFULL_INT;
@@ -145,9 +157,12 @@ int mcu_usb_getinfo(const devfs_handle_t * handle, void * ctl){
 }
 
 int mcu_usb_setattr(const devfs_handle_t * handle, void * ctl){
-	usb_attr_t * attr = ctl;
 	int port = handle->port;
-	int i;
+
+	const usb_attr_t * attr = mcu_select_attr(handle, ctl);
+	if( attr == 0 ){
+		return -1;
+	}
 
 	if ((attr->o_flags & USB_FLAG_SET_DEVICE) == 0){
 		errno = EINVAL;
@@ -162,30 +177,13 @@ int mcu_usb_setattr(const devfs_handle_t * handle, void * ctl){
 	usb_local.read_ready = 0;
 	usb_local.write_pending = 0;
 
-
-	if( mcu_core_set_pin_assignment(
+	if( mcu_set_pin_assignment(
 			&(attr->pin_assignment),
+			MCU_CONFIG_PIN_ASSIGNMENT(usb_config_t, handle),
 			MCU_PIN_ASSIGNMENT_COUNT(usb_pin_assignment_t),
-			CORE_PERIPH_USB,
-			port) < 0 ){
+			CORE_PERIPH_USB, port, configure_pin, 0) < 0 ){
 		return -1;
 	}
-
-	//Configure the IO
-	for(i=0; i < MCU_PIN_ASSIGNMENT_COUNT(usb_pin_assignment_t); i++){
-		const mcu_pin_t * pin = mcu_pin_at(&(attr->pin_assignment), i);
-		if( mcu_is_port_valid(pin->port) ){
-#ifdef LPCXX7X_8X
-			LPC_USB->StCtrl &= ~0x03;
-			if( pin->pin == 31 ){
-				LPC_USB->StCtrl |= 0x03;
-			}
-			LPC_USB->USBClkCtrl &= ~(1<<3); //disable portsel clock
-
-#endif
-		}
-	}
-
 
 	usb_irq_mask = DEV_STAT_INT | EP_FAST_INT | EP_SLOW_INT;
 

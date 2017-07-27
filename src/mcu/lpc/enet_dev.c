@@ -97,7 +97,11 @@ int mcu_enet_setattr(const devfs_handle_t * handle, void * ctl){
 #if MCU_ENET_API == 1
 
 #else
-	enet_attr_t * attr = ctl;
+
+	const enet_attr_t * attr = mcu_select_attr(handle, ctl);
+	if( attr == 0 ){
+		return -1;
+	}
 
 	LPC_EMAC_Type * regs = enet_regs_table[port];
 	//set the MAC addr
@@ -105,6 +109,7 @@ int mcu_enet_setattr(const devfs_handle_t * handle, void * ctl){
 
 	//pin select
 	if( attr->pin_assign == 0 ){
+		/*
 		mcu_core_set_pinsel_func(1, 0, CORE_PERIPH_ENET, port);
 		mcu_core_set_pinsel_func(1, 1, CORE_PERIPH_ENET, port);
 		mcu_core_set_pinsel_func(1, 4, CORE_PERIPH_ENET, port);
@@ -115,6 +120,7 @@ int mcu_enet_setattr(const devfs_handle_t * handle, void * ctl){
 		mcu_core_set_pinsel_func(1, 15, CORE_PERIPH_ENET, port);
 		mcu_core_set_pinsel_func(1, 16, CORE_PERIPH_ENET, port);
 		mcu_core_set_pinsel_func(1, 17, CORE_PERIPH_ENET, port);
+		*/
 	}
 
 	regs->MAC1 = ENET_MAC1_PARF;

@@ -132,12 +132,17 @@ int mcu_tmr_getinfo(const devfs_handle_t * handle, void * ctl){
 int mcu_tmr_setattr(const devfs_handle_t * handle, void * ctl){
 	LPC_TIM_Type * regs;
 	int port = handle->port;
-	regs = tmr_regs_table[port];
-	tmr_attr_t * attr = ctl;
 	int ctcr = 0;
-	int i;
+
+	const tmr_attr_t * attr = mcu_select_attr(handle, ctl);
+	if( attr == 0 ){
+		return -1;
+	}
+
 	u32 o_flags = attr->o_flags;
 	int chan = attr->channel.loc;
+	regs = tmr_regs_table[port];
+
 
 	if( o_flags & TMR_FLAG_SET_TIMER ){
 
@@ -157,14 +162,14 @@ int mcu_tmr_setattr(const devfs_handle_t * handle, void * ctl){
 			}
 		}
 
-		for(i=0; i < MCU_PIN_ASSIGNMENT_COUNT(tmr_pin_assignment_t); i++){
-			const mcu_pin_t * pin = mcu_pin_at(&(attr->pin_assignment), i);
-			if( mcu_is_port_valid(pin->port) ){
-				if ( mcu_core_set_pinsel_func(pin->port, pin->pin, CORE_PERIPH_TMR, port) ){
-					return -1;  //pin failed to allocate as a UART pin
-				}
-			}
+		if( mcu_set_pin_assignment(
+				&(attr->pin_assignment),
+				MCU_CONFIG_PIN_ASSIGNMENT(tmr_config_t, handle),
+				MCU_PIN_ASSIGNMENT_COUNT(tmr_pin_assignment_t),
+				CORE_PERIPH_TMR, port, 0, 0) < 0 ){
+			return -1;
 		}
+
 
 		if( o_flags & TMR_FLAG_IS_CLKSRC_IC1 ){
 			ctcr |= (1<<2);

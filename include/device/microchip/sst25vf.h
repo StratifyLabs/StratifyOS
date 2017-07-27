@@ -27,10 +27,10 @@
 #define DEV_MICROCHIP_SST25VF_H_
 
 #include "sos/dev/microchip/sst25vf.h"
-#include "sos/dev/spi.h"
+#include "mcu/spi.h"
 
 typedef struct {
-	spi_attr_t attr;
+	spi_config_t spi;
 	mcu_pin_t cs;
 	mcu_pin_t hold /*! Hold Pin */;
 	mcu_pin_t wp /*! Write protect pin */;

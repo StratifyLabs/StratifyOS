@@ -115,9 +115,14 @@ int mcu_eint_getinfo(const devfs_handle_t * handle, void * ctl){
 
 int mcu_eint_setattr(const devfs_handle_t * handle, void * ctl){
 	int port = handle->port;
-	eint_attr_t * attr = ctl;
 	pio_attr_t pattr;
 	devfs_handle_t pio_handle;
+
+
+	const eint_attr_t * attr = mcu_select_attr(handle, ctl);
+	if( attr == 0 ){
+		return -1;
+	}
 
 	reset_eint_port(port);
 
@@ -128,8 +133,9 @@ int mcu_eint_setattr(const devfs_handle_t * handle, void * ctl){
 		if( mcu_is_port_valid(pin->port) ){
 			pattr.o_pinmask = 1<<pin->pin;
 			pio_handle.port = pin->port;
+			pio_handle.config = 0;
 			mcu_pio_setattr(&pio_handle, &pattr);
-			if ( mcu_core_set_pinsel_func(pin->port, pin->pin, CORE_PERIPH_EINT, port) ){
+			if ( mcu_core_set_pinsel_func(pin, CORE_PERIPH_EINT, port) ){
 				return -1;  //pin failed to allocate as a UART pin
 			}
 		}
@@ -146,20 +152,26 @@ void reset_eint_port(int port){
 	LPC_SC->EXTPOLAR &= ~(1<<port);
 	LPC_SC->EXTMODE &= ~(1<<port);
 
+	mcu_pin_t pin;
+	pin.port = 2;
+
 	switch(port){
 	case 0:
-		mcu_core_set_pinsel_func(2,10,CORE_PERIPH_PIO,2);
+		pin.pin = 10;
 		break;
 	case 1:
-		mcu_core_set_pinsel_func(2,11,CORE_PERIPH_PIO,2);
+		pin.pin = 11;
 		break;
 	case 2:
-		mcu_core_set_pinsel_func(2,12,CORE_PERIPH_PIO,2);
+		pin.pin = 12;
 		break;
 	case 3:
-		mcu_core_set_pinsel_func(2,13,CORE_PERIPH_PIO,2);
+		pin.pin = 13;
 		break;
 	}
+
+	mcu_core_set_pinsel_func(&pin,CORE_PERIPH_PIO,2);
+
 
 	LPC_SC->EXTINT |= (1<<port); //Clear the interrupt flag
 }

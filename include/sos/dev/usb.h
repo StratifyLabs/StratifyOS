@@ -60,7 +60,6 @@ typedef enum {
 	USB_FLAG_SET_DEVICE /*! device mode */ = (1<<1),
 	USB_FLAG_SET_HOST /*! host mode */ = (1<<2),
 	USB_FLAG_SET_OTG /*! on-the-go mode */ = (1<<3),
-	USB_FLAG_IS_DEFAULT_PIN_ASSIGNMENT /*! Use default pin assignment (if available) */ = (1<<4)
 } usb_flag_t;
 
 

@@ -220,8 +220,12 @@ int mcu_pio_setattr(const devfs_handle_t * handle, void * ctl){
 	int i;
 	int mode;
 	int port = handle->port;
-	pio_attr_t * attr;
-	attr = ctl;
+
+	const pio_attr_t * attr = mcu_select_attr(handle, ctl);
+	if( attr == 0 ){
+		return -1;
+	}
+
 #ifdef LPCXX7X_8X
 	__IO u32 * regs_iocon;
 #else
@@ -262,7 +266,8 @@ int mcu_pio_setattr(const devfs_handle_t * handle, void * ctl){
 	for(i = 0; i < 32; i++){
 		if ( (1<<i) & (attr->o_pinmask) ){
 			regs_iocon = (u32*)LPC_IOCON + port*32 + i;
-			mcu_core_set_pinsel_func(port, i, CORE_PERIPH_PIO, port); //set the pin to use GPIO
+			mcu_pin_t pin = mcu_pin(port, i);
+			mcu_core_set_pinsel_func(&pin, CORE_PERIPH_PIO, port); //set the pin to use GPIO
 
 			if( attr->o_flags & PIO_FLAG_IS_OPENDRAIN ){
 				*regs_iocon |= (1<<10);
@@ -309,7 +314,8 @@ int mcu_pio_setattr(const devfs_handle_t * handle, void * ctl){
 	for(i = 0; i < 8*sizeof(pio_sample_t); i++){
 		if ( (1<<i) & attr->o_pinmask ){
 
-			mcu_core_set_pinsel_func(port, i, CORE_PERIPH_PIO, 0); //set the pin to use GPIO
+			mcu_pin_t pin = mcu_pin(port, i);
+			mcu_core_set_pinsel_func(&pin, CORE_PERIPH_PIO, 0); //set the pin to use GPIO
 
 			if( attr->o_flags & PIO_FLAG_IS_OPENDRAIN ){
 				regs_od[port] |= (1<<i);

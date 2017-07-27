@@ -17,8 +17,9 @@
  *
  */
 
-
+#include <errno.h>
 #include "mcu/mcu.h"
+#include "mcu/core.h"
 
 void mcu_board_execute_event_handler(int event, void * args){
 	if( mcu_board_config.event_handler != 0 ){
@@ -39,5 +40,57 @@ int mcu_execute_event_handler(mcu_event_handler_t * handler, u32 o_events, void 
 		}
 	}
 	return ret;
+}
+
+const void * mcu_select_attr(const devfs_handle_t * handle, void * ctl){
+	if( ctl == 0 ){
+		if( handle->config == 0 ){
+			errno = EINVAL;
+		} else {
+			return handle->config;
+		}
+	}
+
+	return ctl;
+}
+
+int mcu_set_pin_assignment(
+		const void * attr_pin_assignment,
+		const void * config_pin_assignment,
+		int count,
+		int periph,
+		int periph_port,
+		void (*configure_pin)(const mcu_pin_t *, void*), void * arg){
+	int i;
+	int is_default = 1;
+	const void * pin_assignment;
+	for(i=0; i < count; i++){
+		const mcu_pin_t * pin = mcu_pin_at(attr_pin_assignment, i);
+		if( mcu_is_port_valid(pin->port) ){
+			is_default = 0;
+			break;
+		}
+	}
+
+	if( is_default && (config_pin_assignment != 0) ){
+		pin_assignment = config_pin_assignment;
+	} else {
+		pin_assignment = attr_pin_assignment;
+	}
+
+	for(i=0; i < count; i++){
+		const mcu_pin_t * pin = mcu_pin_at(pin_assignment, i);
+		if( mcu_is_port_valid(pin->port) ){
+
+			if( configure_pin ){
+				configure_pin(pin,arg);
+			}
+
+			if ( mcu_core_set_pinsel_func(pin, periph, periph_port) ){
+				return -1;
+			}
+		}
+	}
+	return 0;
 }
 

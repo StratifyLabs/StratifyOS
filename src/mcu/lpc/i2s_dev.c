@@ -111,11 +111,16 @@ int mcu_i2s_getinfo(const devfs_handle_t * handle, void * ctl){
 int mcu_i2s_setattr(const devfs_handle_t * handle, void * ctl){
 	int port = handle->port;
 	LPC_I2S_Type * i2s_regs = i2s_get_regs(port);
-	i2s_attr_t * attr = ctl;
 	u32 audio_reg = (1<<4); //start by holding the i2s in reset
 	u32 bits;
 	u32 bitrate;
 	u32 half_period;
+
+	const i2s_attr_t * attr = mcu_select_attr(handle, ctl);
+	if( attr == 0 ){
+		return -1;
+	}
+
 	u32 o_flags = attr->o_flags;
 
 	bits = 8;
@@ -161,10 +166,11 @@ int mcu_i2s_setattr(const devfs_handle_t * handle, void * ctl){
 	i2s_regs->TXMODE = 0; //transmitter is typical with no MCLK
 	i2s_regs->RXMODE = (1<<2); //share WS and bit clock with TX block
 
-	if( mcu_core_set_pin_assignment(&(attr->pin_assignment),
+	if( mcu_set_pin_assignment(
+			&(attr->pin_assignment),
+			MCU_CONFIG_PIN_ASSIGNMENT(i2s_config_t, handle),
 			MCU_PIN_ASSIGNMENT_COUNT(i2s_pin_assignment_t),
-			CORE_PERIPH_I2S,
-			port) < 0 ){
+			CORE_PERIPH_I2S, port, 0, 0) < 0 ){
 		return -1;
 	}
 

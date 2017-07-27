@@ -60,8 +60,12 @@ int mcu_qei_dev_is_powered(const devfs_handle_t * handle){
 int mcu_qei_setattr(const devfs_handle_t * handle, void * ctl){
 	int port = handle->port;
 
+	const qei_attr_t * attr = mcu_select_attr(handle, ctl);
+	if( attr == 0 ){
+		return -1;
+	}
+
 	LPC_QEI_Type * regs = qei_regs[port];
-	const qei_attr_t * attr = ctl;
 	u32 o_flags = attr->o_flags;
 
 	if( o_flags & QEI_FLAG_RESET ){
@@ -95,12 +99,12 @@ int mcu_qei_setattr(const devfs_handle_t * handle, void * ctl){
 			return -1 - offsetof(qei_attr_t, velocity_freq);
 		}
 
-		if( mcu_core_set_pin_assignment(&(attr->pin_assignment),
+		if( mcu_set_pin_assignment(
+				&(attr->pin_assignment),
+				MCU_CONFIG_PIN_ASSIGNMENT(qei_config_t, handle),
 				MCU_PIN_ASSIGNMENT_COUNT(qei_pin_assignment_t),
-				CORE_PERIPH_QEI,
-				port) < 0 ){
-			errno = EINVAL;
-			return -1 - offsetof(qei_attr_t, pin_assignment);
+				CORE_PERIPH_QEI, port, 0, 0) < 0 ){
+			return -1;
 		}
 
 		regs->MAXPOS = attr->max_position;

@@ -49,6 +49,29 @@ static pwm_local_t pwm_local[MCU_PWM_PORTS] MCU_SYS_MEM;
 LPC_PWM_Type * const pwm_regs_table[MCU_PWM_PORTS] = MCU_PWM_REGS;
 u8 const pwm_irqs[MCU_PWM_PORTS] = MCU_PWM_IRQS;
 
+static void configure_pin(const mcu_pin_t * pin, void * arg){
+	u32 * enabled_channels = arg;
+	//set the bit in enabled channels based on the pin number
+	if( pin->port == 1 ){
+		switch(pin->pin){
+		case 18: *enabled_channels |= (1<<0); return;
+		case 20: *enabled_channels |= (1<<1); return;
+		case 21: *enabled_channels |= (1<<2); return;
+		case 23: *enabled_channels |= (1<<3); return;
+		case 24: *enabled_channels |= (1<<4); return;
+		case 26: *enabled_channels |= (1<<5); return;
+		}
+	} else if(pin->port == 2 ){
+		*enabled_channels |= (1<<pin->pin);
+	}
+#ifdef LPCXX7X_8X
+	else if( pin->port == 3 ){
+		*enabled_channels |= (1<<(pin->pin-24)); //pins 24 to 29 inclusive
+	}
+#endif
+
+}
+
 void mcu_pwm_dev_power_on(const devfs_handle_t * handle){
 	int port = handle->port;
 	if ( pwm_local[port].ref_count == 0 ){
@@ -125,11 +148,15 @@ int mcu_pwm_getinfo(const devfs_handle_t * handle, void * ctl){
 int mcu_pwm_setattr(const devfs_handle_t * handle, void * ctl){
 	int port = handle->port;
 	//check the GPIO configuration
-	int i;
 	u32 tmp;
 	u32 enabled_channels;
-	pwm_attr_t * attr = ctl;
 	LPC_PWM_Type * regs = pwm_regs_table[port];
+
+	const pwm_attr_t * attr = mcu_select_attr(handle, ctl);
+	if( attr == 0 ){
+		return -1;
+	}
+
 
 #ifdef __lpc17xx
 	if( regs == 0 ){
@@ -144,26 +171,14 @@ int mcu_pwm_setattr(const devfs_handle_t * handle, void * ctl){
 	}
 
 	//Configure the GPIO
-
-	if( mcu_core_set_pin_assignment(
+	enabled_channels = 0;
+	if( mcu_set_pin_assignment(
 			&(attr->pin_assignment),
+			MCU_CONFIG_PIN_ASSIGNMENT(pwm_config_t, handle),
 			MCU_PIN_ASSIGNMENT_COUNT(pwm_pin_assignment_t),
-			CORE_PERIPH_PWM,
-			port) < 0 ){
+			CORE_PERIPH_PWM, port, configure_pin, &enabled_channels) < 0 ){
 		return -1;
 	}
-
-	enabled_channels = 0;
-	for(i=0; i < MCU_PIN_ASSIGNMENT_COUNT(pwm_pin_assignment_t); i++){
-		const mcu_pin_t * pin = mcu_pin_at(&(attr->pin_assignment), i);
-		if( mcu_is_port_valid(pin->port) ){
-//need a table to convert port/pin to channel
-
-
-		}
-
-	}
-
 
 
 	tmp = mcu_board_config.core_periph_freq / attr->freq;

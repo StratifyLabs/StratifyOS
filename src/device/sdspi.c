@@ -68,6 +68,7 @@ static void _sdspi_deassert_cs(const devfs_handle_t * handle){
 	const sdspi_config_t * config = handle->config;
 	devfs_handle_t pio_handle;
 	pio_handle.port = config->cs.port;
+	pio_handle.config = 0;
 
 	mcu_pio_setmask(&pio_handle, (void*)(ssize_t)(1<<config->cs.pin));
 }
@@ -76,6 +77,8 @@ static void _sdspi_assert_cs(const devfs_handle_t * handle){
 	const sdspi_config_t * config = handle->config;
 	devfs_handle_t pio_handle;
 	pio_handle.port = config->cs.port;
+	pio_handle.config = 0;
+
 	mcu_pio_clrmask(&pio_handle, (void*)(ssize_t)(1<<config->cs.pin));
 }
 
@@ -89,6 +92,7 @@ int sdspi_open(const devfs_handle_t * handle){
 	const sdspi_config_t * config = handle->config;
 	devfs_handle_t pio_handle;
 	pio_handle.port = config->cs.port;
+	pio_handle.config = 0;
 
 	/*
 	spi_attr_t spi_cfg;

@@ -32,8 +32,7 @@ static u32 mcu_core_reset_source = CORE_FLAG_IS_RESET_SOFTWARE;
 
 int mcu_core_setpinfunc(const devfs_handle_t * handle, void * arg){
 	core_pinfunc_t * argp = arg;
-	return mcu_core_set_pinsel_func(argp->io.port,
-			argp->io.pin,
+	return mcu_core_set_pinsel_func(&(argp->io),
 			argp->periph_func,
 			argp->periph_port);
 }
@@ -58,7 +57,14 @@ int mcu_core_getinfo(const devfs_handle_t * handle, void * arg){
 int mcu_core_setattr(const devfs_handle_t * handle, void * arg){
 	int port = handle->port;
 	core_attr_t * attr = arg;
+
+	if( attr == 0 ){
+		errno = EINVAL;
+		return -1;
+	}
+
 	u32 o_flags = attr->o_flags;
+
 
 	if( o_flags & CORE_FLAG_SET_CLKOUT ){
 		enable_clock_out(o_flags, attr->freq);
@@ -153,19 +159,6 @@ int mcu_core_setclkdivide(const devfs_handle_t * handle, void * arg){
 	return 0;
 }
 
-int mcu_core_set_pin_assignment(const void * pin_assignment, int count, int periph, int periph_port){
-	int i;
-	for(i=0; i < count; i++){
-		const mcu_pin_t * pin = mcu_pin_at(pin_assignment, i);
-		if( mcu_is_port_valid(pin->port) ){
-			if ( mcu_core_set_pinsel_func(pin->port, pin->pin, periph, periph_port) ){
-				return -1;
-			}
-		}
-	}
-	return 0;
-}
-
 int mcu_core_getmcuboardconfig(const devfs_handle_t * handle, void * arg){
 	memcpy(arg, &mcu_board_config, sizeof(mcu_board_config));
 	return 0;
@@ -248,7 +241,8 @@ int enable_clock_out(int o_flags, int div){
 	}
 #endif
 
-	mcu_core_set_pinsel_func(1, 27, CORE_PERIPH_CORE, 0);
+	mcu_pin_t pin = mcu_pin(1,27);
+	mcu_core_set_pinsel_func(&pin, CORE_PERIPH_CORE, 0);
 	return 0;
 
 }

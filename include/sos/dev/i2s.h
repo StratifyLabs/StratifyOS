@@ -58,7 +58,6 @@ enum {
 	I2S_FLAG_IS_TRANSMITTER = (1<<8),
 	I2S_FLAG_IS_RECEIVER = (1<<9),
 	I2S_FLAG_IS_MCLK_ENABLED /*! Set this bit to enable the mclk output */ = (1<<12),
-	I2S_FLAG_IS_DEFAULT_PIN_ASSIGNMENT /*! Use default pin assignment (if available) */ = (1<<13)
 };
 
 /*! \brief I2S IO Attributes

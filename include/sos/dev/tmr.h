@@ -77,7 +77,6 @@ enum {
 	TMR_FLAG_IS_CHANNEL_CLEAR_OUTPUT_ON_MATCH /*! Stop when the timer resets */ = (1<<19),
 	TMR_FLAG_IS_CHANNEL_TOGGLE_OUTPUT_ON_MATCH /*! Stop when the timer resets */ = (1<<20),
 	TMR_FLAG_IS_CHANNEL_PWM_MODE /*! Stop when the timer resets */ = (1<<21),
-	TMR_FLAG_IS_DEFAULT_PIN_ASSIGNMENT /*! Use default pin assignment (if available) */ = (1<<22)
 
 };
 

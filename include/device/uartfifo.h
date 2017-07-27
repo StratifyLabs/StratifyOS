@@ -21,8 +21,8 @@
 #define DEV_UARTFIFO_H_
 
 #include "sos/dev/uartfifo.h"
+#include "mcu/uart.h"
 #include "fifo.h"
-
 
 
 /*! \details This stores the data for the state of the fifo buffer.
@@ -38,6 +38,7 @@ typedef struct {
  *
  */
 typedef struct {
+	uart_config_t uart;
 	fifo_config_t fifo;
 } uartfifo_config_t;
 

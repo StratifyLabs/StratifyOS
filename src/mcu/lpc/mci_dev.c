@@ -116,6 +116,7 @@ int mcu_mci_setattr(const devfs_handle_t * handle, void * ctl){
 
 	}
 
+#if 0
 	//setup the pin selection
 	switch(attr->pin_assign){
 	case 1:
@@ -140,6 +141,7 @@ int mcu_mci_setattr(const devfs_handle_t * handle, void * ctl){
 		break;
 
 	}
+#endif
 
 
 	regs->CLOCK = (1<<8)|(1<<9);

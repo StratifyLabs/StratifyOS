@@ -62,14 +62,6 @@ int sched_check_tid(int id){
 	return -1;
 }
 
-void set_uart_priority(){
-#if MCU_DEBUG
-	//mcu_action_t action;
-	//memset(&action, 0, sizeof(action));
-	//action.prio = 127;
-	//mcu_uart_setaction(mcu_board_config.debug_uart_port, &action);
-#endif
-}
 
 /* \details This function should be called in main() after all hardware
  * and devices have been initialized.
@@ -91,12 +83,9 @@ void scheduler(){
 	u8 do_sleep;
 	sched_priv_assert_status_change();
 
-	//Elevate the priority of the UART so that it can debug in interrupts
-	set_uart_priority();
-
 	//This interval needs to be long enough to allow for flash writes
 	if( (sos_board_config.o_sys_flags & SYS_FLAGS_DISABLE_WDT) == 0 ){
-		mcu_wdt_init(WDT_MODE_INTERRUPT|WDT_MODE_CLK_SRC_MAIN, SCHED_RR_DURATION * 10 * sos_board_config.task_total + 5);
+		//mcu_wdt_init(WDT_MODE_INTERRUPT|WDT_MODE_CLK_SRC_MAIN, SCHED_RR_DURATION * 10 * sos_board_config.task_total + 5);
 	}
 
 	if ( sched_prepare() ){  //this starts memory protection

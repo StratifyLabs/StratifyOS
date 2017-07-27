@@ -42,8 +42,6 @@ static int start_single();
  * \return Zero on success or an error code (see \ref caoslib_err_t)
  */
 int sched_init(){
-
-#if SINGLE_TASK == 0
 	task_total = sos_board_config.task_total;
 	task_table = sos_task_table;
 
@@ -56,7 +54,6 @@ int sched_init(){
 	//Do basic init of task 0 so that memory allocation can happen before the scheduler starts
 	task_table[0].reent = _impure_ptr;
 	task_table[0].global_reent = _global_impure_ptr;
-#endif
 
 	return 0;
 }
@@ -66,8 +63,6 @@ int sched_init(){
  * \return Zero on success or an error code
  */
 int sched_start(void * (*init)(void*), int priority){
-
-#if SINGLE_TASK == 0
 
 	sos_sched_table[0].init = init;
 	sos_sched_table[0].priority = priority;
@@ -82,14 +77,7 @@ int sched_start(void * (*init)(void*), int priority){
 	){
 		return -1;
 	}
-#else
 
-	start_function = init;
-	//Enter thread mode
-	task_init_single(start_single,
-			NULL,
-			sos_board_config.sys_memory_size);
-#endif
 	//Program never gets to this point
 	return -1;
 }
@@ -112,15 +100,10 @@ int sched_prepare(){
 
 	mcu_debug_user_printf("Load MCU Faults\n");
 
-
-
-
 	//Load any possible faults from the last reset
 	mcu_fault_load((fault_t*)&sched_fault.fault);
 
 	mcu_debug_user_printf("Init MPU\n");
-
-
 #if USE_MEMORY_PROTECTION > 0
 	if ( task_init_mpu(&_data, sos_board_config.sys_memory_size) < 0 ){
 		sched_debug("Failed to initialize memory protection\n");
@@ -131,16 +114,6 @@ int sched_prepare(){
 	cortexm_set_unprivileged_mode(); //Enter unpriv mode
 	return 0;
 }
-
-#if SINGLE_TASK != 0
-int start_single(){
-	sched_prepare();
-	start_function(NULL);
-}
-#endif
-
-
-
 
 /*! @} */
 

@@ -49,7 +49,7 @@ int sst25vf_open(const devfs_handle_t * cfg){
 		return err;
 	}
 
-	if( (err = mcu_spi_ioctl(cfg, I_SPI_SETATTR, (void*)&(config->attr))) < 0 ){
+	if( (err = mcu_spi_ioctl(cfg, I_SPI_SETATTR, (void*)&(config->spi.attr))) < 0 ){
 		return err;
 	}
 

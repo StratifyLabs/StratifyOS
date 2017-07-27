@@ -33,6 +33,13 @@
 extern "C" {
 #endif
 
+typedef struct MCU_PACK {
+	u32 value;
+} tmr_event_data_t;
+
+typedef struct MCU_PACK {
+	tmr_attr_t attr;
+} tmr_config_t;
 
 int mcu_tmr_open(const devfs_handle_t * cfg) MCU_PRIV_CODE;
 int mcu_tmr_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_PRIV_CODE;

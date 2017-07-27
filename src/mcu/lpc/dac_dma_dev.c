@@ -69,7 +69,8 @@ void mcu_dac_dev_power_off(const devfs_handle_t * handle){
 	int port = handle->port;
 	if ( dac_local[port].ref_count > 0 ){
 		if ( dac_local[port].ref_count == 1 ){
-		mcu_core_set_pinsel_func(0,26,CORE_PERIPH_PIO,0);
+			mcu_pin_t pin = mcu_pin(0,26);
+			mcu_core_set_pinsel_func(&pin,CORE_PERIPH_PIO,0);
 		}
 		dac_local[port].ref_count--;
 	}
@@ -100,27 +101,34 @@ int mcu_dac_dma_setattr(const devfs_handle_t * handle, void * ctl){
 
 int mcu_dac_setattr(const devfs_handle_t * handle, void * ctl){
 	int port = handle->port;
-	dac_attr_t * attr = ctl;
+	u32 freq;
 	int clkdiv;
 
+	const dac_attr_t * attr = mcu_select_attr(handle, ctl);
+	if( attr == 0 ){
+		return -1;
+	}
+
+	freq = attr->freq;
 	if ( attr->freq == 0 ){
 		errno = EINVAL;
 		return -1 - offsetof(dac_attr_t, freq);
 	}
 
 	if ( attr->freq > DAC_MAX_FREQ ){
-		attr->freq = DAC_MAX_FREQ;
+		freq = DAC_MAX_FREQ;
 	}
 
-	if( mcu_core_set_pin_assignment(
+
+	if( mcu_set_pin_assignment(
 			&(attr->pin_assignment),
+			MCU_CONFIG_PIN_ASSIGNMENT(dac_config_t, handle),
 			MCU_PIN_ASSIGNMENT_COUNT(dac_pin_assignment_t),
-			CORE_PERIPH_DAC,
-			port) < 0 ){
+			CORE_PERIPH_DAC, port, 0, 0) < 0 ){
 		return -1;
 	}
 
-	clkdiv = mcu_board_config.core_periph_freq / attr->freq;
+	clkdiv = mcu_board_config.core_periph_freq / freq;
 	if ( clkdiv > ((1<<16)-1) ){
 		clkdiv = ((1<<16)-1);
 	} else if ( clkdiv < 1 ){
@@ -128,7 +136,7 @@ int mcu_dac_setattr(const devfs_handle_t * handle, void * ctl){
 	}
 
 #ifdef LPCXX7X_8X
-		LPC_IOCON->P0_26 = 0x02 | (1<<16); //Enable the DAC pin
+	LPC_IOCON->P0_26 = 0x02 | (1<<16); //Enable the DAC pin
 #endif
 
 	LPC_DAC->CNTVAL = clkdiv;

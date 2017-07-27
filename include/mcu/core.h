@@ -68,7 +68,6 @@ int mcu_core_getclock(){ return mcu_board_config.core_cpu_freq; }
 
 void mcu_core_get_bootloader_api(void * args) MCU_PRIV_CODE;
 void mcu_core_set_nvic_priority(int irq, int prio) MCU_PRIV_CODE;
-int mcu_core_set_pin_assignment(const void * pin_assignement, int count, int periph, int periph_port) MCU_PRIV_CODE;
 void mcu_core_setclock(int fclk, int fosc) MCU_PRIV_CODE;
 int mcu_core_initclock(int div) MCU_PRIV_CODE;
 void mcu_core_setclockinternal(int fclk) MCU_PRIV_CODE;
@@ -89,7 +88,7 @@ int mcu_core_user_sleep(core_sleep_t level);
 void mcu_set_sleep_mode(int * level) MCU_PRIV_CODE;
 int mcu_core_execsleep(int port, void * arg) MCU_PRIV_CODE;
 int mcu_core_reset(int port, void * arg) MCU_PRIV_CODE;
-int mcu_core_set_pinsel_func(int gpio_port, int pin, core_periph_t function, int periph_port) MCU_PRIV_CODE;
+int mcu_core_set_pinsel_func(const mcu_pin_t * pin, core_periph_t function, int periph_port) MCU_PRIV_CODE;
 void mcu_core_getserialno(mcu_sn_t * serialno) MCU_PRIV_CODE;
 
 

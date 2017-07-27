@@ -225,8 +225,7 @@ int mcu_uart_getinfo(const devfs_handle_t * handle, void * ctl){
 			UART_FLAG_IS_PARITY_ODD |
 			UART_FLAG_IS_PARITY_EVEN |
 			UART_FLAG_IS_STOP1 |
-			UART_FLAG_IS_STOP2 |
-			UART_FLAG_IS_DEFAULT_PIN_ASSIGNMENT;
+			UART_FLAG_IS_STOP2;
 
 	return 0;
 }
@@ -238,18 +237,12 @@ int mcu_uart_setattr(const devfs_handle_t * handle, void * ctl){
 	uint8_t lcr;
 	uint32_t f_div;
 	LPC_UART_Type * uart_regs;
-	const uart_config_t * config = handle->config;
 	u32 o_flags;
-	const uart_attr_t * attr = (const uart_attr_t*)ctl;
-	const uart_pin_assignment_t * pin_assignment;
 	int port = handle->port;
 
+	const uart_attr_t * attr = mcu_select_attr(handle, ctl);
 	if( attr == 0 ){
-		attr = &(config->attr);
-		if( attr == 0 ){
-			errno = EINVAL;
-			return -1;
-		}
+		return -1;
 	}
 
 	uart_regs = uart_regs_table[port];
@@ -285,17 +278,11 @@ int mcu_uart_setattr(const devfs_handle_t * handle, void * ctl){
 		lcr |= ULCR_PAR_ODD;
 	}
 
-	if( (o_flags & UART_FLAG_IS_DEFAULT_PIN_ASSIGNMENT) && config ){
-		pin_assignment = &(config->attr.pin_assignment);
-	} else {
-		pin_assignment = &(attr->pin_assignment);
-	}
-
-	if( mcu_core_set_pin_assignment(
-			pin_assignment,
+	if( mcu_set_pin_assignment(
+			&(attr->pin_assignment),
+			MCU_CONFIG_PIN_ASSIGNMENT(uart_config_t, handle),
 			MCU_PIN_ASSIGNMENT_COUNT(uart_pin_assignment_t),
-			CORE_PERIPH_UART,
-			port) < 0 ){
+			CORE_PERIPH_UART, port, 0, 0) < 0 ){
 		return -1;
 	}
 
