@@ -142,8 +142,6 @@ int mcu_pwm_getinfo(const devfs_handle_t * handle, void * ctl){
 	info->counter_value = regs->TC;
 	info->o_flags = PWM_FLAG_IS_ACTIVE_HIGH | PWM_FLAG_IS_ACTIVE_LOW;
 
-	mcu_debug_printf("Latch 0x%lX\n", regs->LER);
-
 	return 0;
 }
 
@@ -237,14 +235,12 @@ int mcu_pwm_set(const devfs_handle_t * handle, void * ctl){
 #ifdef __lpc17xx
 	if( regs == 0 ){
 		errno = ENODEV;
-		mcu_debug_printf("No Dev\n");
 		return -1;
 	}
 #endif
 
 	if ( regs->MCR & (1<<0) ){ //If the interrupt is enabled--the pwm is busy
 		//Device is busy and can't start a new write
-		mcu_debug_printf("Busy\n");
 		errno = EBUSY;
 		return -1;
 	}
