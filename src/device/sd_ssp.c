@@ -17,28 +17,27 @@
  *
  */
 
+#include "mcu/spi.h"
 
-#ifndef MCU_LED_H_
-#define MCU_LED_H_
-
-#include "sos/dev/led.h"
-#include "sos/fs/devfs.h"
-
-
-enum {
-	LED_CONFIG_FLAG_IS_ACTIVE_HIGH = (1<<0),
-};
-
-typedef struct MCU_PACK {
-	u32 o_flags;
-	u32 pin;
-} led_config_t;
-
-int led_open(const devfs_handle_t * cfg);
-int led_ioctl(const devfs_handle_t * cfg, int request, void * ctl);
-int led_read(const devfs_handle_t * cfg, devfs_async_t * rop);
-int led_write(const devfs_handle_t * cfg, devfs_async_t * wop);
-int led_close(const devfs_handle_t * cfg);
+#define mcu_spi_open mcu_ssp_open
+#define mcu_spi_close mcu_ssp_close
+#define mcu_spi_setaction mcu_ssp_setaction
+#define mcu_spi_setduplex mcu_ssp_setduplex
+#define mcu_spi_swap mcu_ssp_swap
+#define mcu_spi_getinfo mcu_ssp_getinfo
+#define mcu_spi_setattr mcu_ssp_setattr
+#define mcu_spi_write mcu_ssp_write
+#define mcu_spi_read mcu_ssp_read
+#define mcu_spi_ioctl mcu_ssp_ioctl
 
 
-#endif /* MCU_LED_H_ */
+#define sd_spi_open sd_ssp_open
+#define sd_spi_ioctl sd_ssp_ioctl
+#define sd_spi_read sd_ssp_read
+#define sd_spi_write sd_ssp_write
+#define sd_spi_close sd_ssp_close
+
+
+#include <device/sd_spi.c>
+
+

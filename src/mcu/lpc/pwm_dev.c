@@ -62,7 +62,7 @@ static void configure_pin(const mcu_pin_t * pin, void * arg){
 		case 26: *enabled_channels |= (1<<5); return;
 		}
 	} else if(pin->port == 2 ){
-		*enabled_channels |= (1<<pin->pin);
+		*enabled_channels |= (1<<(pin->pin));
 	}
 #ifdef LPCXX7X_8X
 	else if( pin->port == 3 ){
@@ -128,19 +128,21 @@ int mcu_pwm_dev_is_powered(const devfs_handle_t * handle){
 }
 
 int mcu_pwm_getinfo(const devfs_handle_t * handle, void * ctl){
-	pwm_info_t * info = ctl;
+	int port = handle->port;
+	LPC_PWM_Type * regs = pwm_regs_table[port];	pwm_info_t * info = ctl;
 
 #ifdef __lpc17xx
-	int port = handle->port;
-	LPC_PWM_Type * regs = pwm_regs_table[port];
+
 	if( regs == 0 ){
 		errno = ENODEV;
 		return -1;
 	}
 #endif
 
+	info->counter_value = regs->TC;
 	info->o_flags = PWM_FLAG_IS_ACTIVE_HIGH | PWM_FLAG_IS_ACTIVE_LOW;
 
+	mcu_debug_printf("Latch 0x%lX\n", regs->LER);
 
 	return 0;
 }
@@ -150,12 +152,11 @@ int mcu_pwm_setattr(const devfs_handle_t * handle, void * ctl){
 	//check the GPIO configuration
 	u32 tmp;
 	u32 enabled_channels;
+	u32 freq;
 	LPC_PWM_Type * regs = pwm_regs_table[port];
 
 	const pwm_attr_t * attr = mcu_select_attr(handle, ctl);
-	if( attr == 0 ){
-		return -1;
-	}
+	if( attr == 0 ){ return -1; }
 
 
 #ifdef __lpc17xx
@@ -165,9 +166,9 @@ int mcu_pwm_setattr(const devfs_handle_t * handle, void * ctl){
 	}
 #endif
 
+	freq = attr->freq;
 	if ( attr->freq == 0 ){
-		errno = EINVAL;
-		return -1 - offsetof(pwm_attr_t, freq);
+		freq = 1000000;
 	}
 
 	//Configure the GPIO
@@ -181,7 +182,7 @@ int mcu_pwm_setattr(const devfs_handle_t * handle, void * ctl){
 	}
 
 
-	tmp = mcu_board_config.core_periph_freq / attr->freq;
+	tmp = mcu_board_config.core_periph_freq / freq;
 	if ( tmp > 0 ){
 		tmp = tmp - 1;
 	}
@@ -190,11 +191,14 @@ int mcu_pwm_setattr(const devfs_handle_t * handle, void * ctl){
 
 	regs->PR = tmp;
 	//Configure to reset on match0 in PWM Mode
-	regs->MR0 = attr->top;
-	regs->LER |= (1<<0);
-	regs->MCR = (1<<1); //enable the reset
-	regs->TCR = (1<<3)|(1<<0); //Enable the counter in PWM mode
+	regs->MCR = (1<<1); //reset the counter then it matches MR0
+	regs->CTCR = 0;
 	regs->PCR = (enabled_channels & 0x3F) << 9;
+	regs->TCR = (1<<3)|(1<<0); //Enable the counter in PWM mode
+
+	regs->TC = regs->MR0 - 1; //force the counter to latch right now
+	regs->MR0 = attr->period;
+	regs->LER |= (1<<0);
 
 
 	return 0;
@@ -233,12 +237,14 @@ int mcu_pwm_set(const devfs_handle_t * handle, void * ctl){
 #ifdef __lpc17xx
 	if( regs == 0 ){
 		errno = ENODEV;
+		mcu_debug_printf("No Dev\n");
 		return -1;
 	}
 #endif
 
 	if ( regs->MCR & (1<<0) ){ //If the interrupt is enabled--the pwm is busy
 		//Device is busy and can't start a new write
+		mcu_debug_printf("Busy\n");
 		errno = EBUSY;
 		return -1;
 	}
@@ -283,27 +289,29 @@ void update_pwm(int port, int chan, int duty){
 	LPC_PWM_Type * regs = pwm_regs_table[port];
 
 	switch(chan){
-	case 0:
+	case 1:
 		regs->MR1 = duty;
 		break;
-	case 1:
+	case 2:
 		regs->MR2 = duty;
 		break;
-	case 2:
+	case 3:
 		regs->MR3 = duty;
 		break;
-	case 3:
+	case 4:
 		regs->MR4 = duty;
 		break;
-	case 4:
+	case 5:
 		regs->MR5 = duty;
 		break;
-	case 5:
+	case 6:
 		regs->MR6 = duty;
 		break;
+	default:
+		return;
 	}
 
-	regs->LER |= (1<<(chan+1));
+	regs->LER |= (1<<(chan));
 }
 
 void exec_callback(int port, LPC_PWM_Type * regs, u32 o_events){

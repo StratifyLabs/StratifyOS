@@ -6,20 +6,20 @@
 C_SRCS += \
 ../src/sys/link/link_thread.c \
 ../src/sys/link/sos_link_transport_usb.c \
-../src/sys/link/sos_link_transport_usb_common.c \
-../src/sys/link/sos_link_transport_usb_dual_vcp.c 
+../src/sys/link/sos_link_transport_usb_descriptors.c \
+../src/sys/link/sos_link_transport_usb_dual_vcp_descriptors.c 
 
 OBJS += \
 ./src/sys/link/link_thread.o \
 ./src/sys/link/sos_link_transport_usb.o \
-./src/sys/link/sos_link_transport_usb_common.o \
-./src/sys/link/sos_link_transport_usb_dual_vcp.o 
+./src/sys/link/sos_link_transport_usb_descriptors.o \
+./src/sys/link/sos_link_transport_usb_dual_vcp_descriptors.o 
 
 C_DEPS += \
 ./src/sys/link/link_thread.d \
 ./src/sys/link/sos_link_transport_usb.d \
-./src/sys/link/sos_link_transport_usb_common.d \
-./src/sys/link/sos_link_transport_usb_dual_vcp.d 
+./src/sys/link/sos_link_transport_usb_descriptors.d \
+./src/sys/link/sos_link_transport_usb_dual_vcp_descriptors.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes

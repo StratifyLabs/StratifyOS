@@ -31,6 +31,19 @@ limitations under the License.
 #include "device/sys.h"
 #include "sos/link/transport_usb.h"
 
+
+#define USB0_DEVFIFO_BUFFER_SIZE 64
+static char usb0_fifo_buffer[USB0_DEVFIFO_BUFFER_SIZE] MCU_SYS_MEM;
+const usbfifo_config_t sos_link_transport_usb_fifo_cfg = {
+		.endpoint = SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT,
+		.endpoint_size = SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT_SIZE,
+		.fifo = {
+				.buffer = usb0_fifo_buffer,
+				.size = USB0_DEVFIFO_BUFFER_SIZE
+		}
+};
+usbfifo_state_t sos_link_transport_usb_fifo_state MCU_SYS_MEM;
+
 static int open_pio(mcu_pin_t pin, int active_high){
 	char path[PATH_MAX];
 	int fd;

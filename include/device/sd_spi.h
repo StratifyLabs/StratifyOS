@@ -17,12 +17,12 @@
  *
  */
 
-#ifndef DEVICE_SDSPI_H_
-#define DEVICE_SDSPI_H_
+#ifndef DEVICE_SD_SPI_H_
+#define DEVICE_SD_SPI_H_
 
 #include "sos/dev/sd.h"
-#include "sos/dev/spi.h"
 #include "sos/fs/devfs.h"
+#include "mcu/spi.h"
 
 typedef struct {
 	const char * buf;
@@ -33,7 +33,7 @@ typedef struct {
 	devfs_async_t op;
 	mcu_event_handler_t handler;
 	u32 flags;
-} sdspi_state_t;
+} sd_spi_state_t;
 
 typedef struct {
 	spi_config_t spi;
@@ -42,23 +42,23 @@ typedef struct {
 	mcu_pin_t wp /*! \brief Write protect pin */;
 	mcu_pin_t miso /*! \brief The write complete pin */;
 	uint32_t size /*! \brief The size of the memory on the device */;
-} sdspi_config_t;
+} sd_spi_config_t;
 
 typedef struct MCU_PACK {
 	uint16_t r2;
-} sdspi_status_t;
+} sd_spi_status_t;
 
-int sdspi_open(const devfs_handle_t * handle);
-int sdspi_ioctl(const devfs_handle_t * handle, int request, void * ctl);
-int sdspi_read(const devfs_handle_t * handle, devfs_async_t * rop);
-int sdspi_write(const devfs_handle_t * handle, devfs_async_t * wop);
-int sdspi_close(const devfs_handle_t * handle);
+int sd_spi_open(const devfs_handle_t * handle);
+int sd_spi_ioctl(const devfs_handle_t * handle, int request, void * ctl);
+int sd_spi_read(const devfs_handle_t * handle, devfs_async_t * rop);
+int sd_spi_write(const devfs_handle_t * handle, devfs_async_t * wop);
+int sd_spi_close(const devfs_handle_t * handle);
 
-int sdssp_open(const devfs_handle_t * handle);
-int sdssp_ioctl(const devfs_handle_t * handle, int request, void * ctl);
-int sdssp_read(const devfs_handle_t * handle, devfs_async_t * rop);
-int sdssp_write(const devfs_handle_t * handle, devfs_async_t * wop);
-int sdssp_close(const devfs_handle_t * handle);
+int sd_ssp_open(const devfs_handle_t * handle);
+int sd_ssp_ioctl(const devfs_handle_t * handle, int request, void * ctl);
+int sd_ssp_read(const devfs_handle_t * handle, devfs_async_t * rop);
+int sd_ssp_write(const devfs_handle_t * handle, devfs_async_t * wop);
+int sd_ssp_close(const devfs_handle_t * handle);
 
 
-#endif /* DEVICE_SDSPI_H_ */
+#endif /* DEVICE_SD_SPI_H_ */

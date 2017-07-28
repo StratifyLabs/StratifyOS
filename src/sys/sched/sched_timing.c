@@ -202,7 +202,7 @@ int open_usecond_tmr(){
 	devfs_handle_t tmr;
 	tmr.port = sos_board_config.clk_usecond_tmr;
 	tmr.config = 0;
-	tmr.handle = 0;
+	tmr.state = 0;
 
 	//Open the microsecond timer
 	err = mcu_tmr_open(&tmr);

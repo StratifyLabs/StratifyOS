@@ -1,4 +1,4 @@
-/* Copyright 2011-2017 Tyler Gilbert;
+/* Copyright 2011-2016 Tyler Gilbert;
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -17,12 +17,28 @@
  *
  */
 
-#ifndef SOS_DEV_SD_H_
-#define SOS_DEV_SD_H_
 
-#include "mcu/types.h"
+#ifndef MCU_LED_H_
+#define MCU_LED_H_
 
-#define I_SDSPI_STATUS _IOCTLW('S', 2, sd_spi_status_t)
+#include "sos/dev/led.h"
+#include "sos/fs/devfs.h"
 
 
-#endif /* SOS_DEV_SD_H_ */
+enum {
+	LED_PIO_CONFIG_FLAG_IS_ACTIVE_HIGH = (1<<0),
+};
+
+typedef struct MCU_PACK {
+	u32 o_flags;
+	u32 pin;
+} led_pio_config_t;
+
+int led_pio_open(const devfs_handle_t * cfg);
+int led_pio_ioctl(const devfs_handle_t * cfg, int request, void * ctl);
+int led_pio_read(const devfs_handle_t * cfg, devfs_async_t * rop);
+int led_pio_write(const devfs_handle_t * cfg, devfs_async_t * wop);
+int led_pio_close(const devfs_handle_t * cfg);
+
+
+#endif /* MCU_LED_H_ */

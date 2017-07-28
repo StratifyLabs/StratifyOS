@@ -101,6 +101,7 @@ typedef struct MCU_PACK {
 	//provides info about the PWM
 	u32 o_flags /*! Bitmask to show which flags are supported through the driver */;
 	u32 o_events /*! Bitmask of supported events */;
+	u32 counter_value;
 } pwm_info_t;
 
 typedef struct MCU_PACK {
@@ -110,8 +111,8 @@ typedef struct MCU_PACK {
 typedef struct MCU_PACK {
 	u32 o_flags;
 	pwm_pin_assignment_t pin_assignment;
-	u32 freq /*! \brief The PWM timer frequency (target value on write, actual value on read); The period is the "top" member divided by "freq" */;
-	u32 top /*! \brief The top value of the PWM counter */;
+	u32 freq /*! The PWM counter frequency */;
+	u32 period /*! The PWM period in counts */;
 } pwm_attr_t;
 
 /*! \brief Get the PWM attributes (\ref pwm_attr_t)

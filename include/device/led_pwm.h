@@ -17,27 +17,29 @@
  *
  */
 
-#include "mcu/spi.h"
+#ifndef DEVICE_LED_PWM_H_
+#define DEVICE_LED_PWM_H_
 
-#define mcu_spi_open mcu_ssp_open
-#define mcu_spi_close mcu_ssp_close
-#define mcu_spi_setaction mcu_ssp_setaction
-#define mcu_spi_setduplex mcu_ssp_setduplex
-#define mcu_spi_swap mcu_ssp_swap
-#define mcu_spi_getinfo mcu_ssp_getinfo
-#define mcu_spi_setattr mcu_ssp_setattr
-#define mcu_spi_write mcu_ssp_write
-#define mcu_spi_read mcu_ssp_read
-#define mcu_spi_ioctl mcu_ssp_ioctl
+#include "mcu/pwm.h"
+#include "sos/dev/led.h"
+#include "sos/fs/devfs.h"
 
 
-#define sdspi_open sdssp_open
-#define sdspi_ioctl sdssp_ioctl
-#define sdspi_read sdssp_read
-#define sdspi_write sdssp_write
-#define sdspi_close sdssp_close
+enum {
+	LED_PWM_CONFIG_FLAG_IS_ACTIVE_HIGH = (1<<0),
+};
+
+typedef struct MCU_PACK {
+	pwm_config_t pwm;
+	u32 loc; //location of the channel
+	u32 o_flags;
+} led_pwm_config_t;
+
+int led_pwm_open(const devfs_handle_t * cfg);
+int led_pwm_ioctl(const devfs_handle_t * cfg, int request, void * ctl);
+int led_pwm_read(const devfs_handle_t * cfg, devfs_async_t * rop);
+int led_pwm_write(const devfs_handle_t * cfg, devfs_async_t * wop);
+int led_pwm_close(const devfs_handle_t * cfg);
 
 
-#include <device/sdspi.c>
-
-
+#endif /* DEVICE_LED_PWM_H_ */

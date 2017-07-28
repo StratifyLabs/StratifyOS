@@ -26,7 +26,7 @@
 extern "C" {
 #endif
 
-#define LED_IOC_IDENT_CHAR 'I'
+#define LED_IOC_IDENT_CHAR 'L'
 
 typedef struct MCU_PACK {
 	u32 value;
@@ -35,12 +35,10 @@ typedef struct MCU_PACK {
 
 enum {
 	LED_FLAG_NONE = (1<<0),
-	LED_FLAG_IS_ACTIVE_HIGH /*! LED driver is active high */ = (1<<1),
-	LED_FLAG_IS_ACTIVE_LOW /*! LED driver is active  low */ = (1<<2),
-	LED_FLAG_INIT /*! Set this flag will reinitialize the LED */ = (1<<3),
-	LED_FLAG_SET_BRIGHTNESS /*! Set this flag to set the LED brightness (if supported) */ = (1<<4),
-	LED_FLAG_ENABLE /*! Turn the LED on */ = (1<<5),
-	LED_FLAG_DISABLE /*! Turn the LED off */ = (1<<6),
+	LED_FLAG_IS_HIGH_IMPEDANCE /*! LED driver disables output when LED is off */ = (1<<1),
+	LED_FLAG_IS_DUTY_CYCLE /*! When set, use \a duty_cycle and \a period to set brightness or flashing */ = (1<<2),
+	LED_FLAG_ENABLE /*! Turn the LED on */ = (1<<3),
+	LED_FLAG_DISABLE /*! Turn the LED off (use with LED_FLAG_IS_HIGH_IMPEDANCE) */ = (1<<4),
 };
 
 /*! \brief I2S IO Attributes
@@ -56,8 +54,8 @@ typedef struct MCU_PACK {
 
 typedef struct MCU_PACK {
 	u32 o_flags  /*! Flag bitmask */;
-	u32 period /*! LED blinking period in ms (if supported) */;
-	u32 brightness /*! LED brightness (if supported) */;
+	u32 duty_cycle /*! LED duty cycle (if supported) */;
+	u32 period /*! LED blinking period in us (if supported) */;
 } led_attr_t;
 
 /*! \brief This request gets the LED info.

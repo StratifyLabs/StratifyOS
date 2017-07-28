@@ -27,41 +27,30 @@
 #include "usbd/control.h"
 #include "usbd/cdc.h"
 #include "mcu/core.h"
-#include "mcu/boot_debug.h"
+#include "mcu/debug.h"
 #include "device/sys.h"
 
 #include "sos/link/transport_usb.h"
 
 #define SOS_USBD_VID 0x20A0
-#define SOS_USBD_PID 0x413B
+#define SOS_USBD_PID 0x41D5
 
 #define SOS_REQUIRED_CURRENT 500
-#define USB0_DEVFIFO_BUFFER_SIZE 64
 
 #define SOS_VCP0_INTERFACE 0
 #define SOS_VCP0_DATA_INTERFACE 1
-#define SOS_VCP1_INTERFACE 2
-#define SOS_VCP1_DATA_INTERFACE 3
 
-static char usb0_fifo_buffer[USB0_DEVFIFO_BUFFER_SIZE] MCU_SYS_MEM;
-const usbfifo_config_t sos_link_transport_usb_fifo_cfg = {
-		.endpoint = SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT,
-		.endpoint_size = SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT_SIZE,
-		.fifo = {
-				.buffer = usb0_fifo_buffer,
-				.size = USB0_DEVFIFO_BUFFER_SIZE
-		}
-};
-usbfifo_state_t sos_link_transport_usb_fifo_state MCU_SYS_MEM;
+static int cdc_event_handler(usbd_control_t * context, mcu_event_t * event);
 
-const usbd_control_constants_t sos_link_transport_usb_dual_vcp_constants = {
+
+const usbd_control_constants_t sos_link_transport_usb_constants = {
 		.handle.port = SOS_LINK_TRANSPORT_USB_PORT,
 		.handle.config = 0,
 		.handle.state = 0,
-		.device =  &sos_link_transport_usb_dual_vcp_dev_desc,
-		.config = &sos_link_transport_usb_dual_vcp_cfg_desc,
-		.string = &sos_link_transport_usb_dual_vcp_string_desc,
-		.class_event_handler = sos_link_usbd_cdc_event_handler,
+		.device =  &sos_link_transport_usb_dev_desc,
+		.config = &sos_link_transport_usb_cfg_desc,
+		.string = &sos_link_transport_usb_string_desc,
+		.class_event_handler = sos_link_usbd_cdc_event_handler
 };
 
 
@@ -71,11 +60,11 @@ const usbd_control_constants_t sos_link_transport_usb_dual_vcp_constants = {
  * All other values should be unchanged.
  *
  */
-const usbd_device_descriptor_t sos_link_transport_usb_dual_vcp_dev_desc MCU_WEAK = {
+const usbd_device_descriptor_t sos_link_transport_usb_dev_desc MCU_WEAK = {
 		.bLength = sizeof(usbd_device_descriptor_t),
 		.bDescriptorType = USBD_DESCRIPTOR_TYPE_DEVICE,
 		.bcdUSB = 0x0200,
-		.bDeviceClass = 0, //Composite device (2 VCPs)
+		.bDeviceClass = USBD_DEVICE_CLASS_COMMUNICATIONS,
 		.bDeviceSubClass = 0,
 		.bDeviceProtocol = 0,
 		.bMaxPacketSize = MCU_CORE_USB_MAX_PACKET_ZERO_VALUE,
@@ -88,14 +77,14 @@ const usbd_device_descriptor_t sos_link_transport_usb_dual_vcp_dev_desc MCU_WEAK
 		.bNumConfigurations = 1
 };
 
-const sos_link_transport_usb_dual_vcp_configuration_descriptor_t sos_link_transport_usb_dual_vcp_cfg_desc MCU_WEAK = {
+const sos_link_transport_usb_configuration_descriptor_t sos_link_transport_usb_cfg_desc MCU_WEAK = {
 
 		.cfg = {
 				.bLength = sizeof(usbd_configuration_descriptor_t),
 				.bDescriptorType = USBD_DESCRIPTOR_TYPE_CONFIGURATION,
 
-				.wTotalLength = sizeof(sos_link_transport_usb_dual_vcp_configuration_descriptor_t)-1, //exclude the zero terminator
-				.bNumInterfaces = 0x04,
+				.wTotalLength = sizeof(sos_link_transport_usb_configuration_descriptor_t)-1, //exclude the zero terminator
+				.bNumInterfaces = 0x02,
 				.bConfigurationValue = 0x01,
 				.iConfiguration = 0x03,
 				.bmAttributes = USBD_CONFIGURATION_ATTRIBUTES_BUS_POWERED,
@@ -112,7 +101,7 @@ const sos_link_transport_usb_dual_vcp_configuration_descriptor_t sos_link_transp
 						.bFunctionClass = USBD_INTERFACE_CLASS_COMMUNICATIONS,
 						.bFunctionSubClass = USBD_CDC_INTERFACE_SUBCLASS_ACM,
 						.bFunctionProtocol = USBD_CDC_INTERFACE_PROTOCOL_V25TER,
-						.iFunction = 0x0,
+						.iFunction = 0x04,
 				},
 
 				.interface_control = {
@@ -124,7 +113,7 @@ const sos_link_transport_usb_dual_vcp_configuration_descriptor_t sos_link_transp
 						.bInterfaceClass = USBD_INTERFACE_CLASS_COMMUNICATIONS,
 						.bInterfaceSubClass = USBD_CDC_INTERFACE_SUBCLASS_ACM,
 						.bInterfaceProtocol = USBD_CDC_INTERFACE_PROTOCOL_V25TER,
-						.iInterface = 0x0
+						.iInterface = 0x04
 				},
 
 				.acm = {
@@ -166,7 +155,7 @@ const sos_link_transport_usb_dual_vcp_configuration_descriptor_t sos_link_transp
 						.bInterfaceClass = USBD_INTERFACE_CLASS_COMMUNICATIONS_DATA,
 						.bInterfaceSubClass = USBD_CDC_INTERFACE_SUBCLASS_ACM,
 						.bInterfaceProtocol = USBD_CDC_INTERFACE_PROTOCOL_V25TER,
-						.iInterface = 0x0
+						.iInterface = 0x04
 				},
 
 				.data_out = {
@@ -188,90 +177,6 @@ const sos_link_transport_usb_dual_vcp_configuration_descriptor_t sos_link_transp
 				}
 		},
 
-		.vcp1 = {
-				.interface_association = {
-						.bLength = sizeof(usbd_interface_assocation_t),
-						.bDescriptorType = USBD_DESCRIPTOR_TYPE_INTERFACE_ASSOCIATION,
-						.bFirstInterface = SOS_VCP1_INTERFACE,
-						.bInterfaceCount = 2,
-						.bFunctionClass = USBD_INTERFACE_CLASS_COMMUNICATIONS,
-						.bFunctionSubClass = USBD_CDC_INTERFACE_SUBCLASS_ACM,
-						.bFunctionProtocol = USBD_CDC_INTERFACE_PROTOCOL_V25TER,
-						.iFunction = 0x0,
-				},
-
-				.interface_control = {
-						.bLength = sizeof(usbd_interface_descriptor_t),
-						.bDescriptorType = USBD_DESCRIPTOR_TYPE_INTERFACE,
-						.bInterfaceNumber = SOS_VCP1_INTERFACE,
-						.bAlternateSetting = 0x00,
-						.bNumEndpoints = 0x01,
-						.bInterfaceClass = USBD_INTERFACE_CLASS_COMMUNICATIONS,
-						.bInterfaceSubClass = USBD_CDC_INTERFACE_SUBCLASS_ACM,
-						.bInterfaceProtocol = USBD_CDC_INTERFACE_PROTOCOL_V25TER,
-						.iInterface = 0x0
-				},
-
-				.acm = {
-						.header.bFunctionLength = sizeof(usbd_cdc_header_functional_descriptor_t),
-						.header.bDescriptorType = 0x24,
-						.header.bDescriptorSubType = 0x00,
-						.header.bcdCDC = 0x0110,
-						.acm.bFunctionLength = sizeof(usbd_cdc_abstract_control_model_functional_descriptor_t),
-						.acm.bDescriptorType = 0x24,
-						.acm.bDescriptorSubType = 0x02, //ACM descriptor subtype
-						.acm.bmCapabilities = 0x06, //support for SERIAL_STATE
-						.union_descriptor.bFunctionLength = sizeof(usbd_cdc_union_functional_descriptor_t),
-						.union_descriptor.bDescriptorType = 0x24,
-						.union_descriptor.bDescriptorSubType = 0x06, //union descriptor subtype
-						.union_descriptor.bMasterInterface = 0x02, //control interface
-						.union_descriptor.bSlaveInterface = 0x03, //data interface
-						.call_management.bFunctionLength = sizeof(usbd_cdc_call_management_functional_descriptor_t),
-						.call_management.bDescriptorType = 0x24,
-						.call_management.bDescriptorSubType = 0x01, //call management subtype
-						.call_management.bmCapabilities = 0x03, //call management handled
-						.call_management.bDataInterface = 0x03 //data interface
-				},
-
-				.control = {
-						.bLength= sizeof(usbd_endpoint_descriptor_t),
-						.bDescriptorType=USBD_DESCRIPTOR_TYPE_ENDPOINT,
-						.bEndpointAddress=SOS_LINK_TRANSPORT_USB_INTIN_ALT,
-						.bmAttributes=USBD_ENDPOINT_ATTRIBUTES_TYPE_INTERRUPT,
-						.wMaxPacketSize=16,
-						.bInterval=1
-				},
-
-				.interface_data = {
-						.bLength = sizeof(usbd_interface_descriptor_t),
-						.bDescriptorType = USBD_DESCRIPTOR_TYPE_INTERFACE,
-						.bInterfaceNumber = SOS_VCP1_DATA_INTERFACE,
-						.bAlternateSetting = 0x00,
-						.bNumEndpoints = 0x02,
-						.bInterfaceClass = USBD_INTERFACE_CLASS_COMMUNICATIONS_DATA,
-						.bInterfaceSubClass = USBD_CDC_INTERFACE_SUBCLASS_ACM,
-						.bInterfaceProtocol = USBD_CDC_INTERFACE_PROTOCOL_V25TER,
-						.iInterface = 0x0
-				},
-
-				.data_out = {
-						.bLength= sizeof(usbd_endpoint_descriptor_t),
-						.bDescriptorType=USBD_DESCRIPTOR_TYPE_ENDPOINT,
-						.bEndpointAddress=SOS_LINK_TRANSPORT_USB_BULKOUT_ALT,
-						.bmAttributes=USBD_ENDPOINT_ATTRIBUTES_TYPE_BULK,
-						.wMaxPacketSize=LINK_BULK_ENDPOINT_SIZE,
-						.bInterval=1
-				},
-
-				.data_in = {
-						.bLength= sizeof(usbd_endpoint_descriptor_t),
-						.bDescriptorType=USBD_DESCRIPTOR_TYPE_ENDPOINT,
-						.bEndpointAddress=SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT_IN_ALT,
-						.bmAttributes=USBD_ENDPOINT_ATTRIBUTES_TYPE_BULK,
-						.wMaxPacketSize=LINK_BULK_ENDPOINT_SIZE,
-						.bInterval=1
-				}
-		},
 
 		.terminator = 0
 };
@@ -285,13 +190,103 @@ const sos_link_transport_usb_dual_vcp_configuration_descriptor_t sos_link_transp
  * is the file \a devices.c.
  *
  */
-const struct sos_link_transport_usb_string_t sos_link_transport_usb_dual_vcp_string_desc MCU_WEAK = {
+const struct sos_link_transport_usb_string_t sos_link_transport_usb_string_desc MCU_WEAK = {
 		.bLength = 4,
 		.bDescriptorType = USBD_DESCRIPTOR_TYPE_STRING,
 		.wLANGID = 0x0409, //English
 		.manufacturer = usbd_assign_string(SOS_LINK_TRANSPORT_USB_DESC_MANUFACTURER_SIZE, SOS_LINK_TRANSPORT_USB_DESC_MANUFACTURER_STRING),
 		.product = usbd_assign_string(SOS_LINK_TRANSPORT_USB_DESC_PRODUCT_SIZE, SOS_LINK_TRANSPORT_USB_DESC_PRODUCT_STRING),
-		.serial = usbd_assign_string(SOS_LINK_TRANSPORT_USB_DESC_SERIAL_SIZE, 0), //dynamically load SN based on silicon
+		.serial = usbd_assign_string(SOS_LINK_TRANSPORT_USB_DESC_SERIAL_SIZE, 0)
+		, //dynamically load SN based on silicon
 		.vcp0 = usbd_assign_string(SOS_LINK_TRANSPORT_USB_DESC_VCP_0_SIZE, SOS_LINK_TRANSPORT_USB_DESC_VCP_0),
 		.vcp1 = usbd_assign_string(SOS_LINK_TRANSPORT_USB_DESC_VCP_1_SIZE, SOS_LINK_TRANSPORT_USB_DESC_VCP_1)
 };
+
+int sos_link_usbd_cdc_event_handler(void * object, mcu_event_t * event){
+	usbd_control_t * context = object;
+
+	//if this is a class request check the CDC interfaces
+	if ( usbd_control_setup_request_type(context) == USBD_REQUEST_TYPE_CLASS ){
+		return cdc_event_handler(context, event);
+	}
+
+	return 0;
+}
+
+
+int cdc_event_handler(usbd_control_t * context, mcu_event_t * event){
+	u32 rate = 12000000;
+	u32 o_events = event->o_events;
+	int iface = usbd_control_setup_interface(context);
+
+	if( (iface == 0) || (iface == 1) || (iface == 2) || (iface == 3) ){
+
+		if ( (o_events & MCU_EVENT_FLAG_SETUP) ){
+			switch(context->setup_pkt.bRequest){
+			case USBD_CDC_REQUEST_SET_LINE_CODING:
+			case USBD_CDC_REQUEST_SEND_ENCAPSULATED_COMMAND:
+			case USBD_CDC_REQUEST_SET_COMM_FEATURE:
+			case USBD_CDC_REQUEST_SEND_BREAK:
+				//need to receive information from the host
+				usbd_control_prepare_buffer(context); //received the incoming data in the buffer
+				usbd_control_statusin_stage(context); //data out stage?
+				return 1;
+
+			case USBD_CDC_REQUEST_SET_CONTROL_LINE_STATE:
+				usbd_control_statusin_stage(context);
+				return 1;
+
+			case USBD_CDC_REQUEST_GET_LINE_CODING:
+				context->data.dptr = context->buf;
+
+				//copy line coding to dev_std_buf
+				context->buf[0] = (rate >>  0) & 0xFF;
+				context->buf[1] = (rate >>  8) & 0xFF;
+				context->buf[2] = (rate >> 16) & 0xFF;
+				context->buf[3] = (rate >> 24) & 0xFF;  //rate
+				context->buf[4] =  0; //stop bits 1
+				context->buf[5] =  0; //no parity
+				context->buf[6] =  8; //8 data bits
+				usbd_control_datain_stage(context);
+				return 1;
+
+			case USBD_CDC_REQUEST_CLEAR_COMM_FEATURE:
+				usbd_control_statusin_stage(context);
+				return 1;
+
+			case USBD_CDC_REQUEST_GET_COMM_FEATURE:
+				context->data.dptr = context->buf;
+				//copy data to dev_std_buf
+				usbd_control_statusin_stage(context);
+				return 1;
+
+			case USBD_CDC_REQUEST_GET_ENCAPSULATED_RESPONSE:
+				context->data.dptr = context->buf;
+				//copy data to dev_std_buf
+				usbd_control_statusin_stage(context);
+				return 1;
+
+			default:
+				return 0;
+			}
+
+		} else if ( o_events & MCU_EVENT_FLAG_DATA_READY ){
+			switch(context->setup_pkt.bRequest){
+			case USBD_CDC_REQUEST_SET_LINE_CODING:
+				//line coding info is available in context->buf
+
+			case USBD_CDC_REQUEST_SET_CONTROL_LINE_STATE:
+			case USBD_CDC_REQUEST_SET_COMM_FEATURE:
+			case USBD_CDC_REQUEST_SEND_ENCAPSULATED_COMMAND:
+				//use data in dev_std_buf to take action
+				usbd_control_statusin_stage(context);
+				return 1;
+			default:
+				return 0;
+			}
+		}
+	}
+	//The request was not handled
+	return 0;
+}
+

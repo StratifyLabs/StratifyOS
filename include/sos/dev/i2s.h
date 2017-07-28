@@ -72,10 +72,10 @@ typedef struct MCU_PACK {
 
 
 typedef struct MCU_PACK {
-	mcu_pin_t lrck;
-	mcu_pin_t bck;
-	mcu_pin_t tx;
-	mcu_pin_t rx;
+	mcu_pin_t ws;
+	mcu_pin_t sck;
+	mcu_pin_t sdout;
+	mcu_pin_t sdin;
 	mcu_pin_t mck;
 } i2s_pin_assignment_t;
 

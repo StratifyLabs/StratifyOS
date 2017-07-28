@@ -21,7 +21,7 @@
 #define SD_SPI_H_
 
 #include "sos/dev/drive.h"
-#include "device/sd.h"
+#include "device/sd_spi.h"
 
 #define SDSPI_IOC_IDENT_CHAR 'S'
 
@@ -66,11 +66,11 @@ typedef union {
 		unsigned start:1;
 	};
 	uint8_t u8;
-} sdspi_r1_t;
+} sd_spi_r1_t;
 
 typedef union {
 	struct MCU_PACK {
-		sdspi_r1_t r1;
+		sd_spi_r1_t r1;
 		unsigned card_locked:1;
 		unsigned wp_erase_skip_lock_unlock_failed:1;
 		unsigned unspecified_error:1;
@@ -82,32 +82,32 @@ typedef union {
 	};
 	uint16_t u16;
 	uint8_t u8[2];
-} sdspi_r2_t;
+} sd_spi_r2_t;
 
 typedef union {
 	struct MCU_PACK {
-		sdspi_r1_t r1;
+		sd_spi_r1_t r1;
 		uint8_t arg[4];
 	};
 	uint8_t u8[5];
-} sdspi_r3_t;
+} sd_spi_r3_t;
 
 //seven is the same as three
-typedef sdspi_r3_t sdspi_r7_t;
+typedef sd_spi_r3_t sd_spi_r7_t;
 
 typedef union {
-	sdspi_r1_t r1;
-	sdspi_r2_t r2;
-	sdspi_r3_t r3;
+	sd_spi_r1_t r1;
+	sd_spi_r2_t r2;
+	sd_spi_r3_t r3;
 	uint8_t u8[5];
-} sdspi_r_t;
+} sd_spi_r_t;
 
 typedef union {
 	uint64_t u64[2];
 	uint32_t u32[4];
 	uint16_t u16[8];
 	uint8_t u8[16];
-} sdspi_csd_t;
+} sd_spi_csd_t;
 
 
 typedef union {
@@ -115,12 +115,12 @@ typedef union {
 	uint32_t u32[16];
 	uint16_t u16[32];
 	uint8_t u8[64];
-} _sdspi_status_t;
+} _sd_spi_status_t;
 
 
 typedef struct MCU_PACK {
 	uint32_t size;
-} sdspi_attr_t;
+} sd_spi_attr_t;
 
 
 uint8_t crc7(uint8_t crc, const uint8_t * buffer, size_t len);
