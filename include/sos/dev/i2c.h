@@ -139,9 +139,11 @@ typedef union {
 	u16 addr16;
 } i2c_slave_addr_t;
 
+/*! \brief I2C Pin Assignment
+ */
 typedef struct MCU_PACK {
-	mcu_pin_t sda;
-	mcu_pin_t scl;
+	mcu_pin_t sda /*! Data pin */;
+	mcu_pin_t scl /*! Clock pin */;
 } i2c_pin_assignment_t;
 
 typedef struct MCU_PACK {

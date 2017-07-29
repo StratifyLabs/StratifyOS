@@ -70,9 +70,9 @@ void signal_priv_check_stack(void * args){
 	*arg = ret;
 }
 
-int signal_callback(void * context, mcu_event_t * data){
+int devfs_signal_callback(void * context, mcu_event_t * data){
 	//This only works if the other parts of the interrupt handler have not modified the stack
-	signal_callback_t * args = (signal_callback_t*)context;
+	devfs_signal_callback_t * args = (devfs_signal_callback_t*)context;
 	if( signal_priv_send(0, args->tid, args->si_signo, args->si_sigcode, args->sig_value, 1) < 0){
 		//return 0; //this will dis-regard the callback so additional events stop sending signals
 	}

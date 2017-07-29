@@ -115,11 +115,11 @@ int mcu_spi_setattr(const devfs_handle_t * handle, void * ctl){
 		}
 
 		mode = 0;
-		if( o_flags & SPI_FLAG_MODE1 ){
+		if( o_flags & SPI_FLAG_IS_MODE1 ){
 			mode = 1;
-		} else if( o_flags & SPI_FLAG_MODE2 ){
+		} else if( o_flags & SPI_FLAG_IS_MODE2 ){
 			mode = 2;
-		} else if( o_flags & SPI_FLAG_MODE3 ){
+		} else if( o_flags & SPI_FLAG_IS_MODE3 ){
 			mode = 3;
 		}
 

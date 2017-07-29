@@ -31,7 +31,12 @@ int (* const pwm_ioctl_func_table[I_MCU_TOTAL + I_PWM_TOTAL])(const devfs_handle
 		mcu_pwm_getinfo,
 		mcu_pwm_setattr,
 		mcu_pwm_setaction,
-		mcu_pwm_set
+		mcu_pwm_setchannel,
+		mcu_pwm_getchannel,
+		mcu_pwm_set,
+		mcu_pwm_get,
+		mcu_pwm_enable,
+		mcu_pwm_disable
 };
 
 

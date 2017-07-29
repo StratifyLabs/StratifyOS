@@ -174,11 +174,11 @@ int mcu_ssp_setattr(const devfs_handle_t * handle, void * ctl){
 		}
 
 		mode = 0;
-		if( o_flags & SPI_FLAG_MODE1 ){
+		if( o_flags & SPI_FLAG_IS_MODE1 ){
 			mode = 1;
-		} else if( o_flags & SPI_FLAG_MODE2 ){
+		} else if( o_flags & SPI_FLAG_IS_MODE2 ){
 			mode = 2;
-		} else if( o_flags & SPI_FLAG_MODE3 ){
+		} else if( o_flags & SPI_FLAG_IS_MODE3 ){
 			mode = 3;
 		}
 
@@ -203,9 +203,9 @@ int mcu_ssp_setattr(const devfs_handle_t * handle, void * ctl){
 		cr0 |= ( attr->width - 1);
 
 		//default mode is SPI
-		if ( o_flags & SPI_FLAG_FORMAT_TI ){
+		if ( o_flags & SPI_FLAG_IS_FORMAT_TI ){
 			cr0 |= (1<<4);
-		} else if ( o_flags & SPI_FLAG_FORMAT_MICROWIRE ){
+		} else if ( o_flags & SPI_FLAG_IS_FORMAT_MICROWIRE ){
 			cr0 |= (1<<5);
 		}
 

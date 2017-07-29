@@ -484,7 +484,7 @@ u32 const symbols_table[] = {
 		(u32)__aeabi_dcmpge,
 		(u32)__aeabi_dcmpgt,
 		(u32)__powidf2,
-		(u32)signal_callback,
+		(u32)devfs_signal_callback,
 		(u32)__sinit,
 		(u32)task_setstackguard,
 		(u32)crt_import_argv,

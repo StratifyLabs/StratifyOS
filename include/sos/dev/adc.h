@@ -72,6 +72,7 @@ typedef struct MCU_PACK {
 	u8 resolution /*! The number of bits supported by the ADC */;
 	u32 freq /*! The maximum frequency */;
 	u32 maximum /*! The maximum value returned by the ADC */;
+	u32 reference_mv /*! The reference voltage in millivolts */;
 } adc_info_t;
 
 

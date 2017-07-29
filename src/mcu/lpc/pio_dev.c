@@ -311,7 +311,7 @@ int mcu_pio_setattr(const devfs_handle_t * handle, void * ctl){
 		mode = 3;
 	}
 
-	for(i = 0; i < 8*sizeof(pio_sample_t); i++){
+	for(i = 0; i < 8*sizeof(u32); i++){
 		if ( (1<<i) & attr->o_pinmask ){
 
 			mcu_pin_t pin = mcu_pin(port, i);
@@ -371,7 +371,7 @@ void exec_cancelled2(){
 
 //On __lpc17xx The pio interrupts use the eint3 interrupt service routine -- this function should be called from there
 void mcu_core_pio0_isr(){
-	pio_event_t ev;
+	pio_event_data_t ev;
 
 	if ( LPC_GPIOINT->IntStatus & (1<<0) ){
 		ev.status = 0;

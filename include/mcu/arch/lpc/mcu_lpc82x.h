@@ -57,22 +57,6 @@
 #define ADC_MAX_FREQ 400000
 #define ADC_SAMPLE_T
 
-/*! \brief ADC Sample type (when reading ADC) */
-typedef uint16_t adc_sample_t;
-
-#define GPIO_SAMPLE_T
-/*! \brief This defines the type of a GPIO sample for
- * reading/writing the GPIO (see gpio_read() and gpio_write()).
- *
- */
-typedef uint32_t gpio_sample_t;
-
-
-#define PWM_DUTY_T
-/*! \brief This defines the type for the PWM duty cycle for reading/writing the PWM */
-typedef uint32_t pwm_duty_t;
-
-
 /*! \brief The minimum flash write size */
 #define FLASH_MIN_WRITE_SIZE 256
 

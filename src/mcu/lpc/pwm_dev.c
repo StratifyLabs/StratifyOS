@@ -33,6 +33,7 @@
 
 static void update_pwm(int port, int chan, int duty);
 static void exec_callback(int port, LPC_PWM_Type * regs, u32 o_events);
+static void force_latch(LPC_PWM_Type * regs);
 
 typedef struct MCU_PACK {
 	const uint32_t * volatile duty;
@@ -107,7 +108,6 @@ void mcu_pwm_dev_power_off(const devfs_handle_t * handle){
 				cortexm_disable_irq((void*)(u32)(pwm_irqs[port]));
 				mcu_lpc_core_disable_pwr(PCPWM1);
 				break;
-
 			}
 		}
 		pwm_local[port].ref_count--;
@@ -129,18 +129,17 @@ int mcu_pwm_dev_is_powered(const devfs_handle_t * handle){
 
 int mcu_pwm_getinfo(const devfs_handle_t * handle, void * ctl){
 	int port = handle->port;
-	LPC_PWM_Type * regs = pwm_regs_table[port];	pwm_info_t * info = ctl;
+	pwm_info_t * info = ctl;
 
 #ifdef __lpc17xx
 
-	if( regs == 0 ){
+	if( port == 0 ){
 		errno = ENODEV;
 		return -1;
 	}
 #endif
 
-	info->counter_value = regs->TC;
-	info->o_flags = PWM_FLAG_IS_ACTIVE_HIGH | PWM_FLAG_IS_ACTIVE_LOW;
+	info->o_flags = PWM_FLAG_IS_ACTIVE_HIGH | PWM_FLAG_CLEAR_CHANNELS | PMW_FLAG_SET_TIMER | PWM_FLAG_IS_ENABLED;
 
 	return 0;
 }
@@ -151,11 +150,14 @@ int mcu_pwm_setattr(const devfs_handle_t * handle, void * ctl){
 	u32 tmp;
 	u32 enabled_channels;
 	u32 freq;
+	u32 o_flags;
+	u32 pcr;
 	LPC_PWM_Type * regs = pwm_regs_table[port];
 
 	const pwm_attr_t * attr = mcu_select_attr(handle, ctl);
 	if( attr == 0 ){ return -1; }
 
+	o_flags = attr->o_flags;
 
 #ifdef __lpc17xx
 	if( regs == 0 ){
@@ -171,35 +173,64 @@ int mcu_pwm_setattr(const devfs_handle_t * handle, void * ctl){
 
 	//Configure the GPIO
 	enabled_channels = 0;
-	if( mcu_set_pin_assignment(
-			&(attr->pin_assignment),
-			MCU_CONFIG_PIN_ASSIGNMENT(pwm_config_t, handle),
-			MCU_PIN_ASSIGNMENT_COUNT(pwm_pin_assignment_t),
-			CORE_PERIPH_PWM, port, configure_pin, &enabled_channels) < 0 ){
-		return -1;
+
+	pcr = 0;
+	if( o_flags & PWM_FLAG_CLEAR_CHANNELS ){
+		pcr = regs->PCR;
 	}
 
+	regs->PCR = 0;
 
-	tmp = mcu_board_config.core_periph_freq / freq;
-	if ( tmp > 0 ){
-		tmp = tmp - 1;
+	if( o_flags & (PMW_FLAG_SET_TIMER | PWM_FLAG_SET_CHANNELS) ){
+		if( mcu_set_pin_assignment(
+				&(attr->pin_assignment),
+				MCU_CONFIG_PIN_ASSIGNMENT(pwm_config_t, handle),
+				MCU_PIN_ASSIGNMENT_COUNT(pwm_pin_assignment_t),
+				CORE_PERIPH_PWM, port, configure_pin, &enabled_channels) < 0 ){
+			return -1;
+		}
+		regs->PCR |= (((enabled_channels & 0x3F) << 9) | pcr);
 	}
 
-	regs->TCR = 0; //Disable the counter while the registers are being updated
+	if( o_flags & PMW_FLAG_SET_TIMER ){
+		tmp = mcu_board_config.core_periph_freq / freq;
+		if ( tmp > 0 ){
+			tmp = tmp - 1;
+		}
 
-	regs->PR = tmp;
-	//Configure to reset on match0 in PWM Mode
-	regs->MCR = (1<<1); //reset the counter then it matches MR0
-	regs->CTCR = 0;
-	regs->PCR = (enabled_channels & 0x3F) << 9;
-	regs->TCR = (1<<3)|(1<<0); //Enable the counter in PWM mode
+		regs->TCR = 0; //Disable the counter while the registers are being updated
 
-	regs->TC = regs->MR0 - 1; //force the counter to latch right now
-	regs->MR0 = attr->period;
-	regs->LER |= (1<<0);
+		regs->PR = tmp;
+		//Configure to reset on match0 in PWM Mode
+		regs->MCR = (1<<1); //reset the counter then it matches MR0
+		regs->CTCR = 0;
+
+
+		regs->TC = regs->MR0 - 1; //force the counter to latch right now
+		regs->MR0 = attr->period;
+		regs->LER |= (1<<0);
+
+		force_latch(regs);
+
+		if( (o_flags & PWM_FLAG_IS_ENABLED) == 0 ){
+			regs->TCR = 0; //disable the counter
+		}
+
+	}
 
 
 	return 0;
+}
+
+void force_latch(LPC_PWM_Type * regs){
+	if( regs->LER ){
+		regs->TCR = 0; //Disable the counter while the registers are being updated
+		regs->TC = regs->MR0; //force the counter to latch right now
+		regs->TCR = (1<<3)|(1<<0); //Enable the counter in PWM mode
+		while( regs->LER ){ //give the regs time to latch
+			;
+		}
+	}
 }
 
 int mcu_pwm_setaction(const devfs_handle_t * handle, void * ctl){
@@ -227,7 +258,7 @@ int mcu_pwm_setaction(const devfs_handle_t * handle, void * ctl){
 	return 0;
 }
 
-int mcu_pwm_set(const devfs_handle_t * handle, void * ctl){
+int mcu_pwm_setchannel(const devfs_handle_t * handle, void * ctl){
 	int port = handle->port;
 	mcu_channel_t * writep = ctl;
 	LPC_PWM_Type * regs = pwm_regs_table[port];
@@ -246,6 +277,54 @@ int mcu_pwm_set(const devfs_handle_t * handle, void * ctl){
 	}
 
 	update_pwm(port, writep->loc, writep->value);
+	return 0;
+}
+
+int mcu_pwm_getchannel(const devfs_handle_t * handle, void * ctl){
+	int port = handle->port;
+	mcu_channel_t * channel = ctl;
+	LPC_PWM_Type * regs = pwm_regs_table[port];
+
+	switch(channel->loc){
+	case 0: channel->value = regs->MR0; break;
+	case 1: channel->value = regs->MR1; break;
+	case 2: channel->value = regs->MR2; break;
+	case 3: channel->value = regs->MR3; break;
+	case 4: channel->value = regs->MR4; break;
+	case 5: channel->value = regs->MR5; break;
+	case 6: channel->value = regs->MR6; break;
+	default:
+		errno = EINVAL;
+		return -1;
+	}
+
+	return 0;
+}
+int mcu_pwm_set(const devfs_handle_t * handle, void * ctl){
+	int port = handle->port;
+	u32 value = (u32)ctl;
+	LPC_PWM_Type * regs = pwm_regs_table[port];
+	regs->TC = value;
+	return 0;
+}
+
+int mcu_pwm_get(const devfs_handle_t * handle, void * ctl){
+	int port = handle->port;
+	LPC_PWM_Type * regs = pwm_regs_table[port];
+	return regs->TC;
+}
+
+int mcu_pwm_enable(const devfs_handle_t * handle, void * ctl){
+	int port = handle->port;
+	LPC_PWM_Type * regs = pwm_regs_table[port];
+	regs->TCR = (1<<3)|(1<<0); //Enable the counter in PWM mode
+	return 0;
+}
+
+int mcu_pwm_disable(const devfs_handle_t * handle, void * ctl){
+	int port = handle->port;
+	LPC_PWM_Type * regs = pwm_regs_table[port];
+	regs->TCR = 0; //Enable the counter in PWM mode
 	return 0;
 }
 

@@ -22,6 +22,58 @@
 
 #define DEVFS_GET_PORT(x) (x->port)
 
+#if defined __cplusplus
+extern "C" {
+#endif
+
+
+/*! \details This structure is for executing a function as a result of an interrupt
+ * in non-privileged mode.
+ */
+typedef struct {
+	int tid;
+	int si_signo;
+	int si_sigcode;
+	int sig_value;
+	int keep;
+} devfs_signal_callback_t;
+
+
+/*! \details This function can be set as the callback for mcu_action_t.
+ * In this case, the context is pointing to a devfs_signal_callback_t.  When
+ * the event happens, it will send a signal to the specified task.
+ *
+ * If keep is non-zero, the signal will be sent each time the interrupt happens.
+ * Otherwise, the signal is just sent one time.
+ *
+ * In the example below, the thread below will receive a SIGUSR1 the next time
+ * the external interrupt goes low.  The run_on_sigusr1() will execute when the
+ * signal is received.
+ *
+ * \code
+ * #include <pthread.h>
+ * #include <signal.h>
+ * #include <stfy/Hal.hpp>
+ *
+ * void run_on_sigusr1(int a){
+ * 	printf("got sigusr1\n");
+ * }
+ *
+ * Eint intr(0);
+ * intr.init();
+ *
+ * signal(SIGUSR1, (_sig_func_ptr)run_on_sigusr1);
+ *
+ * devfs_signal_callback_t sig; //this must be valid when the interrupt happens
+ * sig.tid = pthread_self();
+ * sig.signo = SIGUSR1;
+ * sig.keep = 0;
+ * intr.setaction(0, EINT_ACTION_EVENT_FALLING, signal_callback, &sig);
+ * \endcode
+ *
+ */
+int devfs_signal_callback(void * context, mcu_event_t * data);
+
 
 typedef struct MCU_PACK {
 	u32 port /*! The port associated with the device (for mcu peripherals) */;
@@ -102,6 +154,8 @@ bool devfs_is_terminator(const devfs_device_t * dev){
 	return false;
 }
 
+
+
 int devfs_init(const void * cfg);
 int devfs_open(const void * cfg, void ** handle, const char * path, int flags, int mode);
 int devfs_read_async(const void * cfg, void * handle, devfs_async_t * op);
@@ -147,6 +201,10 @@ int devfs_closedir(const void * cfg, void ** handle);
 		.unlock = SYSFS_NOTSUP_VOID, \
 		.cfg = cfgp, \
 }
+
+#if defined __cplusplus
+}
+#endif
 
 
 #endif /* SOS_FS_DEVFS_H_ */

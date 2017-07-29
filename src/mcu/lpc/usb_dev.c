@@ -370,7 +370,7 @@ int mcu_usb_dev_write(const devfs_handle_t * handle, devfs_async_t * wop){
 	usb_local.write[ep].callback = wop->handler.callback;
 	usb_local.write[ep].context = wop->handler.context;
 
-	wop->nbyte = mcu_usb_wr_ep(0, loc, wop->buf, wop->nbyte);
+	wop->nbyte = mcu_usb_wr_ep(handle, loc, wop->buf, wop->nbyte);
 
 	if ( wop->nbyte < 0 ){
 		usb_disable_ep(handle, loc );

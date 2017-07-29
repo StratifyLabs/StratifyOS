@@ -32,7 +32,6 @@ typedef struct MCU_PACK {
 	u32 value;
 } led_event_t;
 
-
 enum {
 	LED_FLAG_NONE = (1<<0),
 	LED_FLAG_IS_HIGH_IMPEDANCE /*! LED driver disables output when LED is off */ = (1<<1),

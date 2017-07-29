@@ -90,10 +90,13 @@ extern "C" {
 
 #define PWM_IOC_IDENT_CHAR 'p'
 
-
 typedef enum {
-	PWM_FLAG_IS_ACTIVE_HIGH = (1<<0),
-	PWM_FLAG_IS_ACTIVE_LOW = (1<<1),
+	PMW_FLAG_SET_TIMER /*! Set to configure the frequency and period (implies PWM_FLAG_SET_CHANNEL) */ = (1<<0),
+	PWM_FLAG_IS_ACTIVE_HIGH /*! Set to configure the outputs as active high */ = (1<<1),
+	PWM_FLAG_IS_ACTIVE_LOW /*! Set to configure the outputs as active low */ = (1<<2),
+	PWM_FLAG_SET_CHANNELS /*! Set to just configure channels and leave the timer alone */ = (1<<3),
+	PWM_FLAG_CLEAR_CHANNELS /*! Set to clear all channels; may be with with PWM_FLAG_SET_CHANNELS or PMW_FLAG_SET_TIMER  */ = (1<<4),
+	PWM_FLAG_IS_ENABLED /*! Set with PMW_FLAG_SET_TIMER to enable the timer */ = (1<<5)
 } pwm_flag_t;
 
 
@@ -101,7 +104,6 @@ typedef struct MCU_PACK {
 	//provides info about the PWM
 	u32 o_flags /*! Bitmask to show which flags are supported through the driver */;
 	u32 o_events /*! Bitmask of supported events */;
-	u32 counter_value;
 } pwm_info_t;
 
 typedef struct MCU_PACK {
@@ -137,9 +139,14 @@ typedef struct MCU_PACK {
  * \endcode
  * \hideinitializer
  */
-#define I_PWM_SET _IOCTLW(PWM_IOC_IDENT_CHAR, I_MCU_TOTAL + 0, mcu_channel_t)
+#define I_PWM_SETCHANNEL _IOCTLW(PWM_IOC_IDENT_CHAR, I_MCU_TOTAL + 0, mcu_channel_t)
+#define I_PWM_GETCHANNEL _IOCTLRW(PWM_IOC_IDENT_CHAR, I_MCU_TOTAL + 1, mcu_channel_t)
+#define I_PWM_SET _IOCTL(TMR_IOC_IDENT_CHAR, I_MCU_TOTAL + 2)
+#define I_PWM_GET _IOCTL(TMR_IOC_IDENT_CHAR, I_MCU_TOTAL + 3)
+#define I_PWM_ENABLE _IOCTL(PWM_IOC_IDENT_CHAR, I_MCU_TOTAL + 4)
+#define I_PWM_DISABLE _IOCTL(PWM_IOC_IDENT_CHAR, I_MCU_TOTAL + 5)
 
-#define I_PWM_TOTAL 1
+#define I_PWM_TOTAL 6
 
 #ifdef __cplusplus
 }

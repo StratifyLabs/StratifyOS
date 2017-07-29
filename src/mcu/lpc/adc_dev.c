@@ -34,10 +34,9 @@
 
 typedef struct {
 	mcu_event_handler_t handler;
-	adc_sample_t * bufp;
+	u32 * bufp;
 	int len;
-	uint8_t ref_count;
-	uint8_t enabled_channels;
+	u8 ref_count;
 } adc_local_t;
 
 static adc_local_t adc_local[MCU_ADC_PORTS] MCU_SYS_MEM;
@@ -117,7 +116,7 @@ int mcu_adc_dev_read(const devfs_handle_t * handle, devfs_async_t * rop){
 	adc_local[port].handler.callback = rop->handler.callback;
 	adc_local[port].handler.context = rop->handler.context;
 	adc_local[port].bufp = rop->buf;
-	adc_local[port].len = rop->nbyte & ~(sizeof(adc_sample_t)-1);
+	adc_local[port].len = rop->nbyte & ~(sizeof(u32)-1);
 	rop->nbyte = adc_local[port].len;
 
 	regs->INTEN = (1<<8);
@@ -142,8 +141,8 @@ void mcu_core_adc0_isr(){
 	LPC_ADC_Type * regs = adc_regs[0];
 
 	if ( adc_local[port].len > 0 ){
-		*adc_local[port].bufp++ = (adc_sample_t)(regs->GDR & 0xFFFF);
-		adc_local[port].len = adc_local[port].len - sizeof(adc_sample_t);
+		*adc_local[port].bufp++ = (u32)(regs->GDR & 0xFFFF);
+		adc_local[port].len = adc_local[port].len - sizeof(u32);
 	}
 
 	if ( adc_local[port].len > 0 ){
@@ -156,10 +155,18 @@ void mcu_core_adc0_isr(){
 
 int mcu_adc_getinfo(const devfs_handle_t * handle, void * ctl){
 	adc_info_t * info = ctl;
+	const adc_config_t * config = handle->config;
 
 	info->freq = ADC_MAX_FREQ;
 	info->o_flags = (ADC_FLAG_IS_LEFT_JUSTIFIED|ADC_FLAG_IS_RIGHT_JUSTIFIED);
 	info->resolution = 12;
+	info->maximum = 0xfff0;
+
+	if( config ){
+		info->reference_mv = config->reference_mv;
+	} else {
+		info->reference_mv = 0;
+	}
 
 	return 0;
 }

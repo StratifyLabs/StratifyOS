@@ -137,10 +137,12 @@ typedef struct {
 	mcu_event_handler_t handler /*! Event handler */;
 } mcu_action_t;
 
-
+/*! \brief MCU Pin
+ *
+ */
 typedef struct MCU_PACK {
-	u8 port;
-	u8 pin;
+	u8 port /*! Port */;
+	u8 pin /*! Pin number */;
 } mcu_pin_t;
 
 static inline int mcu_is_port_valid(u8 port){

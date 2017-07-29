@@ -32,6 +32,7 @@ extern "C" {
 
 typedef struct MCU_PACK {
 	adc_attr_t attr; //default attributes
+	u32 reference_mv;
 } adc_config_t;
 
 int mcu_adc_open(const devfs_handle_t * cfg) MCU_PRIV_CODE;

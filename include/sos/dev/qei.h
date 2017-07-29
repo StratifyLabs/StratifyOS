@@ -78,8 +78,8 @@ typedef struct MCU_PACK {
  * for opening or reconfiguring the QEI port.
  */
 typedef struct MCU_PACK {
-	u32 o_flags;
-	qei_pin_assignment_t pin_assignment;
+	u32 o_flags /*! Flag bitmask */;
+	qei_pin_assignment_t pin_assignment /*! Pin assignment */;
 	u32 freq;
 	u32 top /*! Maximum value */;
 	u32 velocity_freq;

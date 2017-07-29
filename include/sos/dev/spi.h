@@ -56,17 +56,17 @@ extern "C" {
 #define SPI_IOC_IDENT_CHAR 's'
 
 typedef enum {
-	SPI_FLAG_FORMAT_SPI = (1<<0) /*! SPI Format */,
-	SPI_FLAG_FORMAT_TI = (1<<1) /*! TI Format */,
-	SPI_FLAG_FORMAT_MICROWIRE = (1<<2) /*! Microwire format */,
-	SPI_FLAG_MODE0 = (1<<3) /*! SPI Mode 0 */,
-	SPI_FLAG_MODE1 = (1<<4) /*! SPI Mode 1 */,
-	SPI_FLAG_MODE2 = (1<<5) /*! SPI Mode 2 */,
-	SPI_FLAG_MODE3 = (1<<6) /*! SPI Mode 3 */,
+	SPI_FLAG_IS_FORMAT_SPI = (1<<0) /*! SPI Format */,
+	SPI_FLAG_IS_FORMAT_TI = (1<<1) /*! TI Format */,
+	SPI_FLAG_IS_FORMAT_MICROWIRE = (1<<2) /*! Microwire format */,
+	SPI_FLAG_IS_MODE0 = (1<<3) /*! SPI Mode 0 */,
+	SPI_FLAG_IS_MODE1 = (1<<4) /*! SPI Mode 1 */,
+	SPI_FLAG_IS_MODE2 = (1<<5) /*! SPI Mode 2 */,
+	SPI_FLAG_IS_MODE3 = (1<<6) /*! SPI Mode 3 */,
 	SPI_FLAG_SET_MASTER = (1<<7) /*! SPI Master */,
 	SPI_FLAG_SET_SLAVE = (1<<8) /*! SPI Slave */,
-	SPI_FLAG_FULL_DUPLEX = (1<<9) /*! Full duplex mode (data is written first then read into the same buffer) */,
-	SPI_FLAG_HALF_DUPLEX = (1<<10) /*! Half duplex mode (default mode) */,
+	SPI_FLAG_IS_FULL_DUPLEX = (1<<9) /*! Full duplex mode (data is written first then read into the same buffer) */,
+	SPI_FLAG_IS_HALF_DUPLEX = (1<<10) /*! Half duplex mode (default mode) */,
 } spi_flag_t;
 
 typedef struct MCU_PACK {

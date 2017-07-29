@@ -464,7 +464,7 @@
 .global __aeabi_dcmpge; __aeabi_dcmpge = LINK_ADDR;
 .global __aeabi_dcmpgt; __aeabi_dcmpgt = LINK_ADDR;
 .global __powidf2; __powidf2 = LINK_ADDR;
-.global signal_callback; signal_callback = LINK_ADDR;
+.global devfs_signal_callback; devfs_signal_callback = LINK_ADDR;
 .global __sinit; __sinit = LINK_ADDR;
 .global task_setstackguard; task_setstackguard = LINK_ADDR;
 .global crt_import_argv; crt_import_argv = LINK_ADDR;

@@ -118,12 +118,6 @@ typedef struct MCU_PACK {
 	u32 o_events;
 } pio_info_t;
 
-typedef struct MCU_PACK {
-	u32 status;
-	u32 rising;
-	u32 falling;
-} pio_event_t;
-
 
 typedef struct MCU_PACK {
 	u32 o_flags;

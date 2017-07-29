@@ -50,7 +50,12 @@ int mcu_pwm_close(const devfs_handle_t * cfg) MCU_PRIV_CODE;
 int mcu_pwm_getinfo(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
 int mcu_pwm_setattr(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
 int mcu_pwm_setaction(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_pwm_setchannel(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_pwm_getchannel(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
 int mcu_pwm_set(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_pwm_get(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_pwm_enable(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_pwm_disable(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
 
 #ifdef __cplusplus
 }

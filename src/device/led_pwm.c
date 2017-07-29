@@ -24,23 +24,24 @@
 
 #include "mcu/debug.h"
 
-static void led_setattr(const devfs_handle_t * handle, const led_attr_t * attr);
+static int led_setattr(const devfs_handle_t * handle, const led_attr_t * attr);
 
 int led_pwm_open(const devfs_handle_t * handle){
-	return 0;
+	return mcu_pwm_open(handle);
 }
 
 int led_pwm_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 	led_info_t * info = ctl;
 	switch(request){
 	case I_LED_GETINFO:
-		info->o_flags = LED_FLAG_ENABLE | LED_FLAG_DISABLE | LED_FLAG_IS_HIGH_IMPEDANCE;
+		info->o_flags = LED_FLAG_ENABLE |
+		LED_FLAG_DISABLE |
+		LED_FLAG_IS_DUTY_CYCLE;
 		info->o_events = 0;
 		break;
 
 	case I_LED_SETATTR:
-		led_setattr(handle, ctl);
-		break;
+		return led_setattr(handle, ctl);
 
 	case I_LED_SETACTION:
 		errno = ENOTSUP;
@@ -66,69 +67,48 @@ int led_pwm_write(const devfs_handle_t * handle, devfs_async_t * wop){
 }
 
 int led_pwm_close(const devfs_handle_t * handle){
-	return 0;
+	return mcu_pwm_close(handle);
 }
 
-void led_setattr(const devfs_handle_t * handle, const led_attr_t * attr){
+int led_setattr(const devfs_handle_t * handle, const led_attr_t * attr){
 	const led_pwm_config_t * config = handle->config;
 	u32 o_flags = attr->o_flags;
-	pio_attr_t pio_attr;
-	mcu_pin_t pin;
-	devfs_handle_t pio_handle;
 	pwm_attr_t pwm_attr;
 	mcu_channel_t channel;
 
-	pin = config->pwm.attr.pin_assignment.channel[0];
-	pio_handle.port = pin.port;
-	pio_handle.config = 0;
-
-
 	if( o_flags & LED_FLAG_ENABLE ){
-
 		if( o_flags & LED_FLAG_IS_DUTY_CYCLE ){
-
-			//led attr period is in us - so pwm freq will be 1MHz
-			memset(&(pwm_attr.pin_assignment), 0xff, sizeof(pwm_pin_assignment_t));
-			pwm_attr.o_flags = PWM_FLAG_IS_ACTIVE_HIGH;
-			pwm_attr.pin_assignment.channel[0] = pin;
-			pwm_attr.freq = 1000000;
 			pwm_attr.period = attr->period;
-			mcu_pwm_setattr(handle, &pwm_attr);
-
-			channel.loc = config->loc;
 			channel.value = attr->duty_cycle;
-			mcu_pwm_set(handle, &channel);
-
 		} else {
-			//just use PIO
-			pio_attr.o_flags = PIO_FLAG_SET_OUTPUT;
-			mcu_pio_setattr(&pio_handle, &pio_attr);
+			pwm_attr.period = 5000;
+			channel.value = 5000;
+		}
+		pwm_attr.freq = 1000000;
+		//led attr period is in us - so pwm freq will be 1MHz
+		memcpy(&(pwm_attr.pin_assignment), &config->pwm.attr.pin_assignment, sizeof(pwm_pin_assignment_t));
+		pwm_attr.o_flags = PMW_FLAG_SET_TIMER | PWM_FLAG_IS_ENABLED;
 
-			if( config->o_flags & LED_PWM_CONFIG_FLAG_IS_ACTIVE_HIGH ){
-				mcu_pio_setmask(&pio_handle, (void*)pio_attr.o_pinmask);
-			} else {
-				mcu_pio_clrmask(&pio_handle, (void*)pio_attr.o_pinmask);
-			}
+		if( mcu_pwm_setattr(handle, &pwm_attr) < 0 ){
+			return -1;
+		}
 
+		channel.loc = config->loc;
+		if( mcu_pwm_setchannel(handle, &channel) < 0 ){
+			return -1;
 		}
 
 	} else if( o_flags & LED_FLAG_DISABLE ){
 
-		if( o_flags & LED_FLAG_IS_HIGH_IMPEDANCE ){
-			pio_attr.o_flags = PIO_FLAG_SET_INPUT | PIO_FLAG_IS_FLOAT;
-			mcu_pio_setattr(&pio_handle, &pio_attr);
-		} else {
+		channel.loc = config->loc;
+		channel.value = 0;
 
-			pio_attr.o_flags = PIO_FLAG_SET_OUTPUT;
-			mcu_pio_setattr(&pio_handle, &pio_attr);
-
-			//set high or low based on IS_ACTIVE_HIGH config values
-			if( config->o_flags & LED_PWM_CONFIG_FLAG_IS_ACTIVE_HIGH ){
-
-			}
-
+		if( mcu_pwm_setchannel(handle, &channel) < 0 ){
+			return -1;
 		}
+
 	}
+	return 0;
 }
 
 

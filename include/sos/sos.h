@@ -41,7 +41,7 @@
  * \section START Start Coding
  *
  * This section is the kernel documentation.  You only need to read this is you want to tinker with the kernel.  The API used
- * for application is <a href="../../StratifyLib/html/"><b>Stratify OS</b> Applib API documentation</a>. If you want finer control,
+ * for applications is <a href="../../StratifyAPI/html/"><b>StratifyAPI</b> documentation</a>. If you want finer control,
  * you can use the built-in \ref POSIX and \ref STDC functions.
  *
  */
@@ -521,17 +521,6 @@ char htoc(int nibble);
  */
 int kernel_request(int request, void * data) MCU_WEAK;
 
-/*! \details This structure is for executing a function as a result of an interrupt
- * in non-privileged mode.
- */
-typedef struct {
-	int tid;
-	int si_signo;
-	int si_sigcode;
-	int sig_value;
-	int keep;
-} signal_callback_t;
-
 typedef struct {
 	//bool logged;
 	uint32_t tid;
@@ -541,40 +530,6 @@ typedef struct {
 	//unsigned int useconds;
 } sched_fault_t;
 
-/*! \details This function can be set as the callback for mcu_action_t.
- * In this case, the context is pointing to a signal_callback_t.  When
- * the event happens, it will send a signal to the specified task.
- *
- * If keep is non-zero, the signal will be sent each time the interrupt happens.
- * Otherwise, the signal is just sent one time.
- *
- * In the example below, the thread below will receive a SIGUSR1 the next time
- * the external interrupt goes low.  The run_on_sigusr1() will execute when the
- * signal is received.
- *
- * \code
- * #include <pthread.h>
- * #include <signal.h>
- * #include <stfy/Hal.hpp>
- *
- * void run_on_sigusr1(int a){
- * 	printf("got sigusr1\n");
- * }
- *
- * Eint intr(0);
- * intr.init();
- *
- * signal(SIGUSR1, (_sig_func_ptr)run_on_sigusr1);
- *
- * signal_callback_t sig; //this must be valid when the interrupt happens
- * sig.tid = pthread_self();
- * sig.signo = SIGUSR1;
- * sig.keep = 0;
- * intr.setaction(0, EINT_ACTION_EVENT_FALLING, signal_callback, &sig);
- * \endcode
- *
- */
-int signal_callback(void * context, mcu_event_t * data);
 
 void sos_trace_event(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len);
 void sos_trace_event_addr_tid(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len, u32 addr, int tid);

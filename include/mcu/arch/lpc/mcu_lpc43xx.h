@@ -79,10 +79,6 @@ typedef u32 pio_sample_t;
  */
 #define DAC_MAX_FREQ 1000000
 
-/*! \brief This defines the type of an ADC sample (see adc_read() and adc_write()).
- */
-typedef uint16_t adc_sample_t;
-
 #define MCU_CORE_PORTS 1
 
 #define MCU_EEPROM_API 1
