@@ -95,7 +95,6 @@ void * sos_default_thread(void * arg){
 	open("/dev/rtc", O_RDWR);
 
 
-
 	mcu_debug_user_printf("Board Event\n");
 	mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_START_LINK, 0);
 

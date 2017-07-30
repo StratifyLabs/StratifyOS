@@ -138,7 +138,7 @@ typedef struct MCU_PACK {
 /*! \brief This requests writes the core attributes.
  */
 #define I_CORE_SETATTR _IOCTLW(CORE_IOC_IDENT_CHAR, I_MCU_SETATTR, core_attr_t)
-#define I_CORE_SETACTION _IOCTLW(CORE_IOC_IDENT_CHAR, I_MCU_SETACTION, core_action_t)
+#define I_CORE_SETACTION _IOCTLW(CORE_IOC_IDENT_CHAR, I_MCU_SETACTION, mcu_action_t)
 
 
 /*! \brief Data structure for setting the pin functionality.

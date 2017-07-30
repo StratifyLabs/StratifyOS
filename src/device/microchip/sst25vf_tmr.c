@@ -129,14 +129,14 @@ void continue_spi_write(const devfs_handle_t * cfg, uint32_t ignore){
 	mcu_action_t action;
 	uint8_t * addrp;
 	devfs_handle_t tmr_handle;
-	tmr_handle.port = sst_cfg->miso.port;
+	tmr_handle.port = sst_cfg->spi.attr.pin_assignment.miso.port;
 	//should be called 10 us after complete_spi_write() executes
 
 	//Disable the TMR interrupt
 	action.handler.callback = 0;
 	action.handler.context = 0;
 	action.o_events = MCU_EVENT_FLAG_NONE;
-	action.channel = sst_cfg->miso.pin;
+	action.channel = sst_cfg->spi.attr.pin_assignment.miso.pin;
 	action.prio = 0;
 	mcu_tmr_disable(&tmr_handle, 0);
 	mcu_tmr_setaction(&tmr_handle, &action);
@@ -180,18 +180,18 @@ void complete_spi_write(const devfs_handle_t * cfg, uint32_t ignore){
 	mcu_channel_t channel;
 	sst25vf_config_t * sst_cfg = (sst25vf_config_t*)cfg->config;
 	devfs_handle_t tmr_handle;
-	tmr_handle.port = sst_cfg->miso.port;
+	tmr_handle.port = sst_cfg->spi.attr.pin_assignment.miso.port;
 
 	sst25vf_share_deassert_cs(cfg);
 
 	//configure the TMR to interrupt in 10 microseconds
 	action.handler.context = (void*)cfg;
 	action.handler.callback = (mcu_callback_t)continue_spi_write;
-	action.channel = sst_cfg->miso.pin;
+	action.channel = sst_cfg->spi.attr.pin_assignment.miso.pin;
 	action.o_events = MCU_EVENT_FLAG_MATCH;
 	action.prio = 0;
 
-	channel.loc = sst_cfg->miso.pin;
+	channel.loc = sst_cfg->spi.attr.pin_assignment.miso.pin;
 
 	//turn the timer off
 	mcu_tmr_disable(&tmr_handle, 0);

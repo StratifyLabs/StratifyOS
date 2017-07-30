@@ -34,9 +34,9 @@
 extern "C" {
 #endif
 
-typedef struct MCU_PACK {
-	u32 value;
-} usb_event_data_t;
+typedef struct {
+	u8 epnum;
+} usb_event_t;
 
 typedef struct MCU_PACK {
 	usb_attr_t attr; //default attributes

@@ -99,19 +99,15 @@ extern "C" {
 
 
 typedef enum {
-	UART_FLAG_IS_STOP1 /*! One stop bit */ = (1<<0),
-	UART_FLAG_IS_STOP2 /*! Two stop bits */ = (1<<1),
-	UART_FLAG_IS_STOP0_5 /*! 0.5 stop bits */ = (1<<2),
-	UART_FLAG_IS_STOP1_5 /*! 1.5 stop bits */ = (1<<3),
-	UART_FLAG_IS_PARITY_NONE /*! Indicates no parity */ = (1<<4),
-	UART_FLAG_IS_PARITY_ODD /*! Indicates odd parity */ = (1<<5),
-	UART_FLAG_IS_PARITY_EVEN /*! Indicates even parity */ = (1<<6),
+	UART_FLAG_SET_CONTROL_LINE_STATE /*! Set the control line state (baudrate, stop bits, etc) */ = (1<<0),
+	UART_FLAG_IS_STOP1 /*! One stop bit (default behavior) */ = (1<<1),
+	UART_FLAG_IS_STOP2 /*! Two stop bits */ = (1<<2),
+	UART_FLAG_IS_STOP0_5 /*! 0.5 stop bits */ = (1<<3),
+	UART_FLAG_IS_STOP1_5 /*! 1.5 stop bits */ = (1<<4),
+	UART_FLAG_IS_PARITY_NONE /*! Indicates no parity (default behavior) */ = (1<<5),
+	UART_FLAG_IS_PARITY_ODD /*! Indicates odd parity */ = (1<<6),
+	UART_FLAG_IS_PARITY_EVEN /*! Indicates even parity */ = (1<<7),
 } uart_flag_t;
-
-
-typedef struct {
-	u8 value;
-} uart_event_t;
 
 
 #define UART_PIN_ASSIGNMENT_COUNT 4

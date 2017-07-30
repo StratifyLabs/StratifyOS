@@ -81,12 +81,12 @@ static int analyze_path(const char * path, const char ** name, int * mem_type){
 
 	} else if ( elements == 2 ){
 		if ( strncmp(path, "flash/", 6) == 0 ){
-			*mem_type = MEM_PAGEINFO_TYPE_FLASH;
+			*mem_type = MEM_FLAG_IS_FLASH;
 			return ANALYZE_PATH_FLASH;
 		}
 
 		if ( strncmp(path, "ram/", 4) == 0 ){
-			*mem_type = MEM_PAGEINFO_TYPE_RAM;
+			*mem_type = MEM_FLAG_IS_RAM;
 			return ANALYZE_PATH_RAM;
 		}
 
@@ -115,8 +115,8 @@ static bool is_sys(const char * name){
 
 int appfs_init(const void * cfg){
 	int i;
-	mem_attr_t attr;
-	priv_load_fileinfo_t info;
+	mem_info_t info;
+	priv_load_fileinfo_t priv_file_info;
 	uint32_t buf[APPFS_RAM_USAGE_WORDS];
 	const devfs_device_t * dev;
 	dev = cfg;
@@ -128,20 +128,20 @@ int appfs_init(const void * cfg){
 	appfs_ram_setrange(buf, mcu_mem_getsyspage(), sos_board_config.sys_memory_size, APPFS_MEMPAGETYPE_SYS);
 
 	//now scan each flash page to see what RAM is used
-	dev->driver.ioctl(&(dev->handle), I_MEM_GETINFO, &attr);
-	for(i=0; i < attr.flash_pages; i++){
-		if ( (appfs_util_getfileinfo(&info, dev, i, MEM_PAGEINFO_TYPE_FLASH, NULL) == APPFS_MEMPAGETYPE_USER) && (appfs_util_isexecutable(&info.fileinfo) == true) ){
+	dev->driver.ioctl(&(dev->handle), I_MEM_GETINFO, &info);
+	for(i=0; i < info.flash_pages; i++){
+		if ( (appfs_util_getfileinfo(&priv_file_info, dev, i, MEM_FLAG_IS_FLASH, NULL) == APPFS_MEMPAGETYPE_USER) && (appfs_util_isexecutable(&priv_file_info.fileinfo) == true) ){
 
 			//get the RAM page associated with the data start
-			info.pageinfo.type = MEM_PAGEINFO_TYPE_QUERY;
-			info.pageinfo.addr = (int)info.fileinfo.exec.ram_start;
-			if ( dev->driver.ioctl(&(dev->handle), I_MEM_GET_PAGEINFO, &info.pageinfo) < 0 ){
+			priv_file_info.pageinfo.o_flags = MEM_FLAG_IS_QUERY;
+			priv_file_info.pageinfo.addr = (int)priv_file_info.fileinfo.exec.ram_start;
+			if ( dev->driver.ioctl(&(dev->handle), I_MEM_GETPAGEINFO, &priv_file_info.pageinfo) < 0 ){
 				continue;
 			}
 
 			appfs_ram_setrange(buf,
-					(int)info.pageinfo.num,
-					info.fileinfo.exec.ram_size,
+					(int)priv_file_info.pageinfo.num,
+					priv_file_info.fileinfo.exec.ram_size,
 					APPFS_MEMPAGETYPE_SYS);
 		}
 	}
@@ -151,8 +151,8 @@ int appfs_init(const void * cfg){
 
 int appfs_startup(const void * cfg){
 	int i;
-	mem_attr_t attr;
-	priv_load_fileinfo_t info;
+	mem_info_t info;
+	priv_load_fileinfo_t priv_file_info;
 	task_memories_t mem;
 	int started;
 	const devfs_device_t * dev;
@@ -161,26 +161,26 @@ int appfs_startup(const void * cfg){
 
 	//go through each flash page and look for programs that should be run on startup
 	started = 0;
-	dev->driver.ioctl(&(dev->handle), I_MEM_GETINFO, &attr);
-	for(i=0; i < attr.flash_pages; i++){
-		if (appfs_util_getfileinfo(&info, dev, i, MEM_PAGEINFO_TYPE_FLASH, NULL) == APPFS_MEMPAGETYPE_USER ){
-			if ( (appfs_util_isexecutable(&info.fileinfo) == true) &&
-					(info.fileinfo.exec.o_flags & APPFS_FLAG_IS_STARTUP) ){
+	dev->driver.ioctl(&(dev->handle), I_MEM_GETINFO, &info);
+	for(i=0; i < info.flash_pages; i++){
+		if (appfs_util_getfileinfo(&priv_file_info, dev, i, MEM_FLAG_IS_FLASH, NULL) == APPFS_MEMPAGETYPE_USER ){
+			if ( (appfs_util_isexecutable(&priv_file_info.fileinfo) == true) &&
+					(priv_file_info.fileinfo.exec.o_flags & APPFS_FLAG_IS_STARTUP) ){
 
 				//start the process
-				mem.code.addr = (void*)info.fileinfo.exec.code_start;
-				mem.code.size = info.fileinfo.exec.code_size;
-				mem.data.addr = (void*)info.fileinfo.exec.ram_start;
-				mem.data.size = info.fileinfo.exec.ram_size;
+				mem.code.addr = (void*)priv_file_info.fileinfo.exec.code_start;
+				mem.code.size = priv_file_info.fileinfo.exec.code_size;
+				mem.data.addr = (void*)priv_file_info.fileinfo.exec.ram_start;
+				mem.data.size = priv_file_info.fileinfo.exec.ram_size;
 
-				if ( sched_new_process((void*)info.fileinfo.exec.startup,
+				if ( sched_new_process((void*)priv_file_info.fileinfo.exec.startup,
 						0,
 						&mem,
-						(void*)info.fileinfo.exec.ram_start) >= 0 ){
+						(void*)priv_file_info.fileinfo.exec.ram_start) >= 0 ){
 					started++;
-					mcu_debug_user_printf("Started %s\n", info.fileinfo.hdr.name);
+					mcu_debug_user_printf("Started %s\n", priv_file_info.fileinfo.hdr.name);
 				} else {
-					mcu_debug_user_printf("Failed to start %s\n", info.fileinfo.hdr.name);
+					mcu_debug_user_printf("Failed to start %s\n", priv_file_info.fileinfo.hdr.name);
 				}
 
 			}
@@ -246,7 +246,7 @@ int appfs_open(const void * cfg, void ** handle, const char * path, int flags, i
 				//open the existing file
 				h->type.reg.beg_addr = args.pageinfo.addr;
 				h->type.reg.page = args.pageinfo.num;
-				h->type.reg.type = args.pageinfo.type;
+				h->type.reg.o_flags = args.pageinfo.o_flags;
 				h->type.reg.size = size;
 				h->type.reg.mode = args.fileinfo.hdr.mode;
 			} else { //the file does not already exist
@@ -292,7 +292,7 @@ int appfs_unlink(const void* cfg, const char * path){
 
 
 	//executable files are deleted based on the header file
-	if ( mem_type == MEM_PAGEINFO_TYPE_FLASH ){
+	if ( mem_type == MEM_FLAG_IS_FLASH ){
 		start_page = args.pageinfo.num;
 		size_deleted = args.pageinfo.size;  //start with the first page
 
@@ -323,7 +323,7 @@ int appfs_unlink(const void* cfg, const char * path){
 	if( args.fileinfo.exec.signature != APPFS_CREATE_SIGNATURE ){
 		//remove the application from the RAM usage table
 		args.pageinfo.addr = (int)args.fileinfo.exec.ram_start;
-		args.pageinfo.type = MEM_PAGEINFO_TYPE_QUERY;
+		args.pageinfo.o_flags = MEM_FLAG_IS_QUERY;
 
 		if ( appfs_util_getpageinfo(cfg, &args.pageinfo) ){
 			return -1;
@@ -351,7 +351,7 @@ int appfs_fstat(const void* cfg, void * handle, struct stat * st){
 		return 0;
 	}
 
-	if ( appfs_util_getfileinfo(&args, cfg, h->type.reg.page, h->type.reg.type, &size) < 0 ){
+	if ( appfs_util_getfileinfo(&args, cfg, h->type.reg.page, h->type.reg.o_flags, &size) < 0 ){
 		return -1;
 	}
 
@@ -409,7 +409,7 @@ int appfs_stat(const void* cfg, const char * path, struct stat * st){
 		handle.type.reg.size = size;
 		handle.type.reg.beg_addr = args.pageinfo.addr;
 		handle.type.reg.page = args.pageinfo.num;
-		handle.type.reg.type = args.pageinfo.type;
+		handle.type.reg.o_flags = args.pageinfo.o_flags;
 	}
 
 	return appfs_fstat(cfg, &handle, st);
@@ -595,9 +595,9 @@ int appfs_readdir_r(const void* cfg, void * handle, int loc, struct dirent * ent
 	case 0:
 		return readdir_root(cfg, loc, entry);
 	case 1:
-		return readdir_mem(cfg, loc, entry, MEM_PAGEINFO_TYPE_FLASH);
+		return readdir_mem(cfg, loc, entry, MEM_FLAG_IS_FLASH);
 	case 2:
-		return readdir_mem(cfg, loc, entry, MEM_PAGEINFO_TYPE_RAM);
+		return readdir_mem(cfg, loc, entry, MEM_FLAG_IS_RAM);
 	default:
 		return -1;
 	}

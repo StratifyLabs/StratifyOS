@@ -58,13 +58,10 @@ extern "C" {
 
 
 typedef enum {
-	ADC_FLAG_IS_LEFT_JUSTIFIED = (1<<0),
-	ADC_FLAG_IS_RIGHT_JUSTIFIED = (1<<1),
+	ADC_FLAG_SET_CONVERTER = (1<<0),
+	ADC_FLAG_IS_LEFT_JUSTIFIED = (1<<1),
+	ADC_FLAG_IS_RIGHT_JUSTIFIED = (1<<2),
 } adc_flag_t;
-
-typedef struct MCU_PACK {
-	u32 value;
-} adc_event_t;
 
 typedef struct MCU_PACK {
 	u32 o_flags /*! A bitmask for the supported features */;
@@ -115,7 +112,7 @@ typedef struct MCU_PACK {
  * \hideinitializer
  */
 #define I_ADC_SETATTR _IOCTLW(ADC_IOC_IDENT_CHAR, I_MCU_SETATTR, adc_attr_t)
-#define I_ADC_SETACTION _IOCTLW(ADC_IOC_IDENT_CHAR, I_MCU_SETACTION, adc_action_t)
+#define I_ADC_SETACTION _IOCTLW(ADC_IOC_IDENT_CHAR, I_MCU_SETACTION, mcu_action_t)
 
 #ifdef __cplusplus
 }

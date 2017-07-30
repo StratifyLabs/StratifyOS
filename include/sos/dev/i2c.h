@@ -103,10 +103,6 @@ enum {
 };
 
 
-typedef struct {
-	u32 value;
-} i2c_event_t;
-
 typedef struct MCU_PACK {
 	u32 o_flags /*! Bitmask of supported flags */;
 	u32 o_events /*! Bitmask of supported events */;
@@ -152,6 +148,7 @@ typedef struct MCU_PACK {
 	u32 freq /*! The bit frequency */;
 	i2c_slave_addr_t slave_addr[2] /*! Slave address */;
 	u32 size /*! Memory size when setting up slave */;
+	void * data /*! Memory pointer to slave data */;
 } i2c_attr_t;
 
 
@@ -168,7 +165,7 @@ typedef struct MCU_PACK {
 /*! \brief This request sets the I2C action.
  * \hideinitializer
  */
-#define I_I2C_SETACTION _IOCTLW(I2C_IOC_IDENT_CHAR, I_MCU_SETACTION, i2c_action_t)
+#define I_I2C_SETACTION _IOCTLW(I2C_IOC_IDENT_CHAR, I_MCU_SETACTION, mcu_action_t)
 
 #define I_I2C_TOTAL 0
 

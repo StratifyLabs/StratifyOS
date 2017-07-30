@@ -22,48 +22,40 @@
 #include "mcu/debug.h"
 #include "sst25vf_local.h"
 
-static int complete_spi_write(const devfs_handle_t * handle, uint32_t ignore);
-static int continue_spi_write(const devfs_handle_t * handle, uint32_t ignore);
+static int complete_spi_write(void * context, mcu_event_t * event);
+static int continue_spi_write(void * context, mcu_event_t * event);
+static int complete_spi_read(void * context, mcu_event_t * event);
 
-
-int sst25vf_open(const devfs_handle_t * cfg){
+int sst25vf_open(const devfs_handle_t * handle){
 	int err;
 	uint8_t status;
 	pio_attr_t pio_attr;
-	sst25vf_state_t * state = (sst25vf_state_t*)cfg->state;
-	const sst25vf_config_t * config = cfg->config;
+	sst25vf_state_t * state = (sst25vf_state_t*)handle->state;
+	const sst25vf_config_t * config = handle->config;
 	devfs_handle_t pio_handle;
 	pio_handle.port = config->cs.port;
+	pio_handle.config = 0;
 
-	/*
-	spi_attr_t spi_cfg;
-	spi_cfg.pin_assign = cfg->pin_assign;
-	spi_cfg.width = cfg->pcfg.spi.width;
-	spi_cfg.mode = cfg->pcfg.spi.mode;
-	spi_cfg.format = cfg->pcfg.spi.format;
-	spi_cfg.bitrate = cfg->bitrate;
-	spi_cfg.master = SPI_ATTR_MASTER;
-	*/
-	err = mcu_spi_open(cfg);
+	err = mcu_spi_open(handle);
 	if ( err < 0 ){
 		return err;
 	}
 
-	if( (err = mcu_spi_ioctl(cfg, I_SPI_SETATTR, (void*)&(config->spi.attr))) < 0 ){
+	if( (err = mcu_spi_setattr(handle, (void*)&(config->spi.attr))) < 0 ){
 		return err;
 	}
 
-	sst25vf_share_deassert_cs(cfg);
+	sst25vf_share_deassert_cs(handle);
 	pio_attr.o_pinmask = (1<<config->cs.pin);
 	pio_attr.o_flags = PIO_FLAG_SET_OUTPUT | PIO_FLAG_IS_DIRONLY;
 	mcu_pio_setattr(&pio_handle, &pio_attr);
 
-	sst25vf_share_write_disable(cfg);
+	sst25vf_share_write_disable(handle);
 
 	//Now ping the device to see if it responds
-	sst25vf_share_power_up(cfg);
-	sst25vf_share_global_protect(cfg);
-	status = sst25vf_share_read_status(cfg);
+	sst25vf_share_power_up(handle);
+	sst25vf_share_global_protect(handle);
+	status = sst25vf_share_read_status(handle);
 
 	if ( status != 0x9C ){
 		//Global protect command failed
@@ -72,11 +64,11 @@ int sst25vf_open(const devfs_handle_t * cfg){
 	}
 
 
-	if ( sst25vf_share_global_unprotect(cfg) ){
+	if ( sst25vf_share_global_unprotect(handle) ){
 		errno = EIO;
 		return -1;
 	}
-	status = sst25vf_share_read_status(cfg);
+	status = sst25vf_share_read_status(handle);
 
 	if ( status != 0x80 ){
 		//global unprotect failed
@@ -90,9 +82,10 @@ int sst25vf_open(const devfs_handle_t * cfg){
 	return 0;
 }
 
-static int complete_spi_read(const devfs_handle_t * cfg, uint32_t ignore){
-	sst25vf_state_t * state = (sst25vf_state_t*)cfg->state;
-	sst25vf_share_deassert_cs(cfg);
+int complete_spi_read(void * context, mcu_event_t * event){
+	const devfs_handle_t * handle = context;
+	sst25vf_state_t * state = handle->state;
+	sst25vf_share_deassert_cs(handle);
 	if( state->handler.callback != NULL ){
 		state->handler.callback(state->handler.context, NULL);
 		state->handler.callback = NULL;
@@ -144,7 +137,8 @@ static void assert_delay(){
 	}
 }
 
-int continue_spi_write(const devfs_handle_t * handle, uint32_t ignore){
+int continue_spi_write(void * context, mcu_event_t * event){
+	const devfs_handle_t * handle = context;
 	sst25vf_state_t * state = (sst25vf_state_t *)handle->state;
 	int tmp;
 	//should be called 10 us after complete_spi_write() executes
@@ -187,7 +181,8 @@ int continue_spi_write(const devfs_handle_t * handle, uint32_t ignore){
 	return 0;
 }
 
-int complete_spi_write(const devfs_handle_t * handle, uint32_t ignore){
+int complete_spi_write(void * context, mcu_event_t * event){
+	const devfs_handle_t * handle = context;
 	mcu_action_t action;
 	devfs_handle_t pio_handle;
 	sst25vf_config_t * sst_cfg = (sst25vf_config_t*)handle->config;
@@ -197,10 +192,11 @@ int complete_spi_write(const devfs_handle_t * handle, uint32_t ignore){
 	//configure the GPIO to interrupt on a rising edge
 	action.handler.context = (void*)handle;
 	action.handler.callback = (mcu_callback_t)continue_spi_write;
-	action.channel = sst_cfg->miso.pin;
+	action.channel = sst_cfg->spi.attr.pin_assignment.miso.pin;
 	action.o_events = MCU_EVENT_FLAG_RISING;
 	action.prio = 0;
-	pio_handle.port = sst_cfg->miso.port;
+	pio_handle.port = sst_cfg->spi.attr.pin_assignment.miso.port;
+	pio_handle.config = 0;
 	mcu_pio_setaction(&pio_handle, &action);
 
 	sst25vf_share_deassert_cs(handle);

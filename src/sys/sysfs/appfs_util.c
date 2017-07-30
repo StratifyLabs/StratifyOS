@@ -85,7 +85,7 @@ int appfs_util_erasepages(const devfs_device_t * dev, int start_page, int end_pa
 }
 
 int appfs_util_getpageinfo(const devfs_device_t * dev, mem_pageinfo_t * pageinfo){
-	return dev->driver.ioctl(&(dev->handle), I_MEM_GET_PAGEINFO, pageinfo);
+	return dev->driver.ioctl(&(dev->handle), I_MEM_GETPAGEINFO, pageinfo);
 }
 
 
@@ -128,7 +128,7 @@ static int find_protectable_addr(const devfs_device_t * dev, int size, int type,
 	int err;
 	int mem_type;
 
-	if ( type == MEM_PAGEINFO_TYPE_FLASH ){
+	if ( type == MEM_FLAG_IS_FLASH ){
 		mem_type = MPU_MEMORY_FLASH;
 	} else {
 		mem_type = MPU_MEMORY_SRAM;
@@ -138,8 +138,8 @@ static int find_protectable_addr(const devfs_device_t * dev, int size, int type,
 	do {
 		//go through each page
 		pageinfo.num = i;
-		pageinfo.type = type;
-		if ( dev->driver.ioctl(&(dev->handle), I_MEM_GET_PAGEINFO, &pageinfo) < 0 ){
+		pageinfo.o_flags = type;
+		if ( dev->driver.ioctl(&(dev->handle), I_MEM_GETPAGEINFO, &pageinfo) < 0 ){
 			return -1;
 		}
 
@@ -174,7 +174,7 @@ int check_for_free_space(const devfs_device_t * dev, int start_page, int type, i
 	int ret;
 
 	info.dev = dev;
-	info.pageinfo.type = type;
+	info.pageinfo.o_flags = type;
 
 	info.pageinfo.num = start_page;
 	free_size = 0;
@@ -182,7 +182,7 @@ int check_for_free_space(const devfs_device_t * dev, int start_page, int type, i
 	last_size = -1;
 
 	do {
-		if ( type == MEM_PAGEINFO_TYPE_FLASH ){
+		if ( type == MEM_FLAG_IS_FLASH ){
 			appfs_util_privloadfileinfo(&info);
 		} else {
 			appfs_util_getpageinfo(dev, &info.pageinfo);
@@ -200,7 +200,7 @@ int check_for_free_space(const devfs_device_t * dev, int start_page, int type, i
 
 		last_addr = info.pageinfo.addr;
 		last_size = info.pageinfo.size;
-		if ( type == MEM_PAGEINFO_TYPE_FLASH ){
+		if ( type == MEM_FLAG_IS_FLASH ){
 			ret = appfs_util_getflashpagetype(&info.fileinfo.hdr);
 		} else {
 			ret = appfs_ram_getusage(info.pageinfo.num);
@@ -281,7 +281,7 @@ static int find_free(const devfs_device_t * dev, int type, int size){
 	//find an area of flash that is available to write
 	do {
 
-		pageinfo.type = type;
+		pageinfo.o_flags = type;
 		if ( dev->driver.ioctl(&(dev->handle), I_MEM_GET_PAGEINFO, &pageinfo) < 0 ){
 			return -1;
 		}
@@ -315,7 +315,7 @@ int appfs_util_priv_free_ram(const devfs_device_t * dev, appfs_handle_t * h){
 	f = appfs_util_getfile(h);
 
 	args.pageinfo.addr = f->exec.ram_start;
-	args.pageinfo.type = MEM_PAGEINFO_TYPE_QUERY;
+	args.pageinfo.o_flags = MEM_FLAG_IS_QUERY;
 
 	if ( appfs_util_getpageinfo(dev, &args.pageinfo) < 0 ){
 		errno = EINVAL;
@@ -344,7 +344,7 @@ int appfs_util_priv_reclaim_ram(const devfs_device_t * dev, appfs_handle_t * h){
 	f = appfs_util_getfile(h);
 
 	args.pageinfo.addr = f->exec.ram_start;
-	args.pageinfo.type = MEM_PAGEINFO_TYPE_QUERY;
+	args.pageinfo.o_flags = MEM_FLAG_IS_QUERY;
 
 	if ( appfs_util_getpageinfo(dev, &args.pageinfo) ){
 		return -1;
@@ -424,7 +424,7 @@ int appfs_util_priv_create(const devfs_device_t * dev, appfs_handle_t * h, appfs
 
 		//check the options
 		dest->exec.o_flags = APPFS_FLAG_IS_FLASH;
-		type = MEM_PAGEINFO_TYPE_FLASH;
+		type = MEM_FLAG_IS_FLASH;
 
 		//find space for the code
 		code_start_addr = find_protectable_free(dev, type, dest->exec.code_size, &page);
@@ -526,10 +526,10 @@ int appfs_util_priv_writeinstall(const devfs_device_t * dev, appfs_handle_t * h,
 		//check the options
 		if ( (src.file->exec.o_flags) & APPFS_FLAG_IS_FLASH ){
 			//This should be installed in flash
-			type = MEM_PAGEINFO_TYPE_FLASH;
+			type = MEM_FLAG_IS_FLASH;
 		} else {
 			//This should be install in RAM
-			type = MEM_PAGEINFO_TYPE_RAM;
+			type = MEM_FLAG_IS_RAM;
 		}
 
 		code_size = src.file->exec.code_size + src.file->exec.data_size; //code plus initialized data
@@ -556,7 +556,7 @@ int appfs_util_priv_writeinstall(const devfs_device_t * dev, appfs_handle_t * h,
 		}
 
 		ram_page = 0;
-		data_start_addr = find_protectable_free(dev, MEM_PAGEINFO_TYPE_RAM, ram_size, &ram_page);
+		data_start_addr = find_protectable_free(dev, MEM_FLAG_IS_RAM, ram_size, &ram_page);
 		if( data_start_addr == -1 ){
 			if ( !((src.file->exec.o_flags) & APPFS_FLAG_IS_FLASH) ){ //for RAM app's mark the RAM usage
 				//free the code section
@@ -675,7 +675,7 @@ int appfs_util_getflashpagetype(appfs_header_t * info){
 }
 
 int appfs_util_getpagetype(appfs_header_t * info, int page, int type){
-	if ( type == MEM_PAGEINFO_TYPE_FLASH ){
+	if ( type == MEM_FLAG_IS_FLASH ){
 		return appfs_util_getflashpagetype(info);
 	}
 	return appfs_ram_getusage(page);
@@ -720,7 +720,7 @@ void appfs_util_privloadfileinfo(void * args){
 
 	if ( p->dev->driver.ioctl(
 			&(p->dev->handle),
-			I_MEM_GET_PAGEINFO,
+			I_MEM_GETPAGEINFO,
 			&p->pageinfo
 	) < 0 ){
 		p->ret = -1;
@@ -746,7 +746,7 @@ int appfs_util_getfileinfo(priv_load_fileinfo_t * info, const devfs_device_t * d
 	int filetype;
 	info->dev = dev;
 	info->pageinfo.num = page;
-	info->pageinfo.type = type;
+	info->pageinfo.o_flags = type;
 	cortexm_svcall(appfs_util_privloadfileinfo, info);
 	if ( info->ret < 0 ){
 		return -1;
@@ -787,7 +787,7 @@ int appfs_util_lookupname(const void * cfg, const char * path, priv_load_fileinf
 			return -1;
 		}
 
-		if ( strcmp(path, args->fileinfo.hdr.name) == 0 ){
+		if ( strncmp(path, args->fileinfo.hdr.name, NAME_MAX) == 0 ){
 			args->ret = i;
 			return 0;
 		}

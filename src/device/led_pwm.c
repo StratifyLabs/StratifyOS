@@ -87,7 +87,7 @@ int led_setattr(const devfs_handle_t * handle, const led_attr_t * attr){
 		pwm_attr.freq = 1000000;
 		//led attr period is in us - so pwm freq will be 1MHz
 		memcpy(&(pwm_attr.pin_assignment), &config->pwm.attr.pin_assignment, sizeof(pwm_pin_assignment_t));
-		pwm_attr.o_flags = PMW_FLAG_SET_TIMER | PWM_FLAG_IS_ENABLED;
+		pwm_attr.o_flags = PWM_FLAG_SET_TIMER | PWM_FLAG_IS_ENABLED;
 
 		if( mcu_pwm_setattr(handle, &pwm_attr) < 0 ){
 			return -1;

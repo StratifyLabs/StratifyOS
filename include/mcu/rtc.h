@@ -38,6 +38,10 @@ typedef struct MCU_PACK {
 	u32 value;
 } rtc_event_data_t;
 
+typedef struct {
+	rtc_time_t time;
+} rtc_event_t;
+
 int mcu_rtc_open(const devfs_handle_t * cfg) MCU_PRIV_CODE;
 int mcu_rtc_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_PRIV_CODE;
 int mcu_rtc_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_PRIV_CODE;

@@ -48,10 +48,6 @@ extern "C" {
 #define USB_IOC_IDENT_CHAR 'u'
 
 
-typedef struct {
-	u8 epnum;
-} usb_event_t;
-
 /*! \details This lists the valid USB modes.
  *
  */

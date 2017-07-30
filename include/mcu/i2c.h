@@ -35,6 +35,10 @@
 extern "C" {
 #endif
 
+typedef struct {
+	u32 value;
+} i2c_event_t;
+
 typedef struct MCU_PACK {
 	i2c_attr_t attr; //default attributes
 } i2c_config_t;

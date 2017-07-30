@@ -94,7 +94,7 @@ typedef u32 emc_info_t;
  */
 #define I_EMC_SETATTR _IOCTLW(EMC_IOC_IDENT_CHAR, I_MCU_SETATTR, eint_attr_t)
 
-#define I_EMC_SETACTION _IOCTLW(EMC_IOC_IDENT_CHAR, I_MCU_SETACTION, eint_action_t)
+#define I_EMC_SETACTION _IOCTLW(EMC_IOC_IDENT_CHAR, I_MCU_SETACTION, mcu_action_t)
 
 #define I_EMC_TOTAL 0
 

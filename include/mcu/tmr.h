@@ -38,6 +38,10 @@ typedef struct MCU_PACK {
 } tmr_event_data_t;
 
 typedef struct MCU_PACK {
+	mcu_channel_t channel;
+} tmr_event_t;
+
+typedef struct MCU_PACK {
 	tmr_attr_t attr;
 } tmr_config_t;
 

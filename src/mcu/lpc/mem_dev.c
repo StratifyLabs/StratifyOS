@@ -71,11 +71,11 @@ int mcu_mem_getsyspage(){
 }
 
 int mcu_mem_getinfo(const devfs_handle_t * handle, void * ctl){
-	mem_attr_t * attr = ctl;
-	attr->flash_pages = (u32)&_flash_pages;
-	attr->flash_size = FLASH_SIZE;
-	attr->ram_pages = (u32)&_flash_pages;
-	attr->ram_size = (u32)&_sram_size + (u32)&_ahb_sram_size;
+	mem_info_t * info = ctl;
+	info->flash_pages = (u32)&_flash_pages;
+	info->flash_size = FLASH_SIZE;
+	info->ram_pages = (u32)&_flash_pages;
+	info->ram_size = (u32)&_sram_size + (u32)&_ahb_sram_size;
 	return 0;
 }
 int mcu_mem_setattr(const devfs_handle_t * handle, void * ctl){
@@ -92,42 +92,45 @@ int mcu_mem_getpageinfo(const devfs_handle_t * handle, void * ctl){
 	int32_t addr = 0;
 	mem_pageinfo_t * ctlp = ctl;
 
-	switch(ctlp->type){
-	case MEM_PAGEINFO_TYPE_QUERY:
-		//lookup the page info based on the address
-		if ( is_ram(ctlp->addr, DEVICE_RAM_PAGE_SIZE) ){
-			ctlp->num = get_ram_page(ctlp->addr);
-			ctlp->size = get_ram_page_size(ctlp->num);
-			ctlp->type = MEM_PAGEINFO_TYPE_RAM;
-			return 0;
-		} else if ( is_flash(ctlp->addr, 0) ){
-			ctlp->num = get_flash_page(ctlp->addr);
-			ctlp->size = get_flash_page_size(ctlp->num);
-			ctlp->type = MEM_PAGEINFO_TYPE_FLASH;
-			return 0;
-		}
 
-		break;
-	case MEM_PAGEINFO_TYPE_RAM:
-		//get the ram page info
+	if( ctlp->o_flags & MEM_FLAG_IS_RAM ){
+
 		size = get_ram_page_size(ctlp->num);
 		addr = get_ram_page_addr(ctlp->num);
 		if ( addr < 0 ){
 			return -1;
 		}
-		break;
-	case MEM_PAGEINFO_TYPE_FLASH:
-		//get the flash page info
+
+	} else if( ctlp->o_flags & MEM_FLAG_IS_FLASH ){
+
 		size = get_flash_page_size(ctlp->num);
 		addr = get_flash_page_addr(ctlp->num);
 		if ( (addr + size) > FLASH_SIZE){
 			return -1; //this page does not exist on this part
 		}
-		break;
-	default:
-		return -1;
 
+	} else if( ctlp->o_flags & MEM_FLAG_IS_QUERY ){
+
+		//Query needs to see if addr is RAM or FLASH
+		if ( is_ram(ctlp->addr, DEVICE_RAM_PAGE_SIZE) ){
+			ctlp->num = get_ram_page(ctlp->addr);
+			ctlp->size = get_ram_page_size(ctlp->num);
+			ctlp->o_flags = MEM_FLAG_IS_RAM;
+			return 0;
+		} else if ( is_flash(ctlp->addr, 0) ){
+			ctlp->num = get_flash_page(ctlp->addr);
+			ctlp->size = get_flash_page_size(ctlp->num);
+			ctlp->o_flags = MEM_FLAG_IS_FLASH;
+			return 0;
+		} else {
+			return -1;
+		}
+
+	} else {
+		return -1;
 	}
+
+
 
 	ctlp->size = size;
 	ctlp->addr = addr;

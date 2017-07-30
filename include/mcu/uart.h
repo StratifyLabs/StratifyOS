@@ -37,7 +37,7 @@ extern "C" {
 
 typedef struct MCU_PACK {
 	u32 value;
-} uart_event_data_t;
+} uart_event_t;
 
 typedef struct MCU_PACK {
 	uart_attr_t attr; //default attributes

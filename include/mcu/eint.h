@@ -36,6 +36,12 @@ extern "C" {
 #endif
 
 typedef struct MCU_PACK {
+	u32 status;
+	u32 rising;
+	u32 falling;
+} eint_event_t;
+
+typedef struct MCU_PACK {
 	eint_attr_t attr; //default attributes
 } eint_config_t;
 

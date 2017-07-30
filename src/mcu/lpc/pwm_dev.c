@@ -128,18 +128,17 @@ int mcu_pwm_dev_is_powered(const devfs_handle_t * handle){
 }
 
 int mcu_pwm_getinfo(const devfs_handle_t * handle, void * ctl){
-	int port = handle->port;
 	pwm_info_t * info = ctl;
 
 #ifdef __lpc17xx
-
+	int port = handle->port;
 	if( port == 0 ){
 		errno = ENODEV;
 		return -1;
 	}
 #endif
 
-	info->o_flags = PWM_FLAG_IS_ACTIVE_HIGH | PWM_FLAG_CLEAR_CHANNELS | PMW_FLAG_SET_TIMER | PWM_FLAG_IS_ENABLED;
+	info->o_flags = PWM_FLAG_IS_ACTIVE_HIGH | PWM_FLAG_CLEAR_CHANNELS | PWM_FLAG_SET_TIMER | PWM_FLAG_IS_ENABLED;
 
 	return 0;
 }
@@ -181,7 +180,7 @@ int mcu_pwm_setattr(const devfs_handle_t * handle, void * ctl){
 
 	regs->PCR = 0;
 
-	if( o_flags & (PMW_FLAG_SET_TIMER | PWM_FLAG_SET_CHANNELS) ){
+	if( o_flags & (PWM_FLAG_SET_TIMER | PWM_FLAG_SET_CHANNELS) ){
 		if( mcu_set_pin_assignment(
 				&(attr->pin_assignment),
 				MCU_CONFIG_PIN_ASSIGNMENT(pwm_config_t, handle),
@@ -192,7 +191,7 @@ int mcu_pwm_setattr(const devfs_handle_t * handle, void * ctl){
 		regs->PCR |= (((enabled_channels & 0x3F) << 9) | pcr);
 	}
 
-	if( o_flags & PMW_FLAG_SET_TIMER ){
+	if( o_flags & PWM_FLAG_SET_TIMER ){
 		tmp = mcu_board_config.core_periph_freq / freq;
 		if ( tmp > 0 ){
 			tmp = tmp - 1;

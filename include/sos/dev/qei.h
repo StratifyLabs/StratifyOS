@@ -104,7 +104,7 @@ typedef mcu_action_t qei_action_t;
 /*! \brief This request sets the action to be taken when a QEI interrupt occurs.
  * \hideinitializer
  */
-#define I_QEI_SETACTION _IOCTLW(QEI_IOC_IDENT_CHAR, I_MCU_SETACTION, qei_action_t)
+#define I_QEI_SETACTION _IOCTLW(QEI_IOC_IDENT_CHAR, I_MCU_SETACTION, mcu_action_t)
 
 /*! \brief See details below.
  * \details This request reads the QEI position.

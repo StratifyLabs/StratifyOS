@@ -80,10 +80,6 @@ enum {
 };
 
 typedef struct MCU_PACK {
-	mcu_channel_t channel;
-} tmr_event_t;
-
-typedef struct MCU_PACK {
 	u32 o_flags;
 	u32 o_events;
 	u32 freq;

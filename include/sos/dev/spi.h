@@ -100,7 +100,7 @@ typedef struct MCU_PACK {
  * \hideinitializer
  */
 #define I_SPI_SETATTR _IOCTLW(SPI_IOC_IDENT_CHAR, I_MCU_SETATTR, spi_attr_t)
-#define I_SPI_SETACTION _IOCTLW(SPI_IOC_IDENT_CHAR, I_MCU_SETACTION, spi_action_t)
+#define I_SPI_SETACTION _IOCTLW(SPI_IOC_IDENT_CHAR, I_MCU_SETACTION, mcu_action_t)
 
 
 /*! \brief See details below.

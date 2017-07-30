@@ -121,7 +121,6 @@ typedef struct MCU_PACK {
  * \hideinitializer
  */
 #define I_DISPLAY_CLEAR _IOCTL(DISPLAY_IOC_CHAR, 1)
-#define I_DISPLAY_CLR I_DISPLAY_CLEAR
 
 /*! \details This request tells the driver to update the display
  * as soon as possible.
@@ -150,23 +149,23 @@ typedef struct MCU_PACK {
  *
  * Example:
  * \code
- * ioctl(fildes, I_DISPLAY_ON);
+ * ioctl(fildes, I_DISPLAY_ENABLE);
  * \endcode
  * \hideinitializer
  */
-#define I_DISPLAY_ON _IOCTL(DISPLAY_IOC_CHAR, 4)
+#define I_DISPLAY_ENABLE _IOCTL(DISPLAY_IOC_CHAR, 4)
 
 /*! \details This turns off the LCD so that no image is shown.
  *
  * Example:
  * \code
- * ioctl(fildes, I_DISPLAY_OFF);
+ * ioctl(fildes, I_DISPLAY_DISABLE);
  * \endcode
  * \hideinitializer
  */
-#define I_DISPLAY_OFF _IOCTL(DISPLAY_IOC_CHAR, 5)
+#define I_DISPLAY_DISABLE _IOCTL(DISPLAY_IOC_CHAR, 5)
 
-/*! \details This turns off the LCD so that no image is shown.
+/*! \details Returns a positive value if the display is busy.
  *
  * Example:
  * \code
@@ -178,7 +177,7 @@ typedef struct MCU_PACK {
  */
 #define I_DISPLAY_ISBUSY _IOCTL(DISPLAY_IOC_CHAR, 6)
 
-/*! \details This request gets the palette attributes of the device.
+/*! \details Gets the palette attributes of the display.
  *
  * Example:
  * \code

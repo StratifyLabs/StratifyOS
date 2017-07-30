@@ -31,6 +31,10 @@ extern "C" {
 #endif
 
 typedef struct MCU_PACK {
+	u32 value;
+} adc_event_t;
+
+typedef struct MCU_PACK {
 	adc_attr_t attr; //default attributes
 	u32 reference_mv;
 } adc_config_t;

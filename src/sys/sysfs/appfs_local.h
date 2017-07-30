@@ -47,7 +47,7 @@ typedef struct {
 	int beg_addr /*! the address of the beginning of the file */;
 	int size /*! the current size of the file */;
 	int page /*! the start page of the open file */;
-	int type /*! the type of memory (flash or RAM) */;
+	u32 o_flags /*! Memory flags (MEM_FLAG_IS_FLASH or MEM_FLAG_IS_RAM) */;
 	u32 mode /*! \brief File mode 0444 for data and 0555 for executables */;
 } appfs_reg_handle_t;
 

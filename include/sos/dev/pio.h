@@ -138,7 +138,7 @@ typedef struct MCU_PACK {
 /*! \brief IOCTL request to set the action.
  * \hideinitializer
  */
-#define I_PIO_SETACTION _IOCTLW(PIO_IOC_IDENT_CHAR, I_MCU_SETACTION, pio_action_t)
+#define I_PIO_SETACTION _IOCTLW(PIO_IOC_IDENT_CHAR, I_MCU_SETACTION, mcu_action_t)
 
 /*! \brief See below for details.
  * \details This request sets the pins that are

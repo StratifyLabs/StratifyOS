@@ -45,10 +45,10 @@ extern "C" {
 
 
 typedef struct MCU_PACK {
-	u32 flash_pages /*! \brief The total number of flash pages */;
-	u32 flash_size /*! \brief The total size of the flash memory */;
-	u32 ram_pages /*! \brief The total number of RAM pages */;
-	u32 ram_size /*! \brief The total size of the RAM */;
+	u32 flash_pages /*! The total number of flash pages */;
+	u32 flash_size /*! The total size of the flash memory */;
+	u32 ram_pages /*! The total number of RAM pages */;
+	u32 ram_size /*! The total size of the RAM */;
 } mem_info_t;
 
 /*! \brief Holds the devices attributes.
@@ -59,20 +59,16 @@ typedef struct MCU_PACK {
  *
  */
 typedef struct MCU_PACK {
-	u32 flash_pages /*! \brief The total number of flash pages */;
-	u32 flash_size /*! \brief The total size of the flash memory */;
-	u32 ram_pages /*! \brief The total number of RAM pages */;
-	u32 ram_size /*! \brief The total size of the RAM */;
+	u32 o_flags;
 } mem_attr_t;
 
 /*! \details This lists each type of page.
  *
  */
 enum {
-	MEM_PAGEINFO_TYPE_QUERY /*! Query the page type */,
-	MEM_PAGEINFO_TYPE_RAM /*! RAM */,
-	MEM_PAGEINFO_TYPE_FLASH /*! Flash */,
-	MEM_PAGEINFO_TYPE_TOTAL
+	MEM_FLAG_IS_QUERY /*! Query the page type */ = (1<<0),
+	MEM_FLAG_IS_RAM /*! RAM */ = (1<<1),
+	MEM_FLAG_IS_FLASH /*! Flash */ = (1<<2)
 };
 
 /*! \brief Holds the characteristics of a page.
@@ -80,8 +76,8 @@ enum {
  * for a page of memory.
  */
 typedef struct MCU_PACK {
-	int32_t num /*! \brief the page number */;
-	uint8_t type /*! \brief RAM or FLASH (page numbers are not unique between types) */;
+	s32 num /*! \brief the page number */;
+	u32 o_flags /*! \brief RAM or FLASH (page numbers are not unique between types) */;
 	u32 addr /*! \brief the address of the page */;
 	u32 size /*! \brief the size of the page */;
 } mem_pageinfo_t;
@@ -90,7 +86,7 @@ typedef struct MCU_PACK {
 typedef struct MCU_PACK {
 	u32 addr /*! The address to write to */;
 	u32 nbyte /*! The number of bytes to write */;
-	u8 buf[256] /*! \brief A buffer for writing to the flash */;
+	u8 buf[256] /*! A buffer for writing to the flash */;
 } mem_writepage_t;
 
 /*! \brief This request gets the memory attributes.
@@ -145,7 +141,6 @@ typedef struct MCU_PACK {
  * \hideinitializer
  */
 #define I_MEM_GETPAGEINFO _IOCTLRW(MEM_IOC_IDENT_CHAR, I_MCU_TOTAL + 1, mem_pageinfo_t)
-#define I_MEM_GET_PAGEINFO I_MEM_GETPAGEINFO
 
 /*! \brief See details below
  * \details This request writes a page to flash memory.

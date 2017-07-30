@@ -34,7 +34,6 @@ typedef struct {
 	mcu_pin_t cs;
 	mcu_pin_t hold /*! Hold Pin */;
 	mcu_pin_t wp /*! Write protect pin */;
-	mcu_pin_t miso /*! The write complete pin */;
 	u32 size /*! The size of the memory on the device */;
 } sst25vf_config_t;
 

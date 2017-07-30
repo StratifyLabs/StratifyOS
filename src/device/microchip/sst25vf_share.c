@@ -32,6 +32,7 @@ void sst25vf_share_assert_cs(const devfs_handle_t * handle){
 	devfs_handle_t pio_handle;
 	const sst25vf_config_t * config = handle->config;
 	pio_handle.port = config->cs.port;
+	pio_handle.config = 0;
 	mcu_pio_clrmask(&pio_handle, (void*)(ssize_t)(1<<config->cs.pin));
 }
 
@@ -39,6 +40,7 @@ void sst25vf_share_deassert_cs(const devfs_handle_t * handle){
 	devfs_handle_t pio_handle;
 	const sst25vf_config_t * config = handle->config;
 	pio_handle.port = config->cs.port;
+	pio_handle.config = 0;
 	mcu_pio_setmask(&pio_handle, (void*)(ssize_t)(1<<config->cs.pin));
 }
 

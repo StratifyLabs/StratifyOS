@@ -115,7 +115,7 @@ int sffs_init(const void * cfg){
 #endif
 
 	if ( sffs_dev_open(cfg) < 0 ){
-		sffs_error("failed to open dev\n");
+		mcu_debug_user_printf("failed to open dev\n");
 		return -1;
 	}
 
@@ -125,7 +125,7 @@ int sffs_init(const void * cfg){
 	while( (err = sffs_serialno_init(cfg, &bad_serialno)) == 1 ){
 
 		if( (tmp = sffs_file_clean(cfg, bad_serialno.serialno, bad_serialno.block, bad_serialno.status)) < 0 ){
-			sffs_error("failed to clean file\n");
+			mcu_debug_user_printf("failed to clean file\n");
 			return -1;
 		}
 
@@ -151,14 +151,14 @@ int sffs_init(const void * cfg){
 	}
 
 	if ( sffs_scratch_init(cfg) < 0 ){
-		sffs_error("failed to restore scratch area\n");
+		mcu_debug_user_printf("failed to restore scratch area\n");
 		return -1;
 	}
 
 	if ( clean_open_blocks == true ){
 		//scan all blocks and discard "OPEN" blocks
 		if ( sffs_block_discardopen(cfg) < 0 ){
-			sffs_error("failed to discard open blocks\n");
+			mcu_debug_user_printf("failed to discard open blocks\n");
 			return -1;
 		}
 	}

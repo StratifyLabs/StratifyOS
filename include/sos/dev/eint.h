@@ -89,12 +89,10 @@ extern "C" {
 
 #define EINT_IOC_IDENT_CHAR 'e'
 
-typedef struct MCU_PACK {
-	u32 status;
-	u32 rising;
-	u32 falling;
-} eint_event_t;
-
+enum {
+	EINT_FLAG_NONE = 0,
+	EING_FLAG_SET_INPUT = (1<<0)
+};
 
 typedef struct MCU_PACK {
 	u32 o_flags /*! Bitmask of supported attributes */;
@@ -126,7 +124,7 @@ typedef struct MCU_PACK {
 /*! \brief See below for details.
  * \details This sets the action for an EINT channel.  For example:
  * \code
- * eint_action_t action;
+ * mcu_action_t action;
  * action.channel = 0; //channel if used on the architecture
  * action.handler.callback = my_callback; //function to execute when event happens
  * action.handler.context = NULL;  //passed to action.handler.callback as first argument
@@ -134,7 +132,7 @@ typedef struct MCU_PACK {
  * ioctl(eint_fd, I_EINT_SETACTION, &action);
  * \endcode
  */
-#define I_EINT_SETACTION _IOCTLW(EINT_IOC_IDENT_CHAR, I_MCU_SETACTION, eint_action_t)
+#define I_EINT_SETACTION _IOCTLW(EINT_IOC_IDENT_CHAR, I_MCU_SETACTION, mcu_action_t)
 
 #define I_EINT_TOTAL 0
 

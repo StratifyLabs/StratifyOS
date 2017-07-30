@@ -41,23 +41,18 @@ extern "C" {
 
 #define I2S_IOC_IDENT_CHAR 'I'
 
-typedef struct MCU_PACK {
-	u32 value;
-} i2s_event_t;
-
-
 enum {
 	I2S_FLAG_IS_WIDTH_8 /*! I2S Word Width 8 bits */ = (1<<0),
 	I2S_FLAG_IS_WIDTH_16 /*! I2S Word Width 16 bits */ = (1<<1),
 	I2S_FLAG_IS_WIDTH_24 /*! I2S Word Width 24 bits */ = (1<<2),
 	I2S_FLAG_IS_WIDTH_32 /*! I2S Word Width 32 bits */ = (1<<3),
-	I2S_FLAG_IS_MONO = (1<<4),
-	I2S_FLAG_IS_STEREO = (1<<5),
-	I2S_FLAG_SET_MASTER = (1<<6),
-	I2S_FLAG_SET_SLAVE = (1<<7),
-	I2S_FLAG_IS_TRANSMITTER = (1<<8),
-	I2S_FLAG_IS_RECEIVER = (1<<9),
-	I2S_FLAG_IS_MCLK_ENABLED /*! Set this bit to enable the mclk output */ = (1<<12),
+	I2S_FLAG_IS_MONO /*! I2S Mono mode */ = (1<<4),
+	I2S_FLAG_IS_STEREO /*! I2S Stereo mode (default behavoir) */ = (1<<5),
+	I2S_FLAG_SET_MASTER /*! Set the I2S as a master */ = (1<<6),
+	I2S_FLAG_SET_SLAVE /*! Set the I2S as a slave */ = (1<<7),
+	I2S_FLAG_IS_TRANSMITTER /*! Set the I2S transmitter (master or slave) */ = (1<<8),
+	I2S_FLAG_IS_RECEIVER /*! Set the I2S receiver (master or slave) */ = (1<<9),
+	I2S_FLAG_IS_MCK_ENABLED /*! Set this bit to enable the mclk output */ = (1<<12),
 };
 
 /*! \brief I2S IO Attributes

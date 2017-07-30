@@ -62,12 +62,20 @@ static const devfs_device_t * load(const devfs_device_t * list, const char * dev
 	int i;
 	i = 0;
 	while( devfs_is_terminator(&(list[i])) == false ){
-		if ( strcmp(device_name, list[i].name) == 0 ){
+		if ( strncmp(device_name, list[i].name, NAME_MAX) == 0 ){
 			return &list[i];
 		}
 		i++;
 	}
-	return NULL;
+	return 0;
+}
+
+const devfs_handle_t * devfs_lookup_handle(const devfs_device_t * list, const char * name){
+	const devfs_device_t * device = load(list, name);
+	if( device != 0 ){
+		return &(device->handle);
+	}
+	return 0;
 }
 
 /*
@@ -98,10 +106,10 @@ int devfs_opendir(const void * cfg, void ** handle, const char * path){
 	const devfs_device_t * dev;
 	const devfs_device_t * list = (const devfs_device_t*)cfg;
 
-	if ( strcmp(path, "") != 0 ){
+	if ( strncmp(path, "", PATH_MAX) != 0 ){
 		//there is only one valid folder (the top)
 			dev = load(list, path);
-		if ( dev == NULL ){
+		if ( dev == 0 ){
 			errno = ENOENT;
 		} else {
 			errno = ENOTDIR;

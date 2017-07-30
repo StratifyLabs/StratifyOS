@@ -174,7 +174,7 @@ int mcu_i2s_setattr(const devfs_handle_t * handle, void * ctl){
 		return -1;
 	}
 
-	if( o_flags & I2S_FLAG_IS_MCLK_ENABLED ){
+	if( o_flags & I2S_FLAG_IS_MCK_ENABLED ){
 		i2s_regs->TXMODE |= (1<<3);
 	}
 

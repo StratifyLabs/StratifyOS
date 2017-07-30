@@ -139,7 +139,7 @@ int mcu_spi_setattr(const devfs_handle_t * handle, void * ctl){
 		cr0 |= (1<<5);  //must be a master
 
 
-		if ( attr->width >= 8 && attr->width <= 16 ){
+		if ( (attr->width >= 8) && (attr->width <= 16) ){
 			cr0 |= (( attr->width & 0x0F ) << 8);
 		} else {
 			errno = EINVAL;

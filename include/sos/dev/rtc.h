@@ -120,15 +120,10 @@ typedef struct MCU_PACK {
 } rtc_time_t;
 
 typedef struct {
-	rtc_time_t time;
-} rtc_event_t;
-
-typedef struct {
 	u32 o_flags;
 	u32 o_events;
 	rtc_time_t alarm;
 } rtc_info_t;
-
 
 
 /*! \brief RTC Attributes
@@ -144,7 +139,7 @@ typedef struct MCU_PACK {
 
 #define I_RTC_GETINFO _IOCTLR(RTC_IOC_IDENT_CHAR, I_MCU_GETINFO, rtc_attr_t)
 #define I_RTC_SETATTR _IOCTLW(RTC_IOC_IDENT_CHAR, I_MCU_SETATTR, rtc_attr_t)
-#define I_RTC_SETACTION _IOCTLW(RTC_IOC_IDENT_CHAR, I_MCU_SETACTION, rtc_action_t)
+#define I_RTC_SETACTION _IOCTLW(RTC_IOC_IDENT_CHAR, I_MCU_SETACTION, mcu_action_t)
 
 /*! \brief See details below.
  * \details This request writes the value of the timer.

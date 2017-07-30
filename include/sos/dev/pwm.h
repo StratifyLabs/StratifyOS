@@ -91,7 +91,7 @@ extern "C" {
 #define PWM_IOC_IDENT_CHAR 'p'
 
 typedef enum {
-	PMW_FLAG_SET_TIMER /*! Set to configure the frequency and period (implies PWM_FLAG_SET_CHANNEL) */ = (1<<0),
+	PWM_FLAG_SET_TIMER /*! Set to configure the frequency and period (implies PWM_FLAG_SET_CHANNEL) */ = (1<<0),
 	PWM_FLAG_IS_ACTIVE_HIGH /*! Set to configure the outputs as active high */ = (1<<1),
 	PWM_FLAG_IS_ACTIVE_LOW /*! Set to configure the outputs as active low */ = (1<<2),
 	PWM_FLAG_SET_CHANNELS /*! Set to just configure channels and leave the timer alone */ = (1<<3),
@@ -126,7 +126,7 @@ typedef struct MCU_PACK {
  * \hideinitializer
  */
 #define I_PWM_SETATTR _IOCTLW(PWM_IOC_IDENT_CHAR, I_MCU_SETATTR, pwm_attr_t)
-#define I_PWM_SETACTION _IOCTLW(PWM_IOC_IDENT_CHAR, I_MCU_SETACTION, pwm_action_t)
+#define I_PWM_SETACTION _IOCTLW(PWM_IOC_IDENT_CHAR, I_MCU_SETACTION, mcu_action_t)
 
 /*! \brief See details below.
  * \details This IOCTL request sets the channel.  The ctl

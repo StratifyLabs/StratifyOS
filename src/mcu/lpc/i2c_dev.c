@@ -297,6 +297,8 @@ int set_slave_attr(const devfs_handle_t * handle, const i2c_attr_t * attr){
 
 	//memcpy( &(i2c_local[port].slave.setup), ctl, sizeof(i2c_slave_setup_t));
 
+	i2c_local[port].slave.data = attr->data;
+
 	if( attr->size > 255 ){
 		i2c_local[port].o_flags |= I2C_FLAG_IS_SLAVE_PTR_16;
 	}

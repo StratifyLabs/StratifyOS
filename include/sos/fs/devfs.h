@@ -121,6 +121,11 @@ typedef struct {
 } devfs_device_t;
 
 
+extern const devfs_device_t devfs_list[];
+
+const devfs_handle_t * devfs_lookup_handle(const devfs_device_t * list, const char * name);
+
+
 #define DEVFS_MODE(mode_value, uid_value, type) .mode = mode_value | type, \
 		.uid = uid_value
 
