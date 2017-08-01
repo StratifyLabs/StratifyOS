@@ -44,28 +44,34 @@ static int data_received(void * context, mcu_event_t * data){
 	int i;
 	int bytes_read;
 	const devfs_handle_t * handle;
-	const usbfifo_config_t * cfgp;
+	const usbfifo_config_t * config;
 	usbfifo_state_t * state;
 	handle = context;
-	cfgp = handle->config;
+	config = handle->config;
 	state = handle->state;
-	int size = cfgp->fifo.size;
-	char buffer[cfgp->endpoint_size];
+	int size = config->fifo.size;
+	char buffer[config->endpoint_size];
 
 	//check to see if USB was disconnected
 	if( mcu_usb_isconnected(handle, NULL) ){
 
+
 		//read the endpoint directly
-		bytes_read = mcu_usb_rd_ep(handle, cfgp->endpoint, buffer);
+		bytes_read = mcu_usb_rd_ep(handle, config->endpoint, buffer);
+		if( bytes_read > config->endpoint_size){
+			bytes_read = config->endpoint_size;
+		}
 
 		//write the new bytes to the buffer
 		for(i=0; i < bytes_read; i++){
-			cfgp->fifo.buffer[ state->fifo.head ] = buffer[i];
+			config->fifo.buffer[ state->fifo.head ] = buffer[i];
 			fifo_inc_head(&(state->fifo), size);
 		}
 
+
 		//see if any functions are blocked waiting for data to arrive
-		fifo_data_received(&(cfgp->fifo), &(state->fifo));
+		fifo_data_received(&(config->fifo), &(state->fifo));
+
 	}
 
 	return 1; //leave the callback in place

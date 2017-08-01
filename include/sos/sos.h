@@ -587,7 +587,7 @@ extern task_t sos_task_table[];
 extern const sos_board_config_t sos_board_config;
 
 void sos_led_startup();
-void sos_led_priv_on(void * args);
+void sos_led_priv_enable(void * args);
 void sos_led_priv_off(void * args);
 void sos_led_priv_error(void * args);
 

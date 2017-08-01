@@ -113,13 +113,12 @@
 typedef struct {
 	mcu_event_handler_t write;
 	mcu_event_handler_t read;
-	uart_attr_t attr;
 	char * rx_bufp;
 	int * rx_nbyte;
 	volatile int rx_len;
 	const char * tx_bufp;
 	volatile int tx_len;
-	uint8_t ref_count;
+	u8 ref_count;
 } uart_local_t;
 
 static uart_local_t uart_local[UART_PORTS] MCU_SYS_MEM;
@@ -161,7 +160,6 @@ void mcu_uart_dev_power_on(const devfs_handle_t * handle){
 			break;
 #endif
 		}
-		//core_priv_enable_irq((void*)UART0_IRQn + port);
 		uart_local[port].tx_bufp = NULL;
 		uart_local[port].rx_bufp = NULL;
 	}
@@ -231,11 +229,11 @@ int mcu_uart_getinfo(const devfs_handle_t * handle, void * ctl){
 }
 
 int mcu_uart_setattr(const devfs_handle_t * handle, void * ctl){
-	uint32_t baud_rate;
-	uint8_t baud_low;
-	uint8_t baud_high;
-	uint8_t lcr;
-	uint32_t f_div;
+	u32 baud_rate;
+	u8 baud_low;
+	u8 baud_high;
+	u8 lcr;
+	u32 f_div;
 	LPC_UART_Type * uart_regs;
 	u32 o_flags;
 	int port = handle->port;
@@ -257,7 +255,6 @@ int mcu_uart_setattr(const devfs_handle_t * handle, void * ctl){
 
 	lcr = 0;
 
-	lcr |= ULCR_STOP_1;
 	if( o_flags & UART_FLAG_IS_STOP2 ){
 		lcr |= ULCR_STOP_2;
 	}
@@ -271,7 +268,6 @@ int mcu_uart_setattr(const devfs_handle_t * handle, void * ctl){
 	}
 
 
-	lcr |= ULCR_PAR_NO;
 	if( o_flags & UART_FLAG_IS_PARITY_EVEN ){
 		lcr |= ULCR_PAR_EVEN;
 	} else if( o_flags & UART_FLAG_IS_PARITY_ODD ){
@@ -287,36 +283,30 @@ int mcu_uart_setattr(const devfs_handle_t * handle, void * ctl){
 	}
 
 
-
-	//! \todo Error check the width
+	//disable NVIC interrupt
 	cortexm_disable_irq((void*)(u32)(uart_irqs[port]));
 
 	uart_regs->RBR;
 	uart_regs->IIR;
 
 	uart_regs->LCR = ULCR_DLAB_ENABLE;
-	f_div =  ( mcu_board_config.core_periph_freq + 8*baud_rate) / ( baud_rate * 16) ;	// calculate the divisor
+	f_div =  (mcu_board_config.core_periph_freq + attr->width*baud_rate) / (baud_rate * 16) ;	// calculate the divisor
 	baud_low = f_div & 0xFF;
 	baud_high = (f_div >> 8) & 0xFF;
 	uart_regs->DLM = baud_high;
 	uart_regs->DLL = baud_low;
 
-	//Set mode to 8 bits, no parity
-	//! \todo set the parity and the stop bits
-
-	uart_regs->LCR = lcr;  //8 bits, no parity, 1 stop
-
-	uart_regs->FCR = UFCR_FIFO_ENABLE; //write first to enable the rest
+	//line control
+	uart_regs->LCR = lcr;
 
 	//configure the TX/RX FIFOs
-	uart_regs->FCR |= UFCR_FIFO_TRIG1|
-			ULCR_RESET_RX|
-			ULCR_RESET_TX;
+	uart_regs->FCR = UFCR_FIFO_ENABLE;
+	uart_regs->FCR |= UFCR_FIFO_TRIG1|ULCR_RESET_RX|ULCR_RESET_TX;
 
+	//read the LSR
+	uart_regs->LSR;
 
-	uart_regs->LSR; //read the LSR
-
-	//wait for data pending transmit
+	//flush out the old data
 	while (( uart_regs->LSR & (ULSR_THRE|ULSR_TEMT)) != (ULSR_THRE|ULSR_TEMT) );
 	while ( uart_regs->LSR & ULSR_RDR ){
 		uart_regs->RBR;	// Dump data from RX FIFO
@@ -324,9 +314,9 @@ int mcu_uart_setattr(const devfs_handle_t * handle, void * ctl){
 
 	uart_regs->IER = 0; //disable the TX/RX interrupts
 
-	memcpy(&(uart_local[port].attr), ctl, sizeof(uart_attr_t));
-	//! \todo need to store actual baud rate not target baud rate
-	//uart_local[port].attr.baudrate = ctl_ptr->baudrate;
+	if( port != 0 ){
+		mcu_debug_printf("Baudrate: %ld %d 0x%lX\n", baud_rate, attr->width, (u32)uart_regs->LCR);
+	}
 
 	cortexm_enable_irq((void*)(u32)(uart_irqs[port]));
 
@@ -364,21 +354,19 @@ int mcu_uart_setaction(const devfs_handle_t * handle, void * ctl){
 	if( action->handler.callback == 0 ){
 		//if there is an ongoing operation -- cancel it
 
-		if( action->o_events == MCU_EVENT_FLAG_DATA_READY ){
+		if( action->o_events & MCU_EVENT_FLAG_DATA_READY ){
 			if ( uart_regs->IER & UIER_RBRIE ){
 				//There is an ongoing read operation
 				exec_readcallback(port, uart_regs, MCU_EVENT_FLAG_CANCELED);
 			}
 			uart_local[port].read.callback = 0;
-			return 0;
 		}
 
-		if( action->o_events == MCU_EVENT_FLAG_WRITE_COMPLETE ){
+		if( action->o_events & MCU_EVENT_FLAG_WRITE_COMPLETE ){
 			if ( uart_regs->IER & UIER_ETBEI ){
 				exec_writecallback(port, uart_regs, MCU_EVENT_FLAG_CANCELED);
 			}
 			uart_local[port].write.callback = 0;
-			return 0;
 		}
 
 	} else {
@@ -387,20 +375,14 @@ int mcu_uart_setaction(const devfs_handle_t * handle, void * ctl){
 			return -1;
 		}
 
-		if( action->o_events == MCU_EVENT_FLAG_DATA_READY ){
-
-			uart_local[port].read.callback = action->handler.callback;
-			uart_local[port].read.context = action->handler.context;
-
+		if( action->o_events & MCU_EVENT_FLAG_DATA_READY ){
+			uart_local[port].read = action->handler;
 			uart_regs->IER |= (UIER_RBRIE);  //enable the receiver interrupt
-			uart_local[port].rx_bufp = NULL;
-		} else if ( action->o_events == MCU_EVENT_FLAG_WRITE_COMPLETE ){
+			uart_local[port].rx_bufp = NULL; //the callback with need to read the incoming data
+		}
 
-			uart_local[port].write.callback = action->handler.callback;
-			uart_local[port].write.context = action->handler.context;
-		} else {
-			errno = EINVAL;
-			return -1;
+		if ( action->o_events & MCU_EVENT_FLAG_WRITE_COMPLETE ){
+			uart_local[port].write = action->handler;
 		}
 	}
 
@@ -478,7 +460,7 @@ int mcu_uart_dev_read(const devfs_handle_t * handle, devfs_async_t * rop){
 	uart_regs = uart_regs_table[port];
 
 	if ( uart_regs->IER & UIER_RBRIE ){
-		errno = EAGAIN;
+		errno = EBUSY;
 		return -1;
 	}
 

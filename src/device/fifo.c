@@ -127,12 +127,13 @@ void fifo_flush(fifo_state_t * state){
 }
 
 
-void fifo_getinfo(fifo_info_t * info, const fifo_config_t * cfgp, fifo_state_t * state){
-	info->size = cfgp->size - 1;
+void fifo_getinfo(fifo_info_t * info, const fifo_config_t * config, fifo_state_t * state){
+	info->o_flags = FIFO_FLAG_IS_OVERFLOW;
+	info->size = config->size - 1;
 	if( state->head >= state->tail ){
 		info->used = state->head - state->tail;
 	} else {
-		info->used = cfgp->size - state->tail + state->head;
+		info->used = config->size - state->tail + state->head;
 	}
 	info->overflow = fifo_is_overflow(state);
 	fifo_set_overflow(state, 0);
@@ -187,12 +188,11 @@ int fifo_open(const devfs_handle_t * cfg){
 
 int fifo_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 	fifo_attr_t * attr = ctl;
-	fifo_info_t * info = ctl;
 	const fifo_config_t * cfgp = cfg->config;
 	fifo_state_t * state = cfg->state;
 	switch(request){
 	case I_FIFO_GETINFO:
-		fifo_getinfo(info, cfgp, state);
+		fifo_getinfo(ctl, cfgp, state);
 		return 0;
 	case I_FIFO_INIT:
 		state->rop = NULL;
@@ -226,7 +226,7 @@ int fifo_read_local(const fifo_config_t * cfgp, fifo_state_t * state, devfs_asyn
 	int bytes_read;
 
 	if ( state->rop != NULL ){
-		errno = EAGAIN; //the device is temporarily unavailable
+		errno = EBUSY; //the device is temporarily unavailable
 		return -1;
 	}
 

@@ -486,7 +486,7 @@ int mcu_usb_rd_ep(const devfs_handle_t * handle, u32 endpoint_num, void * dest){
 	mask = ((EP_MSK_ISO >> endpoint_num) & 1);
 	size = LPC_USB->RxPLen;
 
-	while(LPC_USB->Ctrl & CTRL_RD_EN){
+	while( (LPC_USB->Ctrl & CTRL_RD_EN) && (n < 64) ){
 		*ptr++ = LPC_USB->RxData;
 		n += 4;
 	}

@@ -30,11 +30,7 @@ static int set_read_action(const devfs_handle_t * handle, mcu_callback_t callbac
 	action.handler.context = (void*)handle;
 	action.o_events = MCU_EVENT_FLAG_DATA_READY;
 	action.prio = 0;
-	if( mcu_uart_setaction(handle, &action) < 0 ){
-		return -1;
-	}
-
-	return 0;
+	return mcu_uart_setaction(handle, &action);
 }
 
 static int data_received(void * context, mcu_event_t * data){
@@ -50,7 +46,6 @@ static int data_received(void * context, mcu_event_t * data){
 		cfgp->fifo.buffer[ state->fifo.head ] = c;
 		fifo_inc_head(&(state->fifo), cfgp->fifo.size);
 	}
-
 
 	fifo_data_received(&(cfgp->fifo), &(state->fifo));
 	return 1; //leave the callback in place
@@ -69,14 +64,14 @@ int uartfifo_open(const devfs_handle_t * handle){
 }
 
 int uartfifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
-	fifo_info_t * info = ctl;
 	mcu_action_t * action = ctl;
-	const uartfifo_config_t * cfgp = handle->config;
+	const uartfifo_config_t * config = handle->config;
 	uartfifo_state_t * state = handle->state;
 	int ret;
+
 	switch(request){
 	case I_FIFO_GETINFO:
-		fifo_getinfo(info, &(cfgp->fifo), &(state->fifo));
+		fifo_getinfo(ctl, &(config->fifo), &(state->fifo));
 		break;
 	case I_MCU_SETACTION:
 	case I_UART_SETACTION:
@@ -90,8 +85,7 @@ int uartfifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 	case I_UART_FLUSH:
 	case I_FIFO_FLUSH:
 		fifo_flush(&(state->fifo));
-		return mcu_uart_flush(handle, NULL);
-		break;
+		return mcu_uart_flush(handle, 0);
 	case I_UART_SETATTR:
 		if(  (ret = mcu_uart_setattr(handle, ctl)) < 0 ){
 			return ret;
@@ -105,8 +99,8 @@ int uartfifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 		break;
 	default:
 		return mcu_uart_ioctl(handle, request, ctl);
-}
-return 0;
+	}
+	return 0;
 }
 
 
@@ -125,7 +119,7 @@ int uartfifo_write(const devfs_handle_t * handle, devfs_async_t * wop){
 int uartfifo_close(const devfs_handle_t * handle){
 
 	//clear the callback for the device
-	if( set_read_action(handle, NULL) < 0 ){
+	if( set_read_action(handle, 0) < 0 ){
 		return -1;
 	}
 

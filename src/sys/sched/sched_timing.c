@@ -217,7 +217,7 @@ int open_usecond_tmr(){
 
 	err = mcu_tmr_setattr(&tmr, &attr);
 	if ( err ){
-		sos_led_priv_on(0);
+		sos_led_priv_enable(0);
 		while(1){}
 		return err;
 	}
