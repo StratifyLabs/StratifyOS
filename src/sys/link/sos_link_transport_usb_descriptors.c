@@ -196,8 +196,7 @@ const struct sos_link_transport_usb_string_t sos_link_transport_usb_string_desc 
 		.wLANGID = 0x0409, //English
 		.manufacturer = usbd_assign_string(SOS_LINK_TRANSPORT_USB_DESC_MANUFACTURER_SIZE, SOS_LINK_TRANSPORT_USB_DESC_MANUFACTURER_STRING),
 		.product = usbd_assign_string(SOS_LINK_TRANSPORT_USB_DESC_PRODUCT_SIZE, SOS_LINK_TRANSPORT_USB_DESC_PRODUCT_STRING),
-		.serial = usbd_assign_string(SOS_LINK_TRANSPORT_USB_DESC_SERIAL_SIZE, 0)
-		, //dynamically load SN based on silicon
+		.serial = usbd_assign_string(SOS_LINK_TRANSPORT_USB_DESC_SERIAL_SIZE, 0), //dynamically load SN based on silicon
 		.vcp0 = usbd_assign_string(SOS_LINK_TRANSPORT_USB_DESC_VCP_0_SIZE, SOS_LINK_TRANSPORT_USB_DESC_VCP_0),
 		.vcp1 = usbd_assign_string(SOS_LINK_TRANSPORT_USB_DESC_VCP_1_SIZE, SOS_LINK_TRANSPORT_USB_DESC_VCP_1)
 };

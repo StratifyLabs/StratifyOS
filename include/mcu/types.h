@@ -188,6 +188,11 @@ typedef struct {
 	u32 sn[4];
 } mcu_sn_t;
 
+#if defined __link
+#define MCU_INT_CAST(var) (void*)(u64)var
+#else
+#define MCU_INT_CAST(var) (void*)(u32)var
+#endif
 
 
 

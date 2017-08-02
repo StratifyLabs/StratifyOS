@@ -101,7 +101,7 @@ const sos_link_transport_usb_dual_vcp_configuration_descriptor_t sos_link_transp
 						.bFunctionClass = USBD_INTERFACE_CLASS_COMMUNICATIONS,
 						.bFunctionSubClass = USBD_CDC_INTERFACE_SUBCLASS_ACM,
 						.bFunctionProtocol = USBD_CDC_INTERFACE_PROTOCOL_V25TER,
-						.iFunction = 0x0,
+						.iFunction = 4,
 				},
 
 				.interface_control = {
@@ -113,7 +113,7 @@ const sos_link_transport_usb_dual_vcp_configuration_descriptor_t sos_link_transp
 						.bInterfaceClass = USBD_INTERFACE_CLASS_COMMUNICATIONS,
 						.bInterfaceSubClass = USBD_CDC_INTERFACE_SUBCLASS_ACM,
 						.bInterfaceProtocol = USBD_CDC_INTERFACE_PROTOCOL_V25TER,
-						.iInterface = 0x0
+						.iInterface = 4
 				},
 
 				.acm = {
@@ -155,7 +155,7 @@ const sos_link_transport_usb_dual_vcp_configuration_descriptor_t sos_link_transp
 						.bInterfaceClass = USBD_INTERFACE_CLASS_COMMUNICATIONS_DATA,
 						.bInterfaceSubClass = USBD_CDC_INTERFACE_SUBCLASS_ACM,
 						.bInterfaceProtocol = USBD_CDC_INTERFACE_PROTOCOL_V25TER,
-						.iInterface = 0x0
+						.iInterface = 4
 				},
 
 				.data_out = {
@@ -186,7 +186,7 @@ const sos_link_transport_usb_dual_vcp_configuration_descriptor_t sos_link_transp
 						.bFunctionClass = USBD_INTERFACE_CLASS_COMMUNICATIONS,
 						.bFunctionSubClass = USBD_CDC_INTERFACE_SUBCLASS_ACM,
 						.bFunctionProtocol = USBD_CDC_INTERFACE_PROTOCOL_V25TER,
-						.iFunction = 0x0,
+						.iFunction = 5,
 				},
 
 				.interface_control = {
@@ -198,7 +198,7 @@ const sos_link_transport_usb_dual_vcp_configuration_descriptor_t sos_link_transp
 						.bInterfaceClass = USBD_INTERFACE_CLASS_COMMUNICATIONS,
 						.bInterfaceSubClass = USBD_CDC_INTERFACE_SUBCLASS_ACM,
 						.bInterfaceProtocol = USBD_CDC_INTERFACE_PROTOCOL_V25TER,
-						.iInterface = 0x0
+						.iInterface = 5
 				},
 
 				.acm = {
@@ -240,7 +240,7 @@ const sos_link_transport_usb_dual_vcp_configuration_descriptor_t sos_link_transp
 						.bInterfaceClass = USBD_INTERFACE_CLASS_COMMUNICATIONS_DATA,
 						.bInterfaceSubClass = USBD_CDC_INTERFACE_SUBCLASS_ACM,
 						.bInterfaceProtocol = USBD_CDC_INTERFACE_PROTOCOL_V25TER,
-						.iInterface = 0x0
+						.iInterface = 5
 				},
 
 				.data_out = {

@@ -557,4 +557,4 @@
 .global sg_api; sg_api = LINK_ADDR;
 .global son_api; son_api = LINK_ADDR;
 .global kernel_request; kernel_request = LINK_ADDR;
-.global stratify_trace_event; stratify_trace_event = LINK_ADDR;
+.global sos_trace_event; sos_trace_event = LINK_ADDR;

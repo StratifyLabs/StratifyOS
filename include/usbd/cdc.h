@@ -113,21 +113,21 @@
 #define USBD_CDC_SERIAL_STATE_TX_CARRIER (1<<1)
 #define USBD_CDC_SERIAL_STATE_RX_CARRIER (1<<0)
 
-typedef struct {
+typedef struct MCU_PACK {
 	u8 bFunctionLength;
 	u8 bDescriptorType;
 	u8 bDescriptorSubType;
 	u8 functionSpecificData; //can be array
 } usbd_cdc_functional_descriptor_t;
 
-typedef struct {
+typedef struct MCU_PACK {
 	u8 bFunctionLength;
 	u8 bDescriptorType;
 	u8 bDescriptorSubType;
 	u16 bcdCDC;
 } usbd_cdc_header_functional_descriptor_t;
 
-typedef struct {
+typedef struct MCU_PACK {
 	u8 bFunctionLength;
 	u8 bDescriptorType;
 	u8 bDescriptorSubType;
@@ -135,21 +135,21 @@ typedef struct {
 	u8 bDataInterface;
 } usbd_cdc_call_management_functional_descriptor_t;
 
-typedef struct {
+typedef struct MCU_PACK {
 	u8 bFunctionLength;
 	u8 bDescriptorType;
 	u8 bDescriptorSubType;
 	u8 bmCapabilities;
 } usbd_cdc_abstract_control_model_functional_descriptor_t;
 
-typedef struct {
+typedef struct MCU_PACK {
 	u8 bFunctionLength;
 	u8 bDescriptorType;
 	u8 bDescriptorSubType;
 	u8 bmCapabilities;
 } usbd_cdc_direct_line_management_functional_descriptor_t;
 
-typedef struct {
+typedef struct MCU_PACK {
 	u8 bFunctionLength;
 	u8 bDescriptorType;
 	u8 bDescriptorSubType;
@@ -157,21 +157,21 @@ typedef struct {
 	u8 bNumRingerPatterns;
 } usbd_cdc_telephone_ringer_functional_descriptor_t;
 
-typedef struct {
+typedef struct MCU_PACK {
 	u8 bFunctionLength;
 	u8 bDescriptorType;
 	u8 bDescriptorSubType;
 	u8 bmCapabilities;
 } usbd_cdc_telephone_operational_modes_functional_descriptor_t;
 
-typedef struct {
+typedef struct MCU_PACK {
 	u8 bFunctionLength;
 	u8 bDescriptorType;
 	u8 bDescriptorSubType;
 	u8 bmCapabilities;
 } usbd_cdc_telephone_call_and_line_reporting_capabilities_functional_descriptor_t;
 
-typedef struct {
+typedef struct MCU_PACK {
 	u8 bFunctionLength;
 	u8 bDescriptorType;
 	u8 bDescriptorSubType;
@@ -179,7 +179,7 @@ typedef struct {
 	u8 bSlaveInterface; //can be array
 } usbd_cdc_union_functional_descriptor_t;
 
-typedef struct {
+typedef struct MCU_PACK {
 	u8 bFunctionLength;
 	u8 bDescriptorType;
 	u8 bDescriptorSubType;
@@ -187,7 +187,7 @@ typedef struct {
 	u16 wCountryCode; //can be array
 } usbd_cdc_country_selection_functional_descriptor_t;
 
-typedef struct {
+typedef struct MCU_PACK {
 	u8 bFunctionLength;
 	u8 bDescriptorType;
 	u8 bDescriptorSubType;
@@ -198,7 +198,7 @@ typedef struct {
 	u8 bChildId; //can be array
 } usbd_cdc_usb_terminal_functional_descriptor_t;
 
-typedef struct {
+typedef struct MCU_PACK {
 	u8 bFunctionLength;
 	u8 bDescriptorType;
 	u8 bDescriptorSubType;
@@ -208,7 +208,7 @@ typedef struct {
 	u8 bPhysicalInterface;
 } usbd_cdc_network_channel_terminal_functional_descriptor_t;
 
-typedef struct {
+typedef struct MCU_PACK {
 	u8 bFunctionLength;
 	u8 bDescriptorType;
 	u8 bDescriptorSubType;
@@ -217,7 +217,7 @@ typedef struct {
 	u8 bChildId; //can be array
 } usbd_cdc_protocol_unit_functional_descriptor_t;
 
-typedef struct {
+typedef struct MCU_PACK {
 	u8 bFunctionLength;
 	u8 bDescriptorType;
 	u8 bDescriptorSubType;
@@ -227,21 +227,21 @@ typedef struct {
 	u8 bChildId; //can be array
 } usbd_cdc_extension_unit_functional_descriptor_t;
 
-typedef struct {
+typedef struct MCU_PACK {
 	u8 bFunctionLength;
 	u8 bDescriptorType;
 	u8 bDescriptorSubType;
 	u8 bmCapabilities;
 } usbd_cdc_multi_channel_management_functional_descriptor_t;
 
-typedef struct {
+typedef struct MCU_PACK {
 	u8 bFunctionLength;
 	u8 bDescriptorType;
 	u8 bDescriptorSubType;
 	u8 bmCapabilities;
 } usbd_cdc_capi_control_management_functional_descriptor_t;
 
-typedef struct {
+typedef struct MCU_PACK {
 	u8 bFunctionLength;
 	u8 bDescriptorType;
 	u8 bDescriptorSubType;
@@ -252,7 +252,7 @@ typedef struct {
 	u8 bNumberPowerFilters;
 } usbd_cdc_ethernet_netorking_functional_descriptor_t;
 
-typedef struct {
+typedef struct MCU_PACK {
 	u8 bFunctionLength;
 	u8 bDescriptorType;
 	u8 bDescriptorSubType;
@@ -265,7 +265,7 @@ typedef struct {
 } usbd_cdc_atm_netorking_functional_descriptor_t;
 
 
-typedef struct MCU_PACK {
+typedef struct MCU_PACK MCU_PACK {
 	u8 bFunctionLength;
 	u8 bDescriptorType;
 	u8 bDescriptorSubType;
