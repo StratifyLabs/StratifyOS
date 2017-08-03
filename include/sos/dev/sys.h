@@ -44,16 +44,11 @@ extern "C" {
 
 
 enum {
-	SYS_FLAG_STDIO_FIFO = (1<<0),
-	SYS_FLAG_STDIO_VCP = (1<<1),
-	SYS_FLAG_DISABLE_WDT = (1<<2),
-	SYS_FLAG_NOTIFY = (1<<3)
+	SYS_FLAG_IS_STDIO_FIFO = (1<<0),
+	SYS_FLAG_IS_STDIO_VCP = (1<<1),
+	SYS_FLAG_IS_WDT_DISABLED = (1<<2),
+	SYS_FLAG_IS_REQUEST = (1<<3)
 };
-
-#define SYS_FLAGS_STDIO_FIFO SYS_FLAG_STDIO_FIFO
-#define SYS_FLAGS_STDIO_VCP SYS_FLAG_STDIO_VCP
-#define SYS_FLAGS_DISABLE_WDT SYS_FLAG_DISABLE_WDT
-#define SYS_FLAGS_NOTIFY SYS_FLAG_NOTIFY
 
 #define SYS_IOC_CHAR 's'
 
@@ -95,7 +90,7 @@ typedef struct MCU_PACK {
 typedef sys_26_info_t sys_info_t;
 
 typedef struct MCU_PACK {
-	char id[LINK_PATH_MAX] /*!  Globally unique Cloud Kernel ID value */;
+	char id[LINK_PATH_MAX] /*! Globally unique Cloud Kernel ID value */;
 } sys_id_t;
 
 /*! \brief Task Attributes

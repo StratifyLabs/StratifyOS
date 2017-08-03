@@ -76,9 +76,7 @@ int link_init();
 void link_exit();
 
 int link_connect(link_transport_mdriver_t * driver, const char * sn);
-int link_connect_notify(link_transport_mdriver_t * driver);
 int link_ping(link_transport_mdriver_t * driver, const char * name);
-int link_read_notify(link_transport_mdriver_t * driver, void * buf, int nbyte);
 int link_disconnect(link_transport_mdriver_t * driver /*! The device to close */);
 char * link_new_device_list(link_transport_mdriver_t * driver, int max);
 void link_del_device_list(char * sn_list /*! The list to free */);

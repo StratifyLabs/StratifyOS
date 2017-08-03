@@ -569,6 +569,7 @@ typedef struct MCU_PACK {
 	const char * stdin_dev /*! Device used for standard input */;
 	const char * stdout_dev /*! Device used for standard output */;
 	const char * stderr_dev /*! Device used for standard error */;
+	const char * trace_dev /*! Device used for tracing */;
 	const char * sys_name /*! System (or board) name */;
 	const char * sys_version /*! System (or board) version (distinct from kernel version) */;
 	const char * sys_id /*! System ID (globally unique cloud identifier for board) */;
@@ -577,6 +578,8 @@ typedef struct MCU_PACK {
 	void * (*start)(void*) /*! The start routine (when in doubt use sos_default_thread()) */;
 	void * start_args /*! Arguments passed to the start routine (for  sos_default_thread() use a pointer to the link transport driver) */;
 	const sos_socket_api_t * socket_api /*! Socket API (zero if sockets are not supported) */;
+	void (*trace_event)(void * event) /*! This will trace an event (zero if not supported) */;
+	void (*request)(void) /*! Send an interrupt request to the link master (0 if not supported) */;
 } sos_board_config_t;
 
 #define SOS_DEFAULT_START_STACK_SIZE 2048

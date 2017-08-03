@@ -17,9 +17,9 @@
  *
  */
 
-
 #include <errno.h>
 
+#include "cortexm/cortexm.h"
 #include "sos/sos.h"
 #include "sos/link/transport_usb.h"
 #include "cortexm/task.h"
@@ -28,13 +28,6 @@
 #include "cortexm/mpu.h"
 
 static void sos_trace_event_addr(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len, u32 addr);
-
-void sos_priv_trace_event(void * info){
-	link_notify_posix_trace_event_t notify;
-	memcpy(&(notify.info), info, sizeof(link_posix_trace_event_info_t));
-	notify.id = LINK_NOTIFY_ID_POSIX_TRACE_EVENT;
-	//sos_board_config.notify_write(&notify, sizeof(link_notify_posix_trace_event_t));
-}
 
 void sos_trace_event(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len){
 	register u32 lr asm("lr");
@@ -48,35 +41,43 @@ void sos_trace_event_addr(link_trace_event_id_t event_id, const void * data_ptr,
 void sos_trace_event_addr_tid(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len, u32 addr, int tid){
 	//record event id and in-calling processes trace stream
 	struct timespec spec;
-	link_posix_trace_event_info_t event_info;
+	link_trace_event_t event;
 
-	return;
+	if( sos_board_config.trace_event ){
+		//convert the address using the task memory location
+		//check if addr is part of kernel or app
+		if( (addr > (u32)&_text) && (addr < (u32)&_etext) ){
+			//kernel
+			addr = addr - 1;
+		} else {
+			//app
+			addr = addr - (u32)mpu_addr((u32)sos_task_table[tid].mem.code.addr) - 1 + 0xDE000000;
+		}
 
-	//convert the address using the task memory location
-	//check if addr is part of kernel or app
-	if( (addr > (u32)&_text) && (addr < (u32)&_etext) ){
-		//kernel
-		addr = addr - 1;
-	} else {
-		//app
-		addr = addr - (u32)mpu_addr((u32)sos_task_table[tid].mem.code.addr) - 1 + 0xDE000000;
+		event.header.size = sizeof(link_trace_event_t);
+		event.header.id = LINK_NOTIFY_ID_POSIX_TRACE_EVENT;
+		event.posix_trace_event.posix_event_id = event_id;
+		event.posix_trace_event.posix_pid = task_get_pid( tid );
+		event.posix_trace_event.posix_prog_address = addr; //grab the value of the caller
+		event.posix_trace_event.posix_thread_id = tid;
+
+		if( data_len > LINK_POSIX_TRACE_DATA_SIZE-1  ){
+			data_len = LINK_POSIX_TRACE_DATA_SIZE-1;
+			event.posix_trace_event.posix_truncation_status = 1;
+		} else {
+			event.posix_trace_event.posix_truncation_status = 0;
+		}
+
+		memset(event.posix_trace_event.data, 0, LINK_POSIX_TRACE_DATA_SIZE);
+		memcpy(event.posix_trace_event.data, data_ptr, data_len);
+		clock_gettime(CLOCK_REALTIME, &spec);
+		event.posix_trace_event.posix_timestamp_tv_sec = spec.tv_sec;
+		event.posix_trace_event.posix_timestamp_tv_nsec = spec.tv_nsec;
+
+		cortexm_assign_zero_sum32(&event, CORTEXM_ZERO_SUM32_COUNT(event));
+
+		cortexm_svcall(sos_board_config.trace_event, &event);
 	}
-
-	event_info.posix_event_id = event_id;
-	event_info.posix_pid = task_get_pid( tid );
-	event_info.posix_prog_address = addr; //grab the value of the caller
-	event_info.posix_thread_id = tid;
-
-	if( data_len > LINK_POSIX_TRACE_DATA_SIZE-1  ){
-		data_len = LINK_POSIX_TRACE_DATA_SIZE-1;
-	}
-	memset(event_info.data, 0, LINK_POSIX_TRACE_DATA_SIZE);
-	memcpy(event_info.data, data_ptr, data_len);
-	clock_gettime(CLOCK_REALTIME, &spec);
-	event_info.posix_timestamp_tv_sec = spec.tv_sec;
-	event_info.posix_timestamp_tv_nsec = spec.tv_nsec;
-
-	cortexm_svcall(sos_priv_trace_event, &event_info);
 
 }
 

@@ -84,7 +84,7 @@ void scheduler(){
 	sched_priv_assert_status_change();
 
 	//This interval needs to be long enough to allow for flash writes
-	if( (sos_board_config.o_sys_flags & SYS_FLAGS_DISABLE_WDT) == 0 ){
+	if( (sos_board_config.o_sys_flags & SYS_FLAG_IS_WDT_DISABLED) == 0 ){
 		//mcu_wdt_init(WDT_MODE_INTERRUPT|WDT_MODE_CLK_SRC_MAIN, SCHED_RR_DURATION * 10 * sos_board_config.task_total + 5);
 	}
 

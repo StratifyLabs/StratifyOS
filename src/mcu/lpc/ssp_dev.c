@@ -213,7 +213,7 @@ int mcu_ssp_setattr(const devfs_handle_t * handle, void * ctl){
 				&(attr->pin_assignment),
 				MCU_CONFIG_PIN_ASSIGNMENT(spi_config_t, handle),
 				MCU_PIN_ASSIGNMENT_COUNT(spi_pin_assignment_t),
-				CORE_PERIPH_SPI, port, enable_pin, 0) < 0 ){
+				CORE_PERIPH_SSP, port, enable_pin, 0) < 0 ){
 			return -1;
 		}
 

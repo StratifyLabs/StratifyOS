@@ -48,6 +48,46 @@ static inline void _delay_us(uint32_t __us){
 void cortexm_delay_us(u32 us){ _delay_us(us); }
 void cortexm_delay_ms(u32 ms){ _delay_us(ms*1000); }
 
+void cortexm_assign_zero_sum32(void * data, int count){
+	u32 sum = 0;
+	u32 * ptr = data;
+	int i;
+	for(i=0; i < count-1; i++){
+		sum += ptr[i];
+	}
+	ptr[i] = (u32)(0 - sum);
+}
+
+void cortexm_assign_zero_sum8(void * data, int count){
+	u8 sum = 0;
+	u8 * ptr = data;
+	int i;
+	for(i=0; i < count-1; i++){
+		sum += ptr[i];
+	}
+	ptr[i] = (u8)(0 - sum);
+}
+
+int cortexm_verify_zero_sum32(void * data, int count){
+	u32 sum = 0;
+	u32 * ptr = data;
+	int i;
+	for(i=0; i < count; i++){
+		sum += ptr[i];
+	}
+	return sum == 0;
+}
+
+int cortexm_verify_zero_sum8(void * data, int count){
+	u8 sum = 0;
+	u8 * ptr = data;
+	int i;
+	for(i=0; i < count; i++){
+		sum += ptr[i];
+	}
+	return sum == 0;
+}
+
 
 void cortexm_set_unprivileged_mode(){
 	register uint32_t control;

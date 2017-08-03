@@ -49,18 +49,18 @@ struct mallinfo _mallinfo_r(struct _reent * reent_ptr){
 	total_used_memory = 0;
 	total_free_chunks = 0;
 
-	while( chunk->num_chunks != 0 ){
+	while( chunk->header.num_chunks != 0 ){
 		chunk_free = malloc_chunk_is_free(chunk);
 		if ( chunk_free == -1 ){
 			return mi;
 		}
-		total_chunks += chunk->num_chunks;
+		total_chunks += chunk->header.num_chunks;
 		if ( chunk_free == 1 ){
-			total_free_chunks += chunk->num_chunks;
+			total_free_chunks += chunk->header.num_chunks;
 		} else {
-			total_used_memory += chunk->actual_size;
+			total_used_memory += chunk->header.actual_size;
 		}
-		chunk += chunk->num_chunks;
+		chunk += chunk->header.num_chunks;
 	}
 
 	mi.arena = (total_chunks) * MALLOC_CHUNK_SIZE + (sizeof(malloc_chunk_t) - MALLOC_DATA_SIZE);

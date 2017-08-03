@@ -64,7 +64,7 @@ void mcu_fault_event_handler(fault_t * fault){
 
 #if 0
 		if( sos_board_config.notify_write != 0 ){
-			link_posix_trace_event_info_t info;
+			link_posix_trace_event_t info;
 			info.posix_event_id = 0;
 			info.posix_pid = pid;
 			info.posix_thread_id = task_get_current();

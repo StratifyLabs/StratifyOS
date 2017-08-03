@@ -287,18 +287,6 @@ struct link_stat {
 #define LINK_NOTIFY_ID_FILE_READ 0x200
 #define LINK_NOTIFY_ID_POSIX_TRACE_EVENT 0x300
 
-typedef struct MCU_PACK {
-	u32 id;
-	char name[LINK_NAME_MAX];
-	u32 nbyte;
-} link_notify_dev_t;
-
-typedef struct MCU_PACK {
-	u32 id;
-	char name[LINK_PATH_MAX];
-	u32 nbyte;
-} link_notify_file_t;
-
 
 struct link_timespec {
 	u32	tv_sec;
@@ -337,24 +325,36 @@ typedef u32 link_trace_id_t;
 typedef link_trace_id_handle_t * link_trace_id_t;
 #endif
 
-#define LINK_POSIX_TRACE_DATA_SIZE 24
+#define LINK_POSIX_TRACE_DATA_SIZE 20
+
 
 typedef struct MCU_PACK {
-	link_trace_event_id_t posix_event_id;
-	u32 posix_pid;
+		u16 size;
+		u16 id;
+} link_trace_event_header_t;
+
+typedef struct MCU_PACK {
+	u16 posix_event_id;
+	s16 posix_truncation_status;
+	u16 posix_thread_id;
+	u16 posix_pid;
 	u32 posix_prog_address;
-	s32 posix_truncation_status;
 	u32 posix_timestamp_tv_sec;
 	u32 posix_timestamp_tv_nsec;
-	u32 posix_thread_id;
 	u8 data[LINK_POSIX_TRACE_DATA_SIZE];
-} link_posix_trace_event_info_t;
+} link_posix_trace_event_t;
 
 
 typedef struct MCU_PACK {
-	u32 id;
-	link_posix_trace_event_info_t info;
-} link_notify_posix_trace_event_t;
+	link_trace_event_header_t header;
+	union {
+		link_posix_trace_event_t posix_trace_event;
+	};
+	u32 sum32; //must be aligned on 4-byte boundary
+} link_trace_event_t;
+
+
+
 
 typedef u32 link_mode_t;
 

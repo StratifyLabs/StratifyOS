@@ -20,8 +20,8 @@
 #include "malloc_local.h"
 
 void * _realloc_r(struct _reent * reent_ptr, void * addr, size_t size){
-	uint16_t num_chunks;
-	uint16_t free_chunks;
+	u16 num_chunks;
+	u16 free_chunks;
 	malloc_chunk_t * chunk;
 	malloc_chunk_t * next;
 	void * alloc;
@@ -66,25 +66,23 @@ void * _realloc_r(struct _reent * reent_ptr, void * addr, size_t size){
 			return NULL;
 		}
 
-		if ( num_chunks < chunk->num_chunks ){ //check to see if new size is smaller
-			free_chunks = chunk->num_chunks - num_chunks;
+		if ( num_chunks < chunk->header.num_chunks ){ //check to see if new size is smaller
+			free_chunks = chunk->header.num_chunks - num_chunks;
 			malloc_set_chunk_used(reent_ptr, chunk, num_chunks, size);
 			next = chunk + num_chunks;
-			next->num_chunks = free_chunks;
-			malloc_set_chunk_free(next);
+			malloc_set_chunk_free(next, free_chunks);
 			__malloc_unlock(reent_ptr);
 			return addr;
 		}
 
-		next = chunk + chunk->num_chunks;
+		next = chunk + chunk->header.num_chunks;
 
 		if ( malloc_chunk_is_free(next) == 1 ){ //The next chunk is free
-			free_chunks = next->num_chunks + chunk->num_chunks;
+			free_chunks = next->header.num_chunks + chunk->header.num_chunks;
 			if ( free_chunks < num_chunks ){
 				malloc_set_chunk_used(reent_ptr, chunk, num_chunks, size);
-				next = chunk + chunk->num_chunks;
-				next->num_chunks = num_chunks - free_chunks;
-				malloc_set_chunk_free(next);
+				next = chunk + chunk->header.num_chunks;
+				malloc_set_chunk_free(next, num_chunks - free_chunks);
 				__malloc_unlock(reent_ptr);
 				return addr;
 			} else if ( free_chunks == num_chunks ){

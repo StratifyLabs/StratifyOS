@@ -17,6 +17,7 @@
  * 
  */
 
+#include "cortexm/cortexm.h"
 #include "sos/sos.h"
 #include <sys/unistd.h>
 #include <unistd.h>
@@ -29,16 +30,16 @@
 
 
 static void set_last_chunk(malloc_chunk_t * chunk);
-static void cleanup_memory(malloc_chunk_t * chunk);
+static void cleanup_memory(struct _reent * reent_ptr);
 static int get_more_memory(struct _reent * reent_ptr);
-static malloc_chunk_t * find_free_chunk(malloc_chunk_t * chunk, uint32_t num_chunks);
+static malloc_chunk_t * find_free_chunk(malloc_chunk_t * chunk, u32 num_chunks);
 static int is_memory_corrupt(struct _reent * reent_ptr);
 static void show_seg_fault(void * loc);
 
 
 void malloc_process_fault(void * loc);
 
-uint16_t malloc_calc_num_chunks(uint32_t size){
+u16 malloc_calc_num_chunks(u32 size){
 	int num_chunks;
 	if ( size > MALLOC_DATA_SIZE ){
 		num_chunks = ((size - MALLOC_DATA_SIZE) + MALLOC_CHUNK_SIZE - 1) / MALLOC_CHUNK_SIZE + 1;
@@ -48,60 +49,56 @@ uint16_t malloc_calc_num_chunks(uint32_t size){
 	return num_chunks;
 }
 
-malloc_chunk_t * find_free_chunk(malloc_chunk_t * chunk, uint32_t num_chunks){
+malloc_chunk_t * find_free_chunk(malloc_chunk_t * chunk, u32 num_chunks){
 	int loop_count = 0;
 	int is_free;
 
-	while( chunk->num_chunks != 0 ){
+	while( chunk->header.num_chunks != 0 ){
 		is_free = malloc_chunk_is_free(chunk);
 
 		if ( is_free == -1 ){
 			return NULL;
 		}
 
-		if ( (is_free == 1)  && ( chunk->num_chunks >= num_chunks ) ){
+		if ( (is_free == 1)  && ( chunk->header.num_chunks >= num_chunks ) ){
 			return chunk;
 		}
 		loop_count++;
-		chunk = chunk + chunk->num_chunks;
+		chunk = chunk + chunk->header.num_chunks;
 	}
 
 
 	//No block found to fit size
-	//mcu_debug_user_printf("No chunk to fit (0x%X %d 0x%X)\n", chunk, chunk->num_chunks, chunk->signature);
+	//mcu_debug_user_printf("No chunk to fit (0x%X %d 0x%X)\n", chunk, chunk->header.num_chunks, chunk->signature);
 	return NULL;
 }
 
 int is_memory_corrupt(struct _reent * reent_ptr){
 	int is_free;
-	malloc_chunk_t * start_chunk = (malloc_chunk_t *)&(reent_ptr->procmem_base->base);
-	malloc_chunk_t * chunk = start_chunk;
+	malloc_chunk_t * chunk = (malloc_chunk_t *)&(reent_ptr->procmem_base->base);
 
-	while( chunk->num_chunks != 0 ){
+	while( chunk->header.num_chunks != 0 ){
 		is_free = malloc_chunk_is_free(chunk);
 		if ( is_free == -1 ){
-
-			//Kill the process with the faulty memory
-			malloc_process_fault(chunk);
 			return -1;
 		}
-		chunk += chunk->num_chunks;
+		chunk += chunk->header.num_chunks;
 	}
 	return 0;
 }
 
-void cleanup_memory(malloc_chunk_t * chunk){
+void cleanup_memory(struct _reent * reent_ptr){
 	malloc_chunk_t * current;
 	malloc_chunk_t * next;
 	int next_free;
 	int current_free;
-	current = chunk;
-	next = current + (current->num_chunks);
-	while( next->num_chunks != 0 ){
+	current = (malloc_chunk_t*)&(reent_ptr->procmem_base->base);
+	next = current + (current->header.num_chunks);
+	while( next->header.num_chunks != 0 ){
 		current_free = malloc_chunk_is_free(current);
+		//mcu_debug_user_printf("CC:0x%X %d %d\n", (int)current, current->header.num_chunks, current_free);
 		next_free = malloc_chunk_is_free(next);
-		//mcu_debug_user_printf("CC:0x%X %d %d\n", (int)current, current->num_chunks, current_free);
-		//mcu_debug_user_printf("NC:0x%X %d %d\n", (int)next, next->num_chunks, next_free);
+		//mcu_debug_user_printf("NC:0x%X %d %d\n", (int)next, next->header.num_chunks, next_free);
 
 		if ( next_free == -1 ){
 			return;
@@ -109,12 +106,11 @@ void cleanup_memory(malloc_chunk_t * chunk){
 
 		if ( (current_free == 1) &&
 				(next_free == 1) ){ //both blocks are free
-			current->num_chunks += next->num_chunks;
-			malloc_set_chunk_free(current);
+			malloc_set_chunk_free(current, current->header.num_chunks + next->header.num_chunks);
 		} else {
 			current = next;
 		}
-		next = next + next->num_chunks;
+		next = next + next->header.num_chunks;
 	}
 }
 
@@ -123,7 +119,6 @@ malloc_chunk_t * malloc_chunk_from_addr(void * addr){
 	chunk = (malloc_chunk_t *)((char*)addr - (sizeof(malloc_chunk_t) - MALLOC_DATA_SIZE));
 	return chunk;
 }
-
 
 void malloc_free_task_r(struct _reent * reent_ptr, int task_id){
 	malloc_chunk_t * chunk;
@@ -134,9 +129,9 @@ void malloc_free_task_r(struct _reent * reent_ptr, int task_id){
 
 	chunk = (malloc_chunk_t *) &(reent_ptr->procmem_base->base);
 
-	while( chunk->num_chunks != 0 ){
-		next = chunk + chunk->num_chunks;
-		if ( chunk->task_id == task_id ){
+	while( chunk->header.num_chunks != 0 ){
+		next = chunk + chunk->header.num_chunks;
+		if ( chunk->header.task_id == task_id ){
 			_free_r(reent_ptr, chunk->memory);
 		}
 		chunk = next;
@@ -197,8 +192,8 @@ void _free_r(struct _reent * reent_ptr, void * addr){
 	}
 
 	//mcu_debug_user_printf("f:%d 0x%X\n", _getpid(), addr);
-	malloc_set_chunk_free(chunk);
-	cleanup_memory((malloc_chunk_t *)&(reent_ptr->procmem_base->base));
+	malloc_set_chunk_free(chunk, chunk->header.num_chunks);
+	cleanup_memory(reent_ptr);
 	__malloc_unlock(reent_ptr);
 }
 
@@ -209,18 +204,17 @@ int get_more_memory(struct _reent * reent_ptr){
 	if ( chunk == NULL ){
 		return -1;
 	} else {
-		chunk->num_chunks = MALLOC_SBRK_JUMP_SIZE / MALLOC_CHUNK_SIZE;
-		//mcu_debug_user_printf("MC:0x%X (%d)\n", (int)chunk, chunk->num_chunks);
-		malloc_set_chunk_free(chunk);
-		set_last_chunk(chunk + chunk->num_chunks); //mark the last block
-		//mcu_debug_user_printf("LC:%d:0x%X\n", chunk_is_free(chunk + chunk->num_chunks), chunk + chunk->num_chunks);
+		malloc_set_chunk_free(chunk, MALLOC_SBRK_JUMP_SIZE / MALLOC_CHUNK_SIZE);
+		//mcu_debug_user_printf("MC:0x%X (%d)\n", (int)chunk, chunk->header.num_chunks);
+		set_last_chunk(chunk + chunk->header.num_chunks); //mark the last block
+		//mcu_debug_user_printf("LC:%d:0x%X\n", chunk_is_free(chunk + chunk->header.num_chunks), chunk + chunk->header.num_chunks);
 	}
 	return 0;
 }
 
 void * _malloc_r(struct _reent * reent_ptr, size_t size){
 	void * alloc;
-	uint16_t num_chunks;
+	u16 num_chunks;
 	malloc_chunk_t * chunk;
 	malloc_chunk_t * next;
 	alloc = NULL;
@@ -231,6 +225,7 @@ void * _malloc_r(struct _reent * reent_ptr, size_t size){
 	}
 
 	__malloc_lock(reent_ptr);
+
 
 	if ( reent_ptr->procmem_base->size == 0 ){
 		if ( get_more_memory(reent_ptr) < 0 ){
@@ -264,16 +259,15 @@ void * _malloc_r(struct _reent * reent_ptr, size_t size){
 			}
 
 			//Cleanup the memory
-			cleanup_memory((malloc_chunk_t *)&(reent_ptr->procmem_base->base) );
+			cleanup_memory(reent_ptr);
 
 		} else {
 
 			//See if the memory will fit in this chunk
-			if ( chunk->num_chunks > num_chunks ){
+			if ( chunk->header.num_chunks > num_chunks ){
 				next = chunk + (num_chunks);
-				next->num_chunks = (chunk->num_chunks) - num_chunks;
-				malloc_set_chunk_free(next);
-			} else if ( chunk->num_chunks < num_chunks ){
+				malloc_set_chunk_free(next, (chunk->header.num_chunks) - num_chunks);
+			} else if ( chunk->header.num_chunks < num_chunks ){
 				__malloc_unlock(reent_ptr);
 				errno = ENOMEM;
 				return NULL;
@@ -291,41 +285,48 @@ void * _malloc_r(struct _reent * reent_ptr, size_t size){
 	return alloc;
 }
 
-void malloc_set_chunk_used(struct _reent * reent, malloc_chunk_t * chunk, uint16_t num_chunks, uint32_t actual_size){
-	chunk->num_chunks = num_chunks;
-	chunk->actual_size = actual_size;
-	chunk->signature = ~(num_chunks ^ actual_size);
-#if SINGLE_TASK == 0
+void malloc_set_chunk_used(struct _reent * reent, malloc_chunk_t * chunk, u16 num_chunks, u32 actual_size){
+	chunk->header.num_chunks = num_chunks;
+	chunk->header.actual_size = actual_size;
+	//chunk->signature = ~(num_chunks ^ actual_size);
 	if( (reent == _REENT) && ( task_isthread_asserted( task_get_current() )) ){
-		chunk->task_id = task_get_current();
+		chunk->header.task_id = task_get_current();
 	} else {
-		chunk->task_id = 0;
+		chunk->header.task_id = 0;
 	}
-#else
-	chunk->task_id = 0;
-#endif
+	cortexm_assign_zero_sum32(chunk, CORTEXM_ZERO_SUM32_COUNT(malloc_chunk_header_t));
 }
 
-void malloc_set_chunk_free(malloc_chunk_t * chunk){
-	chunk->actual_size = 0;
-	chunk->signature = ~(chunk->num_chunks ^ 0);
+void malloc_set_chunk_free(malloc_chunk_t * chunk, u16 free_chunks){
+	chunk->header.task_id = task_get_current();
+	chunk->header.actual_size = 0;
+	chunk->header.num_chunks = free_chunks;
+	cortexm_assign_zero_sum32(chunk, CORTEXM_ZERO_SUM32_COUNT(malloc_chunk_header_t));
+	//chunk->signature = ~(chunk->header.num_chunks ^ 0);
 }
 
 void set_last_chunk(malloc_chunk_t * chunk){
-	chunk->num_chunks = 0;
-	chunk->actual_size = 0;
-	chunk->signature = ~(0 ^ 0);
+	chunk->header.task_id = task_get_current();
+	chunk->header.num_chunks = 0;
+	chunk->header.actual_size = 0;
+	cortexm_assign_zero_sum32(chunk, CORTEXM_ZERO_SUM32_COUNT(malloc_chunk_header_t));
+	//chunk->signature = ~(0 ^ 0);
 }
 
 
 int malloc_chunk_is_free(malloc_chunk_t * chunk){
-	if ( chunk->signature != (uint8_t)~(chunk->num_chunks ^ chunk->actual_size) ){
+	if( cortexm_verify_zero_sum32(chunk, CORTEXM_ZERO_SUM32_COUNT(malloc_chunk_header_t)) == 0){
 		//This chunk is corrupt
+		mcu_debug_user_printf("me:%d %d %ld 0x%08lX\n",
+				chunk->header.task_id,
+				chunk->header.num_chunks,
+				chunk->header.actual_size,
+				chunk->header.checksum);
 		malloc_process_fault(chunk);
 		return -1;
 	}
 
-	if ( chunk->actual_size == 0 ){ //Is the chunk free
+	if ( chunk->header.actual_size == 0 ){ //Is the chunk free
 		return 1;
 	}
 
@@ -342,30 +343,25 @@ void malloc_process_fault(void * loc){
 }
 
 void show_seg_fault(void * loc){
-	//mcu_debug_user_printf("\nSegmentation Fault\n");
 	char buffer[32];
 	char hex_buffer[9];
-#if SINGLE_TASK == 0
 	if ( task_get_current() != 0 ){
-#endif
 
-#if USE_STDIO != 0
 		strcpy(buffer, "Heap Fault\n");
 		if ( (stderr != NULL) && (stderr != (FILE*)&__sf_fake_stderr) ){
 			write(stderr->_file, buffer, strlen(buffer));
 		}
-#endif
 
 		strcpy(buffer, "Heap Fault ");
-		htoa(hex_buffer, (uint32_t)loc);
+		htoa(hex_buffer, (u32)loc);
 		strcat(buffer, hex_buffer);
 		posix_trace_event(
 				POSIX_TRACE_MESSAGE,
 				buffer, strlen(buffer));
 
-#if SINGLE_TASK == 0
+	} else {
+		mcu_debug_user_printf("\Heap Fault\n");
 	}
-#endif
 
 
 }

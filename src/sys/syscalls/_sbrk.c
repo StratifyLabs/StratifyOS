@@ -48,12 +48,7 @@ void * _sbrk_r(struct _reent * reent_ptr, ptrdiff_t incr){
 	size = reent_ptr->procmem_base->size;
 	base = (char*)&(reent_ptr->procmem_base->base);
 
-
-#if SINGLE_TASK == 0
 	stack = (void*)task_get_sbrk_stack_ptr(reent_ptr);
-#else
-	stack = core_get_thread_stack_ptr();
-#endif
 
 
 	//leave some room for the stack to grow

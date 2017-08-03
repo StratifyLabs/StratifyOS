@@ -314,10 +314,6 @@ int mcu_uart_setattr(const devfs_handle_t * handle, void * ctl){
 
 	uart_regs->IER = 0; //disable the TX/RX interrupts
 
-	if( port != 0 ){
-		mcu_debug_printf("Baudrate: %ld %d 0x%lX\n", baud_rate, attr->width, (u32)uart_regs->LCR);
-	}
-
 	cortexm_enable_irq((void*)(u32)(uart_irqs[port]));
 
 	return 0;

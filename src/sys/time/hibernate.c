@@ -50,7 +50,7 @@ void priv_hibernate(void * args){
 	int * seconds = (int*)args;
 
 	//set the WDT to reset in args seconds
-	if( (sos_board_config.o_sys_flags & SYS_FLAGS_DISABLE_WDT) == 0 ){
+	if( (sos_board_config.o_sys_flags & SYS_FLAG_IS_WDT_DISABLED) == 0 ){
 		if( *seconds != 0 ){
 			mcu_wdt_setinterval((*seconds+1)*2000);
 		} else {
@@ -71,7 +71,7 @@ void priv_hibernate(void * args){
 	//Set WDT to previous value (it only runs in deep sleep with certain clock sources)
 	mcu_wdt_priv_reset(NULL);
 
-	if( (sos_board_config.o_sys_flags & SYS_FLAGS_DISABLE_WDT) == 0 ){
+	if( (sos_board_config.o_sys_flags & SYS_FLAG_IS_WDT_DISABLED) == 0 ){
 		if( *seconds != 0 ){
 			mcu_wdt_setinterval(SCHED_RR_DURATION * 10 * sos_board_config.task_total + 5);
 		}

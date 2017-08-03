@@ -26,6 +26,15 @@ void cortexm_set_thread_stack_ptr(void * ptr) MCU_PRIV_CODE;
 int cortexm_validate_callback(mcu_callback_t callback) MCU_PRIV_CODE;
 int cortexm_set_irq_prio(int irq, int prio) MCU_PRIV_CODE;
 
+
+#define CORTEXM_ZERO_SUM32_COUNT(x) (sizeof(x)/sizeof(u32))
+#define CORTEXM_ZERO_SUM8_COUNT(x) (sizeof(x))
+
+void cortexm_assign_zero_sum32(void * data, int size);
+void cortexm_assign_zero_sum8(void * data, int size);
+int cortexm_verify_zero_sum32(void * data, int size);
+int cortexm_verify_zero_sum8(void * data, int size);
+
 typedef void (*cortexm_svcall_t)(void*);
 
 #ifndef __link

@@ -30,7 +30,6 @@ const link_transport_mdriver_t link_default_driver = {
 		.unlock = link_phy_unlock,
 		.status = link_phy_status,
 		.dev.handle = LINK_PHY_OPEN_ERROR,
-		.dev.notify_handle = LINK_PHY_OPEN_ERROR,
 		.dev.open = link_phy_open,
 		.dev.write = link_phy_write,
 		.dev.read = link_phy_read,
@@ -64,11 +63,6 @@ int link_disconnect(link_transport_mdriver_t * driver){
 	ret = driver->dev.close(&(driver->dev.handle));
 	driver->dev.handle = LINK_PHY_OPEN_ERROR;
 
-	if( driver->dev.notify_handle != LINK_PHY_OPEN_ERROR ){
-		driver->dev.close(&(driver->dev.notify_handle));
-		driver->dev.notify_handle = LINK_PHY_OPEN_ERROR;
-	}
-
 	return ret;
 }
 
@@ -89,7 +83,6 @@ int link_connect(link_transport_mdriver_t * driver, const char * sn){
 
 	link_debug(LINK_DEBUG_MESSAGE, "Connect to %s", serialno);
 
-	driver->dev.notify_handle = LINK_PHY_OPEN_ERROR;
 
 	while( (err = driver->getname(name, last, LINK_PHY_NAME_MAX)) == 0 ){
 		//success in getting new name
@@ -140,38 +133,6 @@ int link_connect(link_transport_mdriver_t * driver, const char * sn){
 	memset(driver->dev_name, 0, 64);
 	link_error("Device not found");
 	return -1;
-}
-
-/*! \details Connect to the notification port */
-int link_connect_notify(link_transport_mdriver_t * driver){
-
-	char name[LINK_PHY_NAME_MAX];
-	memset(driver->notify_name, 0, 64);
-
-	if( driver->dev.handle == LINK_PHY_OPEN_ERROR ){
-		return -1;
-	}
-
-	if( strlen(driver->dev_name) ==  0 ){
-		return -1;
-	}
-
-	if( driver->getname(name, driver->dev_name, LINK_PHY_NAME_MAX) < 0 ){
-		return -1;
-	}
-
-	if( (driver->dev.notify_handle = driver->dev.open(name, 0)) == LINK_PHY_OPEN_ERROR ){
-		return -1;
-	}
-
-	strncpy(driver->notify_name, name, 63);
-
-	return 0;
-
-}
-
-int link_read_notify(link_transport_mdriver_t * driver, void * buf, int nbyte){
-	return driver->dev.read(driver->dev.notify_handle, buf, nbyte);
 }
 
 
