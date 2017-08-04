@@ -10,7 +10,6 @@ C_SRCS += \
 ../src/link/link_dir.c \
 ../src/link/link_file.c \
 ../src/link/link_phy.c \
-../src/link/link_posix_trace.c \
 ../src/link/link_process.c \
 ../src/link/link_protocol_master.c \
 ../src/link/link_stdio.c \
@@ -24,7 +23,6 @@ OBJS += \
 ./src/link/link_dir.o \
 ./src/link/link_file.o \
 ./src/link/link_phy.o \
-./src/link/link_posix_trace.o \
 ./src/link/link_process.o \
 ./src/link/link_protocol_master.o \
 ./src/link/link_stdio.o \
@@ -38,7 +36,6 @@ C_DEPS += \
 ./src/link/link_dir.d \
 ./src/link/link_file.d \
 ./src/link/link_phy.d \
-./src/link/link_posix_trace.d \
 ./src/link/link_process.d \
 ./src/link/link_protocol_master.d \
 ./src/link/link_stdio.d \

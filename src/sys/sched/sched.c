@@ -126,7 +126,7 @@ int check_faults(){
 		sos_trace_event_addr_tid(
 				POSIX_TRACE_FATAL,
 				buffer, strlen(buffer),
-				(uint32_t)sched_fault.fault.pc + 1,
+				(u32)sched_fault.fault.pc + 1,
 				sched_fault.tid);
 
 		usleep(2000);
@@ -134,12 +134,12 @@ int check_faults(){
 
 		char hex_buffer[9];
 		strcpy(buffer, "ADDR 0x");
-		htoa(hex_buffer, (uint32_t)sched_fault.fault.addr);
+		htoa(hex_buffer, (u32)sched_fault.fault.addr);
 		strcat(buffer, hex_buffer);
 		sos_trace_event_addr_tid(
 				POSIX_TRACE_MESSAGE,
 				buffer, strlen(buffer),
-				(uint32_t)sched_fault.fault.pc + 1,
+				(u32)sched_fault.fault.pc + 1,
 				sched_fault.tid);
 		mcu_debug_user_printf("ADDR 0x%lX %ld\n", (u32)sched_fault.fault.pc + 1, sched_fault.tid);
 		usleep(2000);
@@ -149,7 +149,7 @@ int check_faults(){
 		sos_trace_event_addr_tid(
 				POSIX_TRACE_MESSAGE,
 				buffer, strlen(buffer),
-				(uint32_t)sched_fault.fault.caller,
+				(u32)sched_fault.fault.caller,
 				sched_fault.tid);
 		mcu_debug_user_printf("Caller 0x%lX %ld\n", (u32)sched_fault.fault.caller, sched_fault.tid);
 		usleep(2000);
@@ -169,7 +169,7 @@ int check_faults(){
 		sos_trace_event_addr_tid(
 				POSIX_TRACE_MESSAGE,
 				buffer, strlen(buffer),
-				(uint32_t)sched_fault.fault.handler_caller,
+				(u32)sched_fault.fault.handler_caller,
 				sched_fault.tid);
 		mcu_debug_user_printf("ISR Caller 0x%lX %ld\n", (u32)sched_fault.fault.handler_caller, sched_fault.tid);
 		usleep(2000);

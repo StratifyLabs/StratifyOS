@@ -34,7 +34,6 @@ static void cleanup_memory(struct _reent * reent_ptr);
 static int get_more_memory(struct _reent * reent_ptr);
 static malloc_chunk_t * find_free_chunk(malloc_chunk_t * chunk, u32 num_chunks);
 static int is_memory_corrupt(struct _reent * reent_ptr);
-static void show_seg_fault(void * loc);
 
 
 void malloc_process_fault(void * loc);
@@ -335,33 +334,15 @@ int malloc_chunk_is_free(malloc_chunk_t * chunk){
 }
 
 void malloc_process_fault(void * loc){
-	show_seg_fault(loc);
-#if SINGLE_TASK == 0
-	//free the heap and reset the stack
-	_exit(1);
-#endif
-}
+	SOS_TRACE_MESSAGE("Heap Fault");
+	mcu_debug_user_printf("\nHeap Fault\n");
 
-void show_seg_fault(void * loc){
-	char buffer[32];
-	char hex_buffer[9];
-	if ( task_get_current() != 0 ){
-
-		strcpy(buffer, "Heap Fault\n");
-		if ( (stderr != NULL) && (stderr != (FILE*)&__sf_fake_stderr) ){
-			write(stderr->_file, buffer, strlen(buffer));
-		}
-
-		strcpy(buffer, "Heap Fault ");
-		htoa(hex_buffer, (u32)loc);
-		strcat(buffer, hex_buffer);
-		posix_trace_event(
-				POSIX_TRACE_MESSAGE,
-				buffer, strlen(buffer));
-
+	if( task_get_pid(task_get_current()) > 0 ){
+		//free the heap and reset the stack
+		_exit(1);
 	} else {
-		mcu_debug_user_printf("\Heap Fault\n");
+		mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_FATAL, (void*)"malloc");
 	}
 
-
 }
+

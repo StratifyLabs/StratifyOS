@@ -131,7 +131,6 @@ int link_gettime(link_transport_mdriver_t * driver, struct link_tm * t);
 int link_kill_pid(link_transport_mdriver_t * driver, int pid, int signo);
 int link_get_sys_info(link_transport_mdriver_t * driver, sys_info_t * sys_info);
 
-
 int link_isbootloader(link_transport_mdriver_t * driver);
 int link_bootloader_attr(link_transport_mdriver_t * driver, bootloader_attr_t * attr, u32 id);
 int link_readserialno(link_transport_mdriver_t * driver, char * serialno, int len);
@@ -141,18 +140,6 @@ int link_resetbootloader(link_transport_mdriver_t * driver);
 int link_readflash(link_transport_mdriver_t * driver, int addr, void * buf, int nbyte);
 int link_writeflash(link_transport_mdriver_t * driver, int addr, const void * buf, int nbyte);
 int link_eraseflash(link_transport_mdriver_t * driver);
-
-int link_posix_trace_create(link_transport_mdriver_t * driver,
-		u32 pid,
-		link_trace_id_t * id);
-int link_posix_trace_tryget_events(link_transport_mdriver_t * driver,
-		link_trace_id_t id,
-		void * data,
-		size_t num_bytes);
-int link_posix_trace_shutdown(link_transport_mdriver_t * driver,
-		link_trace_id_t id);
-
-const char * link_posix_trace_getname(int trace_number);
 
 
 #if defined( __cplusplus )

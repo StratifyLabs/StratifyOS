@@ -39,38 +39,29 @@ static int init_fs();
 static int startup_fs();
 static void start_filesystem(void);
 
-static void priv_check_reset_source(void * args) MCU_PRIV_EXEC_CODE;
+static void priv_core_getinfo(void * args) MCU_PRIV_EXEC_CODE;
 
-void priv_check_reset_source(void * args){
-	u32 * src = args;
-	core_info_t info;
-	mcu_core_getinfo(0, &info);
-
-	if( info.o_flags & CORE_FLAG_IS_RESET_SOFTWARE ){
-		mcu_debug_printf("soft rst\n");
-		*src = CORE_FLAG_IS_RESET_SOFTWARE;
-	} else if( info.o_flags & CORE_FLAG_IS_RESET_POR ){
-		mcu_debug_printf("por rst\n");
-		*src = CORE_FLAG_IS_RESET_POR;
-	} else if( info.o_flags & CORE_FLAG_IS_RESET_EXTERNAL ){
-		mcu_debug_printf("ext rst\n");
-		*src = CORE_FLAG_IS_RESET_EXTERNAL;
-	} else if( info.o_flags & CORE_FLAG_IS_RESET_WDT ){
-		mcu_debug_printf("wdt rst\n");
-		*src = CORE_FLAG_IS_RESET_WDT;
-	} else if( info.o_flags & CORE_FLAG_IS_RESET_BOR ){
-		mcu_debug_printf("bor rst\n");
-		*src = CORE_FLAG_IS_RESET_BOR;
-	} else if( info.o_flags & CORE_FLAG_IS_RESET_SYSTEM ){
-		mcu_debug_printf("sys rst\n");
-		*src = CORE_FLAG_IS_RESET_SYSTEM;
-	}
+void priv_core_getinfo(void * args){
+	mcu_core_getinfo(0, args);
 }
 
 void check_reset_source(void){
-	u32 src;
-	cortexm_svcall(priv_check_reset_source, &src);
-	mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_START_INIT, 0);
+	core_info_t info;
+	cortexm_svcall(priv_core_getinfo, &info);
+	if( info.o_flags & CORE_FLAG_IS_RESET_SOFTWARE ){
+		SOS_TRACE_MESSAGE("soft reset");
+	} else if( info.o_flags & CORE_FLAG_IS_RESET_POR ){
+		SOS_TRACE_MESSAGE("por reset");
+	} else if( info.o_flags & CORE_FLAG_IS_RESET_EXTERNAL ){
+		SOS_TRACE_MESSAGE("ext reset");
+	} else if( info.o_flags & CORE_FLAG_IS_RESET_WDT ){
+		SOS_TRACE_MESSAGE("wdt reset");
+	} else if( info.o_flags & CORE_FLAG_IS_RESET_BOR ){
+		SOS_TRACE_MESSAGE("bor reset");
+	} else if( info.o_flags & CORE_FLAG_IS_RESET_SYSTEM ){
+		SOS_TRACE_MESSAGE("sys reset");
+	}
+	mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_START_INIT, &info);
 }
 
 void start_filesystem(void){
@@ -86,7 +77,7 @@ void * sos_default_thread(void * arg){
 
 	//Initialize the file systems
 	if ( init_fs() < 0 ){
-		mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_CRITICAL, (void*)"init_fs");
+		mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_FATAL, (void*)"init_fs");
 	}
 
 	start_filesystem();
@@ -109,9 +100,11 @@ int init_fs(){
 	int i;
 	i = 0;
 	while( sysfs_isterminator(&sysfs_list[i]) == false ){
+		SOS_TRACE_MESSAGE(sysfs_list[i].mount_path);
 		mcu_debug_user_printf("init %s\n", sysfs_list[i].mount_path);
 		if ( sysfs_list[i].mount( sysfs_list[i].cfg ) < 0 ){
 			mcu_debug_user_printf("failed to init\n");
+			SOS_TRACE_CRITICAL(sysfs_list[i].mount_path);
 		}
 		i++;
 	}

@@ -135,9 +135,9 @@ void ffifo_flush(ffifo_state_t * state){
 	ffifo_set_overflow(state, 0);
 }
 
-void ffifo_getinfo(ffifo_info_t * info, const ffifo_config_t * cfgp, ffifo_state_t * state){
-	info->count = cfgp->count;
-	info->frame_size = cfgp->frame_size;
+void ffifo_getinfo(ffifo_info_t * info, const ffifo_config_t * config, ffifo_state_t * state){
+	info->count = config->count;
+	info->frame_size = config->frame_size;
 
 	if( state->head >= state->tail ){
 		info->used = state->head - state->tail;
@@ -151,11 +151,11 @@ void ffifo_getinfo(ffifo_info_t * info, const ffifo_config_t * cfgp, ffifo_state
 }
 
 
-void ffifo_data_received(const ffifo_config_t * cfgp, ffifo_state_t * state){
+void ffifo_data_received(const ffifo_config_t * handle, ffifo_state_t * state){
 	int bytes_read;
 
 	if( state->rop != NULL ){
-		if( (bytes_read = ffifo_read_buffer(cfgp, state, state->rop->buf, state->rop_len)) > 0 ){
+		if( (bytes_read = ffifo_read_buffer(handle, state, state->rop->buf, state->rop_len)) > 0 ){
 			state->rop->nbyte = bytes_read;
 			mcu_execute_event_handler(&(state->rop->handler), MCU_EVENT_FLAG_DATA_READY, 0);
 		}
@@ -170,10 +170,10 @@ void ffifo_cancel_rop(ffifo_state_t * state){
 }
 
 
-void ffifo_data_transmitted(const ffifo_config_t * cfgp, ffifo_state_t * state){
+void ffifo_data_transmitted(const ffifo_config_t * config, ffifo_state_t * state){
 	int bytes_written;
 	if( state->wop != NULL ){
-		if( (bytes_written = ffifo_write_buffer(cfgp, state, state->wop->buf_const, state->wop_len)) > 0 ){
+		if( (bytes_written = ffifo_write_buffer(config, state, state->wop->buf_const, state->wop_len)) > 0 ){
 			state->wop->nbyte = bytes_written;
 			if ( state->wop->handler.callback(state->wop->handler.context, NULL) == 0 ){
 				state->wop = NULL;
@@ -191,11 +191,11 @@ int ffifo_open(const devfs_handle_t * cfg){
 	return 0;
 }
 
-int ffifo_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
+int ffifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 	ffifo_attr_t * attr = ctl;
 	ffifo_info_t * info = ctl;
-	const ffifo_config_t * cfgp = cfg->config;
-	ffifo_state_t * state = cfg->state;
+	const ffifo_config_t * cfgp = handle->config;
+	ffifo_state_t * state = handle->state;
 	switch(request){
 	case I_FFIFO_GETINFO:
 		ffifo_getinfo(info, cfgp, state);
@@ -226,21 +226,21 @@ int ffifo_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 
 
 
-int ffifo_read_local(const ffifo_config_t * cfgp, ffifo_state_t * state, devfs_async_t * rop){
+int ffifo_read_local(const ffifo_config_t * handle, ffifo_state_t * state, devfs_async_t * rop){
 	int bytes_read;
 
 	if ( state->rop != NULL ){
-		errno = EAGAIN; //the device is temporarily unavailable
+		errno = EBUSY; //the device is temporarily unavailable
 		return -1;
 	}
 
-	//writes need to be a integer multiple of the frame size
-	if( (rop->nbyte % cfgp->frame_size) != 0 ){
+	//reads need to be a integer multiple of the frame size
+	if( (rop->nbyte % handle->frame_size) != 0 ){
 		errno = EINVAL;
 		return -1;
 	}
 
-	bytes_read = ffifo_read_buffer(cfgp, state, rop->buf, rop->nbyte); //see if there are bytes in the buffer
+	bytes_read = ffifo_read_buffer(handle, state, rop->buf, rop->nbyte); //see if there are bytes in the buffer
 	if ( bytes_read == 0 ){
 		if( (rop->flags & O_NONBLOCK) ){
 			errno = EAGAIN;
@@ -265,10 +265,6 @@ int ffifo_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	if( bytes_read > 0 ){
 		//see if anything needs to write the FIFO
 		ffifo_data_transmitted(cfgp, state);
-
-		if( cfgp->notify_on_read ){
-			cfgp->notify_on_read(bytes_read);
-		}
 	}
 
 	return bytes_read;
@@ -298,8 +294,6 @@ int ffifo_write_local(const ffifo_config_t * cfgp, ffifo_state_t * state, devfs_
 			state->wop_len = wop->nbyte;
 			wop->nbyte = 0;
 		}
-	} else if( (bytes_written > 0) && (cfgp->notify_on_write != 0) ){
-		cfgp->notify_on_write(bytes_written);
 	}
 
 	return bytes_written;

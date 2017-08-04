@@ -236,9 +236,6 @@ typedef union {
 		link_chown_t chown;
 		link_chmod_t chmod;
 		link_mkfs_t mkfs;
-		link_posix_trace_create_t posix_trace_create;
-		link_posix_trace_tryget_events_t posix_trace_tryget_events;
-		link_posix_trace_shutdown_t posix_trace_shutdown;
 } link_op_t;
 
 typedef struct MCU_PACK {
@@ -270,9 +267,6 @@ enum {
 	LINK_CMD_CHMOD,
 	LINK_CMD_EXEC,
 	LINK_CMD_MKFS,
-	LINK_CMD_POSIX_TRACE_CREATE,
-	LINK_CMD_POSIX_TRACE_TRY_GET_EVENTS,
-	LINK_CMD_POSIX_TRACE_SHUTDOWN,
 	LINK_CMD_TOTAL
 };
 

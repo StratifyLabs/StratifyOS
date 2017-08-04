@@ -80,9 +80,6 @@ static void link_cmd_chown(link_transport_driver_t * driver, link_data_t * args)
 static void link_cmd_chmod(link_transport_driver_t * driver, link_data_t * args);
 static void link_cmd_exec(link_transport_driver_t * driver, link_data_t * args);
 static void link_cmd_mkfs(link_transport_driver_t * driver, link_data_t * args);
-static void link_cmd_posix_trace_create(link_transport_driver_t * driver, link_data_t * args);
-static void link_cmd_posix_trace_tryget_events(link_transport_driver_t * driver, link_data_t * args);
-static void link_cmd_posix_trace_shutdown(link_transport_driver_t * driver, link_data_t * args);
 
 
 void (* const link_cmd_func_table[LINK_CMD_TOTAL])(link_transport_driver_t *, link_data_t*) = {
@@ -107,10 +104,7 @@ void (* const link_cmd_func_table[LINK_CMD_TOTAL])(link_transport_driver_t *, li
 		link_cmd_chown,
 		link_cmd_chmod,
 		link_cmd_exec,
-		link_cmd_mkfs,
-		link_cmd_posix_trace_create,
-		link_cmd_posix_trace_tryget_events,
-		link_cmd_posix_trace_shutdown
+		link_cmd_mkfs
 };
 
 
@@ -548,75 +542,6 @@ void link_cmd_mkfs(link_transport_driver_t * driver, link_data_t * args){
 		link_debug("Failed to exec %s (%d)\n", path, errno);
 		args->reply.err_number = errno;
 	}
-}
-
-
-void link_cmd_posix_trace_create(link_transport_driver_t * driver, link_data_t * args){
-	trace_id_t id;
-	/*
-	args->reply.err = posix_trace_create(args->op.posix_trace_create.pid,
-			0, //always uses default attr
-			&id);
-			*/
-
-	args->reply.err = -1;
-
-
-	if ( args->reply.err < 0 ){
-		args->reply.err_number = errno;
-	} else {
-		//posix_trace_start(id);
-		args->reply.err_number = (uint32_t)id; //pass the ID back to the program
-	}
-}
-
-void link_cmd_posix_trace_tryget_events(link_transport_driver_t * driver, link_data_t * args){
-	trace_id_t id = args->op.posix_trace_tryget_events.trace_id;
-	int num_bytes = sizeof(struct posix_trace_event_info) + id->attr.data_size;
-	char buffer[num_bytes];
-
-	/*
-	//This returns the number of bytes written
-	args->reply.err = posix_trace_trygetnext_data(id,
-			buffer,
-			num_bytes);
-			*/
-
-	args->reply.err = -1;
-
-
-	if ( args->reply.err < 0 ){
-		args->reply.err = -1;
-		args->reply.err_number = errno;
-	}
-
-	num_bytes = args->reply.err;
-	args->op.cmd = 0; //send the reply now -- not at the end
-
-	if( link_transport_slavewrite(driver, &args->reply, sizeof(link_reply_t), NULL, NULL) < 0 ){
-		return;
-	}
-
-	if( args->reply.err <= 0 ){
-		return;
-	}
-
-	link_transport_slavewrite(driver, buffer, num_bytes, NULL, NULL);
-}
-
-void link_cmd_posix_trace_shutdown(link_transport_driver_t * driver, link_data_t * args){
-	//args->reply.err = posix_trace_shutdown(args->op.posix_trace_shutdown.trace_id);
-
-	args->reply.err = -1;
-
-	if ( args->reply.err < 0 ){
-		args->reply.err_number = errno;
-	}
-}
-
-int read_posix_trace_event_callback(void * context, void * buf, int nbyte){
-
-	return 0;
 }
 
 int read_device_callback(void * context, void * buf, int nbyte){

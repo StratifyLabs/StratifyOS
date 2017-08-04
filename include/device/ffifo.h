@@ -42,11 +42,9 @@ typedef struct MCU_PACK {
  *
  */
 typedef struct MCU_PACK {
-	u16 count /*! \brief The number of frames in the buffer */;
+	u16 count /*! The number of frames in the buffer */;
 	u16 frame_size /*! The size of each frame */;
-	char * buffer /*! \brief A pointer to the buffer */;
-	void (*notify_on_read)(int nbyte) /*! Callback for when frame is read */;
-	void (*notify_on_write)(int nbyte) /*! Callback for when frame is written */;
+	char * buffer /*! A pointer to the buffer */;
 } ffifo_config_t;
 
 int ffifo_open(const devfs_handle_t * cfg);

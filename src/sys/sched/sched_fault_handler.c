@@ -59,21 +59,18 @@ void mcu_fault_event_handler(fault_t * fault){
 #if MCU_DEBUG
 		sched_fault_build_string(mcu_debug_buffer);
 		mcu_debug_write_uart(NULL);
-		cortexm_delay_ms(200);
 #endif
 
-#if 0
-		if( sos_board_config.notify_write != 0 ){
-			link_posix_trace_event_t info;
-			info.posix_event_id = 0;
-			info.posix_pid = pid;
-			info.posix_thread_id = task_get_current();
-			info.posix_timestamp_tv_sec = 0;
-			info.posix_timestamp_tv_nsec = 0;
-			sched_fault_build_trace_string((char*)info.data);
-			sos_priv_trace_event(&info);
+		if( sos_board_config.trace_event != 0 ){
+			link_trace_event_t event;
+			event.posix_trace_event.posix_event_id = 0;
+			event.posix_trace_event.posix_pid = pid;
+			event.posix_trace_event.posix_thread_id = task_get_current();
+			event.posix_trace_event.posix_timestamp_tv_sec = 0;
+			event.posix_trace_event.posix_timestamp_tv_nsec = 0;
+			sched_fault_build_trace_string((char*)event.posix_trace_event.data);
+			sos_board_config.trace_event(&event);
 		}
-#endif
 
 		mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_PRIV_FATAL, 0);
 

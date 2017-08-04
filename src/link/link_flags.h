@@ -22,7 +22,7 @@
 #define LINK_FLAGS_H_
 
 #include <stdio.h>
-#include "sos/link/link.h"
+#include "sos/link.h"
 
 #ifdef __cplusplus
 extern "C" {
