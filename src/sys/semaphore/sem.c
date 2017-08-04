@@ -41,8 +41,8 @@
 #define SEM_FILE_HDR_NOT_SIGNATURE (~SEM_FILE_HDR_SIGNATURE)
 
 typedef struct {
-	uint32_t signature;
-	uint32_t not_signature;
+	u32 signature;
+	u32 not_signature;
 	sem_t * sem;
 } sem_file_hdr_t;
 
