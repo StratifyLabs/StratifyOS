@@ -36,16 +36,14 @@
 #endif
 #include "sffs_dev.h"
 
-typedef uint32_t serial_t;
-typedef uint16_t block_t;
+typedef u32 serial_t;
+typedef u16 block_t;
 
-#define BLOCK_SIZE 128
+//block size of 256 will give better performance user more ram but be less space efficient
+#define BLOCK_SIZE 256
 
-//#define SCRATCH_ENTRIES 15
-//#define BLOCK_SIZE 256
-
-//#define SCRATCH_ENTRIES 7
-//#define BLOCK_SIZE 512
+//block size 128 will be more space efficient and use less ram but have worse performance
+//#define BLOCK_SIZE 128
 
 #define BLOCK_INVALID (0xFFFF)
 #define SERIALNO_INVALID (0xFFFFFFFF)
@@ -82,8 +80,8 @@ enum {
 
 typedef struct MCU_PACK {
 	serial_t serialno;
-	uint8_t type;
-	uint8_t status;
+	u8 type;
+	u8 status;
 } sffs_block_hdr_t;
 
 

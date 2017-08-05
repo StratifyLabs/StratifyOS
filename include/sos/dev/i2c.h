@@ -117,7 +117,7 @@ typedef enum {
 	I2C_FLAG_IS_SLAVE_ACK_GENERAL_CALL /*! If slave operation, ack general call */ = (1<<2),
 	I2C_FLAG_IS_PULLUP /*! Enable internal pullups if available (ignore otherwise) */ = (1<<3),
 	I2C_FLAG_PREPARE_PTR_DATA /*! This prepares the driver to write the ptr then read/write data */ = (1<<4),
-	I2C_FLAG_PREPARE_PTR_16_DATA /*! This prepares the driver to write a 16-bit ptr then read/write data */ = (1<<5),
+	I2C_FLAG_IS_PTR_16 /*! This tells the driver to write a 16-bit ptr then read/write data (use with I2C_FLAG_PREPARE_PTR_DATA or I2C_FLAG_PREPARE_PTR)  */ = (1<<5),
 	I2C_FLAG_PREPARE_PTR /*! This will write the ptr value only without writing or reading any data. */ = (1<<6),
 	I2C_FLAG_PREPARE_DATA /*! This will read/write data without first writing the pointer information */ = (1<<7),
 	I2C_FLAG_IS_SLAVE_ADDR0 /*! If hardware supports multiple slave addrs, use the first slot (default) */ = (1<<8),
@@ -128,6 +128,7 @@ typedef enum {
 	I2C_FLAG_IS_SLAVE_PTR_16 /*! Use a 16-bit address pointer when accessing data (set automatically is size > 255) */ = (1<<13),
 	I2C_FLAG_RESET /*! Reset the state of the I2C */ = (1<<14),
 	I2C_FLAG_STRETCH_CLOCK = (1<<15),
+	I2C_FLAG_IS_NO_STOP /*! Don't issue a stop condition when complete (use with I2C_FLAG_PREPARE_DATA) */ = (1<<16)
 } i2c_flag_t;
 
 typedef union {

@@ -11,7 +11,7 @@
 #ifdef __win32
 #define TIMEOUT_VALUE 500
 #else
-#define TIMEOUT_VALUE 2000
+#define TIMEOUT_VALUE 5000
 #endif
 
 
