@@ -95,6 +95,7 @@ typedef struct MCU_PACK {
 	u32 o_flags;
 	u32 o_events;
 	u32 freq;
+	u32 resd[8];
 } dac_info_t;
 
 typedef struct MCU_PACK {
@@ -105,6 +106,7 @@ typedef struct MCU_PACK {
 	u32 o_flags;
 	dac_pin_assignment_t pin_assignment;
 	u32 freq;
+	u32 resd[8];
 } dac_attr_t;
 
 #define I_DAC_GETVERSION _IOCTL(DAC_IOC_IDENT_CHAR, I_MCU_GETVERSION)

@@ -105,6 +105,7 @@ typedef struct MCU_PACK {
 	//provides info about the PWM
 	u32 o_flags /*! Bitmask to show which flags are supported through the driver */;
 	u32 o_events /*! Bitmask of supported events */;
+	u32 resd[8];
 } pwm_info_t;
 
 typedef struct MCU_PACK {
@@ -117,6 +118,7 @@ typedef struct MCU_PACK {
 	u32 freq /*! The PWM counter frequency */;
 	u32 period /*! The PWM period in counts */;
 	mcu_channel_t channel;
+	u32 resd[8];
 } pwm_attr_t;
 
 #define I_PWM_GETVERSION _IOCTL(PWM_IOC_IDENT_CHAR, I_MCU_GETVERSION)

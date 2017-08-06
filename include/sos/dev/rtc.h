@@ -124,6 +124,7 @@ typedef struct {
 	u32 o_flags;
 	u32 o_events;
 	rtc_time_t alarm;
+	u32 resd[8];
 } rtc_info_t;
 
 
@@ -136,6 +137,7 @@ typedef struct MCU_PACK {
 	u32 o_flags /*! Bitmask for setting attributes */;
 	u32 freq /*! Calibration frequency for setting the pre-scalar */;
 	rtc_time_t time;
+	u32 resd[8];
 } rtc_attr_t;
 
 #define I_RTC_GETVERSION _IOCTL(RTC_IOC_IDENT_CHAR, I_MCU_GETVERSION)

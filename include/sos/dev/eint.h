@@ -98,11 +98,13 @@ enum {
 typedef struct MCU_PACK {
 	u32 o_flags /*! Bitmask of supported attributes */;
 	u32 value /*! Value of the pin (zero or non-zero) */;
+	u32 resd[8];
 } eint_info_t;
 
 
 typedef struct MCU_PACK {
 	mcu_pin_t channel[4];
+	u32 resd[8];
 } eint_pin_assignment_t;
 
 /*! \brief External Interrupt Attribute Data Structure

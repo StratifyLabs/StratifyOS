@@ -73,6 +73,7 @@ typedef enum {
 typedef struct MCU_PACK {
 	u32 o_flags /*! Bitmask of supported flags */;
 	u32 o_events /*! Bitmask of supported events */;
+	u32 resd[8];
 } spi_info_t;
 
 #define SPI_PIN_ASSIGNMENT_COUNT 4
@@ -89,6 +90,7 @@ typedef struct MCU_PACK {
 	spi_pin_assignment_t pin_assignment;
 	u32 freq;
 	u8 width;
+	u32 resd[8];
 } spi_attr_t;
 
 #define I_SPI_GETVERSION _IOCTL(SPI_IOC_IDENT_CHAR, I_MCU_GETVERSION)

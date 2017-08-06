@@ -66,10 +66,12 @@ typedef enum {
 typedef struct MCU_PACK {
 	u32 o_flags /*! A bitmask for the supported features */;
 	u32 o_events /*! Events supported by this driver */;
-	u8 resolution /*! The number of bits supported by the ADC */;
 	u32 freq /*! The maximum frequency */;
 	u32 maximum /*! The maximum value returned by the ADC */;
 	u32 reference_mv /*! The reference voltage in millivolts */;
+	u8 resolution /*! The number of bits supported by the ADC */;
+	u8 resd_align[3];
+	u32 resd[8];
 } adc_info_t;
 
 
@@ -81,6 +83,7 @@ typedef struct MCU_PACK {
 	u32 o_flags;
 	adc_pin_assignment_t pin_assignment;
 	u32 freq;
+	u32 resd[8];
 } adc_attr_t;
 
 #define I_ADC_GETVERSION _IOCTL(ADC_IOC_IDENT_CHAR, I_MCU_GETVERSION)

@@ -109,6 +109,7 @@ typedef struct MCU_PACK {
 	u32 o_events /*! Bitmask of supported events */;
 	u32 freq /*! Maximum supported bitrate */;
 	u32 err /*! The error of the most recent transaction */;
+	u32 resd[8];
 } i2c_info_t;
 
 typedef enum {
@@ -151,6 +152,7 @@ typedef struct MCU_PACK {
 	i2c_slave_addr_t slave_addr[2] /*! Slave address */;
 	u32 size /*! Memory size when setting up slave */;
 	void * data /*! Memory pointer to slave data */;
+	u32 resd[8];
 } i2c_attr_t;
 
 #define I_I2C_GETVERSION _IOCTL(I2C_IOC_IDENT_CHAR, I_MCU_GETVERSION)

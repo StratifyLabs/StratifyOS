@@ -40,13 +40,13 @@ static int read_task(sys_taskattr_t * task);
 
 uint8_t sys_euid MCU_SYS_MEM;
 
-int sys_open(const devfs_handle_t * cfg){
+int sys_26_open(const devfs_handle_t * cfg){
 	return 0;
 }
 
-int sys_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
+int sys_26_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 	sys_id_t * id = ctl;
-	sys_info_t * info = ctl;
+	sys_26_info_t * info = ctl;
 	sys_killattr_t * killattr = ctl;
 
 	int i;
@@ -65,7 +65,6 @@ int sys_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 		strncpy(info->stdin_name, sos_board_config.stdin_dev, NAME_MAX-1);
 		strncpy(info->stdout_name, sos_board_config.stdout_dev, NAME_MAX-1);
 		strncpy(info->name, sos_board_config.sys_name, NAME_MAX-1);
-		strncpy(info->trace_name, sos_board_config.trace_dev, NAME_MAX-1);
 		mcu_core_getserialno(&(info->serial));
 		info->hardware_id = (u32)mcu_core_hardware_id;
 		return 0;
@@ -105,17 +104,17 @@ int sys_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 	return -1;
 }
 
-int sys_read(const devfs_handle_t * cfg, devfs_async_t * rop){
+int sys_26_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	errno = ENOTSUP;
 	return -1;
 }
 
-int sys_write(const devfs_handle_t * cfg, devfs_async_t * wop){
+int sys_26_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	errno = ENOTSUP;
 	return -1;
 }
 
-int sys_close(const devfs_handle_t * cfg){
+int sys_26_close(const devfs_handle_t * cfg){
 	return 0;
 }
 

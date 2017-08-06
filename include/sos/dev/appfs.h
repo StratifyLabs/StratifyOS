@@ -40,6 +40,7 @@ typedef struct MCU_PACK {
 	u32 ram_size;
 	u32 o_flags;
 	u32 signature;
+	u32 resd[8];
 } appfs_info_t;
 
 #define I_APPFS_GETVERSION _IOCTL(APPFS_IOC_IDENT_CHAR, I_MCU_GETVERSION)

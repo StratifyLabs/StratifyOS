@@ -68,6 +68,12 @@ typedef enum {
 	QEI_FLAG_IS_RESET_POS_ONINDEX /*! Reset the position on the next index pulse */ = (1<<9),
 } qei_flag_t;
 
+typedef struct {
+	u32 o_flags;
+	u32 o_events;
+	u32 resd[8];
+} qei_info_t;
+
 typedef struct MCU_PACK {
 	mcu_pin_t a;
 	mcu_pin_t b;
@@ -87,6 +93,7 @@ typedef struct MCU_PACK {
 	u32 max_position /*! The maximum position (QEI rolls over at this point) */;
 	u32 velocity_comp /*! The Velocity compare value */;
 	u32 filter /*! The filter coefficient (0 to disable) */;
+	u32 resd[8];
 } qei_attr_t;
 
 /*! \brief This defines a QEI action.
@@ -99,7 +106,7 @@ typedef mcu_action_t qei_action_t;
 /*! \brief This request gets the QEI attributes.
  * \hideinitializer
  */
-#define I_QEI_GETINFO _IOCTLR(QEI_IOC_IDENT_CHAR, I_MCU_GETINFO, qei_attr_t)
+#define I_QEI_GETINFO _IOCTLR(QEI_IOC_IDENT_CHAR, I_MCU_GETINFO, qei_info_t)
 
 /*! \brief This request sets the QEI attributes.
  * \hideinitializer

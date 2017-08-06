@@ -75,6 +75,7 @@ typedef enum {
 typedef struct MCU_PACK {
 	u32 o_flags;
 	u32 o_events;
+	u32 resd[8];
 } usb_info_t;
 
 #define USB_PIN_ASSIGNMENT_COUNT 4
@@ -97,6 +98,7 @@ typedef struct MCU_PACK {
 	u32 address /*! USB endpoint address or device address (USB_FLAG_SET_ADDRESS) */;
 	u16 max_packet_size /*! USB endpoing max packet size */;
 	u16 type; /*! USB endpoint type as bmAttributes */;
+	u32 resd[8];
 } usb_attr_t;
 
 #define I_USB_GETVERSION _IOCTL(USB_IOC_IDENT_CHAR, I_MCU_GETVERSION)

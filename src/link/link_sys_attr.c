@@ -21,25 +21,35 @@
 #include "sos/dev/sys.h"
 #include "link_flags.h"
 
+static sys_info_t convert_sys_26_info(const sys_26_info_t * sys_26_info);
 static sys_info_t convert_sys_23_info(const sys_23_info_t * sys_23_info, const sys_id_t * id);
 
 int link_get_sys_info(link_transport_mdriver_t * driver, sys_info_t * sys_info){
 	int sys_fd;
+
+	sys_26_info_t sys_26_info;
+	sys_23_info_t sys_23_info;
+
+
 	sys_fd = link_open(driver, "/dev/sys", LINK_O_RDWR);
 	if( sys_fd >= 0 ){
 
 		memset(sys_info, 0, sizeof(sys_info_t));
 		if( link_ioctl(driver, sys_fd, I_SYS_GETINFO, sys_info) < 0 ){
 			//this usually means there is a version mismatch between StratifyIO and StratifyOS
-			sys_23_info_t sys_23_info;
-			if( link_ioctl(driver, sys_fd, I_SYS_23_GETINFO, &sys_23_info) < 0 ){
-				//unknown version
+			if( link_ioctl(driver, sys_fd, I_SYS_26_GETINFO, &sys_26_info) < 0 ){
+				//try previous version
+				if( link_ioctl(driver, sys_fd, I_SYS_23_GETINFO, &sys_23_info) < 0 ){
+					return -1;
+				} else {
+					//converting 2.33 to 3.0
+					sys_id_t sys_id;
+					memset(&sys_id, 0, LINK_PATH_MAX);
+					link_ioctl(driver, sys_fd, I_SYS_GETID, &sys_id);
+					*sys_info = convert_sys_23_info(&sys_23_info, &sys_id);
+				}
 			} else {
-				sys_id_t sys_id;
-
-				memset(&sys_id, 0, LINK_PATH_MAX);
-				link_ioctl(driver, sys_fd, I_SYS_GETID, &sys_id);
-				*sys_info = convert_sys_23_info(&sys_23_info, &sys_id);
+				*sys_info = convert_sys_26_info(&sys_26_info);
 			}
 		}
 
@@ -52,6 +62,7 @@ int link_get_sys_info(link_transport_mdriver_t * driver, sys_info_t * sys_info){
 
 sys_info_t convert_sys_23_info(const sys_23_info_t * sys_23_info, const sys_id_t * id){
     sys_info_t sys_info;
+	memset(&sys_info, 0, sizeof(sys_info_t));
     memcpy(sys_info.kernel_version, sys_23_info->version, 8);
     memcpy(sys_info.sys_version, sys_23_info->sys_version, 8);
     memcpy(sys_info.arch, sys_23_info->arch, 8);
@@ -68,3 +79,11 @@ sys_info_t convert_sys_23_info(const sys_23_info_t * sys_23_info, const sys_id_t
 
     return sys_info;
 }
+
+sys_info_t convert_sys_26_info(const sys_26_info_t * sys_26_info){
+	sys_info_t sys_info;
+	memset(&sys_info, 0, sizeof(sys_info_t));
+	memcpy(&sys_info, sys_26_info, sizeof(sys_26_info_t));
+	return sys_info;
+}
+

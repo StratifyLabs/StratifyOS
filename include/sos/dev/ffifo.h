@@ -53,7 +53,8 @@ typedef struct MCU_PACK {
 	u16 count /*! Total number of frames in the fifo */;
 	u16 frame_size /*! Frame size of the fifo */;
 	u16 used /*! Number of frames being used */;
-	u16 resd;
+	u16 resd_align;
+	u32 resd[8];
 } ffifo_info_t;
 
 
@@ -63,6 +64,7 @@ typedef struct MCU_PACK {
  */
 typedef struct MCU_PACK {
 	u32 o_flags /*! Fifo flags */;
+	u32 resd[8];
 } ffifo_attr_t;
 
 #define I_FFIFO_GETVERSION _IOCTL(FFIFO_IOC_IDENT_CHAR, I_MCU_GETVERSION)

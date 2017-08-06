@@ -31,11 +31,13 @@
  */
 typedef struct MCU_PACK {
 	u32 size;
+	u32 resd[8];
 } eeprom_attr_t;
 
 typedef struct MCU_PACK {
 	u32 o_flags;
 	u32 size;
+	u32 resd[8];
 } eeprom_info_t;
 
 #define I_EEPROM_GETVERSION _IOCTL(EEPROM_IOC_IDENT_CHAR, I_MCU_GETVERSION)

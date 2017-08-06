@@ -10,6 +10,7 @@ C_SRCS += \
 ../src/sys/sos_main.c \
 ../src/sys/symbols.c \
 ../src/sys/sys_23_dev.c \
+../src/sys/sys_26_dev.c \
 ../src/sys/sys_dev.c 
 
 OBJS += \
@@ -19,6 +20,7 @@ OBJS += \
 ./src/sys/sos_main.o \
 ./src/sys/symbols.o \
 ./src/sys/sys_23_dev.o \
+./src/sys/sys_26_dev.o \
 ./src/sys/sys_dev.o 
 
 C_DEPS += \
@@ -28,6 +30,7 @@ C_DEPS += \
 ./src/sys/sos_main.d \
 ./src/sys/symbols.d \
 ./src/sys/sys_23_dev.d \
+./src/sys/sys_26_dev.d \
 ./src/sys/sys_dev.d 
 
 

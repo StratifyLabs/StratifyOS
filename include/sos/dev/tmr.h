@@ -81,6 +81,7 @@ typedef struct MCU_PACK {
 	u32 o_flags;
 	u32 o_events;
 	u32 freq;
+	u32 resd[8];
 } tmr_info_t;
 
 typedef struct MCU_PACK {
@@ -93,6 +94,7 @@ typedef struct MCU_PACK {
 	u32 freq; /*! The timer frequency */;
 	u32 period /*! If this value is non-zero, the timer will reset when it matches this value (if supported) */;
 	mcu_channel_t channel;
+	u32 resd[8];
 } tmr_attr_t;
 
 #define I_TMR_GETVERSION _IOCTL(TMR_IOC_IDENT_CHAR, I_MCU_GETVERSION)

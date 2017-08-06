@@ -116,6 +116,7 @@ typedef enum {
 typedef struct MCU_PACK {
 	u32 o_flags /*! A bitmask for the supported features */;
 	u32 o_events /*! Events supported by this driver */;
+	u32 resd[8];
 } uart_info_t;
 
 typedef struct MCU_PACK {
@@ -134,6 +135,7 @@ typedef struct MCU_PACK {
 	u32 freq;
 	uart_pin_assignment_t pin_assignment;
 	u8 width;
+	u32 resd[8];
 } uart_attr_t;
 
 #define I_UART_GETVERSION _IOCTL(UART_IOC_IDENT_CHAR, I_MCU_GETVERSION)

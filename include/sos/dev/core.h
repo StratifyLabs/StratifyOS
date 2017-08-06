@@ -123,6 +123,7 @@ typedef struct MCU_PACK {
 	u32 o_events;
 	u32 freq /*! The current clock speed */;
 	u32 serial_number[4] /*! The serial number of the device (from the silicon) */;
+	u32 resd[8];
 } core_info_t;
 
 /*! \brief Core IO Attributes
@@ -132,6 +133,7 @@ typedef struct MCU_PACK {
 typedef struct MCU_PACK {
 	u32 o_flags /*! Setting certain flags will configure the core as described */;
 	u32 freq /*! This is used with the clock out flags to set the output frequency */;
+	u32 resd[8];
 } core_attr_t;
 
 #define I_CORE_GETVERSION _IOCTL(CORE_IOC_IDENT_CHAR, I_MCU_GETVERSION)

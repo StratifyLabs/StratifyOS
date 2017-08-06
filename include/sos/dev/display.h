@@ -96,6 +96,7 @@ typedef struct MCU_PACK {
 	u16 margin_right /*! \brief Right margin */;
 	u16 margin_top /*! \brief Top margin */;
 	u16 margin_bottom /*! \brief Bottom margin */;
+	u32 resd[8];
 } display_info_t;
 
 #define I_DISPLAY_GETVERSION _IOCTL(DISPLAY_IOC_IDENT_CHAR, I_MCU_GETVERSION)

@@ -53,6 +53,25 @@ enum {
 	SYS_FLAG_IS_TRACE = (1<<4)
 };
 
+typedef struct MCU_PACK {
+	char kernel_version[8] /*!  The OS (kernel) Version */;
+	char sys_version[8] /*!  The System (board) Version */;
+	char arch[16] /*!  The target architecture (lpc17xx, lpc13xx, etc) */;
+	u32 signature /*!  Ths OS library signature used to ensure proper build system is used for applications */;
+	u32 security /*!  Security flags (see \ref sys_security_flags_t)*/;
+	u32 cpu_freq /*!  The CPU clock frequency */;
+	u32 sys_mem_size /*!  The number of bytes in RAM shared across OS and other processes */;
+	char stdout_name[LINK_NAME_MAX] /*!  Default value for the standard output */;
+	char stdin_name[LINK_NAME_MAX] /*!  Default value for the standard output */;
+	char name[LINK_NAME_MAX] /*!  Device Name */;
+	char id[LINK_PATH_MAX] /*!  Globally unique Cloud Kernel ID value */;
+	mcu_sn_t serial /*!  Device Serial number */;
+	u32 o_flags /*!  System flags */;
+	u32 hardware_id /*! Hardware ID of the board */;
+	char trace_name[LINK_NAME_MAX] /*! Name of device used for tracing */;
+	u32 resd[32];
+} sys_info_t;
+
 /*! \details This structure defines the system attributes.
  *
  */
@@ -87,8 +106,6 @@ typedef struct MCU_PACK {
 	mcu_sn_t serial /*!  Device Serial number */;
 	u32 o_flags /*!  System flags */;
 } sys_23_info_t;
-
-typedef sys_26_info_t sys_info_t;
 
 typedef struct MCU_PACK {
 	char id[LINK_PATH_MAX] /*! Globally unique Cloud Kernel ID value */;
@@ -152,26 +169,6 @@ typedef struct MCU_PACK {
 } sys_sudo_t;
 
 #define I_SYS_GETVERSION _IOCTL(SYS_IOC_IDENT_CHAR, I_MCU_GETVERSION)
-
-
-/*! \brief See below.
- * \details This request applies the software write protect
- * to the entire device.
- *
- * Example:
- * \code
- * #include <dev/sys.h>
- * #include <uinstd.h>
- * #include <stdio.h>
- * ...
- * sys_attr_t attr;
- * ioctl(fildes, I_SYS_ATTR, &attr);
- * printf("Version is %s\n", attr.version);
- * \endcode
- *
- * \hideinitializer
- *
- */
 #define I_SYS_GETINFO _IOCTLR(SYS_IOC_CHAR, I_MCU_GETINFO, sys_info_t)
 #define I_SYS_26_GETINFO _IOCTLR(SYS_IOC_CHAR, I_MCU_GETINFO, sys_26_info_t)
 #define I_SYS_23_GETINFO _IOCTLR(SYS_IOC_CHAR, I_MCU_GETINFO, sys_23_info_t)

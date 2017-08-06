@@ -50,6 +50,7 @@ typedef struct MCU_PACK {
 	u32 flash_size /*! The total size of the flash memory */;
 	u32 ram_pages /*! The total number of RAM pages */;
 	u32 ram_size /*! The total size of the RAM */;
+	u32 resd[8];
 } mem_info_t;
 
 /*! \brief Holds the devices attributes.
@@ -61,6 +62,7 @@ typedef struct MCU_PACK {
  */
 typedef struct MCU_PACK {
 	u32 o_flags;
+	u32 resd[8];
 } mem_attr_t;
 
 /*! \details This lists each type of page.

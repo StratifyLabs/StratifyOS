@@ -117,12 +117,14 @@ typedef enum {
 typedef struct MCU_PACK {
 	u32 o_flags;
 	u32 o_events;
+	u32 resd[8];
 } pio_info_t;
 
 
 typedef struct MCU_PACK {
 	u32 o_flags;
 	u32 o_pinmask;
+	u32 resd[8];
 } pio_attr_t;
 
 #define I_PIO_GETVERSION _IOCTL(PIO_IOC_IDENT_CHAR, I_MCU_GETVERSION)

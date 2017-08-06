@@ -72,11 +72,14 @@ extern "C" {
 
 typedef struct {
 	u32 o_flags;
-} flash_attr_t;
+	u32 o_events;
+	u32 resd[8];
+} flash_info_t;
 
 typedef struct {
 	u32 o_flags;
-} flash_info_t;
+	u32 resd[8];
+} flash_attr_t;
 
 #define I_FLASH_GETVERSION _IOCTL(FLASH_IOC_IDENT_CHAR, I_MCU_GETVERSION)
 #define I_FLASH_GETINFO _IOCTLR(FLASH_IOC_IDENT_CHAR, I_MCU_GETINFO, flash_info_t)

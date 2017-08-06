@@ -64,6 +64,7 @@ typedef struct MCU_PACK {
 	u32 o_flags  /*!  Mode flags (see I2S_MODE_*) */;
 	u32 o_events  /*! Mode flags (see I2S_MODE_*) */;
 	u32 freq /*! The I2S audio frequency */;
+	u32 resd[8];
 } i2s_info_t;
 
 
@@ -80,6 +81,7 @@ typedef struct MCU_PACK {
 	u32 freq /*! The I2S audio frequency */;
 	i2s_pin_assignment_t pin_assignment /*! The pin assignement values */;
 	u32 mck_mult /*! The I2S mclk multiplier value */;
+	u32 resd[8];
 } i2s_attr_t;
 
 #define I_I2S_GETVERSION _IOCTL(I2S_IOC_IDENT_CHAR, I_MCU_GETVERSION)

@@ -61,12 +61,14 @@ typedef struct MCU_PACK {
 	u32 erase_block_time /*! Time in microseconds to erase one block */;
 	u32 erase_device_time /*! Time in microseconds to erase the device */;
 	u32 bitrate /*! Max bitrate */;
+	u32 resd[8];
 } drive_info_t;
 
 typedef struct MCU_PACK {
 	u32 o_flags;
 	u32 start;
 	u32 end;
+	u32 resd[8];
 } drive_attr_t;
 
 #define I_DRIVE_GETVERSION _IOCTL(DRIVE_IOC_IDENT_CHAR, I_MCU_GETVERSION)

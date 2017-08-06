@@ -44,6 +44,7 @@ enum {
 typedef struct MCU_PACK {
 	u32 o_flags  /*!  Flags that are supported by the driver */;
 	u32 o_events  /*! Events that are supported by the driver */;
+	u32 resd[8];
 } led_info_t;
 
 #define LED_PIN_ASSIGNMENT_COUNT 1
@@ -52,6 +53,7 @@ typedef struct MCU_PACK {
 	u32 o_flags  /*! Flag bitmask */;
 	u32 duty_cycle /*! LED duty cycle (if supported) */;
 	u32 period /*! LED blinking period in us (if supported) */;
+	u32 resd[8];
 } led_attr_t;
 
 #define I_LED_GETVERSION _IOCTL(LED_IOC_IDENT_CHAR, I_MCU_GETVERSION)
