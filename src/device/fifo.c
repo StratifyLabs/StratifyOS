@@ -154,9 +154,10 @@ void fifo_data_received(const fifo_config_t * cfgp, fifo_state_t * state){
 }
 
 void fifo_cancel_rop(fifo_state_t * state){
-	if( state->rop != NULL ){
+	if( state->rop != 0 ){
 		state->rop->nbyte = -1;
 		mcu_execute_event_handler(&(state->rop->handler), MCU_EVENT_FLAG_CANCELED, 0);
+		state->rop = 0;
 	}
 }
 

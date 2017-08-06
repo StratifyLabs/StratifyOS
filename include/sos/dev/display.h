@@ -195,6 +195,7 @@ typedef struct MCU_PACK {
 
 #define I_DISPLAY_TOTAL 8
 
+/*! @} */
 
 #ifdef __cplusplus
 }

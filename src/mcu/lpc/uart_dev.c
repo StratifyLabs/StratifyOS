@@ -374,7 +374,7 @@ int mcu_uart_setaction(const devfs_handle_t * handle, void * ctl){
 		if( action->o_events & MCU_EVENT_FLAG_DATA_READY ){
 			uart_local[port].read = action->handler;
 			uart_regs->IER |= (UIER_RBRIE);  //enable the receiver interrupt
-			uart_local[port].rx_bufp = NULL; //the callback with need to read the incoming data
+			uart_local[port].rx_bufp = NULL; //the callback will need to read the incoming data
 		}
 
 		if ( action->o_events & MCU_EVENT_FLAG_WRITE_COMPLETE ){
@@ -498,7 +498,7 @@ int mcu_uart_dev_write(const devfs_handle_t * handle, devfs_async_t * wop){
 
 	//Check to see if the port is busy
 	if ( uart_regs->IER & UIER_ETBEI ){
-		errno = EAGAIN;
+		errno = EBUSY;
 		return -1;
 	}
 

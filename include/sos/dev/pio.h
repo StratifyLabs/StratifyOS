@@ -93,8 +93,8 @@ extern "C" {
 #define PIO_IOC_IDENT_CHAR 'p'
 
 typedef enum {
-	PIO_FLAG_SET_INPUT /*! Input flag*/ = (1<<0),
-	PIO_FLAG_SET_OUTPUT /*! Output flag */ = (1<<1),
+	PIO_FLAG_SET_INPUT /*! Configure the pin as an input */ = (1<<0),
+	PIO_FLAG_SET_OUTPUT /*! Configure the pin as an output */ = (1<<1),
 	PIO_FLAG_IS_PULLUP /*! Use the built-in pullup */ = (1<<2),
 	PIO_FLAG_IS_PULLDOWN /*! Use the built-in pull-down */ = (1<<3),
 	PIO_FLAG_IS_REPEATER /*! Use the built-in repeater function */ = (1<<4),

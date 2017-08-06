@@ -103,7 +103,7 @@ enum {
 	I2C_ERROR_ARBITRATION_LOST /*! Arbitration lost on multi-master bus */
 };
 
-
+/*! \brief I2C Info Data Structure */
 typedef struct MCU_PACK {
 	u32 o_flags /*! Bitmask of supported flags */;
 	u32 o_events /*! Bitmask of supported events */;

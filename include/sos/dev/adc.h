@@ -75,8 +75,10 @@ typedef struct MCU_PACK {
 } adc_info_t;
 
 
+/*! \brief ADC Pin assignment
+ */
 typedef struct MCU_PACK {
-	mcu_pin_t channel[4];
+	mcu_pin_t channel[4] /*! Pins to use with the ADC. If more than 4 are needed, make multiple calls to I_ADC_SETATTR */;
 } adc_pin_assignment_t;
 
 typedef struct MCU_PACK {
