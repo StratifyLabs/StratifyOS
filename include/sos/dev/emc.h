@@ -44,6 +44,7 @@
 
 #include "mcu/types.h"
 
+#define EMC_VERSION (0x000000)
 #define EMC_IOC_IDENT_CHAR 'E'
 
 /*! \brief See below for details */
@@ -87,6 +88,7 @@ typedef struct MCU_PACK {
 
 typedef u32 emc_info_t;
 
+#define I_EMC_GETVERSION _IOCTL(EMC_IOC_IDENT_CHAR, I_MCU_GETVERSION)
 
 #define I_EMC_GETINFO _IOCTLR(EMC_IOC_IDENT_CHAR, I_MCU_GETINFO, eint_info_t)
 

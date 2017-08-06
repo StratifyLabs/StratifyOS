@@ -37,6 +37,7 @@
 
 #include "mcu/types.h"
 
+#define FIFO_VERSION (0x030000)
 #define FIFO_IOC_CHAR 'f'
 
 enum {
@@ -69,6 +70,9 @@ typedef struct MCU_PACK {
 	char * buf /*! A pointer to the buffer to receive peek bytes */;
 	int nbyte /*! The number of bytes to peek */;
 } fifo_peek_t;
+
+#define I_FIFO_GETVERSION _IOCTL(FIFO_IOC_IDENT_CHAR, I_MCU_GETVERSION)
+
 
 /*! \brief See below.
  * \details This request gets the size of the FIFO in bytes.

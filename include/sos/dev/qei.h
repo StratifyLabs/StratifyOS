@@ -43,6 +43,7 @@ extern "C" {
 #endif
 
 
+#define QEI_VERSION (0x030000)
 #define QEI_IOC_IDENT_CHAR 'q'
 
 #ifndef QEI_SAMPLE_T
@@ -91,6 +92,9 @@ typedef struct MCU_PACK {
 /*! \brief This defines a QEI action.
  */
 typedef mcu_action_t qei_action_t;
+
+#define I_QEI_GETVERSION _IOCTL(QEI_IOC_IDENT_CHAR, I_MCU_GETVERSION)
+
 
 /*! \brief This request gets the QEI attributes.
  * \hideinitializer

@@ -40,7 +40,7 @@
 #define SOS_VCP0_INTERFACE 0
 #define SOS_VCP0_DATA_INTERFACE 1
 
-static int cdc_event_handler(usbd_control_t * context, mcu_event_t * event);
+static int cdc_event_handler(usbd_control_t * context, const mcu_event_t * event);
 
 
 const usbd_control_constants_t sos_link_transport_usb_constants = {
@@ -201,7 +201,7 @@ const struct sos_link_transport_usb_string_t sos_link_transport_usb_string_desc 
 		.vcp1 = usbd_assign_string(SOS_LINK_TRANSPORT_USB_DESC_VCP_1_SIZE, SOS_LINK_TRANSPORT_USB_DESC_VCP_1)
 };
 
-int sos_link_usbd_cdc_event_handler(void * object, mcu_event_t * event){
+int sos_link_usbd_cdc_event_handler(void * object, const mcu_event_t * event){
 	usbd_control_t * context = object;
 
 	//if this is a class request check the CDC interfaces
@@ -213,7 +213,7 @@ int sos_link_usbd_cdc_event_handler(void * object, mcu_event_t * event){
 }
 
 
-int cdc_event_handler(usbd_control_t * context, mcu_event_t * event){
+int cdc_event_handler(usbd_control_t * context, const mcu_event_t * event){
 	u32 rate = 12000000;
 	u32 o_events = event->o_events;
 	int iface = usbd_control_setup_interface(context);
@@ -221,7 +221,7 @@ int cdc_event_handler(usbd_control_t * context, mcu_event_t * event){
 	if( (iface == 0) || (iface == 1) || (iface == 2) || (iface == 3) ){
 
 		if ( (o_events & MCU_EVENT_FLAG_SETUP) ){
-			switch(context->setup_pkt.bRequest){
+			switch(context->setup_packet.bRequest){
 			case USBD_CDC_REQUEST_SET_LINE_CODING:
 			case USBD_CDC_REQUEST_SEND_ENCAPSULATED_COMMAND:
 			case USBD_CDC_REQUEST_SET_COMM_FEATURE:
@@ -270,7 +270,7 @@ int cdc_event_handler(usbd_control_t * context, mcu_event_t * event){
 			}
 
 		} else if ( o_events & MCU_EVENT_FLAG_DATA_READY ){
-			switch(context->setup_pkt.bRequest){
+			switch(context->setup_packet.bRequest){
 			case USBD_CDC_REQUEST_SET_LINE_CODING:
 				//line coding info is available in context->buf
 

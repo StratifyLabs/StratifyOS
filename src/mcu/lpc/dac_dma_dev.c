@@ -47,7 +47,7 @@ static dac_local_t dac_local[MCU_DAC_PORTS] MCU_SYS_MEM;
 
 //DMA functions
 static int dac_dma_transfer(const devfs_handle_t * cfg);
-static int dma_write_complete(void * context, mcu_event_t * data);
+static int dma_write_complete(void * context, const mcu_event_t * data);
 
 #if defined __lpc43xx
 static int write_complete(void * context);
@@ -305,7 +305,7 @@ void exec_callback(int port, u32 o_events){
 	mcu_execute_event_handler(&(dac_local[port].handler), o_events, 0);
 }
 
-int dma_write_complete(void * context, mcu_event_t * data){
+int dma_write_complete(void * context, const mcu_event_t * data){
 	const devfs_handle_t * cfg = context;
 	const int port = cfg->port;
 	if ( dac_local[port].len ){

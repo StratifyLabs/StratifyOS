@@ -117,12 +117,14 @@ int sffs_dev_read(const void * cfg, int loc, void * buf, int nbyte){
 
 int sffs_dev_erase(const void * cfg){
 	const sffs_config_t * cfgp = cfg;
+	drive_attr_t attr;
 	if ( cfgp->open_file->fs == NULL ){
 		errno = EIO;
 		return -1;
 	}
 	int usec;
-	if( u_ioctl(cfgp->open_file, I_DRIVE_ERASEDEVICE, NULL) < 0 ){
+	attr.o_flags = DRIVE_FLAG_ERASE_DEVICE;
+	if( u_ioctl(cfgp->open_file, I_DRIVE_SETATTR, &attr) < 0 ){
 		return -1;
 	}
 
@@ -134,6 +136,7 @@ int sffs_dev_erase(const void * cfg){
 
 int sffs_dev_erasesection(const void * cfg, int loc){
 	const sffs_config_t * cfgp;
+	drive_attr_t attr;
 	int usec;
 	cfgp = cfg;
 	if ( cfgp->open_file->fs == NULL ){
@@ -141,9 +144,14 @@ int sffs_dev_erasesection(const void * cfg, int loc){
 		return -1;
 	}
 
-	if( u_ioctl(cfgp->open_file, I_DRIVE_ERASEBLOCK, (void*)loc) < 0 ){
+	attr.o_flags = DRIVE_FLAG_ERASE_BLOCKS;
+	attr.start = loc;
+	attr.end = loc;
+
+	if( u_ioctl(cfgp->open_file, I_DRIVE_SETATTR, &attr) < 0 ){
 		return -1;
 	}
+
 
 	usec = cfgp->state->dattr.erase_block_time;
 

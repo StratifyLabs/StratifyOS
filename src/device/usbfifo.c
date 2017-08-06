@@ -40,7 +40,7 @@ static int set_read_action(const devfs_handle_t * handle, mcu_callback_t callbac
 	return 0;
 }
 
-static int data_received(void * context, mcu_event_t * data){
+static int data_received(void * context, const mcu_event_t * data){
 	int i;
 	int bytes_read;
 	const devfs_handle_t * handle;

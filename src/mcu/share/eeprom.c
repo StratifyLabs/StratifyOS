@@ -28,8 +28,12 @@ extern void mcu_eeprom_dev_power_off(const devfs_handle_t * handle);
 extern int mcu_eeprom_dev_is_powered(const devfs_handle_t * handle);
 extern int mcu_eeprom_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop);
 extern int mcu_eeprom_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop);
+static int get_version(const devfs_handle_t * handle, void* ctl){
+	return EEPROM_VERSION;
+}
 
 int (* const eeprom_ioctl_func_table[I_MCU_TOTAL + I_EEPROM_TOTAL])(const devfs_handle_t*, void*) = {
+		get_version,
 		mcu_eeprom_getinfo,
 		mcu_eeprom_setattr,
 		mcu_eeprom_setaction

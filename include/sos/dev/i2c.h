@@ -82,6 +82,7 @@
 extern "C" {
 #endif
 
+#define I2C_VERSION (0x030000)
 #define I2C_IOC_IDENT_CHAR 'i'
 
 #define I2C_TEN_BIT_ADDR_MASK 0xFC
@@ -151,6 +152,8 @@ typedef struct MCU_PACK {
 	u32 size /*! Memory size when setting up slave */;
 	void * data /*! Memory pointer to slave data */;
 } i2c_attr_t;
+
+#define I_I2C_GETVERSION _IOCTL(I2C_IOC_IDENT_CHAR, I_MCU_GETVERSION)
 
 
 /*! \brief This request gets the I2C attributes.

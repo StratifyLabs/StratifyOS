@@ -54,6 +54,7 @@
 extern "C" {
 #endif
 
+#define DISPLAY_VERSION (0x030000)
 #define DISPLAY_IOC_CHAR 'D'
 
 enum {
@@ -96,6 +97,8 @@ typedef struct MCU_PACK {
 	u16 margin_top /*! \brief Top margin */;
 	u16 margin_bottom /*! \brief Bottom margin */;
 } display_info_t;
+
+#define I_DISPLAY_GETVERSION _IOCTL(DISPLAY_IOC_IDENT_CHAR, I_MCU_GETVERSION)
 
 
 /*! \details This request gets the attributes of the device.

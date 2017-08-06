@@ -91,10 +91,13 @@ typedef enum {
 	MCU_EVENT_FLAG_MATCH /*! Match event */ = (1<<21),
 	MCU_EVENT_FLAG_ALARM /*! Alarm event (match alias) */ = MCU_EVENT_FLAG_MATCH,
 	MCU_EVENT_FLAG_COUNT /*! Count event */ = (1<<22),
-
 } mcu_event_flag_t;
 
-typedef int (*mcu_callback_t)(void*, mcu_event_t *);
+typedef enum {
+	MCU_CHANNEL_FLAG_IS_INPUT = 0x80
+} mcu_channel_flag_t;
+
+typedef int (*mcu_callback_t)(void*, const mcu_event_t *);
 
 typedef struct {
 	mcu_callback_t callback;
@@ -173,10 +176,11 @@ typedef struct MCU_PACK {
 	u32 value;
 } mcu_channel_t;
 
-#define I_MCU_GETINFO 0
-#define I_MCU_SETATTR 1
-#define I_MCU_SETACTION (2 | _IOCTL_ROOT)
-#define I_MCU_TOTAL 3
+#define I_MCU_GETVERSION 0
+#define I_MCU_GETINFO 1
+#define I_MCU_SETATTR 2
+#define I_MCU_SETACTION (3 | _IOCTL_ROOT)
+#define I_MCU_TOTAL 4
 
 #define MCU_TEST_BIT(x,y) (x & (1<<y))
 #define MCU_SET_BIT(x,y) (x |= (1<<y))

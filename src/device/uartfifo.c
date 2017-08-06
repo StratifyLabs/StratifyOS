@@ -33,7 +33,7 @@ static int set_read_action(const devfs_handle_t * handle, mcu_callback_t callbac
 	return mcu_uart_setaction(handle, &action);
 }
 
-static int data_received(void * context, mcu_event_t * data){
+static int data_received(void * context, const mcu_event_t * data){
 	char c;
 	const devfs_handle_t * handle;
 	const uartfifo_config_t * cfgp;

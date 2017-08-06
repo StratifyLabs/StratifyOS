@@ -83,6 +83,8 @@ typedef struct MCU_PACK {
 	u32 freq;
 } adc_attr_t;
 
+#define I_ADC_GETVERSION _IOCTL(ADC_IOC_IDENT_CHAR, I_MCU_GETVERSION)
+
 /*! \brief See below for details.
  * \details This requests reads the ADC attributes.
  *

@@ -24,8 +24,12 @@
 extern void mcu_rtc_dev_power_on(const devfs_handle_t * handle);
 extern void mcu_rtc_dev_power_off(const devfs_handle_t * handle);
 extern int mcu_rtc_dev_is_powered(const devfs_handle_t * handle);
+static int get_version(const devfs_handle_t * handle, void* ctl){
+	return RTC_VERSION;
+}
 
 int (* const rtc_ioctl_func_table[I_MCU_TOTAL + I_RTC_TOTAL])(const devfs_handle_t*, void*) = {
+		get_version,
 		mcu_rtc_getinfo,
 		mcu_rtc_setattr,
 		mcu_rtc_setaction,

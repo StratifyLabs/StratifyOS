@@ -109,7 +109,7 @@ int mcu_rtc_setattr(const devfs_handle_t * handle, void * ctl){
 
 	if( o_flags & RTC_FLAG_ENABLE ){
 
-		if( o_flags & RTC_FLAG_IS_CLKSRC_EXTERNAL_32768 ){
+		if( o_flags & RTC_FLAG_IS_SOURCE_EXTERNAL_32768 ){
 
 		}
 

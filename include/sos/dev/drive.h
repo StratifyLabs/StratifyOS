@@ -36,170 +36,53 @@
 
 #include "mcu/types.h"
 
-#define DRIVE_IOC_CHAR 'd'
+#define DRIVE_VERSION (0x030000)
+#define DRIVE_IOC_IDENT_CHAR 'd'
 
-typedef struct MCU_PACK {
-	uint32_t start /*! \brief First block to erase */;
-	uint32_t end /*! \brief Last block to erase */;
-} drive_erase_block_t;
+enum {
+	DRIVE_FLAG_PROTECT = (1<<0),
+	DRIVE_FLAG_UNPROTECT = (1<<1),
+	DRIVE_FLAG_ERASE_BLOCKS = (1<<2),
+	DRIVE_FLAG_ERASE_DEVICE = (1<<3),
+	DRIVE_FLAG_POWERDOWN = (1<<4),
+	DRIVE_FLAG_POWERUP = (1<<5),
+	DRIVE_FLAG_INIT = (1<<6)
+} drive_flags_t;
 
 /*! \brief Disk attributes
  */
 typedef struct MCU_PACK {
-	u16 address_size /*! \brief Number of bytes per address location (1 for small devices 512 for larger ones */;
-	u16 write_block_size /*! \brief Minimum write block size */;
-	u32 num_write_blocks /*! \brief Number of write blocks (size is num_write_blocks*write_block_size */;
-	u32 erase_block_size /*! \brief Minimum eraseable block size */;
-	u32 erase_block_time /*! \brief Time in microseconds to erase one block */;
-	u32 erase_device_time /*! \brief Time in microseconds to erase the device */;
-	u32 bitrate /*! \brief Max bitrate */;
+	u32 o_flags /*! Attribute flags supported by this driver */;
+	u32 o_events /*! MCU Event flags supported by this driver */;
+	u16 address_size /*! Number of bytes per address location (1 for small devices 512 for larger ones */;
+	u16 write_block_size /*! Minimum write block size */;
+	u32 num_write_blocks /*! Number of write blocks (size is num_write_blocks*write_block_size */;
+	u32 erase_block_size /*! Minimum eraseable block size */;
+	u32 erase_block_time /*! Time in microseconds to erase one block */;
+	u32 erase_device_time /*! Time in microseconds to erase the device */;
+	u32 bitrate /*! Max bitrate */;
 } drive_info_t;
 
+typedef struct MCU_PACK {
+	u32 o_flags;
+	u32 start;
+	u32 end;
+} drive_attr_t;
 
-/*! \details This request applies the software write protect
- * to the entire device.
- *
- * Example:
- * \code
- * ioctl(fildes, I_DRIVE_PROTECT);
- * \endcode
- * \hideinitializer
- */
-#define I_DRIVE_PROTECT _IOCTL(DRIVE_IOC_CHAR, 0)
-
-/*! \details This request removes the software write protect
- * from the entire device.
- *
- * Example:
- * \code
- * ioctl(fildes, I_DRIVE_UNPROTECT);
- * \endcode
- * \hideinitializer
- */
-#define I_DRIVE_UNPROTECT _IOCTL(DRIVE_IOC_CHAR, 1)
-
-/*! \details This request erases a block of memory.  The ctl argurment
- * is an address that is contained in the block to erase.
- *
- * Example:
- * \code
- * ioctl(fildes, I_DRIVE_ERASEBLOCK, 0x1000);
- * \endcode
- * \hideinitializer
- */
-#define I_DRIVE_ERASEBLOCK _IOCTL(DRIVE_IOC_CHAR, 2)
-#define I_DRIVE_ERASE_BLOCK I_DRIVE_ERASEBLOCK
-
-/*! \details This request erases the device.
- *
- * Example:
- * \code
- * ioctl(fildes, I_DRIVE_ERASEDEVICE);
- * \endcode
- * \hideinitializer
- */
-#define I_DRIVE_ERASEDEVICE _IOCTL(DRIVE_IOC_CHAR, 3)
-#define I_DRIVE_ERASE_DEVICE I_DRIVE_ERASEDEVICE
-
-/*! \details This request powers down the device.
- *
- * Example:
- * \code
- * ioctl(fildes, I_DRIVE_POWERDOWN);
- * \endcode
- * \hideinitializer
- */
-#define I_DRIVE_POWERDOWN _IOCTL(DRIVE_IOC_CHAR, 4)
-#define I_DRIVE_POWER_DOWN I_DRIVE_POWERDOWN
-
-/*! \details This request powers up the device.
- *
- * Example:
- * \code
- * ioctl(fildes, I_DRIVE_POWER_UP);
- * \endcode
- * \hideinitializer
- */
-#define I_DRIVE_POWERUP _IOCTL(DRIVE_IOC_CHAR, 5)
-#define I_DRIVE_POWER_UP I_DRIVE_POWERUP
-
-/*! \details This request gets the size of the memory on the device.
- *
- * Example:
- * \code
- * uint32_t size;
- * size = ioctl(fildes, I_DRIVE_GETSIZE);
- * \endcode
- * \hideinitializer
- */
-#define I_DRIVE_GETSIZE _IOCTL(DRIVE_IOC_CHAR, 6)
-#define I_DRIVE_GET_SIZE I_DRIVE_GETSIZE
-
-/*! \details This request gets the size of the smallest eraseable block.
- *
- * Example:
- * \code
- * uint32_t size;
- * size = ioctl(fildes, I_DRIVE_GETBLOCKSIZE);
- * \endcode
- * \hideinitializer
- */
-#define I_DRIVE_GETBLOCKSIZE _IOCTL(DRIVE_IOC_CHAR, 7)
-#define I_DRIVE_GET_BLOCKSIZE I_DRIVE_GETBLOCKSIZE
-
-/*! \details This request gets the amount of time to erase a block.
- *
- * Example:
- * \code
- * uint32_t useconds;
- * useconds = ioctl(fildes, I_DRIVE_GETBLOCKERASETIME);
- * ioctl(fildes, I_DRIVE_ERASEBLOCK, 0x1000);
- * usleep(useconds);
- * \endcode
- * \hideinitializer
- */
-#define I_DRIVE_GETBLOCKERASETIME _IOCTL(DRIVE_IOC_CHAR, 8)
-#define I_DRIVE_GET_BLOCK_ERASETIME I_DRIVE_GETBLOCKERASETIME
-
-/*! \details This request gets the amount of time required to erase the device.
- *
- * Example:
- * \code
- * uint32_t useconds;
- * useconds = ioctl(fildes, I_DRIVE_GETDEVICEERASETIME);
- * ioctl(fildes, I_DRIVE_ERASEDEVICE, 0x1000);
- * usleep(useconds);
- * \endcode
- * \hideinitializer
- */
-#define I_DRIVE_GETDEVICEERASETIME _IOCTL(DRIVE_IOC_CHAR, 9)
-#define I_DRIVE_GET_DEVICE_ERASETIME I_DRIVE_GETDEVICEERASETIME
-
-
-/*! \details This request erases the blocks specified
- * in drive_erase_block_t
- *
- * \hideinitializer
- */
-#define I_DRIVE_ERASEBLOCKS _IOCTLW(DRIVE_IOC_CHAR, 10, drive_erase_block_t)
-
-
-/*! \details Request the drive attributes.
- * \hideinitializer
- */
-#define I_DRIVE_GETINFO _IOCTLR(DRIVE_IOC_CHAR, 11, drive_info_t)
+#define I_DRIVE_GETVERSION _IOCTL(DRIVE_IOC_IDENT_CHAR, I_MCU_GETVERSION)
+#define I_DRIVE_GETINFO _IOCTLR(DRIVE_IOC_IDENT_CHAR, I_MCU_GETINFO, drive_info_t)
+#define I_DRIVE_SETATTR _IOCTLW(DRIVE_IOC_IDENT_CHAR, I_MCU_SETATTR, drive_attr_t)
+#define I_DRIVE_SETACTION _IOCTLW(DRIVE_IOC_IDENT_CHAR, I_MCU_SETATTR, mcu_action_t)
 
 /*! \details See if the drive is busy.
  * This ioctl call will return greater than one if the
  * device is busy and 0 if drive is not busy.
  *
  */
-#define I_DRIVE_BUSY _IOCTL(DRIVE_IOC_CHAR, 12)
+#define I_DRIVE_ISBUSY _IOCTL(DRIVE_IOC_IDENT_CHAR, I_MCU_TOTAL)
 
 
-#define I_DRIVE_INIT _IOCTL(DRIVE_IOC_CHAR, 13)
-
-#define I_DRIVE_TOTAL 14
+#define I_DRIVE_TOTAL 1
 
 #endif /* SOS_DEV_DRIVE_H_ */
 

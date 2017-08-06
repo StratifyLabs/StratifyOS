@@ -64,6 +64,7 @@
 #include "ioctl.h"
 #include "mcu/types.h"
 
+#define ETH_VERSION (0x000000)
 #define ETH_IOC_IDENT_CHAR 'e'
 
 enum {
@@ -98,6 +99,9 @@ typedef struct MCU_PACK {
 	uint16_t count;
 	uint8_t status[5];
 } eth_txstatus_t;
+
+
+#define I_ETH_GETVERSION _IOCTL(ETH_IOC_IDENT_CHAR, I_MCU_GETVERSION)
 
 /*! \brief See below for details.
  * \details This requests reads the ADC attributes.
@@ -166,7 +170,7 @@ typedef struct MCU_PACK {
 #define I_ETH_RXPKTCOMPLETE _IOCTL(ETH_IOC_IDENT_CHAR, I_MCU_TOTAL + 4)
 #define I_ETH_RX_PKT_COMPLETE I_ETH_RXPKTCOMPLETE
 
-#define I_ETH_TOTAL (I_MCU_TOTAL + 5)
+#define I_ETH_TOTAL 5
 
 
 #endif // SOS_DEV_ETH_H_

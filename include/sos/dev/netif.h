@@ -40,6 +40,7 @@
 #include "ioctl.h"
 #include "mcu/types.h"
 
+#define NETIF_VERSION (0x000000)
 #define NETIF_IOC_CHAR 'N'
 
 /*! \brief Network Interface attributes

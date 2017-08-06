@@ -38,6 +38,7 @@
 #include "fifo.h"
 #include "mcu/types.h"
 
+#define FFIFO_VERSION (0x030000)
 #define FFIFO_IOC_CHAR 'F'
 
 enum {
@@ -64,6 +65,7 @@ typedef struct MCU_PACK {
 	u32 o_flags /*! Fifo flags */;
 } ffifo_attr_t;
 
+#define I_FFIFO_GETVERSION _IOCTL(FFIFO_IOC_IDENT_CHAR, I_MCU_GETVERSION)
 #define I_FFIFO_GETINFO _IOCTLR(FIFO_IOC_CHAR, 0, ffifo_info_t)
 #define I_FFIFO_SETATTR _IOCTLW(FIFO_IOC_CHAR, 1, ffifo_attr_t)
 

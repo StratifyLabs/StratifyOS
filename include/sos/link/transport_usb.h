@@ -99,7 +99,7 @@ int sos_link_transport_usb_close(link_transport_phy_t * handle);
 void sos_link_transport_usb_wait(int msec);
 void sos_link_transport_usb_flush(link_transport_phy_t handle);
 
-int sos_link_usbd_cdc_event_handler(void * context, mcu_event_t * event);
+int sos_link_usbd_cdc_event_handler(void * context, const mcu_event_t * event);
 
 //provided for the link device fifo
 //DEVFS_DEVICE("link-phy-usb", 0, &sos_link_transport_usb_fifo_cfg, &sos_link_transport_usb_fifo_state, 0666, USER_ROOT, GROUP_ROOT),

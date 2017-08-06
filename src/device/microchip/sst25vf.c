@@ -22,9 +22,9 @@
 #include "mcu/debug.h"
 #include "sst25vf_local.h"
 
-static int complete_spi_write(void * context, mcu_event_t * event);
-static int continue_spi_write(void * context, mcu_event_t * event);
-static int complete_spi_read(void * context, mcu_event_t * event);
+static int complete_spi_write(void * context, const mcu_event_t * event);
+static int continue_spi_write(void * context, const mcu_event_t * event);
+static int complete_spi_read(void * context, const mcu_event_t * event);
 
 int sst25vf_open(const devfs_handle_t * handle){
 	int err;
@@ -82,7 +82,7 @@ int sst25vf_open(const devfs_handle_t * handle){
 	return 0;
 }
 
-int complete_spi_read(void * context, mcu_event_t * event){
+int complete_spi_read(void * context, const mcu_event_t * event){
 	const devfs_handle_t * handle = context;
 	sst25vf_state_t * state = handle->state;
 	sst25vf_share_deassert_cs(handle);
@@ -137,7 +137,7 @@ static void assert_delay(){
 	}
 }
 
-int continue_spi_write(void * context, mcu_event_t * event){
+int continue_spi_write(void * context, const mcu_event_t * event){
 	const devfs_handle_t * handle = context;
 	sst25vf_state_t * state = (sst25vf_state_t *)handle->state;
 	int tmp;
@@ -181,7 +181,7 @@ int continue_spi_write(void * context, mcu_event_t * event){
 	return 0;
 }
 
-int complete_spi_write(void * context, mcu_event_t * event){
+int complete_spi_write(void * context, const mcu_event_t * event){
 	const devfs_handle_t * handle = context;
 	mcu_action_t action;
 	devfs_handle_t pio_handle;
@@ -274,65 +274,7 @@ int sst25vf_write(const devfs_handle_t * handle, devfs_async_t * wop){
 }
 
 int sst25vf_ioctl(const devfs_handle_t * handle, int request, void * ctl){
-	sst25vf_config_t * sst_cfg = (sst25vf_config_t*)handle->config;
-	sst25vf_state_t * state = (sst25vf_state_t*)handle->state;
-	drive_info_t * attr;
-
-	switch(request){
-	case I_DRIVE_ERASE_BLOCK:
-	case I_DRIVE_ERASE_DEVICE:
-		if( state->prot == 1 ){
-			errno = EROFS;
-			return -1;
-		}
-		break;
-	}
-
-	switch(request){
-	case I_DRIVE_PROTECT:
-		sst25vf_share_global_protect(handle);
-		state->prot = 1;
-		break;
-	case I_DRIVE_UNPROTECT:
-		sst25vf_share_global_unprotect(handle);
-		state->prot = 0;
-		break;
-	case I_DRIVE_ERASE_BLOCK:
-		sst25vf_share_block_erase_4kb(handle, (ssize_t)ctl);
-		break;
-	case I_DRIVE_ERASE_DEVICE:
-		sst25vf_share_chip_erase(handle);
-		break;
-	case I_DRIVE_POWER_DOWN:
-		sst25vf_share_power_down(handle);
-		break;
-	case I_DRIVE_POWER_UP:
-		sst25vf_share_power_up(handle);
-		break;
-	case I_DRIVE_GETINFO:
-		attr = ctl;
-
-		attr->address_size = 1;
-		attr->bitrate = 50000000;
-		attr->erase_block_size = SST25VF_BLOCK_ERASE_SIZE;
-		attr->erase_block_time = SST25VF_BLOCK_ERASE_TIME;
-		attr->erase_device_time = SST25VF_CHIP_ERASE_TIME;
-		attr->num_write_blocks = sst_cfg->size / SST25VF_BLOCK_SIZE;
-		attr->write_block_size = SST25VF_BLOCK_SIZE;
-		return 0;
-
-	case I_DRIVE_GET_BLOCKSIZE:
-		return SST25VF_BLOCK_ERASE_SIZE;
-	case I_DRIVE_GET_DEVICE_ERASETIME:
-		return SST25VF_CHIP_ERASE_TIME;
-	case I_DRIVE_GET_BLOCK_ERASETIME:
-		return SST25VF_BLOCK_ERASE_TIME;
-	case I_DRIVE_GET_SIZE:
-		return sst_cfg->size;
-	default:
-		return mcu_spi_ioctl(handle, request, ctl);
-	}
-	return 0;
+	return sst25vf_share_ioctl(handle, request, ctl);
 }
 
 int sst25vf_close(const devfs_handle_t * cfg){

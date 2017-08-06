@@ -25,9 +25,12 @@ extern void mcu_dac_dev_power_on(const devfs_handle_t * handle);
 extern void mcu_dac_dev_power_off(const devfs_handle_t * handle);
 extern int mcu_dac_dev_is_powered(const devfs_handle_t * handle);
 extern int mcu_dac_dma_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop);
-
+static int get_version(const devfs_handle_t * handle, void* ctl){
+	return DAC_VERSION;
+}
 
 int (* const dac_dma_ioctl_func_table[I_MCU_TOTAL + I_DAC_TOTAL])(const devfs_handle_t*, void*) = {
+		get_version,
 		mcu_dac_getinfo,
 		mcu_dac_dma_setattr,
 		mcu_dac_dma_setaction,

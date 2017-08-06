@@ -72,7 +72,7 @@ static int read_buffer(const devfifo_config_t * cfgp, devfifo_state_t * state, d
 	return i; //number of bytes read
 }
 
-static int data_received(void * context, mcu_event_t * data){
+static int data_received(void * context, const mcu_event_t * data){
 	char c;
 	int bytes_read;
 	const devfs_handle_t * cfg;

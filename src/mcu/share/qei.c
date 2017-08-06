@@ -24,9 +24,12 @@
 extern void mcu_qei_dev_power_on(const devfs_handle_t * handle);
 extern void mcu_qei_dev_power_off(const devfs_handle_t * handle);
 extern int mcu_qei_dev_is_powered(const devfs_handle_t * handle);
-
+static int get_version(const devfs_handle_t * handle, void* ctl){
+	return QEI_VERSION;
+}
 
 int (* const qei_ioctl_func_table[I_MCU_TOTAL + I_QEI_TOTAL])(const devfs_handle_t*, void*) = {
+		get_version,
 		mcu_qei_getinfo,
 		mcu_qei_setattr,
 		mcu_qei_setaction,

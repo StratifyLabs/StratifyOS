@@ -30,6 +30,8 @@
 extern "C" {
 #endif
 
+#define ADC_VERSION (0x030000)
+
 typedef struct MCU_PACK {
 	u32 value;
 } adc_event_t;

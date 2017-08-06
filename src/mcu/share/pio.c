@@ -27,8 +27,12 @@ extern void mcu_pio_dev_power_on(const devfs_handle_t * handle);
 extern void mcu_pio_dev_power_off(const devfs_handle_t * handle);
 extern int mcu_pio_dev_is_powered(const devfs_handle_t * handle);
 extern int mcu_pio_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop);
+static int get_version(const devfs_handle_t * handle, void* ctl){
+	return PIO_VERSION;
+}
 
 int (* const mcu_pio_ioctl_func_table[I_MCU_TOTAL + I_PIO_TOTAL])(const devfs_handle_t*, void*) = {
+		get_version,
 		mcu_pio_getinfo,
 		mcu_pio_setattr,
 		mcu_pio_setaction,

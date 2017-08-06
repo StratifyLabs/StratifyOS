@@ -22,6 +22,7 @@
 
 #include "mcu/types.h"
 
+#define EEPROM_VERSION (0x030000)
 #define EEPROM_IOC_IDENT_CHAR 'E'
 
 /*! \brief EEPROM Attribute Data Structure
@@ -37,6 +38,7 @@ typedef struct MCU_PACK {
 	u32 size;
 } eeprom_info_t;
 
+#define I_EEPROM_GETVERSION _IOCTL(EEPROM_IOC_IDENT_CHAR, I_MCU_GETVERSION)
 #define I_EEPROM_GETINFO _IOCTLR(EEPROM_IOC_IDENT_CHAR, I_MCU_GETINFO, eeprom_info_t)
 #define I_EEPROM_SETATTR _IOCTLW(EEPROM_IOC_IDENT_CHAR, I_MCU_SETATTR, eeprom_attr_t)
 #define I_EEPROM_SETACTION _IOCTLW(EEPROM_IOC_IDENT_CHAR, I_MCU_SETACTION, mcu_action_t)

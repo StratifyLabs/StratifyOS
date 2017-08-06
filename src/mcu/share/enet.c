@@ -23,9 +23,12 @@ extern void mcu_enet_dev_power_off(const devfs_handle_t * handle);
 extern int mcu_enet_dev_is_powered(const devfs_handle_t * handle);
 extern int mcu_enet_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop);
 extern int mcu_enet_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop);
-
+static int get_version(const devfs_handle_t * handle, void* ctl){
+	return ENET_VERSION;
+}
 
 int (* const enet_ioctl_func_table[I_MCU_TOTAL + I_ENET_TOTAL])(const devfs_handle_t*, void*) = {
+		get_version,
 		mcu_enet_getinfo,
 		mcu_enet_setattr,
 		mcu_enet_setaction,

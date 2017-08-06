@@ -88,6 +88,7 @@
 extern "C" {
 #endif
 
+#define PWM_VERSION (0x030000)
 #define PWM_IOC_IDENT_CHAR 'p'
 
 typedef enum {
@@ -115,7 +116,11 @@ typedef struct MCU_PACK {
 	pwm_pin_assignment_t pin_assignment;
 	u32 freq /*! The PWM counter frequency */;
 	u32 period /*! The PWM period in counts */;
+	mcu_channel_t channel;
 } pwm_attr_t;
+
+#define I_PWM_GETVERSION _IOCTL(PWM_IOC_IDENT_CHAR, I_MCU_GETVERSION)
+
 
 /*! \brief Get the PWM attributes (\ref pwm_attr_t)
  * \hideinitializer

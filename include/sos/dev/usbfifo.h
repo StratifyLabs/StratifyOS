@@ -38,6 +38,7 @@
 #include "fifo.h"
 #include "usb.h"
 
+
 #endif /* SOS_DEV_USBFIFO_H_ */
 
 

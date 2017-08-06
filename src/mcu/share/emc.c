@@ -25,9 +25,12 @@
 extern void mcu_emc_dev_power_on(const devfs_handle_t * handle);
 extern void mcu_emc_dev_power_off(const devfs_handle_t * handle);
 extern int mcu_emc_dev_is_powered(const devfs_handle_t * handle);
-
+static int get_version(const devfs_handle_t * handle, void* ctl){
+	return EMC_VERSION;
+}
 
 int (* const emc_ioctl_func_table[I_MCU_TOTAL + I_EMC_TOTAL])(const devfs_handle_t*, void*) = {
+		get_version,
 		mcu_emc_getinfo,
 		mcu_emc_setattr,
 		mcu_emc_setaction

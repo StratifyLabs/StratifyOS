@@ -45,6 +45,7 @@
 extern "C" {
 #endif
 
+#define ENET_VERSION (0x000000)
 #define ENET_IOC_IDENT_CHAR 'E'
 
 /*! \brief Lists the valid values for the external interrupt trigger.
@@ -93,6 +94,8 @@ typedef struct MCU_PACK {
 	u16 flags /*! \brief Flag settings (see ENET_FLAGS_*) */;
 	u8 mac_addr[6] /*! \brief MAC address */;
 } enet_attr_t;
+
+#define I_ENET_GETVERSION _IOCTL(ENET_IOC_IDENT_CHAR, I_MCU_GETVERSION)
 
 /*! \brief IOCTL request to get attributes.
  */

@@ -26,6 +26,7 @@
 extern "C" {
 #endif
 
+#define LED_VERSION (0x030000)
 #define LED_IOC_IDENT_CHAR 'L'
 
 enum {
@@ -52,6 +53,9 @@ typedef struct MCU_PACK {
 	u32 duty_cycle /*! LED duty cycle (if supported) */;
 	u32 period /*! LED blinking period in us (if supported) */;
 } led_attr_t;
+
+#define I_LED_GETVERSION _IOCTL(LED_IOC_IDENT_CHAR, I_MCU_GETVERSION)
+
 
 /*! \brief This request gets the LED info.
  * \hideinitializer

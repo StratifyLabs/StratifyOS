@@ -112,16 +112,5 @@
 #define SYS_ERR_INT         0x04
 
 
-typedef struct MCU_PACK {
-  uint8_t  bLength;
-  uint8_t  bDescriptorType;
-  uint8_t  bEndpointAddress;
-  uint8_t  bmAttributes;
-  uint16_t wMaxPacketSize;
-  uint8_t  bInterval;
-} mcu_usbd_endpoint_descriptor_t;
-
-
-
 #endif // USB_FLAGS_H_
 

@@ -44,6 +44,9 @@
 extern "C" {
 #endif
 
+#define BOOTLOADER_VERSION (0x030000)
+
+
 #define BOOTLOADER_IOC_IDENT_CHAR 'b'
 
 

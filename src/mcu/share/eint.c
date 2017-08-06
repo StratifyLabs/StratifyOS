@@ -26,8 +26,12 @@ extern void mcu_eint_dev_power_on(const devfs_handle_t * handle);
 extern void mcu_eint_dev_power_off(const devfs_handle_t * handle);
 extern int mcu_eint_dev_is_powered(const devfs_handle_t * handle);
 extern int mcu_eint_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop);
+static int get_version(const devfs_handle_t * handle, void* ctl){
+	return EINT_VERSION;
+}
 
 int (* const eint_ioctl_func_table[I_MCU_TOTAL + I_EINT_TOTAL])(const devfs_handle_t*, void*) = {
+		get_version,
 		mcu_eint_getinfo,
 		mcu_eint_setattr,
 		mcu_eint_setaction

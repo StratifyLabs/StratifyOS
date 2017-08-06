@@ -22,6 +22,10 @@
 
 #include "mcu/types.h"
 
+#define SD_VERSION (0x030000)
+
+#define I_SD_GETVERSION _IOCTL(SD_IOC_IDENT_CHAR, I_MCU_GETVERSION)
+
 #define I_SDSPI_STATUS _IOCTLW('S', 2, sd_spi_status_t)
 
 

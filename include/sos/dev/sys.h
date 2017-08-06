@@ -42,6 +42,8 @@ extern "C" {
 #endif
 
 
+#define SYS_VERSION (0x030000)
+#define SYS_IOC_CHAR 's'
 
 enum {
 	SYS_FLAG_IS_STDIO_FIFO = (1<<0),
@@ -50,8 +52,6 @@ enum {
 	SYS_FLAG_IS_REQUEST = (1<<3),
 	SYS_FLAG_IS_TRACE = (1<<4)
 };
-
-#define SYS_IOC_CHAR 's'
 
 /*! \details This structure defines the system attributes.
  *
@@ -93,6 +93,11 @@ typedef sys_26_info_t sys_info_t;
 typedef struct MCU_PACK {
 	char id[LINK_PATH_MAX] /*! Globally unique Cloud Kernel ID value */;
 } sys_id_t;
+
+typedef struct MCU_PACK {
+	u32 o_flags;
+	u32 resd[8];
+} sys_attr_t;
 
 /*! \brief Task Attributes
  * \details This structure contains the task attributes
@@ -146,6 +151,9 @@ typedef struct MCU_PACK {
 	u8 key[32] /*! \brief The password used to unlock the device */;
 } sys_sudo_t;
 
+#define I_SYS_GETVERSION _IOCTL(SYS_IOC_IDENT_CHAR, I_MCU_GETVERSION)
+
+
 /*! \brief See below.
  * \details This request applies the software write protect
  * to the entire device.
@@ -164,9 +172,12 @@ typedef struct MCU_PACK {
  * \hideinitializer
  *
  */
-#define I_SYS_GETINFO _IOCTLR(SYS_IOC_CHAR, 0, sys_info_t)
-#define I_SYS_26_GETINFO _IOCTLR(SYS_IOC_CHAR, 0, sys_26_info_t)
-#define I_SYS_23_GETINFO _IOCTLR(SYS_IOC_CHAR, 0, sys_23_info_t)
+#define I_SYS_GETINFO _IOCTLR(SYS_IOC_CHAR, I_MCU_GETINFO, sys_info_t)
+#define I_SYS_26_GETINFO _IOCTLR(SYS_IOC_CHAR, I_MCU_GETINFO, sys_26_info_t)
+#define I_SYS_23_GETINFO _IOCTLR(SYS_IOC_CHAR, I_MCU_GETINFO, sys_23_info_t)
+
+#define I_SYS_SETATTR _IOCTLW(SYS_IOC_CHAR, I_MCU_SETATTR, sys_attr_t)
+#define I_SYS_SETACTION _IOCTLW(SYS_IOC_CHAR, I_MCU_SETACTION, mcu_action_t)
 
 /*! \brief See below for details.
  * \details This request gets the information about the specified task.
@@ -176,23 +187,23 @@ typedef struct MCU_PACK {
  * ioctl(fd, I_SYS_GETTASK, &task);
  * \endcode
  */
-#define I_SYS_GETTASK _IOCTLRW(SYS_IOC_CHAR, 1, sys_taskattr_t)
+#define I_SYS_GETTASK _IOCTLRW(SYS_IOC_CHAR, I_MCU_TOTAL, sys_taskattr_t)
 
 /*! \brief See below for details
  * \details This request sends a signal to all the tasks in the
  * specified process group.
  */
-#define I_SYS_KILL _IOCTLW(SYS_IOC_CHAR, 2, sys_killattr_t)
+#define I_SYS_KILL _IOCTLW(SYS_IOC_CHAR, I_MCU_TOTAL+1, sys_killattr_t)
 
 /*! \brief See below for details
  * \details This request sends a signal to a single task (thread)
  */
-#define I_SYS_PTHREADKILL _IOCTLW(SYS_IOC_CHAR, 3, sys_killattr_t)
+#define I_SYS_PTHREADKILL _IOCTLW(SYS_IOC_CHAR, I_MCU_TOTAL+2, sys_killattr_t)
 
 /*! \brief See below for details
  * \details Read the system ID's globally unique cloud identifier
  */
-#define I_SYS_GETID _IOCTLR(SYS_IOC_CHAR, 4, sys_id_t)
+#define I_SYS_GETID _IOCTLR(SYS_IOC_CHAR, I_MCU_TOTAL+3, sys_id_t)
 
 
 /*! \brief See below for details
@@ -208,7 +219,7 @@ typedef struct MCU_PACK {
  * }
  * \endcode
  */
-#define I_SYS_GETPROCESS _IOCTLRW(SYS_IOC_CHAR, 4, sys_process_t)
+#define I_SYS_GETPROCESS _IOCTLRW(SYS_IOC_CHAR, I_MCU_TOTAL+4, sys_process_t)
 
 /*! \brief See below for details
  * \details This request temporarily changes the effective user ID to root.
@@ -224,7 +235,7 @@ typedef struct MCU_PACK {
  * }
  * \endcode
  */
-#define I_SYS_SUDO _IOCTLW(SYS_IOC_CHAR, 5, sys_sudo_t)
+#define I_SYS_SUDO _IOCTLW(SYS_IOC_CHAR, I_MCU_TOTAL+5, sys_sudo_t)
 
 /*! \brief See below for details.
  * \details This copies the sos_board_config_t data that is set by the
@@ -235,9 +246,9 @@ typedef struct MCU_PACK {
  * \endcode
  *
  */
-#define I_SYS_GETBOARDCONFIG _IOCTLR(SYS_IOC_CHAR, 6, sos_board_config_t)
+#define I_SYS_GETBOARDCONFIG _IOCTLR(SYS_IOC_CHAR, I_MCU_TOTAL+6, sos_board_config_t)
 
-#define I_SYS_TOTAL 6
+#define I_SYS_TOTAL 7
 
 
 

@@ -53,6 +53,7 @@ extern "C" {
 #endif
 
 
+#define SPI_VERSION (0x030000)
 #define SPI_IOC_IDENT_CHAR 's'
 
 typedef enum {
@@ -90,6 +91,7 @@ typedef struct MCU_PACK {
 	u8 width;
 } spi_attr_t;
 
+#define I_SPI_GETVERSION _IOCTL(SPI_IOC_IDENT_CHAR, I_MCU_GETVERSION)
 
 /*! \brief This request gets the SPI attributes.
  * \hideinitializer

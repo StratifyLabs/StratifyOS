@@ -20,6 +20,9 @@
 #ifndef SOS_DEV_APPFS_H_
 #define SOS_DEV_APPFS_H_
 
+#define APPFS_VERSION (0x030000)
+
+
 #include "sos/link/types.h"
 
 #define APPFS_PAGE_SIZE 256
@@ -39,14 +42,17 @@ typedef struct MCU_PACK {
 	u32 signature;
 } appfs_info_t;
 
+#define I_APPFS_GETVERSION _IOCTL(APPFS_IOC_IDENT_CHAR, I_MCU_GETVERSION)
+
+
 //Install an executable in RAM or Flash
-#define I_APPFS_INSTALL _IOCTLW('a', 0, appfs_installattr_t)
+#define I_APPFS_INSTALL _IOCTLW('a', 1, appfs_installattr_t)
 
 //Create a data file in RAM or flash
-#define I_APPFS_CREATE _IOCTLW('a', 1, appfs_createattr_t)
-#define I_APPFS_FREE_RAM _IOCTL('a', 2)
-#define I_APPFS_RECLAIM_RAM _IOCTL('a', 3)
-#define I_APPFS_GETINFO _IOCTLR('a',4,appfs_info_t)
+#define I_APPFS_CREATE _IOCTLW('a', 2, appfs_createattr_t)
+#define I_APPFS_FREE_RAM _IOCTL('a', 3)
+#define I_APPFS_RECLAIM_RAM _IOCTL('a', 4)
+#define I_APPFS_GETINFO _IOCTLR('a',5,appfs_info_t)
 
 #define APPFS_CREATE_SIGNATURE 0x12345678
 

@@ -83,6 +83,6 @@ void sst25vf_share_power_up(const devfs_handle_t * cfg);
 void sst25vf_share_global_protect(const devfs_handle_t * cfg);
 int sst25vf_share_global_unprotect(const devfs_handle_t * cfg);
 void sst25vf_share_read_id(const devfs_handle_t * cfg, char * dest);
-
+int sst25vf_share_ioctl(const devfs_handle_t * handle, int request, void * ctl);
 
 #endif /* SST25VF_LOCAL_H_ */

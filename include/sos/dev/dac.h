@@ -80,7 +80,7 @@
 extern "C" {
 #endif
 
-
+#define DAC_VERSION (0x030000)
 #define DAC_IOC_IDENT_CHAR 'd'
 
 enum {
@@ -106,6 +106,8 @@ typedef struct MCU_PACK {
 	dac_pin_assignment_t pin_assignment;
 	u32 freq;
 } dac_attr_t;
+
+#define I_DAC_GETVERSION _IOCTL(DAC_IOC_IDENT_CHAR, I_MCU_GETVERSION)
 
 
 /*! \brief See below for details.

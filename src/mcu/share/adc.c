@@ -22,8 +22,12 @@ extern void mcu_adc_dev_power_on(const devfs_handle_t * handle) MCU_PRIV_CODE;
 extern void mcu_adc_dev_power_off(const devfs_handle_t * handle) MCU_PRIV_CODE;
 extern int mcu_adc_dev_is_powered(const devfs_handle_t * handle) MCU_PRIV_CODE;
 extern int mcu_adc_dev_read(const devfs_handle_t * handle, devfs_async_t * rop) MCU_PRIV_CODE;
+static int get_version(const devfs_handle_t * handle, void* ctl){
+	return ADC_VERSION;
+}
 
 int (* const adc_ioctl_func_table[I_MCU_TOTAL])(const devfs_handle_t*, void*) = {
+		get_version,
 		mcu_adc_getinfo,
 		mcu_adc_setattr,
 		mcu_adc_setaction

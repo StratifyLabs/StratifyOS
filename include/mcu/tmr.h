@@ -60,10 +60,8 @@ int mcu_tmrsimple_getinfo(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CO
 int mcu_tmrsimple_setattr(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
 int mcu_tmrsimple_setaction(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
 
-int mcu_tmr_setoc(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_tmr_getoc(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_tmr_setic(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_tmr_getic(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_tmr_setchannel(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_tmr_getchannel(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
 int mcu_tmr_set(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
 int mcu_tmr_get(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
 int mcu_tmr_enable(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;

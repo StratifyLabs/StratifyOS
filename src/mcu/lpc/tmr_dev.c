@@ -146,47 +146,47 @@ int mcu_tmr_setattr(const devfs_handle_t * handle, void * ctl){
 
 	if( o_flags & TMR_FLAG_SET_TIMER ){
 
-	if( (o_flags & (TMR_FLAG_IS_CLKSRC_CPU|TMR_FLAG_IS_CLKSRC_IC0|TMR_FLAG_IS_CLKSRC_IC1)) ){
+		if( (o_flags & (TMR_FLAG_IS_SOURCE_CPU|TMR_FLAG_IS_SOURCE_IC0|TMR_FLAG_IS_SOURCE_IC1)) ){
 
-		if( o_flags & TMR_FLAG_IS_CLKSRC_CPU ){
-			if( attr->freq == 0 ){
-				errno = EINVAL;
-				return -1 - offsetof(tmr_attr_t, freq);
+			if( o_flags & TMR_FLAG_IS_SOURCE_CPU ){
+				if( attr->freq == 0 ){
+					errno = EINVAL;
+					return -1 - offsetof(tmr_attr_t, freq);
+				}
+			} else {
+				ctcr = 1; //default on the rising edge
+				if( o_flags & TMR_FLAG_IS_SOURCE_EDGEFALLING ){
+					ctcr = 2;
+				} else if( o_flags & TMR_FLAG_IS_SOURCE_EDGEBOTH ){
+					ctcr = 3;
+				}
 			}
-		} else {
-			ctcr = 1; //default on the rising edge
-			if( o_flags & TMR_FLAG_IS_CLKSRC_EDGEFALLING ){
-				ctcr = 2;
-			} else if( o_flags & TMR_FLAG_IS_CLKSRC_EDGEBOTH ){
-				ctcr = 3;
+
+			if( mcu_set_pin_assignment(
+					&(attr->pin_assignment),
+					MCU_CONFIG_PIN_ASSIGNMENT(tmr_config_t, handle),
+					MCU_PIN_ASSIGNMENT_COUNT(tmr_pin_assignment_t),
+					CORE_PERIPH_TMR, port, 0, 0) < 0 ){
+				return -1;
 			}
-		}
-
-		if( mcu_set_pin_assignment(
-				&(attr->pin_assignment),
-				MCU_CONFIG_PIN_ASSIGNMENT(tmr_config_t, handle),
-				MCU_PIN_ASSIGNMENT_COUNT(tmr_pin_assignment_t),
-				CORE_PERIPH_TMR, port, 0, 0) < 0 ){
-			return -1;
-		}
 
 
-		if( o_flags & TMR_FLAG_IS_CLKSRC_IC1 ){
-			ctcr |= (1<<2);
-		}
-
-		//Set the prescalar so that the freq is correct
-		if ( (attr->freq < mcu_board_config.core_periph_freq) && (attr->freq != 0) ){
-			tmr_regs_table[port]->PR = ((mcu_board_config.core_periph_freq + attr->freq/2) / attr->freq);
-			if (tmr_regs_table[port]->PR != 0 ){
-				tmr_regs_table[port]->PR -= 1;
+			if( o_flags & TMR_FLAG_IS_SOURCE_IC1 ){
+				ctcr |= (1<<2);
 			}
-		} else {
-			regs->PR = 0;
-		}
 
-		regs->CTCR = ctcr;
-	}
+			//Set the prescalar so that the freq is correct
+			if ( (attr->freq < mcu_board_config.core_periph_freq) && (attr->freq != 0) ){
+				tmr_regs_table[port]->PR = ((mcu_board_config.core_periph_freq + attr->freq/2) / attr->freq);
+				if (tmr_regs_table[port]->PR != 0 ){
+					tmr_regs_table[port]->PR -= 1;
+				}
+			} else {
+				regs->PR = 0;
+			}
+
+			regs->CTCR = ctcr;
+		}
 
 	}
 
@@ -240,78 +240,72 @@ int mcu_tmr_disable(const devfs_handle_t * handle, void * ctl){
 	return 0;
 }
 
-int mcu_tmr_setoc(const devfs_handle_t * handle, void * ctl){
+int mcu_tmr_setchannel(const devfs_handle_t * handle, void * ctl){
 	LPC_TIM_Type * regs;
 	int port = handle->port;
 	regs = tmr_regs_table[port];
 	//Write the output compare value
 	mcu_channel_t * req = (mcu_channel_t*)ctl;
-	if ( req->loc > 3 ){
-		errno = EINVAL;
-		return -1;
-	}
+	u8 chan;
+
+	if( req->loc & MCU_CHANNEL_FLAG_IS_INPUT ){
+		chan = req->loc & ~MCU_CHANNEL_FLAG_IS_INPUT;
+		if ( chan > 1 ){
+			errno = EINVAL;
+			return -1;
+		}
+#if MCU_TMR_API == 1
+		regs->CR[chan] = req->value;
+#else
+		((uint32_t*)&(regs->CR0))[ chan ] = req->value;
+#endif
+
+	} else {
+
+		if ( req->loc > 3 ){
+			errno = EINVAL;
+			return -1;
+		}
 
 #if MCU_TMR_API == 1
-	regs->MR[req->loc] = req->value;
+		regs->MR[req->loc] = req->value;
 #else
-	((uint32_t*)&(regs->MR0))[ req->loc ] = req->value;
+		((uint32_t*)&(regs->MR0))[ req->loc ] = req->value;
 #endif
+	}
 	return 0;
 }
 
-int mcu_tmr_getoc(const devfs_handle_t * handle, void * ctl){
+int mcu_tmr_getchannel(const devfs_handle_t * handle, void * ctl){
 	LPC_TIM_Type * regs;
 	int port = handle->port;
 	regs = tmr_regs_table[port];
 	//Read the output compare channel
 	mcu_channel_t * req = (mcu_channel_t*)ctl;
-	if ( req->loc > 3 ){
-		errno = EINVAL;
-		return -1;
-	}
-#if MCU_TMR_API == 1
-	req->value = regs->MR[req->loc];
-#else
-	req->value = ((uint32_t*)&(regs->MR0))[ req->loc ];
-#endif
-	return 0;
-}
+	u8 chan;
 
-int mcu_tmr_setic(const devfs_handle_t * handle, void * ctl){
-	LPC_TIM_Type * regs;
-	int port = handle->port;
-	regs = tmr_regs_table[port];
-	unsigned int chan;
-	mcu_channel_t * req = (mcu_channel_t*)ctl;
-	chan = req->loc - TMR_ACTION_CHANNEL_IC0;
-	if ( chan > 1 ){
-		errno = EINVAL;
-		return -1;
-	}
+	if( req->loc & MCU_CHANNEL_FLAG_IS_INPUT ){
+		chan = req->loc & ~MCU_CHANNEL_FLAG_IS_INPUT;
+		if ( chan > 1 ){
+			errno = EINVAL;
+			return -1;
+		}
 #if MCU_TMR_API == 1
-	regs->CR[chan] = req->value;
+		req->value = regs->CR[chan];
 #else
-	((uint32_t*)&(regs->CR0))[ req->loc ] = req->value;
+		req->value = ((uint32_t*)&(regs->CR0))[ chan ];
 #endif
-	return 0;
-}
-
-int mcu_tmr_getic(const devfs_handle_t * handle, void * ctl){
-	LPC_TIM_Type * regs;
-	int port = handle->port;
-	unsigned int chan;
-	regs = tmr_regs_table[port];
-	mcu_channel_t * req = (mcu_channel_t*)ctl;
-	chan = req->loc - TMR_ACTION_CHANNEL_IC0;
-	if ( chan > 1 ){
-		errno = EINVAL;
-		return -1;
-	}
+	} else {
+		if ( req->loc > 3 ){
+			errno = EINVAL;
+			return -1;
+		}
 #if MCU_TMR_API == 1
-	req->value = regs->CR[chan];
+		req->value = regs->MR[req->loc];
 #else
-	req->value = ((uint32_t*)&(regs->CR0))[ chan ];
+		req->value = ((uint32_t*)&(regs->MR0))[ req->loc ];
 #endif
+	}
 	return 0;
 }
 

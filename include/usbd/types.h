@@ -30,6 +30,7 @@
 #define MCU_USBD_TYPEDEFS_H_
 
 #include "mcu/types.h"
+#include "defines.h"
 
 typedef union MCU_PACK {
 	u16 w;

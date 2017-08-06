@@ -42,6 +42,9 @@
 extern "C" {
 #endif
 
+#define CORE_VERSION (0x030000)
+
+
 #define CORE_IOC_IDENT_CHAR 'c'
 
 
@@ -130,6 +133,9 @@ typedef struct MCU_PACK {
 	u32 o_flags /*! Setting certain flags will configure the core as described */;
 	u32 freq /*! This is used with the clock out flags to set the output frequency */;
 } core_attr_t;
+
+#define I_CORE_GETVERSION _IOCTL(CORE_IOC_IDENT_CHAR, I_MCU_GETVERSION)
+
 
 /*!  \brief This requests reads the core attributes.
  */

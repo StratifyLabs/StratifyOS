@@ -87,6 +87,7 @@
 extern "C" {
 #endif
 
+#define EINT_VERSION (0x030000)
 #define EINT_IOC_IDENT_CHAR 'e'
 
 enum {
@@ -112,6 +113,9 @@ typedef struct MCU_PACK {
 	u32 o_flags /*! Set the attibutes (use PIO_FLAG values) */;
 	eint_pin_assignment_t pin_assignment;
 } eint_attr_t;
+
+
+#define I_EINT_GETVERSION _IOCTL(EINT_IOC_IDENT_CHAR, I_MCU_GETVERSION)
 
 /*! \brief IOCTL request to get info.
  */

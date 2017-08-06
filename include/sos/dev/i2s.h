@@ -39,6 +39,7 @@
 extern "C" {
 #endif
 
+#define I2S_VERSION (0x030000)
 #define I2S_IOC_IDENT_CHAR 'I'
 
 enum {
@@ -80,6 +81,9 @@ typedef struct MCU_PACK {
 	i2s_pin_assignment_t pin_assignment /*! The pin assignement values */;
 	u32 mck_mult /*! The I2S mclk multiplier value */;
 } i2s_attr_t;
+
+#define I_I2S_GETVERSION _IOCTL(I2S_IOC_IDENT_CHAR, I_MCU_GETVERSION)
+
 
 /*! \brief This request gets the I2S attributes.
  * \hideinitializer

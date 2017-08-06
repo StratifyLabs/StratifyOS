@@ -72,7 +72,7 @@ typedef struct {
  * \endcode
  *
  */
-int devfs_signal_callback(void * context, mcu_event_t * data);
+int devfs_signal_callback(void * context, const mcu_event_t * data);
 
 
 typedef struct MCU_PACK {

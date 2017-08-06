@@ -39,6 +39,7 @@
 #include "ioctl.h"
 #include "mcu/types.h"
 
+#define RADIO_VERSION (0x000000)
 #define RADIO_IOC_CHAR 'R'
 
 enum {
@@ -72,6 +73,8 @@ typedef struct MCU_PACK {
 	u16 power /*! The power output */;
 } radio_attr_t;
 
+#define I_RADIO_GETVERSION _IOCTL(RADIO_IOC_IDENT_CHAR, I_MCU_GETVERSION)
+
 
 /*! \details This request reads the radio attributes.
  *
@@ -81,7 +84,7 @@ typedef struct MCU_PACK {
  * \endcode
  * \hideinitializer
  */
-#define I_RADIO_GETINFO _IOCTLR(RADIO_IOC_CHAR, 0, radio_attr_t)
+#define I_RADIO_GETINFO _IOCTLR(RADIO_IOC_CHAR, I_MCU_GETINFO, radio_attr_t)
 
 /*! \details This request sets the radio attributes.
  *
@@ -91,7 +94,7 @@ typedef struct MCU_PACK {
  * \endcode
  * \hideinitializer
  */
-#define I_RADIO_SETATTR _IOCTLW(RADIO_IOC_CHAR, 1, radio_attr_t)
+#define I_RADIO_SETATTR _IOCTLW(RADIO_IOC_CHAR, I_MCU_SETATTR, radio_attr_t)
 
 /*! \details This request sets the radio attributes.
  *

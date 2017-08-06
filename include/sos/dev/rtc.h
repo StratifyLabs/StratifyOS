@@ -42,14 +42,15 @@
 extern "C" {
 #endif
 
+#define RTC_VERSION (0x030000)
 #define RTC_IOC_IDENT_CHAR 'r'
 
 typedef enum {
 	RTC_FLAG_NONE = 0,
 	RTC_FLAG_ENABLE /*! Set the alarm */ = (1<<0),
 	RTC_FLAG_DISABLE /*! Set the alarm */ = (1<<1),
-	RTC_FLAG_IS_CLKSRC_EXTERNAL_32768 /*! External 32.768KHz Crystal */ = (1<<2),
-	RTC_FLAG_IS_CLKSRC_INTERNAL_40000 /*! Internal 40KHz Oscillator */ = (1<<3),
+	RTC_FLAG_IS_SOURCE_EXTERNAL_32768 /*! External 32.768KHz Crystal */ = (1<<2),
+	RTC_FLAG_IS_SOURCE_INTERNAL_40000 /*! Internal 40KHz Oscillator */ = (1<<3),
 	RTC_FLAG_ENABLE_ALARM /*! Enable the alarm */ = (1<<4),
 	RTC_FLAG_DISABLE_ALARM /*! Enable the alarm */ = (1<<5),
 	RTC_FLAG_IS_ALARM_ONCE /*! One time alarm */ = (1<<6),
@@ -137,6 +138,7 @@ typedef struct MCU_PACK {
 	rtc_time_t time;
 } rtc_attr_t;
 
+#define I_RTC_GETVERSION _IOCTL(RTC_IOC_IDENT_CHAR, I_MCU_GETVERSION)
 #define I_RTC_GETINFO _IOCTLR(RTC_IOC_IDENT_CHAR, I_MCU_GETINFO, rtc_attr_t)
 #define I_RTC_SETATTR _IOCTLW(RTC_IOC_IDENT_CHAR, I_MCU_SETATTR, rtc_attr_t)
 #define I_RTC_SETACTION _IOCTLW(RTC_IOC_IDENT_CHAR, I_MCU_SETACTION, mcu_action_t)

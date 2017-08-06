@@ -24,8 +24,12 @@
 extern void mcu_core_dev_power_on(const devfs_handle_t * handle) MCU_PRIV_CODE;
 extern void mcu_core_dev_power_off(const devfs_handle_t * handle) MCU_PRIV_CODE;
 extern int mcu_core_dev_is_powered(const devfs_handle_t * handle) MCU_PRIV_CODE;
+static int get_version(const devfs_handle_t * handle, void* ctl){
+	return CORE_VERSION;
+}
 
 int (* const mcu_core_ioctl_func_table[I_MCU_TOTAL + I_CORE_TOTAL])(const devfs_handle_t*, void*) = {
+		get_version,
 		mcu_core_getinfo,
 		mcu_core_setattr,
 		mcu_core_setaction,

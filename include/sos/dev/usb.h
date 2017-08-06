@@ -45,6 +45,7 @@
 extern "C" {
 #endif
 
+#define USB_VERSION (0x030000)
 #define USB_IOC_IDENT_CHAR 'u'
 
 
@@ -56,6 +57,18 @@ typedef enum {
 	USB_FLAG_SET_DEVICE /*! device mode */ = (1<<1),
 	USB_FLAG_SET_HOST /*! host mode */ = (1<<2),
 	USB_FLAG_SET_OTG /*! on-the-go mode */ = (1<<3),
+	USB_FLAG_RESET = (1<<4),
+	USB_FLAG_ATTACH = (1<<5),
+	USB_FLAG_DETACH = (1<<6),
+	USB_FLAG_CONFIGURE = (1<<7),
+	USB_FLAG_UNCONFIGURE = (1<<8),
+	USB_FLAG_SET_ADDRESS = (1<<9),
+	USB_FLAG_RESET_ENDPOINT = (1<<10),
+	USB_FLAG_ENABLE_ENDPOINT = (1<<11),
+	USB_FLAG_DISABLE_ENDPOINT = (1<<12),
+	USB_FLAG_STALL_ENDPOINT = (1<<13),
+	USB_FLAG_UNSTALL_ENDPOINT = (1<<14),
+	USB_FLAG_CONFIGURE_ENDPOINT = (1<<15),
 } usb_flag_t;
 
 
@@ -80,162 +93,16 @@ typedef struct MCU_PACK {
 typedef struct MCU_PACK {
 	u32 o_flags /*! Configuration flags */;
 	usb_pin_assignment_t pin_assignment /*! Pin assignments */;
-	u32 freq /*! \brief The crystal oscillator frequency */;
+	u32 freq /*! The crystal oscillator frequency */;
+	u32 address /*! USB endpoint address or device address (USB_FLAG_SET_ADDRESS) */;
+	u16 max_packet_size /*! USB endpoing max packet size */;
+	u16 type; /*! USB endpoint type as bmAttributes */;
 } usb_attr_t;
 
-/*! \brief This request gets the USB attributes.
- * \hideinitializer
- */
+#define I_USB_GETVERSION _IOCTL(USB_IOC_IDENT_CHAR, I_MCU_GETVERSION)
 #define I_USB_GETINFO _IOCTLR(USB_IOC_IDENT_CHAR, I_MCU_GETINFO, usb_attr_t)
-
-/*! \brief This request sets the USB attributes.
- * \hideinitializer
- */
 #define I_USB_SETATTR _IOCTLW(USB_IOC_IDENT_CHAR, I_MCU_SETATTR, usb_attr_t)
 #define I_USB_SETACTION _IOCTLW(USB_IOC_IDENT_CHAR, I_MCU_SETACTION, mcu_action_t)
-
-/*! \brief See details below.
- * \details This request resets the USB interface.
- *
- * Example:
- * \code
- * usb_ioctl(usb_fd, I_USB_RESET);
- * \endcode
- * \hideinitializer
- */
-#define I_USB_RESET _IOCTL(USB_IOC_IDENT_CHAR, I_MCU_TOTAL + 0)
-
-/*! \brief See details below.
- * \details This request attaches the USB.
- *
- * Example:
- * \code
- * ioctl(usb_fd, I_USB_ATTACH);
- * \endcode
- * \hideinitializer
- */
-#define I_USB_ATTACH _IOCTL(USB_IOC_IDENT_CHAR, I_MCU_TOTAL + 1)
-
-/*! \brief See details below.
- * \details This request detaches the USB
- *
- * Example:
- * \code
- * ioctl(usb_fd, I_USB_DETACH);
- * \endcode
- * \hideinitializer
- */
-#define I_USB_DETACH _IOCTL(USB_IOC_IDENT_CHAR, I_MCU_TOTAL + 2)
-
-/*! \brief See details below.
- * \details This request configures the USB interface.
- *
- * Example:
- * \code
- * ioctl(usb_fd, I_USB_CONFIGURE);
- * \endcode
- * \hideinitializer
- */
-#define I_USB_CONFIGURE _IOCTL(USB_IOC_IDENT_CHAR, I_MCU_TOTAL + 3)
-
-/*! \brief See details below.
- * \details This request sets the USB address.
- *
- * Example:
- * \code
- * ioctl(usb_fd, I_USB_SETADDR, usb_addr);
- * \endcode
- * \hideinitializer
- */
-#define I_USB_SETADDR _IOCTL(USB_IOC_IDENT_CHAR, I_MCU_TOTAL + 4)
-
-/*! \brief See details below.
- * \details This request resets the specified USB endpoint.
- *
- * Example:
- * \code
- * ioctl(usb_fd, I_USB_RESETEP, endpoint_number);
- * \endcode
- * \hideinitializer
- */
-#define I_USB_RESETEP _IOCTL(USB_IOC_IDENT_CHAR, I_MCU_TOTAL + 5)
-#define I_USB_RESET_EP I_USB_RESETEP
-
-/*! \brief See details below.
- * \details This request resets the USB interface.
- *
- * Example:
- * \code
- * ioctl(usb_fd, I_USB_ENABLEEP, endpoint_number);
- * \endcode
- * \hideinitializer
- */
-#define I_USB_ENABLEEP _IOCTL(USB_IOC_IDENT_CHAR, I_MCU_TOTAL + 6)
-#define I_USB_ENABLE_EP I_USB_ENABLEEP
-
-/*! \brief See details below.
- * \details This request resets the USB interface.
- *
- * Example:
- * \code
- * ioctl(usb_fd, I_USB_DISABLEEP, endpoint_number);
- * \endcode
- * \hideinitializer
- */
-#define I_USB_DISABLEEP _IOCTL(USB_IOC_IDENT_CHAR, I_MCU_TOTAL + 7)
-#define I_USB_DISABLE_EP I_USB_DISABLEEP
-
-/*! \brief See details below.
- * \details This request resets the USB interface.
- *
- * Example:
- * \code
- * ioctl(usb_fd, I_USB_STALL_EP, endpoint_number);
- * \endcode
- * \hideinitializer
- */
-#define I_USB_STALLEP _IOCTL(USB_IOC_IDENT_CHAR, I_MCU_TOTAL + 8)
-#define I_USB_STALL_EP I_USB_STALLEP
-
-/*! \brief See details below.
- * \details This request resets the USB interface.
- *
- * Example:
- * \code
- * ioctl(usb_fd, I_USB_UNSTALLEP, (void*)endpoint_number);
- * \endcode
- * \hideinitializer
- */
-#define I_USB_UNSTALLEP _IOCTL(USB_IOC_IDENT_CHAR, I_MCU_TOTAL + 9)
-#define I_USB_UNSTALL_EP I_USB_UNSTALLEP
-
-/*! \brief See details below.
- * \details This request resets the USB interface.
- *
- * Example:
- * \code
- * ioctl(usb_fd, I_USB_CFGEP, endpoint_number);
- * \endcode
- * \hideinitializer
- */
-#define I_USB_CFGEP _IOCTL(USB_IOC_IDENT_CHAR, I_MCU_TOTAL + 10)
-#define I_USB_CFG_EP I_USB_CFGEP
-
-
-/*! \brief See details below.
- * \details This request sets the function to handle events.
- *
- * Example:
- * \code
- * void my_handler(usb_spec_event_t event);
- * if ( ioctl(usb_fd, I_USB_SETEVENTHANDLER, my_handler) ){
- * }
- * \endcode
- * \hideinitializer
- */
-#define I_USB_SETEVENTHANDLER _IOCTL(USB_IOC_IDENT_CHAR, I_MCU_TOTAL + 11)
-#define I_USB_SET_EVENT_HANDLER I_USB_SETEVENTHANDLER
-
 
 /*! \brief See details below.
  * \details This request checks to see if the USB is connected to an upstream port.
@@ -253,10 +120,10 @@ typedef struct MCU_PACK {
  *
  * \hideinitializer
  */
-#define I_USB_ISCONNECTED _IOCTL(USB_IOC_IDENT_CHAR, I_MCU_TOTAL + 12)
+#define I_USB_ISCONNECTED _IOCTL(USB_IOC_IDENT_CHAR, I_MCU_TOTAL + 0)
 #define I_USB_CONNECTED I_USB_ISCONNECTED
 
-#define I_USB_TOTAL 13
+#define I_USB_TOTAL 1
 
 #ifdef __cplusplus
 }

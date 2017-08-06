@@ -39,6 +39,7 @@
 extern "C" {
 #endif
 
+#define MCI_VERSION (0x000000)
 #define MCI_IOC_IDENT_CHAR 'm'
 
 
@@ -60,6 +61,8 @@ typedef struct MCU_PACK {
 	uint16_t mode /*! \brief OR the mci_mode_t */;
 	uint32_t freq /*! \brief MCI clock frequency */;
 } mci_attr_t;
+
+#define I_MCI_GETVERSION _IOCTL(MCI_IOC_IDENT_CHAR, I_MCU_GETVERSION)
 
 
 /*! \brief IOCTL request to get the attributes.

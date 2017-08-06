@@ -39,7 +39,7 @@
 
 #include "mcu/types.h"
 
-
+#define DEVFIFO_VERSION (0x030000)
 #define DEVFIFO_IOC_CHAR 'f'
 
 /*! \details This structure defines the attributes used
@@ -54,6 +54,8 @@ typedef struct MCU_PACK {
 
 typedef devfifo_info_t devfifo_attr_t;
 
+#define I_DEVFIFO_GETVERSION _IOCTL(DEVFIFO_IOC_IDENT_CHAR, I_MCU_GETVERSION)
+
 /*! \details This request gets the size of the FIFO in bytes.
  *
  * Example:
@@ -63,9 +65,9 @@ typedef devfifo_info_t devfifo_attr_t;
  * \endcode
  * \hideinitializer
  */
-#define I_DEVFIFO_GETINFO _IOCTLR(DEVFIFO_IOC_CHAR, 0, devfifo_info_t)
+#define I_DEVFIFO_GETINFO _IOCTLR(DEVFIFO_IOC_CHAR, I_MCU_GETINFO, devfifo_info_t)
 
-#define I_DEVFIFO_TOTAL 1
+#define I_DEVFIFO_TOTAL 2
 
 /*! \details This is used for the configuration of the device.
  *

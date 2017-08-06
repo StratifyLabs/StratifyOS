@@ -52,19 +52,6 @@ int mcu_usb_close(const devfs_handle_t * cfg) MCU_PRIV_CODE;
 int mcu_usb_getinfo(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
 int mcu_usb_setattr(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
 int mcu_usb_setaction(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-
-int mcu_usb_reset(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_usb_attach(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_usb_detach(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_usb_configure(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_usb_setaddr(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_usb_resetep(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_usb_enableep(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_usb_disableep(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_usb_stallep(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_usb_unstallep(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_usb_cfgep(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_usb_seteventhandler(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
 int mcu_usb_isconnected(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
 
 

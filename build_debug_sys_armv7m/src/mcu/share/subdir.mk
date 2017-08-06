@@ -29,7 +29,6 @@ C_SRCS += \
 ../src/mcu/share/ssp.c \
 ../src/mcu/share/sys.c \
 ../src/mcu/share/tmr.c \
-../src/mcu/share/tmr_simple.c \
 ../src/mcu/share/uart.c \
 ../src/mcu/share/usb.c 
 
@@ -59,7 +58,6 @@ OBJS += \
 ./src/mcu/share/ssp.o \
 ./src/mcu/share/sys.o \
 ./src/mcu/share/tmr.o \
-./src/mcu/share/tmr_simple.o \
 ./src/mcu/share/uart.o \
 ./src/mcu/share/usb.o 
 
@@ -89,7 +87,6 @@ C_DEPS += \
 ./src/mcu/share/ssp.d \
 ./src/mcu/share/sys.d \
 ./src/mcu/share/tmr.d \
-./src/mcu/share/tmr_simple.d \
 ./src/mcu/share/uart.d \
 ./src/mcu/share/usb.d 
 

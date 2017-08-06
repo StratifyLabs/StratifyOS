@@ -380,15 +380,4 @@ typedef struct MCU_PACK {
 
 
 
-//! \todo -- add an initialization function
-
-//HID Request functions
-uint32_t usb_dev_hid_get_report();
-uint32_t usb_dev_hid_set_report();
-uint32_t usb_dev_hid_get_idle();
-uint32_t usb_dev_hid_set_idle();
-uint32_t usb_dev_hid_get_protocol();
-uint32_t usb_dev_hid_set_protocol();
-
-
 #endif  /* MCU_USBD_HID_H_ */

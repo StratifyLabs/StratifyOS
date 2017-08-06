@@ -38,6 +38,7 @@
 #include "fifo.h"
 #include "uart.h"
 
+
 #endif /* SOS_DEV_UARTFIFO_H_ */
 
 

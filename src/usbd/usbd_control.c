@@ -1,4 +1,4 @@
-/* Copyright 2011-2016 Tyler Gilbert; 
+/* Copyright 2011-2017 Tyler Gilbert;
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -28,10 +28,11 @@
 #include "mcu/debug.h"
 #include "device/sys.h"
 #include "usbd/control.h"
+#include "usbd_local.h"
 
 
 static void stall(usbd_control_t * context){
-	mcu_usb_stallep(context->handle, (void*)(USBD_ENDPOINT_ADDRESS_IN|0x00));
+	usbd_control_stall_endpoint(context->handle, (USBD_ENDPOINT_ADDRESS_IN|0x00));
 	context->data.nbyte = 0;
 }
 
@@ -48,13 +49,12 @@ void usbd_control_priv_init(void * args){
 	mcu_usb_setaction(context->handle, &action);
 
 
-	mcu_usb_attach(context->handle, NULL);
+	usbd_control_attach(context->handle);
 }
 
-int usbd_control_handler(void * context_object, mcu_event_t * usb_event /*! Callback data */){
+int usbd_control_handler(void * context_object, const mcu_event_t * usb_event /*! Callback data */){
 	u32 o_events = usb_event->o_events;
 	usbd_control_t * context = context_object;
-
 
 	if ( o_events & MCU_EVENT_FLAG_SETUP ){
 		//read the setup packet
@@ -113,11 +113,11 @@ int usbd_control_handler(void * context_object, mcu_event_t * usb_event /*! Call
 		} else {
 			if (context->addr & USBD_ENDPOINT_ADDRESS_IN) {
 				context->addr &= 0x7F;
-				mcu_usb_setaddr(context->handle, (void*)((int)context->addr));
+				usbd_control_set_address(context->handle, context->addr);
 			}
 		}
 	} else if( o_events & MCU_EVENT_FLAG_STALL ){
-		mcu_usb_unstallep(context->handle, (void*)(u32)((usb_event_t*)usb_event->data)->epnum);
+		usbd_control_unstall_endpoint(context->handle, ((usb_event_t*)usb_event->data)->epnum);
 	}
 
 	return 1;
@@ -133,8 +133,8 @@ void * usbd_control_add_ptr(usbd_control_t * context, void * ptr, u32 value){
 /*! \details This function reads the setup packet as part of the setup stage.
  */
 void usbd_control_handler_setup_stage(usbd_control_t * context){
-	mcu_usb_rd_ep(context->handle, 0x00, (uint8_t *)&(context->setup_pkt));
-	context->data.nbyte = context->setup_pkt.wLength;
+	mcu_usb_rd_ep(context->handle, 0x00, (u8 *)&(context->setup_packet));
+	context->data.nbyte = context->setup_packet.wLength;
 	context->data.max = context->data.nbyte;
 }
 
@@ -165,14 +165,96 @@ void usbd_control_dataout_stage(usbd_control_t * context){
 
 
 //send a zero length packet
-void usbd_control_statusin_stage (usbd_control_t * context){
+void usbd_control_statusin_stage(usbd_control_t * context){
 	mcu_usb_wr_ep(context->handle, 0x80, NULL, 0);
 }
 
 //receive a zero length packet
-void usbd_control_statusout_stage (usbd_control_t * context){
+void usbd_control_statusout_stage(usbd_control_t * context){
 	mcu_usb_rd_ep(context->handle, 0x00, context->buf);
 }
+
+int usbd_control_reset(const devfs_handle_t * handle){
+	usb_attr_t attr;
+	attr.o_flags = USB_FLAG_RESET;
+	return mcu_usb_setattr(handle, &attr);
+}
+
+int usbd_control_attach(const devfs_handle_t * handle){
+	usb_attr_t attr;
+	attr.o_flags = USB_FLAG_ATTACH;
+	return mcu_usb_setattr(handle, &attr);
+}
+
+int usbd_control_detach(const devfs_handle_t * handle){
+	usb_attr_t attr;
+	attr.o_flags = USB_FLAG_DETACH;
+	return mcu_usb_setattr(handle, &attr);
+}
+
+int usbd_control_configure(const devfs_handle_t * handle){
+	usb_attr_t attr;
+	attr.o_flags = USB_FLAG_CONFIGURE;
+	return mcu_usb_setattr(handle, &attr);
+}
+
+int usbd_control_unconfigure(const devfs_handle_t * handle){
+	usb_attr_t attr;
+	attr.o_flags = USB_FLAG_UNCONFIGURE;
+	return mcu_usb_setattr(handle, &attr);
+}
+
+int usbd_control_set_address(const devfs_handle_t * handle, u8 address){
+	usb_attr_t attr;
+	attr.o_flags = USB_FLAG_SET_ADDRESS;
+	attr.address = address;
+	return mcu_usb_setattr(handle, &attr);
+}
+
+int usbd_control_reset_endpoint(const devfs_handle_t * handle, u8 endpoint_number){
+	usb_attr_t attr;
+	attr.o_flags = USB_FLAG_RESET_ENDPOINT;
+	attr.address = endpoint_number;
+	return mcu_usb_setattr(handle, &attr);
+}
+
+int usbd_control_enable_endpoint(const devfs_handle_t * handle, u8 endpoint_number){
+	usb_attr_t attr;
+	attr.o_flags = USB_FLAG_ENABLE_ENDPOINT;
+	attr.address = endpoint_number;
+	return mcu_usb_setattr(handle, &attr);
+}
+
+int usbd_control_disable_endpoint(const devfs_handle_t * handle, u8 endpoint_number){
+	usb_attr_t attr;
+	attr.o_flags = USB_FLAG_DISABLE_ENDPOINT;
+	attr.address = endpoint_number;
+	return mcu_usb_setattr(handle, &attr);
+}
+
+int usbd_control_stall_endpoint(const devfs_handle_t * handle, u8 endpoint_number){
+	usb_attr_t attr;
+	attr.o_flags = USB_FLAG_STALL_ENDPOINT;
+	attr.address = endpoint_number;
+	return mcu_usb_setattr(handle, &attr);
+}
+
+int usbd_control_unstall_endpoint(const devfs_handle_t * handle, u8 endpoint_number){
+	usb_attr_t attr;
+	attr.o_flags = USB_FLAG_UNSTALL_ENDPOINT;
+	attr.address = endpoint_number;
+	return mcu_usb_setattr(handle, &attr);
+}
+
+int usbd_control_configure_endpoint(const devfs_handle_t * handle, const usbd_endpoint_descriptor_t * endpoint_descriptor){
+	usb_attr_t attr;
+	attr.o_flags = USB_FLAG_CONFIGURE_ENDPOINT;
+	attr.address = endpoint_descriptor->bEndpointAddress;
+	attr.max_packet_size = endpoint_descriptor->wMaxPacketSize;
+	attr.type = endpoint_descriptor->bmAttributes;
+	return mcu_usb_setattr(handle, &attr);
+}
+
 
 
 

@@ -201,7 +201,7 @@ void complete_spi_write(const devfs_handle_t * cfg, uint32_t ignore){
 	if( channel.value > (1000000*2048) ){
 		channel.value -= (1000000*2048);
 	}
-	mcu_tmr_setoc(&tmr_handle, &channel);
+	mcu_tmr_setchannel(&tmr_handle, &channel);
 
 	//everything is set; turn the timer back on
 	mcu_tmr_enable(&tmr_handle, 0);
@@ -249,38 +249,7 @@ int sst25vf_tmr_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 }
 
 int sst25vf_tmr_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
-	sst25vf_config_t * sst_cfg = (sst25vf_config_t*)cfg->config;
-	switch(request){
-	case I_DRIVE_PROTECT:
-		sst25vf_share_global_protect(cfg);
-		break;
-	case I_DRIVE_UNPROTECT:
-		sst25vf_share_global_unprotect(cfg);
-		break;
-	case I_DRIVE_ERASE_BLOCK:
-		sst25vf_share_block_erase_4kb(cfg, (ssize_t)ctl);
-		break;
-	case I_DRIVE_ERASE_DEVICE:
-		sst25vf_share_chip_erase(cfg);
-		break;
-	case I_DRIVE_POWER_DOWN:
-		sst25vf_share_power_down(cfg);
-		break;
-	case I_DRIVE_POWER_UP:
-		sst25vf_share_power_up(cfg);
-		break;
-	case I_DRIVE_GET_BLOCKSIZE:
-		return SST25VF_BLOCK_ERASE_SIZE;
-	case I_DRIVE_GET_DEVICE_ERASETIME:
-		return SST25VF_CHIP_ERASE_TIME;
-	case I_DRIVE_GET_BLOCK_ERASETIME:
-		return SST25VF_BLOCK_ERASE_TIME;
-	case I_DRIVE_GET_SIZE:
-		return sst_cfg->size;
-	default:
-		return mcu_spi_ioctl(cfg, request, ctl);
-	}
-	return 0;
+	return sst25vf_share_ioctl(cfg, request, ctl);
 }
 
 int sst25vf_tmr_close(const devfs_handle_t * cfg){

@@ -89,6 +89,7 @@
 extern "C" {
 #endif
 
+#define PIO_VERSION (0x030000)
 #define PIO_IOC_IDENT_CHAR 'p'
 
 typedef enum {
@@ -123,6 +124,8 @@ typedef struct MCU_PACK {
 	u32 o_flags;
 	u32 o_pinmask;
 } pio_attr_t;
+
+#define I_PIO_GETVERSION _IOCTL(PIO_IOC_IDENT_CHAR, I_MCU_GETVERSION)
 
 
 /*! \brief IOCTL request to get the attributes.

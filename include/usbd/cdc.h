@@ -39,7 +39,8 @@
 #define MCU_USBD_CDC_H_
 
 #include "mcu/types.h"
-#include "typedefs.h"
+
+#include "types.h"
 
 //bInterfaceSubClass
 #define USBD_CDC_INTERFACE_SUBCLASS_ACM 0x02

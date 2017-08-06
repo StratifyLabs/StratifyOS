@@ -95,6 +95,7 @@
 extern "C" {
 #endif
 
+#define UART_VERSION (0x030000)
 #define UART_IOC_IDENT_CHAR 'u'
 
 
@@ -135,15 +136,8 @@ typedef struct MCU_PACK {
 	u8 width;
 } uart_attr_t;
 
-/*! \brief This request gets the UART attributes.
- * \hideinitializer
- *
- */
+#define I_UART_GETVERSION _IOCTL(UART_IOC_IDENT_CHAR, I_MCU_GETVERSION)
 #define I_UART_GETINFO _IOCTLR(UART_IOC_IDENT_CHAR, I_MCU_GETINFO, uart_info_t)
-
-/*! \brief This request sets the UART attributes.
- * \hideinitializer
- */
 #define I_UART_SETATTR _IOCTLW(UART_IOC_IDENT_CHAR, I_MCU_SETATTR, uart_attr_t)
 #define I_UART_SETACTION _IOCTLW(UART_IOC_IDENT_CHAR, I_MCU_SETACTION, mcu_action_t)
 

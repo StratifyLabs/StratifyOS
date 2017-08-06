@@ -41,6 +41,7 @@
 extern "C" {
 #endif
 
+#define MEM_VERSION (0x030000)
 #define MEM_IOC_IDENT_CHAR 'M'
 
 
@@ -89,9 +90,7 @@ typedef struct MCU_PACK {
 	u8 buf[256] /*! A buffer for writing to the flash */;
 } mem_writepage_t;
 
-/*! \brief This request gets the memory attributes.
- * \hideinitializer
- */
+#define I_MEM_GETVERSION _IOCTL(MEM_IOC_IDENT_CHAR, I_MCU_GETVERSION)
 #define I_MEM_GETINFO _IOCTLR(MEM_IOC_IDENT_CHAR, I_MCU_GETINFO, mem_info_t)
 #define I_MEM_SETATTR _IOCTLW(MEM_IOC_IDENT_CHAR, I_MCU_SETATTR, mem_attr_t)
 #define I_MEM_SETACTION _IOCTLW(MEM_IOC_IDENT_CHAR, I_MCU_SETACTION, mem_attr_t)

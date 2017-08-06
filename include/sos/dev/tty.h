@@ -43,6 +43,7 @@ extern "C" {
 #endif
 
 
+#define TTY_VERSION (0x000000)
 #define TTY_IOC_CHAR 't'
 
 /*! \brief This request sets the terminal attributes

@@ -177,6 +177,73 @@ void sst25vf_share_read_id(const devfs_handle_t * handle, char * dest){
 	sst25vf_share_deassert_cs(handle);
 }
 
+int sst25vf_share_ioctl(const devfs_handle_t * handle, int request, void * ctl){
+	sst25vf_config_t * sst_cfg = (sst25vf_config_t*)handle->config;
+	sst25vf_state_t * state = (sst25vf_state_t*)handle->state;
+	drive_info_t * info;
+	drive_attr_t * attr;
+	u32 o_flags;
+	int i;
+
+	switch(request){
+	case I_DRIVE_GETVERSION:
+		return DRIVE_VERSION;
+
+	case I_DRIVE_SETATTR:
+		attr = ctl;
+		o_flags = attr->o_flags;
+
+		if( o_flags & (DRIVE_FLAG_ERASE_DEVICE|DRIVE_FLAG_ERASE_BLOCKS) ){
+			if( state->prot == 1 ){
+				errno = EROFS;
+				return -1;
+			}
+
+			if( o_flags & DRIVE_FLAG_ERASE_DEVICE ){
+				sst25vf_share_chip_erase(handle);
+			}
+
+			if( o_flags & DRIVE_FLAG_ERASE_BLOCKS ){
+				for(i=attr->start; i <= attr->end; i++){
+					sst25vf_share_block_erase_4kb(handle, attr->start);
+				}
+			}
+		}
+
+		if( o_flags & DRIVE_FLAG_PROTECT ){
+			sst25vf_share_global_protect(handle);
+		}
+
+		if( o_flags & DRIVE_FLAG_UNPROTECT ){
+			sst25vf_share_global_unprotect(handle);
+		}
+
+		if( o_flags & DRIVE_FLAG_POWERUP ){
+			sst25vf_share_power_up(handle);
+		}
+
+		if( o_flags & DRIVE_FLAG_POWERDOWN ){
+			sst25vf_share_power_down(handle);
+		}
+
+		break;
+	case I_DRIVE_GETINFO:
+		info = ctl;
+		info->address_size = 1;
+		info->bitrate = 50000000;
+		info->erase_block_size = SST25VF_BLOCK_ERASE_SIZE;
+		info->erase_block_time = SST25VF_BLOCK_ERASE_TIME;
+		info->erase_device_time = SST25VF_CHIP_ERASE_TIME;
+		info->num_write_blocks = sst_cfg->size / SST25VF_BLOCK_SIZE;
+		info->write_block_size = SST25VF_BLOCK_SIZE;
+		return 0;
+	default:
+		return mcu_spi_ioctl(handle, request, ctl);
+	}
+
+	return 0;
+}
+
 
 
 

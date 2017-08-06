@@ -26,8 +26,12 @@ extern void mcu_i2c_dev_power_off(const devfs_handle_t * handle);
 extern int mcu_i2c_dev_is_powered(const devfs_handle_t * handle);
 extern int mcu_i2c_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop);
 extern int mcu_i2c_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop);
+static int get_version(const devfs_handle_t * handle, void* ctl){
+	return I2C_VERSION;
+}
 
 int (* const i2c_ioctl_func_table[I_MCU_TOTAL + I_I2C_TOTAL])(const devfs_handle_t*, void*) = {
+		get_version,
 		mcu_i2c_getinfo,
 		mcu_i2c_setattr,
 		mcu_i2c_setaction,

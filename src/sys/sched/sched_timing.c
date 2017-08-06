@@ -33,10 +33,10 @@
 
 static volatile u32 sched_usecond_counter MCU_SYS_MEM;
 
-static int usecond_overflow_event(void * context, mcu_event_t * data);
+static int usecond_overflow_event(void * context, const mcu_event_t * data);
 static int open_usecond_tmr();
 
-static int priv_usecond_match_event(void * context, mcu_event_t * data);
+static int priv_usecond_match_event(void * context, const mcu_event_t * data);
 
 int sched_timing_init(){
 	if ( open_usecond_tmr() < 0 ){
@@ -81,7 +81,7 @@ void sched_priv_timedblock(void * block_object, struct sched_timeval * abs_time)
 
 			//Read the current OC value to see if it needs to be updated
 			chan_req.loc = SCHED_USECOND_TMR_SLEEP_OC;
-			mcu_tmr_getoc(&tmr_handle, &chan_req);
+			mcu_tmr_getchannel(&tmr_handle, &chan_req);
 			if ( abs_time->tv_usec < chan_req.value ){
 				chan_req.value = abs_time->tv_usec;
 			}
@@ -89,7 +89,7 @@ void sched_priv_timedblock(void * block_object, struct sched_timeval * abs_time)
 			//See if abs_time is in the past
 			now = (u32)mcu_tmr_get(&tmr_handle, NULL);
 			if( abs_time->tv_usec > (now+40) ){ //needs to be enough in the future to allow the OC to be set before the timer passes it
-				mcu_tmr_setoc(&tmr_handle, &chan_req);
+				mcu_tmr_setchannel(&tmr_handle, &chan_req);
 				time_sleep = true;
 			}
 
@@ -136,13 +136,13 @@ void sched_priv_get_realtime(struct sched_timeval * tv){
 	tv->tv_usec = (u32)mcu_tmr_get(&tmr_handle, NULL);
 }
 
-int usecond_overflow_event(void * context, mcu_event_t * data){
+int usecond_overflow_event(void * context, const mcu_event_t * data){
 	sched_usecond_counter++;
 	priv_usecond_match_event(NULL, 0);
 	return 1; //do not clear callback
 }
 
-int priv_usecond_match_event(void * context, mcu_event_t * data){
+int priv_usecond_match_event(void * context, const mcu_event_t * data){
 	int i;
 	u32 next;
 	u32 tmp;
@@ -185,7 +185,7 @@ int priv_usecond_match_event(void * context, mcu_event_t * data){
 	if ( next < overflow ){
 		chan_req.value = next;
 	}
-	mcu_tmr_setoc(&tmr_handle, &chan_req);
+	mcu_tmr_setchannel(&tmr_handle, &chan_req);
 
 	sched_priv_update_on_wake(new_priority);
 
@@ -212,7 +212,7 @@ int open_usecond_tmr(){
 
 	memset(&attr, 0, sizeof(tmr_attr_t));
 	attr.freq = 1000000;
-	attr.o_flags = TMR_FLAG_SET_TIMER | TMR_FLAG_IS_CLKSRC_CPU;
+	attr.o_flags = TMR_FLAG_SET_TIMER | TMR_FLAG_IS_SOURCE_CPU;
 	memset(&attr.pin_assignment, 0xff, sizeof(tmr_pin_assignment_t));
 
 	err = mcu_tmr_setattr(&tmr, &attr);
@@ -230,7 +230,7 @@ int open_usecond_tmr(){
 	//Set the reset output compare value to reset the clock every 32 seconds
 	chan_req.loc = SCHED_USECOND_TMR_RESET_OC;
 	chan_req.value = STFY_USECOND_PERIOD; //overflow every SCHED_TIMEVAL_SECONDS seconds
-	err = mcu_tmr_setoc(&tmr, &chan_req);
+	err = mcu_tmr_setchannel(&tmr, &chan_req);
 	if(err){ return -1; }
 
 	attr.channel.loc = SCHED_USECOND_TMR_RESET_OC;
@@ -256,7 +256,7 @@ int open_usecond_tmr(){
 	//This sets up the output compare unit used with the usleep() function
 	chan_req.loc = SCHED_USECOND_TMR_SLEEP_OC;
 	chan_req.value = STFY_USECOND_PERIOD + 1;
-	err = mcu_tmr_setoc(&tmr, &chan_req);
+	err = mcu_tmr_setchannel(&tmr, &chan_req);
 	if ( err ){ return -1; }
 
 	action.channel = SCHED_USECOND_TMR_SLEEP_OC;

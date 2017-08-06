@@ -33,7 +33,7 @@
 #include "mcu/types.h"
 
 #include "defines.h"
-#include "typedefs.h"
+#include "types.h"
 
 //#define USBD_PORT 0
 #define USBD_ALT_SETTING_SIZE 16
@@ -44,7 +44,7 @@ typedef struct {
 	const void * const device;
 	const void * const config;
 	const void * const string;
-	int (* const class_event_handler)(void * context, mcu_event_t * event);
+	int (* const class_event_handler)(void * context, const mcu_event_t * event);
 } usbd_control_constants_t;
 
 #define MCU_CORE_USB_MAX_PACKET_ZERO_VALUE 64
@@ -58,7 +58,7 @@ typedef struct {
 } usbd_control_data_t;
 
 typedef struct MCU_PACK {
-	usbd_setup_packet_t setup_pkt;
+	usbd_setup_packet_t setup_packet;
 	usbd_control_data_t data;
 	u16 status;
 	u8 addr;
@@ -74,7 +74,7 @@ typedef struct MCU_PACK {
 } usbd_control_t;
 
 void usbd_control_priv_init(void * context);
-int usbd_control_handler(void * context, mcu_event_t * data);
+int usbd_control_handler(void * context, const mcu_event_t * data);
 
 void usbd_control_handler_setup_stage(usbd_control_t * context);
 void usbd_control_datain_stage(usbd_control_t * context) MCU_NEVER_INLINE;
@@ -84,19 +84,19 @@ void usbd_control_statusin_stage(usbd_control_t * context);
 void usbd_control_statusout_stage (usbd_control_t * context);
 
 static inline int usbd_control_setup_request_type(usbd_control_t * context){
-	return context->setup_pkt.bmRequestType.bitmap_t.type;
+	return context->setup_packet.bmRequestType.bitmap_t.type;
 }
 
 static inline int usbd_control_setup_interface(usbd_control_t * context){
-	return context->setup_pkt.wIndex.b[0];
+	return context->setup_packet.wIndex.b[0];
 }
 
 static inline int usbd_control_setup_request(usbd_control_t * context){
-	return context->setup_pkt.bRequest;
+	return context->setup_packet.bRequest;
 }
 
 static inline int usbd_control_setup_request_direction(usbd_control_t * context){
-	return context->setup_pkt.bmRequestType.bitmap_t.dir;
+	return context->setup_packet.bmRequestType.bitmap_t.dir;
 }
 
 static inline void usbd_control_prepare_buffer(usbd_control_t * context){

@@ -32,17 +32,18 @@
 #if MCU_USB_PORTS > 0
 
 static u32 usb_irq_mask;
-static usb_attr_t usb_ctl;
 static void usb_connect(u32 con);
-static inline void usb_cfg(const devfs_handle_t * handle, u32 cfg) MCU_ALWAYS_INLINE;
-static inline void usb_set_addr(const devfs_handle_t * handle, u32 addr) MCU_ALWAYS_INLINE;
-static inline void usb_reset_ep(const devfs_handle_t * handle, u32 endpoint_num) MCU_ALWAYS_INLINE;
-static inline void usb_enable_ep(const devfs_handle_t * handle, u32 endpoint_num) MCU_ALWAYS_INLINE;
-static inline void usb_disable_ep(const devfs_handle_t * handle, u32 endpoint_num) MCU_ALWAYS_INLINE;
-static inline void usb_set_stall_ep(const devfs_handle_t * handle, u32 endpoint_num) MCU_ALWAYS_INLINE;
-static inline void usb_clr_stall_ep(const devfs_handle_t * handle, u32 endpoint_num) MCU_ALWAYS_INLINE;
-static inline void usb_cfg_ep(const devfs_handle_t * handle, void * ep_desc) MCU_ALWAYS_INLINE;
+static inline void usb_configure(const devfs_handle_t * handle, u32 cfg) MCU_ALWAYS_INLINE;
+static inline void usb_set_address(const devfs_handle_t * handle, u32 addr) MCU_ALWAYS_INLINE;
+static inline void usb_reset_endpoint(const devfs_handle_t * handle, u32 endpoint_num) MCU_ALWAYS_INLINE;
+static inline void usb_enable_endpoint(const devfs_handle_t * handle, u32 endpoint_num) MCU_ALWAYS_INLINE;
+static inline void usb_disable_endpoint(const devfs_handle_t * handle, u32 endpoint_num) MCU_ALWAYS_INLINE;
+static inline void usb_stall_endpoint(const devfs_handle_t * handle, u32 endpoint_num) MCU_ALWAYS_INLINE;
+static inline void usb_unstall_endpoint(const devfs_handle_t * handle, u32 endpoint_num) MCU_ALWAYS_INLINE;
+static inline void usb_configure_endpoint(const devfs_handle_t * handle, u32 endpoint_num, u32 max_packet_size) MCU_ALWAYS_INLINE;
+static inline void usb_reset(const devfs_handle_t * handle);
 static inline void slow_ep_int() MCU_ALWAYS_INLINE;
+
 
 typedef struct {
 	mcu_event_handler_t write[DEV_USB_LOGICAL_ENDPOINT_COUNT];
@@ -152,7 +153,10 @@ int mcu_usb_dev_is_powered(const devfs_handle_t * handle){
 
 
 int mcu_usb_getinfo(const devfs_handle_t * handle, void * ctl){
-	memcpy(ctl, &usb_ctl, sizeof(usb_attr_t));
+	usb_info_t * info = ctl;
+
+	info->o_flags = 0;
+	info->o_events = 0;
 	return 0;
 }
 
@@ -163,48 +167,72 @@ int mcu_usb_setattr(const devfs_handle_t * handle, void * ctl){
 	if( attr == 0 ){
 		return -1;
 	}
+	u32 o_flags = attr->o_flags;
 
-	if ((attr->o_flags & USB_FLAG_SET_DEVICE) == 0){
-		errno = EINVAL;
-		return -1 - offsetof(usb_attr_t, o_flags);
+	if( o_flags & USB_FLAG_SET_DEVICE ){
+		//Start the USB clock
+		mcu_core_setusbclock(attr->freq);
+
+		usb_local.read_ready = 0;
+		usb_local.write_pending = 0;
+
+		if( mcu_set_pin_assignment(
+				&(attr->pin_assignment),
+				MCU_CONFIG_PIN_ASSIGNMENT(usb_config_t, handle),
+				MCU_PIN_ASSIGNMENT_COUNT(usb_pin_assignment_t),
+				CORE_PERIPH_USB, port, configure_pin, 0) < 0 ){
+			return -1;
+		}
+
+		usb_irq_mask = DEV_STAT_INT | EP_FAST_INT | EP_SLOW_INT;
+
+		cortexm_enable_irq((void*)USB_IRQn);  //Enable the USB interrupt
+		usb_reset(handle);
+		usb_set_address(handle,0);
 	}
 
-	//Start the USB clock
-	mcu_core_setusbclock(attr->freq);
+	if( o_flags & USB_FLAG_RESET ){ usb_reset(handle); }
+	if( o_flags & USB_FLAG_ATTACH ){ usb_connect(1); }
+	if( o_flags & USB_FLAG_DETACH ){ usb_connect(0); }
+	if( o_flags & USB_FLAG_CONFIGURE ){ usb_configure(handle, 1); }
+	if( o_flags & USB_FLAG_UNCONFIGURE ){ usb_configure(handle, 0); }
 
-	memcpy(&usb_ctl, ctl, sizeof(usb_attr_t));
-
-	usb_local.read_ready = 0;
-	usb_local.write_pending = 0;
-
-	if( mcu_set_pin_assignment(
-			&(attr->pin_assignment),
-			MCU_CONFIG_PIN_ASSIGNMENT(usb_config_t, handle),
-			MCU_PIN_ASSIGNMENT_COUNT(usb_pin_assignment_t),
-			CORE_PERIPH_USB, port, configure_pin, 0) < 0 ){
-		return -1;
+	if( o_flags & USB_FLAG_SET_ADDRESS ){
+		usb_set_address(handle, attr->address);
 	}
 
-	usb_irq_mask = DEV_STAT_INT | EP_FAST_INT | EP_SLOW_INT;
+	if( o_flags & USB_FLAG_RESET_ENDPOINT ){
+		usb_reset_endpoint(handle, attr->address);
+	}
 
-	cortexm_enable_irq((void*)USB_IRQn);  //Enable the USB interrupt
-	mcu_usb_reset(0, NULL);
-	usb_set_addr(0,0);
+	if( o_flags & USB_FLAG_ENABLE_ENDPOINT ){
+		usb_enable_endpoint(handle, attr->address);
+	}
+
+	if( o_flags & USB_FLAG_DISABLE_ENDPOINT ){
+		usb_disable_endpoint(handle, attr->address);
+	}
+
+	if( o_flags & USB_FLAG_STALL_ENDPOINT ){
+		usb_stall_endpoint(handle, attr->address);
+	}
+
+	if( o_flags & USB_FLAG_UNSTALL_ENDPOINT ){
+		usb_unstall_endpoint(handle, attr->address);
+	}
+
+	if( o_flags & USB_FLAG_CONFIGURE_ENDPOINT ){
+		usb_configure_endpoint(handle, attr->address, attr->max_packet_size);
+	}
+
+
+
+
 	return 0;
 }
 
 void usb_connect(u32 con){
 	usb_sie_wr_cmd_dat(USB_SIE_CMD_SET_DEV_STAT, USB_SIE_DAT_WR_BYTE(con ? DEV_CON : 0));
-}
-
-int mcu_usb_attach(const devfs_handle_t * handle, void * ctl){
-	usb_connect(1);
-	return 0;
-}
-
-int mcu_usb_detach(const devfs_handle_t * handle, void * ctl){
-	usb_connect(0);
-	return 0;
 }
 
 int mcu_usb_setaction(const devfs_handle_t * handle, void * ctl){
@@ -214,6 +242,14 @@ int mcu_usb_setaction(const devfs_handle_t * handle, void * ctl){
 
 	cortexm_set_irq_prio(USB_IRQn, action->prio);
 	log_ep = action->channel & ~0x80;
+
+	if( action->o_events &
+			(MCU_EVENT_FLAG_POWER|MCU_EVENT_FLAG_SUSPEND|MCU_EVENT_FLAG_STALL|MCU_EVENT_FLAG_SOF|MCU_EVENT_FLAG_WAKEUP)
+			){
+		memcpy(&(usb_local.special_event_handler), ctl, sizeof(mcu_event_handler_t));
+		return 0;
+	}
+
 
 	if( action->channel & 0x80 ){
 		if( (action->handler.callback == 0) && (action->o_events & MCU_EVENT_FLAG_WRITE_COMPLETE) ){
@@ -256,53 +292,6 @@ int mcu_usb_setaction(const devfs_handle_t * handle, void * ctl){
 		errno = EINVAL;
 	}
 	return ret;
-}
-
-int mcu_usb_configure(const devfs_handle_t * handle, void * ctl){
-	usb_cfg(handle, (int)ctl);
-	return 0;
-}
-
-int mcu_usb_setaddr(const devfs_handle_t * handle, void * ctl){
-	usb_set_addr(handle, (u32)ctl);
-	return 0;
-}
-
-int mcu_usb_resetep(const devfs_handle_t * handle, void * ctl){
-	usb_reset_ep(handle, (u32)ctl);
-	return 0;
-}
-
-int mcu_usb_enableep(const devfs_handle_t * handle, void * ctl){
-	usb_enable_ep(handle, (u32)ctl);
-	return 0;
-}
-
-int mcu_usb_disableep(const devfs_handle_t * handle, void * ctl){
-	usb_disable_ep(handle, (u32)ctl);
-	return 0;
-}
-
-int mcu_usb_stallep(const devfs_handle_t * handle, void * ctl){
-	int ep = (int)ctl;
-	usb_set_stall_ep(handle, ep);
-	return 0;
-}
-
-int mcu_usb_unstallep(const devfs_handle_t * handle, void * ctl){
-	int ep = (int)ctl;
-	usb_clr_stall_ep(handle, ep);
-	return 0;
-}
-
-int mcu_usb_cfgep(const devfs_handle_t * handle, void * ctl){
-	usb_cfg_ep(handle, ctl);
-	return 0;
-}
-
-int mcu_usb_seteventhandler(const devfs_handle_t * handle, void * ctl){
-	memcpy(&(usb_local.special_event_handler), ctl, sizeof(mcu_event_handler_t));
-	return 0;
 }
 
 int mcu_usb_dev_read(const devfs_handle_t * handle, devfs_async_t * rop){
@@ -373,9 +362,9 @@ int mcu_usb_dev_write(const devfs_handle_t * handle, devfs_async_t * wop){
 	wop->nbyte = mcu_usb_wr_ep(handle, loc, wop->buf, wop->nbyte);
 
 	if ( wop->nbyte < 0 ){
-		usb_disable_ep(handle, loc );
-		usb_reset_ep(handle, loc );
-		usb_enable_ep(handle, loc );
+		usb_disable_endpoint(handle, loc );
+		usb_reset_endpoint(handle, loc );
+		usb_enable_endpoint(handle, loc );
 		usb_local.write_pending &= ~(1<<ep);
 		return -2;
 	}
@@ -392,7 +381,7 @@ u32 calc_ep_addr (u32 endpoint_num){
 	return (val);
 }
 
-int mcu_usb_reset(const devfs_handle_t * handle, void * cfg){
+void usb_reset(const devfs_handle_t * handle){
 
 	//Set max packet size of phy ep 0
 	LPC_USB->EpInd = 0;
@@ -408,52 +397,48 @@ int mcu_usb_reset(const devfs_handle_t * handle, void * cfg){
 	LPC_USB->EpIntEn   = 0xFFFFFFFF ^ USB_DMA_EP;
 	LPC_USB->DevIntClr = 0xFFFFFFFF;
 	LPC_USB->DevIntEn = usb_irq_mask;
-
-	return 0;
 }
 
 void usb_wakeup(int port){
 	usb_sie_wr_cmd_dat(USB_SIE_CMD_SET_DEV_STAT, USB_SIE_DAT_WR_BYTE(DEV_CON));
 }
 
-void usb_set_addr(const devfs_handle_t * handle, u32 addr){
+void usb_set_address(const devfs_handle_t * handle, u32 addr){
 	usb_sie_wr_cmd_dat(USB_SIE_CMD_SET_ADDR, USB_SIE_DAT_WR_BYTE(DEV_EN | addr)); // Don't wait for next
 	usb_sie_wr_cmd_dat(USB_SIE_CMD_SET_ADDR, USB_SIE_DAT_WR_BYTE(DEV_EN | addr)); //  Setup Status Phase
 }
 
-void usb_cfg(const devfs_handle_t * handle, u32 cfg){
+void usb_configure(const devfs_handle_t * handle, u32 cfg){
 	usb_sie_wr_cmd_dat(USB_SIE_CMD_CFG_DEV, USB_SIE_DAT_WR_BYTE(cfg ? CONF_DVICE : 0));
 }
 
-void usb_cfg_ep(const devfs_handle_t * handle, void * ep_desc){
+void usb_configure_endpoint(const devfs_handle_t * handle, u32 endpoint_num, u32 max_packet_size){
 	u32 num;
-	mcu_usbd_endpoint_descriptor_t * ep_ptr;
-	ep_ptr = (mcu_usbd_endpoint_descriptor_t*)ep_desc;
-	num = calc_ep_addr(ep_ptr->bEndpointAddress);
+	num = calc_ep_addr(endpoint_num);
 	LPC_USB->ReEp |= (1 << num);
 	LPC_USB->EpInd = num;
-	LPC_USB->MaxPSize = ep_ptr->wMaxPacketSize;
+	LPC_USB->MaxPSize = max_packet_size;
 	while ((LPC_USB->DevIntSt & EP_RLZED_INT) == 0);
 	LPC_USB->DevIntClr = EP_RLZED_INT;
 }
 
-void usb_enable_ep(const devfs_handle_t * handle, u32 endpoint_num){
+void usb_enable_endpoint(const devfs_handle_t * handle, u32 endpoint_num){
 	usb_sie_wr_cmd_dat(USB_SIE_CMD_SET_EP_STAT(calc_ep_addr(endpoint_num)), USB_SIE_DAT_WR_BYTE(0));
 }
 
-void usb_disable_ep(const devfs_handle_t * handle, u32 endpoint_num){
+void usb_disable_endpoint(const devfs_handle_t * handle, u32 endpoint_num){
 	usb_sie_wr_cmd_dat(USB_SIE_CMD_SET_EP_STAT(calc_ep_addr(endpoint_num)), USB_SIE_DAT_WR_BYTE(EP_STAT_DA));
 }
 
-void usb_reset_ep(const devfs_handle_t * handle, u32 endpoint_num){
+void usb_reset_endpoint(const devfs_handle_t * handle, u32 endpoint_num){
 	usb_sie_wr_cmd_dat(USB_SIE_CMD_SET_EP_STAT(calc_ep_addr(endpoint_num)), USB_SIE_DAT_WR_BYTE(0));
 }
 
-void usb_set_stall_ep(const devfs_handle_t * handle, u32 endpoint_num){
+void usb_stall_endpoint(const devfs_handle_t * handle, u32 endpoint_num){
 	usb_sie_wr_cmd_dat(USB_SIE_CMD_SET_EP_STAT(calc_ep_addr(endpoint_num)), USB_SIE_DAT_WR_BYTE(EP_STAT_ST));
 }
 
-void usb_clr_stall_ep(const devfs_handle_t * handle, u32 endpoint_num){
+void usb_unstall_endpoint(const devfs_handle_t * handle, u32 endpoint_num){
 	usb_sie_wr_cmd_dat(USB_SIE_CMD_SET_EP_STAT(calc_ep_addr(endpoint_num)), USB_SIE_DAT_WR_BYTE(0));
 }
 

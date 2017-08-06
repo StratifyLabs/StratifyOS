@@ -26,23 +26,15 @@ extern void mcu_usb_dev_power_off(const devfs_handle_t * handle);
 extern int mcu_usb_dev_is_powered(const devfs_handle_t * handle);
 extern int mcu_usb_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop);
 extern int mcu_usb_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop);
+static int get_version(const devfs_handle_t * handle, void* ctl){
+	return USB_VERSION;
+}
 
 int (* const usb_ioctl_func_table[I_MCU_TOTAL + I_USB_TOTAL])(const devfs_handle_t*, void*) = {
+		get_version,
 		mcu_usb_getinfo,
 		mcu_usb_setattr,
 		mcu_usb_setaction,
-		mcu_usb_reset,
-		mcu_usb_attach,
-		mcu_usb_detach,
-		mcu_usb_configure,
-		mcu_usb_setaddr,
-		mcu_usb_resetep,
-		mcu_usb_enableep,
-		mcu_usb_disableep,
-		mcu_usb_stallep,
-		mcu_usb_unstallep,
-		mcu_usb_cfgep,
-		mcu_usb_seteventhandler,
 		mcu_usb_isconnected
 };
 
