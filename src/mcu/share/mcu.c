@@ -31,12 +31,15 @@ void mcu_board_execute_event_handler(int event, void * args){
 int mcu_execute_event_handler(mcu_event_handler_t * handler, u32 o_events, void * data){
 	int ret = 0;
 	mcu_event_t event;
+	mcu_callback_t callback;
 	if( handler->callback ){
 		event.o_events = o_events;
 		event.data = data;
-		ret = handler->callback(handler->context, &event);
-		if( ret == 0 ){
-			handler->callback = 0;
+		callback = handler->callback;
+		handler->callback = 0; //the callback might want to read/write the device and callback needs to be NULL to allow that
+		ret = callback(handler->context, &event);
+		if( ret != 0 ){
+			handler->callback = callback; //If the callback returns non-zero, re-instate the callback
 		}
 	}
 	return ret;

@@ -332,8 +332,8 @@ int mcu_i2s_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 		return -1;
 	}
 
-	if ( i2s_regs->IRQ & (1<<1) ){ //is tx interrupt already enabled
-		errno = EAGAIN;
+	if ( i2s_local[port].tx.handler.callback ){ //is tx interrupt already enabled
+		errno = EBUSY;
 		return -1;
 	}
 
@@ -373,8 +373,8 @@ int mcu_i2s_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 		return -1;
 	}
 
-	if ( i2s_regs->IRQ & (1<<0) ){ //is receive interrupt already enabled - another context is using the IRQ
-		errno = EAGAIN;
+	if ( i2s_local[port].rx.handler.callback ){ //is receive interrupt already enabled - another context is using the IRQ
+		errno = EBUSY;
 		return -1;
 	}
 
@@ -428,16 +428,20 @@ void mcu_core_i2s0_isr(){
 	if( i2s_local[port].rx.bufp ){
 		read_rx_data(port);
 		if( i2s_local[port].rx.len == 0 ){
-			i2s_regs->IRQ &= ~(1<<0); //disable RX interrupt
 			exec_callback(&(i2s_local[port].rx), 0);
+			if( i2s_local[port].rx.handler.callback == 0 ){
+				i2s_regs->IRQ &= ~(1<<0); //disable RX interrupt
+			}
 		}
 	}
 
 	if( i2s_local[port].tx.bufp ){
 		write_tx_data(port);
 		if( i2s_local[port].tx.len == 0 ){
-			i2s_regs->IRQ &= ~(1<<1); //disable TX interrupt
 			exec_callback(&(i2s_local[port].tx), 0);
+			if( i2s_local[port].tx.handler.callback == 0 ){
+				i2s_regs->IRQ &= ~(1<<1); //disable TX interrupt
+			}
 		}
 	}
 }

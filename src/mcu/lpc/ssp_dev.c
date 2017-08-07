@@ -239,8 +239,12 @@ int mcu_ssp_setduplex(const devfs_handle_t * handle, void * ctl){
 }
 
 static void exec_callback(int port, LPC_SSP_Type * regs, u32 o_events){
-	regs->IMSC &= ~(SSPIMSC_RXIM|SSPIMSC_RTIM); //Kill the interrupts
 	mcu_execute_event_handler(&(ssp_local[port].handler), o_events, 0);
+
+	//if the callback is null, disable the interrupts
+	if( ssp_local[port].handler.callback == 0 ){
+		regs->IMSC &= ~(SSPIMSC_RXIM|SSPIMSC_RTIM);
+	}
 }
 
 
@@ -251,10 +255,11 @@ int mcu_ssp_setaction(const devfs_handle_t * handle, void * ctl){
 	regs = ssp_regs_table[port];
 
 	if( action->handler.callback == 0 ){
-		if ( regs->IMSC & (SSPIMSC_RXIM|SSPIMSC_RTIM) ){
+		if ( action->o_events & (MCU_EVENT_FLAG_DATA_READY|MCU_EVENT_FLAG_WRITE_COMPLETE) ){
 			exec_callback(port, regs, MCU_EVENT_FLAG_CANCELED);
+			ssp_local[port].handler.callback = 0;
+			regs->IMSC &= ~(SSPIMSC_RXIM|SSPIMSC_RTIM);
 		}
-		ssp_local[port].handler.callback = 0;
 		return 0;
 	}
 
@@ -360,8 +365,8 @@ int ssp_port_transfer(const devfs_handle_t * handle, int is_read, devfs_async_t 
 	regs = ssp_regs_table[port];
 
 	//Check to see if SSP port is busy
-	if ( regs->IMSC & (SSPIMSC_RXIM|SSPIMSC_RTIM) ){
-		errno = EAGAIN;
+	if ( ssp_local[port].handler.callback ){
+		errno = EBUSY;
 		return -1;
 	}
 
@@ -383,13 +388,9 @@ int ssp_port_transfer(const devfs_handle_t * handle, int is_read, devfs_async_t 
 	}
 
 	//empty RX fifo
-	u8 byte;
 	while( regs->SR & SSPSR_RNE ){
-		byte = regs->DR;
+		regs->DR;
 	}
-
-	//this code suppress a warning we don't want but doesn't do anything
-	if( byte & 0 ){ byte = 0; }
 
 	ssp_local[port].handler.callback = dop->handler.callback;
 	ssp_local[port].handler.context = dop->handler.context;
@@ -397,7 +398,6 @@ int ssp_port_transfer(const devfs_handle_t * handle, int is_read, devfs_async_t 
 	//fill the TX buffer
 	ssp_fill_tx_fifo(port, regs);
 
-	//! \todo Use DMA for SSP ssp_local??
 	regs->IMSC |= (SSPIMSC_RXIM|SSPIMSC_RTIM); //when RX is half full or a timeout, get the bytes
 	ssp_local[port].ret = size;
 

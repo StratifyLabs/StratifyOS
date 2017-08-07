@@ -86,10 +86,9 @@ int complete_spi_read(void * context, const mcu_event_t * event){
 	const devfs_handle_t * handle = context;
 	sst25vf_state_t * state = handle->state;
 	sst25vf_share_deassert_cs(handle);
-	if( state->handler.callback != NULL ){
-		state->handler.callback(state->handler.context, NULL);
-		state->handler.callback = NULL;
-	}
+
+	//use mcu_execute_handler
+	mcu_execute_event_handler(&(state->handler), MCU_EVENT_FLAG_DATA_READY, 0);
 	return 0;
 }
 
@@ -97,6 +96,13 @@ int complete_spi_read(void * context, const mcu_event_t * event){
 int sst25vf_read(const devfs_handle_t * handle, devfs_async_t * rop){
 	sst25vf_state_t * state = (sst25vf_state_t*)handle->state;
 	const sst25vf_config_t * dcfg = (const sst25vf_config_t *)(handle->config);
+
+
+	if ( state->handler.callback ){
+		errno = EBUSY;
+		return -1;
+	}
+
 	state->handler.callback = rop->handler.callback;
 	state->handler.context = rop->handler.context;
 	rop->handler.context = (void*)handle;
@@ -169,14 +175,8 @@ int continue_spi_write(void * context, const mcu_event_t * event){
 
 		sst25vf_share_read_status(handle);
 
-		//Set the buffer to NULL to indicate the device is not busy
-		state->buf = NULL;
-
 		//call the event handler to show the operation is complete
-		if ( state->handler.callback != NULL ){
-			state->handler.callback(state->handler.context, NULL);
-			state->handler.callback = NULL;
-		}
+		mcu_execute_event_handler(&(state->handler), MCU_EVENT_FLAG_WRITE_COMPLETE, 0);
 	}
 	return 0;
 }
@@ -186,7 +186,6 @@ int complete_spi_write(void * context, const mcu_event_t * event){
 	mcu_action_t action;
 	devfs_handle_t pio_handle;
 	sst25vf_config_t * sst_cfg = (sst25vf_config_t*)handle->config;
-	sst25vf_state_t * state = (sst25vf_state_t*)handle->state;
 
 
 	//configure the GPIO to interrupt on a rising edge
@@ -202,12 +201,7 @@ int complete_spi_write(void * context, const mcu_event_t * event){
 	sst25vf_share_deassert_cs(handle);
 	assert_delay();
 	sst25vf_share_assert_cs(handle);
-	//continue_spi_write() will be called when the SPI flash is done writing and the GPIO is triggered
-	if( state->nbyte > 0 ){
-		return 1;
-	} else {
-		return 0;
-	}
+	return 0;
 }
 
 int sst25vf_write(const devfs_handle_t * handle, devfs_async_t * wop){
@@ -222,7 +216,7 @@ int sst25vf_write(const devfs_handle_t * handle, devfs_async_t * wop){
 		return -1;
 	}
 
-	if ( state->buf != NULL ){
+	if ( state->handler.callback ){
 		errno = EBUSY;
 		return -1;
 	}

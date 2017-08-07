@@ -183,18 +183,15 @@ void exec_callback(int port, u32 o_events){
 
 int mcu_spi_setaction(const devfs_handle_t * handle, void * ctl){
 	int port = handle->port;
-	LPC_SPI_Type * regs = spi_regs[port];
 
 	mcu_action_t * action = (mcu_action_t*)ctl;
 
-		if ( regs->CR & (SPIE) ){
-			exec_callback(port, MCU_EVENT_FLAG_CANCELED);
-		}
-
+	if ( (action->handler.callback == 0) && (action->o_events & (MCU_EVENT_FLAG_DATA_READY|MCU_EVENT_FLAG_WRITE_COMPLETE)) ){
+		exec_callback(port, MCU_EVENT_FLAG_CANCELED);
+	}
 
 	spi_local[port].handler = action->handler;
 	cortexm_set_irq_prio(spi_irqs[port], action->prio);
-
 	return 0;
 }
 
@@ -255,8 +252,8 @@ int spi_port_transfer(const devfs_handle_t * handle, int is_read, devfs_async_t 
 	int size;
 	size = dop->nbyte;
 
-	if ( regs->CR & (SPIE) ){
-		errno = EAGAIN;
+	if ( spi_local[port].handler.callback ){
+		errno = EBUSY;
 		return -1;
 	}
 

@@ -351,17 +351,14 @@ int mcu_uart_setaction(const devfs_handle_t * handle, void * ctl){
 		//if there is an ongoing operation -- cancel it
 
 		if( action->o_events & MCU_EVENT_FLAG_DATA_READY ){
-			if ( uart_regs->IER & UIER_RBRIE ){
-				//There is an ongoing read operation
-				exec_readcallback(port, uart_regs, MCU_EVENT_FLAG_CANCELED);
-			}
+			//execute the read callback if not null
+			exec_readcallback(port, uart_regs, MCU_EVENT_FLAG_CANCELED);
 			uart_local[port].read.callback = 0;
+			uart_regs->IER &= ~UIER_RBRIE; //disable the receive interrupt
 		}
 
 		if( action->o_events & MCU_EVENT_FLAG_WRITE_COMPLETE ){
-			if ( uart_regs->IER & UIER_ETBEI ){
-				exec_writecallback(port, uart_regs, MCU_EVENT_FLAG_CANCELED);
-			}
+			exec_writecallback(port, uart_regs, MCU_EVENT_FLAG_CANCELED);
 			uart_local[port].write.callback = 0;
 		}
 
@@ -455,7 +452,7 @@ int mcu_uart_dev_read(const devfs_handle_t * handle, devfs_async_t * rop){
 	port = handle->port;
 	uart_regs = uart_regs_table[port];
 
-	if ( uart_regs->IER & UIER_RBRIE ){
+	if ( uart_local[port].read.callback ){
 		errno = EBUSY;
 		return -1;
 	}
@@ -497,7 +494,7 @@ int mcu_uart_dev_write(const devfs_handle_t * handle, devfs_async_t * wop){
 	uart_regs = uart_regs_table[port];
 
 	//Check to see if the port is busy
-	if ( uart_regs->IER & UIER_ETBEI ){
+	if ( uart_local[port].write.callback ){
 		errno = EBUSY;
 		return -1;
 	}

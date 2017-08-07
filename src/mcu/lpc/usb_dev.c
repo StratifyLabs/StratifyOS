@@ -246,7 +246,7 @@ int mcu_usb_setaction(const devfs_handle_t * handle, void * ctl){
 	if( action->o_events &
 			(MCU_EVENT_FLAG_POWER|MCU_EVENT_FLAG_SUSPEND|MCU_EVENT_FLAG_STALL|MCU_EVENT_FLAG_SOF|MCU_EVENT_FLAG_WAKEUP)
 			){
-		memcpy(&(usb_local.special_event_handler), ctl, sizeof(mcu_event_handler_t));
+		usb_local.special_event_handler = action->handler;
 		return 0;
 	}
 
@@ -303,8 +303,8 @@ int mcu_usb_dev_read(const devfs_handle_t * handle, devfs_async_t * rop){
 		return -1;
 	}
 
-	if( usb_local.read[loc].callback != NULL ){
-		errno = EAGAIN;
+	if( usb_local.read[loc].callback ){
+		errno = EBUSY;
 		return -1;
 	}
 
@@ -345,8 +345,8 @@ int mcu_usb_dev_write(const devfs_handle_t * handle, devfs_async_t * wop){
 		return -1;
 	}
 
-	if ( usb_local.write[ep].callback != NULL ){
-		errno = EAGAIN;
+	if ( usb_local.write[ep].callback ){
+		errno = EBUSY;
 		return -1;
 	}
 

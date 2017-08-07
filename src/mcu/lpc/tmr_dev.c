@@ -310,31 +310,8 @@ int mcu_tmr_getchannel(const devfs_handle_t * handle, void * ctl){
 }
 
 int mcu_tmr_dev_write(const devfs_handle_t * handle, devfs_async_t * wop){
-	int port;
-	mcu_action_t * action;
-	int chan;
-	action = (mcu_action_t*)wop->buf;
-
-	if( wop->nbyte != sizeof(mcu_action_t) ){
-		errno = EINVAL;
-		return -1;
-	}
-
-	port = handle->port;
-	chan = action->channel;
-	if ( m_tmr_local[port].handler[chan].callback != 0 ){
-		//The interrupt is on -- port is busy
-		errno = EAGAIN;
-		return -1;
-	}
-
-	action = (mcu_action_t*)wop->buf;
-	action->handler.callback = wop->handler.callback;
-	action->handler.context = wop->handler.context;
-
-	cortexm_set_irq_prio(tmr_irqs[port], action->prio);
-
-	return mcu_tmr_setaction(handle, action);
+	errno = ENOTSUP;
+	return -1;
 }
 
 
@@ -344,37 +321,31 @@ int mcu_tmr_setaction(const devfs_handle_t * handle, void * ctl){
 	int port = handle->port;
 	regs = tmr_regs_table[port];
 	u32 chan;
-	u32 event;
+	u32 o_events;
 
-	event = action->o_events;
+	o_events = action->o_events;
 	chan = action->channel;
 
-	if ( event == MCU_EVENT_FLAG_NONE ){ //Check to see if all actions are disabled
+	if ( o_events == MCU_EVENT_FLAG_NONE ){ //Check to see if all actions are disabled
 		regs->MCR &= ~(0x03 << (chan*3) );
-		m_tmr_local[port].handler[chan].callback = NULL;
-	} else if( event & MCU_EVENT_FLAG_MATCH ){
+		m_tmr_local[port].handler[chan].callback = 0;
+	} else if( o_events & MCU_EVENT_FLAG_MATCH ){
 
 		if( action->handler.callback != 0 ){
-			regs->MCR |= ((1<<0) << (chan*3) ); //set the interrupt on match flag
-			m_tmr_local[port].handler[chan] = action->handler;
+			regs->MCR |= ((1<<0) << (chan*3)); //set the interrupt on match flag
+		}  else {
+			regs->MCR &= ~((1<<0) << (chan*3)); //disable the interrupt on match
 		}
 
+		m_tmr_local[port].handler[chan] = action->handler;
 	}
 
 	return 0;
 }
 
 int mcu_tmr_dev_read(const devfs_handle_t * handle, devfs_async_t * rop){
-	int port = handle->port;
-	int chan = rop->loc;
-
-	if( cortexm_validate_callback(rop->handler.callback) < 0 ){
-		return -1;
-	}
-
-	m_tmr_local[port].handler[chan].callback = rop->handler.callback;
-	m_tmr_local[port].handler[chan].context = rop->handler.context;
-	return 0;
+	errno = ENOTSUP;
+	return -1;
 }
 
 int mcu_tmr_set(const devfs_handle_t * handle, void * ctl){

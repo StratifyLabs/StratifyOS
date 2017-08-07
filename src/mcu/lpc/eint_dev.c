@@ -70,7 +70,7 @@ int mcu_eint_dev_write(const devfs_handle_t * handle, devfs_async_t * wop){
 	port = handle->port;
 	if ( eint_local[port].handler.callback != 0 ){
 		//The interrupt is on -- port is busy
-		errno = EAGAIN;
+		errno = EBUSY;
 		return -1;
 	}
 	if( wop->nbyte != sizeof(mcu_action_t) ){

@@ -183,8 +183,8 @@ int mcu_enet_setaction(const devfs_handle_t * handle, void * ctl){
 int mcu_enet_dev_read(const devfs_handle_t * handle, devfs_async_t * rop){
 	int port = handle->port;
 
-	if( enet_local[port].rx_desc.buf != 0 ){
-		errno = EAGAIN;
+	if( enet_local[port].read.callback ){
+		errno = EBUSY;
 		return -1;
 	}
 
@@ -224,8 +224,8 @@ int mcu_enet_dev_write(const devfs_handle_t * handle, devfs_async_t * wop){
 
 
 
-	if( enet_local[port].tx_desc.buf != 0 ){
-		errno = EAGAIN;
+	if( enet_local[port].write.callback ){
+		errno = EBUSY;
 		return -1;
 	}
 

@@ -339,8 +339,8 @@ int mcu_pwm_dev_write(const devfs_handle_t * handle, devfs_async_t * wop){
 	}
 #endif
 
-	if ( regs->MCR & (1<<0) ){ //If the interrupt is enabled--the pwm is busy
-		errno = EAGAIN;
+	if ( pwm_local[port].handler.callback ){ //If the interrupt is enabled--the pwm is busy
+		errno = EBUSY;
 		return -1;
 	}
 
@@ -392,11 +392,13 @@ void exec_callback(int port, LPC_PWM_Type * regs, u32 o_events){
 	//stop updating the duty cycle
 	pwm_local[port].duty = NULL;
 
-	//Disable the interrupt
-	regs->MCR = (1<<1); //leave the reset on, but disable the interrupt
-
 	//call the event handler
 	mcu_execute_event_handler(&(pwm_local[port].handler), o_events, 0);
+
+	if( pwm_local[port].handler.callback == 0 ){
+		//Disable the interrupt
+		regs->MCR = (1<<1); //leave the reset on, but disable the interrupt
+	}
 }
 
 

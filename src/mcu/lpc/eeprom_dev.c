@@ -119,7 +119,7 @@ int mcu_eeprom_setaction(const devfs_handle_t * handle, void * ctl){
 	int port = handle->port;
 	mcu_action_t * action = (mcu_action_t *)ctl;
 	if( action->handler.callback == 0 ){
-		if( eeprom_local[port].buf != 0 ){
+		if( action->o_events & (MCU_EVENT_FLAG_DATA_READY|MCU_EVENT_FLAG_WRITE_COMPLETE) ){
 			exec_callback(port, MCU_EVENT_FLAG_CANCELED, 0);
 		}
 	}
@@ -141,8 +141,8 @@ int mcu_eeprom_dev_write(const devfs_handle_t * handle, devfs_async_t * wop){
 	}
 
 	//Check to see if the port is busy
-	if ( eeprom_local[port].buf != 0 ){
-		errno = EAGAIN;
+	if ( eeprom_local[port].handler.callback ){
+		errno = EBUSY;
 		return -1;
 	}
 
@@ -204,8 +204,8 @@ int mcu_eeprom_dev_read(const devfs_handle_t * handle, devfs_async_t * rop){
 	}
 
 	//Check to see if the port is busy
-	if ( eeprom_local[port].buf != 0 ){
-		errno = EAGAIN;
+	if ( eeprom_local[port].handler.callback ){
+		errno = EBUSY;
 		return -1;
 	}
 
@@ -255,8 +255,10 @@ int mcu_eeprom_dev_read(const devfs_handle_t * handle, devfs_async_t * rop){
 void exec_callback(int port, u32 o_flags, void * data){
 	LPC_EEPROM_Type * regs = eeprom_regs[port];
 	eeprom_local[port].buf = 0;
-	regs->INTENCLR = (1<<26)|(1<<28); //disable the interrupts
 	mcu_execute_event_handler(&(eeprom_local[port].handler), o_flags, data);
+	if( eeprom_local[port].handler.callback == 0 ){
+		regs->INTENCLR = (1<<26)|(1<<28); //disable the interrupts
+	}
 }
 
 void mcu_core_eeprom0_isr(){

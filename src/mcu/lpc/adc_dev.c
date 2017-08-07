@@ -103,9 +103,9 @@ int mcu_adc_dev_read(const devfs_handle_t * handle, devfs_async_t * rop){
 		return -1;
 	}
 
-	if ( regs->INTEN & 0xFF ){
+	if ( adc_local[port].handler.callback ){
 		//The interrupt is on -- port is busy
-		errno = EAGAIN;
+		errno = EBUSY;
 		return -1;
 	}
 
@@ -219,11 +219,10 @@ int mcu_adc_setattr(const devfs_handle_t * handle, void * ctl){
 
 int mcu_adc_setaction(const devfs_handle_t * handle, void * ctl){
 	int port = handle->port;
-	LPC_ADC_Type * regs = adc_regs[port];
 
 	mcu_action_t * action = (mcu_action_t*)ctl;
 	if( action->handler.callback == 0 ){
-		if ( regs->INTEN & 0xFF ){
+		if ( action->o_events & MCU_EVENT_FLAG_DATA_READY ){
 			exec_callback(port, MCU_EVENT_FLAG_CANCELED);
 		}
 	}

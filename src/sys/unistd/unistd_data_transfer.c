@@ -135,6 +135,7 @@ void clear_device_action(open_file_t * open_file, int is_read){
 	} else {
 		action.o_events = MCU_EVENT_FLAG_WRITE_COMPLETE;
 	}
+	action.channel = open_file->loc;
 	u_ioctl(open_file, I_MCU_SETACTION, &action);
 }
 

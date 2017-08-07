@@ -202,8 +202,8 @@ int mcu_dac_dma_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 		return -1;
 	}
 
-	if ( LPC_GPDMA->ENBLDCHNS & (1<<DAC_DMA_CHAN) ){
-		errno = EAGAIN;
+	if ( dac_local[port].handler.callback ){
+		errno = EBUSY;
 		return -1;
 	}
 
