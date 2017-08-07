@@ -122,8 +122,8 @@ enum {
 };
 
 enum {
-	MCU_BOARD_CONFIG_EVENT_PRIV_RESET /*! Event is called after a reset while still in priviledged mode. Args is null */,
-	MCU_BOARD_CONFIG_EVENT_PRIV_FATAL /*! Event is called when a fatal error occurs (called in priviledged mode).  Args is a c string */,
+	MCU_BOARD_CONFIG_EVENT_ROOT_RESET /*! Event is called after a reset while still in priviledged mode. Args is null */,
+	MCU_BOARD_CONFIG_EVENT_ROOT_FATAL /*! Event is called when a fatal error occurs (called in priviledged mode).  Args is a c string */,
 	MCU_BOARD_CONFIG_EVENT_FATAL /*! Event is called when a fatal error occurs (called in unpriviledged mode).  Args is a c string */,
 	MCU_BOARD_CONFIG_EVENT_CRITICAL /*! Event is called when a critical error occurs (e.g. a filesystem fails to start).  Args is a c string */,
 	MCU_BOARD_CONFIG_EVENT_WARNING /*! Event is called when something isn't quite right but things should basically still work. Args is a c string */,
@@ -133,6 +133,9 @@ enum {
 	MCU_BOARD_CONFIG_EVENT_START_INIT /*! Called with sos_default_thread(). Args is a pointer to u8 which is the reset type */,
 	MCU_BOARD_CONFIG_EVENT_START_FILESYSTEM /*! Called with sos_default_thread() when filesystem starts. Args is a pointer to u32 which says how many processes started */,
 	MCU_BOARD_CONFIG_EVENT_START_LINK /*! Called with sos_default_thread(), when link starts.  Args is null */,
+	MCU_BOARD_CONFIG_EVENT_HIBERNATE /*! MCU is about to enter hibernate mode */,
+	MCU_BOARD_CONFIG_EVENT_POWERDOWN /*! MCU is about to enter powerdown mode */,
+	MCU_BOARD_CONFIG_EVENT_WAKEUP_FROM_HIBERNATE /*! MCU wokeup from hibernation */,
 	MCU_BOARD_CONFIG_EVENT_TOTAL
 };
 

@@ -42,7 +42,7 @@ int link_get_sys_info(link_transport_mdriver_t * driver, sys_info_t * sys_info){
 				if( link_ioctl(driver, sys_fd, I_SYS_23_GETINFO, &sys_23_info) < 0 ){
 					return -1;
 				} else {
-					//converting 2.33 to 3.0
+					//converting 2.3 to 3.0
 					sys_id_t sys_id;
 					memset(&sys_id, 0, LINK_PATH_MAX);
 					link_ioctl(driver, sys_fd, I_SYS_GETID, &sys_id);

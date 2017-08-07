@@ -72,7 +72,7 @@ void mcu_fault_event_handler(fault_t * fault){
 			sos_board_config.trace_event(&event);
 		}
 
-		mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_PRIV_FATAL, 0);
+		mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_FATAL, 0);
 
 	} else {
 

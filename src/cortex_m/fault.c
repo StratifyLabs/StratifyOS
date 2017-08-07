@@ -124,7 +124,7 @@ void wdtfault_handler(hw_stack_frame_t * handler_stack){
 
 	mcu_fault_event_handler(&fault);
 
-	mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_PRIV_FATAL, 0);
+	mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_FATAL, 0);
 }
 
 void mcu_core_memfault_handler() MCU_WEAK;

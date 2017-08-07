@@ -78,6 +78,7 @@ int fifo_write_local(const fifo_config_t * cfgp, fifo_state_t * state, devfs_asy
 int fifo_read_local(const fifo_config_t * cfgp, fifo_state_t * state, devfs_async_t * rop);
 
 void fifo_cancel_rop(fifo_state_t * state);
+void fifo_cancel_wop(fifo_state_t * state);
 
 
 

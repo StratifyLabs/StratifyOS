@@ -85,6 +85,7 @@ int ffifo_write_local(const ffifo_config_t * cfgp, ffifo_state_t * state, devfs_
 int ffifo_read_local(const ffifo_config_t * cfgp, ffifo_state_t * state, devfs_async_t * rop);
 
 void ffifo_cancel_rop(ffifo_state_t * state);
+void ffifo_cancel_wop(ffifo_state_t * state);
 
 
 
