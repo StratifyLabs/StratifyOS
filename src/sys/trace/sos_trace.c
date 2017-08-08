@@ -46,7 +46,7 @@ void sos_trace_event_addr_tid(link_trace_event_id_t event_id, const void * data_
 	if( sos_board_config.trace_event ){
 		//convert the address using the task memory location
 		//check if addr is part of kernel or app
-		if( (addr > (u32)&_text) && (addr < (u32)&_etext) ){
+		if( ((addr >= (u32)&_text) && (addr < (u32)&_etext)) || (addr == 1) ){
 			//kernel
 			addr = addr - 1;
 		} else {

@@ -203,7 +203,21 @@ int mcu_i2c_dev_is_powered(const devfs_handle_t * handle){
 
 int mcu_i2c_getinfo(const devfs_handle_t * handle, void * ctl){
 	int port = handle->port;
-	memcpy(ctl, &(i2c_local_attr[port]), sizeof(i2c_attr_t));
+	i2c_info_t * info = ctl;
+
+	info->err = i2c_local[port].err;
+	info->o_flags = I2C_FLAG_SET_MASTER |
+			I2C_FLAG_SET_SLAVE |
+			I2C_FLAG_PREPARE_PTR_DATA |
+			I2C_FLAG_PREPARE_DATA |
+			I2C_FLAG_IS_PULLUP |
+			I2C_FLAG_IS_SLAVE_ADDR0 |
+			I2C_FLAG_IS_SLAVE_ADDR1 |
+			I2C_FLAG_IS_SLAVE_ADDR2 |
+			I2C_FLAG_IS_SLAVE_ADDR3;
+
+	info->freq = 400000;
+	info->o_events = MCU_EVENT_FLAG_WRITE_COMPLETE | MCU_EVENT_FLAG_DATA_READY;
 	return 0;
 }
 

@@ -103,8 +103,25 @@ int mcu_i2s_dev_is_powered(const devfs_handle_t * handle){
 }
 
 int mcu_i2s_getinfo(const devfs_handle_t * handle, void * ctl){
-	int port = handle->port;
-	memcpy(ctl, &(i2s_local_attr[port]), sizeof(i2s_attr_t));
+	i2s_info_t * info = ctl;
+
+
+	info->o_flags = I2S_FLAG_SET_MASTER |
+			I2S_FLAG_IS_STEREO |
+			I2S_FLAG_IS_MONO |
+			I2S_FLAG_IS_WIDTH_8 |
+			I2S_FLAG_IS_WIDTH_16 |
+			I2S_FLAG_IS_WIDTH_24 |
+			I2S_FLAG_IS_WIDTH_32 |
+			I2S_FLAG_SET_SLAVE |
+			I2S_FLAG_IS_TRANSMITTER |
+			I2S_FLAG_IS_RECEIVER |
+			I2S_FLAG_IS_MCK_ENABLED;
+
+	info->o_events = MCU_EVENT_FLAG_WRITE_COMPLETE | MCU_EVENT_FLAG_DATA_READY;
+
+	info->freq = 96000000;
+
 	return 0;
 }
 
