@@ -29,7 +29,7 @@
 #include "mcu/mcu.h"
 #include <errno.h>
 #include <stdarg.h>
-#include "unistd_flags.h"
+#include "unistd_local.h"
 #include "sos/sos.h"
 #include "mcu/core.h"
 #include "device/sys.h"
@@ -75,17 +75,12 @@ int ioctl(int fildes, int request, ...) {
 	fs = get_fs(fildes);
 	if ( fs->ioctl != NULL ){
 		//Character and device drivers both have the same interface to ioctl
-		return u_ioctl(get_open_file(fildes), request, ctl);
+		return sysfs_file_ioctl(get_open_file(fildes), request, ctl);
 	}
 
 	errno = ENOTSUP;
 	return -1;
 }
 
-
-int u_ioctl(open_file_t * open_file, int request, void * ctl){
-	const sysfs_t * fs = open_file->fs;
-	return fs->ioctl(fs->cfg, open_file->handle, request, ctl);
-}
 
 /*! @} */

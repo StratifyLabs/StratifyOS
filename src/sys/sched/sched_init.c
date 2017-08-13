@@ -24,7 +24,7 @@
 
 /*! \file */
 #include "config.h"
-#include "sched_flags.h"
+#include "sched_local.h"
 
 #include "mcu/mcu.h"
 #include "mcu/core.h"

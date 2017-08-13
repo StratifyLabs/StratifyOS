@@ -18,7 +18,7 @@
  */
 
 #include "mcu/mcu.h"
-#include "core_flags.h"
+#include "core_local.h"
 #include "cortexm/cortexm.h"
 #include "mcu/core.h"
 

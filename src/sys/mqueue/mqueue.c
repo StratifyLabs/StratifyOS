@@ -98,7 +98,7 @@
 
 #include "mcu/debug.h"
 #include "mqueue.h"
-#include "../sched/sched_flags.h"
+#include "../sched/sched_local.h"
 
 //#define MSG_RD_ONLY 0
 //#define MSG_RDWR 1

@@ -30,7 +30,7 @@
 #include <errno.h>
 #include "sched.h"
 
-#include "../sched/sched_flags.h"
+#include "../sched/sched_local.h"
 
 typedef struct {
 	int tid;

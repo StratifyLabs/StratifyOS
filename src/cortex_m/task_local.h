@@ -17,8 +17,8 @@
  * 
  */
 
-#ifndef TASK_FLAGS_H_
-#define TASK_FLAGS_H_
+#ifndef TASK_LOCAL_H_
+#define TASK_LOCAL_H_
 
 #include "mcu/arch.h"
 #include "mcu/types.h"
@@ -101,4 +101,4 @@ void task_return_context(){
 
 
 
-#endif /* TASK_FLAGS_H_ */
+#endif /* TASK_LOCAL_H_ */

@@ -186,8 +186,9 @@ extern void __div0();
 extern void crt_load_data(void * global_reent, int code_size, int data_size);
 extern char ** const crt_import_argv(int argc, char * const argv[]);
 
-#include <sapi/son.h>
-#include <sgfx/sg.h>
+extern void sg_api();
+extern void son_api();
+
 #include "sys/socket.h"
 
 #ifndef USE_FLOAT

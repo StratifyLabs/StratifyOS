@@ -32,7 +32,7 @@
 #include "sos/fs/sysfs.h"
 
 #include "cortexm/mpu.h"
-#include "../sched/sched_flags.h"
+#include "../sched/sched_local.h"
 #include "../signal/sig_local.h"
 
 static void priv_stop_threads(int * send_signal) MCU_PRIV_EXEC_CODE;

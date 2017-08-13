@@ -28,8 +28,8 @@
 #include "sos/fs/sffs.h"
 #include "sys/sffs/sffs_dev.h"
 #include "sos/dev/drive.h"
-#include "../unistd/unistd_flags.h"
-#include "../sched/sched_flags.h"
+#include "../sched/sched_local.h"
+#include "../unistd/unistd_local.h"
 
 #include "mcu/debug.h"
 
@@ -67,7 +67,7 @@ int sffs_dev_open(const void * cfg){
 	cfgp->open_file->handle = NULL;
 
 	if( cfgp->devfs->open(
-			cfgp->devfs->cfg,
+			cfgp->devfs->config,
 			&(cfgp->open_file->handle),
 			cfgp->name,
 			O_RDWR,
@@ -76,7 +76,7 @@ int sffs_dev_open(const void * cfg){
 				return -1;
 			}
 
-	return u_ioctl(cfgp->open_file, I_DRIVE_GETINFO, &(cfgp->state->dattr));
+	return sysfs_file_ioctl(cfgp->open_file, I_DRIVE_GETINFO, &(cfgp->state->dattr));
 }
 
 int sffs_dev_write(const void * cfg, int loc, const void * buf, int nbyte){
@@ -89,14 +89,14 @@ int sffs_dev_write(const void * cfg, int loc, const void * buf, int nbyte){
 		return -1;
 	}
 	cfgp->open_file->loc = loc;
-	ret = u_write(cfgp->open_file, buf, nbyte);
+	ret = sysfs_file_write(cfgp->open_file, buf, nbyte);
 	if( ret != nbyte ){
 		//mcu_debug_user_printf("Only wrote %d bytes\n", ret);
 		return -1;
 	}
 	memset(buffer, 0, nbyte);
 	cfgp->open_file->loc = loc;
-	u_read(cfgp->open_file, buffer, nbyte);
+	sysfs_file_read(cfgp->open_file, buffer, nbyte);
 	if ( memcmp(buffer, buf, nbyte) != 0 ){
 		return -1;
 	}
@@ -111,7 +111,7 @@ int sffs_dev_read(const void * cfg, int loc, void * buf, int nbyte){
 		return -1;
 	}
 	cfgp->open_file->loc = loc;
-	return u_read(cfgp->open_file, buf, nbyte);
+	return sysfs_file_read(cfgp->open_file, buf, nbyte);
 }
 
 
@@ -124,7 +124,7 @@ int sffs_dev_erase(const void * cfg){
 	}
 	int usec;
 	attr.o_flags = DRIVE_FLAG_ERASE_DEVICE;
-	if( u_ioctl(cfgp->open_file, I_DRIVE_SETATTR, &attr) < 0 ){
+	if( sysfs_file_ioctl(cfgp->open_file, I_DRIVE_SETATTR, &attr) < 0 ){
 		return -1;
 	}
 
@@ -148,7 +148,7 @@ int sffs_dev_erasesection(const void * cfg, int loc){
 	attr.start = loc;
 	attr.end = loc;
 
-	if( u_ioctl(cfgp->open_file, I_DRIVE_SETATTR, &attr) < 0 ){
+	if( sysfs_file_ioctl(cfgp->open_file, I_DRIVE_SETATTR, &attr) < 0 ){
 		return -1;
 	}
 
@@ -162,7 +162,7 @@ int sffs_dev_erasesection(const void * cfg, int loc){
 int sffs_dev_close(const void * cfg){
 	const sffs_config_t * cfgp = cfg;
 	return cfgp->devfs->close(
-			cfgp->devfs->cfg,
+			cfgp->devfs->config,
 			&(cfgp->open_file->handle));
 }
 

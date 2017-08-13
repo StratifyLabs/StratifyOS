@@ -23,9 +23,9 @@
 
 /*! \file */
 
+#include "unistd_local.h"
 #include "config.h"
 #include  "unistd_fs.h"
-#include  "unistd_flags.h"
 
 static int get_size(int fildes);
 
@@ -79,7 +79,7 @@ int get_size(int fildes){
 	fs = get_fs(fildes);
 	st.st_size = 0;
 	tmp = errno;
-	fs->fstat(fs->cfg, get_handle(fildes), &st);
+	fs->fstat(fs->config, get_handle(fildes), &st);
 	errno = tmp;
 	return st.st_size;
 }

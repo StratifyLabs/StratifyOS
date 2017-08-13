@@ -17,7 +17,7 @@
  *
  */
 
-#include "link_flags.h"
+#include "link_local.h"
 
 int link_debug_level = 0;
 

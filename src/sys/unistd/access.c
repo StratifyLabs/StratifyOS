@@ -59,7 +59,7 @@ int access(const char * path, int amode){
 		return-1;
 	}
 
-	if ( fs->stat(fs->cfg, sysfs_stripmountpath(fs, path), &st) < 0 ){
+	if ( fs->stat(fs->config, sysfs_stripmountpath(fs, path), &st) < 0 ){
 		return -1;
 	}
 

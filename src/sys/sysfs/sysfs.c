@@ -41,7 +41,7 @@ int mkfs(const char * path){
 		return -1;
 	}
 
-	return fs->mkfs(fs->cfg);
+	return fs->mkfs(fs->config);
 }
 
 int mount(const char * path){
@@ -53,7 +53,7 @@ int mount(const char * path){
 		return -1;
 	}
 
-	return fs->mount(fs->cfg);
+	return fs->mount(fs->config);
 }
 
 int unmount(const char * path){
@@ -63,7 +63,7 @@ int unmount(const char * path){
 		errno = ENOENT;
 		return -1;
 	}
-	return fs->unmount(fs->cfg);
+	return fs->unmount(fs->config);
 }
 
 int sysfs_always_mounted(const void * cfg){
@@ -258,7 +258,7 @@ void sysfs_unlock(){
 	int i;
 	i = 0;
 	while( sysfs_isterminator(&(sysfs_list[i])) == false ){
-		sysfs_list[i].unlock( sysfs_list[i].cfg );
+		sysfs_list[i].unlock( sysfs_list[i].config );
 		i++;
 	}
 }

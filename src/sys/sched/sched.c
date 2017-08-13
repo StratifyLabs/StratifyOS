@@ -34,14 +34,14 @@
 #include <signal.h>
 #include <malloc.h>
 
+#include "../unistd/unistd_local.h"
 #include "mcu/wdt.h"
 #include "mcu/debug.h"
 #include "mcu/rtc.h"
 
 #include "trace.h"
 
-#include "sched_flags.h"
-#include "../unistd/unistd_flags.h"
+#include "sched_local.h"
 
 static int start_first_thread();
 

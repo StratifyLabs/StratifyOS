@@ -23,8 +23,8 @@
 
 /*! \file */
 
+#include "unistd_local.h"
 #include "unistd_fs.h"
-#include "unistd_flags.h"
 
 /*! \details This function creates a new directory.
  *
@@ -46,7 +46,7 @@ int mkdir(const char *path, mode_t mode){
 
 	fs = sysfs_find(path, true);
 	if ( fs != NULL ){
-		return fs->mkdir(fs->cfg,
+		return fs->mkdir(fs->config,
 				sysfs_stripmountpath(fs, path),
 				mode);
 	}

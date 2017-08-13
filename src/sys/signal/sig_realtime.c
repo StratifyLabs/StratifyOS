@@ -33,7 +33,7 @@
 #include "mcu/mcu.h"
 #include "cortexm/task.h"
 
-#include "../sched/sched_flags.h"
+#include "../sched/sched_local.h"
 
 #include "sig_local.h"
 

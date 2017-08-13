@@ -102,7 +102,7 @@ int init_fs(){
 	while( sysfs_isterminator(&sysfs_list[i]) == false ){
 		SOS_TRACE_MESSAGE(sysfs_list[i].mount_path);
 		mcu_debug_user_printf("init %s\n", sysfs_list[i].mount_path);
-		if ( sysfs_list[i].mount( sysfs_list[i].cfg ) < 0 ){
+		if ( sysfs_list[i].mount( sysfs_list[i].config ) < 0 ){
 			mcu_debug_user_printf("failed to init\n");
 			SOS_TRACE_CRITICAL(sysfs_list[i].mount_path);
 		}
@@ -118,7 +118,7 @@ int startup_fs(){
 	int ret;
 	started = 0;
 	while( sysfs_isterminator(&sysfs_list[i]) == false ){
-		ret = sysfs_list[i].startup( sysfs_list[i].cfg );
+		ret = sysfs_list[i].startup( sysfs_list[i].config );
 		if ( ret > 0){
 			started += ret;
 		}

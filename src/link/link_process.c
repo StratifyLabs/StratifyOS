@@ -23,7 +23,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-#include "link_flags.h"
+#include "link_local.h"
 
 
 int link_exec(link_transport_mdriver_t * driver, const char * file){

@@ -33,7 +33,7 @@
 #include <signal.h>
 #include <errno.h>
 #include "sos/sos.h"
-#include "../sched/sched_flags.h"
+#include "../sched/sched_local.h"
 #include "sig_local.h"
 
 #include "mcu/debug.h"

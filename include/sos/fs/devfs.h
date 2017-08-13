@@ -163,6 +163,8 @@ bool devfs_is_terminator(const devfs_device_t * dev){
 
 int devfs_init(const void * cfg);
 int devfs_open(const void * cfg, void ** handle, const char * path, int flags, int mode);
+int devfs_read(const void * cfg, void * handle, int flags, int loc, void * buf, int nbyte);
+int devfs_write(const void * cfg, void * handle, int flags, int loc, const void * buf, int nbyte);
 int devfs_read_async(const void * cfg, void * handle, devfs_async_t * op);
 int devfs_write_async(const void * cfg, void * handle, devfs_async_t * op);
 int devfs_ioctl(const void * cfg, void * handle, int request, void * ctl);
@@ -185,8 +187,8 @@ int devfs_closedir(const void * cfg, void ** handle);
 		.read_async = devfs_read_async, \
 		.write_async = devfs_write_async, \
 		.ioctl = devfs_ioctl, \
-		.read = NULL, \
-		.write = NULL, \
+		.read = devfs_read, \
+		.write = devfs_write, \
 		.close = devfs_close, \
 		.rename = SYSFS_NOTSUP, \
 		.unlink = SYSFS_NOTSUP, \
@@ -204,7 +206,7 @@ int devfs_closedir(const void * cfg, void ** handle);
 		.chmod = SYSFS_NOTSUP, \
 		.chown = SYSFS_NOTSUP, \
 		.unlock = SYSFS_NOTSUP_VOID, \
-		.cfg = cfgp, \
+		.config = cfgp, \
 }
 
 #if defined __cplusplus

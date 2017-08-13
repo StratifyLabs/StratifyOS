@@ -31,7 +31,7 @@
 #include <sys/times.h>
 #include <time.h>
 
-#include "../sched/sched_flags.h"
+#include "../sched/sched_local.h"
 
 #define CLOCK_PROCESS_FLAG (1<<31)
 static s32 convert_clocks_to_nanoseconds(s32 clocks);

@@ -24,8 +24,8 @@
 
 /*! \file */
 
+#include "unistd_local.h"
 #include "unistd_fs.h"
-#include "unistd_flags.h"
 
 /*! \details This function checks to see if \a fildes is associated
  * with a terminal device.

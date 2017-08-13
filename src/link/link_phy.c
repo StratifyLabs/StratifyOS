@@ -24,7 +24,7 @@
 #include <errno.h>
 
 
-#include "link_flags.h"
+#include "link_local.h"
 
 
 #if defined __win32 || defined __win64

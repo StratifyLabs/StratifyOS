@@ -46,7 +46,7 @@ int chown(const char *path, uid_t uid, gid_t gid){
 
 	fs = sysfs_find(path, true);
 	if ( fs != NULL ){
-		return fs->chown(fs->cfg, sysfs_stripmountpath(fs, path), uid, gid);
+		return fs->chown(fs->config, sysfs_stripmountpath(fs, path), uid, gid);
 	}
 	errno = ENOENT;
 	return -1;

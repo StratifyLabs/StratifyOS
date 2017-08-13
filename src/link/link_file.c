@@ -20,7 +20,7 @@
 #include <string.h>
 #include <stdarg.h>
 
-#include "link_flags.h"
+#include "link_local.h"
 
 int link_open(link_transport_mdriver_t * driver, const char * path, int flags, ...){
 	link_op_t op;

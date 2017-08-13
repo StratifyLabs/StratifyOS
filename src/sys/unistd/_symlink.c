@@ -23,8 +23,8 @@
 
 /*! \file */
 
+#include "unistd_local.h"
 #include "unistd_fs.h"
-#include "unistd_flags.h"
 
 /*! \details This function creates a hard link between \a old and \a new.
  *
@@ -50,7 +50,7 @@ int _symlink(const char *old, const char *new){
 	fs_new = sysfs_find(new, true);
 
 	if ( (fs_old == fs_new) && (fs_new != NULL) ){
-		return fs_new->symlink(&fs_new->cfg,
+		return fs_new->symlink(&fs_new->config,
 				sysfs_stripmountpath(fs_old, old),
 				sysfs_stripmountpath(fs_new, new)
 				);

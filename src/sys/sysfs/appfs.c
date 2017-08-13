@@ -31,7 +31,8 @@
 #include "cortexm/mpu.h"
 #include "mcu/debug.h"
 #include "appfs_local.h"
-#include "../sched/sched_flags.h"
+#include "sos/fs/sysfs.h"
+#include "../sched/sched_local.h"
 
 #define ANALYZE_PATH_NOENT -1
 #define ANALYZE_PATH_ROOT 0
@@ -40,14 +41,6 @@
 #define ANALYZE_PATH_FLASH_DIR 3
 #define ANALYZE_PATH_RAM 4
 #define ANALYZE_PATH_RAM_DIR 5
-
-typedef struct {
-	const void * cfg;
-	void * handle;
-	int request;
-	void * ctl;
-	int ret;
-} priv_ioctl_t;
 
 static void priv_ioctl(void * args);
 
@@ -440,10 +433,61 @@ int appfs_read_async(const void* cfg, void * handle, devfs_async_t * op){
 	return dev->driver.read(&(dev->handle), op);
 }
 
-int appfs_write_async(const void* cfg, void * handle, devfs_async_t * op){
+
+void priv_read(void * args){
+	sysfs_read_t * p = args;
+
+	devfs_async_t async;
+	const devfs_device_t * dev;
+	appfs_handle_t * h;
+
+	h = p->handle;
+	dev = p->config;
+
+	memset(&async, 0, sizeof(async));
+	async.tid = task_get_current();
+	async.buf = p->buf;
+	async.nbyte = p->nbyte;
+	async.flags = p->flags;
+	async.loc = p->loc;
+
+	if( h->type.reg.mode == 0444 ){
+		async.loc += sizeof(appfs_file_t);
+	}
+
+	if ( async.loc >= h->type.reg.size ){
+		p->ret = -1;
+		return; //return EOF
+	}
+
+	//read should not go past the end of the file
+	if ( (async.loc + async.nbyte) >= (h->type.reg.size) ){
+		async.nbyte = h->type.reg.size - async.loc;
+	}
+
+	async.loc = (int)h->type.reg.beg_addr + async.loc;
+	p->ret = dev->driver.read(&(dev->handle), &async);
+}
+
+int appfs_read(const void * cfg, void * handle, int flags, int loc, void * buf, int nbyte){
+	sysfs_read_t args;
+	args.config = cfg;
+	args.handle = handle;
+	args.flags = flags;
+	args.loc = loc;
+	args.buf = buf;
+	args.nbyte = nbyte;
+
+	cortexm_svcall(priv_read, &args);
+	return args.ret;
+
+}
+
+int appfs_write(const void * cfg, void * handle, int flags, int loc, const void * buf, int nbyte){
 	errno = EROFS;
 	return -1;
 }
+
 
 int appfs_close(const void* cfg, void ** handle){
 	//close a file
@@ -470,7 +514,7 @@ int appfs_opendir(const void* cfg, void ** handle, const char * path){
 
 
 void priv_ioctl(void * args){
-	priv_ioctl_t * a = args;
+	sysfs_ioctl_t * a = args;
 	appfs_handle_t * h = a->handle;
 	int request = a->request;
 	appfs_installattr_t * attr;
@@ -543,7 +587,7 @@ void priv_ioctl(void * args){
 }
 
 int appfs_ioctl(const void * cfg, void * handle, int request, void * ctl){
-	priv_ioctl_t args;
+	sysfs_ioctl_t args;
 	args.cfg = cfg;
 	args.handle = handle;
 	args.request = request;

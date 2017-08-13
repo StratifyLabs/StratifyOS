@@ -21,7 +21,7 @@
 #include <stdarg.h>
 
 #include "sos/dev/bootloader.h"
-#include "link_flags.h"
+#include "link_local.h"
 
 static int reset_device(link_transport_mdriver_t * driver, int invoke_bootloader);
 

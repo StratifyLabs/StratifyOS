@@ -33,7 +33,7 @@
 #include "mcu/mcu.h"
 #include "sos/dev/rtc.h"
 
-#include "../sched/sched_flags.h"
+#include "../sched/sched_local.h"
 
 struct timeval time_of_day_offset MCU_SYS_MEM;
 

@@ -38,7 +38,7 @@
 
 
 #include "mcu/debug.h"
-#include "../sched/sched_flags.h"
+#include "../sched/sched_local.h"
 
 static int check_initialized(const pthread_mutex_t * mutex);
 static int mutex_trylock(pthread_mutex_t *mutex, bool trylock, const struct timespec * abs_timeout);

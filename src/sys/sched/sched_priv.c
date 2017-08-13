@@ -24,7 +24,7 @@
 
 /*! \file */
 
-#include "sched_flags.h"
+#include "sched_local.h"
 
 void sched_priv_set_delaymutex(void * args){
 	sos_sched_table[ task_get_current() ].signal_delay_mutex = args;

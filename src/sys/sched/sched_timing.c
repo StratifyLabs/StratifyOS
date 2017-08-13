@@ -25,7 +25,7 @@
 #include <time.h>
 #include <errno.h>
 
-#include "sched_flags.h"
+#include "sched_local.h"
 
 #include "mcu/tmr.h"
 #include "mcu/rtc.h"

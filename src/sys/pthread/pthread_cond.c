@@ -32,7 +32,7 @@
 #include <pthread.h>
 #include <errno.h>
 
-#include "../sched/sched_flags.h"
+#include "../sched/sched_local.h"
 
 #define PSHARED_FLAG 31
 #define INIT_FLAG 30

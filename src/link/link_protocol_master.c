@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "link_flags.h"
+#include "link_local.h"
 
 #include "mcu/debug.h"
 

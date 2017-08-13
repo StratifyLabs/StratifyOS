@@ -31,8 +31,8 @@
 #include "sos/fs/sysfs.h"
 #include <sys/syscalls/process/process_start.h>
 
-#include "../../sched/sched_flags.h"
-#include "../../sysfs/appfs.h"
+#include "../../sched/sched_local.h"
+#include "../../sysfs/appfs_local.h"
 
 static int reent_is_free(struct _reent * reent);
 

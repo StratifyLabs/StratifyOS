@@ -74,7 +74,7 @@ typedef struct {
 	int (*chmod)(const void*, const char*, int mode);
 	int (*chown)(const void*, const char*, uid_t uid, gid_t gid);
 	void (*unlock)(const void*);
-	const void * cfg;
+	const void * config;
 } sysfs_t;
 
 int rootfs_init(const void* cfg);
@@ -117,7 +117,7 @@ int rootfs_closedir(const void* cfg, void ** handle);
 		.chmod = SYSFS_NOTSUP, \
 		.chown = SYSFS_NOTSUP, \
 		.unlock = SYSFS_NOTSUP_VOID, \
-		.cfg = cfgp, \
+		.config = cfgp, \
 }
 
 
@@ -150,11 +150,35 @@ void sysfs_unlock();
 extern const char sysfs_validset[];
 extern const char sysfs_whitespace[];
 
-int u_open(open_file_t * open_file, const char * name);
-int u_ioctl(open_file_t * open_file, int request, void * ctl);
-int u_read(open_file_t * open_file, void * buf, int nbyte);
-int u_write(open_file_t * open_file, const void * buf, int nbyte);
-int u_close(open_file_t * open_file);
+typedef open_file_t sysfs_file_t;
+
+int sysfs_file_open(sysfs_file_t * open_file, const char * name, int mode);
+int sysfs_file_ioctl(sysfs_file_t * open_file, int request, void * ctl);
+int sysfs_file_read(sysfs_file_t * open_file, void * buf, int nbyte);
+int sysfs_file_write(sysfs_file_t * open_file, const void * buf, int nbyte);
+int sysfs_file_close(sysfs_file_t * open_file);
+
+typedef struct {
+	const void * config;
+	void * handle;
+	void * buf;
+	int flags;
+	int loc;
+	int nbyte;
+	int ret;
+} sysfs_read_t;
+
+typedef sysfs_read_t sysfs_write_t;
+
+typedef struct {
+	const void * cfg;
+	void * handle;
+	int request;
+	void * ctl;
+	int ret;
+} sysfs_ioctl_t;
+
+
 
 
 #endif /* SYSFS_H_ */

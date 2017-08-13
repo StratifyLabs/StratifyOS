@@ -25,7 +25,7 @@
 /*! \file */
 
 
-#include "sched_flags.h"
+#include "sched_local.h"
 
 void sched_debug_print_tasks(){
 	int i;

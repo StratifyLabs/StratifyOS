@@ -21,7 +21,7 @@
 
 #include "mcu/arch.h"
 #include "mcu/mcu.h"
-#include "core_flags.h"
+#include "core_local.h"
 
 //int mcu_board_config.core_cpu_freq MCU_SYS_MEM;
 

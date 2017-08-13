@@ -25,8 +25,8 @@
 
 #include <fcntl.h>
 #include <stdarg.h>
+#include "unistd_local.h"
 #include "unistd_fs.h"
-#include "unistd_flags.h"
 #include "sos/sos.h"
 
 #include "mcu/debug.h"

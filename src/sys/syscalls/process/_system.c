@@ -31,7 +31,7 @@
 #include <sys/wait.h>
 
 #include "mcu/mcu.h"
-#include "../../sched/sched_flags.h"
+#include "../../sched/sched_local.h"
 
 
 /*! \details This function creates a new process.

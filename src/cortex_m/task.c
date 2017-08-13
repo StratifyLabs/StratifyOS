@@ -19,7 +19,7 @@
 
 
 
-#include <cortex_m/task_flags.h>
+#include <cortex_m/task_local.h>
 #include <string.h>
 #include <errno.h>
 #include "mcu/mcu.h"

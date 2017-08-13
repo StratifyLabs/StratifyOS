@@ -31,7 +31,6 @@ C_SRCS += \
 ../src/sys/unistd/rmdir.c \
 ../src/sys/unistd/sleep.c \
 ../src/sys/unistd/uidgid.c \
-../src/sys/unistd/unistd_data_transfer.c \
 ../src/sys/unistd/usleep.c 
 
 OBJS += \
@@ -62,7 +61,6 @@ OBJS += \
 ./src/sys/unistd/rmdir.o \
 ./src/sys/unistd/sleep.o \
 ./src/sys/unistd/uidgid.o \
-./src/sys/unistd/unistd_data_transfer.o \
 ./src/sys/unistd/usleep.o 
 
 C_DEPS += \
@@ -93,7 +91,6 @@ C_DEPS += \
 ./src/sys/unistd/rmdir.d \
 ./src/sys/unistd/sleep.d \
 ./src/sys/unistd/uidgid.d \
-./src/sys/unistd/unistd_data_transfer.d \
 ./src/sys/unistd/usleep.d 
 
 

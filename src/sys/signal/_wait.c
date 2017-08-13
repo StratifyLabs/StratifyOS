@@ -26,7 +26,7 @@
 #include <errno.h>
 #include <signal.h>
 #include <sys/wait.h>
-#include "../sched/sched_flags.h"
+#include "../sched/sched_local.h"
 #include "sig_local.h"
 
 static void priv_wait_child(void * args) MCU_PRIV_EXEC_CODE;

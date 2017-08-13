@@ -19,7 +19,7 @@
 
 #include <string.h>
 #include "sos/dev/sys.h"
-#include "link_flags.h"
+#include "link_local.h"
 
 static sys_info_t convert_sys_26_info(const sys_26_info_t * sys_26_info);
 static sys_info_t convert_sys_23_info(const sys_23_info_t * sys_23_info, const sys_id_t * id);

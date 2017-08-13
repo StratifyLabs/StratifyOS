@@ -46,7 +46,7 @@ int lstat(const char * path, struct stat *buf){
 
 	fs = sysfs_find(path, true);
 	if ( fs != NULL ){
-		return fs->lstat(fs->cfg, sysfs_stripmountpath(fs, path), buf);
+		return fs->lstat(fs->config, sysfs_stripmountpath(fs, path), buf);
 	}
 	errno = ENOENT;
 	return -1;

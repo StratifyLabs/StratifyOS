@@ -23,8 +23,8 @@
 
 /*! \file */
 
+#include "unistd_local.h"
 #include  "unistd_fs.h"
-#include  "unistd_flags.h"
 #include "mcu/debug.h"
 #include "sos/sos.h"
 
@@ -49,12 +49,7 @@
 int write(int fildes, const void *buf, size_t nbyte);
 
 int _write(int fildes, const void *buf, size_t nbyte) {
-	int32_t tmp;
-	void * handle;
-	int loc;
-	int flags;
-	char * bufp;
-	const sysfs_t * fs;
+	sysfs_file_t * file;
 
 	fildes = u_fildes_is_bad(fildes);
 	if ( fildes < 0 ){
@@ -63,12 +58,6 @@ int _write(int fildes, const void *buf, size_t nbyte) {
 		return -1;
 	}
 
-	//This code will ensure that the process has permissions to access the specified memory
-	if ( nbyte > 0 ){
-		bufp = (char*)buf;
-		loc = bufp[0];
-		loc = bufp[nbyte-1];
-	}
 
 	if( fildes & FILDES_SOCKET_FLAG ){
 		if( sos_board_config.socket_api != 0 ){
@@ -83,25 +72,11 @@ int _write(int fildes, const void *buf, size_t nbyte) {
 		return -1;
 	}
 
-
-	fs = get_fs(fildes);
-	if ( fs->write_async != NULL ){  //This means the handle is not a regular file -- must be a device
-		return u_write(get_open_file(fildes), buf, nbyte);
-	} else {
-		//initialize the file offset location
-		loc = get_loc(fildes);
-		handle = get_handle(fildes);
-		flags = get_flags(fildes);
-		tmp = fs->write(fs->cfg, handle, flags, loc, buf, nbyte);
-
-		if ( tmp > 0 ){
-			set_loc(fildes, loc + tmp);
-		}
-	}
-
-
-	return tmp;
+	file = get_open_file(fildes);
+	return sysfs_file_write(file, buf, nbyte);
 }
+
+
 
 /*! @} */
 

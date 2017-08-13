@@ -20,7 +20,7 @@
 #include <stdio.h>
 
 #include "sos/dev/sys.h"
-#include "link_flags.h"
+#include "link_local.h"
 
 #define MAX_TRIES 3
 

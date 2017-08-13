@@ -96,7 +96,7 @@ int sffs_ismounted(const void * cfg);
 		.chmod = SYSFS_NOTSUP, \
 		.chown = SYSFS_NOTSUP, \
 		.unlock = sffs_unlock, \
-		.cfg = cfgp, \
+		.config = cfgp, \
 }
 
 

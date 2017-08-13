@@ -34,7 +34,7 @@
 
 #include "mcu/debug.h"
 
-#include "sched_flags.h"
+#include "sched_local.h"
 #include "../syscalls/malloc_local.h"
 
 

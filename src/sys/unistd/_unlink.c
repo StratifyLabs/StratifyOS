@@ -34,7 +34,7 @@ int _unlink(const char * name){
 
 	fs = sysfs_find(name, true);
 	if ( fs != NULL ){
-		return fs->unlink(fs->cfg,
+		return fs->unlink(fs->config,
 				sysfs_stripmountpath(fs, name)
 				);
 	}

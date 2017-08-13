@@ -106,9 +106,8 @@ void dup_open_file(int new_fd, int old_fd){
 			sizeof(open_file_t));
 }
 
-static inline void update_loc(int fildes, int loc) MCU_ALWAYS_INLINE;
-void update_loc(int fildes, int loc){
-	set_loc(fildes, loc);
-}
+int unistd_update_loc(sysfs_file_t * file, int adjust);
+
+
 
 #endif /* UNISTD_FLAGS_H_ */

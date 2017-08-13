@@ -27,9 +27,8 @@
 #include "mcu/mcu.h"
 #include "sos/fs/devfs.h"
 #include "../unistd/unistd_fs.h"
-#include "../unistd/unistd_flags.h"
-#include "../sched/sched_flags.h"
-#include "../unistd/unistd_flags.h"
+#include "../sched/sched_local.h"
+#include "../unistd/unistd_local.h"
 
 static int get_entries(const sysfs_t * list){
 	int i;
@@ -38,7 +37,7 @@ static int get_entries(const sysfs_t * list){
 	count = 0;
 
 	while( sysfs_isterminator(&list[i]) == false ){
-		if( list[i].ismounted( list[i].cfg) ){
+		if( list[i].ismounted( list[i].config ) ){
 			count++;
 		}
 		i++;
@@ -103,7 +102,7 @@ int rootfs_readdir_r(const void* cfg, void * handle, int loc, struct dirent * en
 		i = 0;
 		j = 0;
 		while( j < loc ){
-			if( list[i].ismounted( list[i].cfg) ){
+			if( list[i].ismounted( list[i].config) ){
 				j++;
 			}
 			i++;

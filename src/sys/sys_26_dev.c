@@ -29,7 +29,7 @@
 #include "mcu/core.h"
 #include "device/sys.h"
 #include "mcu/debug.h"
-#include "sched/sched_flags.h"
+#include "sched/sched_local.h"
 #include "signal/sig_local.h"
 #include "device/sys.h"
 #include "symbols.h"

@@ -28,7 +28,7 @@
 #include "mcu/mcu.h"
 #include "cortexm/cortexm.h"
 
-#include "sched/sched_flags.h"
+#include "sched/sched_local.h"
 
 static void init_hw();
 

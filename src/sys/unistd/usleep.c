@@ -29,7 +29,7 @@
 #include <errno.h>
 
 #include "mcu/debug.h"
-#include "../sched/sched_flags.h"
+#include "../sched/sched_local.h"
 
 static void priv_usleep(void * args) MCU_PRIV_EXEC_CODE;
 

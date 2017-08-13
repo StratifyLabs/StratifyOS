@@ -31,8 +31,8 @@
 #include "mcu/core.h"
 #include "sos/sos.h"
 
-#include "sched_flags.h"
-#include "../unistd/unistd_flags.h"
+#include "sched_local.h"
+#include "../unistd/unistd_local.h"
 #include "../signal/sig_local.h"
 
 #include "mcu/debug.h"

@@ -19,7 +19,7 @@
 
 #include <string.h>
 #include "sos/sos.h"
-#include "sched_flags.h"
+#include "sched_local.h"
 
 void sched_fault_build_trace_string(char * dest){
 	sprintf(dest, "F%X:0x%lX",

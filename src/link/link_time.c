@@ -19,7 +19,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
-#include "link_flags.h"
+#include "link_local.h"
 
 
 int link_settime(link_transport_mdriver_t * driver, struct link_tm * t){

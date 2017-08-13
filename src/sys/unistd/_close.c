@@ -27,9 +27,9 @@
 #include "sos/fs/sysfs.h"
 #include "mcu/mcu.h"
 #include "unistd_fs.h"
-#include "unistd_flags.h"
 #include "mcu/debug.h"
 #include "sos/sos.h"
+#include "unistd_local.h"
 
 /*! \details This function closes the file associated
  * with the specified descriptor.
@@ -58,20 +58,12 @@ int _close(int fildes) {
 		return -1;
 	}
 
-	ret = u_close(get_open_file(fildes));
+	ret = sysfs_file_close(get_open_file(fildes));
 
 	u_reset_fildes(fildes);
 	return ret;
 }
 
-int u_close(open_file_t * open_file){
-	const sysfs_t * fs;
-	fs = open_file->fs;
-	//if( getpid() > 0 ){
-	//	printf("close file---\n");
-	//}
-	return fs->close(fs->cfg, &open_file->handle);
-}
 
 
 /*! @} */

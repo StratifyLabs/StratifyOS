@@ -22,7 +22,6 @@
 
 #include "config.h"
 #include <stdbool.h>
-#include "appfs.h"
 #include "sos/dev/appfs.h"
 #include "mcu/debug.h"
 #include "mcu/mem.h"
@@ -86,6 +85,7 @@ int appfs_util_erasepages(const devfs_device_t * dev, int start_page, int end_pa
 int appfs_util_getpageinfo(const devfs_device_t * dev, mem_pageinfo_t * pageinfo);
 
 const appfs_file_t * appfs_util_getfile(appfs_handle_t * h);
+bool appfs_util_isexecutable(const appfs_file_t * info);
 
 //ram access
 #define APPFS_RAM_PAGES ((DEVICE_MAX_RAM-DEVICE_SYS_RAM)/DEVICE_RAM_PAGE_SIZE)

@@ -23,8 +23,8 @@
 
 /*! \file */
 
+#include "unistd_local.h"
 #include  "unistd_fs.h"
-#include  "unistd_flags.h"
 #include "sos/sos.h"
 
 /*! \details This function reads \a nbyte bytes from \a fildes to the memory
@@ -48,12 +48,9 @@
 int read(int fildes, void *buf, size_t nbyte);
 
 int _read(int fildes, void *buf, size_t nbyte){
-	void * handle;
-	int flags;
 	char * bufp;
 	int loc;
-	int bytes_read;
-	const sysfs_t * fs;
+	sysfs_file_t * file;
 
 	fildes = u_fildes_is_bad(fildes);
 	if ( fildes < 0 ){
@@ -89,23 +86,12 @@ int _read(int fildes, void *buf, size_t nbyte){
 		return -1;
 	}
 
-	fs = get_fs(fildes);
-	if ( fs->read_async != NULL ){  //This means the handle is not a regular file -- must be a device
-		return u_read(get_open_file(fildes), buf, nbyte);
-	}
-
+	file = get_open_file(fildes);
 
 	//initialize the file offset location
-	loc = get_loc(fildes);
-	flags = get_flags(fildes);
-	handle = get_handle(fildes);
-	bytes_read = fs->read(fs->cfg, handle, flags, loc, buf, nbyte);
+	return sysfs_file_read(file, buf, nbyte);
 
-	if ( bytes_read > 0 ){
-		set_loc(fildes, loc + bytes_read);
-	}
-
-	return bytes_read;
 }
+
 
 /*! @} */

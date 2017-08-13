@@ -23,8 +23,8 @@
 
 /*! \file */
 
+#include "unistd_local.h"
 #include "unistd_fs.h"
-#include "unistd_flags.h"
 
 /*! \details This function removes the directory specified by \a path.
  *
@@ -44,7 +44,7 @@ int rmdir(const char *path){
 
 	fs = sysfs_find(path, true);
 	if ( fs != NULL ){
-		return fs->rmdir(fs->cfg,
+		return fs->rmdir(fs->config,
 				sysfs_stripmountpath(fs, path)
 				);
 	}

@@ -27,7 +27,7 @@
 #include <errno.h>
 
 #include "sig_local.h"
-#include "../sched/sched_flags.h"
+#include "../sched/sched_local.h"
 
 /*! \details This function sends the signal \a signo to the process \a pid.
  *

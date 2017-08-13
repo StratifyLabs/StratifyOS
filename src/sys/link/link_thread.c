@@ -40,7 +40,7 @@
 
 #include "trace.h"
 
-#include "../sched/sched_flags.h"
+#include "../sched/sched_local.h"
 
 #define SERIAL_NUM_WIDTH 3
 

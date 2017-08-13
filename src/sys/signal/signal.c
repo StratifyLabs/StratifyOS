@@ -30,7 +30,7 @@
 #include "mcu/debug.h"
 #include <signal.h>
 #include <errno.h>
-#include "../sched/sched_flags.h"
+#include "../sched/sched_local.h"
 #include "sig_local.h"
 
 static int alloc_sigactions();

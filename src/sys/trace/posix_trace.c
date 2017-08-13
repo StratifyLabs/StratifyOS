@@ -25,7 +25,7 @@
 #include "cortexm/mpu.h"
 #include "mcu/core.h"
 #include <fcntl.h>
-#include "../sched/sched_flags.h"
+#include "../sched/sched_local.h"
 #include "trace.h"
 
 typedef struct {

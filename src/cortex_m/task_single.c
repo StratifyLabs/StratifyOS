@@ -17,7 +17,7 @@
  * 
  */
 
-#include <cortex_m/task_flags.h>
+#include <cortex_m/task_local.h>
 #include "mcu/mcu.h"
 #include "mcu/debug.h"
 #include "cortexm/cortexm.h"

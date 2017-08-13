@@ -32,7 +32,7 @@
 #include <stdlib.h>
 #include <signal.h>
 #include "trace.h"
-#include "../sched/sched_flags.h"
+#include "../sched/sched_local.h"
 #include "sig_local.h"
 
 

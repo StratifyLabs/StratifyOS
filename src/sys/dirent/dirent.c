@@ -93,7 +93,7 @@ int closedir(DIR * dirp /*! A pointer to the open directory */){
 		return -1;
 	}
 	fs = dirp->fs;
-	ret = fs->closedir(fs->cfg, &(dirp->handle));
+	ret = fs->closedir(fs->config, &(dirp->handle));
 
 	free(dirp);
 	return ret;
@@ -130,7 +130,7 @@ DIR * opendir(const char * dirname){
 	}
 
 	//Open the directory and check for errors
-	err = fs->opendir(fs->cfg, &(dirp->handle), sysfs_stripmountpath(fs, dirname));
+	err = fs->opendir(fs->config, &(dirp->handle), sysfs_stripmountpath(fs, dirname));
 	if ( err < 0 ){
 		free(dirp);
 		return NULL;
@@ -180,7 +180,7 @@ int readdir_r(DIR * dirp /*! a pointer to the directory structure */,
 	}
 
 	fs = dirp->fs;
-	err = fs->readdir_r(fs->cfg, dirp->handle, dirp->loc, entry);
+	err = fs->readdir_r(fs->config, dirp->handle, dirp->loc, entry);
 	if ( err < 0 ){
 		//errno is set by fs->readdir_r
 		if ( result ){

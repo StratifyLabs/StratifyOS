@@ -28,14 +28,12 @@
 #include <stdarg.h>
 #include <sys/stat.h>
 #include <errno.h>
-#include <sys/unistd.h>
 
-
+#include "unistd_local.h"
 #include "sos/dev/sys.h"
 #include "mcu/mcu.h"
 #include "unistd_fs.h"
-#include "unistd_flags.h"
-#include "../sched/sched_flags.h"
+#include "../sched/sched_local.h"
 
 
 
@@ -101,13 +99,11 @@ void set_open_file(int fildes, const sysfs_t * fs, void * handle, uint16_t flags
 int open(const char * name, int flags, ... );
 
 int _open(const char * name, int flags, ...) {
-	void * handle;
 	int tmp;
 	int fildes;
 	va_list ap;
 	int mode;
 	const sysfs_t * fs;
-	int ret;
 
 
 	//Check the length of the filename
@@ -159,26 +155,23 @@ int _open(const char * name, int flags, ...) {
 		mode = 0;
 	}
 
-	if ( (ret = fs->open(fs->cfg, &handle, sysfs_stripmountpath(fs, name), flags, mode)) < 0 ){
+	set_open_file(fildes, fs, 0, flags);
+
+	if( sysfs_file_open(get_open_file(fildes), sysfs_stripmountpath(fs, name), mode) <  0){
 		u_reset_fildes(fildes);
-		return ret;
+		return -1;
 	}
 
-	set_open_file(fildes, fs, handle, flags);
+	//if ( (ret = fs->open(fs->config, &handle, sysfs_stripmountpath(fs, name), flags, mode)) < 0 ){
+	//	u_reset_fildes(fildes);
+	//	return ret;
+	//}
+	//set_open_file(fildes, fs, handle, flags);
+
 	if ( flags & O_APPEND ){
 		lseek(fildes, 0, SEEK_END);
 	}
 	return fildes;
-}
-
-int u_open(open_file_t * open_file, const char * name){
-	const sysfs_t * fs = open_file->fs;
-	return fs->open(
-			fs->cfg,
-			&(open_file->handle),
-			name,
-			open_file->flags,
-			0);
 }
 
 int u_fildes_is_bad(int fildes){

@@ -51,7 +51,7 @@ int _rename(const char *old, const char *new){
 	fs_new = sysfs_find(new, true);
 
 	if ( (fs_old == fs_new) && (fs_new != NULL) ){
-		return fs_new->rename(fs_new->cfg, sysfs_stripmountpath(fs_old, old), sysfs_stripmountpath(fs_new, new) );
+		return fs_new->rename(fs_new->config, sysfs_stripmountpath(fs_old, old), sysfs_stripmountpath(fs_new, new) );
 	}
 
 	errno = ENOTSUP;

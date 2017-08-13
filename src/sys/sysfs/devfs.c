@@ -25,11 +25,13 @@
 
 #include "mcu/mcu.h"
 #include "../unistd/unistd_fs.h"
-#include "../unistd/unistd_flags.h"
-#include "../sched/sched_flags.h"
+#include "../sched/sched_local.h"
+#include "../unistd/unistd_local.h"
 
 #include "sos/fs/devfs.h"
-#include "../unistd/unistd_flags.h"
+#include "sos/fs/sysfs.h"
+
+#include "devfs_local.h"
 
 typedef struct {
 	int err;
@@ -39,17 +41,10 @@ typedef struct {
 
 static void priv_open_device(void * args) MCU_PRIV_EXEC_CODE;
 static void priv_devfs_close(void * args) MCU_PRIV_EXEC_CODE;
+static int get_total(const devfs_device_t * list);
+static void ioctl_priv(void * args) MCU_PRIV_EXEC_CODE;
 
-typedef struct {
-	int err;
-	const void * cfg;
-	void * handle;
-	int request;
-	void * ctl;
-} ioctl_priv_t;
-void ioctl_priv(void * args) MCU_PRIV_EXEC_CODE;
-
-static int get_total(const devfs_device_t * list){
+int get_total(const devfs_device_t * list){
 	int total;
 	total = 0;
 	while( list[total].driver.open != NULL ){
@@ -192,6 +187,16 @@ int devfs_stat(const void * cfg, const char * path, struct stat * st){
 	return devfs_fstat(cfg, (void*)dev, st);
 }
 
+int devfs_read(const void * config, void * handle, int flags, int loc, void * buf, int nbyte){
+	//config points to the list of devices (not used because handle already has the device)
+	//handle points to the actual device
+	return devfs_data_transfer(config, handle, flags, loc, buf, nbyte, 1);
+}
+
+int devfs_write(const void * cfg, void * handle, int flags, int loc, const void * buf, int nbyte){
+	return devfs_data_transfer(cfg, handle, flags, loc, (void*)buf, nbyte, 0);
+}
+
 int devfs_read_async(const void * cfg, void * handle, devfs_async_t * op){
 	const devfs_device_t * dev = (const devfs_device_t*)(handle);
 	return dev->driver.read(&dev->handle, op);
@@ -203,20 +208,20 @@ int devfs_write_async(const void * cfg, void * handle, devfs_async_t * op){
 }
 
 int devfs_ioctl(const void * cfg, void * handle, int request, void * ctl){
-	ioctl_priv_t args;
+	sysfs_ioctl_t args;
 	args.cfg = cfg;
 	args.handle = handle;
 	args.request = request;
 	args.ctl = ctl;
-	args.err = 0;
+	args.ret = 0;
 	cortexm_svcall(ioctl_priv, &args);
-	return args.err;
+	return args.ret;
 }
 
 void ioctl_priv(void * args){
-	ioctl_priv_t * p = (ioctl_priv_t*)args;
+	sysfs_ioctl_t * p = args;
 	const devfs_device_t * dev = (const devfs_device_t*)p->handle;
-	p->err = dev->driver.ioctl(&dev->handle, p->request, p->ctl);
+	p->ret = dev->driver.ioctl(&dev->handle, p->request, p->ctl);
 }
 
 void priv_devfs_close(void * args){

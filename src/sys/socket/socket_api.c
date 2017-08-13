@@ -18,9 +18,9 @@
  */
 
 #include <unistd.h>
-#include "../unistd/unistd_flags.h"
 #include "sos/sos.h"
 #include "sys/socket.h"
+#include "../unistd/unistd_local.h"
 
 //int close(int s);
 //int ioctl(int s, long cmd, void *argp);

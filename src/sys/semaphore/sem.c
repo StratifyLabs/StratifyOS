@@ -33,7 +33,7 @@
 #include "sos/fs/sysfs.h"
 
 #include "semaphore.h"
-#include "../sched/sched_flags.h"
+#include "../sched/sched_local.h"
 
 #include "mcu/debug.h"
 

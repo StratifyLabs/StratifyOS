@@ -21,6 +21,8 @@ int appfs_init(const void* cfg);
 int appfs_startup(const void* cfg);
 int appfs_mkfs(const void* cfg);
 int appfs_open(const void* cfg, void ** handle, const char * path, int flags, int mode);
+int appfs_read(const void * cfg, void * handle, int flags, int loc, void * buf, int nbyte);
+int appfs_write(const void * cfg, void * handle, int flags, int loc, const void * buf, int nbyte);
 int appfs_read_async(const void* cfg, void * handle, devfs_async_t * op);
 int appfs_write_async(const void* cfg, void * handle, devfs_async_t * op);
 int appfs_ioctl(const void * cfg, void * handle, int request, void * ctl);
@@ -42,10 +44,10 @@ int appfs_unlink(const void* cfg, const char * path);
 		.startup = appfs_startup, \
 		.mkfs = appfs_mkfs, \
 		.open = appfs_open, \
-		.read_async = appfs_read_async, \
-		.write_async = appfs_write_async, \
-		.read = NULL, \
-		.write = NULL, \
+		.read_async = SYSFS_NOTSUP, \
+		.write_async = SYSFS_NOTSUP, \
+		.read = appfs_read, \
+		.write = appfs_write, \
 		.close = appfs_close, \
 		.ioctl = appfs_ioctl, \
 		.rename = SYSFS_NOTSUP, \
@@ -64,7 +66,7 @@ int appfs_unlink(const void* cfg, const char * path);
 		.chmod = SYSFS_NOTSUP, \
 		.chown = SYSFS_NOTSUP, \
 		.unlock = SYSFS_NOTSUP_VOID, \
-		.cfg = cfgp, \
+		.config = cfgp, \
 }
 
 

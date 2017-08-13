@@ -22,7 +22,7 @@
 #include <sos/fs/sysfs.h>
 #include <string.h>
 
-#include "../sched/sched_flags.h"
+#include "../sched/sched_local.h"
 #include "mcu/core.h"
 #include "cortexm/mpu.h"
 #include "cortexm/task.h"

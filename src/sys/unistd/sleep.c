@@ -25,7 +25,7 @@
 
 #include <unistd.h>
 #include <time.h>
-#include "../sched/sched_flags.h"
+#include "../sched/sched_local.h"
 
 static void priv_sleep(void * args) MCU_PRIV_EXEC_CODE;
 

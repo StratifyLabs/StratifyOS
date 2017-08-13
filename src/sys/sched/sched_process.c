@@ -29,7 +29,7 @@
 #include <errno.h>
 #include <fcntl.h>
 
-#include "sched_flags.h"
+#include "sched_local.h"
 
 typedef struct {
 	task_memories_t * mem;

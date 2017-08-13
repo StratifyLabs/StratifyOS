@@ -24,8 +24,8 @@
 
 /*! \file */
 
+#include "unistd_local.h"
 #include  "unistd_fs.h"
-#include  "unistd_flags.h"
 
 
 /*! \details This function gets various file statistics for
@@ -51,7 +51,7 @@ int _fstat(int fildes, struct stat *buf){
 	memset (buf, 0, sizeof (* buf));
 	fs = get_fs(fildes);
 	if ( fs != NULL ){
-		return fs->fstat(fs->cfg, handle, buf);
+		return fs->fstat(fs->config, handle, buf);
 	} else {
 		errno = EBADF;
 		return -1;

@@ -31,8 +31,8 @@
 #include "cortexm/cortexm.h"
 #include "mcu/debug.h"
 #include "aio.h"
-#include "../unistd/unistd_flags.h"
-#include "../sched/sched_flags.h"
+#include "../sched/sched_local.h"
+#include "../unistd/unistd_local.h"
 #include "../signal/sig_local.h"
 
 typedef struct {

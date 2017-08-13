@@ -170,10 +170,6 @@ void fifo_data_received(const fifo_config_t * cfgp, fifo_state_t * state){
 		state->rop->nbyte = state->rop_len; //update the number of bytes read??
 		if( (bytes_read = fifo_read_buffer(cfgp, state, state->rop->buf)) > 0 ){
 			execute_read_callback(state, bytes_read, MCU_EVENT_FLAG_DATA_READY);
-			//state->rop->nbyte = bytes_read;
-			//if( mcu_execute_event_handler(&(state->rop->handler), MCU_EVENT_FLAG_DATA_READY, 0) == 0 ){
-			//	state->rop = 0;
-			//}
 		}
 	}
 }
@@ -204,18 +200,11 @@ static int data_transmitted(const devfs_handle_t * cfg){
 	if( state->wop != NULL ){
 		if( (bytes_written = fifo_write_buffer(cfgp, state, state->wop->buf_const)) > 0 ){
 			execute_write_callback(state, bytes_written, MCU_EVENT_FLAG_WRITE_COMPLETE);
-			//state->wop->nbyte = bytes_written;
-			//if ( state->wop->handler.callback(state->wop->handler.context, NULL) == 0 ){
-			//	state->wop = NULL;
-			//}
 		}
 	}
 
 	return 1; //leave the callback in place
 }
-
-
-
 
 int fifo_open(const devfs_handle_t * cfg){
 	//const fifo_config_t * cfgp = cfg->config;

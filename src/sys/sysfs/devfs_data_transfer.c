@@ -29,32 +29,27 @@
 #include <errno.h>
 
 #include "mcu/mcu.h"
-#include "unistd_fs.h"
-#include "unistd_flags.h"
-#include "../sched/sched_flags.h"
+#include "../sched/sched_local.h"
+
+#include "sos/fs/sysfs.h"
+#include "devfs_local.h"
 
 #define ARGS_READ_WRITE 0
 #define ARGS_READ_READ 1
 #define ARGS_READ_DONE 2
 
 typedef struct {
-	const sysfs_t * fs;
-	void * handle;
-	devfs_async_t op;
+	const void * device;
+	devfs_async_t async;
 	volatile int is_read;
 	int ret;
 } priv_device_data_transfer_t;
-
-#if SINGLE_TASK != 0
-volatile bool waiting;
-#endif
 
 
 static void priv_check_op_complete(void * args);
 static void priv_device_data_transfer(void * args) MCU_PRIV_EXEC_CODE;
 static int priv_data_transfer_callback(void * context, const mcu_event_t * data) MCU_PRIV_CODE;
-static int device_data_transfer(open_file_t * open_file, void * buf, int nbyte, int read);
-static int get_mode(const sysfs_t* fs, void * handle);
+static void clear_device_action(const void * config, const devfs_device_t * device, int loc, int is_read);
 
 int priv_data_transfer_callback(void * context, const mcu_event_t * event){
 	//activate all tasks that are blocked on this signal
@@ -62,24 +57,25 @@ int priv_data_transfer_callback(void * context, const mcu_event_t * event){
 	int new_priority;
 	priv_device_data_transfer_t * args = (priv_device_data_transfer_t*)context;
 
-	new_priority = -1;
-	if ( (uint32_t)args->op.tid < task_get_total() ){
 
-		if ( sched_inuse_asserted(args->op.tid) ){
+	new_priority = -1;
+	if ( (uint32_t)args->async.tid < task_get_total() ){
+
+		if ( sched_inuse_asserted(args->async.tid) ){
 			if( event->o_events & MCU_EVENT_FLAG_CANCELED ){
-				args->op.nbyte = -1; //ignore any data transferred and return an error
+				args->async.nbyte = -1; //ignore any data transferred and return an error
 			}
 		}
 
-		if ( sched_inuse_asserted(args->op.tid) && !sched_stopped_asserted(args->op.tid) ){ //check to see if the process terminated or stopped
-			new_priority = sos_sched_table[args->op.tid].priority;
+		if ( sched_inuse_asserted(args->async.tid) && !sched_stopped_asserted(args->async.tid) ){ //check to see if the process terminated or stopped
+			new_priority = sos_sched_table[args->async.tid].priority;
 		}
 	}
 
 	//check to see if any tasks are waiting for this device
 	for(i = 1; i < task_get_total(); i++){
 		if ( task_enabled(i) && sched_inuse_asserted(i) ){
-			if ( sos_sched_table[i].block_object == (args->handle + args->is_read) ){
+			if ( sos_sched_table[i].block_object == (args->device + args->is_read) ){
 				sched_priv_assert_active(i, SCHED_UNBLOCK_TRANSFER);
 				if( !sched_stopped_asserted(i) && (sos_sched_table[i].priority > new_priority) ){
 					new_priority = sos_sched_table[i].priority;
@@ -100,10 +96,10 @@ void priv_check_op_complete(void * args){
 
 	if( p->is_read != ARGS_READ_DONE ){
 		if ( p->ret == 0 ){
-			if ( (p->op.nbyte >= 0) //wait for the operation to complete or for data to arrive
+			if ( (p->async.nbyte >= 0) //wait for the operation to complete or for data to arrive
 			){
 				//Block waiting for the operation to complete or new data to be ready
-				sos_sched_table[ task_get_current() ].block_object = (void*)p->handle + p->is_read;
+				sos_sched_table[ task_get_current() ].block_object = (void*)p->device + p->is_read;
 				//switch tasks until a signal becomes available
 				sched_priv_update_on_sleep();
 			}
@@ -115,19 +111,22 @@ void priv_check_op_complete(void * args){
 
 void priv_device_data_transfer(void * args){
 	priv_device_data_transfer_t * p = (priv_device_data_transfer_t*)args;
+	const devfs_device_t * dev = p->device;
 
 	if ( p->is_read != 0 ){
 		//Read operation
-		p->ret = p->fs->read_async(p->fs->cfg, p->handle, &p->op);
+		p->ret = dev->driver.read(&(dev->handle), &(p->async));
+		//p->ret = p->fs->read_async(p->fs->config, p->handle, &p->op);
 	} else {
-		p->ret = p->fs->write_async(p->fs->cfg, p->handle, &p->op);
+		//p->ret = p->fs->write_async(p->fs->config, p->handle, &p->op);
+		p->ret = dev->driver.write(&(dev->handle), &(p->async));
 	}
 
 	priv_check_op_complete(args);
 
 }
 
-void clear_device_action(open_file_t * open_file, int is_read){
+void clear_device_action(const void * config, const devfs_device_t * device, int loc, int is_read){
 	mcu_action_t action;
 	memset(&action, 0, sizeof(mcu_action_t));
 	if( is_read ){
@@ -135,46 +134,31 @@ void clear_device_action(open_file_t * open_file, int is_read){
 	} else {
 		action.o_events = MCU_EVENT_FLAG_WRITE_COMPLETE;
 	}
-	action.channel = open_file->loc;
-	u_ioctl(open_file, I_MCU_SETACTION, &action);
+	action.channel = loc;
+	devfs_ioctl(config, (void*)device, I_MCU_SETACTION, &action);
 }
 
 
-int u_read(open_file_t * open_file, void * buf, int nbyte){
-	return device_data_transfer(open_file, buf, nbyte, 1);
-}
-
-int u_write(open_file_t * open_file, const void * buf, int nbyte){
-	return device_data_transfer(open_file, (void*)buf, nbyte, 0);
-}
-
-
-int device_data_transfer(open_file_t * open_file, void * buf, int nbyte, int is_read){
+int devfs_data_transfer(const void * config, const devfs_device_t * device, int flags, int loc, void * buf, int nbyte, int is_read){
 	int tmp;
-	int mode;
 	volatile priv_device_data_transfer_t args;
 
 	if ( nbyte == 0 ){
 		return 0;
 	}
 
-	args.fs = (const sysfs_t*)open_file->fs;
-	args.handle = (devfs_device_t *)open_file->handle;
+	args.device = device;
 	if( is_read ){
 		args.is_read = ARGS_READ_READ;
 	} else {
 		args.is_read = ARGS_READ_WRITE;
 	}
-	args.op.loc = open_file->loc;
-	args.op.flags = open_file->flags;
-	args.op.buf = buf;
-	args.op.handler.callback = priv_data_transfer_callback;
-	args.op.handler.context = (void*)&args;
-	args.op.tid = task_get_current();
-
-	if ( (mode = get_mode(args.fs, args.handle)) < 0 ){
-		return -1;
-	}
+	args.async.loc = loc;
+	args.async.flags = flags;
+	args.async.buf = buf;
+	args.async.handler.callback = priv_data_transfer_callback;
+	args.async.handler.context = (void*)&args;
+	args.async.tid = task_get_current();
 
 	tmp = 0;
 
@@ -182,7 +166,7 @@ int device_data_transfer(open_file_t * open_file, void * buf, int nbyte, int is_
 	do {
 
 		args.ret = -101010;
-		args.op.nbyte = nbyte;
+		args.async.nbyte = nbyte;
 
 		//This transfers the data
 		cortexm_svcall(priv_device_data_transfer, (void*)&args);
@@ -192,9 +176,9 @@ int device_data_transfer(open_file_t * open_file, void * buf, int nbyte, int is_
 		while( (sched_get_unblock_type(task_get_current()) == SCHED_UNBLOCK_SIGNAL)
 				&& ((volatile int)args.is_read != ARGS_READ_DONE) ){
 
-			if( (args.ret == 0) && (args.op.nbyte == 0) ){
+			if( (args.ret == 0) && (args.async.nbyte == 0) ){
 				//no data was transferred
-				clear_device_action(open_file, args.is_read);
+				clear_device_action(config, device, loc, args.is_read);
 				errno = EINTR;
 				//return the number of bytes transferred
 				return -1;
@@ -211,18 +195,18 @@ int device_data_transfer(open_file_t * open_file, void * buf, int nbyte, int is_
 			break;
 		} else if ( args.ret == 0 ){
 			//the operation happened asynchronously
-			if ( args.op.nbyte > 0 ){
-				//The operation has completed and transferred args.op.nbyte bytes
-				tmp = args.op.nbyte;
+			if ( args.async.nbyte > 0 ){
+				//The operation has completed and transferred args.async.nbyte bytes
+				tmp = args.async.nbyte;
 				break;
-			} else if ( args.op.nbyte == 0 ){
+			} else if ( args.async.nbyte == 0 ){
 				//There was no data to read/write -- try again
-				if (args.op.flags & O_NONBLOCK ){
+				if (args.async.flags & O_NONBLOCK ){
 					errno = ENODATA;
 					return -1;
 				}
 
-			} else if ( args.op.nbyte < 0 ){
+			} else if ( args.async.nbyte < 0 ){
 				//there was an error executing the operation (or the operation was cancelled)
 				return -1;
 			}
@@ -236,20 +220,9 @@ int device_data_transfer(open_file_t * open_file, void * buf, int nbyte, int is_
 	} while ( args.ret == 0 );
 
 
-	if ( ((mode & S_IFMT) != S_IFCHR) && (tmp > 0) ){
-		open_file->loc += tmp;
-	}
-
 	return tmp;
 }
 
-int get_mode(const sysfs_t* fs, void * handle){
-	struct stat st;
-	if ( fs->fstat(fs->cfg, handle, &st) < 0){
-		return -1;
-	}
-	return st.st_mode;
-}
 
 /*! @} */
 

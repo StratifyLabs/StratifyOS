@@ -18,8 +18,8 @@
  */
 
 
-#ifndef LINK_FLAGS_H_
-#define LINK_FLAGS_H_
+#ifndef LINK_LOCAL_H_
+#define LINK_LOCAL_H_
 
 #include <stdio.h>
 #include "sos/link.h"
@@ -77,4 +77,4 @@ void link_phy_wait(int msec);
 #endif
 
 
-#endif /* LINK_FLAGS_H_ */
+#endif /* LINK_LOCAL_H_ */

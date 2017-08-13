@@ -36,7 +36,7 @@
 #include "mcu/wdt.h"
 #include "sos/dev/rtc.h"
 
-#include "../sched/sched_flags.h"
+#include "../sched/sched_local.h"
 
 static int set_alarm(int seconds);
 static void priv_powerdown(void * args) MCU_PRIV_EXEC_CODE;
