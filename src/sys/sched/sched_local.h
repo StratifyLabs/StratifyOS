@@ -236,13 +236,13 @@ void sched_priv_assert_sync(void * args) MCU_PRIV_CODE;
 int sched_get_highest_priority_blocked(void * block_object);
 int sched_priv_unblock_all(void * block_object, int unblock_type);
 
-void sched_priv_timedblock(void * block_object, struct sched_timeval * interval);
+void sched_priv_timedblock(void * block_object, struct mcu_timeval * interval);
 
 uint32_t sched_seconds_to_clocks(int seconds);
 uint32_t sched_useconds_to_clocks(int useconds);
 uint32_t sched_nanoseconds_to_clocks(int nanoseconds);
-void sched_convert_timespec(struct sched_timeval * tv, const struct timespec * ts);
-void sched_priv_get_realtime(struct sched_timeval * tv) MCU_PRIV_EXEC_CODE;
+void sched_convert_timespec(struct mcu_timeval * tv, const struct timespec * ts);
+void sched_priv_get_realtime(struct mcu_timeval * tv) MCU_PRIV_EXEC_CODE;
 void sched_fault_build_string(char * dest);
 void sched_fault_build_trace_string(char * dest);
 

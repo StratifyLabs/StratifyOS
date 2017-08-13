@@ -197,6 +197,8 @@ int devfs_write(const void * cfg, void * handle, int flags, int loc, const void 
 	return devfs_data_transfer(cfg, handle, flags, loc, (void*)buf, nbyte, 0);
 }
 
+
+#if 0
 int devfs_read_async(const void * cfg, void * handle, devfs_async_t * op){
 	const devfs_device_t * dev = (const devfs_device_t*)(handle);
 	return dev->driver.read(&dev->handle, op);
@@ -205,6 +207,12 @@ int devfs_read_async(const void * cfg, void * handle, devfs_async_t * op){
 int devfs_write_async(const void * cfg, void * handle, devfs_async_t * op){
 	const devfs_device_t * dev = (const devfs_device_t*)handle;
 	return dev->driver.write(&dev->handle, op);
+}
+#endif
+
+
+int devfs_aio(const void * config, void * handle, struct aiocb * aio){
+	return devfs_aio_data_transfer(handle, aio);
 }
 
 int devfs_ioctl(const void * cfg, void * handle, int request, void * ctl){

@@ -40,9 +40,7 @@ int (* const dac_ioctl_func_table[I_MCU_TOTAL + I_DAC_TOTAL])(const devfs_handle
 };
 
 int mcu_dac_open(const devfs_handle_t * cfg){
-	return mcu_open(cfg,
-			mcu_dac_dev_is_powered,
-			mcu_dac_dev_power_on);
+	return mcu_open(cfg, mcu_dac_dev_is_powered, mcu_dac_dev_power_on);
 }
 
 int mcu_dac_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
@@ -63,9 +61,7 @@ int mcu_dac_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 
 
 int mcu_dac_write(const devfs_handle_t * cfg, devfs_async_t * wop){
-	return mcu_write(cfg, wop,
-			mcu_dac_dev_is_powered,
-			mcu_dac_dev_write);
+	return mcu_write(cfg, wop, mcu_dac_dev_is_powered, mcu_dac_dev_write);
 
 }
 

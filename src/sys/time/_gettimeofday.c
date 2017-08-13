@@ -56,12 +56,12 @@ int _gettimeofday(struct timeval * ptimeval, void * ptimezone){
 }
 
 void gettimeofday_sched(struct timeval * ptimeval){
-	struct sched_timeval tv;
+	struct mcu_timeval tv;
 	div_t d;
 	struct timeval tmp;
 	cortexm_svcall((cortexm_svcall_t)sched_priv_get_realtime, &tv);
 
-	//Convert the sched_timeval to a timeval struct
+	//Convert the mcu_timeval to a timeval struct
 	d = div(tv.tv_usec, 1000000);
 	tmp.tv_sec = tv.tv_sec * SCHED_TIMEVAL_SECONDS + d.quot;
 	tmp.tv_usec = d.rem;

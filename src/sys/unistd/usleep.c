@@ -77,7 +77,7 @@ int usleep(useconds_t useconds){
 
 void priv_usleep(void * args){
 	useconds_t * p;
-	struct sched_timeval abs_time;
+	struct mcu_timeval abs_time;
 	p = (useconds_t*)args;
 	sched_priv_get_realtime(&abs_time);
 	abs_time.tv_usec = abs_time.tv_usec + *p;

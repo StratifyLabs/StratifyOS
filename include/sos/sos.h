@@ -541,11 +541,6 @@ void sos_trace_event_addr_tid(link_trace_event_id_t event_id, const void * data_
 #define STFY_SCHED_TIMEVAL_SECONDS 2048
 #define STFY_USECOND_PERIOD (1000000UL * STFY_SCHED_TIMEVAL_SECONDS)
 
-struct sched_timeval {
-	u32 tv_sec; //SCHED_TIMEVAL_SECONDS seconds each
-	u32 tv_usec; //up to 1000000 * SCHED_TIMEVAL_SECONDS
-};
-
 typedef struct {
 	pthread_attr_t attr /*! This holds the task's pthread attributes */;
 	volatile void * block_object /*! The blocking object */;
@@ -554,7 +549,7 @@ typedef struct {
 		void * (*init)(void*) /*! Task 0 init routine */;
 	};
 	pthread_mutex_t * signal_delay_mutex /*! The mutex to lock if the task cannot be interrupted */;
-	volatile struct sched_timeval wake /*! When to wake the task */;
+	volatile struct mcu_timeval wake /*! When to wake the task */;
 	volatile u16 flags /*! This indicates whether the process is active or not */;
 	volatile u16 priority /*! The current priority */;
 	trace_id_t trace_id /*! Trace ID is PID is being traced (0 otherwise) */;

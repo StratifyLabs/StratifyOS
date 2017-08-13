@@ -30,21 +30,15 @@
 #include <signal.h>
 #include "cortexm/cortexm.h"
 #include "mcu/debug.h"
-#include "aio.h"
+#include "sos/fs/sysfs.h"
 #include "../sched/sched_local.h"
 #include "../unistd/unistd_local.h"
 #include "../signal/sig_local.h"
 
-typedef struct {
-	struct aiocb *const * list;
-	int nent;
-	bool block_on_all;
-	struct sched_timeval abs_timeout;
-	int ret;
-	struct sigevent * event;
-} priv_suspend_t;
 
 static void priv_suspend(void * args) MCU_PRIV_EXEC_CODE;
+static int suspend(struct aiocb *const list[], int nent, const struct timespec * timeout, bool block_on_all);
+static int data_transfer(struct aiocb * aiocbp);
 
 typedef struct {
 	const devfs_device_t * device;
@@ -53,9 +47,6 @@ typedef struct {
 	int ret;
 } priv_aio_transfer_t;
 
-static void priv_device_data_transfer(void * args) MCU_PRIV_EXEC_CODE;
-
-static int aio_data_transfer(struct aiocb * aiocbp);
 
 /*! \details This function is not supported this version.
  *
@@ -93,6 +84,21 @@ int aio_fsync(int op, struct aiocb * aiocbp){
 	return -1;
 }
 
+int data_transfer(struct aiocb * aiocbp){
+	int fildes;
+	sysfs_file_t * file;
+
+	fildes = u_fildes_is_bad(aiocbp->aio_fildes);
+	if ( fildes < 0 ){
+		//check to see if fildes is a socket
+		errno = EBADF;
+		return -1;
+	}
+	aiocbp->aio_fildes = fildes;
+	file = get_open_file(fildes);
+	return sysfs_file_aio(file, aiocbp);
+}
+
 /*! \details The function initiates an asynchronous read using the data specified by \a aiocbp.
  *
  * \return 0 on success or -1 with errno (see \ref ERRNO) set to:
@@ -100,7 +106,7 @@ int aio_fsync(int op, struct aiocb * aiocbp){
  */
 int aio_read(struct aiocb * aiocbp /*! a pointer to the AIO data struture */){
 	aiocbp->aio_lio_opcode = LIO_READ;
-	return aio_data_transfer(aiocbp);
+	return data_transfer(aiocbp);
 }
 
 /*! \details The function initiates an asynchronous write using the data specified by \a aiocbp.
@@ -110,7 +116,7 @@ int aio_read(struct aiocb * aiocbp /*! a pointer to the AIO data struture */){
  */
 int aio_write(struct aiocb * aiocbp /*! a pointer to the AIO data struture */){
 	aiocbp->aio_lio_opcode = LIO_WRITE;
-	return aio_data_transfer(aiocbp);
+	return data_transfer(aiocbp);
 }
 
 /*! \details This function returns the number of bytes read/written for the asynchronous operation.
@@ -129,7 +135,7 @@ ssize_t aio_return(struct aiocb * aiocbp /*! a pointer to the AIO data struture 
 void priv_suspend(void * args){
 	int i;
 	bool suspend;
-	priv_suspend_t * p = (priv_suspend_t*)args;
+	sysfs_aio_suspend_t * p = (sysfs_aio_suspend_t*)args;
 	//disable interrupts
 	//! \todo See if an operation is in progress
 	if ( p->block_on_all == false ){
@@ -168,8 +174,8 @@ void priv_suspend(void * args){
 }
 
 
-static int suspend(struct aiocb *const list[], int nent, const struct timespec * timeout, bool block_on_all){
-	priv_suspend_t args;
+int suspend(struct aiocb *const list[], int nent, const struct timespec * timeout, bool block_on_all){
+	sysfs_aio_suspend_t args;
 
 	//suspend until an AIO operation completes or until timeout is exceeded
 	args.list = list;
@@ -246,7 +252,7 @@ int lio_listio(int mode /*! The mode:  \a LIO_WAIT or \a LIO_NOWAIT */,
 	for(i=0; i < nent; i++){
 		//start all of the operations in the list
 		if( list[i] != NULL ){  //ignore NULL entries
-			aio_data_transfer(list[i]);
+			data_transfer(list[i]);
 		}
 	}
 
@@ -257,11 +263,13 @@ int lio_listio(int mode /*! The mode:  \a LIO_WAIT or \a LIO_NOWAIT */,
 	return 0;
 }
 
-static int aio_data_transfer_callback(struct aiocb * aiocbp, const void * ignore){
+int sysfs_aio_data_transfer_callback(void * context, const mcu_event_t * event){
+	struct aiocb * aiocbp;
 	unsigned int tid;
 	int i;
 	bool wakeup;
-	priv_suspend_t * p;
+	aiocbp = context;
+	sysfs_aio_suspend_t * p;
 	aiocbp->aio_nbytes = aiocbp->op.nbyte;
 	aiocbp->op.buf = NULL;
 	aiocbp->op.nbyte = 0;
@@ -275,7 +283,7 @@ static int aio_data_transfer_callback(struct aiocb * aiocbp, const void * ignore
 
 	if( task_enabled(tid) ){ //if task is no longer enabled (don't do anything)
 		if ( sched_aiosuspend_asserted(tid) ){
-			p = (priv_suspend_t*)sos_sched_table[tid].block_object;
+			p = (sysfs_aio_suspend_t*)sos_sched_table[tid].block_object;
 
 			if ( p->block_on_all == false ){
 				for(i=0; i < p->nent; i++){
@@ -322,6 +330,8 @@ static int aio_data_transfer_callback(struct aiocb * aiocbp, const void * ignore
 
 	return 0;
 }
+
+#if 0
 
 void priv_device_data_transfer(void * args){
 	priv_aio_transfer_t * p = (priv_aio_transfer_t*)args;
@@ -379,6 +389,7 @@ int aio_data_transfer(struct aiocb * aiocbp){
 	cortexm_svcall(priv_device_data_transfer, &args);
 	return args.ret;
 }
+#endif
 
 /*! @} */
 

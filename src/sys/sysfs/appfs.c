@@ -408,6 +408,7 @@ int appfs_stat(const void* cfg, const char * path, struct stat * st){
 	return appfs_fstat(cfg, &handle, st);
 }
 
+#if 0
 int appfs_read_async(const void* cfg, void * handle, devfs_async_t * op){
 	const devfs_device_t * dev;
 	appfs_handle_t * h;
@@ -432,6 +433,7 @@ int appfs_read_async(const void* cfg, void * handle, devfs_async_t * op){
 	op->loc = (int)h->type.reg.beg_addr + op->loc;
 	return dev->driver.read(&(dev->handle), op);
 }
+#endif
 
 
 void priv_read(void * args){

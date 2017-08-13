@@ -33,7 +33,7 @@ static void priv_sleep(void * args) MCU_PRIV_EXEC_CODE;
  * \return 0
  */
 unsigned int sleep(unsigned int seconds /*! The number of seconds to sleep */){
-	struct sched_timeval interval;
+	struct mcu_timeval interval;
 	div_t d;
 
 	if ( task_get_current() != 0 ){
@@ -51,9 +51,9 @@ unsigned int sleep(unsigned int seconds /*! The number of seconds to sleep */){
 }
 
 void priv_sleep(void * args){
-	struct sched_timeval * p;
-	struct sched_timeval abs_time;
-	p = (struct sched_timeval*)args;
+	struct mcu_timeval * p;
+	struct mcu_timeval abs_time;
+	p = (struct mcu_timeval*)args;
 	sched_priv_get_realtime(&abs_time);
 	abs_time.tv_sec += p->tv_sec;
 	abs_time.tv_usec += p->tv_usec;

@@ -57,7 +57,7 @@ u32 sched_nanoseconds_to_clocks(int nanoseconds){
 	return (u32)nanoseconds * 1024 / SCHED_CLK_NSEC_DIV;
 }
 
-void sched_priv_timedblock(void * block_object, struct sched_timeval * abs_time){
+void sched_priv_timedblock(void * block_object, struct mcu_timeval * abs_time){
 	int id;
 	mcu_channel_t chan_req;
 	u32 now;
@@ -109,7 +109,7 @@ void sched_priv_timedblock(void * block_object, struct sched_timeval * abs_time)
 	sched_priv_update_on_sleep();
 }
 
-void sched_convert_timespec(struct sched_timeval * tv, const struct timespec * ts){
+void sched_convert_timespec(struct mcu_timeval * tv, const struct timespec * ts){
 #if SINGLE_TASK == 0
 	div_t d;
 	if ( ts == NULL ){
@@ -123,13 +123,13 @@ void sched_convert_timespec(struct sched_timeval * tv, const struct timespec * t
 #endif
 }
 
-void sched_convert_timeval(struct timeval * t, const struct sched_timeval * tv){
+void sched_convert_timeval(struct timeval * t, const struct mcu_timeval * tv){
 #if SINGLE_TASK == 0
 
 #endif
 }
 
-void sched_priv_get_realtime(struct sched_timeval * tv){
+void sched_priv_get_realtime(struct mcu_timeval * tv){
 	devfs_handle_t tmr_handle;
 	tmr_handle.port = sos_board_config.clk_usecond_tmr;
 	tv->tv_sec = sched_usecond_counter;

@@ -14,8 +14,8 @@
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>. */
 
-#ifndef CORE_FLAGS_H_
-#define CORE_FLAGS_H_
+#ifndef CORE_LOCAL_H_
+#define CORE_LOCAL_H_
 
 
 
@@ -50,4 +50,4 @@
 #define PLLCFG_PSEL(x) ((x) << 5) // PLL Divider
 
 
-#endif /* CORE_FLAGS_H_ */
+#endif /* CORE_LOCAL_H_ */

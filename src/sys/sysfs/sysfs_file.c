@@ -62,6 +62,11 @@ int sysfs_file_write(sysfs_file_t * file, const void * buf, int nbyte){
 	return bytes;
 }
 
+int sysfs_file_aio(sysfs_file_t * file, void * aiocbp){
+	const sysfs_t * fs = file->fs;
+	return fs->aio(fs->config, file->handle, aiocbp);
+}
+
 
 int sysfs_file_close(sysfs_file_t * file){
 	const sysfs_t * fs = file->fs;

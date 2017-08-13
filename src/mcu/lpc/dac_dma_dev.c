@@ -110,12 +110,7 @@ int mcu_dac_setattr(const devfs_handle_t * handle, void * ctl){
 	}
 
 	freq = attr->freq;
-	if ( attr->freq == 0 ){
-		errno = EINVAL;
-		return -1 - offsetof(dac_attr_t, freq);
-	}
-
-	if ( attr->freq > DAC_MAX_FREQ ){
+	if( (attr->freq == 0) || (attr->freq > DAC_MAX_FREQ) ){
 		freq = DAC_MAX_FREQ;
 	}
 

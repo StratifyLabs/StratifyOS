@@ -74,8 +74,7 @@ int sffs_ismounted(const void * cfg);
 		.startup = SYSFS_NOTSUP, \
 		.mkfs = sffs_mkfs, \
 		.open = sffs_open, \
-		.read_async = NULL, \
-		.write_async = NULL, \
+		.aio = SYSFS_NOTSUP, \
 		.read = sffs_read, \
 		.write = sffs_write, \
 		.close = sffs_close, \

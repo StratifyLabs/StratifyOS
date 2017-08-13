@@ -199,6 +199,11 @@ typedef struct {
 #endif
 
 
+struct mcu_timeval {
+	u32 tv_sec; //SCHED_TIMEVAL_SECONDS seconds each
+	u32 tv_usec; //up to 1000000 * SCHED_TIMEVAL_SECONDS
+};
+
 
 #ifdef __cplusplus
 }

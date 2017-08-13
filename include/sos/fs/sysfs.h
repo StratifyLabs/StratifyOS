@@ -29,6 +29,9 @@
 #include <dirent.h>
 #include <sys/lock.h>
 
+#include "types.h"
+#include "aio.h"
+
 #ifdef __SIM__
 #include "sim_device.h"
 #else
@@ -52,9 +55,8 @@ typedef struct {
 	int (*startup)(const void*);
 	int (*mkfs)(const void*);
 	int (*open)(const void*, void**, const char*, int, int);
-	int (*read_async)(const void*, void*, devfs_async_t*); //must be called in priv mode
-	int (*write_async)(const void*, void*, devfs_async_t*); //must be called in priv mode
-	int (*ioctl)(const void*, void*, int, void*); //must be called in priv mode
+	int (*aio)(const void*, void*, struct aiocb*);
+	int (*ioctl)(const void*, void*, int, void*);
 	int (*read)(const void*, void*, int, int, void*, int);
 	int (*write)(const void*, void*, int, int, const void*, int);
 	int (*close)(const void*, void**);
@@ -95,8 +97,7 @@ int rootfs_closedir(const void* cfg, void ** handle);
 		.startup = SYSFS_NOTSUP, \
 		.mkfs = SYSFS_NOTSUP, \
 		.open = SYSFS_NOTSUP, \
-		.read_async = NULL, \
-		.write_async = NULL, \
+		.aio = SYSFS_NOTSUP, \
 		.read = SYSFS_NOTSUP, \
 		.write = SYSFS_NOTSUP, \
 		.ioctl = SYSFS_NOTSUP, \
@@ -152,11 +153,12 @@ extern const char sysfs_whitespace[];
 
 typedef open_file_t sysfs_file_t;
 
-int sysfs_file_open(sysfs_file_t * open_file, const char * name, int mode);
-int sysfs_file_ioctl(sysfs_file_t * open_file, int request, void * ctl);
-int sysfs_file_read(sysfs_file_t * open_file, void * buf, int nbyte);
-int sysfs_file_write(sysfs_file_t * open_file, const void * buf, int nbyte);
-int sysfs_file_close(sysfs_file_t * open_file);
+int sysfs_file_open(sysfs_file_t * file, const char * name, int mode);
+int sysfs_file_ioctl(sysfs_file_t * file, int request, void * ctl);
+int sysfs_file_read(sysfs_file_t * file, void * buf, int nbyte);
+int sysfs_file_write(sysfs_file_t * file, const void * buf, int nbyte);
+int sysfs_file_aio(sysfs_file_t * file, void * aio);
+int sysfs_file_close(sysfs_file_t * file);
 
 typedef struct {
 	const void * config;
@@ -177,6 +179,18 @@ typedef struct {
 	void * ctl;
 	int ret;
 } sysfs_ioctl_t;
+
+typedef struct {
+	struct aiocb * const * list;
+	int nent;
+	bool block_on_all;
+	struct mcu_timeval abs_timeout;
+	int ret;
+	struct sigevent * event;
+} sysfs_aio_suspend_t;
+
+int sysfs_aio_data_transfer_callback(void * context, const mcu_event_t * event);
+
 
 
 

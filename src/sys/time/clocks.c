@@ -61,7 +61,7 @@ int clock_getcpuclockid(pid_t pid, clockid_t *clock_id){
 int clock_gettime(clockid_t id, struct timespec * tp){
 	u64 task_timer;
 	div_t d;
-	struct sched_timeval sched_time;
+	struct mcu_timeval sched_time;
 	int pid;
 	int i;
 

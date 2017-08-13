@@ -110,7 +110,7 @@ int sigwait(const sigset_t * set, int * sig){
 int sigtimedwait(const sigset_t * set,
 		siginfo_t * info,
 		const struct timespec * timeout){
-	struct sched_timeval abs_timeout;
+	struct mcu_timeval abs_timeout;
 	int sig;
 
 	sched_convert_timespec(&abs_timeout, timeout);
@@ -200,7 +200,7 @@ int check_pending_set(const sigset_t * set){
 
 void signal_priv_wait(void * args){
 	if ( args != NULL ){
-		sched_priv_timedblock(NULL, (struct sched_timeval *)args);
+		sched_priv_timedblock(NULL, (struct mcu_timeval *)args);
 	} else {
 		sched_priv_update_on_sleep();
 	}

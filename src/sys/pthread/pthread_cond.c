@@ -44,7 +44,7 @@ typedef struct {
 	pthread_cond_t *cond;
 	pthread_mutex_t *mutex;
 	int new_thread;
-	struct sched_timeval interval;
+	struct mcu_timeval interval;
 	int ret;
 } priv_cond_wait_t;
 static void priv_cond_wait(void  * args) MCU_PRIV_EXEC_CODE;

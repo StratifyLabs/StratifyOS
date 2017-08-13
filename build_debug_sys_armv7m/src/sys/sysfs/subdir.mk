@@ -8,27 +8,33 @@ C_SRCS += \
 ../src/sys/sysfs/appfs_ram.c \
 ../src/sys/sysfs/appfs_util.c \
 ../src/sys/sysfs/devfs.c \
+../src/sys/sysfs/devfs_aio.c \
 ../src/sys/sysfs/devfs_data_transfer.c \
 ../src/sys/sysfs/rootfs.c \
-../src/sys/sysfs/sysfs.c 
+../src/sys/sysfs/sysfs.c \
+../src/sys/sysfs/sysfs_file.c 
 
 OBJS += \
 ./src/sys/sysfs/appfs.o \
 ./src/sys/sysfs/appfs_ram.o \
 ./src/sys/sysfs/appfs_util.o \
 ./src/sys/sysfs/devfs.o \
+./src/sys/sysfs/devfs_aio.o \
 ./src/sys/sysfs/devfs_data_transfer.o \
 ./src/sys/sysfs/rootfs.o \
-./src/sys/sysfs/sysfs.o 
+./src/sys/sysfs/sysfs.o \
+./src/sys/sysfs/sysfs_file.o 
 
 C_DEPS += \
 ./src/sys/sysfs/appfs.d \
 ./src/sys/sysfs/appfs_ram.d \
 ./src/sys/sysfs/appfs_util.d \
 ./src/sys/sysfs/devfs.d \
+./src/sys/sysfs/devfs_aio.d \
 ./src/sys/sysfs/devfs_data_transfer.d \
 ./src/sys/sysfs/rootfs.d \
-./src/sys/sysfs/sysfs.d 
+./src/sys/sysfs/sysfs.d \
+./src/sys/sysfs/sysfs_file.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes

@@ -50,7 +50,6 @@
  *
  */
 int ioctl(int fildes, int request, ...) {
-	const sysfs_t * fs;
 	void * ctl;
 	va_list ap;
 	va_start(ap, request);
@@ -72,14 +71,8 @@ int ioctl(int fildes, int request, ...) {
 		return -1;
 	}
 
-	fs = get_fs(fildes);
-	if ( fs->ioctl != NULL ){
-		//Character and device drivers both have the same interface to ioctl
-		return sysfs_file_ioctl(get_open_file(fildes), request, ctl);
-	}
 
-	errno = ENOTSUP;
-	return -1;
+	return sysfs_file_ioctl(get_open_file(fildes), request, ctl);
 }
 
 

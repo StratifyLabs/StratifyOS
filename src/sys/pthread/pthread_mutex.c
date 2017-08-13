@@ -46,7 +46,7 @@ typedef struct {
 	int id;
 	pthread_mutex_t *mutex;
 	bool trylock;
-	struct sched_timeval abs_timeout;
+	struct mcu_timeval abs_timeout;
 	int ret;
 } priv_mutex_trylock_t;
 static void priv_mutex_trylock(priv_mutex_trylock_t *args) MCU_PRIV_EXEC_CODE;

@@ -41,7 +41,7 @@ static void priv_set_time(void * args) MCU_PRIV_EXEC_CODE;
 
 void priv_set_time(void * args){
 	div_t d;
-	struct sched_timeval tv;
+	struct mcu_timeval tv;
 	struct timeval tmp;
 	struct timeval * t = (struct timeval *)args;
 	sched_priv_get_realtime(&tv);

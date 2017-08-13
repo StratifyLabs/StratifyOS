@@ -106,7 +106,7 @@ static sem_t * sem_find_free(){
 
 typedef struct {
 	sem_t * sem;
-	struct sched_timeval interval;
+	struct mcu_timeval interval;
 } priv_sem_timedwait_t;
 
 /*! \details This function initializes \a sem as an unnamed semaphore with

@@ -19,6 +19,7 @@
 
 #include <sys/dirent.h>
 #include "mcu/types.h"
+#include "sos/fs/sysfs.h"
 
 #define DEVFS_GET_PORT(x) (x->port)
 
@@ -75,50 +76,7 @@ typedef struct {
 int devfs_signal_callback(void * context, const mcu_event_t * data);
 
 
-typedef struct MCU_PACK {
-	u32 port /*! The port associated with the device (for mcu peripherals) */;
-	const void * config /*! Pointer to device configuration (flash) */;
-	void * state /*! \brief Pointer to device state (RAM) */;
-} devfs_handle_t;
 
-
-typedef struct MCU_PACK {
-	int tid /*! The calling task ID */;
-	int flags /*! The flags for the open file descriptor */;
-	int loc /*! The location to read or write */;
-	union {
-		const void * buf_const /*! Pointer to const void buffer */;
-		void * buf /*! Pointer to void buffer */;
-	};
-	int nbyte /*! The number of bytes to transfer */;
-	mcu_event_handler_t handler /*! The function to call when the operation completes */;
-} devfs_async_t;
-
-typedef devfs_async_t device_3_transfer_t;
-
-typedef int (*devfs_open_t)(const devfs_handle_t*);
-typedef int (*devfs_ioctl_t)(const devfs_handle_t*, int, void*);
-typedef int (*devfs_read_t)(const devfs_handle_t*, devfs_async_t *);
-typedef int (*devfs_write_t)(const devfs_handle_t*, devfs_async_t *);
-typedef int (*devfs_close_t)(const devfs_handle_t*);
-
-typedef struct MCU_PACK {
-	devfs_open_t open;
-	devfs_ioctl_t ioctl;
-	devfs_read_t read;
-	devfs_write_t write;
-	devfs_close_t close;
-} devfs_driver_t;
-
-
-
-typedef struct {
-	char name[NAME_MAX] /*! The name of the device */;
-	u16 uid /*! The user ID of the device (either user or root) */;
-	u16 mode /*! The file access values */;
-	devfs_driver_t driver /*! \brief The driver functions */;
-	devfs_handle_t handle /*! \brief The configuration for the device */;
-} devfs_device_t;
 
 
 extern const devfs_device_t devfs_list[];
@@ -165,8 +123,7 @@ int devfs_init(const void * cfg);
 int devfs_open(const void * cfg, void ** handle, const char * path, int flags, int mode);
 int devfs_read(const void * cfg, void * handle, int flags, int loc, void * buf, int nbyte);
 int devfs_write(const void * cfg, void * handle, int flags, int loc, const void * buf, int nbyte);
-int devfs_read_async(const void * cfg, void * handle, devfs_async_t * op);
-int devfs_write_async(const void * cfg, void * handle, devfs_async_t * op);
+int devfs_aio(const void * cfg, void * handle, struct aiocb * aio);
 int devfs_ioctl(const void * cfg, void * handle, int request, void * ctl);
 int devfs_close(const void * cfg, void ** handle);
 int devfs_fstat(const void * cfg, void * handle, struct stat * st);
@@ -184,8 +141,7 @@ int devfs_closedir(const void * cfg, void ** handle);
 		.startup = SYSFS_NOTSUP, \
 		.mkfs = SYSFS_NOTSUP, \
 		.open = devfs_open, \
-		.read_async = devfs_read_async, \
-		.write_async = devfs_write_async, \
+		.aio = devfs_aio, \
 		.ioctl = devfs_ioctl, \
 		.read = devfs_read, \
 		.write = devfs_write, \

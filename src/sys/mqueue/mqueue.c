@@ -312,7 +312,7 @@ static int block_on_mq(void * block, const struct timespec * abs_timeout);
 
 typedef struct {
 	void * block;
-	struct sched_timeval abs_timeout;
+	struct mcu_timeval abs_timeout;
 } priv_block_on_mq_t;
 
 typedef struct {

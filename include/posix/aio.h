@@ -22,7 +22,7 @@
 
 #include <sys/signal.h>
 #include <sys/types.h>
-#include "sos/fs/devfs.h"
+#include "sos/fs/types.h"
 
 #ifdef __cplusplus
 extern "C" {
