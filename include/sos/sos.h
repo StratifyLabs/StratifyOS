@@ -476,7 +476,7 @@ int unmount(const char * path);
  *
  *
  * @param path Path to launch binary
- * @param exec_dest The path to store the path where the binary is installed (e.g. /app/flash/0-HelloWorld)
+ * @param exec_path The path to store the path where the binary is installed (e.g. /app/flash/0-HelloWorld)
  * @param args Pointer to the arguments for launch
  * @param options Install options mask (flash, startup, etc)
  * @param ram_size The amount of RAM that will be allocated to stack/heap (excludes code even if running from RAM), set to zero for default RAM size

@@ -22,6 +22,9 @@
 
 #include <mcu/types.h>
 
+typedef open_file_t sysfs_file_t;
+
+
 typedef struct MCU_PACK {
 	u32 port /*! The port associated with the device (for mcu peripherals) */;
 	const void * config /*! Pointer to device configuration (flash) */;

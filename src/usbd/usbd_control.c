@@ -28,7 +28,6 @@
 #include "mcu/debug.h"
 #include "device/sys.h"
 #include "usbd/control.h"
-#include "usbd_local.h"
 
 
 static void stall(usbd_control_t * context){

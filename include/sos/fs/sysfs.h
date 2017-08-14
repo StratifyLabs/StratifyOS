@@ -38,6 +38,11 @@
 #include "sos/fs/devfs.h"
 #endif
 
+#if defined __cplusplus
+extern "C" {
+#endif
+
+
 int sysfs_notsup();
 void * sysfs_notsup_null();
 void sysfs_notsup_void();
@@ -127,7 +132,7 @@ int rootfs_closedir(const void* cfg, void ** handle);
 }
 
 
-extern const sysfs_t const sysfs_list[]; //global list of filesystems
+extern const sysfs_t sysfs_list[]; //global list of filesystems
 const sysfs_t * sysfs_find(const char * path, bool needs_parent);
 const char * sysfs_stripmountpath(const sysfs_t * fs, const char * path);
 
@@ -150,8 +155,6 @@ void sysfs_unlock();
 
 extern const char sysfs_validset[];
 extern const char sysfs_whitespace[];
-
-typedef open_file_t sysfs_file_t;
 
 int sysfs_file_open(sysfs_file_t * file, const char * name, int mode);
 int sysfs_file_ioctl(sysfs_file_t * file, int request, void * ctl);
@@ -191,7 +194,9 @@ typedef struct {
 
 int sysfs_aio_data_transfer_callback(void * context, const mcu_event_t * event);
 
-
+#if defined __cplusplus
+}
+#endif
 
 
 

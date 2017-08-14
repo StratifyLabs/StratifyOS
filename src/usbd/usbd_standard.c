@@ -22,7 +22,7 @@
 #include "mcu/core.h"
 #include "mcu/mcu.h"
 #include "mcu/boot_debug.h"
-#include "usbd_local.h"
+#include "usbd/control.h"
 
 #define USBD_EP_MASK (USBD_ENDPOINT_ADDRESS_IN|(mcu_config.usb_logical_endpoint_count-1))
 

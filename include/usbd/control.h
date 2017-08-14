@@ -107,6 +107,20 @@ static inline void usbd_control_prepare_buffer(usbd_control_t * context){
 
 char htoc(int nibble);
 
+int usbd_control_reset(const devfs_handle_t * handle);
+int usbd_control_attach(const devfs_handle_t * handle);
+int usbd_control_detach(const devfs_handle_t * handle);
+int usbd_control_configure(const devfs_handle_t * handle);
+int usbd_control_unconfigure(const devfs_handle_t * handle);
+int usbd_control_set_address(const devfs_handle_t * handle, u8 address);
+int usbd_control_reset_endpoint(const devfs_handle_t * handle, u8 endpoint_number);
+int usbd_control_enable_endpoint(const devfs_handle_t * handle, u8 endpoint_number);
+int usbd_control_disable_endpoint(const devfs_handle_t * handle, u8 endpoint_number);
+int usbd_control_stall_endpoint(const devfs_handle_t * handle, u8 endpoint_number);
+int usbd_control_unstall_endpoint(const devfs_handle_t * handle, u8 endpoint_number);
+int usbd_control_configure_endpoint(const devfs_handle_t * handle, const usbd_endpoint_descriptor_t * endpoint_descriptor);
+
+
 
 
 #endif /* MCU_USBD_CONTROL_H_ */

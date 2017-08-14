@@ -161,7 +161,7 @@ typedef struct MCU_PACK {
 
 /*! \brief Data structure to unlock the security word features.
  * \details This data structure is used with I_SYS_UNLOCK.  A successful
- * request will unlock the security features (see \a security in \ref sys_attr_t) of the device giving access
+ * request will unlock the security features (see \a security in \ref sys_info_t) of the device giving access
  * to certain parts of the device.
  */
 typedef struct MCU_PACK {

@@ -43,14 +43,14 @@ static u8 const tmr_irqs[MCU_TMR_PORTS] = MCU_TMR_IRQS;
 
 
 struct tmr_cfg {
-	uint8_t pin_assign;
-	uint8_t enabled_oc_chans;
-	uint8_t enabled_ic_chans;
+	u8 pin_assign;
+	u8 enabled_oc_chans;
+	u8 enabled_ic_chans;
 };
 
 typedef struct MCU_PACK {
 	mcu_event_handler_t handler[NUM_OCS+NUM_ICS];
-	struct tmr_cfg cfg;
+	//struct tmr_cfg cfg;
 	u8 ref_count;
 } tmr_local_t;
 

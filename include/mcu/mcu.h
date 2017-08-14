@@ -65,7 +65,7 @@ extern "C" {
 
 #if !defined __link
 
-#include "sos/fs/devfs.h"
+#include "sos/fs/types.h"
 
 
 //These values are defined in the linker script

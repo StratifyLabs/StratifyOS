@@ -28,7 +28,7 @@
 #include <signal.h>
 #include <stdint.h>
 
-#include "../sys/sysfs/appfs.h"
+#include "../sys/sysfs/appfs_local.h"
 
 
 extern uint32_t _text;

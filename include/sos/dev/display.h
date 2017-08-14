@@ -82,8 +82,8 @@ typedef struct MCU_PACK {
  * \details This contains the attributes of a display.
  */
 typedef struct MCU_PACK {
-	u16 w /*! \brief display width in pixels */;
-	u16 h /*! \brief display height in pixels */;
+	u16 width /*! \brief display width in pixels */;
+	u16 height /*! \brief display height in pixels */;
 	void * mem /*! \brief A pointer to the shared display memory which is mapped to the screen. */;
 	void * scratch_mem /*! \brief A pointer to the shared display memory which is mapped to the screen. */;
 	u32 size /*! \brief The size of \a mem in bytes (typically w*h*bits_per_pixel/8) */;
