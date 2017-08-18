@@ -15,7 +15,7 @@ xcopy /S /Y ..\include\* %TOOLSPATH%\%HOST%\include
 if NOT "%NAME%"=="link" (
 	echo "Installing linker files in %TOOLSPATH%\%HOST%\lib\ldscripts"
 	xcopy /S /Y ..\ldscript\* %TOOLSPATH%\%HOST%\lib\ldscripts
-	xcopy /S /Y ..\include\posix\* %TOOLSPATH%\%HOST%\lib\include
+	xcopy /S /Y ..\include\posix\* %TOOLSPATH%\%HOST%\include
 )
 
 if "%NAME%"=="link" (
