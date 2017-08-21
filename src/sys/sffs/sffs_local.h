@@ -39,7 +39,7 @@
 typedef u32 serial_t;
 typedef u16 block_t;
 
-//block size of 256 will give better performance user more ram but be less space efficient
+//block size of 256 will give better performance but use more ram and be less space efficient
 #define BLOCK_SIZE 256
 
 //block size 128 will be more space efficient and use less ram but have worse performance

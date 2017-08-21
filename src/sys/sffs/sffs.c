@@ -115,7 +115,7 @@ int sffs_init(const void * cfg){
 #endif
 
 	if ( sffs_dev_open(cfg) < 0 ){
-		mcu_debug_user_printf("failed to open dev\n");
+		mcu_debug_user_printf("SFFS: Failed to open dev\n");
 		return -1;
 	}
 
@@ -142,9 +142,11 @@ int sffs_init(const void * cfg){
 
 	if ( err == -1 ){
 		//failed to find initial serial numbers so no other access is allowed
-		mcu_debug_user_printf("Failed to init SFFS\n");
-		sffs_mkfs(cfg);
-		mcu_debug_user_printf("Format complete\n");
+		if( sffs_mkfs(cfg) < 0 ){
+			mcu_debug_user_printf("SFFS: Failed to format\n");
+		} else {
+			mcu_debug_user_printf("SFFS: Format complete\n");
+		}
 
 		cfgp->open_file->fs = NULL;
 		return -1;
@@ -180,13 +182,11 @@ int sffs_mkfs(const void * cfg){
 	if ( (ret = sffs_dev_erase(cfg)) < 0 ){
 		cfgp->open_file->fs = NULL;
 		sffs_error("failed to erase\n");
-		errno = ENOSPC;
 	} else {
 		sffs_debug(DEBUG_LEVEL, "Init serial number\n");
 		if ( (ret = sffs_serialno_mkfs(cfg)) < 0 ){
 			//failed to format so no other access is allowed
 			cfgp->open_file->fs = NULL;
-			errno = EIO;
 		}
 	}
 	unlock_sffs();

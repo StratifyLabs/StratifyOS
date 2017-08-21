@@ -74,6 +74,7 @@ int rootfs_stat(const void * cfg, const char * path, struct stat * st){
 		}
 	}
 
+	memset(st, 0, sizeof(struct stat));
 	st->st_mode = S_IFDIR | fs->access;
 	return 0;
 }

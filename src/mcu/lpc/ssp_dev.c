@@ -52,17 +52,14 @@ static u8 const ssp_irqs[MCU_SSP_PORTS] = MCU_SSP_IRQS;
 #ifdef LPCXX7X_8X
 static void enable_pin(const mcu_pin_t * pin, void * arg) MCU_PRIV_CODE;
 void enable_pin(const mcu_pin_t * pin, void * arg){
-	if( pin->port == 0 ){
-		if( (pin->pin == 7) || (pin->pin == 8) || (pin->pin == 9) ){
-			pio_attr_t pattr;
-			devfs_handle_t pio_handle;
-			pio_handle.config = 0;
-			pattr.o_pinmask = (1<<pin->pin);
-			pattr.o_flags = PIO_FLAG_SET_OUTPUT;
-			pio_handle.port = pin->port;
-			mcu_pio_setattr(&pio_handle, &pattr);
-		}
-	}
+	//put the pin in fast mode
+	pio_attr_t pattr;
+	devfs_handle_t pio_handle;
+	pio_handle.config = 0;
+	pattr.o_pinmask = (1<<pin->pin);
+	pattr.o_flags = PIO_FLAG_SET_OUTPUT|PIO_FLAG_IS_SPEED_BLAZING|PIO_FLAG_IS_HYSTERESIS;
+	pio_handle.port = pin->port;
+	mcu_pio_setattr(&pio_handle, &pattr);
 }
 #else
 #define enable_pin 0
@@ -105,17 +102,9 @@ void mcu_ssp_dev_power_off(const devfs_handle_t * handle){
 
 			switch(port){
 			case 0:
-#if defined __lpc13uxx || __lpc13xx
-				LPC_SYSCON->SSP0CLKDIV = 0;
-				LPC_SYSCON->PRESETCTRL &= ~(1<<0);
-#endif
 				mcu_lpc_core_disable_pwr(PCSSP0);
 				break;
 			case 1:
-#if defined __lpc13uxx || __lpc13xx
-				LPC_SYSCON->SSP0CLKDIV = 0;
-				LPC_SYSCON->PRESETCTRL &= ~(1<<2);
-#endif
 				mcu_lpc_core_disable_pwr(PCSSP1);
 				break;
 #ifdef LPCXX7X_8X

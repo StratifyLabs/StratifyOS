@@ -41,16 +41,20 @@ int sst25vf_open(const devfs_handle_t * handle){
 		return err;
 	}
 
+
 	if( (err = mcu_spi_setattr(handle, (void*)&(config->spi.attr))) < 0 ){
 		return err;
 	}
+
 
 	sst25vf_share_deassert_cs(handle);
 	pio_attr.o_pinmask = (1<<config->cs.pin);
 	pio_attr.o_flags = PIO_FLAG_SET_OUTPUT | PIO_FLAG_IS_DIRONLY;
 	mcu_pio_setattr(&pio_handle, &pio_attr);
 
+
 	sst25vf_share_write_disable(handle);
+
 
 	//Now ping the device to see if it responds
 	sst25vf_share_power_up(handle);
@@ -103,14 +107,15 @@ int sst25vf_read(const devfs_handle_t * handle, devfs_async_t * rop){
 		return -1;
 	}
 
+	if ( rop->loc >= dcfg->size ){
+		errno = EINVAL;
+		return -1;
+	}
+
 	state->handler.callback = rop->handler.callback;
 	state->handler.context = rop->handler.context;
 	rop->handler.context = (void*)handle;
 	rop->handler.callback = (mcu_callback_t)complete_spi_read;
-
-	if ( rop->loc >= dcfg->size ){
-		return EOF;
-	}
 
 	if ( rop->loc + rop->nbyte > dcfg->size ){
 		rop->nbyte = dcfg->size - rop->loc; //update the bytes read to not go past the end of the disk
@@ -150,6 +155,7 @@ int continue_spi_write(void * context, const mcu_event_t * event){
 	//should be called 10 us after complete_spi_write() executes
 
 	sst25vf_share_deassert_cs(handle);
+
 
 	if( state->nbyte > 0 ){
 		state->cmd[0] = SST25VF_INS_SEQ_PROGRAM;
@@ -229,6 +235,7 @@ int sst25vf_write(const devfs_handle_t * handle, devfs_async_t * wop){
 	sst25vf_share_write_ebsy(handle);
 	sst25vf_share_write_enable(handle);
 
+
 	//set Auto increment
 	addrp = (uint8_t*)&(wop->loc);
 	state->cmd[0] = SST25VF_INS_SEQ_PROGRAM;
@@ -259,10 +266,12 @@ int sst25vf_write(const devfs_handle_t * handle, devfs_async_t * wop){
 	state->op.nbyte = 6;
 	state->op.loc = 0;
 
+
 	sst25vf_share_assert_cs(handle);
 	err = mcu_spi_write(handle, &state->op);
 	state->buf = state->buf + tmp;
 	state->nbyte = state->nbyte - tmp;
+
 
 	return err;
 }

@@ -79,11 +79,9 @@ static u32 usb_sie_rd_cmd_dat(u32 cmd);
 
 #ifdef LPCXX7X_8X
 static void configure_pin(const mcu_pin_t * pin, void * arg){
-	LPC_USB->StCtrl &= ~0x03;
 	if( pin->pin == 31 ){
 		LPC_USB->StCtrl |= 0x03;
 	}
-	LPC_USB->USBClkCtrl &= ~(1<<3); //disable portsel clock
 }
 #else
 #define configure_pin 0
@@ -176,6 +174,11 @@ int mcu_usb_setattr(const devfs_handle_t * handle, void * ctl){
 		usb_local.read_ready = 0;
 		usb_local.write_pending = 0;
 
+#ifdef LPCXX7X_8X
+		LPC_USB->USBClkCtrl &= ~(1<<3); //disable portsel clock
+		while( (LPC_USB->USBClkSt & (1<<3)) != 0 ){}
+#endif
+
 		if( mcu_set_pin_assignment(
 				&(attr->pin_assignment),
 				MCU_CONFIG_PIN_ASSIGNMENT(usb_config_t, handle),
@@ -183,6 +186,11 @@ int mcu_usb_setattr(const devfs_handle_t * handle, void * ctl){
 				CORE_PERIPH_USB, port, configure_pin, 0) < 0 ){
 			return -1;
 		}
+
+#ifdef LPCXX7X_8X
+	LPC_USB->USBClkCtrl |= (1<<3); //enable portsel clock
+	while( (LPC_USB->USBClkSt & (1<<3)) == 0 ){}
+#endif
 
 		usb_irq_mask = DEV_STAT_INT | EP_FAST_INT | EP_SLOW_INT;
 
