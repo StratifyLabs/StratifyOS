@@ -25,6 +25,7 @@
 #include "mcu/pio.h"
 #include "mcu/spi.h"
 #include "mcu/core.h"
+#include "mcu/crc.h"
 #include "mcu/debug.h"
 #include "mcu/wdt.h"
 
@@ -161,7 +162,7 @@ static int continue_spi_read(void * handle, const mcu_event_t * ignore){
 
 		_sd_spi_transfer(handle, 0, state->cmd, CMD_FRAME_SIZE); //gobble up the CRC
 		checksum = (state->cmd[0] << 8) + state->cmd[1];
-		checksum_calc = crc16(0x0000, (const uint8_t *)state->buf, (size_t)*(state->nbyte));
+		checksum_calc = mcu_calc_crc16(0x0000, (const uint8_t *)state->buf, (size_t)*(state->nbyte));
 		if( checksum != checksum_calc ){
 			*(state->nbyte) = -1;
 			err = EINVAL;
@@ -175,6 +176,7 @@ static int continue_spi_read(void * handle, const mcu_event_t * ignore){
 }
 
 int _sd_spi_try_read(const devfs_handle_t * handle, int first){
+	int ret;
 	sd_spi_state_t * state = handle->state;
 	state->count = _sd_spi_parse_data((uint8_t*)state->buf, *(state->nbyte), -1, SDSPI_START_BLOCK_TOKEN, state->cmd);
 	if( state->count >= 0 ){
@@ -190,10 +192,11 @@ int _sd_spi_try_read(const devfs_handle_t * handle, int first){
 
 	if( first != 0 ){
 		//send the command for the first time
-		return mcu_spi_read(handle, &(state->op));
+		ret = mcu_spi_read(handle, &(state->op));
+		return ret;
 	}
 
-	if( mcu_spi_read(handle, &(state->op)) != 0 ){
+	if( (ret = mcu_spi_read(handle, &(state->op))) != 0 ){
 		_sd_spi_state_callback(handle, EINVAL, -5);
 		return 0;
 	}
@@ -272,7 +275,7 @@ static int continue_spi_write(void * handle, const mcu_event_t * ignore){
 	uint16_t checksum;
 
 	//calculate and write the checksum
-	checksum = crc16(0x0000, (const uint8_t*)state->buf, *(state->nbyte));
+	checksum = mcu_calc_crc16(0x0000, (const uint8_t*)state->buf, *(state->nbyte));
 
 	//finish the write
 	state->cmd[0] = checksum >> 8;
@@ -395,7 +398,7 @@ int sd_spi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 			spi_attr.freq = 400000;
 
 			if( mcu_spi_setattr(handle, &spi_attr) < 0 ){
-				mcu_debug_printf("Attr\n");
+				mcu_debug_printf("SD_SPI: setattr failed\n");
 				return -2;
 			}
 
@@ -415,13 +418,13 @@ int sd_spi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 			resp.r1 = _sd_spi_cmd_r1(handle, SDSPI_CMD0_GO_IDLE_STATE, 0, 0);
 			if( resp.r1.start == 1 ){
 				errno = EIO;
-				mcu_debug_printf("GO IDLE\n");
+				mcu_debug_printf("SD_SPI: Failed GO IDLE\n");
 				return -4;
 			}
 
 			if( resp.r1.idle != 1 ){
 				errno = EIO;
-				mcu_debug_printf("No IDLE 0x%X\n", resp.r1.u8);
+				mcu_debug_printf("SD_SPI: Failed No IDLE 0x%X\n", resp.r1.u8);
 				return -5;
 			}
 
@@ -429,7 +432,7 @@ int sd_spi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 			resp.r3 = _sd_spi_cmd_r3(handle, SDSPI_CMD8_SEND_IF_COND, 0x01AA);
 			if( resp.r3.r1.u8 != 0x01 ){
 				errno = EIO;
-				mcu_debug_printf("NO IF COND\n");
+				mcu_debug_printf("SD_SPI: Failed NO IF COND\n");
 				return -6;
 			}
 
@@ -442,7 +445,7 @@ int sd_spi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 				resp.r1 = _sd_spi_cmd_r1(handle, SDSPI_CMD16_SET_BLOCKLEN, BLOCK_SIZE, 0);
 				if( resp.r1.u8 != 0x01 ){
 					errno = EIO;
-					mcu_debug_printf("NO 16 BLOCK LEN\n");
+					mcu_debug_printf("SD_SPI: Failed NO 16 BLOCK LEN\n");
 					return -7;
 				}
 			}
@@ -451,7 +454,7 @@ int sd_spi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 			resp.r1 = _sd_spi_cmd_r1(handle, SDSPI_CMD59_CRC_ON_OFF, 0xFFFFFFFF, 0);
 			if( resp.r1.u8 != 0x01 ){
 				errno = EIO;
-				mcu_debug_printf("NO 59\n");
+				mcu_debug_printf("SD_SPI: Failed NO 59\n");
 				return -7;
 			}
 
@@ -463,14 +466,14 @@ int sd_spi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 				resp.r1 = _sd_spi_cmd_r1(handle, SDSPI_CMD55_APP_CMD, 0, 0);  //send 55
 				if( resp.r1.u8 != 0x01 ){
 					errno = EIO;
-					mcu_debug_printf("NO 55\n");
+					mcu_debug_printf("SD_SPI: Failed NO 55\n");
 					return -7;
 				}
 
 				resp.r1 = _sd_spi_cmd_r1(handle, SDSPI_ACMD41_SD_SEND_OP_COND, 1<<30, 0);  //indicate that HC is supported
 				if( (resp.r1.u8 != 0x01) && (resp.r1.u8 != 0x00) ){  //this takes awhile to return to zero
 					errno = EIO;
-					mcu_debug_printf("HC?\n");
+					mcu_debug_printf("SD_SPI: Failed HC?\n");
 					return -8;
 				}
 				timeout++;
@@ -480,13 +483,13 @@ int sd_spi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 
 			if( timeout == timeout_value ){
 				errno = EIO;
-				mcu_debug_printf("TIMEOUT\n");
+				mcu_debug_printf("SD_SPI: Failed TIMEOUT\n");
 				return -9;
 			}
 
 			memcpy(&spi_attr, &(config->spi.attr), sizeof(spi_attr_t));
 			if( mcu_spi_setattr(handle, &spi_attr) < 0 ){
-				mcu_debug_printf("BITRATE\n");
+				mcu_debug_printf("SD_SPI: Failed BITRATE\n");
 				return -10;
 			}
 
@@ -495,7 +498,7 @@ int sd_spi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 			_sd_spi_transfer(handle, 0, 0, CMD_FRAME_SIZE);
 			_sd_spi_deassert_cs(handle);
 
-			mcu_debug_printf("INIT SUCCESS 0x%lX\n", state->flags);
+			mcu_debug_printf("SD_SPI: INIT SUCCESS 0x%lX\n", state->flags);
 
 			return 0;
 
@@ -680,7 +683,7 @@ int _sd_spi_send_cmd(const devfs_handle_t * cfg, uint8_t cmd, uint32_t arg, uint
 	buffer[2] = arg >> 16;
 	buffer[3] = arg >> 8;
 	buffer[4] = arg;
-	buffer[5] = crc7(0, buffer, 5);
+	buffer[5] = mcu_calc_crc7(0, buffer, 5);
 
 	retries = 0;
 	do {

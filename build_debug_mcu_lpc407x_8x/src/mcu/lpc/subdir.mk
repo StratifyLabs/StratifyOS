@@ -11,6 +11,7 @@ C_SRCS += \
 ../src/mcu/lpc/core_setusbclock.c \
 ../src/mcu/lpc/core_sleep.c \
 ../src/mcu/lpc/core_startup.c \
+../src/mcu/lpc/crc_dev.c \
 ../src/mcu/lpc/dac_dma_dev.c \
 ../src/mcu/lpc/dma_dev.c \
 ../src/mcu/lpc/eeprom_dev.c \
@@ -46,6 +47,7 @@ OBJS += \
 ./src/mcu/lpc/core_setusbclock.o \
 ./src/mcu/lpc/core_sleep.o \
 ./src/mcu/lpc/core_startup.o \
+./src/mcu/lpc/crc_dev.o \
 ./src/mcu/lpc/dac_dma_dev.o \
 ./src/mcu/lpc/dma_dev.o \
 ./src/mcu/lpc/eeprom_dev.o \
@@ -81,6 +83,7 @@ C_DEPS += \
 ./src/mcu/lpc/core_setusbclock.d \
 ./src/mcu/lpc/core_sleep.d \
 ./src/mcu/lpc/core_startup.d \
+./src/mcu/lpc/crc_dev.d \
 ./src/mcu/lpc/dac_dma_dev.d \
 ./src/mcu/lpc/dma_dev.d \
 ./src/mcu/lpc/eeprom_dev.d \

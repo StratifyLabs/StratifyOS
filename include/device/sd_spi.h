@@ -38,10 +38,6 @@ typedef struct {
 typedef struct {
 	spi_config_t spi;
 	mcu_pin_t cs;
-	mcu_pin_t hold /*! \brief Hold Pin */;
-	mcu_pin_t wp /*! \brief Write protect pin */;
-	mcu_pin_t miso /*! \brief The write complete pin */;
-	uint32_t size /*! \brief The size of the memory on the device */;
 } sd_spi_config_t;
 
 typedef struct MCU_PACK {

@@ -123,9 +123,6 @@ typedef struct MCU_PACK {
 } sd_spi_attr_t;
 
 
-uint8_t crc7(uint8_t crc, const uint8_t * buffer, size_t len);
-uint16_t crc16(uint16_t seed, const uint8_t * buffer, size_t nbyte);
-
 #define I_SDSPI_TOTAL 2
 
 

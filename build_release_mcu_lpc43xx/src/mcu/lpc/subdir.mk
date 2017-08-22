@@ -6,6 +6,7 @@
 C_SRCS += \
 ../src/mcu/lpc/adc_dev.c \
 ../src/mcu/lpc/core_startup.c \
+../src/mcu/lpc/crc_dev.c \
 ../src/mcu/lpc/dac_dma_dev.c \
 ../src/mcu/lpc/dma_dev.c \
 ../src/mcu/lpc/enet_dev.c \
@@ -28,6 +29,7 @@ C_SRCS += \
 OBJS += \
 ./src/mcu/lpc/adc_dev.o \
 ./src/mcu/lpc/core_startup.o \
+./src/mcu/lpc/crc_dev.o \
 ./src/mcu/lpc/dac_dma_dev.o \
 ./src/mcu/lpc/dma_dev.o \
 ./src/mcu/lpc/enet_dev.o \
@@ -50,6 +52,7 @@ OBJS += \
 C_DEPS += \
 ./src/mcu/lpc/adc_dev.d \
 ./src/mcu/lpc/core_startup.d \
+./src/mcu/lpc/crc_dev.d \
 ./src/mcu/lpc/dac_dma_dev.d \
 ./src/mcu/lpc/dma_dev.d \
 ./src/mcu/lpc/enet_dev.d \

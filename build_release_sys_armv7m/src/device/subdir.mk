@@ -12,7 +12,6 @@ C_SRCS += \
 ../src/device/led_pwm.c \
 ../src/device/null.c \
 ../src/device/random.c \
-../src/device/sd_crc.c \
 ../src/device/sd_spi.c \
 ../src/device/sd_ssp.c \
 ../src/device/tty_uart.c \
@@ -31,7 +30,6 @@ OBJS += \
 ./src/device/led_pwm.o \
 ./src/device/null.o \
 ./src/device/random.o \
-./src/device/sd_crc.o \
 ./src/device/sd_spi.o \
 ./src/device/sd_ssp.o \
 ./src/device/tty_uart.o \
@@ -50,7 +48,6 @@ C_DEPS += \
 ./src/device/led_pwm.d \
 ./src/device/null.d \
 ./src/device/random.d \
-./src/device/sd_crc.d \
 ./src/device/sd_spi.d \
 ./src/device/sd_ssp.d \
 ./src/device/tty_uart.d \
