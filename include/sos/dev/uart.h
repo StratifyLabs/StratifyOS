@@ -100,7 +100,7 @@ extern "C" {
 
 
 typedef enum {
-	UART_FLAG_SET_CONTROL_LINE_STATE /*! Set the control line state (baudrate, stop bits, etc) */ = (1<<0),
+	UART_FLAG_SET_LINE_CODING /*! Set the control line state (baudrate, stop bits, etc) */ = (1<<0),
 	UART_FLAG_IS_STOP1 /*! One stop bit (default behavior) */ = (1<<1),
 	UART_FLAG_IS_STOP2 /*! Two stop bits */ = (1<<2),
 	UART_FLAG_IS_STOP0_5 /*! 0.5 stop bits */ = (1<<3),
