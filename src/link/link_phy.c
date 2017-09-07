@@ -139,6 +139,9 @@ link_transport_phy_t link_phy_open(const char * name, int baudrate){
 
 int link_phy_write(link_transport_phy_t handle, const void * buf, int nbyte){
 	DWORD bytes_written;
+	if( handle == LINK_PHY_OPEN_ERROR){
+		return LINK_PHY_ERROR;
+	}
 	if( !WriteFile(((link_phy_container_t*)handle)->handle, buf, nbyte, &bytes_written, NULL) ){
 		link_error("Failed to write %d bytes from handle:%d\n", nbyte, (int)handle);
 		return LINK_PHY_ERROR;
@@ -148,6 +151,9 @@ int link_phy_write(link_transport_phy_t handle, const void * buf, int nbyte){
 
 int link_phy_read(link_transport_phy_t handle, void * buf, int nbyte){
 	DWORD bytes_read;
+	if( handle == LINK_PHY_OPEN_ERROR){
+		return LINK_PHY_ERROR;
+	}
 	if( !ReadFile(((link_phy_container_t*)handle)->handle, buf, nbyte, &bytes_read, NULL) ){
 		link_error("Failed to read %d bytes from handle:%d\n", nbyte, (int)handle);
 		return LINK_PHY_ERROR;
@@ -157,6 +163,11 @@ int link_phy_read(link_transport_phy_t handle, void * buf, int nbyte){
 
 int link_phy_close(link_transport_phy_t * handle){
 	link_phy_container_t * phy = (link_phy_container_t *)*handle;
+
+	if( phy == LINK_PHY_OPEN_ERROR ){
+		return 0;
+	}
+
 	*handle = LINK_PHY_OPEN_ERROR;
 	if( CloseHandle(phy->handle) == 0 ){
 		link_error("Failed to close handle\n");
