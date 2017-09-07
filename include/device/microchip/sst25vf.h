@@ -26,7 +26,7 @@
 #ifndef DEV_MICROCHIP_SST25VF_H_
 #define DEV_MICROCHIP_SST25VF_H_
 
-#include "sos/dev/microchip/sst25vf.h"
+#include "sos/dev/drive.h"
 #include "mcu/spi.h"
 
 typedef struct {
