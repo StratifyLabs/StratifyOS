@@ -192,11 +192,8 @@ void fifo_cancel_wop(fifo_state_t * state){
 	//}
 }
 
-static int data_transmitted(const devfs_handle_t * cfg){
+int fifo_data_transmitted(const fifo_config_t * cfgp, fifo_state_t * state){
 	int bytes_written;
-	const fifo_config_t * cfgp = cfg->config;
-	fifo_state_t * state = cfg->state;
-
 	if( state->wop != NULL ){
 		if( (bytes_written = fifo_write_buffer(cfgp, state, state->wop->buf_const)) > 0 ){
 			execute_write_callback(state, bytes_written, MCU_EVENT_FLAG_WRITE_COMPLETE);
@@ -212,10 +209,9 @@ int fifo_open(const devfs_handle_t * cfg){
 	return 0;
 }
 
-int fifo_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
+
+int fifo_ioctl_local(const fifo_config_t * cfgp, fifo_state_t * state, int request, void * ctl){
 	fifo_attr_t * attr = ctl;
-	const fifo_config_t * cfgp = cfg->config;
-	fifo_state_t * state = cfg->state;
 	mcu_action_t * action = ctl;
 	switch(request){
 	case I_FIFO_GETINFO:
@@ -245,7 +241,7 @@ int fifo_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 		/* no break */
 	case I_FIFO_FLUSH:
 		fifo_flush(state);
-		data_transmitted(cfg); //something might be waiting to write the fifo
+		fifo_data_transmitted(cfgp, state); //something might be waiting to write the fifo
 		return 0;
 	case I_FIFO_SETATTR:
 		if( attr->o_flags & FIFO_FLAG_SET_WRITEBLOCK ){
@@ -258,12 +254,18 @@ int fifo_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 
 		if( fifo_is_writeblock(state) ){
 			//make sure the FIFO is not currently blocked
-			data_transmitted(cfg);
+			fifo_data_transmitted(cfgp, state); //something might be waiting to write the fifo
 		}
 		return 0;
 	}
 	errno = EINVAL;
 	return -1;
+}
+
+int fifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
+	const fifo_config_t * cfgp = handle->config;
+	fifo_state_t * state = handle->state;
+	return fifo_ioctl_local(cfgp, state, request, ctl);
 }
 
 
@@ -288,23 +290,18 @@ int fifo_read_local(const fifo_config_t * cfgp, fifo_state_t * state, devfs_asyn
 		}
 	}
 
+	if( bytes_read > 0 ){
+		//see if anything needs to write the FIFO
+		fifo_data_transmitted(cfgp, state);
+	}
+
 	return bytes_read;
 }
 
-int fifo_read(const devfs_handle_t * cfg, devfs_async_t * rop){
-	const fifo_config_t * cfgp = cfg->config;
-	fifo_state_t * state = cfg->state;
-	int bytes_read;
-
-	bytes_read = fifo_read_local(cfgp, state, rop);
-	if( bytes_read > 0 ){
-		//see if anything needs to write the FIFO
-		data_transmitted(cfg);
-	}
-
-
-
-	return bytes_read;
+int fifo_read(const devfs_handle_t * handle, devfs_async_t * rop){
+	const fifo_config_t * cfgp = handle->config;
+	fifo_state_t * state = handle->state;
+	return fifo_read_local(cfgp, state, rop);
 }
 
 int fifo_write_local(const fifo_config_t * cfgp, fifo_state_t * state, devfs_async_t * wop){
@@ -328,15 +325,6 @@ int fifo_write_local(const fifo_config_t * cfgp, fifo_state_t * state, devfs_asy
 		}
 	}
 
-	return bytes_written;
-}
-
-int fifo_write(const devfs_handle_t * cfg, devfs_async_t * wop){
-	const fifo_config_t * cfgp = cfg->config;
-	fifo_state_t * state = cfg->state;
-	int bytes_written;
-
-	bytes_written = fifo_write_local(cfgp, state, wop);
 	if( bytes_written > 0 ){
 		fifo_data_received(cfgp, state);
 	}
@@ -344,7 +332,14 @@ int fifo_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	return bytes_written;
 }
 
-int fifo_close(const devfs_handle_t * cfg){
+int fifo_write(const devfs_handle_t * handle, devfs_async_t * wop){
+	const fifo_config_t * cfgp = handle->config;
+	fifo_state_t * state = handle->state;
+
+	return fifo_write_local(cfgp, state, wop);
+}
+
+int fifo_close(const devfs_handle_t * handle){
 	return 0;
 }
 
