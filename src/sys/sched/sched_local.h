@@ -71,8 +71,8 @@ typedef enum {
 //Scheduler timing
 int sched_timing_init();
 
-extern volatile i8 sched_current_priority;
-extern volatile i8 sched_status_changed;
+extern volatile s8 sched_current_priority;
+extern volatile s8 sched_status_changed;
 extern volatile sched_fault_t sched_fault;
 
 static inline int sched_active_asserted(int id) MCU_ALWAYS_INLINE;

@@ -206,9 +206,7 @@ int open_usecond_tmr(){
 
 	//Open the microsecond timer
 	err = mcu_tmr_open(&tmr);
-	if (err){
-		return err;
-	}
+	if(err){ return err; }
 
 	memset(&attr, 0, sizeof(tmr_attr_t));
 	attr.freq = 1000000;
@@ -227,6 +225,7 @@ int open_usecond_tmr(){
 	err = mcu_tmr_set(&tmr, (void*)0);
 	if (err){ return err; }
 
+	//The reset OC is only needed if TMR_FLAG_IS_AUTO_RELOAD is not supported
 	//Set the reset output compare value to reset the clock every 32 seconds
 	chan_req.loc = SCHED_USECOND_TMR_RESET_OC;
 	chan_req.value = STFY_USECOND_PERIOD; //overflow every SCHED_TIMEVAL_SECONDS seconds

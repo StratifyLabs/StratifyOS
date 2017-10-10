@@ -127,7 +127,7 @@ int task_init(int interval,
 }
 
 int task_set_interval(int interval){
-	uint32_t reload;
+	u32 reload;
 	int core_tick_freq;
 	reload = (mcu_board_config.core_cpu_freq * interval + 500) / 1000;
 	if ( reload > (0x00FFFFFF) ){

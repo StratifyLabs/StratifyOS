@@ -45,8 +45,8 @@
 
 static int start_first_thread();
 
-volatile int8_t sched_current_priority MCU_SYS_MEM;
-volatile int8_t sched_status_changed MCU_SYS_MEM;
+volatile s8 sched_current_priority MCU_SYS_MEM;
+volatile s8 sched_status_changed MCU_SYS_MEM;
 
 
 static void priv_check_sleep_mode(void * args) MCU_PRIV_EXEC_CODE;

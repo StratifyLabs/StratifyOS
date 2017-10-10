@@ -10,6 +10,7 @@ C_SRCS += \
 ../src/device/full.c \
 ../src/device/led_pio.c \
 ../src/device/led_pwm.c \
+../src/device/mcfifo.c \
 ../src/device/null.c \
 ../src/device/random.c \
 ../src/device/sd_spi.c \
@@ -28,6 +29,7 @@ OBJS += \
 ./src/device/full.o \
 ./src/device/led_pio.o \
 ./src/device/led_pwm.o \
+./src/device/mcfifo.o \
 ./src/device/null.o \
 ./src/device/random.o \
 ./src/device/sd_spi.o \
@@ -46,6 +48,7 @@ C_DEPS += \
 ./src/device/full.d \
 ./src/device/led_pio.d \
 ./src/device/led_pwm.d \
+./src/device/mcfifo.d \
 ./src/device/null.d \
 ./src/device/random.d \
 ./src/device/sd_spi.d \
