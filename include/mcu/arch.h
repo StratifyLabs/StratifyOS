@@ -57,7 +57,7 @@
 #define CORE_M4 1
 #define ARM_MATH_CM4 1
 #define STM32F446xx 1
-#include "mcu_stm32f446xx.h"
+#include "arch/stm32/mcu_stm32f446xx.h"
 #endif
 
 #ifdef __armv7em

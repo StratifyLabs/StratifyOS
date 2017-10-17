@@ -5,7 +5,7 @@
   		 KEEP(*(.startup))
   		 KEEP(*(.reset_vector))
   		 KEEP(*(.isr_vector))
-  		 . = 0x2fc;
+  		 . = 0x2fc; 
          KEEP(*(.crp_section))
          *(.text)
          *(.init)

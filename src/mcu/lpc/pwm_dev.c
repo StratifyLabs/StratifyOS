@@ -173,9 +173,9 @@ int mcu_pwm_setattr(const devfs_handle_t * handle, void * ctl){
 	//Configure the GPIO
 	enabled_channels = 0;
 
-	pcr = 0;
+	pcr = regs->PCR;
 	if( o_flags & PWM_FLAG_CLEAR_CHANNELS ){
-		pcr = regs->PCR;
+		pcr = 0;
 	}
 
 	regs->PCR = 0;

@@ -24,52 +24,6 @@
  * \details This module controls the PWM peripherals on a microcontroller.  More information about
  * accessing peripheral IO is in the \ref IFACE_DEV section.
  *
- * The following is an example of how to write the PWM in an OS environment:
- *
- * \code
- *
- * #include <unistd.h>
- * #include <fcntl.h>
- * #include <errno.h>
- * #include <stdio.h>
- * #include "mcu/mcu.h"
- *
- * int write_pwm(pwm_duty_t * src, int samples){
- * 	int fd;
- * 	pwm_attr_t ctl;
- * 	int i;
- * 	pwm_duty_t profile[50];
- *
- * 	fd = open("/dev/pwm0", O_RDWR);
- * 	if ( fd < 0 ){
- * 		printf("Error opening peripheral (%d)\n", errno);
- * 	} else {
- *		ctl.enabled_channels = (1<<1)|(1<<0); //enable channel zero and 1 -- auto-configures the GPIO for PWM use
- * 		ctl.freq = 200000; //200KHz output
- * 		ctl.top = 10000; //The PWM period is this values divided by the frequency (10K /200K = 50ms)
- * 		ctl.pin_assign = 0; //Use GPIO configuration zero (see device specific documentation for details)
- * 		if( ioctl(fd, I_SETATTR, &ctl) < 0 ){
- * 			printf("Failed to set peripheral configuration (%d)\n", errno);
- * 			return -1;
- *		}
- *
- *		//Create a ramp-up profile
- *		for(i=0; i < 50; i++){
- *			profile[i] = i*2;
- *		}
- *
- *		//now write a profile to the PWM
- *		lseek(fd, 0, SEEK_SET); //this sets the channel to 0 -- since this is a 'B' device the file offset is unchanged by read/write
- *		if ( write(fd, profile, sizeof(pwm_duty_t)*50) < 0 ){ //This function won't return for 2.5s (50 samples * 50ms period)
- *			printf("Error writing peripheral (%d)\n", errno);
- *			return -1;
- *		}
- * 	}
- * 	close(fd);
- * 	return 0;
- * }
- *
- * \endcode
  *
  *
  */

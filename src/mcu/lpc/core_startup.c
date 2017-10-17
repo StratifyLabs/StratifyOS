@@ -218,7 +218,7 @@ void (* const mcu_core_vector_table[])() __attribute__ ((section(".startup"))) =
 		mcu_core_busfault_handler,					// The bus fault handler
 		mcu_core_usagefault_handler,				// The usage fault handler
 		mcu_core_hardware_id,					// Reserved -- this is the checksum addr for ISP programming 0x1C
-		0,										// Reserved -- this is the hwpl security word 0x20
+		0,										// Reserved
 		(void*)&mcu_core_bootloader_api,		// Reserved -- this is the kernel signature checksum value 0x24
 		0,										// Reserved
 		mcu_core_svcall_handler,					// SVCall handler
