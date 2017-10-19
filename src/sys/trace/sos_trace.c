@@ -28,6 +28,43 @@
 #include "cortexm/mpu.h"
 
 static void sos_trace_event_addr(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len, u32 addr);
+static void sos_trace_build_event(link_trace_event_t * event, link_trace_event_id_t event_id, const void * data_ptr, size_t data_len, u32 addr, int tid, const struct timespec * spec);
+
+void sos_trace_priv_event(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len){
+	register u32 lr asm("lr");
+	link_trace_event_t event;
+	if( sos_board_config.trace_event ){
+		sos_trace_build_event(&event, event_id, data_ptr, data_len, lr, task_get_current(), 0);
+		sos_board_config.trace_event(&event);
+	}
+}
+
+void sos_trace_build_event(link_trace_event_t * event, link_trace_event_id_t event_id, const void * data_ptr, size_t data_len, u32 addr, int tid, const struct timespec * spec){
+	event->header.size = sizeof(link_trace_event_t);
+	event->header.id = LINK_NOTIFY_ID_POSIX_TRACE_EVENT;
+	event->posix_trace_event.posix_event_id = event_id;
+	event->posix_trace_event.posix_pid = task_get_pid( tid );
+	event->posix_trace_event.posix_prog_address = addr; //grab the value of the caller
+	event->posix_trace_event.posix_thread_id = tid;
+
+	if( data_len > LINK_POSIX_TRACE_DATA_SIZE-1  ){
+		data_len = LINK_POSIX_TRACE_DATA_SIZE-1;
+		event->posix_trace_event.posix_truncation_status = 1;
+	} else {
+		event->posix_trace_event.posix_truncation_status = 0;
+	}
+
+	memset(event->posix_trace_event.data, 0, LINK_POSIX_TRACE_DATA_SIZE);
+	memcpy(event->posix_trace_event.data, data_ptr, data_len);
+	if (spec){
+		event->posix_trace_event.posix_timestamp_tv_sec = spec->tv_sec;
+		event->posix_trace_event.posix_timestamp_tv_nsec = spec->tv_nsec;
+	} else {
+		event->posix_trace_event.posix_timestamp_tv_sec = 0;
+		event->posix_trace_event.posix_timestamp_tv_nsec = 0;
+	}
+	cortexm_assign_zero_sum32(&event, CORTEXM_ZERO_SUM32_COUNT(event));
+}
 
 void sos_trace_event(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len){
 	register u32 lr asm("lr");
@@ -54,6 +91,12 @@ void sos_trace_event_addr_tid(link_trace_event_id_t event_id, const void * data_
 			addr = addr - (u32)mpu_addr((u32)sos_task_table[tid].mem.code.addr) - 1 + 0xDE000000;
 		}
 
+		clock_gettime(CLOCK_REALTIME, &spec);
+
+		sos_trace_build_event(&event, event_id, data_ptr, data_len, addr, tid, &spec);
+
+
+		/*
 		event.header.size = sizeof(link_trace_event_t);
 		event.header.id = LINK_NOTIFY_ID_POSIX_TRACE_EVENT;
 		event.posix_trace_event.posix_event_id = event_id;
@@ -70,11 +113,11 @@ void sos_trace_event_addr_tid(link_trace_event_id_t event_id, const void * data_
 
 		memset(event.posix_trace_event.data, 0, LINK_POSIX_TRACE_DATA_SIZE);
 		memcpy(event.posix_trace_event.data, data_ptr, data_len);
-		clock_gettime(CLOCK_REALTIME, &spec);
 		event.posix_trace_event.posix_timestamp_tv_sec = spec.tv_sec;
 		event.posix_trace_event.posix_timestamp_tv_nsec = spec.tv_nsec;
 
 		cortexm_assign_zero_sum32(&event, CORTEXM_ZERO_SUM32_COUNT(event));
+		*/
 
 		cortexm_svcall(sos_board_config.trace_event, &event);
 	}

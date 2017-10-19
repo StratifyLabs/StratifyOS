@@ -18,6 +18,8 @@
  */
 
 
+#include "sos/sos.h"
+
 #include <device/sd_spi_local.h>
 #include <errno.h>
 #include <unistd.h>
@@ -43,29 +45,31 @@
 #define FLAG_SDSC (1<<1)
 
 
-static int _sd_spi_is_sdsc(const devfs_handle_t * cfg);
+static int is_sdsc(const devfs_handle_t * cfg);
 
-static int _sd_spi_erase_blocks(const devfs_handle_t * cfg, uint32_t block_num, uint32_t end_block);
-static int _sd_spi_busy(const devfs_handle_t * cfg);
-static int _sd_spi_status(const devfs_handle_t * cfg, uint8_t * buf);
-static int _sd_spi_csd(const devfs_handle_t * cfg, uint8_t * buf);
+static int erase_blocks(const devfs_handle_t * cfg, uint32_t block_num, uint32_t end_block);
+static int is_busy(const devfs_handle_t * cfg);
+static int get_status(const devfs_handle_t * cfg, uint8_t * buf);
+static int exec_csd(const devfs_handle_t * cfg, uint8_t * buf);
 
-static sd_spi_r1_t _sd_spi_cmd_r1(const devfs_handle_t * cfg, uint8_t cmd, uint32_t arg, uint8_t * r);
+static sd_spi_r1_t exec_cmd_r1(const devfs_handle_t * cfg, uint8_t cmd, uint32_t arg, uint8_t * r);
 //static sd_spi_r2_t _sd_spi_cmd_r2(const devfs_handle_t * cfg, uint8_t cmd, uint32_t arg, uint8_t * r);
-static sd_spi_r3_t _sd_spi_cmd_r3(const devfs_handle_t * cfg, uint8_t cmd, uint32_t arg);
+static sd_spi_r3_t exec_cmd_r3(const devfs_handle_t * cfg, uint8_t cmd, uint32_t arg);
 
 
-static int _sd_spi_send_cmd(const devfs_handle_t * cfg, uint8_t cmd, uint32_t arg, uint8_t * response);
-static int _sd_spi_parse_response(uint8_t * response, int num, sd_spi_r_t * r, uint32_t * arg);
-static int _sd_spi_parse_data(uint8_t * dest, int nbyte, int count, uint8_t token, uint8_t * response);
-static int _sd_spi_read_data(const devfs_handle_t * cfg, void * data, int nbyte, uint8_t token, uint8_t * first_response);
+static int send_cmd(const devfs_handle_t * cfg, uint8_t cmd, uint32_t arg, uint8_t * response);
+static int parse_response(uint8_t * response, int num, sd_spi_r_t * r, uint32_t * arg);
+static int parse_data(uint8_t * dest, int nbyte, int count, uint8_t token, uint8_t * response);
+static int read_data(const devfs_handle_t * cfg, void * data, int nbyte, uint8_t token, uint8_t * first_response);
 //static int _sd_spi_write_data(const devfs_handle_t * cfg, const void * data, int nbyte);
 
-static int _sd_spi_transfer(const devfs_handle_t * cfg, const uint8_t * data_out, uint8_t * data_in, int nbyte);
+static int spi_transfer(const devfs_handle_t * cfg, const uint8_t * data_out, uint8_t * data_in, int nbyte);
 
-static int _sd_spi_try_read(const devfs_handle_t * handle, int first);
+static int try_read(const devfs_handle_t * handle, int first);
+static int continue_spi_read(void * handle, const mcu_event_t * ignore);
+static int continue_spi_write(void * handle, const mcu_event_t * ignore);
 
-static void _sd_spi_deassert_cs(const devfs_handle_t * handle){
+static void deassert_cs(const devfs_handle_t * handle){
 	const sd_spi_config_t * config = handle->config;
 	devfs_handle_t pio_handle;
 	pio_handle.port = config->cs.port;
@@ -74,7 +78,7 @@ static void _sd_spi_deassert_cs(const devfs_handle_t * handle){
 	mcu_pio_setmask(&pio_handle, (void*)(ssize_t)(1<<config->cs.pin));
 }
 
-static void _sd_spi_assert_cs(const devfs_handle_t * handle){
+static void assert_cs(const devfs_handle_t * handle){
 	const sd_spi_config_t * config = handle->config;
 	devfs_handle_t pio_handle;
 	pio_handle.port = config->cs.port;
@@ -83,27 +87,17 @@ static void _sd_spi_assert_cs(const devfs_handle_t * handle){
 	mcu_pio_clrmask(&pio_handle, (void*)(ssize_t)(1<<config->cs.pin));
 }
 
-static void _sd_spi_state_callback(const devfs_handle_t * handle, int err, int nbyte);
+static void state_callback(const devfs_handle_t * handle, int err, int nbyte);
 
 
 int sd_spi_open(const devfs_handle_t * handle){
 	int err;
 	pio_attr_t attr;
-	//sd_spi_state_t * state = (sd_spi_state_t*)cfg->state;
 	const sd_spi_config_t * config = handle->config;
 	devfs_handle_t pio_handle;
 	pio_handle.port = config->cs.port;
 	pio_handle.config = 0;
 
-	/*
-	spi_attr_t spi_cfg;
-	spi_cfg.pin_assign = cfg->pin_assign;
-	spi_cfg.width = cfg->pcfg.spi.width;
-	spi_cfg.mode = cfg->pcfg.spi.mode;
-	spi_cfg.format = cfg->pcfg.spi.format;
-	spi_cfg.bitrate = cfg->bitrate;
-	spi_cfg.master = SPI_ATTR_MASTER;
-	 */
 	err = mcu_spi_open(handle);
 	if ( err < 0 ){
 		return err;
@@ -113,7 +107,7 @@ int sd_spi_open(const devfs_handle_t * handle){
 		return err;
 	}
 
-	_sd_spi_deassert_cs(handle);
+	deassert_cs(handle);
 	attr.o_pinmask = (1<<config->cs.pin);
 	attr.o_flags = PIO_FLAG_SET_OUTPUT | PIO_FLAG_IS_DIRONLY;
 	mcu_pio_setattr(&pio_handle, &attr);
@@ -123,7 +117,7 @@ int sd_spi_open(const devfs_handle_t * handle){
 }
 
 
-void _sd_spi_state_callback(const devfs_handle_t * handle, int err, int nbyte){
+void state_callback(const devfs_handle_t * handle, int err, int nbyte){
 	sd_spi_state_t * state = handle->state;
 	if( state->handler.callback ){
 		*(state->nbyte) = nbyte;
@@ -136,7 +130,7 @@ void _sd_spi_state_callback(const devfs_handle_t * handle, int err, int nbyte){
 	}
 }
 
-static int continue_spi_read(void * handle, const mcu_event_t * ignore){
+int continue_spi_read(void * handle, const mcu_event_t * ignore){
 	//data has been read -- complete the operation
 	int err = 0;
 	sd_spi_state_t * state = ((const devfs_handle_t*)handle)->state;
@@ -148,19 +142,17 @@ static int continue_spi_read(void * handle, const mcu_event_t * ignore){
 		state->timeout++;
 		if( state->timeout > 5000 ){
 			//failed to read the data
-			_sd_spi_deassert_cs(handle);
-
-			_sd_spi_state_callback(handle, EIO, -2);
+			deassert_cs(handle);
+			state_callback(handle, EIO, -2);
 			return 0;
 		}
 
 		//try again to try the start of the data
-		return _sd_spi_try_read(handle, 0);
+		return try_read(handle, 0);
 
 	} else {
 		//the read is complete
-
-		_sd_spi_transfer(handle, 0, state->cmd, CMD_FRAME_SIZE); //gobble up the CRC
+		spi_transfer(handle, 0, state->cmd, CMD_FRAME_SIZE); //gobble up the CRC
 		checksum = (state->cmd[0] << 8) + state->cmd[1];
 		checksum_calc = mcu_calc_crc16(0x0000, (const uint8_t *)state->buf, (size_t)*(state->nbyte));
 		if( checksum != checksum_calc ){
@@ -169,16 +161,16 @@ static int continue_spi_read(void * handle, const mcu_event_t * ignore){
 		}
 
 		//execute the callback
-		_sd_spi_state_callback(handle, err, *(state->nbyte));
+		state_callback(handle, err, *(state->nbyte));
 	}
 
 	return 0;
 }
 
-int _sd_spi_try_read(const devfs_handle_t * handle, int first){
+int try_read(const devfs_handle_t * handle, int first){
 	int ret;
 	sd_spi_state_t * state = handle->state;
-	state->count = _sd_spi_parse_data((uint8_t*)state->buf, *(state->nbyte), -1, SDSPI_START_BLOCK_TOKEN, state->cmd);
+	state->count = parse_data((uint8_t*)state->buf, *(state->nbyte), -1, SDSPI_START_BLOCK_TOKEN, state->cmd);
 	if( state->count >= 0 ){
 		state->op.nbyte = *(state->nbyte) - state->count;
 		state->op.buf = (void*)&(state->buf[state->count]);
@@ -197,7 +189,7 @@ int _sd_spi_try_read(const devfs_handle_t * handle, int first){
 	}
 
 	if( (ret = mcu_spi_read(handle, &(state->op))) != 0 ){
-		_sd_spi_state_callback(handle, EINVAL, -5);
+		state_callback(handle, EINVAL, -5);
 		return 0;
 	}
 	return 1;
@@ -214,7 +206,7 @@ int sd_spi_read(const devfs_handle_t * handle, devfs_async_t * rop){
 		return -1;
 	}
 
-	if( _sd_spi_busy(handle) != 0 ){
+	if( is_busy(handle) != 0 ){
 		errno = EBUSY;
 		return -1;
 	}
@@ -226,13 +218,13 @@ int sd_spi_read(const devfs_handle_t * handle, devfs_async_t * rop){
 	state->timeout = 0;
 	state->op.tid = rop->tid;
 
-	if( _sd_spi_is_sdsc(handle) ){
+	if( is_sdsc(handle) ){
 		loc = rop->loc*BLOCK_SIZE;
 	} else {
 		loc = rop->loc;
 	}
 
-	r1 = _sd_spi_cmd_r1(handle, SDSPI_CMD17_READ_SINGLE_BLOCK, loc, state->cmd);
+	r1 = exec_cmd_r1(handle, SDSPI_CMD17_READ_SINGLE_BLOCK, loc, state->cmd);
 	if( r1.u8 != 0x00 ){
 		if( (r1.param_error) ){
 			errno = EINVAL;
@@ -263,13 +255,15 @@ int sd_spi_read(const devfs_handle_t * handle, devfs_async_t * rop){
 		return -6;
 	}
 
-	_sd_spi_assert_cs(handle);
+	assert_cs(handle);
 	cortexm_delay_us(LONG_DELAY);
 
-	return _sd_spi_try_read(handle, 1);
+
+
+	return try_read(handle, 1);
 }
 
-static int continue_spi_write(void * handle, const mcu_event_t * ignore){
+int continue_spi_write(void * handle, const mcu_event_t * ignore){
 	sd_spi_state_t * state = ((const devfs_handle_t *)handle)->state;
 
 	uint16_t checksum;
@@ -283,15 +277,16 @@ static int continue_spi_write(void * handle, const mcu_event_t * ignore){
 	state->cmd[2] = 0xFF;
 	state->cmd[3] = 0xFF;
 	state->cmd[4] = 0xFF;
-	_sd_spi_transfer(handle, state->cmd, state->cmd, 5); //send dummy CRC
-	_sd_spi_deassert_cs(handle);
+	spi_transfer(handle, state->cmd, state->cmd, 5); //send dummy CRC
+	deassert_cs(handle);
+
 
 	if( (state->cmd[2] & 0x1F) == 0x05 ){
 		//data was accepted
-		_sd_spi_state_callback(handle, 0, *(state->nbyte));
+		state_callback(handle, 0, *(state->nbyte));
 	} else {
 		//data was not accepted
-		_sd_spi_state_callback(handle, EIO, -1);
+		state_callback(handle, EIO, -1);
 	}
 
 	return 0;
@@ -299,7 +294,6 @@ static int continue_spi_write(void * handle, const mcu_event_t * ignore){
 
 
 int sd_spi_write(const devfs_handle_t * handle, devfs_async_t * wop){
-
 	sd_spi_state_t * state = handle->state;
 	sd_spi_r1_t r1;
 	u32 loc;
@@ -311,7 +305,7 @@ int sd_spi_write(const devfs_handle_t * handle, devfs_async_t * wop){
 	}
 
 	//check to see if device is busy
-	if( _sd_spi_busy(handle) != 0 ){
+	if( is_busy(handle) != 0 ){
 		errno = EBUSY;
 		return -1;
 	}
@@ -322,13 +316,13 @@ int sd_spi_write(const devfs_handle_t * handle, devfs_async_t * wop){
 	state->buf = wop->buf;
 	state->timeout = 0;
 
-	if( _sd_spi_is_sdsc(handle) ){
+	if( is_sdsc(handle) ){
 		loc = wop->loc*BLOCK_SIZE;
 	} else {
 		loc = wop->loc;
 	}
 
-	r1 = _sd_spi_cmd_r1(handle, SDSPI_CMD24_WRITE_SINGLE_BLOCK, loc, state->cmd);
+	r1 = exec_cmd_r1(handle, SDSPI_CMD24_WRITE_SINGLE_BLOCK, loc, state->cmd);
 	if( r1.u8 != 0x00 ){
 		if( (r1.addr_error) || (r1.param_error) ){
 			errno = EINVAL;
@@ -339,19 +333,19 @@ int sd_spi_write(const devfs_handle_t * handle, devfs_async_t * wop){
 		return -1;
 	}
 
-
 	state->cmd[0] = 0xFF;  //busy byte
 	state->cmd[1] = SDSPI_START_BLOCK_TOKEN;
 
-	_sd_spi_assert_cs(handle);
+	assert_cs(handle);
 	cortexm_delay_us(LONG_DELAY);
-	_sd_spi_transfer(handle, state->cmd, 0, 2);
+	spi_transfer(handle, state->cmd, 0, 2);
 
 	state->op.nbyte = wop->nbyte;
 	state->op.buf = wop->buf;
 	state->op.handler.context = (void*)handle;
 	state->op.handler.callback = continue_spi_write;
 	state->op.tid = wop->tid;
+
 
 	return mcu_spi_write(handle, &(state->op));
 }
@@ -383,11 +377,11 @@ int sd_spi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 			if( o_flags & DRIVE_FLAG_ERASE_BLOCKS ){
 
 				//erase blocks in a sequence
-				if( _sd_spi_busy(handle) != 0 ){
+				if( is_busy(handle) != 0 ){
 					errno = EBUSY;
 					return -1;
 				}
-				return _sd_spi_erase_blocks(handle, attr->start, attr->end);
+				return erase_blocks(handle, attr->start, attr->end);
 			}
 		}
 
@@ -407,15 +401,15 @@ int sd_spi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 
 			//init sequence
 			//apply at least 74 init clocks with DI and CS high
-			_sd_spi_deassert_cs(handle);
+			deassert_cs(handle);
 			cortexm_delay_us(LONG_DELAY);
-			_sd_spi_transfer(handle, 0, 0, CMD_FRAME_SIZE*6);
+			spi_transfer(handle, 0, 0, CMD_FRAME_SIZE*6);
 			cortexm_delay_us(LONG_DELAY);
 
 
 			cortexm_delay_us(500);
 
-			resp.r1 = _sd_spi_cmd_r1(handle, SDSPI_CMD0_GO_IDLE_STATE, 0, 0);
+			resp.r1 = exec_cmd_r1(handle, SDSPI_CMD0_GO_IDLE_STATE, 0, 0);
 			if( resp.r1.start == 1 ){
 				errno = EIO;
 				mcu_debug_printf("SD_SPI: Failed GO IDLE\n");
@@ -429,7 +423,7 @@ int sd_spi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 			}
 
 			//send CMD8
-			resp.r3 = _sd_spi_cmd_r3(handle, SDSPI_CMD8_SEND_IF_COND, 0x01AA);
+			resp.r3 = exec_cmd_r3(handle, SDSPI_CMD8_SEND_IF_COND, 0x01AA);
 			if( resp.r3.r1.u8 != 0x01 ){
 				errno = EIO;
 				mcu_debug_printf("SD_SPI: Failed NO IF COND\n");
@@ -437,12 +431,12 @@ int sd_spi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 			}
 
 			//disable write protection (SD Cards only)
-			resp.r1 = _sd_spi_cmd_r1(handle, SDSPI_CMD28_SET_WRITE_PROT, 0, 0);
+			resp.r1 = exec_cmd_r1(handle, SDSPI_CMD28_SET_WRITE_PROT, 0, 0);
 			if( resp.r1.u8 == 0x01 ){
 				state->flags |= FLAG_SDSC;
 
 				//set block len
-				resp.r1 = _sd_spi_cmd_r1(handle, SDSPI_CMD16_SET_BLOCKLEN, BLOCK_SIZE, 0);
+				resp.r1 = exec_cmd_r1(handle, SDSPI_CMD16_SET_BLOCKLEN, BLOCK_SIZE, 0);
 				if( resp.r1.u8 != 0x01 ){
 					errno = EIO;
 					mcu_debug_printf("SD_SPI: Failed NO 16 BLOCK LEN\n");
@@ -451,7 +445,7 @@ int sd_spi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 			}
 
 			//enable checksums
-			resp.r1 = _sd_spi_cmd_r1(handle, SDSPI_CMD59_CRC_ON_OFF, 0xFFFFFFFF, 0);
+			resp.r1 = exec_cmd_r1(handle, SDSPI_CMD59_CRC_ON_OFF, 0xFFFFFFFF, 0);
 			if( resp.r1.u8 != 0x01 ){
 				errno = EIO;
 				mcu_debug_printf("SD_SPI: Failed NO 59\n");
@@ -463,14 +457,14 @@ int sd_spi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 			const int timeout_value = 2000;
 
 			do {
-				resp.r1 = _sd_spi_cmd_r1(handle, SDSPI_CMD55_APP_CMD, 0, 0);  //send 55
+				resp.r1 = exec_cmd_r1(handle, SDSPI_CMD55_APP_CMD, 0, 0);  //send 55
 				if( resp.r1.u8 != 0x01 ){
 					errno = EIO;
 					mcu_debug_printf("SD_SPI: Failed NO 55\n");
 					return -7;
 				}
 
-				resp.r1 = _sd_spi_cmd_r1(handle, SDSPI_ACMD41_SD_SEND_OP_COND, 1<<30, 0);  //indicate that HC is supported
+				resp.r1 = exec_cmd_r1(handle, SDSPI_ACMD41_SD_SEND_OP_COND, 1<<30, 0);  //indicate that HC is supported
 				if( (resp.r1.u8 != 0x01) && (resp.r1.u8 != 0x00) ){  //this takes awhile to return to zero
 					errno = EIO;
 					mcu_debug_printf("SD_SPI: Failed HC?\n");
@@ -493,10 +487,10 @@ int sd_spi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 				return -10;
 			}
 
-			_sd_spi_assert_cs(handle);
+			assert_cs(handle);
 			cortexm_delay_us(LONG_DELAY);
-			_sd_spi_transfer(handle, 0, 0, CMD_FRAME_SIZE);
-			_sd_spi_deassert_cs(handle);
+			spi_transfer(handle, 0, 0, CMD_FRAME_SIZE);
+			deassert_cs(handle);
 
 			mcu_debug_printf("SD_SPI: INIT SUCCESS 0x%lX\n", state->flags);
 
@@ -511,19 +505,19 @@ int sd_spi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 		break;
 
 	case I_DRIVE_ISBUSY:
-		return _sd_spi_busy(handle);
+		return is_busy(handle);
 
 	case I_DRIVE_GETINFO:
 
-		if( _sd_spi_busy(handle) != 0 ){
+		if( is_busy(handle) != 0 ){
 			errno = EBUSY;
 			return -1;
 		}
 
-		_sd_spi_assert_cs(handle);
+		assert_cs(handle);
 		cortexm_delay_us(LONG_DELAY);
-		_sd_spi_transfer(handle, 0, 0, CMD_FRAME_SIZE);
-		_sd_spi_deassert_cs(handle);
+		spi_transfer(handle, 0, 0, CMD_FRAME_SIZE);
+		deassert_cs(handle);
 
 		info->o_flags = DRIVE_FLAG_ERASE_BLOCKS|DRIVE_FLAG_INIT;
 
@@ -532,7 +526,7 @@ int sd_spi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 		info->write_block_size = info->address_size;
 
 		//This is from CSD C_Size and TRANS_SPEED
-		if( _sd_spi_csd(handle, buffer) < 0 ){
+		if( exec_csd(handle, buffer) < 0 ){
 			errno = EIO;
 			return -1;
 		}
@@ -541,7 +535,7 @@ int sd_spi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 		uint32_t c_size;
 		uint32_t c_mult;
 
-		if( _sd_spi_is_sdsc(handle) ){
+		if( is_sdsc(handle) ){
 			c_size = (((buffer[6] & 0x03) << 10) + (buffer[7] << 2) + (buffer[8] >> 6));
 			c_mult = 1<<(((buffer[9] & 0x03) << 1) + (buffer[10] >> 7) + 2);
 			block_len = 1 << (buffer[5] & 0x0F);
@@ -553,7 +547,7 @@ int sd_spi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 		info->bitrate = 25*1000000;  //TRAN_SPEED should always be 25MHz
 
 		//need to read Status to get AU_Size, ERASE_SIZE, ERASE_TIMEOUT
-		if( _sd_spi_status(handle, buffer) < 0 ){
+		if( get_status(handle, buffer) < 0 ){
 			errno = EIO;
 			return -2;
 		}
@@ -580,7 +574,7 @@ int sd_spi_close(const devfs_handle_t * cfg){
 	return 0;
 }
 
-int _sd_spi_is_sdsc(const devfs_handle_t * cfg){
+int is_sdsc(const devfs_handle_t * cfg){
 	sd_spi_state_t * state = (sd_spi_state_t*)cfg->state;
 
 	if( state->flags & FLAG_SDSC ){
@@ -591,24 +585,24 @@ int _sd_spi_is_sdsc(const devfs_handle_t * cfg){
 
 }
 
-int _sd_spi_erase_blocks(const devfs_handle_t * cfg, uint32_t block_num, uint32_t end_block){
+int erase_blocks(const devfs_handle_t * cfg, uint32_t block_num, uint32_t end_block){
 	sd_spi_r_t r;
 
-	if( _sd_spi_is_sdsc(cfg) ){
+	if( is_sdsc(cfg) ){
 		block_num*=BLOCK_SIZE;
 		end_block*=BLOCK_SIZE;
 	}
 
 	//cmd32, 33, then 38
-	r.r1 = _sd_spi_cmd_r1(cfg, SDSPI_CMD32_ERASE_WR_BLK_START, block_num, 0);
+	r.r1 = exec_cmd_r1(cfg, SDSPI_CMD32_ERASE_WR_BLK_START, block_num, 0);
 	if( r.r1.u8 != 0 ){
 		return -1;
 	}
-	r.r1 = _sd_spi_cmd_r1(cfg, SDSPI_CMD33_ERASE_WR_BLK_END, end_block, 0);
+	r.r1 = exec_cmd_r1(cfg, SDSPI_CMD33_ERASE_WR_BLK_END, end_block, 0);
 	if( r.r1.u8 != 0 ){
 		return -1;
 	}
-	r.r1 = _sd_spi_cmd_r1(cfg, SDSPI_CMD38_ERASE, 0, 0);
+	r.r1 = exec_cmd_r1(cfg, SDSPI_CMD38_ERASE, 0, 0);
 	if( r.r1.u8 != 0 ){
 		return -1;
 	}
@@ -616,34 +610,34 @@ int _sd_spi_erase_blocks(const devfs_handle_t * cfg, uint32_t block_num, uint32_
 	return 0;
 }
 
-int _sd_spi_busy(const devfs_handle_t * cfg){
+int is_busy(const devfs_handle_t * cfg){
 	uint8_t c;
-	_sd_spi_assert_cs(cfg);
+	assert_cs(cfg);
 	cortexm_delay_us(LONG_DELAY);
 	c = mcu_spi_swap(cfg, (void*)0xFF);
-	_sd_spi_deassert_cs(cfg);
+	deassert_cs(cfg);
 	return (c == 0x00);
 }
 
-int _sd_spi_status(const devfs_handle_t * cfg, uint8_t * buf){
+int get_status(const devfs_handle_t * cfg, uint8_t * buf){
 	sd_spi_r_t resp;
 	int ret;
 	uint8_t tmp[CMD_FRAME_SIZE];
 
-	resp.r1 = _sd_spi_cmd_r1(cfg, SDSPI_CMD55_APP_CMD, 0, tmp);
+	resp.r1 = exec_cmd_r1(cfg, SDSPI_CMD55_APP_CMD, 0, tmp);
 	if( resp.r1.u8 != 0x00 ){
 		errno = EIO;
 		return -1;
 	}
 
-	resp.r1 = _sd_spi_cmd_r1(cfg, SDSPI_CMD13_SD_STATUS, 0, tmp);
+	resp.r1 = exec_cmd_r1(cfg, SDSPI_CMD13_SD_STATUS, 0, tmp);
 	if( resp.r1.u8 != 0x00 ){
 		errno = EIO;
 		return -1;
 	}
 
 	//now read the data
-	ret = _sd_spi_read_data(cfg, buf, sizeof(_sd_spi_status_t), SDSPI_START_BLOCK_TOKEN, tmp);
+	ret = read_data(cfg, buf, sizeof(_sd_spi_status_t), SDSPI_START_BLOCK_TOKEN, tmp);
 	if( ret < 0 ){
 		errno = EIO;
 	}
@@ -651,19 +645,19 @@ int _sd_spi_status(const devfs_handle_t * cfg, uint8_t * buf){
 	return ret;
 }
 
-int _sd_spi_csd(const devfs_handle_t * cfg, uint8_t * buf){
+int exec_csd(const devfs_handle_t * cfg, uint8_t * buf){
 	sd_spi_r_t resp;
 	int ret;
 	uint8_t tmp[CMD_FRAME_SIZE];
 
-	resp.r1 = _sd_spi_cmd_r1(cfg, SDSPI_CMD9_SEND_CSD, 0, tmp);
+	resp.r1 = exec_cmd_r1(cfg, SDSPI_CMD9_SEND_CSD, 0, tmp);
 	if( resp.r1.u8 != 0x00 ){
 		errno = EIO;
 		return -1;
 	}
 
 	//now read the data
-	ret = _sd_spi_read_data(cfg, buf, sizeof(sd_spi_csd_t), SDSPI_START_BLOCK_TOKEN, tmp);
+	ret = read_data(cfg, buf, sizeof(sd_spi_csd_t), SDSPI_START_BLOCK_TOKEN, tmp);
 	if( ret < 0 ){
 		errno = EIO;
 	}
@@ -671,7 +665,7 @@ int _sd_spi_csd(const devfs_handle_t * cfg, uint8_t * buf){
 	return ret;
 }
 
-int _sd_spi_send_cmd(const devfs_handle_t * cfg, uint8_t cmd, uint32_t arg, uint8_t * response){
+int send_cmd(const devfs_handle_t * cfg, uint8_t cmd, uint32_t arg, uint8_t * response){
 	uint8_t buffer[CMD_FRAME_SIZE];
 	int i;
 	int ret;
@@ -688,11 +682,11 @@ int _sd_spi_send_cmd(const devfs_handle_t * cfg, uint8_t cmd, uint32_t arg, uint
 	retries = 0;
 	do {
 		//read the response
-		_sd_spi_assert_cs(cfg);
+		assert_cs(cfg);
 		cortexm_delay_us(LONG_DELAY);
-		_sd_spi_transfer(cfg, buffer, response, CMD_FRAME_SIZE);
+		spi_transfer(cfg, buffer, response, CMD_FRAME_SIZE);
 		cortexm_delay_us(LONG_DELAY);
-		_sd_spi_deassert_cs(cfg);
+		deassert_cs(cfg);
 
 		ret = 0;
 		if( response != 0 ){
@@ -710,7 +704,7 @@ int _sd_spi_send_cmd(const devfs_handle_t * cfg, uint8_t cmd, uint32_t arg, uint
 	return ret;
 }
 
-int _sd_spi_parse_data(uint8_t * dest, int nbyte, int count, uint8_t token, uint8_t * response){
+int parse_data(uint8_t * dest, int nbyte, int count, uint8_t token, uint8_t * response){
 	int i;
 	for(i=0; i < CMD_FRAME_SIZE; i++){
 		if( count >= 0 ){
@@ -730,26 +724,26 @@ int _sd_spi_parse_data(uint8_t * dest, int nbyte, int count, uint8_t token, uint
 	return count;
 }
 
-int _sd_spi_read_data(const devfs_handle_t * cfg, void * data, int nbyte, uint8_t token, uint8_t * first_response){
+int read_data(const devfs_handle_t * cfg, void * data, int nbyte, uint8_t token, uint8_t * first_response){
 	//look through the first response for the data token
 	int timeout;
 	uint8_t response[CMD_FRAME_SIZE];
 	int count;
 
-	count = _sd_spi_parse_data((uint8_t*)data, nbyte, -1, token, first_response);
+	count = parse_data((uint8_t*)data, nbyte, -1, token, first_response);
 
 	timeout = 0;
 	while( count < nbyte ){
-		_sd_spi_assert_cs(cfg);
+		assert_cs(cfg);
 		cortexm_delay_us(LONG_DELAY);
 		if( count >= 0 ){
-			_sd_spi_transfer(cfg, 0, (uint8_t*)data + count, nbyte - count);
+			spi_transfer(cfg, 0, (uint8_t*)data + count, nbyte - count);
 			count = nbyte;
 		} else {
-			_sd_spi_transfer(cfg, 0, response, CMD_FRAME_SIZE);
-			count = _sd_spi_parse_data((uint8_t*)data, nbyte, count, token, response);
+			spi_transfer(cfg, 0, response, CMD_FRAME_SIZE);
+			count = parse_data((uint8_t*)data, nbyte, count, token, response);
 		}
-		_sd_spi_deassert_cs(cfg);
+		deassert_cs(cfg);
 
 
 		timeout++;
@@ -758,17 +752,17 @@ int _sd_spi_read_data(const devfs_handle_t * cfg, void * data, int nbyte, uint8_
 		}
 	}
 
-	_sd_spi_assert_cs(cfg);
+	assert_cs(cfg);
 	cortexm_delay_us(LONG_DELAY);
-	_sd_spi_transfer(cfg, 0, response, CMD_FRAME_SIZE); //gobble up any checksum
-	_sd_spi_deassert_cs(cfg);
+	spi_transfer(cfg, 0, response, CMD_FRAME_SIZE); //gobble up any checksum
+	deassert_cs(cfg);
 
 	//verify the checksum on data read
 
 	return count;
 }
 
-int _sd_spi_transfer(const devfs_handle_t * cfg, const uint8_t * data_out, uint8_t * data_in, int nbyte){
+int spi_transfer(const devfs_handle_t * cfg, const uint8_t * data_out, uint8_t * data_in, int nbyte){
 	int i;
 	for(i=0; i < nbyte; i++){
 		if( data_out == 0 ){
@@ -786,7 +780,7 @@ int _sd_spi_transfer(const devfs_handle_t * cfg, const uint8_t * data_out, uint8
 	return nbyte;
 }
 
-int _sd_spi_parse_response(uint8_t * response, int num, sd_spi_r_t * r, uint32_t * arg){
+int parse_response(uint8_t * response, int num, sd_spi_r_t * r, uint32_t * arg){
 	int i;
 	uint8_t * arg_u8 = (uint8_t *)arg;
 	for(i=0; i < CMD_FRAME_SIZE; i++){
@@ -817,7 +811,7 @@ int _sd_spi_parse_response(uint8_t * response, int num, sd_spi_r_t * r, uint32_t
 	return false;
 }
 
-sd_spi_r1_t _sd_spi_cmd_r1(const devfs_handle_t * cfg, uint8_t cmd, uint32_t arg, uint8_t * r){
+sd_spi_r1_t exec_cmd_r1(const devfs_handle_t * cfg, uint8_t cmd, uint32_t arg, uint8_t * r){
 	uint8_t tmp[CMD_FRAME_SIZE];
 	uint8_t * response;
 	if( r == 0 ){
@@ -826,9 +820,9 @@ sd_spi_r1_t _sd_spi_cmd_r1(const devfs_handle_t * cfg, uint8_t cmd, uint32_t arg
 		response = r;
 	}
 	sd_spi_r_t ret;
-	_sd_spi_send_cmd(cfg, cmd, arg, response);
+	send_cmd(cfg, cmd, arg, response);
 	memset(&r, 0xFF, sizeof(sd_spi_r_t));
-	if( _sd_spi_parse_response(response, 1, &ret, 0) == false ){
+	if( parse_response(response, 1, &ret, 0) == false ){
 		memset(&ret, 0xFF, sizeof(sd_spi_r_t));
 	}
 	return ret.r1;
@@ -853,12 +847,12 @@ sd_spi_r2_t _sd_spi_cmd_r2(const devfs_handle_t * cfg, uint8_t cmd, uint32_t arg
 }
  */
 
-sd_spi_r3_t _sd_spi_cmd_r3(const devfs_handle_t * cfg, uint8_t cmd, uint32_t arg){
+sd_spi_r3_t exec_cmd_r3(const devfs_handle_t * cfg, uint8_t cmd, uint32_t arg){
 	uint8_t response[CMD_FRAME_SIZE];
 	sd_spi_r_t r;
-	_sd_spi_send_cmd(cfg, cmd, arg, response);
+	send_cmd(cfg, cmd, arg, response);
 	memset(&r, 0xFF, sizeof(sd_spi_r_t));
-	if( _sd_spi_parse_response(response, 3, &r, 0) == false ){
+	if( parse_response(response, 3, &r, 0) == false ){
 		memset(&r, 0xFF, sizeof(sd_spi_r_t));
 	}
 	return r.r3;

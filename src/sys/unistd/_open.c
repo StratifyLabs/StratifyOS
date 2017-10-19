@@ -31,6 +31,7 @@
 
 #include "unistd_local.h"
 #include "sos/dev/sys.h"
+#include "cortexm/cortexm.h"
 #include "mcu/mcu.h"
 #include "unistd_fs.h"
 #include "../sched/sched_local.h"
@@ -43,16 +44,29 @@ void * my_callback;
 #endif
 
 
-int u_new_open_file(int start){
+void priv_assign_handle(void * args){
+	int * argp = args;
 	int i;
+	int start = *argp;
+	*argp = -1;
 	for(i = start; i < OPEN_MAX; i++){
+		//can't be interrupted
 		if ( get_handle(i) == NULL ){
 			set_handle(i, (void*)1);
-			return i;
+			*argp = i;
+			return;
 		}
 	}
-	errno = EMFILE;
-	return -1;
+}
+
+int u_new_open_file(int start){
+	int arg = start;
+
+	cortexm_svcall(priv_assign_handle, &arg);
+	if( arg < 0 ){
+		errno = EMFILE;
+	}
+	return arg;
 }
 
 void u_reset_fildes(int fildes){
@@ -105,7 +119,6 @@ int _open(const char * name, int flags, ...) {
 	int mode;
 	const sysfs_t * fs;
 
-
 	//Check the length of the filename
 	if ( sysfs_ispathinvalid(name) == true ){
 		return -1;
@@ -137,6 +150,7 @@ int _open(const char * name, int flags, ...) {
 	}
 
 	if ( flags & O_CREAT ){
+
 		va_start(ap, flags);
 		mode = va_arg(ap, mode_t);
 		va_end(ap);
@@ -155,22 +169,17 @@ int _open(const char * name, int flags, ...) {
 		mode = 0;
 	}
 
-	set_open_file(fildes, fs, 0, flags);
+	set_open_file(fildes, fs, (void*)1, flags);
 
 	if( sysfs_file_open(get_open_file(fildes), sysfs_stripmountpath(fs, name), mode) <  0){
 		u_reset_fildes(fildes);
 		return -1;
 	}
 
-	//if ( (ret = fs->open(fs->config, &handle, sysfs_stripmountpath(fs, name), flags, mode)) < 0 ){
-	//	u_reset_fildes(fildes);
-	//	return ret;
-	//}
-	//set_open_file(fildes, fs, handle, flags);
-
 	if ( flags & O_APPEND ){
 		lseek(fildes, 0, SEEK_END);
 	}
+
 	return fildes;
 }
 
