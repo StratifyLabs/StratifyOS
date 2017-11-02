@@ -128,13 +128,17 @@ int mcu_eint_setattr(const devfs_handle_t * handle, void * ctl){
 
 	pattr.o_flags = attr->o_flags;
 	int i;
+	//This loop needs to use mcu_set_pin_assignment()
+
 	for(i=0; i < MCU_PIN_ASSIGNMENT_COUNT(eint_pin_assignment_t); i++){
 		const mcu_pin_t * pin = mcu_pin_at(&(attr->pin_assignment), i);
 		if( mcu_is_port_valid(pin->port) ){
 			pattr.o_pinmask = 1<<pin->pin;
 			pio_handle.port = pin->port;
 			pio_handle.config = 0;
-			mcu_pio_setattr(&pio_handle, &pattr);
+			if( mcu_pio_setattr(&pio_handle, &pattr) < 0 ){
+				return -1;
+			}
 			if ( mcu_core_set_pinsel_func(pin, CORE_PERIPH_EINT, port) ){
 				return -1;  //pin failed to allocate as a UART pin
 			}

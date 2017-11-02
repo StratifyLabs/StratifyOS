@@ -226,6 +226,7 @@ int mcu_i2c_setattr(const devfs_handle_t * handle, void * ctl){
 	LPC_I2C_Type * i2c_regs;
 	int count;
 	int internal_pullup;
+	u32 freq;
 
 	const i2c_attr_t * attr = mcu_select_attr(handle, ctl);
 	if( attr == 0 ){
@@ -237,11 +238,13 @@ int mcu_i2c_setattr(const devfs_handle_t * handle, void * ctl){
 	//Check for a valid port
 	i2c_regs = i2c_regs_table[port];
 
-	if( o_flags & I2C_FLAG_SET_MASTER ){
-		if ( attr->freq == 0 ){
-			errno = EINVAL;
-			return -1 - offsetof(i2c_attr_t, freq);
-		}
+	if ( attr->freq == 0 ){
+		freq = 100000;
+	} else {
+		freq = attr->freq;
+	}
+
+	if( o_flags & (I2C_FLAG_SET_MASTER|I2C_FLAG_SET_SLAVE) ){
 
 		if ( o_flags & I2C_FLAG_IS_PULLUP ){
 			internal_pullup = PIO_FLAG_IS_PULLUP;
@@ -264,7 +267,7 @@ int mcu_i2c_setattr(const devfs_handle_t * handle, void * ctl){
 		i2c_local[port].master.size = 0; //no bytes
 		i2c_local[port].master.data = 0; //no data pointer
 
-		count = ((mcu_board_config.core_periph_freq) / (attr->freq * 2));
+		count = ((mcu_board_config.core_periph_freq) / (freq * 2));
 		if ( count > 0xFFFF ){
 			count = 0xFFFF;
 		}
@@ -273,9 +276,11 @@ int mcu_i2c_setattr(const devfs_handle_t * handle, void * ctl){
 
 		//Enable the I2C unit
 		i2c_regs->CONSET = (I2EN);
-	} else if( o_flags & I2C_FLAG_SET_SLAVE ){
+	}
+
+	if( o_flags & I2C_FLAG_SET_SLAVE ){
 		//setup the device in slave mode
-		set_slave_attr(handle, attr);
+		return set_slave_attr(handle, attr);
 
 	}
 
@@ -300,10 +305,16 @@ int set_slave_attr(const devfs_handle_t * handle, const i2c_attr_t * attr){
 	//memcpy( &(i2c_local[port].slave.setup), ctl, sizeof(i2c_slave_setup_t));
 
 	i2c_local[port].slave.data = attr->data;
+	i2c_local[port].slave.size = attr->size;
+	i2c_local[port].slave.ptr.ptr16 = 0;
+
 
 	if( attr->size > 255 ){
 		i2c_local[port].o_flags |= I2C_FLAG_IS_SLAVE_PTR_16;
+	} else {
+		i2c_local[port].o_flags |= I2C_FLAG_IS_SLAVE_PTR_8;
 	}
+
 
 	i2c_regs = i2c_regs_table[port];
 
@@ -339,10 +350,7 @@ int set_slave_attr(const devfs_handle_t * handle, const i2c_attr_t * attr){
 #endif
 	}
 
-
-
 	i2c_regs->CONSET = (AA);
-
 	return 0;
 }
 
@@ -591,7 +599,7 @@ static void mcu_i2c_isr(int port) {
 
 		break;
 
-		//SLAVE OPERATION STARTS HERE ---------------------------------------------------------------
+		//SLAVE OPERATION STARTS HERE --------------------------------------------------------------------------------
 	case 0x68: //Arbitration lost in SLA+R/W as master; Own SLA+W has been received, ACK returned
 	case 0x60: //Slave mode SLA+W has been received -- Ack returned
 	case 0x78: //Arbitration lost and general ack received
