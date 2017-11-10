@@ -39,6 +39,15 @@ static int set_event(int port, u32 event);
 static void reset_eint_port(int port);
 static void exec_callback(int port, u32 o_events);
 
+static void configure_pin(const mcu_pin_t * pin, void * arg){
+	devfs_handle_t pio_handle;
+	pio_attr_t * attr = arg;
+	pio_handle.port = pin->port;
+	pio_handle.config = 0;
+	attr->o_pinmask = 1<< pin->pin;
+	mcu_pio_setattr(&pio_handle, attr);
+}
+
 
 void mcu_eint_dev_power_on(const devfs_handle_t * handle){
 	int port = handle->port;
@@ -116,33 +125,24 @@ int mcu_eint_getinfo(const devfs_handle_t * handle, void * ctl){
 int mcu_eint_setattr(const devfs_handle_t * handle, void * ctl){
 	int port = handle->port;
 	pio_attr_t pattr;
-	devfs_handle_t pio_handle;
-
 
 	const eint_attr_t * attr = mcu_select_attr(handle, ctl);
 	if( attr == 0 ){
+		errno = EINVAL;
 		return -1;
 	}
 
 	reset_eint_port(port);
 
 	pattr.o_flags = attr->o_flags;
-	int i;
-	//This loop needs to use mcu_set_pin_assignment()
 
-	for(i=0; i < MCU_PIN_ASSIGNMENT_COUNT(eint_pin_assignment_t); i++){
-		const mcu_pin_t * pin = mcu_pin_at(&(attr->pin_assignment), i);
-		if( mcu_is_port_valid(pin->port) ){
-			pattr.o_pinmask = 1<<pin->pin;
-			pio_handle.port = pin->port;
-			pio_handle.config = 0;
-			if( mcu_pio_setattr(&pio_handle, &pattr) < 0 ){
-				return -1;
-			}
-			if ( mcu_core_set_pinsel_func(pin, CORE_PERIPH_EINT, port) ){
-				return -1;  //pin failed to allocate as a UART pin
-			}
-		}
+	if( mcu_set_pin_assignment(
+			&(attr->pin_assignment),
+			MCU_CONFIG_PIN_ASSIGNMENT(eint_config_t, handle),
+			MCU_PIN_ASSIGNMENT_COUNT(eint_pin_assignment_t),
+			CORE_PERIPH_EINT, port, configure_pin, &pattr) < 0 ){
+		errno = EINVAL;
+		return -1 - offsetof(eint_attr_t, pin_assignment);
 	}
 
 	return 0;

@@ -179,14 +179,22 @@ int mcu_dac_dma_setaction(const devfs_handle_t * handle, void * ctl){
 
 int mcu_dac_get(const devfs_handle_t * handle, void * ctl){
 	mcu_channel_t * channel = ctl;
-	channel->value = LPC_DAC->CR;
-	return 0;
+	if( channel->loc == 0 ){
+		channel->value = LPC_DAC->CR;
+		return 0;
+	}
+	errno = EINVAL;
+	return -1;
 }
 
 int mcu_dac_set(const devfs_handle_t * handle, void * ctl){
-	mcu_channel_t * attr = ctl;
-	LPC_DAC->CR = attr->loc;
-	return 0;
+	mcu_channel_t * channel = ctl;
+	if( channel->loc == 0 ){
+		LPC_DAC->CR = channel->value;
+		return 0;
+	}
+	errno = EINVAL;
+	return -1;
 }
 
 int mcu_dac_dma_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){
