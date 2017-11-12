@@ -108,12 +108,13 @@ void cortexm_svcall(cortexm_svcall_t call, void * args){
 }
 
 void mcu_core_svcall_handler(){
-	register uint32_t * frame;
+	register u32 * frame;
 	register cortexm_svcall_t call;
 	register void * args;
 	asm volatile ("MRS %0, psp\n\t" : "=r" (frame) );
 	call = (cortexm_svcall_t)frame[0];
 	args = (void*)(frame[1]);
+	//verify call is located in kernel text region
 	call(args);
 }
 

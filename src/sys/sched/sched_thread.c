@@ -52,7 +52,7 @@ typedef struct {
 	pthread_attr_t * attr;
 	void * stackguard;
 } priv_activate_thread_t;
-static void priv_activate_thread(priv_activate_thread_t * args) MCU_PRIV_EXEC_CODE;
+static void root_activate_thread(priv_activate_thread_t * args) MCU_PRIV_EXEC_CODE;
 
 
 /*! \details This function creates a new thread.
@@ -68,9 +68,11 @@ int sched_new_thread(void *(*p)(void*)  /*! The function to execute for the task
 	priv_activate_thread_t args;
 
 	//start a new thread
+
 	id = task_new_thread(p, cleanup_thread, arg, mem_addr, mem_size, task_get_pid( task_get_current() ) );
 
 	if ( id > 0 ){
+
 		//Initialize the reent structure
 		reent = (struct _reent *)mem_addr; //The bottom of the stack
 		_REENT_INIT_PTR(reent);
@@ -86,13 +88,15 @@ int sched_new_thread(void *(*p)(void*)  /*! The function to execute for the task
 		args.id = id;
 		args.attr = attr;
 		args.stackguard = (void*)((uint32_t)mem_addr + sizeof(struct _reent));
-		cortexm_svcall((cortexm_svcall_t)priv_activate_thread, &args);
+
+		cortexm_svcall((cortexm_svcall_t)root_activate_thread, &args);
+
 	}
 	return id;
 }
 
 
-void priv_activate_thread(priv_activate_thread_t * args){
+void root_activate_thread(priv_activate_thread_t * args){
 	int id;
 	id = args->id;
 	struct _reent * reent;
@@ -117,9 +121,11 @@ void priv_activate_thread(priv_activate_thread_t * args){
 	sos_sched_table[id].wake.tv_usec = 0;
 	sched_priv_assert_active(id, 0);
 	sched_priv_assert_inuse(id);
+
 #if USE_MEMORY_PROTECTION > 0
 	task_root_set_stackguard(id, args->stackguard, SCHED_DEFAULT_STACKGUARD_SIZE);
 #endif
+
 	sched_priv_update_on_wake(sos_sched_table[id].priority);
 }
 

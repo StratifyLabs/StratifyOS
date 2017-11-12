@@ -44,13 +44,8 @@
  * 	if ( fd < 0 ){
  * 		printf("Error opening peripheral (%d)\n", errno);
  * 	} else {
- *		attr.baudrate = 9600; //9600 Baudrate
- * 		attr.pin_assign = 0; //Use GPIO configuration zero (see device specific documentation for details)
- * 		attr.parity = UART_PARITY_NONE; //No parity
- * 		attr.start = UART_ATTR_START_BITS_1;
- * 		attr.stop = UART_ATTR_STOP_BITS_1;
- * 		attr.width = 8; //8-bit widths
- * 		if( ioctl(fd, I_SETATTR, &attr) < 0 ){
+ * 		//initializes using default configuration
+ * 		if( ioctl(fd, I_SETATTR, 0) < 0 ){
  * 			perror("failed to set attr");
  * 			return -1;
  *		}

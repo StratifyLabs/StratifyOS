@@ -73,6 +73,11 @@ void start_filesystem(void){
 
 void * sos_default_thread(void * arg){
 
+	mcu_debug_user_printf("Enter default thread\n");
+	while(1){
+		;
+	}
+
 	check_reset_source();
 
 	//Initialize the file systems

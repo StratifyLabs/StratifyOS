@@ -85,7 +85,7 @@ int sched_start(void * (*init)(void*), int priority){
 
 int sched_prepare(){
 
-	if ( mcu_debug_init() ){
+	if ( mcu_debug_init() < 0 ){
 		cortexm_disable_interrupts(NULL);
 		mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_FATAL, (void*)"dbgi");
 	}

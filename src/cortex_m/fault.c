@@ -21,7 +21,7 @@
 #include "cortexm/fault.h"
 #include "mcu/core.h"
 
-extern int fault_dev_save(fault_t * fault);
+extern int fault_dev_save(const fault_t * fault);
 extern int fault_dev_load(fault_t * fault);
 
 void hardfault_handler(u32 fault_status, hw_stack_frame_t * handler_stack);

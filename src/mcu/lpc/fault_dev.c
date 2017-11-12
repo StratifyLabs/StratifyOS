@@ -20,7 +20,7 @@
 #include "cortexm/fault.h"
 #include "mcu/arch.h"
 
-int fault_dev_save(fault_t * fault){
+int fault_dev_save(const fault_t * fault){
 	LPC_RTC->GPREG0 = fault->num;
 	LPC_RTC->GPREG1 = (uint32_t)fault->pc;
 	LPC_RTC->GPREG2 = (uint32_t)fault->caller;

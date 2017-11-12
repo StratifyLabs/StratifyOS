@@ -22,6 +22,7 @@
 #include <cortex_m/task_local.h>
 #include <string.h>
 #include <errno.h>
+#include "sos/sos.h"
 #include "mcu/mcu.h"
 #include "mcu/debug.h"
 #include "cortexm/cortexm.h"
@@ -79,8 +80,8 @@ int task_init(int interval,
 	frame->r2 = 0;
 	frame->r3 = 0;
 	frame->r12 = 0;
-	frame->pc = ((uint32_t)scheduler_function);
-	frame->lr = (uint32_t)system_reset;
+	frame->pc = ((u32)scheduler_function);
+	frame->lr = (u32)system_reset;
 	frame->psr = 0x21000000; //default PSR value
 #if __FPU_USED != 0
 	task_table[0].fpscr = FPU->FPDSCR;
@@ -97,7 +98,7 @@ int task_init(int interval,
 
 	mcu_core_set_nvic_priority(SysTick_IRQn, mcu_config.irq_middle_prio+1); //lower priority so they don't interrupt the hardware
 	mcu_core_set_nvic_priority(PendSV_IRQn, mcu_config.irq_middle_prio+1);
-	mcu_core_set_nvic_priority(SVCall_IRQn, mcu_config.irq_middle_prio-1); //elevate this so it isn't interrupted by peripheral hardware
+	mcu_core_set_nvic_priority(SVCall_IRQn, mcu_config.irq_middle_prio+1); //elevate this so it isn't interrupted by peripheral hardware
 #if !defined MCU_NO_HARD_FAULT
 	mcu_core_set_nvic_priority(HardFault_IRQn, 2);
 #endif
@@ -170,9 +171,9 @@ int task_new_thread(void *(*p)(void*),
 
 	//Initialize the task
 	task.stackaddr = stackaddr;
-	task.start = (uint32_t)p;
-	task.stop = (uint32_t)cleanup;
-	task.r0 = (uint32_t)arg;
+	task.start = (u32)p;
+	task.stop = (u32)cleanup;
+	task.r0 = (u32)arg;
 	task.r1 = 0;
 	task.pid = pid;
 	//task.mem_size = mem_size;
@@ -287,13 +288,13 @@ int task_get_thread_zero(int pid){
 	return -1;
 }
 
-static void priv_task_tmr_rd(uint32_t * val){
+static void priv_task_tmr_rd(u32 * val){
 	*val = task_rr_reload - SysTick->VAL;
 }
 
 
 uint64_t task_root_gettime(int tid){
-	uint32_t val;
+	u32 val;
 	if ( tid != task_get_current() ){
 		return task_table[tid].timer.t + (task_rr_reload - task_table[tid].rr_time);
 	} else {
@@ -304,7 +305,7 @@ uint64_t task_root_gettime(int tid){
 
 
 uint64_t task_gettime(int tid){
-	uint32_t val;
+	u32 val;
 	if ( tid != task_get_current() ){
 		return task_table[tid].timer.t + (task_rr_reload - task_table[tid].rr_time);
 	} else {
@@ -384,12 +385,12 @@ void task_context_switcher(){
 					task_isfifo_asserted(task_current) ){ //is this a FIFO task
 				//Enable the MPU for the process code section
 #if MPU_PRESENT || __MPU_PRESENT
-				MPU->RBAR = (uint32_t)(task_table[task_current].mem.code.addr);
-				MPU->RASR = (uint32_t)(task_table[task_current].mem.code.size);
+				MPU->RBAR = (u32)(task_table[task_current].mem.code.addr);
+				MPU->RASR = (u32)(task_table[task_current].mem.code.size);
 
 				//Enable the MPU for the process data section
-				MPU->RBAR = (uint32_t)(task_table[task_current].mem.data.addr);
-				MPU->RASR = (uint32_t)(task_table[task_current].mem.data.size);
+				MPU->RBAR = (u32)(task_table[task_current].mem.data.addr);
+				MPU->RASR = (u32)(task_table[task_current].mem.data.size);
 #endif
 				break;
 			}
@@ -398,8 +399,8 @@ void task_context_switcher(){
 
 	//Enable the MPU for the task stack guard
 #if MPU_PRESENT || __MPU_PRESENT
-	MPU->RBAR = (uint32_t)(task_table[task_current].mem.stackguard.addr);
-	MPU->RASR = (uint32_t)(task_table[task_current].mem.stackguard.size);
+	MPU->RBAR = (u32)(task_table[task_current].mem.stackguard.addr);
+	MPU->RASR = (u32)(task_table[task_current].mem.stackguard.size);
 #endif
 
 	cortexm_enable_interrupts(NULL);
@@ -464,7 +465,7 @@ void mcu_core_pendsv_handler(){
 static void priv_task_restore(void * args) MCU_NAKED;
 void priv_task_restore(void * args){
 	asm volatile ("push {lr}\n\t");
-	uint32_t pstack;
+	u32 pstack;
 
 	//discard the current HW stack by adjusting the PSP up by sizeof(hw_stack_frame_t) --sw_stack_frame_t is same size
 	pstack = __get_PSP();
@@ -483,7 +484,7 @@ void task_restore(){
 }
 
 int task_root_interrupt_call(void * args){
-	uint32_t pstack;
+	u32 pstack;
 	task_interrupt_t * intr = (task_interrupt_t*)args;
 	hw_stack_frame_t * hw_frame;
 
@@ -506,8 +507,8 @@ int task_root_interrupt_call(void * args){
 		hw_frame->r2 = intr->arg[2];
 		hw_frame->r3 = intr->arg[3];
 		hw_frame->r12 = 0;
-		hw_frame->pc = (uint32_t)intr->handler;
-		hw_frame->lr = (uint32_t)task_restore;
+		hw_frame->pc = (u32)intr->handler;
+		hw_frame->lr = (u32)task_restore;
 		hw_frame->psr = 0x21000000; //default PSR value
 	}
 
@@ -522,7 +523,7 @@ int task_root_interrupt_call(void * args){
 	return 0;
 }
 
-uint32_t task_interrupt_stacksize(){
+u32 task_interrupt_stacksize(){
 	return sizeof(hw_stack_frame_t) + sizeof(sw_stack_frame_t);
 }
 

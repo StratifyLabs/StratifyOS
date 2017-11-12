@@ -20,6 +20,7 @@
 
 #if !defined __link
 
+#include "sos/sos.h"
 #include "mcu/debug.h"
 #include "sos/dev/uart.h"
 #include "mcu/uart.h"
@@ -34,15 +35,16 @@ char mcu_debug_buffer[MCU_DEBUG_BUFFER_SIZE];
 int mcu_debug_init(){
 	devfs_handle_t handle;
 
+
 	//Open the debugging UART
 	handle.port = mcu_board_config.debug_uart_port;
+	handle.config = 0;
 	if( mcu_uart_open(&handle) < 0 ){
 		return -1;
 	}
 
 	return mcu_uart_setattr(&handle, (void*)&mcu_board_config.debug_uart_attr);
 }
-
 
 void mcu_debug_write_uart(void * args){
 	int nbyte;
