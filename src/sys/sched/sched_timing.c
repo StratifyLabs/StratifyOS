@@ -197,6 +197,7 @@ int priv_usecond_match_event(void * context, const mcu_event_t * data){
 int open_usecond_tmr(){
 	int err;
 	tmr_attr_t attr;
+	tmr_info_t info;
 	mcu_action_t action;
 	mcu_channel_t chan_req;
 	devfs_handle_t tmr;
@@ -208,15 +209,18 @@ int open_usecond_tmr(){
 	err = mcu_tmr_open(&tmr);
 	if(err){ return err; }
 
+	err = mcu_tmr_getinfo(&tmr, &info);
+	if(err){ return err; }
+
+
 	memset(&attr, 0, sizeof(tmr_attr_t));
 	attr.freq = 1000000;
 	attr.o_flags = TMR_FLAG_SET_TIMER | TMR_FLAG_IS_SOURCE_CPU;
+	attr.period = STFY_USECOND_PERIOD; //only works if TMR_FLAG_IS_AUTO_RELOAD is set
 	memset(&attr.pin_assignment, 0xff, sizeof(tmr_pin_assignment_t));
 
 	err = mcu_tmr_setattr(&tmr, &attr);
 	if ( err ){
-		sos_led_priv_enable(0);
-		while(1){}
 		return err;
 	}
 
@@ -225,27 +229,31 @@ int open_usecond_tmr(){
 	err = mcu_tmr_set(&tmr, (void*)0);
 	if (err){ return err; }
 
-	//The reset OC is only needed if TMR_FLAG_IS_AUTO_RELOAD is not supported
-	//Set the reset output compare value to reset the clock every 32 seconds
-	chan_req.loc = SCHED_USECOND_TMR_RESET_OC;
-	chan_req.value = STFY_USECOND_PERIOD; //overflow every SCHED_TIMEVAL_SECONDS seconds
-	err = mcu_tmr_setchannel(&tmr, &chan_req);
-	if(err){ return -1; }
+	if( (info.o_flags & TMR_FLAG_IS_AUTO_RELOAD) == 0 ){
+		//The reset OC is only needed if TMR_FLAG_IS_AUTO_RELOAD is not supported
+		//Set the reset output compare value to reset the clock every 32 seconds
+		chan_req.loc = SCHED_USECOND_TMR_RESET_OC;
+		chan_req.value = STFY_USECOND_PERIOD; //overflow every SCHED_TIMEVAL_SECONDS seconds
+		err = mcu_tmr_setchannel(&tmr, &chan_req);
+		if(err){ return -1; }
 
-	attr.channel.loc = SCHED_USECOND_TMR_RESET_OC;
-	attr.o_flags = TMR_FLAG_SET_CHANNEL | TMR_FLAG_IS_CHANNEL_RESET_ON_MATCH;
-	err = mcu_tmr_setattr(&tmr, &attr);
-	if ( err ){
-		return err;
-	}
+		attr.channel.loc = SCHED_USECOND_TMR_RESET_OC;
+		attr.o_flags = TMR_FLAG_SET_CHANNEL | TMR_FLAG_IS_CHANNEL_RESET_ON_MATCH;
+		err = mcu_tmr_setattr(&tmr, &attr);
+		if ( err ){
+			return err;
+		}
 
-	action.prio = 0;
-	action.channel = SCHED_USECOND_TMR_RESET_OC;
-	action.o_events = MCU_EVENT_FLAG_MATCH;
-	action.handler.callback = usecond_overflow_event;
-	err = mcu_tmr_setaction(&tmr, &action);
-	if (err ){
-		return -1;
+		action.prio = 0;
+		action.channel = SCHED_USECOND_TMR_RESET_OC;
+		action.o_events = MCU_EVENT_FLAG_MATCH;
+		action.handler.callback = usecond_overflow_event;
+		action.handler.context = 0;
+		err = mcu_tmr_setaction(&tmr, &action);
+		if (err ){
+			return -1;
+		}
+
 	}
 
 	//Turn the timer on
@@ -261,6 +269,7 @@ int open_usecond_tmr(){
 	action.channel = SCHED_USECOND_TMR_SLEEP_OC;
 	action.o_events = MCU_EVENT_FLAG_MATCH;
 	action.handler.callback = priv_usecond_match_event;
+	action.handler.context = 0;
 	err = mcu_tmr_setaction(&tmr, &action);
 	if ( err ){
 		return -1;
