@@ -74,9 +74,6 @@ void start_filesystem(void){
 void * sos_default_thread(void * arg){
 
 	mcu_debug_user_printf("Enter default thread\n");
-	while(1){
-		;
-	}
 
 	check_reset_source();
 
@@ -95,6 +92,11 @@ void * sos_default_thread(void * arg){
 	mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_START_LINK, 0);
 
 	mcu_debug_user_printf("Start Link\n");
+
+	while(1){
+		;
+	}
+
 	link_update(arg); 	//Run the link update thread--never returns
 
 	return NULL;

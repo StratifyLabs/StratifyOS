@@ -63,6 +63,7 @@
 #ifdef __armv7em
 #define __CHECK_DEVICE_DEFINES
 #define __FPU_PRESENT 1
+#define ARM_MATH_CM4 1
 #undef __FPU_USED
 typedef enum IRQn
 {
@@ -84,6 +85,7 @@ typedef enum IRQn
 #ifdef __armv7m
 #define __CHECK_DEVICE_DEFINES
 #define __FPU_PRESENT 0
+#define ARM_MATH_CM3 1
 #undef __FPU_USED
 typedef enum IRQn
 {

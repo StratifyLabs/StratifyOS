@@ -13,7 +13,7 @@
 
 #define LINK_ADDR (0xDEFF8001 + (__LINE__ - 16) * 4)
 
-.global _signature; _signature = 0x00000300 + __CORTEX_M;
+.global _signature; _signature = 0x00000310 + __CORTEX_M;
 .global __cxa_pure_virtual; __cxa_pure_virtual = LINK_ADDR;
 .global mcu_core_privcall; mcu_core_privcall = LINK_ADDR;
 .global task_priv_set_stackguard; task_priv_set_stackguard = LINK_ADDR;

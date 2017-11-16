@@ -44,6 +44,9 @@ extern "C" {
 #define MCU_ALIAS(f) __attribute__((weak, alias (#f)))
 #define MCU_WEAK __attribute__((weak))
 
+#define MCU_UNUSED __attribute__((unused))
+
+
 #if defined __MINGW32__
 #define MCU_PACK __attribute__((packed, gcc_struct))
 #else

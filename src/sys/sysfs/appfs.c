@@ -577,6 +577,8 @@ void priv_ioctl(void * args){
 			info->signature = f->exec.signature;
 			info->version = f->hdr.version;
 			info->ram_size = f->exec.ram_size;
+			memcpy(info->id, f->hdr.id, LINK_NAME_MAX);
+			memcpy(info->name, f->hdr.name, LINK_NAME_MAX);
 			a->ret = 0;
 		}
 		break;
