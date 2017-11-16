@@ -207,7 +207,6 @@ int mcu_mem_writepage(const devfs_handle_t * handle, void * ctl){
 		return -1;
 	}
 
-
 	err = mcu_lpc_flash_write_page(get_flash_page(wattr->addr), (void*)wattr->addr, wattr->buf, nbyte);
 	if( err < 0 ){
 		errno = EIO;

@@ -31,8 +31,9 @@ struct _reent global_impure_data = _REENT_INIT(global_impure_data);
 
 const appfs_file_t startup_data __attribute__ ((section(".startup"))) = {
 		.hdr.name = "",
-		.hdr.mode = 0777,
+		.hdr.mode = 0555,
 		.hdr.version = 0x0000,
+		.hdr.id = "",
 		.exec.startup = (u32)crt,
 		.exec.code_start = (u32)&_text,
 		.exec.code_size = (u32)&_text_size,

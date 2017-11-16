@@ -17,7 +17,7 @@
  * 
  */
 
-
+#include <cortexm/cortexm.h>
 #include <mcu/lpc/lpc_flash_flags.h>
 #include "mcu/arch.h"
 #include "mcu/core.h"
@@ -44,6 +44,7 @@ int mcu_lpc_flash_write_page(int page, void * addr, const void * src, int size){
 	cmd.sector.start = (unsigned long)page;
 	cmd.sector.end = (unsigned long)page;
 	//iap_entry_wrapper, &args);
+	cortexm_disable_interrupts(0);
 	mcu_iap_entry((unsigned*)&cmd, (unsigned*)&result);
 
 	if (result.status != IAP_RESULT_CMD_SUCCESS){
@@ -57,6 +58,7 @@ int mcu_lpc_flash_write_page(int page, void * addr, const void * src, int size){
 	cmd.mem.size = (unsigned long)size;
 	cmd.mem.cpu_freq = mcu_core_getclock() / 1000;
 	mcu_iap_entry((unsigned*)&cmd, (unsigned*)&result);
+	cortexm_enable_interrupts(0);
 
 	if (result.status != IAP_RESULT_CMD_SUCCESS){
 		return -1;

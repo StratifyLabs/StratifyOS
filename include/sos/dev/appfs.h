@@ -87,7 +87,7 @@ typedef struct MCU_PACK {
 	u16 version /*! BCD 0xMMmm version (e.g, 1.2 is 0x0102) */;
 } appfs_header_t;  //28 + 24 bytes
 
-typedef struct {
+typedef struct MCU_PACK {
 	appfs_header_t hdr;
 	appfs_exec_t exec;
 } appfs_file_t;

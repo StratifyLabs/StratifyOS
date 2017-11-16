@@ -57,15 +57,15 @@ static int analyze_path(const char * path, const char ** name, int * mem_type){
 	}
 
 	if (elements == 1){
-		if ( strcmp(*name, ".install") == 0 ){
+		if ( strncmp(*name, ".install", NAME_MAX) == 0 ){
 			return ANALYZE_PATH_INSTALL;
 		}
 
-		if ( strcmp(*name, "flash") == 0 ){
+		if ( strncmp(*name, "flash", NAME_MAX) == 0 ){
 			return ANALYZE_PATH_FLASH_DIR;
 		}
 
-		if ( strcmp(*name, "ram") == 0 ){
+		if ( strncmp(*name, "ram", NAME_MAX) == 0 ){
 			return ANALYZE_PATH_RAM_DIR;
 		}
 
@@ -376,14 +376,31 @@ int appfs_stat(const void* cfg, const char * path, struct stat * st){
 
 	switch(path_type){
 	case ANALYZE_PATH_ROOT:
+		st->st_size = 0;
+		st->st_blocks = 1;
+		st->st_uid = 0;
+		st->st_gid = 0;
+		st->st_mode = S_IFDIR | 0777;
 		return 0;
 	case ANALYZE_PATH_INSTALL:
+		st->st_size = 0;
+		st->st_blocks = 1;
+		st->st_uid = 0;
+		st->st_gid = 0;
 		handle.is_install = true;
 		break;
 	case ANALYZE_PATH_FLASH_DIR:
+		st->st_size = 0;
+		st->st_blocks = 1;
+		st->st_uid = 0;
+		st->st_gid = 0;
 		st->st_mode = S_IFDIR | 0777;
 		return 0;
 	case ANALYZE_PATH_RAM_DIR:
+		st->st_size = 0;
+		st->st_blocks = 1;
+		st->st_uid = 0;
+		st->st_gid = 0;
 		st->st_mode = S_IFDIR | 0777;
 		return 0;
 

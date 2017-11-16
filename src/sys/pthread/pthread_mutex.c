@@ -40,7 +40,7 @@
 #include "mcu/debug.h"
 #include "../sched/sched_local.h"
 
-static int check_initialized(const pthread_mutex_t * mutex);
+static int mutex_check_initialized(const pthread_mutex_t * mutex);
 static int mutex_trylock(pthread_mutex_t *mutex, bool trylock, const struct timespec * abs_timeout);
 typedef struct {
 	int id;
@@ -120,7 +120,7 @@ int pthread_mutex_lock(pthread_mutex_t * mutex){
 	}
 
 
-	if ( check_initialized(mutex) ){
+	if ( mutex_check_initialized(mutex) ){
 		return -1;
 	}
 
@@ -156,7 +156,7 @@ int pthread_mutex_trylock(pthread_mutex_t *mutex){
 		return 0;
 	}
 
-	if ( check_initialized(mutex) ){
+	if ( mutex_check_initialized(mutex) ){
 		return -1;
 	}
 
@@ -194,7 +194,7 @@ int pthread_mutex_unlock(pthread_mutex_t *mutex){
 		return 0;
 	}
 
-	if ( check_initialized(mutex) ){
+	if ( mutex_check_initialized(mutex) ){
 		return -1;
 	}
 
@@ -225,7 +225,7 @@ int pthread_mutex_unlock(pthread_mutex_t *mutex){
  */
 int pthread_mutex_destroy(pthread_mutex_t *mutex){
 
-	if ( check_initialized(mutex) ){
+	if ( mutex_check_initialized(mutex) ){
 		return -1;
 	}
 
@@ -414,7 +414,7 @@ int pthread_mutex_timedlock(pthread_mutex_t * mutex, const struct timespec * abs
 		return 0;
 	}
 
-	if ( check_initialized(mutex) ){
+	if ( mutex_check_initialized(mutex) ){
 		return -1;
 	}
 
@@ -449,7 +449,7 @@ int pthread_mutex_timedlock(pthread_mutex_t * mutex, const struct timespec * abs
  * - EINVAL: mutex or prioceiling is NULL
  */
 int pthread_mutex_getprioceiling(pthread_mutex_t * mutex, int *prioceiling){
-	if ( check_initialized(mutex) ){
+	if ( mutex_check_initialized(mutex) ){
 		return -1;
 	}
 
@@ -464,7 +464,7 @@ int pthread_mutex_getprioceiling(pthread_mutex_t * mutex, int *prioceiling){
  * - EINVAL: mutex is NULL
  */
 int pthread_mutex_setprioceiling(pthread_mutex_t *mutex, int prioceiling, int *old_ceiling){
-	if ( check_initialized(mutex) ){
+	if ( mutex_check_initialized(mutex) ){
 		return -1;
 	}
 
@@ -477,7 +477,7 @@ int pthread_mutex_setprioceiling(pthread_mutex_t *mutex, int prioceiling, int *o
 	return 0;
 }
 
-int check_initialized(const pthread_mutex_t * mutex){
+int mutex_check_initialized(const pthread_mutex_t * mutex){
 	if ( (mutex == NULL) || (((u32)mutex & 0x03) != 0) ){
 		errno = EINVAL;
 		return -1;

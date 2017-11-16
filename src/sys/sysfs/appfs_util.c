@@ -378,6 +378,7 @@ static int mem_write_page(const devfs_device_t * dev, appfs_handle_t * h, appfs_
 	write_page.addr = h->type.install.code_start + attr->loc;
 	write_page.nbyte = attr->nbyte;
 	memcpy(write_page.buf, attr->buffer, 256);
+	mcu_debug_printf("drv 0x%lX %d\n", write_page.addr, write_page.nbyte);
 	return dev->driver.ioctl(&(dev->handle), I_MEM_WRITEPAGE, &write_page);
 }
 
@@ -506,13 +507,18 @@ int appfs_util_priv_writeinstall(const devfs_device_t * dev, appfs_handle_t * h,
 		len = strnlen(dest.file.hdr.name, NAME_MAX-2);
 		if ( len == (NAME_MAX-2) ){
 			//truncate the name if it is too long
-			dest.file.hdr.name[NAME_MAX-1] = 0;
-			dest.file.hdr.name[NAME_MAX-2] = 0; //! \todo this needs to be a checksum
+			dest.file.hdr.name[NAME_MAX-2] = 0;
 		}
 
+		len = strnlen(dest.file.hdr.id, NAME_MAX-2);
+		if ( len == (NAME_MAX-2) ){
+			//truncate the name if it is too long
+			dest.file.hdr.id[NAME_MAX-2] = 0;
+		}
 
 		//add a checksum to the name
 		dest.file.hdr.name[NAME_MAX-1] = calc_checksum(dest.file.hdr.name);
+		dest.file.hdr.id[NAME_MAX-1] = calc_checksum(dest.file.hdr.id);
 
 		//set mode to read/exec
 		dest.file.hdr.mode = 0555;
