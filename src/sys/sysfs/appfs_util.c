@@ -378,7 +378,6 @@ static int mem_write_page(const devfs_device_t * dev, appfs_handle_t * h, appfs_
 	write_page.addr = h->type.install.code_start + attr->loc;
 	write_page.nbyte = attr->nbyte;
 	memcpy(write_page.buf, attr->buffer, 256);
-	mcu_debug_printf("drv 0x%lX %d\n", write_page.addr, write_page.nbyte);
 	return dev->driver.ioctl(&(dev->handle), I_MEM_WRITEPAGE, &write_page);
 }
 
