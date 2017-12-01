@@ -51,10 +51,11 @@ typedef struct {
 	void * next;
 } sem_list_t;
 
-static void priv_sem_wait(void * args) MCU_PRIV_EXEC_CODE;
-static void priv_sem_post(void * args) MCU_PRIV_EXEC_CODE;
-static void priv_sem_trywait(void * args) MCU_PRIV_EXEC_CODE;
-static void priv_sem_timedwait(void * args) MCU_PRIV_EXEC_CODE;
+static void root_sem_wait(void * args) MCU_PRIV_EXEC_CODE;
+static void root_sem_post(void * args) MCU_PRIV_EXEC_CODE;
+static void root_sem_trywait(void * args) MCU_PRIV_EXEC_CODE;
+static void root_sem_timedwait(void * args) MCU_PRIV_EXEC_CODE;
+
 static int check_initialized(sem_t * sem);
 
 typedef struct {
@@ -62,7 +63,8 @@ typedef struct {
 	int id;
 	int new_thread;
 	int ret;
-} priv_sem_t;
+	struct mcu_timeval interval;
+} root_sem_args_t;
 
 static sem_list_t * sem_first = 0;
 
@@ -103,11 +105,6 @@ static sem_t * sem_find_free(){
 	new_entry->next = 0;
 	return &new_entry->sem;
 }
-
-typedef struct {
-	sem_t * sem;
-	struct mcu_timeval interval;
-} priv_sem_timedwait_t;
 
 /*! \details This function initializes \a sem as an unnamed semaphore with
  * \a pshared and \a value.
@@ -281,7 +278,7 @@ int sem_close(sem_t *sem){
 	return 0;
 }
 
-void priv_sem_post(void * args){
+void root_sem_post(void * args){
 	int id = *((int*)args);
 	sos_sched_table[id].block_object = NULL;
 	sched_priv_assert_active(id, SCHED_UNBLOCK_SEMAPHORE);
@@ -313,20 +310,23 @@ int sem_post(sem_t *sem){
 	new_thread = sched_get_highest_priority_blocked(sem);
 
 	if ( new_thread != -1 ){
-		cortexm_svcall(priv_sem_post, &new_thread);
+		cortexm_svcall(root_sem_post, &new_thread);
 	}
 
 	return 0;
 }
 
-void priv_sem_timedwait(void * args){
-	priv_sem_timedwait_t * argsp = (priv_sem_timedwait_t*)args;
+void root_sem_timedwait(void * args){
+	root_sem_args_t * p = (root_sem_args_t*)args;
 
-	if ( argsp->sem->value <= 0 ){
-		sched_priv_timedblock(argsp->sem, &argsp->interval);
+	if ( p->sem->value <= 0 ){
+		sched_priv_timedblock(p->sem, &p->interval);
+		p->ret = -1;
+	} else {
+		p->ret = 0;
+		p->sem->value--;
 	}
 
-	argsp->sem->value--;
 }
 
 
@@ -341,7 +341,7 @@ void priv_sem_timedwait(void * args){
  */
 int sem_timedwait(sem_t * sem, const struct timespec * abs_timeout){
 	//timed wait
-	priv_sem_timedwait_t args;
+	root_sem_args_t args;
 
 	if ( check_initialized(sem) < 0 ){
 		return -1;
@@ -350,27 +350,29 @@ int sem_timedwait(sem_t * sem, const struct timespec * abs_timeout){
 	args.sem = sem;
 	sched_convert_timespec(&args.interval, abs_timeout);
 
-	cortexm_svcall(priv_sem_timedwait, &args);
+	cortexm_svcall(root_sem_timedwait, &args);
 
-	//Check for a timeout or a lock
-	if ( sched_get_unblock_type(task_get_current()) == SCHED_UNBLOCK_SLEEP){
-		//The timeout expired
-		sem->value++; //lock is aborted
-		errno = ETIMEDOUT;
-		return -1;
+	if( args.ret < 0 ){
+		if ( sched_get_unblock_type(task_get_current()) == SCHED_UNBLOCK_SLEEP){
+			//The timeout expired
+			errno = ETIMEDOUT;
+			return -1;
+		} else {
+			//waited on semaphore -- need to see if it is still available
+			return sem_trywait(sem);
+		}
 	}
 
 	return 0;
 }
 
-void priv_sem_trywait(void * args){
-	priv_sem_t * p = (priv_sem_t*)args;
+void root_sem_trywait(void * args){
+	root_sem_args_t * p = (root_sem_args_t*)args;
 
 	if ( p->sem->value > 0 ){
 		p->sem->value--;
 		p->ret = 0;
 	} else {
-		errno = EAGAIN;
 		p->ret = -1;
 	}
 }
@@ -385,15 +387,20 @@ void priv_sem_trywait(void * args){
  *
  */
 int sem_trywait(sem_t *sem){
-	priv_sem_t args;
+	root_sem_args_t args;
 
 	if ( check_initialized(sem) < 0 ){
 		return -1;
 	}
 
 	args.sem = sem;
+	args.ret = 0;
 
-	cortexm_svcall(priv_sem_trywait, &args);
+	cortexm_svcall(root_sem_trywait, &args);
+
+	if( args.ret < 0 ){
+		errno = EAGAIN;
+	}
 
 	return args.ret;
 }
@@ -441,17 +448,20 @@ int sem_unlink(const char *name){
 	return -1;
 }
 
-void priv_sem_wait(void * args){
-	sem_t * sem = (sem_t*)args;
+void root_sem_wait(void * args){
+	root_sem_args_t * p = args;
 
 	sos_sched_table[ task_get_current() ].block_object = args;
 
-	if ( sem->value <= 0){
+	if ( p->sem->value <= 0){
 		//task must be blocked until the semaphore is available
 		sched_priv_update_on_sleep();
+		p->ret = -1; //didn't get the semaphore
+	} else {
+		//got the semaphore
+		p->sem->value--;
+		p->ret = 0;
 	}
-
-	sem->value--;
 }
 
 /*! \details This function locks (decrements) the semaphore.  If
@@ -464,11 +474,18 @@ void priv_sem_wait(void * args){
  *
  */
 int sem_wait(sem_t *sem){
+	root_sem_args_t args;
 	if ( check_initialized(sem) < 0 ){
 		return -1;
 	}
 
-	cortexm_svcall(priv_sem_wait, sem);
+	args.sem = sem;
+	args.ret = 0;
+
+	do {
+		cortexm_svcall(root_sem_wait, &args);
+	} while( args.ret <  0 );
+
 	return 0;
 }
 
