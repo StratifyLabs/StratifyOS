@@ -48,6 +48,7 @@ void priv_powerdown(void * args){
 
 void priv_hibernate(void * args){
 	int * seconds = (int*)args;
+	u16 save_priority;
 
 	//set the WDT to reset in args seconds
 	if( (sos_board_config.o_sys_flags & SYS_FLAG_IS_WDT_DISABLED) == 0 ){
@@ -62,7 +63,17 @@ void priv_hibernate(void * args){
 	//The WDT only runs in hibernate on certain clock sources
 	mcu_wdt_priv_reset(NULL);
 
+	//elevate task prio of caller so that nothing executes until prio is restored
+	save_priority = sos_sched_table[ task_get_current() ].priority;
+	sos_sched_table[ task_get_current() ].priority = SCHED_HIGHEST_PRIORITY+1;
+
+	mcu_core_set_nvic_priority(SVCall_IRQn, mcu_config.irq_middle_prio*2-1); //allow interrrupts to wake from sleep
 	mcu_core_execsleep(0, (void*)CORE_DEEPSLEEP);
+	mcu_core_set_nvic_priority(SVCall_IRQn, mcu_config.irq_middle_prio-1); //restore SV call interrupt priority
+
+	//restore task prio
+	sos_sched_table[ task_get_current() ].priority = save_priority;
+
 
 	//reinitialize the Clocks
 	mcu_core_initclock(1); //Set the main clock
@@ -76,7 +87,6 @@ void priv_hibernate(void * args){
 			mcu_wdt_setinterval(SCHED_RR_DURATION * 10 * sos_board_config.task_total + 5);
 		}
 	}
-
 }
 
 int set_alarm(int seconds){

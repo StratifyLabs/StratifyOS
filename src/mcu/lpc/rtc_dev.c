@@ -154,9 +154,6 @@ int set_alarm(int port, const rtc_attr_t * attr){
 
 		cortexm_enable_irq((void*)RTC_IRQn);
 
-		//elevate prio to come out of hibernate
-		cortexm_set_irq_prio(RTC_IRQn, 3);
-
 
 		regs->ASEC = attr->time.time.tm_sec;
 		regs->AMIN = attr->time.time.tm_min;
