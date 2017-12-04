@@ -57,7 +57,7 @@ static int data_received(void * context, const mcu_event_t * data){
 
 
 		//read the endpoint directly
-		bytes_read = mcu_usb_rd_ep(handle, config->endpoint, buffer);
+		bytes_read = mcu_usb_root_read_endpoint(handle, config->endpoint, buffer);
 		if( bytes_read > config->endpoint_size){
 			bytes_read = config->endpoint_size;
 		}

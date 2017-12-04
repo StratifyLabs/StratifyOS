@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-*/
+ */
 
 #include <errno.h>
 #include <stdbool.h>
@@ -78,9 +78,13 @@ link_transport_phy_t sos_link_transport_usb_open(const char * name,
 	link_transport_phy_t fd;
 	int pio_fd;
 
-	pio_fd = open_pio(usb_up_pin, usb_up_active_high);
-	if( pio_fd < 0 ){
-		return LINK_PHY_ERROR;
+	if( usb_up_pin.port != 0xff ){
+		pio_fd = open_pio(usb_up_pin, usb_up_active_high);
+		if( pio_fd < 0 ){
+			return LINK_PHY_ERROR;
+		}
+	} else {
+		pio_fd = -1;
 	}
 
 	memset(context, 0, sizeof(usbd_control_t));
@@ -108,13 +112,14 @@ link_transport_phy_t sos_link_transport_usb_open(const char * name,
 	//initialize USB device
 	cortexm_svcall(usbd_control_priv_init, context);
 
-	if( usb_up_active_high ){
-		ioctl(pio_fd, I_PIO_SETMASK, (void*)(1<<usb_up_pin.pin));
-	} else {
-		ioctl(pio_fd, I_PIO_CLRMASK, (void*)(1<<usb_up_pin.pin));
+	if( pio_fd >= 0 ){
+		if( usb_up_active_high ){
+			ioctl(pio_fd, I_PIO_SETMASK, (void*)(1<<usb_up_pin.pin));
+		} else {
+			ioctl(pio_fd, I_PIO_CLRMASK, (void*)(1<<usb_up_pin.pin));
+		}
+		close(pio_fd);
 	}
-
-	close(pio_fd);
 
 	return fd;
 }

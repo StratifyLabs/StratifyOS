@@ -56,8 +56,8 @@ int mcu_usb_isconnected(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE
 
 
 //Endpoint functions
-int mcu_usb_rd_ep(const devfs_handle_t * handle, u32 endpoint_num, void * dest) MCU_PRIV_CODE;
-int mcu_usb_wr_ep(const devfs_handle_t * handle, u32 endpoint_num, const void * src, u32 size) MCU_PRIV_CODE;
+int mcu_usb_root_read_endpoint(const devfs_handle_t * handle, u32 endpoint_num, void * dest) MCU_PRIV_CODE;
+int mcu_usb_root_write_endpoint(const devfs_handle_t * handle, u32 endpoint_num, const void * src, u32 size) MCU_PRIV_CODE;
 
 
 #ifdef __cplusplus

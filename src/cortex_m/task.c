@@ -93,12 +93,12 @@ int task_init(int interval,
 
 	//Set the interrupt priorities
 	for(i=0; i <= mcu_config.irq_total; i++){
-		mcu_core_set_nvic_priority( i, mcu_config.irq_middle_prio); //higher priority than the others
+		mcu_core_set_nvic_priority(i, mcu_config.irq_middle_prio+1); //mark as middle priority
 	}
 
-	mcu_core_set_nvic_priority(SysTick_IRQn, mcu_config.irq_middle_prio+1); //lower priority so they don't interrupt the hardware
-	mcu_core_set_nvic_priority(PendSV_IRQn, mcu_config.irq_middle_prio+1);
-	mcu_core_set_nvic_priority(SVCall_IRQn, mcu_config.irq_middle_prio-1); //elevate this so it isn't interrupted by peripheral hardware
+	mcu_core_set_nvic_priority(SysTick_IRQn, mcu_config.irq_middle_prio+2); //lower priority so they don't interrupt the hardware
+	mcu_core_set_nvic_priority(PendSV_IRQn, mcu_config.irq_middle_prio+2);
+	mcu_core_set_nvic_priority(SVCall_IRQn, mcu_config.irq_middle_prio); //elevate this so it isn't interrupted by peripheral hardware
 #if !defined MCU_NO_HARD_FAULT
 	mcu_core_set_nvic_priority(HardFault_IRQn, 2);
 #endif
@@ -107,6 +107,9 @@ int task_init(int interval,
 	mcu_core_set_nvic_priority(MemoryManagement_IRQn, 3);
 	mcu_core_set_nvic_priority(BusFault_IRQn, 3);
 	mcu_core_set_nvic_priority(UsageFault_IRQn, 3);
+
+	mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_TASK_INIT, 0);
+
 
 	//enable the FPU if it is in use
 #if __FPU_USED != 0

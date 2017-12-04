@@ -234,16 +234,7 @@ u32 usbd_standard_request_set_clr_feature(usbd_control_t * context, u32 sc) {
 }
 
 u32 usbd_standard_request_set_address (usbd_control_t * context) {
-
-	switch (context->setup_packet.bmRequestType.bitmap_t.recipient) {
-
-	case USBD_REQUEST_TYPE_RECIPIENT_DEVICE:
-		context->addr = USBD_ENDPOINT_ADDRESS_IN | context->setup_packet.wValue.b[0];
-		break;
-
-	default:
-		return 0;
-	}
+	usbd_control_set_address(context->handle, context->setup_packet.wValue.b[0]);
 	return 1;
 }
 

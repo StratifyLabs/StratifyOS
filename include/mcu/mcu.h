@@ -136,6 +136,7 @@ enum {
 	MCU_BOARD_CONFIG_EVENT_HIBERNATE /*! MCU is about to enter hibernate mode */,
 	MCU_BOARD_CONFIG_EVENT_POWERDOWN /*! MCU is about to enter powerdown mode */,
 	MCU_BOARD_CONFIG_EVENT_WAKEUP_FROM_HIBERNATE /*! MCU wokeup from hibernation */,
+	MCU_BOARD_CONFIG_EVENT_ROOT_TASK_INIT /*! MCU is about to enter context switching mode */,
 	MCU_BOARD_CONFIG_EVENT_TOTAL
 };
 
@@ -150,6 +151,8 @@ typedef struct MCU_PACK {
 	u8 debug_uart_port;
 	uart_attr_t debug_uart_attr;
 	u8 resd;
+	void * usb_rx_buffer;
+	u16 usb_rx_buffer_size;
 } mcu_board_config_t;
 
 extern const mcu_board_config_t mcu_board_config;

@@ -53,6 +53,7 @@ typedef struct {
 	mcu_event_handler_t special_event_handler;
 	u8 ref_count;
 	u8 connected;
+	u8 address;
 } usb_local_t;
 
 static usb_local_t usb_local MCU_SYS_MEM;
@@ -196,6 +197,7 @@ int mcu_usb_setattr(const devfs_handle_t * handle, void * ctl){
 
 		cortexm_enable_irq((void*)USB_IRQn);  //Enable the USB interrupt
 		usb_reset(handle);
+		usb_local.address = 0;
 		usb_set_address(handle,0);
 	}
 
@@ -206,7 +208,8 @@ int mcu_usb_setattr(const devfs_handle_t * handle, void * ctl){
 	if( o_flags & USB_FLAG_UNCONFIGURE ){ usb_configure(handle, 0); }
 
 	if( o_flags & USB_FLAG_SET_ADDRESS ){
-		usb_set_address(handle, attr->address);
+		//store the address until the status stage is over
+		usb_local.address = attr->address;
 	}
 
 	if( o_flags & USB_FLAG_RESET_ENDPOINT ){
@@ -319,7 +322,7 @@ int mcu_usb_dev_read(const devfs_handle_t * handle, devfs_async_t * rop){
 	//Synchronous read (only if data is ready) otherwise 0 is returned
 	if ( usb_local.read_ready & (1<<loc) ){
 		usb_local.read_ready &= ~(1<<loc);  //clear the read ready bit
-		ret = mcu_usb_rd_ep(0, loc, rop->buf);
+		ret = mcu_usb_root_read_endpoint(0, loc, rop->buf);
 	} else {
 		rop->nbyte = 0;
 		if ( !(rop->flags & O_NONBLOCK) ){
@@ -367,7 +370,7 @@ int mcu_usb_dev_write(const devfs_handle_t * handle, devfs_async_t * wop){
 	usb_local.write[ep].callback = wop->handler.callback;
 	usb_local.write[ep].context = wop->handler.context;
 
-	wop->nbyte = mcu_usb_wr_ep(handle, loc, wop->buf, wop->nbyte);
+	wop->nbyte = mcu_usb_root_write_endpoint(handle, loc, wop->buf, wop->nbyte);
 
 	if ( wop->nbyte < 0 ){
 		usb_disable_endpoint(handle, loc );
@@ -458,7 +461,7 @@ void usb_clr_ep_buf(const devfs_handle_t * handle, u32 endpoint_num){
 	usb_sie_wr_cmd_ep(endpoint_num, USB_SIE_CMD_CLR_BUF);
 }
 
-int mcu_usb_rd_ep(const devfs_handle_t * handle, u32 endpoint_num, void * dest){
+int mcu_usb_root_read_endpoint(const devfs_handle_t * handle, u32 endpoint_num, void * dest){
 	u32 n;
 	u32 * ptr;
 	u32 size;
@@ -495,7 +498,7 @@ int mcu_usb_rd_ep(const devfs_handle_t * handle, u32 endpoint_num, void * dest){
 
 /*! \details
  */
-int mcu_usb_wr_ep(const devfs_handle_t * handle, u32 endpoint_num, const void * src, u32 size){
+int mcu_usb_root_write_endpoint(const devfs_handle_t * handle, u32 endpoint_num, const void * src, u32 size){
 	u32 n;
 	u32 * ptr = (u32*)src;
 
@@ -620,6 +623,12 @@ void slow_ep_int(){
 				event.epnum |= 0x80;
 				usb_local.write_pending &= ~(1<<log_ep);
 				mcu_execute_event_handler(&(usb_local.write[log_ep]), MCU_EVENT_FLAG_WRITE_COMPLETE, &event);
+
+				if( usb_local.address ){
+					usb_set_address(0, usb_local.address);
+					usb_local.address = 0;
+				}
+
 			}
 		}
 
