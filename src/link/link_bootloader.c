@@ -60,7 +60,7 @@ int link_isbootloader(link_transport_mdriver_t * driver){
 		}
 
 	}
-	*/
+	 */
 
 	link_debug(LINK_DEBUG_MESSAGE, "Bootloader Version is 0x%X", attr.version);
 
@@ -90,28 +90,30 @@ int reset_device(link_transport_mdriver_t * driver, int invoke_bootloader){
 	//use "/dev/core" to reset
 	int fd;
 	core_attr_t attr;
+	int ret = 0;
 
 	fd = link_open(driver, "/dev/core", LINK_O_RDWR);
 	if ( fd < 0 ){
-		return -1;
-	}
-
-
-	if( invoke_bootloader == 0 ){
-		link_debug(LINK_DEBUG_MESSAGE, "Try to reset");
-		attr.o_flags = CORE_FLAG_EXEC_RESET;
+		ret = -1;
 	} else {
-		link_debug(LINK_DEBUG_MESSAGE, "Try to invoke bootloader");
-		attr.o_flags = CORE_FLAG_EXEC_INVOKE_BOOTLOADER;
-	}
+		if( invoke_bootloader == 0 ){
+			link_debug(LINK_DEBUG_MESSAGE, "Try to reset");
+			attr.o_flags = CORE_FLAG_EXEC_RESET;
+		} else {
+			link_debug(LINK_DEBUG_MESSAGE, "Try to invoke bootloader");
+			attr.o_flags = CORE_FLAG_EXEC_INVOKE_BOOTLOADER;
+		}
 
-	if( link_ioctl(driver, fd, I_CORE_SETATTR, &attr) < 0 ){
-		return -1;
+		if( link_ioctl(driver, fd, I_CORE_SETATTR, &attr) < 0 ){
+			//try the old version of the bootloader
+			if( link_ioctl(driver, fd, I_CORE_INVOKEBOOTLOADER_2, &attr) < 0 ){
+				ret = -1;
+			}
+		}
+		//since the device has been reset -- close the handle
+		driver->dev.close(&(driver->dev.handle));
 	}
-
-	//since the device has been reset -- close the handle
-	driver->dev.close(&(driver->dev.handle));
-	return 0;
+	return ret;
 }
 
 int link_resetbootloader(link_transport_mdriver_t * driver){

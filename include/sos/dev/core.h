@@ -224,6 +224,9 @@ typedef struct MCU_PACK {
  */
 #define I_CORE_GETMCUBOARDCONFIG _IOCTLR(CORE_IOC_IDENT_CHAR, I_MCU_TOTAL + 3, mcu_board_config_t)
 
+//invoke bootloader for version 2
+#define I_CORE_INVOKEBOOTLOADER_2 _IOCTL('c', 6)
+
 #define I_CORE_TOTAL 7
 
 #ifdef __cplusplus

@@ -40,8 +40,6 @@
 static LPC_TIM_Type * const tmr_regs_table[NUM_TMRS] = MCU_TMR_REGS;
 static u8 const tmr_irqs[MCU_TMR_PORTS] = MCU_TMR_IRQS;
 
-
-
 struct tmr_cfg {
 	u8 pin_assign;
 	u8 enabled_oc_chans;

@@ -182,12 +182,11 @@ int mcu_adc_setattr(const devfs_handle_t * handle, void * ctl){
 		return -1;
 	}
 
-	if ( attr->freq == 0 ){
-		freq = ADC_MAX_FREQ;
-	}
-
 	freq = attr->freq;
-	if ( attr->freq > ADC_MAX_FREQ ){
+
+	if ( freq == 0 ){
+		freq = ADC_MAX_FREQ;
+	} else if ( freq > ADC_MAX_FREQ ){
 		freq = ADC_MAX_FREQ;
 	}
 
