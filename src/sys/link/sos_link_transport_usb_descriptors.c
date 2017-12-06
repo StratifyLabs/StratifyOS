@@ -278,8 +278,6 @@ int cdc_event_handler(usbd_control_t * context, const mcu_event_t * event){
 			switch(context->setup_packet.bRequest){
 			case USBD_CDC_REQUEST_SET_LINE_CODING:
 				//line coding info is available in context->buf
-
-				mcu_debug_root_printf("Line coding is ready\n");
 				usbd_control_statusin_stage(context);
 				return 1;
 

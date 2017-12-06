@@ -69,9 +69,6 @@ int usbd_control_handler(void * context_object, const mcu_event_t * usb_event /*
 
 
 	if ( o_events & MCU_EVENT_FLAG_SETUP ){
-		mcu_debug_root_printf("Setup %d %d %d\n", context->setup_packet.bRequest,
-				context->setup_packet.bmRequestType,
-				context->setup_packet.wLength);
 		if (usbd_control_setup_request_type(context) == USBD_REQUEST_STANDARD){
 			if( usbd_standard_request_handle_setup(context) == 0 ){
 				if( execute_class_handler(context, usb_event) == 0 ){
@@ -79,7 +76,6 @@ int usbd_control_handler(void * context_object, const mcu_event_t * usb_event /*
 				}
 			}
 		} else {
-			mcu_debug_root_printf("Class handler\n");
 			//a setup event that is not a standard request may be handled by the callback
 			if( execute_class_handler(context, usb_event) == 0 ){
 				stall(context);
@@ -89,9 +85,7 @@ int usbd_control_handler(void * context_object, const mcu_event_t * usb_event /*
 		if (usbd_control_setup_request_direction(context) == USBD_REQUEST_TYPE_DIRECTION_HOST_TO_DEVICE) {
 			if (context->data.nbyte) {
 				usbd_control_dataout_stage(context);
-				mcu_debug_root_printf("data out %d\n", context->data.nbyte);
 				if (context->data.nbyte == 0){
-
 					if (usbd_control_setup_request_type(context) == USBD_REQUEST_STANDARD){
 						mcu_debug_root_printf("standard stall\n");
 						stall(context);
@@ -153,7 +147,6 @@ void usbd_control_dataout_stage(usbd_control_t * context){
 	if( nbyte > context->data.nbyte ){
 		nbyte = context->data.nbyte;
 	}
-	mcu_debug_root_printf("dout stage %d %d %d\n", nbyte, context->data.nbyte, context->data.max);
 	context->data.dptr += nbyte;
 	context->data.nbyte -= nbyte;
 }
