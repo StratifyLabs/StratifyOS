@@ -222,13 +222,18 @@ int cdc_event_handler(usbd_control_t * context, const mcu_event_t * event){
 
 		if ( (o_events & MCU_EVENT_FLAG_SETUP) ){
 			switch(context->setup_packet.bRequest){
-			case USBD_CDC_REQUEST_SET_LINE_CODING:
 			case USBD_CDC_REQUEST_SEND_ENCAPSULATED_COMMAND:
 			case USBD_CDC_REQUEST_SET_COMM_FEATURE:
 			case USBD_CDC_REQUEST_SEND_BREAK:
 				//need to receive information from the host
 				usbd_control_prepare_buffer(context); //received the incoming data in the buffer
 				usbd_control_statusin_stage(context); //data out stage?
+				return 1;
+
+			case USBD_CDC_REQUEST_SET_LINE_CODING:
+				//usbd_control_statusin_stage(context); //data out stage?
+				context->data.dptr = context->buf;
+				context->data.nbyte = context->setup_packet.wLength;
 				return 1;
 
 			case USBD_CDC_REQUEST_SET_CONTROL_LINE_STATE:
@@ -273,6 +278,10 @@ int cdc_event_handler(usbd_control_t * context, const mcu_event_t * event){
 			switch(context->setup_packet.bRequest){
 			case USBD_CDC_REQUEST_SET_LINE_CODING:
 				//line coding info is available in context->buf
+
+				mcu_debug_root_printf("Line coding is ready\n");
+				usbd_control_statusin_stage(context);
+				return 1;
 
 			case USBD_CDC_REQUEST_SET_CONTROL_LINE_STATE:
 			case USBD_CDC_REQUEST_SET_COMM_FEATURE:
