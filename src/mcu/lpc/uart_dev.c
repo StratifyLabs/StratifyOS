@@ -240,6 +240,7 @@ int mcu_uart_setattr(const devfs_handle_t * handle, void * ctl){
 
 	const uart_attr_t * attr = mcu_select_attr(handle, ctl);
 	if( attr == 0 ){
+		errno = EINVAL;
 		return -1;
 	}
 
@@ -279,7 +280,8 @@ int mcu_uart_setattr(const devfs_handle_t * handle, void * ctl){
 			MCU_CONFIG_PIN_ASSIGNMENT(uart_config_t, handle),
 			MCU_PIN_ASSIGNMENT_COUNT(uart_pin_assignment_t),
 			CORE_PERIPH_UART, port, 0, 0) < 0 ){
-		return -1;
+		errno = EINVAL;
+		return -1 - offsetof(uart_attr_t, pin_assignment);
 	}
 
 

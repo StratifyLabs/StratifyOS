@@ -427,7 +427,7 @@ void mcu_core_reset_handler(){
 
 
 void mcu_core_nmi_isr(){
-	mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_FATAL, 0);
+	mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_FATAL, "NMI");
 }
 
 
@@ -436,7 +436,7 @@ void mcu_core_os_handler(){
 }
 
 void mcu_core_default_isr(){
-	mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_FATAL, 0);
+	mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_FATAL, "default isr");
 }
 
 int pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *attr){

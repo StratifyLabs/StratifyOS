@@ -20,6 +20,9 @@
 
 #if !defined __link
 
+#include <stdarg.h>
+
+#include "cortexm/cortexm.h"
 #include "sos/sos.h"
 #include "mcu/debug.h"
 #include "sos/dev/uart.h"
@@ -30,15 +33,20 @@
 
 #if MCU_DEBUG
 
-char mcu_debug_buffer[MCU_DEBUG_BUFFER_SIZE];
+typedef struct {
+	char buffer[256];
+	int len;
+} mcu_debug_buffer_t;
+
+static void mcu_debug_root_write_uart_svcall(void * args);
 
 int mcu_debug_init(){
 	devfs_handle_t handle;
 
-
 	//Open the debugging UART
 	handle.port = mcu_board_config.debug_uart_port;
 	handle.config = 0;
+	handle.state = 0;
 	if( mcu_uart_open(&handle) < 0 ){
 		return -1;
 	}
@@ -46,17 +54,42 @@ int mcu_debug_init(){
 	return mcu_uart_setattr(&handle, (void*)&mcu_board_config.debug_uart_attr);
 }
 
-void mcu_debug_write_uart(void * args){
-	int nbyte;
+void mcu_debug_root_write_uart(const char * buffer, int nbyte){
 	int i;
 	devfs_handle_t handle;
 	handle.port = mcu_board_config.debug_uart_port;
-	nbyte = strnlen(mcu_debug_buffer, MCU_DEBUG_BUFFER_SIZE);
+	handle.config = 0;
+	handle.state = 0;
 
 	for(i=0; i < nbyte; i++){
-		mcu_uart_put(&handle, (void*)(u32)mcu_debug_buffer[i]);
+		mcu_uart_put(&handle, (void*)(u32)(buffer[i]));
 	}
+}
 
+void mcu_debug_root_write_uart_svcall(void * args){
+	mcu_debug_buffer_t * p = args;
+	mcu_debug_root_write_uart(p->buffer, p->len);
+}
+
+int mcu_debug_user_printf(const char * format, ...){
+	mcu_debug_buffer_t svcall_args;
+	va_list args;
+	va_start (args, format);
+	svcall_args.buffer[255] = 0;
+	svcall_args.len = vsnprintf(svcall_args.buffer, 255, format, args);
+	cortexm_svcall(mcu_debug_root_write_uart_svcall, &svcall_args);
+	return svcall_args.len;
+}
+
+int mcu_debug_root_printf(const char * format, ...){
+	int ret = 0;
+	char buffer[256];
+	buffer[255] = 0;
+	va_list args;
+	va_start (args, format);
+	ret = vsnprintf(buffer, 255, format, args);
+	mcu_debug_root_write_uart(buffer, ret);
+	return ret;
 }
 
 #endif

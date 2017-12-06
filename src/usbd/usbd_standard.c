@@ -69,7 +69,7 @@ char htoc(int nibble){
 	}
 }
 
-int usbd_standard_request_setup_handler(usbd_control_t * context){
+int usbd_standard_request_handle_setup(usbd_control_t * context){
 	switch (context->setup_packet.bRequest) {
 
 	case USBD_REQUEST_STANDARD_GET_STATUS:
@@ -449,6 +449,7 @@ u32 usbd_standard_request_get_descriptor(usbd_control_t * context) {
 
 		case USBD_DESCRIPTOR_TYPE_DEVICE:
 			//give the device descriptor
+
 			context->data.dptr = (u8 * const)context->constants->device;
 			len = sizeof(usbd_device_descriptor_t);
 			break;

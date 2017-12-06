@@ -62,7 +62,7 @@ int usbd_control_handler(void * context_object, const mcu_event_t * usb_event /*
 
 	if ( o_events & MCU_EVENT_FLAG_SETUP ){
 		if (usbd_control_setup_request_type(context) == USBD_REQUEST_STANDARD){
-			if( usbd_standard_request_setup_handler(context) == 0 ){
+			if( usbd_standard_request_handle_setup(context) == 0 ){
 				stall(context);
 				return 1;
 			}
@@ -124,22 +124,15 @@ int usbd_control_handler(void * context_object, const mcu_event_t * usb_event /*
 	return 1;
 }
 
-
-
-
 void * usbd_control_add_ptr(usbd_control_t * context, void * ptr, u32 value){
 	return (char*)ptr + value;
 }
 
-/*! \details This function reads the setup packet as part of the setup stage.
- */
 void usbd_control_handler_setup_stage(usbd_control_t * context){
 	mcu_usb_root_read_endpoint(context->handle, 0x00, (u8 *)&(context->setup_packet));
 	context->data.nbyte = context->setup_packet.wLength;
 	context->data.max = context->data.nbyte;
 }
-
-
 
 void usbd_control_datain_stage(usbd_control_t * context) {
 	u32 nbyte;
@@ -148,12 +141,13 @@ void usbd_control_datain_stage(usbd_control_t * context) {
 	} else {
 		nbyte = context->data.nbyte;
 	}
-	nbyte = mcu_usb_root_write_endpoint(context->handle, 0x80, context->data.dptr, nbyte);
-	context->data.dptr += nbyte;
-	context->data.nbyte -= nbyte;
+
+	if( nbyte > 0 || (context->data.max > mcu_board_config.usb_max_packet_zero) ){
+		nbyte = mcu_usb_root_write_endpoint(context->handle, 0x80, context->data.dptr, nbyte);
+		context->data.dptr += nbyte;
+		context->data.nbyte -= nbyte;
+	}
 }
-
-
 
 void usbd_control_dataout_stage(usbd_control_t * context){
 	u32 nbyte;

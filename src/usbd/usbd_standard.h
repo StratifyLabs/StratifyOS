@@ -22,7 +22,7 @@
 
 #include "usbd/control.h"
 
-int usbd_standard_request_setup_handler(usbd_control_t * context);
+int usbd_standard_request_handle_setup(usbd_control_t * context);
 
 u32 usbd_standard_request_set_interface(usbd_control_t * context);
 u32 usbd_standard_request_get_interface(usbd_control_t * context);

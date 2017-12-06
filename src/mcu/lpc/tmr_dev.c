@@ -20,13 +20,13 @@
 #include <errno.h>
 #include <stdbool.h>
 #include "cortexm/cortexm.h"
+#include "mcu/debug.h"
 #include "mcu/tmr.h"
 #include "mcu/core.h"
 
 #define NUM_TMRS MCU_TMR_PORTS
 #define NUM_OCS 4
 #define NUM_ICS 2
-
 
 #define MR0_FLAG (1<<0)
 #define MR1_FLAG (1<<1)

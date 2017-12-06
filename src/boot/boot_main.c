@@ -177,9 +177,7 @@ int check_run_app(){
 
 #ifdef DEBUG_BOOTLOADER
 static int debug_write_func(const void * buf, int nbyte){
-	memset(mcu_debug_buffer, 0, MCU_DEBUG_BUFFER_SIZE);
-	memcpy(mcu_debug_buffer, buf, nbyte);
-	mcu_debug_write_uart(NULL);
+	mcu_debug_root_write_uart(buf, nbyte);
 	return nbyte;
 }
 #endif

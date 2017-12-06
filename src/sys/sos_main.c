@@ -37,17 +37,20 @@ int _main(){
 	init_hw();
 
 	if ( sched_init() < 0 ){ //Initialize the data used for the scheduler
+		mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_FATAL, "main sched init");
 		cortexm_disable_interrupts(NULL);
-		while(1){ mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_FATAL, 0); }
+		while(1){}
 	}
 
 	if ( sched_start(sos_board_config.start, 10) < 0 ){
+		mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_FATAL, "main sched start");
 		cortexm_disable_interrupts(NULL);
-		while(1){ mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_FATAL, 0); }
+		while(1){}
 	}
 
+	mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_FATAL, "main sched failed");
 	cortexm_disable_interrupts(NULL);
-	while(1){ mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_FATAL, 0); }
+	while(1){}
 	return 0;
 }
 

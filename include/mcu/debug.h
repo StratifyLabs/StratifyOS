@@ -42,24 +42,17 @@ extern "C" {
 #define mcu_debug_write_uart(x)
 #define mcu_debug_user_printf(...)
 #define mcu_debug_printf(...)
+#define mcu_debug_root_printf(...)
 #else
 #define MCU_DEBUG 1
 int mcu_debug_init();
-void mcu_debug_write_uart(void * args);
+void mcu_debug_root_write_uart(const char * buffer, int nbyte);
 
-#define MCU_DEBUG_BUFFER_SIZE 256
-extern char mcu_debug_buffer[MCU_DEBUG_BUFFER_SIZE];
 
-//UART debugging
-#define mcu_debug_user_printf(...) do { \
-	siprintf(mcu_debug_buffer, __VA_ARGS__); \
-	cortexm_svcall(mcu_debug_write_uart, NULL); \
-} while(0)
+int mcu_debug_user_printf(const char * format, ...);
+int mcu_debug_root_printf(const char * format, ...);
 
-#define mcu_debug_printf(...) do { \
-	siprintf(mcu_debug_buffer, __VA_ARGS__); \
-	mcu_debug_write_uart(NULL); \
-} while(0)
+#define mcu_debug_printf mcu_debug_root_printf
 
 
 #endif

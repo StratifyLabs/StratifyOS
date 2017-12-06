@@ -8,31 +8,11 @@
 
 #include "mcu/types.h"
 
-typedef u32 pwm_duty_t;
 
-#define PIO_SAMPLE_T
-/*! \brief This defines the type of a PIO sample for
- * reading/writing the PIO.
- */
-typedef u32 pio_sample_t;
-
-
-
-/*! \brief The maximum ADC value on the LPC17xx.
- */
 #define ADC_MAX 0x0000FFF0
-
-/*! \brief Minimum ADC set value
- */
 #define ADC_MIN 0x01
-
-/*! \brief The maximum ADC sampling frequency.
- */
 #define ADC_MAX_FREQ 400000
-#define ADC_SAMPLE_T
 
-/*! \brief The maximum DAC output frequency.
- */
 #define DAC_MAX_FREQ 1000000
 
 #define MCU_CORE_PORTS 1

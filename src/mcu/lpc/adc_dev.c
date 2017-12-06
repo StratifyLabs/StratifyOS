@@ -206,6 +206,7 @@ int mcu_adc_setattr(const devfs_handle_t * handle, void * ctl){
 #ifdef LPCXX7X_8X
 	clk_div = mcu_board_config.core_periph_freq/(freq * 31);
 #endif
+
 	if ( clk_div > 0 ){
 		clk_div = clk_div - 1;
 	}

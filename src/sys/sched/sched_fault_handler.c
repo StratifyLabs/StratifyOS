@@ -57,8 +57,9 @@ void mcu_fault_event_handler(fault_t * fault){
 		//The OS has experienced a fault
 
 #if MCU_DEBUG
-		sched_fault_build_string(mcu_debug_buffer);
-		mcu_debug_write_uart(NULL);
+		char buffer[128];
+		sched_fault_build_string(buffer);
+		mcu_debug_root_write_uart(buffer, strnlen(buffer,128));
 #endif
 
 		if( sos_board_config.trace_event != 0 ){
@@ -72,7 +73,11 @@ void mcu_fault_event_handler(fault_t * fault){
 			sos_board_config.trace_event(&event);
 		}
 
-		mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_FATAL, 0);
+#if MCU_DEBUG
+		mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_FATAL, buffer);
+#else
+		mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_FATAL, "OS FAULT");
+#endif
 
 	} else {
 

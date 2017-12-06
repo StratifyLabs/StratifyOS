@@ -143,17 +143,20 @@ int mcu_core_setclkdivide(const devfs_handle_t * handle, void * arg){
 #endif
 
 #ifdef LPCXX7X_8X
-	uint32_t div = (int)arg;
-	uint32_t clksel;
+	u32 div = (int)arg;
+	u32 clksel;
 
-	if( (div >= 1) && (div <= 31) ){
-		clksel = LPC_SC->CCLKSEL & ~0x1F;
-		clksel |= div;
-		LPC_SC->CCLKSEL = clksel;
-	} else {
-		errno = EINVAL;
-		return -1;
+	if( div < 1 ){
+		div = 1;
 	}
+
+	if( div > 31 ){
+		div = 31;
+	}
+
+	clksel = LPC_SC->CCLKSEL & ~0x1F;
+	clksel |= div;
+	LPC_SC->CCLKSEL = clksel;
 #endif
 
 	return 0;
