@@ -62,7 +62,7 @@ typedef struct MCU_PACK {
 	usbd_control_data_t data;
 	u16 status;
 	u8 addr;
-	u8 cfg;
+	u8 current_configuration;
 	u32 ep_mask;
 	u32 ep_halt;
 	u32 ep_stall;

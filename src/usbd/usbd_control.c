@@ -60,6 +60,7 @@ int usbd_control_handler(void * context_object, const mcu_event_t * usb_event /*
 		usbd_control_handler_setup_stage(context);
 	}
 
+
 	if ( o_events & MCU_EVENT_FLAG_SETUP ){
 		if (usbd_control_setup_request_type(context) == USBD_REQUEST_STANDARD){
 			if( usbd_standard_request_handle_setup(context) == 0 ){
@@ -142,7 +143,7 @@ void usbd_control_datain_stage(usbd_control_t * context) {
 		nbyte = context->data.nbyte;
 	}
 
-	if( nbyte > 0 || (context->data.max > mcu_board_config.usb_max_packet_zero) ){
+	if( nbyte > 0 || ((context->data.max % mcu_board_config.usb_max_packet_zero) == 0) ){
 		nbyte = mcu_usb_root_write_endpoint(context->handle, 0x80, context->data.dptr, nbyte);
 		context->data.dptr += nbyte;
 		context->data.nbyte -= nbyte;
