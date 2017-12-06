@@ -22,17 +22,17 @@
 #include "cortexm/mpu.h"
 
 
-//  __I  uint32_t TYPE;                         /*!< Offset: 0x00  MPU Type Register                              */
-//  __IO uint32_t CTRL;                         /*!< Offset: 0x04  MPU Control Register                           */
-//  __IO uint32_t RNR;                          /*!< Offset: 0x08  MPU Region RNR Register                     */
-//  __IO uint32_t RBAR;                         /*!< Offset: 0x0C  MPU Region Base Address Register               */
-//  __IO uint32_t RASR;                         /*!< Offset: 0x10  MPU Region Attribute and Size Register         */
-//  __IO uint32_t RBAR_A1;                      /*!< Offset: 0x14  MPU Alias 1 Region Base Address Register       */
-//  __IO uint32_t RASR_A1;                      /*!< Offset: 0x18  MPU Alias 1 Region Attribute and Size Register */
-//  __IO uint32_t RBAR_A2;                      /*!< Offset: 0x1C  MPU Alias 2 Region Base Address Register       */
-//  __IO uint32_t RASR_A2;                      /*!< Offset: 0x20  MPU Alias 2 Region Attribute and Size Register */
-//  __IO uint32_t RBAR_A3;                      /*!< Offset: 0x24  MPU Alias 3 Region Base Address Register       */
-//  __IO uint32_t RASR_A3;                      /*!< Offset: 0x28  MPU Alias 3 Region Attribute and Size Register */
+//  __I  u32 TYPE;                         /*!< Offset: 0x00  MPU Type Register                              */
+//  __IO u32 CTRL;                         /*!< Offset: 0x04  MPU Control Register                           */
+//  __IO u32 RNR;                          /*!< Offset: 0x08  MPU Region RNR Register                     */
+//  __IO u32 RBAR;                         /*!< Offset: 0x0C  MPU Region Base Address Register               */
+//  __IO u32 RASR;                         /*!< Offset: 0x10  MPU Region Attribute and Size Register         */
+//  __IO u32 RBAR_A1;                      /*!< Offset: 0x14  MPU Alias 1 Region Base Address Register       */
+//  __IO u32 RASR_A1;                      /*!< Offset: 0x18  MPU Alias 1 Region Attribute and Size Register */
+//  __IO u32 RBAR_A2;                      /*!< Offset: 0x1C  MPU Alias 2 Region Base Address Register       */
+//  __IO u32 RASR_A2;                      /*!< Offset: 0x20  MPU Alias 2 Region Attribute and Size Register */
+//  __IO u32 RBAR_A3;                      /*!< Offset: 0x24  MPU Alias 3 Region Base Address Register       */
+//  __IO u32 RASR_A3;                      /*!< Offset: 0x28  MPU Alias 3 Region Attribute and Size Register */
 
 
 int mpu_enable(){
@@ -45,10 +45,10 @@ int mpu_disable(){
 	return 0;
 }
 
-mpu_size_t mpu_calc_size(uint32_t size){
-	uint32_t shift;
+mpu_size_t mpu_calc_size(u32 size){
+	u32 shift;
 	shift = 5;
-	while ( (uint32_t)(1<<shift) < (uint32_t)size ){
+	while ( (u32)(1<<shift) < (u32)size ){
 		shift++;
 		if ( shift == (MPU_SIZE_4GB+1) ){
 			//size is too big
@@ -60,8 +60,8 @@ mpu_size_t mpu_calc_size(uint32_t size){
 
 
 int mpu_set_region_access(int region, mpu_access_t access_type){
-	uint32_t rasr;
-	uint8_t valid_regions;
+	u32 rasr;
+	u8 valid_regions;
 
 	//check if the region is valid
 	valid_regions = ((MPU->TYPE >> 8) & 0xFF);
@@ -78,8 +78,8 @@ int mpu_set_region_access(int region, mpu_access_t access_type){
 }
 
 int mpu_disable_region(int region){
-	uint32_t rasr;
-	uint8_t valid_regions;
+	u32 rasr;
+	u8 valid_regions;
 	//check if the region is valid
 	valid_regions = ((MPU->TYPE >> 8) & 0xFF);
 	if ( region >= valid_regions ){
@@ -115,38 +115,39 @@ int mpu_calc_region(int region,
 		mpu_access_t access,
 		mpu_memory_t type,
 		int executable,
-		uint32_t * rbar,
-		uint32_t * rasr){
-	uint32_t up_size;
-	uint32_t addr_tmp;
-	uint32_t subregion_size;
-	uint8_t subregion_mask;
-	uint8_t subregions;
+		u32 * rbar,
+		u32 * rasr){
+	u32 up_size;
+	u32 addr_tmp;
+	u32 subregion_size;
+	u8 subregion_mask;
+	u8 subregions;
 	mpu_size_t mpu_size;
 
 
 	//Get the next power of two size
 	up_size = mpu_getnextpowerof2(size);
 	if ( up_size < 32 ){
+		//must be at least 32 bytes for MPU
 		return -1;
 	}
 
 	//Make sure the address is aligned to the size
-	addr_tmp = (uint32_t)addr;
+	addr_tmp = (u32)addr;
 
 	if ( addr_tmp & ((up_size)-1) ){
-		return -1; //this should be an alignment error
+		return -2; //this should be an alignment error
 	}
 
 	//Make sure the size is aligned with a subregion
 	subregion_size = up_size >> 3; //Divide by 8
 
 	if ( subregion_size == 0 ){
-		return -1;
+		return -3;
 	}
 
 	if ( (up_size % subregion_size) != 0 ){
-		return -1;
+		return -4;
 	}
 
 	subregions = up_size / subregion_size;
@@ -155,7 +156,7 @@ int mpu_calc_region(int region,
 	//Check the size
 	mpu_size = mpu_calc_size(up_size);
 	if ( mpu_size < MPU_SIZE_32B ){
-		return -1;
+		return -5;
 	}
 
 	*rasr = (mpu_size << 1)|(1<<0)|(access<<24)|(subregion_mask<<8);
@@ -179,7 +180,7 @@ int mpu_calc_region(int region,
 		break;
 	}
 
-	*rbar = (uint32_t)addr | ((1<<4)|region);
+	*rbar = (u32)addr | ((1<<4)|region);
 	return 0;
 }
 
@@ -190,9 +191,9 @@ int mpu_enable_region(int region,
 		mpu_memory_t type,
 		int executable){
 	int err;
-	uint32_t rasr;
-	uint32_t rbar;
-	uint8_t valid_regions;
+	u32 rasr;
+	u32 rbar;
+	u8 valid_regions;
 
 
 	//check if the region is valid

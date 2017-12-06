@@ -170,9 +170,14 @@ int mcu_mem_writepage(const devfs_handle_t * handle, void * ctl){
 	mem_writepage_t * wattr = ctl;
 	int last_boot_page;
 
-	if ( is_ram(wattr->addr, wattr->nbyte) ){
-		memcpy((void*)wattr->addr, wattr->buf, wattr->nbyte);
-		return wattr->nbyte;
+	nbyte = wattr->nbyte;
+	if( nbyte > 256 ){
+		nbyte = 256;
+	}
+
+	if ( is_ram(wattr->addr, nbyte) ){
+		memcpy((void*)wattr->addr, wattr->buf, nbyte);
+		return nbyte;
 	}
 
 	last_boot_page = get_last_boot_page();
@@ -187,18 +192,8 @@ int mcu_mem_writepage(const devfs_handle_t * handle, void * ctl){
 		return -11;
 	}
 
-	if ( wattr->addr + wattr->nbyte > FLASH_SIZE ){
-		wattr->nbyte = FLASH_SIZE - wattr->addr; //update the bytes read to not go past the end of the disk
-	}
-
-	if ( wattr->nbyte <= 256 ){
-		nbyte = 256;
-	} else if( wattr->nbyte <= 512 ){
-		nbyte = 512;
-	} else if ( wattr->nbyte <= 1024 ){
-		nbyte = 1024;
-	} else if ( wattr->nbyte > 1024 ){
-		nbyte = 1024;
+	if ( wattr->addr + nbyte > FLASH_SIZE ){
+		nbyte = FLASH_SIZE - wattr->addr; //update the bytes read to not go past the end of the disk
 	}
 
 
@@ -213,7 +208,7 @@ int mcu_mem_writepage(const devfs_handle_t * handle, void * ctl){
 		return -1;
 	}
 
-	return wattr->nbyte;
+	return nbyte;
 }
 
 int mcu_mem_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop){

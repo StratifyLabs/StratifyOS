@@ -159,7 +159,6 @@ static int find_protectable_addr(const devfs_device_t * dev, int size, int type,
 			return pageinfo.addr;
 		}
 
-
 		i++;
 	} while(1);
 
@@ -240,28 +239,26 @@ static int find_protectable_free(const devfs_device_t * dev, int type, int size,
 				size,
 				type,
 				page);
-		if ( start_addr < 0 ){
+		if ( start_addr >= 0 ){
 			//could not find any free space
-			break;
-		}
 
-
-		tmp = check_for_free_space(dev, *page, type, size);
-		if( tmp > 0 ){
-			//there is room here -- find the smallest free space where the program fits
-			if( tmp < space_available ){
-				space_available = tmp;
-				smallest_space_addr = start_addr;
-				smallest_space_page = *page;
-				if( size == space_available ){ //this is as good as it gets
-					return smallest_space_addr;
+			tmp = check_for_free_space(dev, *page, type, size);
+			if( tmp > 0 ){
+				//there is room here -- find the smallest free space where the program fits
+				if( tmp < space_available ){
+					space_available = tmp;
+					smallest_space_addr = start_addr;
+					smallest_space_page = *page;
+					if( size == space_available ){ //this is as good as it gets
+						return smallest_space_addr;
+					}
 				}
 			}
+
+			(*page)++;
 		}
 
-		(*page)++;
-
-	} while(1);
+	} while( start_addr >= 0 );
 
 	if( smallest_space_addr == -1 ){
 		errno = ENOSPC;
@@ -296,7 +293,7 @@ static int find_free(const devfs_device_t * dev, int type, int size){
 
 	return -1;
 }
-*/
+ */
 
 const appfs_file_t * appfs_util_getfile(appfs_handle_t * h){
 	return (appfs_file_t *)h->type.reg.beg_addr;
@@ -548,13 +545,13 @@ int appfs_util_priv_writeinstall(const devfs_device_t * dev, appfs_handle_t * h,
 
 		if ( !((src.file->exec.o_flags) & APPFS_FLAG_IS_FLASH) ){ //for RAM app's mark the RAM usage
 			//mark the range as SYS
-			appfs_ram_setrange(appfs_ram_usagetable,
+			appfs_ram_setrange(sos_appfs_ram_usage_table,
 					code_page,
 					code_size,
 					APPFS_MEMPAGETYPE_SYS);
 
 			//mark the first page as USER
-			appfs_ram_setrange(appfs_ram_usagetable,
+			appfs_ram_setrange(sos_appfs_ram_usage_table,
 					code_page,
 					DEVICE_RAM_PAGE_SIZE, //mark the first page as USER
 					APPFS_MEMPAGETYPE_USER);
@@ -565,7 +562,7 @@ int appfs_util_priv_writeinstall(const devfs_device_t * dev, appfs_handle_t * h,
 		if( data_start_addr == -1 ){
 			if ( !((src.file->exec.o_flags) & APPFS_FLAG_IS_FLASH) ){ //for RAM app's mark the RAM usage
 				//free the code section
-				appfs_ram_setrange(appfs_ram_usagetable,
+				appfs_ram_setrange(sos_appfs_ram_usage_table,
 						code_page,
 						code_size,
 						APPFS_MEMPAGETYPE_FREE);
@@ -582,7 +579,7 @@ int appfs_util_priv_writeinstall(const devfs_device_t * dev, appfs_handle_t * h,
 		h->type.install.rewrite_mask = (u32)(src.file->exec.code_start) & APPFS_REWRITE_MASK;
 		h->type.install.kernel_symbols_total = symbols_total();
 
-		appfs_ram_setrange(appfs_ram_usagetable,
+		appfs_ram_setrange(sos_appfs_ram_usage_table,
 				ram_page,
 				ram_size,
 				APPFS_MEMPAGETYPE_SYS);
@@ -640,7 +637,7 @@ int appfs_util_priv_writeinstall(const devfs_device_t * dev, appfs_handle_t * h,
 
 int appfs_ram_setusage(int page, int size, int type){
 	u32 buf[APPFS_RAM_USAGE_WORDS];
-	memcpy(buf, appfs_ram_usagetable, APPFS_RAM_USAGE_BYTES);
+	memcpy(buf, sos_appfs_ram_usage_table, APPFS_RAM_USAGE_BYTES);
 	appfs_ram_setrange(buf, page, size, type);
 	cortexm_svcall(appfs_ram_priv_saveusage, buf);
 	return 0;
@@ -648,7 +645,7 @@ int appfs_ram_setusage(int page, int size, int type){
 
 int appfs_priv_ram_setusage(int page, int size, int type){
 	u32 buf[APPFS_RAM_USAGE_WORDS];
-	memcpy(buf, appfs_ram_usagetable, APPFS_RAM_USAGE_BYTES);
+	memcpy(buf, sos_appfs_ram_usage_table, APPFS_RAM_USAGE_BYTES);
 	appfs_ram_setrange(buf, page, size, type);
 	appfs_ram_priv_saveusage(buf);
 	return 0;
@@ -743,6 +740,7 @@ void appfs_util_privloadfileinfo(void * args){
 		p->ret = 0;
 		return;
 	}
+
 	//this is an EIO error
 	p->ret = -2;
 }

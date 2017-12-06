@@ -17,13 +17,13 @@
  * 
  */
 
+#include "sos/sos.h"
 #include "cortexm/mpu.h"
 #include "appfs_local.h"
 
-uint32_t appfs_ram_usagetable[APPFS_RAM_USAGE_WORDS] MCU_SYS_MEM;
 
 void appfs_ram_priv_saveusage(void * args){
-	memcpy(appfs_ram_usagetable, args, APPFS_RAM_USAGE_BYTES);
+	memcpy(sos_appfs_ram_usage_table, args, APPFS_RAM_PAGES);
 }
 
 //this is a privileged call
@@ -52,7 +52,7 @@ int appfs_ram_getusage(int page){
 	if ( (uint32_t)page < APPFS_RAM_PAGES){
 		block = page / 16;
 		shift = (page % 16) * 2;
-		return ( (appfs_ram_usagetable[block] >> (shift)) & APPFS_MEMPAGETYPE_MASK );
+		return ( (sos_appfs_ram_usage_table[block] >> (shift)) & APPFS_MEMPAGETYPE_MASK );
 	} else {
 		return -1;
 	}

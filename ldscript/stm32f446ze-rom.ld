@@ -23,11 +23,12 @@ PROVIDE ( _end = . );
 PROVIDE ( _iap = 0x1FFF1FF1 );
 PROVIDE ( _top_of_stack = (0x2001C000 + 16384) );
 PROVIDE ( _estack = (0x2001C000 + 16384) );
-PROVIDE ( _flash_pages = 30 );
+PROVIDE ( _flash_start = 0x08000000 );
+PROVIDE ( _flash_pages = 8 );
 PROVIDE ( _flash_size = 524288 );
 PROVIDE ( _ram_pages = 112 );
 PROVIDE ( _sram_size = 114688 );
-PROVIDE ( _ahb_sram_size = 0 );
+PROVIDE ( _sram_start = 0x20000000 );
 
 
 
