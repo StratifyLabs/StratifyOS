@@ -34,7 +34,7 @@
 #ifndef MPU_H_
 #define MPU_H_
 
-#include "mcu/arch.h"
+#include "mcu/types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -140,9 +140,9 @@ int mpu_calc_region(int region,
 		uint32_t * rasr);
 
 //convert rbar to address
-static inline void * mpu_addr(uint32_t rbar){ return (void*)(rbar & ~0x1F); }
-static inline uint32_t mpu_size(uint32_t rasr){
-	uint32_t shift;
+static inline void * mpu_addr(u32 rbar){ return (void*)(rbar & ~0x1F); }
+static inline u32 mpu_size(u32 rasr){
+	u32 shift;
 	shift = ((rasr >> 1) & 0x1F) + 1;
 	return (1<<shift);
 };

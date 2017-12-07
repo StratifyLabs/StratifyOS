@@ -28,7 +28,7 @@ src/cortex_m \
 src/device \
 src/device/microchip \
 src/link_common \
-src/mcu/share \
+src/mcu \
 src/sys/aio \
 src/sys/crt \
 src/sys/dirent \

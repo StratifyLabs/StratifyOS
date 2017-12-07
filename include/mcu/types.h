@@ -207,6 +207,8 @@ struct mcu_timeval {
 	u32 tv_usec; //up to 1000000 * SCHED_TIMEVAL_SECONDS
 };
 
+#define MCU_RAM_PAGE_SIZE 1024
+
 
 #ifdef __cplusplus
 }

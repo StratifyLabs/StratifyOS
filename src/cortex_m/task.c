@@ -26,6 +26,7 @@
 #include "mcu/mcu.h"
 #include "mcu/debug.h"
 #include "cortexm/cortexm.h"
+#include "cortexm_local.h"
 #include "mcu/core.h"
 #include "cortexm/task.h"
 

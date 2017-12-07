@@ -29,28 +29,8 @@
 #include <stdlib.h> //defines NULL
 #include "types.h"
 
-#define USB_CTRL_MAX_PACKET_SIZE 64
-
-#ifdef __lpc17xx
-#define ARM_MATH_CM3
-#include "arch/lpc/mcu_lpc17xx.h"
-#endif
-
-#ifdef __lpc177x_8x
-#define ARM_MATH_CM3
-#include "arch/lpc/mcu_lpc177x_8x.h"
-#endif
-
-#ifdef __lpc407x_8x
-#define CORE_M4 1
-#define ARM_MATH_CM4 1
-#include "arch/lpc/mcu_lpc407x_8x.h"
-#endif
-
-#ifdef __lpc43xx
-#define CORE_M4 1
-#define ARM_MATH_CM4 1
-#include "arch/lpc/mcu_lpc43xx.h"
+#if (defined __lpc17xx) || (defined __lpc177x_8x) || (defined __lpc407x_8x) || (defined __lpc43xx)
+#include "arch/lpc/lpc_arch.h"
 #endif
 
 #ifdef __stm32f446xx

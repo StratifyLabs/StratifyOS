@@ -44,7 +44,7 @@
 #ifndef WDT_H_
 #define WDT_H_
 
-#include "arch.h"
+#include "mcu/types.h"
 
 #ifdef __cplusplus
 extern "C" {

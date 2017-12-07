@@ -30,7 +30,7 @@ RM := rm -rf
 -include src/sys/crt/subdir.mk
 -include src/sys/aio/subdir.mk
 -include src/sys/subdir.mk
--include src/mcu/share/subdir.mk
+-include src/mcu/subdir.mk
 -include src/link_common/subdir.mk
 -include src/device/microchip/subdir.mk
 -include src/device/subdir.mk

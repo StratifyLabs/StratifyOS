@@ -27,7 +27,6 @@
 #define _MCU_QEI_H_
 
 #include "sos/dev/qei.h"
-
 #include "sos/fs/devfs.h"
 
 #ifdef __cplusplus

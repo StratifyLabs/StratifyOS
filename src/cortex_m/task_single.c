@@ -22,6 +22,7 @@
 #include "mcu/debug.h"
 #include "cortexm/cortexm.h"
 #include "cortexm/task.h"
+#include "cortexm_local.h"
 
 #define TASK_THREAD_RETURN 0xFFFFFFFD
 

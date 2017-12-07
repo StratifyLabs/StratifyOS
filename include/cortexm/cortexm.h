@@ -1,9 +1,25 @@
-
+/* Copyright 2011-2016 Tyler Gilbert;
+ * This file is part of Stratify OS.
+ *
+ * Stratify OS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Stratify OS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ */
 
 #ifndef MCU_CORTEXM_H_
 #define MCU_CORTEXM_H_
 
-#include "mcu/arch.h"
 #include "mcu/types.h"
 
 #ifdef __cplusplus
@@ -36,13 +52,7 @@ int cortexm_verify_zero_sum32(void * data, int size);
 int cortexm_verify_zero_sum8(void * data, int size);
 
 typedef void (*cortexm_svcall_t)(void*);
-
-#ifndef __link
-/*! \details This performs a privileged call.
- *
- */
 void cortexm_svcall(cortexm_svcall_t call, void * args) __attribute__((optimize("1")));
-#endif
 
 void cortexm_set_unprivileged_mode() MCU_PRIV_CODE;
 void cortexm_set_thread_mode() MCU_PRIV_CODE;
@@ -50,22 +60,7 @@ void cortexm_set_thread_mode() MCU_PRIV_CODE;
 void cortexm_delay_us(u32 us);
 void cortexm_delay_ms(u32 ms);
 
-#define SYSTICK_CTRL_TICKINT (1<<1)
-
-static inline void cortexm_enable_systick_irq() MCU_ALWAYS_INLINE;
-void cortexm_enable_systick_irq(){
-	SysTick->CTRL |= SYSTICK_CTRL_TICKINT;
-}
-
-static inline void cortexm_disable_systick_irq() MCU_ALWAYS_INLINE;
-void cortexm_disable_systick_irq(){
-	SysTick->CTRL &= ~SYSTICK_CTRL_TICKINT;
-}
-
-static inline void cortexm_set_vector_table_addr(void * addr) MCU_ALWAYS_INLINE;
-void cortexm_set_vector_table_addr(void * addr){
-	SCB->VTOR = (uint32_t)addr;
-}
+void cortexm_set_vector_table_addr(void * addr);
 
 #define r(x) register long x asm("lr")
 

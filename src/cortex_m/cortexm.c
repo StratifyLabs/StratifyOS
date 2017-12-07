@@ -20,6 +20,7 @@
 #include "mcu/mcu.h"
 #include "mcu/core.h"
 #include "cortexm/cortexm.h"
+#include "cortexm_local.h"
 #include "device/sys.h"
 
 
@@ -180,5 +181,9 @@ int cortexm_set_irq_prio(int irq, int prio){
 	mcu_core_set_nvic_priority((IRQn_Type)irq, prio);
 
 	return 0;
+}
+
+void cortexm_set_vector_table_addr(void * addr){
+	SCB->VTOR = (uint32_t)addr;
 }
 

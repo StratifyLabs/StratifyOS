@@ -26,11 +26,8 @@
 #ifndef _MCU_SPI_H_
 #define _MCU_SPI_H_
 
-
 #include "sos/dev/spi.h"
-
 #include "sos/fs/devfs.h"
-#include "arch.h"
 
 #ifdef __cplusplus
 extern "C" {
