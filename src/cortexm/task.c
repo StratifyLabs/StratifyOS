@@ -170,7 +170,7 @@ int task_create_thread(void *(*p)(void*),
 			TASK_FLAGS_IS_THREAD;
 	task.reent = mem_addr;
 	task.global_reent = sos_task_table[ thread_zero ].global_reent;
-	task.mem = &(sos_task_table[ thread_zero ].mem);
+	task.mem = (void*)&(sos_task_table[ thread_zero ].mem);
 
 	//Do a priv call while accessing the task table so there are no interruptions
 	cortexm_svcall( (cortexm_svcall_t)task_root_new_task, &task);
@@ -191,7 +191,7 @@ void task_root_new_task(new_task_t * task){
 			sos_task_table[i].global_reent = task->global_reent;
 			sos_task_table[i].timer.t = 0;
 			sos_task_table[i].rr_time = m_task_rr_reload;
-			memcpy(&(sos_task_table[i].mem), task->mem, sizeof(task_memories_t));
+			memcpy((void*)&(sos_task_table[i].mem), task->mem, sizeof(task_memories_t));
 #if __FPU_USED != 0
 			sos_task_table[i].fpscr = FPU->FPDSCR;
 #endif
@@ -305,7 +305,7 @@ void task_context_switcher(){
 	asm volatile ("MRS %0, psp\n\t" : "=r" (sos_task_table[m_task_current].sp) );
 
 #if __FPU_USED == 1
-	void * fpu_stack;
+	volatile void * fpu_stack;
 	if( m_task_current != 0 ){
 		//only do this if the task has used the FPU -- copy FPU registers to task table
 		fpu_stack = sos_task_table[m_task_current].fp + 32;

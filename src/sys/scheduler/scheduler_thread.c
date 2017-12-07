@@ -106,8 +106,6 @@ void root_activate_thread(root_activate_thread_t * args){
 		task_deassert_isfifo(id);
 	}
 
-	mcu_debug_root_printf("r3:%d\n", id);
-
 	sos_sched_table[id].wake.tv_sec = SCHEDULER_TIMEVAL_SEC_INVALID;
 	sos_sched_table[id].wake.tv_usec = 0;
 	scheduler_root_assert_active(id, 0);

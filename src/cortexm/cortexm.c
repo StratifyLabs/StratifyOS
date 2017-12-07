@@ -17,11 +17,9 @@
  *
  */
 
-#include <cortexm/cortexm_local.h>
+#include "cortexm_local.h"
 #include "mcu/mcu.h"
 #include "mcu/core.h"
-#include "cortexm/cortexm.h"
-#include "device/sys.h"
 
 
 //This is 6 clock cycles per loop

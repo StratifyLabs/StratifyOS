@@ -20,6 +20,7 @@
 #include "sos/sos.h"
 #include "mcu/core.h"
 #include "mcu/pio.h"
+#include "cortexm/cortexm.h"
 
 void sos_led_startup(){
 	int i;

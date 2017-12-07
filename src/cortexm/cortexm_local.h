@@ -20,10 +20,9 @@
 #ifndef CORTEXM_LOCAL_H_
 #define CORTEXM_LOCAL_H_
 
-#include "mcu/types.h"
 #include "mcu/arch.h"
-#include "mcu/debug.h"
 #include "cortexm/cortexm.h"
+#include "mcu/debug.h"
 
 #define SYSTICK_CTRL_TICKINT (1<<1)
 

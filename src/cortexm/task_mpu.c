@@ -46,7 +46,7 @@ int task_init_mpu(void * system_memory, int system_memory_size){
 	if ( err < 0 ){
 		return err;
 	}
-	memcpy(&(sos_task_table[0].mem), &os_mem, sizeof(os_mem));  //Copy the OS mem to the task table
+	memcpy((void*)&(sos_task_table[0].mem), &os_mem, sizeof(os_mem));  //Copy the OS mem to the task table
 
 	//Turn the MPU On
 	mpu_enable();

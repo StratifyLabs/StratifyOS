@@ -29,18 +29,19 @@
 #include "types.h"
 
 #if (defined __lpc17xx) || (defined __lpc177x_8x) || (defined __lpc407x_8x) || (defined __lpc43xx)
+#undef __FPU_USED
 #include "arch/lpc/lpc_arch.h"
-#endif
-
-#if (defined __stm32f446xx)
+#define ARCH_DEFINED
+#elif (defined __stm32f446xx)
+#undef __FPU_USED
 #include "arch/stm32/stm32_arch.h"
-#endif
-
-#ifdef __armv7em
+#define ARCH_DEFINED
+#elif defined __armv7em
 #define __CHECK_DEVICE_DEFINES
 #define __FPU_PRESENT 1
 #define ARM_MATH_CM4 1
 #undef __FPU_USED
+#define ARCH_DEFINED
 typedef enum IRQn
 {
 /******  Cortex-M4 Processor Exceptions Numbers ***************************************************/
@@ -56,13 +57,12 @@ typedef enum IRQn
 } IRQn_Type;
 #define __MPU_PRESENT 1
 #include "arch/cmsis/core_cm4.h"
-#endif
-
-#ifdef __armv7m
+#elif defined __armv7m
 #define __CHECK_DEVICE_DEFINES
 #define __FPU_PRESENT 0
 #define ARM_MATH_CM3 1
 #undef __FPU_USED
+#define ARCH_DEFINED
 typedef enum IRQn
 {
 /******  Cortex-M3 Processor Exceptions Numbers ***************************************************/
@@ -111,6 +111,7 @@ typedef u32 pwm_duty_t;
 #define MCU_RTC_PORTS 32
 #define MCU_USB_PORTS 32
 #define MCU_PWM_PORTS 32
+#define ARCH_DEFINED
 
 #else
 #include <sys/syslimits.h>
