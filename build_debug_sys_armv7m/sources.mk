@@ -35,7 +35,9 @@ src/sys/dirent \
 src/sys/grp \
 src/sys \
 src/sys/link \
+src/sys/malloc \
 src/sys/mqueue \
+src/sys/process \
 src/sys/pthread \
 src/sys/pwd \
 src/sys/sched \
@@ -44,8 +46,6 @@ src/sys/semaphore \
 src/sys/sffs \
 src/sys/signal \
 src/sys/socket \
-src/sys/syscalls \
-src/sys/syscalls/process \
 src/sys/sysfs \
 src/sys/termios \
 src/sys/time \
