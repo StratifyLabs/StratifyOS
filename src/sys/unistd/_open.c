@@ -36,14 +36,6 @@
 #include "unistd_fs.h"
 #include "../sched/sched_local.h"
 
-
-
-#if SINGLE_TASK > 0
-volatile bool waiting = false;
-void * my_callback;
-#endif
-
-
 void priv_assign_handle(void * args){
 	int * argp = args;
 	int i;

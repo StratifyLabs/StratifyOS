@@ -32,11 +32,6 @@
 
 volatile sched_fault_t sched_fault MCU_SYS_MEM;
 
-#if SINGLE_TASK != 0
-static void * (*start_function)(void*) MCU_SYS_MEM;
-static int start_single();
-#endif
-
 /*! \details This function initializes the peripheral hardware needed
  * by the scheduler specifically the microsecond timer.
  * \return Zero on success or an error code (see \ref caoslib_err_t)
@@ -104,12 +99,10 @@ int sched_prepare(){
 	mcu_fault_load((fault_t*)&sched_fault.fault);
 
 	mcu_debug_user_printf("Init MPU\n");
-#if USE_MEMORY_PROTECTION > 0
 	if ( task_init_mpu(&_data, sos_board_config.sys_memory_size) < 0 ){
 		sched_debug("Failed to initialize memory protection\n");
 		mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_FATAL, (void*)"tski");
 	}
-#endif
 
 	cortexm_set_unprivileged_mode(); //Enter unpriv mode
 	return 0;

@@ -110,7 +110,6 @@ void sched_priv_timedblock(void * block_object, struct mcu_timeval * abs_time){
 }
 
 void sched_convert_timespec(struct mcu_timeval * tv, const struct timespec * ts){
-#if SINGLE_TASK == 0
 	div_t d;
 	if ( ts == NULL ){
 		tv->tv_sec = SCHED_TIMEVAL_SEC_INVALID;
@@ -120,13 +119,6 @@ void sched_convert_timespec(struct mcu_timeval * tv, const struct timespec * ts)
 		tv->tv_sec = d.quot;
 		tv->tv_usec = d.rem * 1000000 + (ts->tv_nsec + 500) / 1000;
 	}
-#endif
-}
-
-void sched_convert_timeval(struct timeval * t, const struct mcu_timeval * tv){
-#if SINGLE_TASK == 0
-
-#endif
 }
 
 void sched_priv_get_realtime(struct mcu_timeval * tv){

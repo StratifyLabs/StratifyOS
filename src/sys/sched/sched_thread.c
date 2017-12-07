@@ -122,9 +122,7 @@ void root_activate_thread(priv_activate_thread_t * args){
 	sched_priv_assert_active(id, 0);
 	sched_priv_assert_inuse(id);
 
-#if USE_MEMORY_PROTECTION > 0
 	task_root_set_stackguard(id, args->stackguard, SCHED_DEFAULT_STACKGUARD_SIZE);
-#endif
 
 	sched_priv_update_on_wake(sos_sched_table[id].priority);
 }

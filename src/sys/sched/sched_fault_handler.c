@@ -40,7 +40,6 @@
 extern void sos_priv_trace_event(void * info);
 
 void mcu_fault_event_handler(fault_t * fault){
-#if SINGLE_TASK == 0
 	int i;
 	int pid;
 
@@ -102,11 +101,6 @@ void mcu_fault_event_handler(fault_t * fault){
 		}
 
 	}
-#else
-
-
-	while(1);
-#endif
 }
 
 /*! @} */

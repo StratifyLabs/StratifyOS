@@ -44,7 +44,6 @@ static uint8_t launch_count = 0;
 int process_start(const char *path_arg,
 		char *const envp[]
 ){
-#if SINGLE_PROCESS == 0
 	int fd;
 	int err;
 	appfs_file_t startup;
@@ -129,15 +128,10 @@ int process_start(const char *path_arg,
 	mcu_debug_user_printf("process_start:returned %d\n", err);
 
 	return err;
-#else
-	errno = ENOTSUP;
-	return -1;
-#endif
 }
 
 
 
-#if SINGLE_PROCESS == 0
 int reent_is_free(struct _reent * reent){
 	int i;
 	for(i=0; i < task_get_total(); i++){
@@ -147,5 +141,4 @@ int reent_is_free(struct _reent * reent){
 	}
 	return 1;
 }
-#endif
 

@@ -58,21 +58,17 @@ void * _sbrk_r(struct _reent * reent_ptr, ptrdiff_t incr){
 
 
 	//adjust the location of the stack guard -- always 32 bytes for processes
-#if USE_MEMORY_PROTECTION > 0
 	cortexm_svcall(priv_update_guard, base + size + incr);
-#endif
 
 	reent_ptr->procmem_base->size += incr;
 	return (caddr_t) (base + size);
 }
 
-#if USE_MEMORY_PROTECTION > 0
 void priv_update_guard(void * args){
 	int tid;
 	tid = task_get_thread_zero( task_get_pid(task_get_current() ) );
 	task_root_set_stackguard(tid, args, SCHED_DEFAULT_STACKGUARD_SIZE);
 }
-#endif
 
 
 void * _sbrk(ptrdiff_t incr) {

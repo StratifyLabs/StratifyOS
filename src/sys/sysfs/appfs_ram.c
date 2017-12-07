@@ -40,7 +40,7 @@ void appfs_ram_setrange(uint32_t * buf, int page, int size, int usage){
 	int i;
 	int pages;
 	size = mpu_getnextpowerof2(size);
-	pages = (size + DEVICE_RAM_PAGE_SIZE - 1) / DEVICE_RAM_PAGE_SIZE;
+	pages = (size + MCU_RAM_PAGE_SIZE - 1) / MCU_RAM_PAGE_SIZE;
 	for(i=page; i < (pages+page); i++){
 		set_ram_usage(buf, i, usage);
 	}

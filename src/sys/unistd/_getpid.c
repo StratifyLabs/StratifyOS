@@ -34,11 +34,7 @@
 pid_t getpid();
 
 pid_t _getpid(){
-#if SINGLE_TASK == 0
 	return (pid_t)task_get_pid( task_get_current() );
-#else
-	return 0;
-#endif
 }
 
 /*! @} */

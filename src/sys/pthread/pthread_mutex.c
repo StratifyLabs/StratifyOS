@@ -64,7 +64,6 @@ static void priv_mutex_unblocked(priv_mutex_trylock_t *args) MCU_PRIV_EXEC_CODE;
  * - EINVAL: mutex is NULL
  */
 int pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *attr){
-#if SINGLE_TASK == 0
 	if ( mutex == NULL ){
 		errno = EINVAL;
 		return -1;
@@ -97,9 +96,6 @@ int pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *attr){
 	mutex->lock = 0;
 	mutex->pthread = -1;
 	return 0;
-#else
-	return 0;
-#endif
 }
 
 /*! \details This function locks \a mutex.  If \a mutex cannot be locked immediately,
@@ -112,7 +108,6 @@ int pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *attr){
  *
  */
 int pthread_mutex_lock(pthread_mutex_t * mutex){
-#if SINGLE_TASK == 0
 	int ret;
 
 	if ( task_get_current() == 0 ){
@@ -135,9 +130,6 @@ int pthread_mutex_lock(pthread_mutex_t * mutex){
 		break;
 	}
 	return 0;
-#else
-	return 0;
-#endif
 }
 
 /*! \details This function tries to lock \a mutex.  If \a mutex cannot be locked immediately,
@@ -149,7 +141,6 @@ int pthread_mutex_lock(pthread_mutex_t * mutex){
  *
  */
 int pthread_mutex_trylock(pthread_mutex_t *mutex){
-#if SINGLE_TASK == 0
 	int ret;
 
 	if ( task_get_current() == 0 ){
@@ -174,9 +165,6 @@ int pthread_mutex_trylock(pthread_mutex_t *mutex){
 		//Doesn't own the lock
 		return -1;
 	}
-#else
-	return 0;
-#endif
 }
 
 /*! \details This function unlocks \a mutex.
@@ -187,7 +175,6 @@ int pthread_mutex_trylock(pthread_mutex_t *mutex){
  *
  */
 int pthread_mutex_unlock(pthread_mutex_t *mutex){
-#if SINGLE_TASK == 0
 	priv_mutex_unlock_t args;
 
 	if ( task_get_current() == 0 ){
@@ -213,7 +200,6 @@ int pthread_mutex_unlock(pthread_mutex_t *mutex){
 
 	args.mutex = mutex;  //The Mutex
 	cortexm_svcall((cortexm_svcall_t)priv_mutex_unlock, &args);
-#endif
 	return 0;
 }
 
@@ -238,7 +224,6 @@ int pthread_mutex_destroy(pthread_mutex_t *mutex){
 }
 
 
-#if SINGLE_TASK == 0
 
 int mutex_trylock(pthread_mutex_t *mutex, bool trylock, const struct timespec * abs_timeout){
 	int id;
@@ -490,7 +475,6 @@ int mutex_check_initialized(const pthread_mutex_t * mutex){
 
 	return 0;
 }
-#endif
 
 /*! @} */
 

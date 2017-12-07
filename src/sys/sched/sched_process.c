@@ -94,9 +94,7 @@ void priv_init_sched_task(init_sched_task_t * task){
 	sched_priv_assert_inuse(id);
 	sched_priv_update_on_wake( sos_sched_table[id].priority );
 	stackguard = (uint32_t)task->mem->data.addr + task->mem->data.size - 128;
-#if USE_MEMORY_PROTECTION > 0
 	task_root_set_stackguard(id, (void*)stackguard, SCHED_DEFAULT_STACKGUARD_SIZE);
-#endif
 
 	//Items inherited from parent process
 

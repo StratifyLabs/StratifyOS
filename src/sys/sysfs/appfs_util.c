@@ -349,7 +349,7 @@ int appfs_util_priv_reclaim_ram(const devfs_device_t * dev, appfs_handle_t * h){
 
 	page_num = args.pageinfo.num;
 
-	for(s=0; s < f->exec.ram_size; s += DEVICE_RAM_PAGE_SIZE ){
+	for(s=0; s < f->exec.ram_size; s += MCU_RAM_PAGE_SIZE ){
 		if( appfs_ram_getusage(page_num++) !=  APPFS_MEMPAGETYPE_FREE ){
 			errno = ENOMEM;
 			return -1;
@@ -553,7 +553,7 @@ int appfs_util_priv_writeinstall(const devfs_device_t * dev, appfs_handle_t * h,
 			//mark the first page as USER
 			appfs_ram_setrange(sos_appfs_ram_usage_table,
 					code_page,
-					DEVICE_RAM_PAGE_SIZE, //mark the first page as USER
+					MCU_RAM_PAGE_SIZE, //mark the first page as USER
 					APPFS_MEMPAGETYPE_USER);
 		}
 
