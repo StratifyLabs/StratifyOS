@@ -26,7 +26,7 @@
 #include <errno.h>
 #include <signal.h>
 #include <sys/wait.h>
-#include "../sched/sched_local.h"
+#include "../scheduler/scheduler_local.h"
 #include "sig_local.h"
 
 static void priv_wait_child(void * args) MCU_PRIV_EXEC_CODE;
@@ -118,7 +118,7 @@ void priv_check_for_zombie_child(void * args){
 		if( task_enabled(i) ){
 			if( task_get_pid( task_get_parent(i) ) == current_pid ){ //is the task a child
 				num_children++;
-				if ( sched_zombie_asserted(i) ){
+				if ( scheduler_zombie_asserted(i) ){
 					//this zombie process is ready
 					if ( (task_get_pid(i) == p->pid) || (p->pid == -1) ){ //matching pid or any pid?
 						if( SIGCHLD_ASSERTED() ){
@@ -158,9 +158,9 @@ void priv_wait_child(void * args){
 
 	priv_check_for_zombie_child(args);
 	if( p->tid == 0 ){
-		sched_priv_assert_stopped(task_get_current());
-		sched_priv_update_on_stopped(); //causes the currently executing thread to sleep
-		//sched_priv_update_on_sleep(); //Sleep the current thread
+		scheulder_root_assert_stopped(task_get_current());
+		scheduler_root_update_on_stopped(); //causes the currently executing thread to sleep
+		//scheduler_root_update_on_sleep(); //Sleep the current thread
 	} //otherwise -- tid is < 0 and there are no children
 }
 

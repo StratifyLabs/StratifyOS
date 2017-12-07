@@ -29,7 +29,7 @@
 #include <errno.h>
 #include <fcntl.h>
 
-#include "sched_local.h"
+#include "scheduler_local.h"
 
 typedef struct {
 	task_memories_t * mem;
@@ -42,7 +42,7 @@ static void cleanup_process(void * status);
 /*! \details This function creates a new process.
  * \return The thread id or zero if the thread could not be created.
  */
-int sched_new_process(void (*p)(char *)  /*! The startup function (crt()) */,
+int scheduler_create_process(void (*p)(char *)  /*! The startup function (crt()) */,
 		const char * path_arg /*! Path string with arguments */,
 		task_memories_t * mem,
 		void * reent /*! The location of the reent structure */){
@@ -88,11 +88,11 @@ void priv_init_sched_task(init_sched_task_t * task){
 	sos_sched_table[id].priority = 0; //This is the default starting priority priority
 	sos_sched_table[id].attr.schedparam.sched_priority = 0; //This is the priority to revert to after being escalated
 
-	sos_sched_table[id].wake.tv_sec = SCHED_TIMEVAL_SEC_INVALID;
+	sos_sched_table[id].wake.tv_sec = SCHEDULER_TIMEVAL_SEC_INVALID;
 	sos_sched_table[id].wake.tv_usec = 0;
-	sched_priv_assert_active(id, 0);
-	sched_priv_assert_inuse(id);
-	sched_priv_update_on_wake( sos_sched_table[id].priority );
+	scheduler_root_assert_active(id, 0);
+	scheduler_root_assert_inuse(id);
+	scheduler_root_update_on_wake( sos_sched_table[id].priority );
 	stackguard = (uint32_t)task->mem->data.addr + task->mem->data.size - 128;
 	task_root_set_stackguard(id, (void*)stackguard, SCHED_DEFAULT_STACKGUARD_SIZE);
 

@@ -33,7 +33,7 @@
 #include "sos/fs/sysfs.h"
 
 #include "semaphore.h"
-#include "../sched/sched_local.h"
+#include "../scheduler/scheduler_local.h"
 
 #include "mcu/debug.h"
 
@@ -281,9 +281,9 @@ int sem_close(sem_t *sem){
 void root_sem_post(void * args){
 	int id = *((int*)args);
 	sos_sched_table[id].block_object = NULL;
-	sched_priv_assert_active(id, SCHED_UNBLOCK_SEMAPHORE);
-	if( !sched_stopped_asserted(id) ){
-		sched_priv_update_on_wake( sos_sched_table[id].priority );
+	scheduler_root_assert_active(id, SCHEDULER_UNBLOCK_SEMAPHORE);
+	if( !scheduler_stopped_asserted(id) ){
+		scheduler_root_update_on_wake( sos_sched_table[id].priority );
 	}
 }
 
@@ -307,7 +307,7 @@ int sem_post(sem_t *sem){
 	sem->value++;
 
 	//see if any tasks are blocked on this semaphore
-	new_thread = sched_get_highest_priority_blocked(sem);
+	new_thread = scheduler_get_highest_priority_blocked(sem);
 
 	if ( new_thread != -1 ){
 		cortexm_svcall(root_sem_post, &new_thread);
@@ -320,7 +320,7 @@ void root_sem_timedwait(void * args){
 	root_sem_args_t * p = (root_sem_args_t*)args;
 
 	if ( p->sem->value <= 0 ){
-		sched_priv_timedblock(p->sem, &p->interval);
+		scheduler_timing_root_timedblock(p->sem, &p->interval);
 		p->ret = -1;
 	} else {
 		p->ret = 0;
@@ -348,12 +348,12 @@ int sem_timedwait(sem_t * sem, const struct timespec * abs_timeout){
 	}
 
 	args.sem = sem;
-	sched_convert_timespec(&args.interval, abs_timeout);
+	scheduler_timing_convert_timespec(&args.interval, abs_timeout);
 
 	cortexm_svcall(root_sem_timedwait, &args);
 
 	if( args.ret < 0 ){
-		if ( sched_get_unblock_type(task_get_current()) == SCHED_UNBLOCK_SLEEP){
+		if ( scheduler_unblock_type(task_get_current()) == SCHEDULER_UNBLOCK_SLEEP){
 			//The timeout expired
 			errno = ETIMEDOUT;
 			return -1;
@@ -455,7 +455,7 @@ void root_sem_wait(void * args){
 
 	if ( p->sem->value <= 0){
 		//task must be blocked until the semaphore is available
-		sched_priv_update_on_sleep();
+		scheduler_root_update_on_sleep();
 		p->ret = -1; //didn't get the semaphore
 	} else {
 		//got the semaphore

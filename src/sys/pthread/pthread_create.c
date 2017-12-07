@@ -62,7 +62,7 @@
 #include <errno.h>
 
 
-#include "../sched/sched_local.h"
+#include "../scheduler/scheduler_local.h"
 
 
 static void priv_join_thread(void * args) MCU_PRIV_EXEC_CODE;
@@ -91,7 +91,7 @@ int pthread_create(pthread_t * thread /*! If not null, the thread id is written 
 		memcpy(&attrs, attr, sizeof(pthread_attr_t));
 	}
 
-	id = sched_new_thread(start_routine,
+	id = scheduler_create_thread(start_routine,
 			arg,
 			attrs.stackaddr,
 			attrs.stacksize,
@@ -143,7 +143,7 @@ int pthread_join(pthread_t thread, void ** value_ptr){
 					errno = ESRCH;
 					return -1;
 				}
-			} while( sched_get_unblock_type(task_get_current()) != SCHED_UNBLOCK_PTHREAD_JOINED_THREAD_COMPLETE);
+			} while( scheduler_unblock_type(task_get_current()) != SCHEDULER_UNBLOCK_PTHREAD_JOINED_THREAD_COMPLETE);
 
 			if ( value_ptr != NULL ){
 				//When the thread terminates, it puts the exit value in this threads scheduler table entry
@@ -165,9 +165,9 @@ void priv_join_thread(void * args){
 		sos_sched_table[task_get_current()].block_object = (void*)&sos_sched_table[id]; //block on the thread to be joined
 		//If the thread is waiting to be joined, it needs to be activated
 		if ( sos_sched_table[id].block_object == (void*)&sos_sched_table[id].block_object ){
-			sched_priv_assert_active(id, SCHED_UNBLOCK_PTHREAD_JOINED);
+			scheduler_root_assert_active(id, SCHEDULER_UNBLOCK_PTHREAD_JOINED);
 		}
-		sched_priv_update_on_sleep();
+		scheduler_root_update_on_sleep();
 	} else {
 		*p = -1;
 	}

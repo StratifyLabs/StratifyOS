@@ -203,8 +203,8 @@ typedef struct {
 
 
 struct mcu_timeval {
-	u32 tv_sec; //SCHED_TIMEVAL_SECONDS seconds each
-	u32 tv_usec; //up to 1000000 * SCHED_TIMEVAL_SECONDS
+	u32 tv_sec; //SCHEDULER_TIMEVAL_SECONDS seconds each
+	u32 tv_usec; //up to 1000000 * SCHEDULER_TIMEVAL_SECONDS
 };
 
 #define MCU_RAM_PAGE_SIZE 1024

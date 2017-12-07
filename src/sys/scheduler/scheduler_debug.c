@@ -25,9 +25,9 @@
 /*! \file */
 
 
-#include "sched_local.h"
+#include "scheduler_local.h"
 
-void sched_debug_print_tasks(){
+void scheduler_debug_print_tasks(){
 	int i;
 	for(i=1; i < task_get_total(); i++){
 		if ( task_enabled(i) ){
@@ -42,17 +42,17 @@ void sched_debug_print_tasks(){
 	}
 }
 
-void sched_debug_print_active(){
+void scheduler_debug_print_active(){
 	int i;
 	mcu_debug_user_printf("Active Tasks:\n");
 	for(i=1; i < task_get_total(); i++){
-		if ( sched_active_asserted(i) ){
+		if ( scheduler_active_asserted(i) ){
 			mcu_debug_user_printf("\t%d\n", i);
 		}
 	}
 }
 
-void sched_debug_print_executing(){
+void scheduler_debug_print_executing(){
 	int i;
 	mcu_debug_user_printf("Executing Tasks:\n");
 	for(i=0; i < task_get_total(); i++){
@@ -63,7 +63,7 @@ void sched_debug_print_executing(){
 }
 
 
-void sched_debug_print_timers(){
+void scheduler_debug_print_timers(){
 	int i;
 	uint32_t timer[2];
 	mcu_debug_user_printf("Task Timers:\n");

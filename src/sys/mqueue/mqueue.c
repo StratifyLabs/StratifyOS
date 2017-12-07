@@ -98,7 +98,7 @@
 
 #include "mcu/debug.h"
 #include "mqueue.h"
-#include "../sched/sched_local.h"
+#include "../scheduler/scheduler_local.h"
 
 //#define MSG_RD_ONLY 0
 //#define MSG_RDWR 1
@@ -914,7 +914,7 @@ int mq_trysend(mqd_t mqdes, const char * msg_ptr, size_t msg_len, unsigned msg_p
 
 void priv_block_on_mq(void * args){
 	priv_block_on_mq_t * argsp = (priv_block_on_mq_t*)args;
-	sched_priv_timedblock(argsp->block, &argsp->abs_timeout);
+	scheduler_timing_root_timedblock(argsp->block, &argsp->abs_timeout);
 }
 
 int block_on_mq(void * block, const struct timespec * abs_timeout){
@@ -926,9 +926,9 @@ int block_on_mq(void * block, const struct timespec * abs_timeout){
 			return -1;
 		}
 	}
-	sched_convert_timespec(&args.abs_timeout, abs_timeout);
+	scheduler_timing_convert_timespec(&args.abs_timeout, abs_timeout);
 	cortexm_svcall(priv_block_on_mq, &args);
-	if ( sched_get_unblock_type( task_get_current() ) == SCHED_UNBLOCK_SLEEP ){
+	if ( scheduler_unblock_type( task_get_current() ) == SCHEDULER_UNBLOCK_SLEEP ){
 		errno = ETIMEDOUT;
 		return -1;
 	}
@@ -938,15 +938,15 @@ int block_on_mq(void * block, const struct timespec * abs_timeout){
 void priv_wake_blocked(void * args){
 	int * task = (int*)args;
 	int id = *task;
-	sched_priv_assert_active(id, SCHED_UNBLOCK_MQ);
-	if( !sched_stopped_asserted(id) ){
-		sched_priv_update_on_wake(sos_sched_table[id].priority);
+	scheduler_root_assert_active(id, SCHEDULER_UNBLOCK_MQ);
+	if( !scheduler_stopped_asserted(id) ){
+		scheduler_root_update_on_wake(sos_sched_table[id].priority);
 	}
 }
 
 void check_for_blocked_task(void * block){
 	int new_thread;
-	new_thread = sched_get_highest_priority_blocked(block);
+	new_thread = scheduler_get_highest_priority_blocked(block);
 	if ( new_thread != -1 ){
 		cortexm_svcall(priv_wake_blocked, &new_thread);
 	} else {

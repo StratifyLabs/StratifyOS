@@ -34,7 +34,7 @@
 #include "cortexm/cortexm.h"
 #include "mcu/mcu.h"
 #include "unistd_fs.h"
-#include "../sched/sched_local.h"
+#include "../scheduler/scheduler_local.h"
 
 void priv_assign_handle(void * args){
 	int * argp = args;

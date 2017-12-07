@@ -1,4 +1,4 @@
-/* Copyright 2011-2016 Tyler Gilbert; 
+/* Copyright 2011-2017 Tyler Gilbert;
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -13,11 +13,15 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
-#ifndef TASK_CM3_H_
-#define TASK_CM3_H_
+#ifndef SCHEDULER_SCHEDULER_FAULT_H_
+#define SCHEDULER_SCHEDULER_FAULT_H_
 
-#endif /* TASK_CM3_H_ */
+void scheduler_fault_build_string(char * dest);
+void scheduler_fault_build_trace_string(char * dest);
+
+
+#endif /* SCHEDULER_SCHEDULER_FAULT_H_ */

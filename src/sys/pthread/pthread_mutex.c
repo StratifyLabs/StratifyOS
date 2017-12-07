@@ -38,7 +38,7 @@
 
 
 #include "mcu/debug.h"
-#include "../sched/sched_local.h"
+#include "../scheduler/scheduler_local.h"
 
 static int mutex_check_initialized(const pthread_mutex_t * mutex);
 static int mutex_trylock(pthread_mutex_t *mutex, bool trylock, const struct timespec * abs_timeout);
@@ -272,10 +272,10 @@ int mutex_trylock(pthread_mutex_t *mutex, bool trylock, const struct timespec * 
 	args.id = id;
 	args.mutex = mutex;
 	args.trylock = trylock;
-	sched_convert_timespec(&args.abs_timeout, abs_timeout);
+	scheduler_timing_convert_timespec(&args.abs_timeout, abs_timeout);
 	cortexm_svcall((cortexm_svcall_t)priv_mutex_trylock, &args);
 	if( args.ret == -2 ){
-		while( (sched_get_unblock_type(args.id) == SCHED_UNBLOCK_SIGNAL)  ){
+		while( (scheduler_unblock_type(args.id) == SCHEDULER_UNBLOCK_SIGNAL)  ){
 			cortexm_svcall((cortexm_svcall_t)priv_mutex_unblocked, &args);
 		}
 	}
@@ -300,13 +300,13 @@ int pthread_mutex_force_unlock(pthread_mutex_t *mutex){
 void priv_mutex_block(priv_mutex_trylock_t *args){
 	//block the calling mutex
 	sos_sched_table[ args->id ].block_object = args->mutex; //Elevate the priority of the task based on prio_ceiling
-	sched_priv_timedblock(args->mutex, &args->abs_timeout);
+	scheduler_timing_root_timedblock(args->mutex, &args->abs_timeout);
 }
 
 void priv_mutex_unblocked(priv_mutex_trylock_t *args){
 	if( args->mutex->pthread == args->id ){
 		//mutex is locked -- exit loop
-		sched_priv_set_unblock_type(args->id, SCHED_UNBLOCK_MUTEX);
+		scheduler_root_set_unblock_type(args->id, SCHEDULER_UNBLOCK_MUTEX);
 		return;
 	}
 
@@ -314,8 +314,8 @@ void priv_mutex_unblocked(priv_mutex_trylock_t *args){
 	priv_mutex_block(args);
 
 	//if the time has expired, the thread will still be active -- therefore unblock from SLEEP (not signal)
-	if( sched_active_asserted(args->id) ){
-		sched_priv_set_unblock_type(args->id, SCHED_UNBLOCK_SLEEP);
+	if( scheduler_active_asserted(args->id) ){
+		scheduler_root_set_unblock_type(args->id, SCHEDULER_UNBLOCK_SLEEP);
 	}
 
 }
@@ -344,27 +344,27 @@ void priv_mutex_unlock(priv_mutex_unlock_t * args){
 	int last_prio;
 	//Restore the priority to the task that is unlocking the mutex
 	sos_sched_table[args->id].priority = sos_sched_table[args->id].attr.schedparam.sched_priority;
-	last_prio = sched_current_priority;
-	sched_current_priority = sos_sched_table[args->id].priority;
+	last_prio = m_scheduler_current_priority;
+	m_scheduler_current_priority = sos_sched_table[args->id].priority;
 	sos_sched_table[args->id].block_object = NULL;
 
 	//check to see if another task is waiting for the mutex
-	new_thread = sched_get_highest_priority_blocked(args->mutex);
+	new_thread = scheduler_get_highest_priority_blocked(args->mutex);
 
 	if ( new_thread != -1 ){
 		args->mutex->pthread = new_thread;
 		args->mutex->pid = task_get_pid(new_thread);
 		args->mutex->lock = 1;
 		sos_sched_table[new_thread].priority = args->mutex->prio_ceiling;
-		sched_priv_assert_active(new_thread, SCHED_UNBLOCK_MUTEX);
-		if( !sched_stopped_asserted(new_thread) ){
-			sched_priv_update_on_wake(sos_sched_table[new_thread].priority);
+		scheduler_root_assert_active(new_thread, SCHEDULER_UNBLOCK_MUTEX);
+		if( !scheduler_stopped_asserted(new_thread) ){
+			scheduler_root_update_on_wake(sos_sched_table[new_thread].priority);
 		}
 	} else {
 		args->mutex->lock = 0;
 		args->mutex->pthread = -1; //The mutex is up for grabs
-		if ( last_prio > sched_current_priority ){
-			sched_priv_update_on_wake(sos_sched_table[args->id].priority); //The priority was downgraded
+		if ( last_prio > m_scheduler_current_priority ){
+			scheduler_root_update_on_wake(sos_sched_table[args->id].priority); //The priority was downgraded
 		}
 	}
 }

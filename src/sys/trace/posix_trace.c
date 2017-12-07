@@ -25,7 +25,7 @@
 #include "cortexm/mpu.h"
 #include "mcu/core.h"
 #include <fcntl.h>
-#include "../sched/sched_local.h"
+#include "../scheduler/scheduler_local.h"
 #include "trace.h"
 
 typedef struct {
@@ -168,7 +168,7 @@ void priv_set_trace_id(void * args){
 	for(i=0; i < task_get_total(); i++){
 		if( task_enabled(i) ){
 			if( task_get_pid(i) == p->id->pid ){
-				sched_priv_set_trace_id(i, p->id);
+				scheduler_root_set_trace_id(i, p->id);
 				p->ret++; //found the pid -- otherwise return ESRCH
 			}
 		}
@@ -261,7 +261,7 @@ void posix_trace_event_addr_tid(trace_event_id_t event_id, const void * data_ptr
 	struct posix_trace_event_info event_info;
 	//check for an active trace stream
 
-	trace_id_t trace_id = sched_get_trace_id( tid );
+	trace_id_t trace_id = scheduler_trace_id( tid );
 
 
 	if( trace_id == 0 ){
@@ -527,8 +527,8 @@ void priv_shutdown_trace_id(void * args){
 	int i;
 	priv_trace_id_t * p = args;
 	for(i=0; i < task_get_total(); i++){
-		if( sched_get_trace_id(i) == p->id ){
-			sched_priv_set_trace_id(i, 0);
+		if( scheduler_trace_id(i) == p->id ){
+			scheduler_root_set_trace_id(i, 0);
 		}
 	}
 }

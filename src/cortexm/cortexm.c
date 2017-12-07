@@ -17,10 +17,10 @@
  *
  */
 
+#include <cortexm/cortexm_local.h>
 #include "mcu/mcu.h"
 #include "mcu/core.h"
 #include "cortexm/cortexm.h"
-#include "cortexm_local.h"
 #include "device/sys.h"
 
 

@@ -20,8 +20,7 @@
 #ifndef TASK_LOCAL_H_
 #define TASK_LOCAL_H_
 
-#include "mcu/arch.h"
-#include "mcu/types.h"
+#include "cortexm_local.h"
 #include "cortexm/task.h"
 #include "cortexm/mpu.h"
 

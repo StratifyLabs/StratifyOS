@@ -28,7 +28,7 @@
 #include "sos/fs/sffs.h"
 #include "sys/sffs/sffs_dev.h"
 #include "sos/dev/drive.h"
-#include "../sched/sched_local.h"
+#include "../scheduler/scheduler_local.h"
 #include "../unistd/unistd_local.h"
 
 #include "mcu/debug.h"
@@ -45,7 +45,7 @@ void sffs_dev_setlist_block(const void * cfg, int list_block){
 }
 
 void sffs_dev_setdelay_mutex(pthread_mutex_t * mutex){
-	cortexm_svcall(sched_priv_set_delaymutex, mutex);
+	cortexm_svcall(scheduler_root_set_delaymutex, mutex);
 }
 
 int sffs_dev_getserialno(const void * cfg){

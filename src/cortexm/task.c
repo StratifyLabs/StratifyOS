@@ -17,24 +17,17 @@
  * 
  */
 
-
-
-#include <cortex_m/task_local.h>
 #include <string.h>
 #include <errno.h>
+
+#include "task_local.h"
 #include "sos/sos.h"
-#include "mcu/mcu.h"
-#include "mcu/debug.h"
-#include "cortexm/cortexm.h"
-#include "cortexm_local.h"
-#include "mcu/core.h"
 #include "cortexm/task.h"
 
 #define SYSTICK_MIN_CYCLES 10000
 
 
 int task_rr_reload MCU_SYS_MEM;
-int task_total MCU_SYS_MEM;
 task_t * task_table MCU_SYS_MEM;
 volatile int task_current MCU_SYS_MEM;
 
@@ -48,6 +41,10 @@ void system_reset(){
 }
 
 
+int task_get_total(){
+	return sos_board_config.task_total;
+}
+
 int task_init(int interval,
 		void (*scheduler_function)(),
 		void * system_memory,
@@ -57,7 +54,7 @@ int task_init(int interval,
 	int i;
 	//Initialize the core system tick timer
 
-	if ( task_table == NULL ){
+	if ( task_table == 0 ){
 		//The table must be allocated before the task manager is initialized
 		return -1;
 	}
@@ -155,22 +152,15 @@ int task_new_thread(void *(*p)(void*),
 		void * mem_addr,
 		int mem_size,
 		int pid){
-	int tid;
 	int thread_zero;
 	void * stackaddr;
 	new_task_t task;
 
+	//valid validity of pid and stack
 	thread_zero = task_get_thread_zero(pid);
-	if ( thread_zero < 0 ){
-		//The PID is not valid
-		return 0;
-	}
-
-	//Variable initialization
 	stackaddr = mem_addr + mem_size;
-	//Check the stack alignment
-	if ( (unsigned int)stackaddr & 0x03 ){
-		return -1;
+	if ( (thread_zero < 0) || ((u32)stackaddr & 0x03) ){
+		return 0;
 	}
 
 	//Initialize the task
@@ -190,9 +180,7 @@ int task_new_thread(void *(*p)(void*),
 
 	//Do a priv call while accessing the task table so there are no interruptions
 	cortexm_svcall( (cortexm_svcall_t)task_root_new_task, &task);
-	tid = task.tid;
-
-	return tid;
+	return task.tid;
 }
 
 void task_root_new_task(new_task_t * task){
@@ -233,8 +221,6 @@ void task_root_new_task(new_task_t * task){
 		task->tid = i;
 	}
 }
-
-
 
 void task_root_del(int id){
 	if ( (id < task_get_total() ) && (id >= 1)){

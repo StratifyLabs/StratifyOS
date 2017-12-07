@@ -31,7 +31,7 @@
 #include "sos/fs/sysfs.h"
 #include <sys/syscalls/process/process_start.h>
 
-#include "../../sched/sched_local.h"
+#include "../../scheduler/scheduler_local.h"
 #include "../../sysfs/appfs_local.h"
 
 static int reent_is_free(struct _reent * reent);
@@ -120,7 +120,7 @@ int process_start(const char *path_arg,
 	}
 	strcpy(process_path, path_arg);
 
-	err = sched_new_process((void*)startup.exec.startup,
+	err = scheduler_create_process((void*)startup.exec.startup,
 			process_path,
 			&mem,
 			(void*)startup.exec.ram_start);

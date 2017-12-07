@@ -27,11 +27,11 @@
 
 #include <fcntl.h>
 #include <errno.h>
-#include <sys/syscalls/process/process_start.h>
 #include <sys/wait.h>
 
+#include "process_start.h"
 #include "mcu/mcu.h"
-#include "../../sched/sched_local.h"
+#include "../../scheduler/scheduler_local.h"
 
 
 /*! \details This function creates a new process.

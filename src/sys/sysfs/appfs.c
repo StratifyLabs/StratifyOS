@@ -32,7 +32,7 @@
 #include "mcu/debug.h"
 #include "appfs_local.h"
 #include "sos/fs/sysfs.h"
-#include "../sched/sched_local.h"
+#include "../scheduler/scheduler_local.h"
 
 #define ANALYZE_PATH_NOENT -1
 #define ANALYZE_PATH_ROOT 0
@@ -167,7 +167,7 @@ int appfs_startup(const void * cfg){
 				mem.data.addr = (void*)priv_file_info.fileinfo.exec.ram_start;
 				mem.data.size = priv_file_info.fileinfo.exec.ram_size;
 
-				if ( sched_new_process((void*)priv_file_info.fileinfo.exec.startup,
+				if ( scheduler_create_process((void*)priv_file_info.fileinfo.exec.startup,
 						0,
 						&mem,
 						(void*)priv_file_info.fileinfo.exec.ram_start) >= 0 ){

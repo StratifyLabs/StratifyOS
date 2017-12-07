@@ -17,9 +17,7 @@
  * 
  */
 
-#include "mcu/arch.h"
-#include "mcu/mcu.h"
-#include "mcu/core.h"
+#include "cortexm_local.h"
 #include "cortexm/mpu.h"
 
 

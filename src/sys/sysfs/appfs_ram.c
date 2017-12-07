@@ -23,7 +23,7 @@
 
 
 void appfs_ram_priv_saveusage(void * args){
-	memcpy(sos_appfs_ram_usage_table, args, APPFS_RAM_PAGES);
+	memcpy(mcu_ram_usage_table, args, APPFS_RAM_PAGES);
 }
 
 //this is a privileged call
@@ -49,10 +49,10 @@ void appfs_ram_setrange(uint32_t * buf, int page, int size, int usage){
 int appfs_ram_getusage(int page){
 	int block;
 	int shift;
-	if ( (uint32_t)page < APPFS_RAM_PAGES){
+	if ( (u32)page < APPFS_RAM_PAGES){
 		block = page / 16;
 		shift = (page % 16) * 2;
-		return ( (sos_appfs_ram_usage_table[block] >> (shift)) & APPFS_MEMPAGETYPE_MASK );
+		return ( (mcu_ram_usage_table[block] >> (shift)) & APPFS_MEMPAGETYPE_MASK );
 	} else {
 		return -1;
 	}

@@ -528,7 +528,7 @@ typedef struct {
 	fault_t fault;
 	//time_t time;
 	//unsigned int useconds;
-} sched_fault_t;
+} scheduler_fault_t;
 
 #define SOS_TRACE_MESSAGE(msg) sos_trace_event(LINK_POSIX_TRACE_MESSAGE, msg, strnlen(msg, LINK_POSIX_TRACE_DATA_SIZE))
 #define SOS_TRACE_WARNING(msg) sos_trace_event(LINK_POSIX_TRACE_WARNING, msg, strnlen(msg, LINK_POSIX_TRACE_DATA_SIZE))
@@ -539,8 +539,8 @@ void sos_trace_event(link_trace_event_id_t event_id, const void * data_ptr, size
 void sos_trace_event_addr_tid(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len, u32 addr, int tid);
 void sos_trace_priv_event(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len);
 
-#define STFY_SCHED_TIMEVAL_SECONDS 2048
-#define STFY_USECOND_PERIOD (1000000UL * STFY_SCHED_TIMEVAL_SECONDS)
+#define STFY_SCHEDULER_TIMEVAL_SECONDS 2048
+#define STFY_USECOND_PERIOD (1000000UL * STFY_SCHEDULER_TIMEVAL_SECONDS)
 
 typedef struct {
 	pthread_attr_t attr /*! This holds the task's pthread attributes */;
@@ -587,7 +587,7 @@ typedef struct MCU_PACK {
 //must be provided by board support package
 extern volatile sched_task_t sos_sched_table[];
 extern task_t sos_task_table[];
-extern u32 sos_appfs_ram_usage_table[];
+extern u32 mcu_ram_usage_table[];
 extern const sos_board_config_t sos_board_config;
 
 void sos_led_startup();

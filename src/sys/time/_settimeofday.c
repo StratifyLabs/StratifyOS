@@ -33,7 +33,7 @@
 #include "mcu/mcu.h"
 #include "sos/dev/rtc.h"
 
-#include "../sched/sched_local.h"
+#include "../scheduler/scheduler_local.h"
 
 struct timeval time_of_day_offset MCU_SYS_MEM;
 
@@ -44,12 +44,12 @@ void priv_set_time(void * args){
 	struct mcu_timeval tv;
 	struct timeval tmp;
 	struct timeval * t = (struct timeval *)args;
-	sched_priv_get_realtime(&tv);
+	scheduler_timing_root_get_realtime(&tv);
 
 	//time = value + offset
 	//offset = time - value
 	d = div(tv.tv_usec, 1000000);
-	tmp.tv_sec = tv.tv_sec * SCHED_TIMEVAL_SECONDS + d.quot;
+	tmp.tv_sec = tv.tv_sec * SCHEDULER_TIMEVAL_SECONDS + d.quot;
 	tmp.tv_usec = d.rem;
 	time_of_day_offset.tv_usec = t->tv_usec - tmp.tv_usec;
 	time_of_day_offset.tv_sec = t->tv_sec - tmp.tv_sec;

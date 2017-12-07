@@ -32,7 +32,7 @@
 #include <pthread.h>
 #include <errno.h>
 
-#include "../sched/sched_local.h"
+#include "../scheduler/scheduler_local.h"
 
 #define PSHARED_FLAG 31
 #define INIT_FLAG 30
@@ -90,8 +90,8 @@ int pthread_cond_destroy(pthread_cond_t *cond){
 
 void priv_cond_broadcast(void * args){
 	int prio;
-	prio = sched_priv_unblock_all(args, SCHED_UNBLOCK_COND);
-	sched_priv_update_on_wake(prio);
+	prio = scheduler_root_unblock_all(args, SCHEDULER_UNBLOCK_COND);
+	scheduler_root_update_on_wake(prio);
 }
 
 /*! \details This function wakes all threads that are blocked on \a cond.
@@ -117,9 +117,9 @@ int pthread_cond_broadcast(pthread_cond_t *cond){
 
 void priv_cond_signal(void * args){
 	int id = *((int*)args);
-	sched_priv_assert_active(id, SCHED_UNBLOCK_COND);
-	if( !sched_stopped_asserted(id) ){
-		sched_priv_update_on_wake( sos_sched_table[id].priority );
+	scheduler_root_assert_active(id, SCHEDULER_UNBLOCK_COND);
+	if( !scheduler_stopped_asserted(id) ){
+		scheduler_root_update_on_wake( sos_sched_table[id].priority );
 	}
 }
 
@@ -142,7 +142,7 @@ int pthread_cond_signal(pthread_cond_t *cond){
 		return -1;
 	}
 
-	new_thread = sched_get_highest_priority_blocked(cond);
+	new_thread = scheduler_get_highest_priority_blocked(cond);
 
 	if ( new_thread != -1 ){
 		cortexm_svcall(priv_cond_signal, &new_thread);
@@ -166,13 +166,13 @@ void priv_cond_wait(void  * args){
 			argsp->mutex->pid = task_get_pid(new_thread);
 			argsp->mutex->lock = 1;
 			sos_sched_table[new_thread].priority = argsp->mutex->prio_ceiling;
-			sched_priv_assert_active(new_thread, SCHED_UNBLOCK_MUTEX);
+			scheduler_root_assert_active(new_thread, SCHEDULER_UNBLOCK_MUTEX);
 		} else {
 			argsp->mutex->lock = 0;
 			argsp->mutex->pthread = -1; //The mutex is up for grabs
 		}
 
-		sched_priv_timedblock(argsp->cond, &argsp->interval);
+		scheduler_timing_root_timedblock(argsp->cond, &argsp->interval);
 		argsp->ret = 0;
 	} else {
 		argsp->ret = -1;
@@ -214,11 +214,11 @@ int pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex){
 
 	args.cond = cond;
 	args.mutex = mutex;
-	args.interval.tv_sec = SCHED_TIMEVAL_SEC_INVALID;
+	args.interval.tv_sec = SCHEDULER_TIMEVAL_SEC_INVALID;
 	args.interval.tv_usec = 0;
 
 	//release the mutex and block on the cond
-	args.new_thread = sched_get_highest_priority_blocked(mutex);
+	args.new_thread = scheduler_get_highest_priority_blocked(mutex);
 	cortexm_svcall(priv_cond_wait, &args);
 
 	if ( args.ret == -1 ){
@@ -279,11 +279,11 @@ int pthread_cond_timedwait(pthread_cond_t *cond, pthread_mutex_t *mutex, const s
 
 	args.cond = cond;
 	args.mutex = mutex;
-	sched_convert_timespec(&args.interval, abstime);
+	scheduler_timing_convert_timespec(&args.interval, abstime);
 
 
 	//release the mutex and block on the cond
-	args.new_thread = sched_get_highest_priority_blocked(mutex);
+	args.new_thread = scheduler_get_highest_priority_blocked(mutex);
 	cortexm_svcall(priv_cond_wait, &args);
 
 	if ( args.ret == -1 ){
@@ -291,7 +291,7 @@ int pthread_cond_timedwait(pthread_cond_t *cond, pthread_mutex_t *mutex, const s
 		return -1;
 	}
 
-	if ( sched_get_unblock_type( task_get_current() ) == SCHED_UNBLOCK_SLEEP ){
+	if ( scheduler_unblock_type( task_get_current() ) == SCHEDULER_UNBLOCK_SLEEP ){
 		errno = ETIMEDOUT;
 		return -1;
 	}

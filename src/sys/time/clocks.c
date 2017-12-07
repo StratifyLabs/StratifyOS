@@ -31,7 +31,7 @@
 #include <sys/times.h>
 #include <time.h>
 
-#include "../sched/sched_local.h"
+#include "../scheduler/scheduler_local.h"
 
 #define CLOCK_PROCESS_FLAG (1<<31)
 static s32 convert_clocks_to_nanoseconds(s32 clocks);
@@ -73,9 +73,9 @@ int clock_gettime(clockid_t id, struct timespec * tp){
 	switch(id){
 	case CLOCK_MONOTONIC:
 	case CLOCK_REALTIME:
-		cortexm_svcall((cortexm_svcall_t)sched_priv_get_realtime, &sched_time);
+		cortexm_svcall((cortexm_svcall_t)scheduler_timing_root_get_realtime, &sched_time);
 		d = div(sched_time.tv_usec, 1000000);
-		tp->tv_sec = sched_time.tv_sec * SCHED_TIMEVAL_SECONDS + d.quot;
+		tp->tv_sec = sched_time.tv_sec * SCHEDULER_TIMEVAL_SECONDS + d.quot;
 		tp->tv_nsec = d.rem * 1000;
 		break;
 
@@ -107,7 +107,7 @@ int clock_gettime(clockid_t id, struct timespec * tp){
 
 int32_t convert_clocks_to_nanoseconds(int32_t clocks){
 	uint64_t tmp;
-	tmp = (u64)clocks * SCHED_CLK_NSEC_DIV + 512;
+	tmp = (u64)clocks * SCHEDULER_CLOCK_NSEC_DIV + 512;
 	return (u32)(tmp / 1024);
 }
 
@@ -115,7 +115,7 @@ void task_timer_to_timespec(struct timespec * tp, u64 task_timer){
 	u64 nanosec;
 	ldiv_t divide;
 	divide = ldiv(task_timer, mcu_core_getclock());
-	nanosec = divide.rem * SCHED_CLK_NSEC_DIV;
+	nanosec = divide.rem * SCHEDULER_CLOCK_NSEC_DIV;
 	tp->tv_sec = divide.quot;
 	tp->tv_nsec = nanosec;
 }

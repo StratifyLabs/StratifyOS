@@ -29,7 +29,8 @@
 #include "mcu/core.h"
 #include "device/sys.h"
 #include "mcu/debug.h"
-#include "sched/sched_local.h"
+#include "scheduler/scheduler_local.h"
+
 #include "signal/sig_local.h"
 #include "device/sys.h"
 #include "symbols.h"
@@ -130,7 +131,7 @@ int read_task(sys_taskattr_t * task){
 			task->stack_ptr = (uint32_t)task_table[task->tid].sp;
 			task->prio = sos_sched_table[task->tid].priority;
 			task->prio_ceiling = sos_sched_table[task->tid].attr.schedparam.sched_priority;
-			task->is_active = (sched_active_asserted(task->tid) != 0) | ((sched_stopped_asserted(task->tid != 0)<<1));
+			task->is_active = (scheduler_active_asserted(task->tid) != 0) | ((scheduler_stopped_asserted(task->tid != 0)<<1));
 			task->is_thread = task_isthread_asserted( task->tid );
 
 			strncpy(task->name, ((struct _reent*)task_table[ task->tid ].global_reent)->procmem_base->proc_name, NAME_MAX);

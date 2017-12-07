@@ -32,7 +32,7 @@
 #include "sos/fs/sysfs.h"
 
 #include "cortexm/mpu.h"
-#include "../sched/sched_local.h"
+#include "../scheduler/scheduler_local.h"
 #include "../signal/sig_local.h"
 
 static void priv_stop_threads(int * send_signal) MCU_PRIV_EXEC_CODE;
@@ -125,12 +125,12 @@ void priv_stop_threads(int * send_signal){
 		*send_signal = false;
 	}
 
-	if ( sched_zombie_asserted(task_get_current()) ){
+	if ( scheduler_zombie_asserted(task_get_current()) ){
 		//This will be executed if a SIGTERM is sent to a ZOMBIE process
 		*send_signal = false;
 	} else if( *send_signal == true ){
 		//assert the zombie flags
-		sos_sched_table[task_get_current()].flags |= (1<< SCHED_TASK_FLAGS_ZOMBIE);
+		sos_sched_table[task_get_current()].flags |= (1<< SCHEDULER_TASK_FLAG_ZOMBIE);
 
 		//send a signal to the parent process
 		tmp = task_get_pid( task_get_parent( task_get_current() ) );
@@ -175,10 +175,10 @@ void priv_zombie_process(int * signal_sent){
 		task_root_del(task_get_current());
 	} else {
 		//the parent is waiting -- set this thread to a zombie thread
-		sched_priv_deassert_inuse(task_get_current());
+		scheduler_root_deassert_inuse(task_get_current());
 	}
 
-	sched_priv_update_on_sleep();
+	scheduler_root_update_on_sleep();
 }
 
 

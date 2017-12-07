@@ -31,7 +31,7 @@
 #include "cortexm/cortexm.h"
 #include "mcu/debug.h"
 #include "sos/fs/sysfs.h"
-#include "../sched/sched_local.h"
+#include "../scheduler/scheduler_local.h"
 #include "../unistd/unistd_local.h"
 #include "../signal/sig_local.h"
 
@@ -162,8 +162,8 @@ void priv_suspend(void * args){
 	}
 
 	if ( suspend == true ){
-		sched_priv_assert_aiosuspend(task_get_current());
-		sched_priv_timedblock(args, &p->abs_timeout);
+		scheduler_root_assert_aiosuspend(task_get_current());
+		scheduler_timing_root_timedblock(args, &p->abs_timeout);
 	} else {
 		p->nent = -1;
 	}
@@ -181,7 +181,7 @@ int suspend(struct aiocb *const list[], int nent, const struct timespec * timeou
 	args.list = list;
 	args.nent = nent;
 	args.block_on_all = block_on_all; //only block on one or block on all
-	sched_convert_timespec(&args.abs_timeout, timeout);
+	scheduler_timing_convert_timespec(&args.abs_timeout, timeout);
 	cortexm_svcall(priv_suspend, &args);
 
 	if( args.nent == -1 ){
@@ -189,10 +189,10 @@ int suspend(struct aiocb *const list[], int nent, const struct timespec * timeou
 	}
 
 	//Check the unblock type
-	if ( sched_get_unblock_type( task_get_current() ) == SCHED_UNBLOCK_SLEEP ){
+	if ( scheduler_unblock_type( task_get_current() ) == SCHEDULER_UNBLOCK_SLEEP ){
 		errno = EAGAIN;
 		return -1;
-	} else if ( sched_get_unblock_type( task_get_current() ) == SCHED_UNBLOCK_SIGNAL ){
+	} else if ( scheduler_unblock_type( task_get_current() ) == SCHEDULER_UNBLOCK_SIGNAL ){
 		//check to see if a signal interrupted the sleeping period
 		errno = EINTR;
 		return -1;
@@ -282,15 +282,15 @@ int sysfs_aio_data_transfer_callback(void * context, const mcu_event_t * event){
 	}
 
 	if( task_enabled(tid) ){ //if task is no longer enabled (don't do anything)
-		if ( sched_aiosuspend_asserted(tid) ){
+		if ( scheduler_aiosuspend_asserted(tid) ){
 			p = (sysfs_aio_suspend_t*)sos_sched_table[tid].block_object;
 
 			if ( p->block_on_all == false ){
 				for(i=0; i < p->nent; i++){
 					if ( aiocbp == p->list[i] ){ //If this is true the thread is blocked on the operation that is currently completing
-						sched_priv_assert_active(tid, SCHED_UNBLOCK_AIO);
-						if( !sched_stopped_asserted(tid) ){
-							sched_priv_update_on_wake(sos_sched_table[tid].priority);
+						scheduler_root_assert_active(tid, SCHEDULER_UNBLOCK_AIO);
+						if( !scheduler_stopped_asserted(tid) ){
+							scheduler_root_update_on_wake(sos_sched_table[tid].priority);
 						}
 						break;
 					}
@@ -305,9 +305,9 @@ int sysfs_aio_data_transfer_callback(void * context, const mcu_event_t * event){
 				}
 
 				if( wakeup == true ){
-					sched_priv_assert_active(tid, SCHED_UNBLOCK_AIO);
-					if( !sched_stopped_asserted(tid) ){
-						sched_priv_update_on_wake(sos_sched_table[tid].priority);
+					scheduler_root_assert_active(tid, SCHEDULER_UNBLOCK_AIO);
+					if( !scheduler_stopped_asserted(tid) ){
+						scheduler_root_update_on_wake(sos_sched_table[tid].priority);
 					}
 				}
 			}

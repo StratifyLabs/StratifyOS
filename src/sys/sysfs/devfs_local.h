@@ -12,7 +12,7 @@
 #include "sos/fs/sysfs.h"
 #include "sos/fs/devfs.h"
 #include "aio.h"
-#include "../sched/sched_local.h"
+#include "../scheduler/scheduler_local.h"
 #include "../signal/sig_local.h"
 
 

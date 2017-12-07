@@ -30,7 +30,7 @@
 #include "mcu/debug.h"
 #include <signal.h>
 #include <errno.h>
-#include "../sched/sched_local.h"
+#include "../scheduler/scheduler_local.h"
 #include "sig_local.h"
 
 static int alloc_sigactions();
@@ -45,7 +45,7 @@ static int alloc_sigaction(int sig);
  *
  */
 _sig_func_ptr signal(int sig, _sig_func_ptr func){
-	if ( sig < SCHED_NUM_SIGNALS ){
+	if ( sig < SCHEDULER_NUM_SIGNALS ){
 
 		//check for signals that cannot be caught or ignored
 		if ( (sig == SIGKILL) || (sig == SIGSTOP) ){
@@ -90,7 +90,7 @@ _sig_func_ptr signal(int sig, _sig_func_ptr func){
  */
 int sigaction(int sig, const struct sigaction * act, struct sigaction * oact){
 
-	if ( sig < SCHED_NUM_SIGNALS ){
+	if ( sig < SCHEDULER_NUM_SIGNALS ){
 
 		//check for signals that cannot be caught or ignored
 		if ( (sig == SIGKILL) || (sig == SIGSTOP) ){
@@ -234,7 +234,7 @@ int alloc_sigactions(){
 	int tmp;
 	void * mem;
 	if( GLOBAL_SIGACTIONS == NULL ){
-		tmp = sizeof(struct sigaction*) * SCHED_NUM_SIGNALS;
+		tmp = sizeof(struct sigaction*) * SCHEDULER_NUM_SIGNALS;
 		mem = malloc(tmp);
 		if( mem == NULL ){
 			//memory allocation failure

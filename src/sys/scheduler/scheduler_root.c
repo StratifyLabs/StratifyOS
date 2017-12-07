@@ -24,59 +24,59 @@
 
 /*! \file */
 
-#include "sched_local.h"
+#include "scheduler_local.h"
 
-void sched_priv_set_delaymutex(void * args){
+void scheduler_root_set_delaymutex(void * args){
 	sos_sched_table[ task_get_current() ].signal_delay_mutex = args;
 }
 
-void sched_priv_assert_sync(void * args){
+void scheduler_root_assert_sync(void * args){
 	//verify the calling PC is correct?
 
-	sos_sched_table[task_get_current()].flags |= (1<< SCHED_TASK_FLAGS_PRIV_SYNC);
+	sos_sched_table[task_get_current()].flags |= (1<< SCHEDULER_TASK_FLAG_ROOT_SYNC);
 }
 
-void sched_priv_set_trace_id(int tid, trace_id_t id){
+void scheduler_root_set_trace_id(int tid, trace_id_t id){
 	sos_sched_table[tid].trace_id = id;
 }
 
-void sched_priv_assert_active(int id, int unblock_type){
-	sos_sched_table[id].flags |= (1<< SCHED_TASK_FLAGS_ACTIVE);
-	sched_priv_set_unblock_type(id, unblock_type);
-	sched_priv_deassert_aiosuspend(id);
+void scheduler_root_assert_active(int id, int unblock_type){
+	sos_sched_table[id].flags |= (1<< SCHEDULER_TASK_FLAG_ACTIVE);
+	scheduler_root_set_unblock_type(id, unblock_type);
+	scheduler_root_deassert_aiosuspend(id);
 	//Remove all blocks (mutex, timing, etc)
 	sos_sched_table[id].block_object = NULL;
-	sos_sched_table[id].wake.tv_sec = SCHED_TIMEVAL_SEC_INVALID;
+	sos_sched_table[id].wake.tv_sec = SCHEDULER_TIMEVAL_SEC_INVALID;
 	sos_sched_table[id].wake.tv_usec = 0;
 }
 
-void sched_priv_deassert_active(int id){
-	sos_sched_table[id].flags &= ~(1<< SCHED_TASK_FLAGS_ACTIVE);
+void scheduler_root_deassert_active(int id){
+	sos_sched_table[id].flags &= ~(1<< SCHEDULER_TASK_FLAG_ACTIVE);
 	task_deassert_exec(id);  //stop executing the task
-	sched_priv_assert_status_change(); //notify the scheduler a task has changed status
+	scheduler_root_assert_status_change(); //notify the scheduler a task has changed status
 }
 
-void sched_priv_assert_status_change(){
-	sched_status_changed = 1;
+void scheduler_root_assert_status_change(){
+	m_scheduler_status_changed = 1;
 }
 
-inline void sched_priv_deassert_status_change(){
-	sched_status_changed = 0;
+inline void scheduler_root_deassert_status_change(){
+	m_scheduler_status_changed = 0;
 }
 
-void sched_priv_stop_task(int id){
-	sched_priv_deassert_active(id);
+void scheduler_root_stop_task(int id){
+	scheduler_root_deassert_active(id);
 }
 
-void sched_priv_start_task(int id){
-	sched_priv_assert_active(id, SCHED_UNBLOCK_SIGNAL);
+void scheulder_root_start_task(int id){
+	scheduler_root_assert_active(id, SCHEDULER_UNBLOCK_SIGNAL);
 }
 
-void sched_priv_assert(int id, int flag){
+void scheduler_root_assert(int id, int flag){
 	sos_sched_table[id].flags |= (1<<flag);
 
 }
-void sched_priv_deassert(int id, int flag){
+void scheduler_root_deassert(int id, int flag){
 	sos_sched_table[id].flags &= ~(1<<flag);
 }
 

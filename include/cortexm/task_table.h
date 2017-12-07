@@ -173,10 +173,7 @@ int task_get_pid(int id){
 	return task_table[id].pid;
 }
 
-static inline int task_get_total() MCU_ALWAYS_INLINE;
-int task_get_total(){
-	return task_total;
-}
+int task_get_total();
 
 static inline void task_get_timer(uint32_t * dest, int id) MCU_ALWAYS_INLINE;
 void task_get_timer(uint32_t * dest, int id){

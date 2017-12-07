@@ -33,7 +33,7 @@
 #include "mcu/mcu.h"
 #include "cortexm/task.h"
 
-#include "../sched/sched_local.h"
+#include "../scheduler/scheduler_local.h"
 
 #include "sig_local.h"
 
@@ -113,7 +113,7 @@ int sigtimedwait(const sigset_t * set,
 	struct mcu_timeval abs_timeout;
 	int sig;
 
-	sched_convert_timespec(&abs_timeout, timeout);
+	scheduler_timing_convert_timespec(&abs_timeout, timeout);
 
 	do {
 		if ( (sig = check_pending_set(set)) ){
@@ -126,13 +126,13 @@ int sigtimedwait(const sigset_t * set,
 		cortexm_svcall(signal_priv_wait, &abs_timeout);
 
 		//Check to see if a non-blocked signal was caught --executed by user function
-		if ( sched_sigcaught_asserted(task_get_current()) ){ //! \todo the sigcault flag should not be in a protected area of memory
+		if ( scheduler_sigcaught_asserted(task_get_current()) ){ //! \todo the sigcault flag should not be in a protected area of memory
 			errno = EINTR;
 			return -1;
 		}
 
 		//Check to see if the thread woke up because the timeout expired
-		if ( sched_get_unblock_type( task_get_current() ) == SCHED_UNBLOCK_SLEEP ){
+		if ( scheduler_unblock_type( task_get_current() ) == SCHEDULER_UNBLOCK_SLEEP ){
 			errno = EAGAIN;
 			return -1;
 		}
@@ -170,7 +170,7 @@ int sigwaitinfo(const sigset_t *set, siginfo_t *info){
 		cortexm_svcall(signal_priv_wait, NULL);
 
 		//Check to see if a non-blocked signal was caught --executed by user function
-		if ( sched_sigcaught_asserted(task_get_current()) ){
+		if ( scheduler_sigcaught_asserted(task_get_current()) ){
 			errno = EINTR;
 			return -1;
 		}
@@ -185,7 +185,7 @@ int check_pending_set(const sigset_t * set){
 	int i;
 	mask = THREAD_SIGPENDING & *set;
 	if ( mask ){
-		for(i = 0; i < SCHED_NUM_SIGNALS; i++){
+		for(i = 0; i < SCHEDULER_NUM_SIGNALS; i++){
 			if ( mask & (1<<i) ){
 				THREAD_SIGPENDING &= ~(1<<i); //clear the pending signal
 				//execute the handler
@@ -200,9 +200,9 @@ int check_pending_set(const sigset_t * set){
 
 void signal_priv_wait(void * args){
 	if ( args != NULL ){
-		sched_priv_timedblock(NULL, (struct mcu_timeval *)args);
+		scheduler_timing_root_timedblock(NULL, (struct mcu_timeval *)args);
 	} else {
-		sched_priv_update_on_sleep();
+		scheduler_root_update_on_sleep();
 	}
 }
 

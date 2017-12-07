@@ -31,7 +31,7 @@
 #include "mcu/core.h"
 #include "sos/sos.h"
 
-#include "sched_local.h"
+#include "scheduler_local.h"
 #include "../unistd/unistd_local.h"
 #include "../signal/sig_local.h"
 
@@ -45,10 +45,10 @@ void mcu_fault_event_handler(fault_t * fault){
 
 	pid = task_get_pid( task_get_current() );
 
-	if ( sched_fault.fault.num == 0 ){
-		sched_fault.tid = task_get_current();
-		sched_fault.pid = pid;
-		memcpy((void*)&sched_fault.fault, fault, sizeof(fault_t));
+	if ( m_scheduler_fault.fault.num == 0 ){
+		m_scheduler_fault.tid = task_get_current();
+		m_scheduler_fault.pid = pid;
+		memcpy((void*)&m_scheduler_fault.fault, fault, sizeof(fault_t));
 	}
 
 	if ( pid == 0 ){
@@ -57,7 +57,7 @@ void mcu_fault_event_handler(fault_t * fault){
 
 #if MCU_DEBUG
 		char buffer[128];
-		sched_fault_build_string(buffer);
+		scheduler_fault_build_string(buffer);
 		mcu_debug_root_write_uart(buffer, strnlen(buffer,128));
 #endif
 
@@ -68,7 +68,7 @@ void mcu_fault_event_handler(fault_t * fault){
 			event.posix_trace_event.posix_thread_id = task_get_current();
 			event.posix_trace_event.posix_timestamp_tv_sec = 0;
 			event.posix_trace_event.posix_timestamp_tv_nsec = 0;
-			sched_fault_build_trace_string((char*)event.posix_trace_event.data);
+			scheduler_fault_build_trace_string((char*)event.posix_trace_event.data);
 			sos_board_config.trace_event(&event);
 		}
 
@@ -92,7 +92,7 @@ void mcu_fault_event_handler(fault_t * fault){
 					if( signal_priv_send(0, i, SIGKILL, 0, 0, 0) < 0 ){
 						//kill manually -- for example, if the target task doesn't have enough memory to accept SIGKILL
 						task_root_del(i);
-						sched_priv_update_on_sleep();
+						scheduler_root_update_on_sleep();
 					}
 					break;
 				}

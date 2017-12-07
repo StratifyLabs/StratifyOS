@@ -24,27 +24,26 @@
 
 /*! \file */
 #include "config.h"
-#include "sched_local.h"
+#include "scheduler_local.h"
 
 #include "mcu/mcu.h"
 #include "mcu/core.h"
 #include "mcu/debug.h"
 
-volatile sched_fault_t sched_fault MCU_SYS_MEM;
+volatile scheduler_fault_t m_scheduler_fault MCU_SYS_MEM;
 
 /*! \details This function initializes the peripheral hardware needed
  * by the scheduler specifically the microsecond timer.
  * \return Zero on success or an error code (see \ref caoslib_err_t)
  */
-int sched_init(){
-	task_total = sos_board_config.task_total;
+int scheduler_init(){
 	task_table = sos_task_table;
 
-	sched_current_priority = SCHED_LOWEST_PRIORITY - 1;
-	sched_status_changed = 0;
+	m_scheduler_current_priority = SCHED_LOWEST_PRIORITY - 1;
+	m_scheduler_status_changed = 0;
 
-	memset((void*)task_table, 0, sizeof(task_t) * task_total);
-	memset((void*)sos_sched_table, 0, sizeof(sched_task_t) * task_total);
+	memset((void*)task_table, 0, sizeof(task_t) * sos_board_config.task_total);
+	memset((void*)sos_sched_table, 0, sizeof(sched_task_t) * sos_board_config.task_total);
 
 	//Do basic init of task 0 so that memory allocation can happen before the scheduler starts
 	task_table[0].reent = _impure_ptr;
@@ -57,7 +56,7 @@ int sched_init(){
  * called after all peripherals are initialized and interrupts are on.
  * \return Zero on success or an error code
  */
-int sched_start(void * (*init)(void*), int priority){
+int scheduler_start(void * (*init)(void*), int priority){
 
 	sos_sched_table[0].init = init;
 	sos_sched_table[0].priority = priority;
@@ -78,7 +77,7 @@ int sched_start(void * (*init)(void*), int priority){
 }
 
 
-int sched_prepare(){
+int scheduler_prepare(){
 
 	if ( mcu_debug_init() < 0 ){
 		cortexm_disable_interrupts(NULL);
@@ -88,7 +87,7 @@ int sched_prepare(){
 	mcu_debug_user_printf("MCU Debug start\n");
 
 #if SCHED_USECOND_TMR_SLEEP_OC > -1
-	if ( sched_timing_init() ){
+	if ( scheduler_timing_init() ){
 		return -1;
 	}
 #endif
@@ -96,11 +95,11 @@ int sched_prepare(){
 	mcu_debug_user_printf("Load MCU Faults\n");
 
 	//Load any possible faults from the last reset
-	mcu_fault_load((fault_t*)&sched_fault.fault);
+	mcu_fault_load((fault_t*)&m_scheduler_fault.fault);
 
 	mcu_debug_user_printf("Init MPU\n");
 	if ( task_init_mpu(&_data, sos_board_config.sys_memory_size) < 0 ){
-		sched_debug("Failed to initialize memory protection\n");
+		scheduler_debug("Failed to initialize memory protection\n");
 		mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_FATAL, (void*)"tski");
 	}
 

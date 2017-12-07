@@ -29,7 +29,7 @@
 #include <errno.h>
 
 #include "mcu/mcu.h"
-#include "../sched/sched_local.h"
+#include "../scheduler/scheduler_local.h"
 
 #include "sos/fs/sysfs.h"
 #include "devfs_local.h"
@@ -61,23 +61,23 @@ int priv_data_transfer_callback(void * context, const mcu_event_t * event){
 	new_priority = -1;
 	if ( (uint32_t)args->async.tid < task_get_total() ){
 
-		if ( sched_inuse_asserted(args->async.tid) ){
+		if ( scheduler_inuse_asserted(args->async.tid) ){
 			if( event->o_events & MCU_EVENT_FLAG_CANCELED ){
 				args->async.nbyte = -1; //ignore any data transferred and return an error
 			}
 		}
 
-		if ( sched_inuse_asserted(args->async.tid) && !sched_stopped_asserted(args->async.tid) ){ //check to see if the process terminated or stopped
+		if ( scheduler_inuse_asserted(args->async.tid) && !scheduler_stopped_asserted(args->async.tid) ){ //check to see if the process terminated or stopped
 			new_priority = sos_sched_table[args->async.tid].priority;
 		}
 	}
 
 	//check to see if any tasks are waiting for this device
 	for(i = 1; i < task_get_total(); i++){
-		if ( task_enabled(i) && sched_inuse_asserted(i) ){
+		if ( task_enabled(i) && scheduler_inuse_asserted(i) ){
 			if ( sos_sched_table[i].block_object == (args->device + args->is_read) ){
-				sched_priv_assert_active(i, SCHED_UNBLOCK_TRANSFER);
-				if( !sched_stopped_asserted(i) && (sos_sched_table[i].priority > new_priority) ){
+				scheduler_root_assert_active(i, SCHEDULER_UNBLOCK_TRANSFER);
+				if( !scheduler_stopped_asserted(i) && (sos_sched_table[i].priority > new_priority) ){
 					new_priority = sos_sched_table[i].priority;
 				}
 			}
@@ -85,7 +85,7 @@ int priv_data_transfer_callback(void * context, const mcu_event_t * event){
 	}
 
 	args->is_read = ARGS_READ_DONE;
-	sched_priv_update_on_wake(new_priority);
+	scheduler_root_update_on_wake(new_priority);
 
 	return 0;
 }
@@ -101,7 +101,7 @@ void priv_check_op_complete(void * args){
 				//Block waiting for the operation to complete or new data to be ready
 				sos_sched_table[ task_get_current() ].block_object = (void*)p->device + p->is_read;
 				//switch tasks until a signal becomes available
-				sched_priv_update_on_sleep();
+				scheduler_root_update_on_sleep();
 			}
 		} else {
 			p->is_read = ARGS_READ_DONE;
@@ -173,7 +173,7 @@ int devfs_data_transfer(const void * config, const devfs_device_t * device, int 
 
 		//We arrive here if the data is done transferring or there is no data to transfer and O_NONBLOCK is set
 		//or if there was an error
-		while( (sched_get_unblock_type(task_get_current()) == SCHED_UNBLOCK_SIGNAL)
+		while( (scheduler_unblock_type(task_get_current()) == SCHEDULER_UNBLOCK_SIGNAL)
 				&& ((volatile int)args.is_read != ARGS_READ_DONE) ){
 
 			if( (args.ret == 0) && (args.async.nbyte == 0) ){

@@ -242,7 +242,7 @@
 					<sourceEntries>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="include"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/boot"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/cortex_m"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/cortexm"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/device"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/link_common"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/mcu"/>
@@ -572,7 +572,7 @@
 					<sourceEntries>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="include"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/boot"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/cortex_m"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/cortexm"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/device"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/link_common"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/mcu"/>
@@ -686,7 +686,7 @@
 					<sourceEntries>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="include"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/boot"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/cortex_m"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/cortexm"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/device"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/link_common"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/mcu"/>
@@ -801,7 +801,7 @@
 					<sourceEntries>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="include"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/boot"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/cortex_m"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/cortexm"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/device"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/link_common"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/mcu"/>

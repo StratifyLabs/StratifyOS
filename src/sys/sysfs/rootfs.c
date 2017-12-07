@@ -27,7 +27,7 @@
 #include "mcu/mcu.h"
 #include "sos/fs/devfs.h"
 #include "../unistd/unistd_fs.h"
-#include "../sched/sched_local.h"
+#include "../scheduler/scheduler_local.h"
 #include "../unistd/unistd_local.h"
 
 static int get_entries(const sysfs_t * list){

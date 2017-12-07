@@ -32,7 +32,7 @@
 #include "mcu/mcu.h"
 #include "sos/dev/rtc.h"
 
-#include "../sched/sched_local.h"
+#include "../scheduler/scheduler_local.h"
 
 extern struct timeval time_of_day_offset MCU_SYS_MEM;
 
@@ -59,11 +59,11 @@ void gettimeofday_sched(struct timeval * ptimeval){
 	struct mcu_timeval tv;
 	div_t d;
 	struct timeval tmp;
-	cortexm_svcall((cortexm_svcall_t)sched_priv_get_realtime, &tv);
+	cortexm_svcall((cortexm_svcall_t)scheduler_timing_root_get_realtime, &tv);
 
 	//Convert the mcu_timeval to a timeval struct
 	d = div(tv.tv_usec, 1000000);
-	tmp.tv_sec = tv.tv_sec * SCHED_TIMEVAL_SECONDS + d.quot;
+	tmp.tv_sec = tv.tv_sec * SCHEDULER_TIMEVAL_SECONDS + d.quot;
 	tmp.tv_usec = d.rem;
 	//add the offset
 	ptimeval->tv_sec = tmp.tv_sec + time_of_day_offset.tv_sec;

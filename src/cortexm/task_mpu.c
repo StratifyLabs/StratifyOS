@@ -17,12 +17,8 @@
  * 
  */
 
-#include <cortex_m/task_local.h>
-#include "mcu/mcu.h"
+#include "task_local.h"
 #include "cortexm/mpu.h"
-#include "mcu/debug.h"
-#include "mcu/core.h"
-#include "device/sys.h"
 
 static int init_os_memory_protection(task_memories_t * os_mem);
 int task_mpu_calc_protection(task_memories_t * mem);

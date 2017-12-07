@@ -40,7 +40,7 @@
 
 #include "trace.h"
 
-#include "../sched/sched_local.h"
+#include "../scheduler/scheduler_local.h"
 
 #define SERIAL_NUM_WIDTH 3
 

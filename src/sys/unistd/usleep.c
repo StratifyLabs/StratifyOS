@@ -29,7 +29,7 @@
 #include <errno.h>
 
 #include "mcu/debug.h"
-#include "../sched/sched_local.h"
+#include "../scheduler/scheduler_local.h"
 
 static void priv_usleep(void * args) MCU_PRIV_EXEC_CODE;
 
@@ -46,8 +46,8 @@ int usleep(useconds_t useconds){
 		return 0;
 	}
 	if ( useconds <= 1000000UL ){
-		clocks =  sched_useconds_to_clocks(useconds);
-		tmp = sched_useconds_to_clocks(1);
+		clocks =  scheduler_timing_useconds_to_clocks(useconds);
+		tmp = scheduler_timing_useconds_to_clocks(1);
 		if( (task_get_current() == 0) || (clocks < 8000) ){
 
 			for(i = 0; i < clocks; i+=14){
@@ -79,7 +79,7 @@ void priv_usleep(void * args){
 	useconds_t * p;
 	struct mcu_timeval abs_time;
 	p = (useconds_t*)args;
-	sched_priv_get_realtime(&abs_time);
+	scheduler_timing_root_get_realtime(&abs_time);
 	abs_time.tv_usec = abs_time.tv_usec + *p;
 
 	if ( abs_time.tv_usec > STFY_USECOND_PERIOD ){
@@ -87,7 +87,7 @@ void priv_usleep(void * args){
 		abs_time.tv_usec -= STFY_USECOND_PERIOD;
 	}
 
-	sched_priv_timedblock(NULL, &abs_time);
+	scheduler_timing_root_timedblock(NULL, &abs_time);
 }
 
 /*! @} */

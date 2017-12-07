@@ -1,4 +1,4 @@
-/* Copyright 2011-2016 Tyler Gilbert; 
+/* Copyright 2011-2016 Tyler Gilbert;
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -13,31 +13,28 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
-#ifndef CORTEX_M_H_
-#define CORTEX_M_H_
+#ifndef CORTEXM_LOCAL_H_
+#define CORTEXM_LOCAL_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "mcu/types.h"
+#include "mcu/arch.h"
+#include "mcu/debug.h"
+#include "cortexm/cortexm.h"
 
-#define CORE_THREAD_RETURN 0xFFFFFFFD
+#define SYSTICK_CTRL_TICKINT (1<<1)
 
-
-
-
-#define TASK_MAIN_RETURN 0xFFFFFFF9
-
-
-
-
-
-#ifdef __cplusplus
+static inline void cortexm_enable_systick_irq() MCU_ALWAYS_INLINE;
+void cortexm_enable_systick_irq(){
+	SysTick->CTRL |= SYSTICK_CTRL_TICKINT;
 }
-#endif
 
+static inline void cortexm_disable_systick_irq() MCU_ALWAYS_INLINE;
+void cortexm_disable_systick_irq(){
+	SysTick->CTRL &= ~SYSTICK_CTRL_TICKINT;
+}
 
-#endif /* CORTEX_M_H_ */
+#endif /* CORTEXM_LOCAL_H_ */

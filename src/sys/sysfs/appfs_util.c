@@ -545,13 +545,13 @@ int appfs_util_priv_writeinstall(const devfs_device_t * dev, appfs_handle_t * h,
 
 		if ( !((src.file->exec.o_flags) & APPFS_FLAG_IS_FLASH) ){ //for RAM app's mark the RAM usage
 			//mark the range as SYS
-			appfs_ram_setrange(sos_appfs_ram_usage_table,
+			appfs_ram_setrange(mcu_ram_usage_table,
 					code_page,
 					code_size,
 					APPFS_MEMPAGETYPE_SYS);
 
 			//mark the first page as USER
-			appfs_ram_setrange(sos_appfs_ram_usage_table,
+			appfs_ram_setrange(mcu_ram_usage_table,
 					code_page,
 					MCU_RAM_PAGE_SIZE, //mark the first page as USER
 					APPFS_MEMPAGETYPE_USER);
@@ -562,7 +562,7 @@ int appfs_util_priv_writeinstall(const devfs_device_t * dev, appfs_handle_t * h,
 		if( data_start_addr == -1 ){
 			if ( !((src.file->exec.o_flags) & APPFS_FLAG_IS_FLASH) ){ //for RAM app's mark the RAM usage
 				//free the code section
-				appfs_ram_setrange(sos_appfs_ram_usage_table,
+				appfs_ram_setrange(mcu_ram_usage_table,
 						code_page,
 						code_size,
 						APPFS_MEMPAGETYPE_FREE);
@@ -579,7 +579,7 @@ int appfs_util_priv_writeinstall(const devfs_device_t * dev, appfs_handle_t * h,
 		h->type.install.rewrite_mask = (u32)(src.file->exec.code_start) & APPFS_REWRITE_MASK;
 		h->type.install.kernel_symbols_total = symbols_total();
 
-		appfs_ram_setrange(sos_appfs_ram_usage_table,
+		appfs_ram_setrange(mcu_ram_usage_table,
 				ram_page,
 				ram_size,
 				APPFS_MEMPAGETYPE_SYS);
@@ -637,7 +637,7 @@ int appfs_util_priv_writeinstall(const devfs_device_t * dev, appfs_handle_t * h,
 
 int appfs_ram_setusage(int page, int size, int type){
 	u32 buf[APPFS_RAM_USAGE_WORDS];
-	memcpy(buf, sos_appfs_ram_usage_table, APPFS_RAM_USAGE_BYTES);
+	memcpy(buf, mcu_ram_usage_table, APPFS_RAM_USAGE_BYTES);
 	appfs_ram_setrange(buf, page, size, type);
 	cortexm_svcall(appfs_ram_priv_saveusage, buf);
 	return 0;
@@ -645,7 +645,7 @@ int appfs_ram_setusage(int page, int size, int type){
 
 int appfs_priv_ram_setusage(int page, int size, int type){
 	u32 buf[APPFS_RAM_USAGE_WORDS];
-	memcpy(buf, sos_appfs_ram_usage_table, APPFS_RAM_USAGE_BYTES);
+	memcpy(buf, mcu_ram_usage_table, APPFS_RAM_USAGE_BYTES);
 	appfs_ram_setrange(buf, page, size, type);
 	appfs_ram_priv_saveusage(buf);
 	return 0;

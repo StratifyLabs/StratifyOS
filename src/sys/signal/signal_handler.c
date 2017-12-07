@@ -32,7 +32,7 @@
 #include <stdlib.h>
 #include <signal.h>
 #include "trace.h"
-#include "../sched/sched_local.h"
+#include "../scheduler/scheduler_local.h"
 #include "sig_local.h"
 
 
@@ -45,7 +45,7 @@ static void ignore_action(int signo, int flags);
 static void priv_stoppid(void * args) MCU_PRIV_EXEC_CODE;
 static void priv_contpid(void * args) MCU_PRIV_EXEC_CODE;
 
-static void (* const default_handlers[SCHED_NUM_SIGNALS])(int,int) = {
+static void (* const default_handlers[SCHEDULER_NUM_SIGNALS])(int,int) = {
 		ignore_action, //NULL SIGNAL
 		abort_action, //SIGABRT 1
 		terminate_action, //SIGALRM 2
@@ -90,7 +90,7 @@ void signal_handler(int tid, int si_signo, int si_sigcode, union sigval sig_valu
 	siginfo.si_code = si_sigcode;
 	siginfo.si_value = sig_value;
 
-	if ( si_signo < SCHED_NUM_SIGNALS ){
+	if ( si_signo < SCHEDULER_NUM_SIGNALS ){
 
 		if ( GLOBAL_SIGINFOS != NULL ){
 			GLOBAL_SIGINFO(si_signo) = siginfo;
@@ -180,16 +180,16 @@ void priv_stoppid(void * args){
 
 	i = task_get_current();
 	if( task_isthread_asserted(i) ){
-		sched_priv_assert_stopped(i);
+		scheulder_root_assert_stopped(i);
 	} else {
 		for(i=1; i < task_get_total(); i++){
 			if( task_get_pid(i) == pid ){
-				sched_priv_assert_stopped(i);
+				scheulder_root_assert_stopped(i);
 			}
 		}
 	}
 
-	sched_priv_update_on_stopped(); //causes the currently executing thread to sleep
+	scheduler_root_update_on_stopped(); //causes the currently executing thread to sleep
 }
 
 void priv_contpid(void * args){
@@ -201,13 +201,13 @@ void priv_contpid(void * args){
 	i = task_get_current();
 
 	if( task_isthread_asserted(i) ){
-		sched_priv_deassert_stopped(i);
-		highest_prio = sched_get_priority(i);
+		scheduler_root_deassert_stopped(i);
+		highest_prio = scheduler_priority(i);
 	} else {
 		for(i=1; i < task_get_total(); i++){
 			if( task_get_pid(i) == pid ){
-				sched_priv_deassert_stopped(i);
-				prio = sched_get_priority(i);
+				scheduler_root_deassert_stopped(i);
+				prio = scheduler_priority(i);
 				if( prio > highest_prio ){
 					highest_prio = prio;
 				}
@@ -215,7 +215,7 @@ void priv_contpid(void * args){
 		}
 	}
 
-	sched_priv_update_on_wake( highest_prio );
+	scheduler_root_update_on_wake( highest_prio );
 }
 
 void stop_action(int signo, int flags){

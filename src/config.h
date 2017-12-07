@@ -5,20 +5,13 @@
 
 #include "mcu/debug.h"
 
-/*! \addtogroup STFY
- * @{
- */
-
-/*! \brief Version \showinitializer */
 #if MCU_DEBUG
-#define VERSION "3.1.0d"
+#define VERSION "3.2.0d"
 #else
-#define VERSION "3.1.0"
+#define VERSION "3.2.0"
 #endif
 
-#define BCD_VERSION 0x310
-
-/*! @} */
+#define BCD_VERSION 0x320
 
 #include <stdint.h>
 

@@ -25,7 +25,7 @@
 
 #include <unistd.h>
 #include <time.h>
-#include "../sched/sched_local.h"
+#include "../scheduler/scheduler_local.h"
 
 static void priv_sleep(void * args) MCU_PRIV_EXEC_CODE;
 
@@ -37,11 +37,11 @@ unsigned int sleep(unsigned int seconds /*! The number of seconds to sleep */){
 	div_t d;
 
 	if ( task_get_current() != 0 ){
-		if ( seconds < SCHED_TIMEVAL_SECONDS ){
+		if ( seconds < SCHEDULER_TIMEVAL_SECONDS ){
 			interval.tv_sec = 0;
 			interval.tv_usec = seconds * 1000000;
 		} else {
-			d = div(seconds, SCHED_TIMEVAL_SECONDS);
+			d = div(seconds, SCHEDULER_TIMEVAL_SECONDS);
 			interval.tv_sec = d.quot;
 			interval.tv_usec = d.rem;
 		}
@@ -54,14 +54,14 @@ void priv_sleep(void * args){
 	struct mcu_timeval * p;
 	struct mcu_timeval abs_time;
 	p = (struct mcu_timeval*)args;
-	sched_priv_get_realtime(&abs_time);
+	scheduler_timing_root_get_realtime(&abs_time);
 	abs_time.tv_sec += p->tv_sec;
 	abs_time.tv_usec += p->tv_usec;
-	if ( abs_time.tv_usec > SCHED_TIMEVAL_SECONDS*1000000 ){
+	if ( abs_time.tv_usec > SCHEDULER_TIMEVAL_SECONDS*1000000 ){
 		abs_time.tv_sec++;
-		abs_time.tv_usec -= SCHED_TIMEVAL_SECONDS*1000000;
+		abs_time.tv_usec -= SCHEDULER_TIMEVAL_SECONDS*1000000;
 	}
-	sched_priv_timedblock(NULL, &abs_time);
+	scheduler_timing_root_timedblock(NULL, &abs_time);
 }
 
 /*! @} */

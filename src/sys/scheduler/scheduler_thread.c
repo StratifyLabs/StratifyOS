@@ -34,7 +34,7 @@
 
 #include "mcu/debug.h"
 
-#include "sched_local.h"
+#include "scheduler_local.h"
 #include "../syscalls/malloc_local.h"
 
 
@@ -58,7 +58,7 @@ static void root_activate_thread(priv_activate_thread_t * args) MCU_PRIV_EXEC_CO
 /*! \details This function creates a new thread.
  * \return The thread id or zero if the thread could not be created.
  */
-int sched_new_thread(void *(*p)(void*)  /*! The function to execute for the task */,
+int scheduler_create_thread(void *(*p)(void*)  /*! The function to execute for the task */,
 		void * arg /*! The thread's single argument */,
 		void * mem_addr /*! The address for the thread memory (bottom of the stack) */,
 		int mem_size /*! The stack size in bytes */,
@@ -68,7 +68,6 @@ int sched_new_thread(void *(*p)(void*)  /*! The function to execute for the task
 	priv_activate_thread_t args;
 
 	//start a new thread
-
 	id = task_new_thread(p, cleanup_thread, arg, mem_addr, mem_size, task_get_pid( task_get_current() ) );
 
 	if ( id > 0 ){
@@ -90,8 +89,8 @@ int sched_new_thread(void *(*p)(void*)  /*! The function to execute for the task
 		args.stackguard = (void*)((uint32_t)mem_addr + sizeof(struct _reent));
 
 		cortexm_svcall((cortexm_svcall_t)root_activate_thread, &args);
-
 	}
+
 	return id;
 }
 
@@ -101,12 +100,12 @@ void root_activate_thread(priv_activate_thread_t * args){
 	id = args->id;
 	struct _reent * reent;
 
+
 	memset( (void*)&sos_sched_table[id], 0, sizeof(sched_task_t));
 	memcpy( (void*)&(sos_sched_table[id].attr), args->attr, sizeof(pthread_attr_t));
 
 	//Items inherited from parent thread
 	//Signal mask
-
 	reent = (struct _reent *)task_table[id].reent;
 	reent->sigmask = _REENT->sigmask;
 
@@ -117,14 +116,15 @@ void root_activate_thread(priv_activate_thread_t * args){
 		task_deassert_isfifo(id);
 	}
 
-	sos_sched_table[id].wake.tv_sec = SCHED_TIMEVAL_SEC_INVALID;
+	mcu_debug_root_printf("r3:%d\n", id);
+
+	sos_sched_table[id].wake.tv_sec = SCHEDULER_TIMEVAL_SEC_INVALID;
 	sos_sched_table[id].wake.tv_usec = 0;
-	sched_priv_assert_active(id, 0);
-	sched_priv_assert_inuse(id);
+	scheduler_root_assert_active(id, 0);
+	scheduler_root_assert_inuse(id);
 
 	task_root_set_stackguard(id, args->stackguard, SCHED_DEFAULT_STACKGUARD_SIZE);
-
-	sched_priv_update_on_wake(sos_sched_table[id].priority);
+	scheduler_root_update_on_wake(sos_sched_table[id].priority);
 }
 
 void cleanup_thread(void * status){
@@ -172,7 +172,7 @@ void priv_wait_joined(void * args){
 
 	if ( p->joined == 0 ){
 		sos_sched_table[task_get_current()].block_object = (void*)&sos_sched_table[task_get_current()].block_object; //block on self
-		sched_priv_update_on_sleep();
+		scheduler_root_update_on_sleep();
 	} else {
 		sos_sched_table[task_get_current()].exit_status = p->status;
 	}
@@ -186,13 +186,13 @@ void priv_cleanup(void * args){
 		if ( sos_sched_table[joined].block_object == &sos_sched_table[task_get_current()] ){
 			//This thread is joined to the current thread
 			sos_sched_table[joined].exit_status = sos_sched_table[task_get_current()].exit_status;
-			sched_priv_assert_active(joined, SCHED_UNBLOCK_PTHREAD_JOINED_THREAD_COMPLETE);
+			scheduler_root_assert_active(joined, SCHEDULER_UNBLOCK_PTHREAD_JOINED_THREAD_COMPLETE);
 		}
 	}
 
 	sos_sched_table[task_get_current()].flags = 0;
 	task_root_del(task_get_current());
-	sched_priv_update_on_sleep();
+	scheduler_root_update_on_sleep();
 }
 
 /*! @} */

@@ -30,7 +30,7 @@
 #include <errno.h>
 #include "sched.h"
 
-#include "../sched/sched_local.h"
+#include "../scheduler/scheduler_local.h"
 
 typedef struct {
 	int tid;
@@ -51,7 +51,7 @@ static void priv_set_scheduling_param(void * args) MCU_PRIV_EXEC_CODE;
 int pthread_getschedparam(pthread_t thread, int *policy,
     struct sched_param *param){
 
-	if ( sched_check_tid(thread) ){
+	if ( scheduler_check_tid(thread) ){
 		errno = ESRCH;
 		return -1;
 	}
@@ -87,7 +87,7 @@ int pthread_setschedparam(pthread_t thread,
 		return -1;
 	}
 
-	if ( sched_check_tid(thread) < 0 ){
+	if ( scheduler_check_tid(thread) < 0 ){
 		errno = ESRCH;
 		return -1;
 	}

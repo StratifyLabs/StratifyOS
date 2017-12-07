@@ -19,45 +19,45 @@
 
 #include <string.h>
 #include "sos/sos.h"
-#include "sched_local.h"
+#include "scheduler_local.h"
 
-void sched_fault_build_trace_string(char * dest){
+void scheduler_fault_build_trace_string(char * dest){
 	sprintf(dest, "F%X:0x%lX",
-			sched_fault.fault.num,
-			(u32)sched_fault.fault.addr
+			m_scheduler_fault.fault.num,
+			(u32)m_scheduler_fault.fault.addr
 	);
 	return;
 	char hex_buffer[9];
 	strcpy(dest, "F");
-	htoa(hex_buffer, sched_fault.fault.num);
+	htoa(hex_buffer, m_scheduler_fault.fault.num);
 	strcat(dest, hex_buffer);
 	strcat(dest, ":A");
-	htoa(hex_buffer, (u32)sched_fault.fault.handler_pc);
+	htoa(hex_buffer, (u32)m_scheduler_fault.fault.handler_pc);
 	strcat(dest, hex_buffer);
 	strcat(dest, ":C");
-	htoa(hex_buffer, (u32)sched_fault.fault.caller);
+	htoa(hex_buffer, (u32)m_scheduler_fault.fault.caller);
 	strcat(dest, "\n");
 }
 
-void sched_fault_build_string(char * dest){
+void scheduler_fault_build_string(char * dest){
 	sprintf(dest, "F%X:A%lX:PC%lX:C%lX:HA%lX:HC%lX\n",
-			sched_fault.fault.num,
-			(u32)sched_fault.fault.addr,
-			(u32)sched_fault.fault.pc,
-			(u32)sched_fault.fault.caller,
-			(u32)sched_fault.fault.handler_pc,
-			(u32)sched_fault.fault.handler_caller
+			m_scheduler_fault.fault.num,
+			(u32)m_scheduler_fault.fault.addr,
+			(u32)m_scheduler_fault.fault.pc,
+			(u32)m_scheduler_fault.fault.caller,
+			(u32)m_scheduler_fault.fault.handler_pc,
+			(u32)m_scheduler_fault.fault.handler_caller
 	);
 	return;
 	char hex_buffer[9];
 	strcpy(dest, "F");
-	htoa(hex_buffer, sched_fault.fault.num);
+	htoa(hex_buffer, m_scheduler_fault.fault.num);
 	strcat(dest, hex_buffer);
 	strcat(dest, ":A");
-	htoa(hex_buffer, (u32)sched_fault.fault.handler_pc);
+	htoa(hex_buffer, (u32)m_scheduler_fault.fault.handler_pc);
 	strcat(dest, hex_buffer);
 	strcat(dest, ":C");
-	htoa(hex_buffer, (u32)sched_fault.fault.caller);
+	htoa(hex_buffer, (u32)m_scheduler_fault.fault.caller);
 	strcat(dest, "\n");
 }
 

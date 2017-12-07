@@ -25,19 +25,15 @@
 #ifndef ARCH_H_
 #define ARCH_H_
 
-#include <stdint.h>
-#include <stdlib.h> //defines NULL
+#include <stdlib.h>
 #include "types.h"
 
 #if (defined __lpc17xx) || (defined __lpc177x_8x) || (defined __lpc407x_8x) || (defined __lpc43xx)
 #include "arch/lpc/lpc_arch.h"
 #endif
 
-#ifdef __stm32f446xx
-#define CORE_M4 1
-#define ARM_MATH_CM4 1
-#define STM32F446xx 1
-#include "arch/stm32/mcu_stm32f446xx.h"
+#if (defined __stm32f446xx)
+#include "arch/stm32/stm32_arch.h"
 #endif
 
 #ifdef __armv7em
@@ -121,9 +117,6 @@ typedef u32 pwm_duty_t;
 typedef void * mcu_target_ptr_t;
 #endif
 
-#ifdef __stm32f
-#include "arch/stm32f.h"
-#endif
 
 #endif /* ARCH_H_ */
 

@@ -25,7 +25,7 @@
 #include <time.h>
 #include <errno.h>
 
-#include "sched_local.h"
+#include "scheduler_local.h"
 
 #include "mcu/tmr.h"
 #include "mcu/rtc.h"
@@ -33,31 +33,30 @@
 
 static volatile u32 sched_usecond_counter MCU_SYS_MEM;
 
-static int usecond_overflow_event(void * context, const mcu_event_t * data);
 static int open_usecond_tmr();
+static int root_handle_usecond_overflow_event(void * context, const mcu_event_t * data);
+static int root_handle_usecond_match_event(void * context, const mcu_event_t * data);
 
-static int priv_usecond_match_event(void * context, const mcu_event_t * data);
-
-int sched_timing_init(){
+int scheduler_timing_init(){
 	if ( open_usecond_tmr() < 0 ){
 		return -1;
 	}
 	return 0;
 }
 
-u32 sched_seconds_to_clocks(int seconds){
+u32 scheduler_timing_seconds_to_clocks(int seconds){
 	return (u32)mcu_core_getclock() * (u32)seconds;
 }
 
-u32 sched_useconds_to_clocks(int useconds){
-	return (u32)(SCHED_CLK_USEC_MULT * useconds);
+u32 scheduler_timing_useconds_to_clocks(int useconds){
+	return (u32)(SCHEDULER_CLOCK_USEC_MULT * useconds);
 }
 
-u32 sched_nanoseconds_to_clocks(int nanoseconds){
-	return (u32)nanoseconds * 1024 / SCHED_CLK_NSEC_DIV;
+u32 scheduler_timing_nanoseconds_to_clocks(int nanoseconds){
+	return (u32)nanoseconds * 1024 / SCHEDULER_CLOCK_NSEC_DIV;
 }
 
-void sched_priv_timedblock(void * block_object, struct mcu_timeval * abs_time){
+void scheduler_timing_root_timedblock(void * block_object, struct mcu_timeval * abs_time){
 	int id;
 	mcu_channel_t chan_req;
 	u32 now;
@@ -106,35 +105,35 @@ void sched_priv_timedblock(void * block_object, struct mcu_timeval * abs_time){
 		return;
 	}
 
-	sched_priv_update_on_sleep();
+	scheduler_root_update_on_sleep();
 }
 
-void sched_convert_timespec(struct mcu_timeval * tv, const struct timespec * ts){
+void scheduler_timing_convert_timespec(struct mcu_timeval * tv, const struct timespec * ts){
 	div_t d;
 	if ( ts == NULL ){
-		tv->tv_sec = SCHED_TIMEVAL_SEC_INVALID;
+		tv->tv_sec = SCHEDULER_TIMEVAL_SEC_INVALID;
 		tv->tv_usec = 0;
 	} else {
-		d = div(ts->tv_sec, STFY_SCHED_TIMEVAL_SECONDS);
+		d = div(ts->tv_sec, STFY_SCHEDULER_TIMEVAL_SECONDS);
 		tv->tv_sec = d.quot;
 		tv->tv_usec = d.rem * 1000000 + (ts->tv_nsec + 500) / 1000;
 	}
 }
 
-void sched_priv_get_realtime(struct mcu_timeval * tv){
+void scheduler_timing_root_get_realtime(struct mcu_timeval * tv){
 	devfs_handle_t tmr_handle;
 	tmr_handle.port = sos_board_config.clk_usecond_tmr;
 	tv->tv_sec = sched_usecond_counter;
 	tv->tv_usec = (u32)mcu_tmr_get(&tmr_handle, NULL);
 }
 
-int usecond_overflow_event(void * context, const mcu_event_t * data){
+int root_handle_usecond_overflow_event(void * context, const mcu_event_t * data){
 	sched_usecond_counter++;
-	priv_usecond_match_event(NULL, 0);
+	root_handle_usecond_match_event(NULL, 0);
 	return 1; //do not clear callback
 }
 
-int priv_usecond_match_event(void * context, const mcu_event_t * data){
+int root_handle_usecond_match_event(void * context, const mcu_event_t * data){
 	int i;
 	u32 next;
 	u32 tmp;
@@ -155,17 +154,17 @@ int priv_usecond_match_event(void * context, const mcu_event_t * data){
 	current_match = mcu_tmr_get(&tmr_handle, NULL);
 
 	for(i=1; i < task_get_total(); i++){
-		if ( task_enabled(i) && !sched_active_asserted(i) ){ //enabled and inactive tasks only
+		if ( task_enabled(i) && !scheduler_active_asserted(i) ){ //enabled and inactive tasks only
 			tmp = sos_sched_table[i].wake.tv_usec;
 			//compare the current clock to the wake time
 			if ( (sos_sched_table[i].wake.tv_sec < sched_usecond_counter) ||
 					( (sos_sched_table[i].wake.tv_sec == sched_usecond_counter) && (tmp <= current_match) )
 			){
 				//wake this task
-				sos_sched_table[i].wake.tv_sec = SCHED_TIMEVAL_SEC_INVALID;
-				sched_priv_assert_active(i, SCHED_UNBLOCK_SLEEP);
-				if( !sched_stopped_asserted(i) && (sched_get_priority(i) > new_priority) ){
-					new_priority = sched_get_priority(i);
+				sos_sched_table[i].wake.tv_sec = SCHEDULER_TIMEVAL_SEC_INVALID;
+				scheduler_root_assert_active(i, SCHEDULER_UNBLOCK_SLEEP);
+				if( !scheduler_stopped_asserted(i) && (scheduler_priority(i) > new_priority) ){
+					new_priority = scheduler_priority(i);
 				}
 
 			} else if ( (sos_sched_table[i].wake.tv_sec == sched_usecond_counter) && (tmp < next) ) {
@@ -179,7 +178,7 @@ int priv_usecond_match_event(void * context, const mcu_event_t * data){
 	}
 	mcu_tmr_setchannel(&tmr_handle, &chan_req);
 
-	sched_priv_update_on_wake(new_priority);
+	scheduler_root_update_on_wake(new_priority);
 
 	mcu_tmr_enable(&tmr_handle, 0);
 
@@ -225,7 +224,7 @@ int open_usecond_tmr(){
 		//The reset OC is only needed if TMR_FLAG_IS_AUTO_RELOAD is not supported
 		//Set the reset output compare value to reset the clock every 32 seconds
 		chan_req.loc = SCHED_USECOND_TMR_RESET_OC;
-		chan_req.value = STFY_USECOND_PERIOD; //overflow every SCHED_TIMEVAL_SECONDS seconds
+		chan_req.value = STFY_USECOND_PERIOD; //overflow every SCHEDULER_TIMEVAL_SECONDS seconds
 		err = mcu_tmr_setchannel(&tmr, &chan_req);
 		if(err){ return -1; }
 
@@ -239,7 +238,7 @@ int open_usecond_tmr(){
 		action.prio = 0;
 		action.channel = SCHED_USECOND_TMR_RESET_OC;
 		action.o_events = MCU_EVENT_FLAG_MATCH;
-		action.handler.callback = usecond_overflow_event;
+		action.handler.callback = root_handle_usecond_overflow_event;
 		action.handler.context = 0;
 		err = mcu_tmr_setaction(&tmr, &action);
 		if (err ){
@@ -260,7 +259,7 @@ int open_usecond_tmr(){
 
 	action.channel = SCHED_USECOND_TMR_SLEEP_OC;
 	action.o_events = MCU_EVENT_FLAG_MATCH;
-	action.handler.callback = priv_usecond_match_event;
+	action.handler.callback = root_handle_usecond_match_event;
 	action.handler.context = 0;
 	err = mcu_tmr_setaction(&tmr, &action);
 	if ( err ){

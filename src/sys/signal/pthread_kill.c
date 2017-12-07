@@ -33,7 +33,7 @@
 #include <signal.h>
 #include <errno.h>
 #include "sos/sos.h"
-#include "../sched/sched_local.h"
+#include "../scheduler/scheduler_local.h"
 #include "sig_local.h"
 
 #include "mcu/debug.h"
@@ -91,7 +91,7 @@ int signal_priv_forward(int send_tid, int tid, int si_signo, int si_sigcode, int
 	//make sure the task id is valid
 	if ( (uint32_t)tid < task_get_total() ){
 		if ( si_signo != 0 ){
-			if ( si_signo < SCHED_NUM_SIGNALS ){
+			if ( si_signo < SCHEDULER_NUM_SIGNALS ){
 
 				check_stack = tid;
 				signal_priv_check_stack(&check_stack);
@@ -134,7 +134,7 @@ int signal_priv_send(int send_tid, int tid, int si_signo, int si_sigcode, int si
 	//make sure the task id is valid
 	if ( (uint32_t)tid < task_get_total() ){
 		if ( si_signo != 0 ){
-			if ( si_signo < SCHED_NUM_SIGNALS ){
+			if ( si_signo < SCHEDULER_NUM_SIGNALS ){
 
 				check_stack = tid;
 				signal_priv_check_stack(&check_stack);
@@ -176,7 +176,7 @@ int signal_send(int tid, int si_signo, int si_sigcode, int sig_value){
 	struct timespec abstime;
 
 	//make sure the task id is valid
-	if ( sched_check_tid(tid) ){
+	if ( scheduler_check_tid(tid) ){
 		errno = ESRCH;
 		return -1;
 	}
@@ -194,7 +194,7 @@ int signal_send(int tid, int si_signo, int si_sigcode, int sig_value){
 			}
 		}
 
-		if ( si_signo < SCHED_NUM_SIGNALS ){
+		if ( si_signo < SCHEDULER_NUM_SIGNALS ){
 			check_stack = tid;
 			cortexm_svcall(signal_priv_check_stack, &check_stack);
 			if( check_stack < 0 ){
@@ -240,9 +240,9 @@ int pthread_kill(pthread_t thread, int signo){
 
 void signal_priv_activate(int * thread){
 	int id = *thread;
-	sched_priv_deassert_stopped(id);
-	sched_priv_assert_active(id, SCHED_UNBLOCK_SIGNAL);
-	sched_priv_update_on_wake( sched_get_priority(id) );
+	scheduler_root_deassert_stopped(id);
+	scheduler_root_assert_active(id, SCHEDULER_UNBLOCK_SIGNAL);
+	scheduler_root_update_on_wake( scheduler_priority(id) );
 }
 
 

@@ -24,7 +24,7 @@ CPP_DEPS :=
 # Every subdirectory with source files must be described here
 SUBDIRS := \
 src/boot \
-src/cortex_m \
+src/cortexm \
 src/device \
 src/device/microchip \
 src/link_common \
@@ -39,6 +39,7 @@ src/sys/mqueue \
 src/sys/pthread \
 src/sys/pwd \
 src/sys/sched \
+src/sys/scheduler \
 src/sys/semaphore \
 src/sys/sffs \
 src/sys/signal \

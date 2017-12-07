@@ -20,6 +20,7 @@ RM := rm -rf
 -include src/sys/signal/subdir.mk
 -include src/sys/sffs/subdir.mk
 -include src/sys/semaphore/subdir.mk
+-include src/sys/scheduler/subdir.mk
 -include src/sys/sched/subdir.mk
 -include src/sys/pwd/subdir.mk
 -include src/sys/pthread/subdir.mk
@@ -34,7 +35,7 @@ RM := rm -rf
 -include src/link_common/subdir.mk
 -include src/device/microchip/subdir.mk
 -include src/device/subdir.mk
--include src/cortex_m/subdir.mk
+-include src/cortexm/subdir.mk
 -include src/boot/subdir.mk
 -include subdir.mk
 -include objects.mk

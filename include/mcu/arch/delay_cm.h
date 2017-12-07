@@ -30,7 +30,7 @@
 #define DELAY_CM_H_
 
 
-#include <stdint.h>
+#include "../types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -46,7 +46,7 @@ static inline void _delay_ms(uint32_t __ms){}
 static inline void _delay_us(uint32_t __us){}
 #else
 //user F_CPU to create millisecond and microsecond delay loops
-static inline void _delay_loop_1(uint32_t __count) MCU_ALWAYS_INLINE;
+static inline void _delay_loop_1(u32 __count) MCU_ALWAYS_INLINE;
 
 
 #endif
