@@ -38,7 +38,7 @@
 #define INIT_FLAG 30
 #define PID_MASK 0x3FFFFFFF
 
-static void priv_cond_signal(void * args) MCU_PRIV_EXEC_CODE;
+static void priv_cond_signal(void * args) MCU_ROOT_EXEC_CODE;
 
 typedef struct {
 	pthread_cond_t *cond;
@@ -47,8 +47,8 @@ typedef struct {
 	struct mcu_timeval interval;
 	int ret;
 } priv_cond_wait_t;
-static void priv_cond_wait(void  * args) MCU_PRIV_EXEC_CODE;
-static void priv_cond_broadcast(void * args) MCU_PRIV_EXEC_CODE;
+static void priv_cond_wait(void  * args) MCU_ROOT_EXEC_CODE;
+static void priv_cond_broadcast(void * args) MCU_ROOT_EXEC_CODE;
 
 /*! \details This function initializes a pthread block condition.
  *

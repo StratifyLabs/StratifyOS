@@ -79,17 +79,17 @@ enum {
 
 /*! \details This function opens the DMA peripheral.
  */
-void mcu_dma_init(int mode /*! Flags which specify how the DMA is configured */) MCU_PRIV_CODE;
+void mcu_dma_init(int mode /*! Flags which specify how the DMA is configured */) MCU_ROOT_CODE;
 
 
 
 /*! \details This function halts the specified DMA channel.
  */
-int mcu_dma_halttransfer(int chan /*! The channel to halt */) MCU_PRIV_CODE;
+int mcu_dma_halttransfer(int chan /*! The channel to halt */) MCU_ROOT_CODE;
 
 /*! \details This function closes and disables the DMA peripheral.
  */
-void mcu_dma_exit() MCU_PRIV_CODE;
+void mcu_dma_exit() MCU_ROOT_CODE;
 
 int mcu_dma_transferlist(int operation,
 		int chan,
@@ -98,7 +98,7 @@ int mcu_dma_transferlist(int operation,
 		void * context,
 		u32 dest_periph,
 		u32 src_periph
-		) MCU_PRIV_CODE;
+		) MCU_ROOT_CODE;
 
 int mcu_dma_transfer(int operation,
 		int chan,
@@ -108,7 +108,7 @@ int mcu_dma_transfer(int operation,
 		mcu_callback_t cb,
 		void * context,
 		u32 dest_periph,
-		u32 src_periph) MCU_PRIV_CODE;
+		u32 src_periph) MCU_ROOT_CODE;
 
 
 #ifdef __cplusplus

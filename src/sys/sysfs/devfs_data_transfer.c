@@ -47,8 +47,8 @@ typedef struct {
 
 
 static void priv_check_op_complete(void * args);
-static void priv_device_data_transfer(void * args) MCU_PRIV_EXEC_CODE;
-static int priv_data_transfer_callback(void * context, const mcu_event_t * data) MCU_PRIV_CODE;
+static void priv_device_data_transfer(void * args) MCU_ROOT_EXEC_CODE;
+static int priv_data_transfer_callback(void * context, const mcu_event_t * data) MCU_ROOT_CODE;
 static void clear_device_action(const void * config, const devfs_device_t * device, int loc, int is_read);
 
 int priv_data_transfer_callback(void * context, const mcu_event_t * event){

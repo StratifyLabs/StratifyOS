@@ -49,15 +49,15 @@ typedef struct {
 	struct mcu_timeval abs_timeout;
 	int ret;
 } priv_mutex_trylock_t;
-static void priv_mutex_trylock(priv_mutex_trylock_t *args) MCU_PRIV_EXEC_CODE;
+static void priv_mutex_trylock(priv_mutex_trylock_t *args) MCU_ROOT_EXEC_CODE;
 
 typedef struct {
 	int id;
 	pthread_mutex_t *mutex;
 } priv_mutex_unlock_t;
-static void priv_mutex_unlock(priv_mutex_unlock_t * args) MCU_PRIV_EXEC_CODE;
+static void priv_mutex_unlock(priv_mutex_unlock_t * args) MCU_ROOT_EXEC_CODE;
 static void priv_mutex_block(priv_mutex_trylock_t *args);
-static void priv_mutex_unblocked(priv_mutex_trylock_t *args) MCU_PRIV_EXEC_CODE;
+static void priv_mutex_unblocked(priv_mutex_trylock_t *args) MCU_ROOT_EXEC_CODE;
 
 /*! \details This function initializes \a mutex with \a attr.
  * \return Zero on success or -1 with \a errno (see \ref ERRNO) set to:

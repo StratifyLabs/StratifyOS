@@ -586,8 +586,7 @@ typedef struct MCU_PACK {
 
 //must be provided by board support package
 extern volatile sched_task_t sos_sched_table[];
-extern task_t sos_task_table[];
-extern u32 mcu_ram_usage_table[];
+extern volatile task_t sos_task_table[];
 extern const sos_board_config_t sos_board_config;
 
 void sos_led_startup();

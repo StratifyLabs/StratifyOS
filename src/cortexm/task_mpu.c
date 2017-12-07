@@ -46,7 +46,7 @@ int task_init_mpu(void * system_memory, int system_memory_size){
 	if ( err < 0 ){
 		return err;
 	}
-	memcpy(&(task_table[0].mem), &os_mem, sizeof(os_mem));  //Copy the OS mem to the task table
+	memcpy(&(sos_task_table[0].mem), &os_mem, sizeof(os_mem));  //Copy the OS mem to the task table
 
 	//Turn the MPU On
 	mpu_enable();
@@ -104,8 +104,8 @@ int task_root_set_stackguard(int tid, void * stackaddr, int stacksize){
 		return -1;
 	}
 
-	task_table[tid].mem.stackguard.addr = (void*)rbar;
-	task_table[tid].mem.stackguard.size = rasr;
+	sos_task_table[tid].mem.stackguard.addr = (void*)rbar;
+	sos_task_table[tid].mem.stackguard.size = rasr;
 
 	if ( tid == task_get_current() ){
 		MPU->RBAR = rbar;

@@ -42,11 +42,11 @@ static int signal_priv_forward(int send_tid,
 		int tid,
 		int si_signo,
 		int si_sigcode,
-		int sig_value) MCU_PRIV_CODE;
+		int sig_value) MCU_ROOT_CODE;
 static void signal_forward_handler(int send_tid, int signo, int sigcode, int sigvalue);
 
 //this checks to see if sending a signal will cause a stack/heap collision in the target thread
-static void signal_priv_check_stack(void * args) MCU_PRIV_EXEC_CODE;
+static void signal_priv_check_stack(void * args) MCU_ROOT_EXEC_CODE;
 void signal_priv_check_stack(void * args){
 	int * arg = (int*)args;
 	int tid = *arg;
@@ -56,14 +56,14 @@ void signal_priv_check_stack(void * args){
 	//Check to see if stacking an interrupt handler will cause a stack heap collision
 	if( tid != task_get_current() ){
 		//check the target stack pointer
-		sp = (uint32_t)task_table[tid].sp;
+		sp = (u32)sos_task_table[tid].sp;
 	} else {
 		//read the current stack pointer
 		cortexm_get_thread_stack_ptr(&sp);
 	}
 
 	if( (sp - task_interrupt_stacksize() - (8*SCHED_DEFAULT_STACKGUARD_SIZE)) < //stackguard * 8 gives the handler a little bit of memory
-			(uint32_t)(task_table[tid].mem.stackguard.addr) ){
+			(u32)(sos_task_table[tid].mem.stackguard.addr) ){
 		ret = -1;
 	}
 

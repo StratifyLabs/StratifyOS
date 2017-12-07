@@ -33,7 +33,7 @@ typedef struct {
 	int data_size;
 } priv_load_data_t;
 
-static void priv_load_data(void * args) MCU_PRIV_EXEC_CODE;
+static void priv_load_data(void * args) MCU_ROOT_EXEC_CODE;
 void priv_load_data(void * args){
 
 	priv_load_data_t * p = args;
@@ -44,18 +44,18 @@ void priv_load_data(void * args){
 	void * dest_addr;
 
 	//sanity check the size
-	size =  mpu_size((uint32_t)task_table[ task_get_current() ].mem.data.size);
+	size =  mpu_size((uint32_t)sos_task_table[ task_get_current() ].mem.data.size);
 	if( p->data_size < size ){
 		size = p->data_size;
 	}
 
 	code_size = p->code_size;
-	if( code_size > mpu_size((uint32_t)task_table[ task_get_current() ].mem.code.size) ){
+	if( code_size > mpu_size((uint32_t)sos_task_table[ task_get_current() ].mem.code.size) ){
 		return;
 	}
 
-	dest_addr = mpu_addr((uint32_t)task_table[ task_get_current() ].mem.data.addr);
-	code_addr = mpu_addr((uint32_t)task_table[ task_get_current() ].mem.code.addr);
+	dest_addr = mpu_addr((uint32_t)sos_task_table[ task_get_current() ].mem.data.addr);
+	code_addr = mpu_addr((uint32_t)sos_task_table[ task_get_current() ].mem.code.addr);
 	code_size = p->code_size;
 	src_addr = code_addr + code_size;
 	memcpy(dest_addr, src_addr, size);
@@ -88,7 +88,7 @@ char ** const crt_import_argv(char * path_arg, int * argc){
 	arg_buffer = malloc(len);
 	if( arg_buffer == 0 ){
 		//since we couldn't allocate memory in the application, free the memory allocated on global
-		_free_r(task_table[0].global_reent, path_arg);
+		_free_r(sos_task_table[0].global_reent, path_arg);
 		return 0;
 	}
 
@@ -102,7 +102,7 @@ char ** const crt_import_argv(char * path_arg, int * argc){
 	}
 
 	//free the path_arg passed from shared system memory
-	_free_r(task_table[0].global_reent, path_arg);
+	_free_r(sos_task_table[0].global_reent, path_arg);
 
 	argv = malloc(sizeof(char*)*count);
 	if( argv == 0 ){

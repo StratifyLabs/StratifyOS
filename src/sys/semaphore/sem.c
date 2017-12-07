@@ -51,10 +51,10 @@ typedef struct {
 	void * next;
 } sem_list_t;
 
-static void root_sem_wait(void * args) MCU_PRIV_EXEC_CODE;
-static void root_sem_post(void * args) MCU_PRIV_EXEC_CODE;
-static void root_sem_trywait(void * args) MCU_PRIV_EXEC_CODE;
-static void root_sem_timedwait(void * args) MCU_PRIV_EXEC_CODE;
+static void root_sem_wait(void * args) MCU_ROOT_EXEC_CODE;
+static void root_sem_post(void * args) MCU_ROOT_EXEC_CODE;
+static void root_sem_trywait(void * args) MCU_ROOT_EXEC_CODE;
+static void root_sem_timedwait(void * args) MCU_ROOT_EXEC_CODE;
 
 static int check_initialized(sem_t * sem);
 
@@ -93,7 +93,7 @@ static sem_t * sem_find_free(){
 	}
 
 	//no free semaphores
-	new_entry = _malloc_r(task_table[0].global_reent, sizeof(sem_list_t));
+	new_entry = _malloc_r(sos_task_table[0].global_reent, sizeof(sem_list_t));
 	if( new_entry == 0 ){
 		return SEM_FAILED;
 	}

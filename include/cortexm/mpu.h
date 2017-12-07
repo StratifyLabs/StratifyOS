@@ -105,12 +105,12 @@ typedef enum {
 /*! \details This function enables memory protection.  It does not
  * configure any regions.
  */
-int mpu_enable() MCU_PRIV_CODE;
+int mpu_enable() MCU_ROOT_CODE;
 
 /*! \details This function disables memory protection.  It does not change
  * the configuration settings for any regions.
  */
-int mpu_disable() MCU_PRIV_CODE;
+int mpu_disable() MCU_ROOT_CODE;
 
 
 /*! \details This function calculates
@@ -128,7 +128,7 @@ int mpu_enable_region(int region /*! The region to enable */,
 		int size /*! The size of the region */,
 		mpu_access_t access /*! MPU Access value */,
 		mpu_memory_t type /*! MPU memory type */,
-		int executable /*! Non-zero to mark code as executable */) MCU_PRIV_CODE;
+		int executable /*! Non-zero to mark code as executable */) MCU_ROOT_CODE;
 
 int mpu_calc_region(int region,
 		void * addr,
@@ -150,7 +150,7 @@ static inline u32 mpu_size(u32 rasr){
 
 int mpu_getnextpowerof2(int size);
 
-int mpu_dev_init() MCU_PRIV_CODE;
+int mpu_dev_init() MCU_ROOT_CODE;
 
 #ifdef __cplusplus
 }

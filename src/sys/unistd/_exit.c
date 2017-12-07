@@ -35,8 +35,8 @@
 #include "../scheduler/scheduler_local.h"
 #include "../signal/sig_local.h"
 
-static void priv_stop_threads(int * send_signal) MCU_PRIV_EXEC_CODE;
-static void priv_zombie_process(int * signal_sent) MCU_PRIV_EXEC_CODE;
+static void priv_stop_threads(int * send_signal) MCU_ROOT_EXEC_CODE;
+static void priv_zombie_process(int * signal_sent) MCU_ROOT_EXEC_CODE;
 
 static int get_exec_flags();
 
@@ -95,14 +95,14 @@ void priv_stop_threads(int * send_signal){
 		if ( task_get_pid(i) == tmp ){
 			if ( i != task_get_current() ){
 				sos_sched_table[i].flags = 0;
-				task_root_del(i);
+				task_root_delete(i);
 			}
 		}
 	}
 
 	//now check for SA_NOCLDWAIT in parent process
 	tmp = task_get_parent( task_get_current() );
-	parent_reent = (struct _reent *)task_table[tmp].global_reent;
+	parent_reent = (struct _reent *)sos_task_table[tmp].global_reent;
 
 	if ( task_get_pid(tmp) == 0 ){
 		//process 0 never waits
@@ -164,7 +164,7 @@ void priv_stop_threads(int * send_signal){
 int get_exec_flags(){
 	appfs_file_t * hdr;
 	//check to see if the app should discard itself
-	hdr = (appfs_file_t *)mpu_addr((uint32_t)task_table[task_get_current()].mem.code.addr);
+	hdr = (appfs_file_t *)mpu_addr((u32)sos_task_table[task_get_current()].mem.code.addr);
 	return hdr->exec.o_flags;
 }
 
@@ -172,7 +172,7 @@ void priv_zombie_process(int * signal_sent){
 	if ( *signal_sent == false ){
 		//discard this thread immediately
 		sos_sched_table[task_get_current()].flags = 0;
-		task_root_del(task_get_current());
+		task_root_delete(task_get_current());
 	} else {
 		//the parent is waiting -- set this thread to a zombie thread
 		scheduler_root_deassert_inuse(task_get_current());

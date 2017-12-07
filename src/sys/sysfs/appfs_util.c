@@ -41,11 +41,11 @@
 #define APPFS_REWRITE_KERNEL_ADDR (0x00FF8000)
 #define APPFS_REWRITE_KERNEL_ADDR_MASK (0x7FFF)
 
-static void appfs_util_privloadfileinfo(void * args) MCU_PRIV_EXEC_CODE;
+static void appfs_util_privloadfileinfo(void * args) MCU_ROOT_EXEC_CODE;
 static int get_hdrinfo(appfs_file_t * file, int page, int type);
 static int get_filesize(const devfs_device_t * dev, priv_load_fileinfo_t * args, int filetype);
 
-static void priv_op_erase_pages(void * args) MCU_PRIV_EXEC_CODE;
+static void priv_op_erase_pages(void * args) MCU_ROOT_EXEC_CODE;
 
 static u8 calc_checksum(const char * name){
 	int i;

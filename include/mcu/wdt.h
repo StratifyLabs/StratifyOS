@@ -84,7 +84,7 @@ typedef enum {
  * \return An HWPL Error code (Zero on success)
  */
 int mcu_wdt_init( int mode /*! The WDT mode to use (see \ref wdt_mode_t) */,
-		int interval /*! The timeout value in ms */) MCU_PRIV_CODE;
+		int interval /*! The timeout value in ms */) MCU_ROOT_CODE;
 
 
 /*! \details This function resets the watchdog timer
@@ -94,15 +94,15 @@ int mcu_wdt_init( int mode /*! The WDT mode to use (see \ref wdt_mode_t) */,
  */
 void mcu_wdt_reset();
 
-void mcu_wdt_priv_reset(void * args) MCU_PRIV_CODE;
+void mcu_wdt_priv_reset(void * args) MCU_ROOT_CODE;
 
-int mcu_wdt_setaction(int (*action)(const void *, void *)) MCU_PRIV_CODE;
+int mcu_wdt_setaction(int (*action)(const void *, void *)) MCU_ROOT_CODE;
 
 
 /*! \details This function sets the WDT timeout interval in ms.
  * \return Zero on success.
  */
-int mcu_wdt_setinterval(int interval) MCU_PRIV_CODE;
+int mcu_wdt_setinterval(int interval) MCU_ROOT_CODE;
 
 #ifdef __cplusplus
 }

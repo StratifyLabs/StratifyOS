@@ -17,12 +17,6 @@
  * 
  */
 
-/*! \addtogroup SCHED
- * @{
- *
- */
-
-/*! \file */
 
 #include "config.h"
 #include <pthread.h>
@@ -31,71 +25,67 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <malloc.h>
+#include <sys/malloc/malloc_local.h>
 
 #include "mcu/debug.h"
-
 #include "scheduler_local.h"
-#include "../syscalls/malloc_local.h"
-
 
 static void cleanup_thread(void * status);
 
 typedef struct {
 	int joined;
 	int status;
-} priv_wait_joined_t;
-static void priv_wait_joined(void * args) MCU_PRIV_EXEC_CODE;
-static void priv_cleanup(void * args) MCU_PRIV_EXEC_CODE;
+} root_wait_joined_t;
+static void root_wait_joined(void * args) MCU_ROOT_EXEC_CODE;
+static void root_cleanup(void * args) MCU_ROOT_EXEC_CODE;
 
 typedef struct {
 	int id;
-	pthread_attr_t * attr;
+	const pthread_attr_t * attr;
 	void * stackguard;
-} priv_activate_thread_t;
-static void root_activate_thread(priv_activate_thread_t * args) MCU_PRIV_EXEC_CODE;
+} root_activate_thread_t;
+static void root_activate_thread(root_activate_thread_t * args) MCU_ROOT_EXEC_CODE;
+static void activate_thread(int id, void * mem_addr, const pthread_attr_t * attr);
 
-
-/*! \details This function creates a new thread.
- * \return The thread id or zero if the thread could not be created.
- */
-int scheduler_create_thread(void *(*p)(void*)  /*! The function to execute for the task */,
-		void * arg /*! The thread's single argument */,
-		void * mem_addr /*! The address for the thread memory (bottom of the stack) */,
-		int mem_size /*! The stack size in bytes */,
-		pthread_attr_t * attr){
+int scheduler_create_thread(void *(*p)(void*), void * arg, void * mem_addr, int mem_size, const pthread_attr_t * attr){
 	int id;
-	struct _reent * reent;
-	priv_activate_thread_t args;
 
 	//start a new thread
-	id = task_new_thread(p, cleanup_thread, arg, mem_addr, mem_size, task_get_pid( task_get_current() ) );
+	id = task_create_thread(p, cleanup_thread, arg, mem_addr, mem_size, task_get_pid( task_get_current() ) );
 
 	if ( id > 0 ){
-
-		//Initialize the reent structure
-		reent = (struct _reent *)mem_addr; //The bottom of the stack
-		_REENT_INIT_PTR(reent);
-
-		reent->_stderr = _GLOBAL_REENT->_stderr;
-		reent->_stdout = _GLOBAL_REENT->_stdout;
-		reent->_stdin = _GLOBAL_REENT->_stdin;
-		reent->__sdidinit = 1;
-
-		reent->procmem_base = _GLOBAL_REENT->procmem_base; //malloc use the same base as the process
-
-		//Now activate the thread
-		args.id = id;
-		args.attr = attr;
-		args.stackguard = (void*)((uint32_t)mem_addr + sizeof(struct _reent));
-
-		cortexm_svcall((cortexm_svcall_t)root_activate_thread, &args);
+		activate_thread(id, mem_addr, attr);
 	}
 
 	return id;
 }
 
+void activate_thread(int id, void * mem_addr, const pthread_attr_t * attr){
+	struct _reent * reent;
+	root_activate_thread_t args;
 
-void root_activate_thread(priv_activate_thread_t * args){
+	//Initialize the reent structure
+	reent = (struct _reent *)mem_addr; //The bottom of the stack
+	_REENT_INIT_PTR(reent);
+
+	reent->_stderr = _GLOBAL_REENT->_stderr;
+	reent->_stdout = _GLOBAL_REENT->_stdout;
+	reent->_stdin = _GLOBAL_REENT->_stdin;
+	reent->__sdidinit = 1;
+
+	reent->procmem_base = _GLOBAL_REENT->procmem_base; //malloc use the same base as the process
+
+	//Now activate the thread
+	args.id = id;
+	args.attr = attr;
+	args.stackguard = (void*)((uint32_t)mem_addr + sizeof(struct _reent));
+
+	cortexm_svcall((cortexm_svcall_t)root_activate_thread, &args);
+
+}
+
+
+void root_activate_thread(root_activate_thread_t * args){
 	int id;
 	id = args->id;
 	struct _reent * reent;
@@ -106,7 +96,7 @@ void root_activate_thread(priv_activate_thread_t * args){
 
 	//Items inherited from parent thread
 	//Signal mask
-	reent = (struct _reent *)task_table[id].reent;
+	reent = (struct _reent *)sos_task_table[id].reent;
 	reent->sigmask = _REENT->sigmask;
 
 	sos_sched_table[args->id].priority = args->attr->schedparam.sched_priority;
@@ -129,7 +119,7 @@ void root_activate_thread(priv_activate_thread_t * args){
 
 void cleanup_thread(void * status){
 	int detach_state;
-	priv_wait_joined_t args;
+	root_wait_joined_t args;
 
 	stdin = 0;
 	stdout = 0;
@@ -145,19 +135,19 @@ void cleanup_thread(void * status){
 	if ( detach_state == PTHREAD_CREATE_JOINABLE ){
 		args.status = (int)status;
 		do {
-			cortexm_svcall(priv_wait_joined, &args);
+			cortexm_svcall(root_wait_joined, &args);
 		} while(args.joined == 0);
 	}
 
 	//Free all memory associated with this thread
 	malloc_free_task_r(_REENT, task_get_current() );
 	free( sos_sched_table[task_get_current()].attr.stackaddr ); //free the stack address
-	cortexm_svcall(priv_cleanup, &args.joined);
+	cortexm_svcall(root_cleanup, &args.joined);
 }
 
-void priv_wait_joined(void * args){
+void root_wait_joined(void * args){
 	int joined;
-	priv_wait_joined_t * p = (priv_wait_joined_t*)args;
+	root_wait_joined_t * p = (root_wait_joined_t*)args;
 
 	//wait until the thread has been joined to free the resources
 	for(joined=1; joined < task_get_total(); joined++){
@@ -178,7 +168,7 @@ void priv_wait_joined(void * args){
 	}
 }
 
-void priv_cleanup(void * args){
+void root_cleanup(void * args){
 	int joined;
 	//notify all joined threads of termination
 	for(joined=1; joined < task_get_total(); joined++){
@@ -191,8 +181,7 @@ void priv_cleanup(void * args){
 	}
 
 	sos_sched_table[task_get_current()].flags = 0;
-	task_root_del(task_get_current());
+	task_root_delete(task_get_current());
 	scheduler_root_update_on_sleep();
 }
 
-/*! @} */

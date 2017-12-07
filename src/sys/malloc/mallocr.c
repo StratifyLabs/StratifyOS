@@ -17,13 +17,13 @@
  * 
  */
 
+#include <sys/malloc/malloc_local.h>
 #include "cortexm/cortexm.h"
 #include "sos/sos.h"
 #include <sys/unistd.h>
 #include <unistd.h>
 
 #include "config.h"
-#include "malloc_local.h"
 #include "mcu/debug.h"
 #include "mcu/core.h"
 #include "trace.h"

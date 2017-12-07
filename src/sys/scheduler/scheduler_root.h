@@ -61,9 +61,9 @@ void scheduler_root_deassert_active(int id);
 void scheduler_root_assert_status_change();
 void scheduler_root_deassert_status_change();
 void scheduler_root_set_trace_id(int tid, trace_id_t id);
-void scheduler_root_assert_sync(void * args) MCU_PRIV_CODE;
+void scheduler_root_assert_sync(void * args) MCU_ROOT_CODE;
 int scheduler_root_unblock_all(void * block_object, int unblock_type);
-void scheduler_root_set_delaymutex(void * args) MCU_PRIV_EXEC_CODE;
+void scheduler_root_set_delaymutex(void * args) MCU_ROOT_EXEC_CODE;
 
 void scheduler_root_stop_task(int id);
 void scheulder_root_start_task(int id);

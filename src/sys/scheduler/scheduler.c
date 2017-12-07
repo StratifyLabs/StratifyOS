@@ -48,9 +48,9 @@ static int start_first_thread();
 volatile s8 m_scheduler_current_priority MCU_SYS_MEM;
 volatile s8 m_scheduler_status_changed MCU_SYS_MEM;
 
-static void priv_check_sleep_mode(void * args) MCU_PRIV_EXEC_CODE;
+static void priv_check_sleep_mode(void * args) MCU_ROOT_EXEC_CODE;
 static int check_faults();
-static void priv_fault_logged(void * args) MCU_PRIV_EXEC_CODE;
+static void priv_fault_logged(void * args) MCU_ROOT_EXEC_CODE;
 
 int scheduler_check_tid(int id){
 	if( id < task_get_total() ){

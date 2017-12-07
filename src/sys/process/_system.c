@@ -31,7 +31,7 @@
 
 #include "process_start.h"
 #include "mcu/mcu.h"
-#include "../../scheduler/scheduler_local.h"
+#include "../scheduler/scheduler_local.h"
 
 
 /*! \details This function creates a new process.

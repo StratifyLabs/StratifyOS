@@ -27,8 +27,8 @@
 #include "sos/fs/sysfs.h"
 #include "sos/sos.h"
 #include "process_start.h"
-#include "../../scheduler/scheduler_local.h"
-#include "../../sysfs/appfs_local.h"
+#include "../scheduler/scheduler_local.h"
+#include "../sysfs/appfs_local.h"
 
 #define PATH_ARG_MAX LINK_PATH_ARG_MAX
 

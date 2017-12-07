@@ -28,8 +28,8 @@
 #include "cortexm/task.h"
 #include "mcu/debug.h"
 #include "sos/fs/sysfs.h"
-#include "../../scheduler/scheduler_local.h"
-#include "../../sysfs/appfs_local.h"
+#include "../scheduler/scheduler_local.h"
+#include "../sysfs/appfs_local.h"
 
 static u8 launch_count = 0;
 

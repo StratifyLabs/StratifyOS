@@ -43,15 +43,15 @@ typedef struct MCU_PACK {
 	i2c_attr_t attr; //default attributes
 } i2c_config_t;
 
-int mcu_i2c_open(const devfs_handle_t * cfg) MCU_PRIV_CODE;
-int mcu_i2c_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_PRIV_CODE;
-int mcu_i2c_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_PRIV_CODE;
-int mcu_i2c_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
-int mcu_i2c_close(const devfs_handle_t * cfg) MCU_PRIV_CODE;
+int mcu_i2c_open(const devfs_handle_t * cfg) MCU_ROOT_CODE;
+int mcu_i2c_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_ROOT_CODE;
+int mcu_i2c_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_ROOT_CODE;
+int mcu_i2c_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_ROOT_CODE;
+int mcu_i2c_close(const devfs_handle_t * cfg) MCU_ROOT_CODE;
 
-int mcu_i2c_getinfo(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_i2c_setattr(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_i2c_setaction(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_i2c_getinfo(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
+int mcu_i2c_setattr(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
+int mcu_i2c_setaction(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
 
 
 #ifdef __cplusplus

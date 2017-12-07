@@ -112,7 +112,7 @@ int mcu_set_pin_assignment(const void * attr_pin_assignment,
 		int count,
 		int periph,
 		int periph_port,
-		void (*configure_pin)(const mcu_pin_t *, void *), void * arg) MCU_PRIV_CODE;
+		void (*configure_pin)(const mcu_pin_t *, void *), void * arg) MCU_ROOT_CODE;
 
 #endif
 
@@ -156,6 +156,7 @@ typedef struct MCU_PACK {
 } mcu_board_config_t;
 
 extern const mcu_board_config_t mcu_board_config;
+extern u32 mcu_ram_usage_table[];
 
 
 #ifdef __cplusplus

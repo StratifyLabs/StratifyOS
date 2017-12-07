@@ -42,8 +42,8 @@ static void stop_action(int signo, int flags);
 static void continue_action(int signo, int flags);
 static void ignore_action(int signo, int flags);
 
-static void priv_stoppid(void * args) MCU_PRIV_EXEC_CODE;
-static void priv_contpid(void * args) MCU_PRIV_EXEC_CODE;
+static void priv_stoppid(void * args) MCU_ROOT_EXEC_CODE;
+static void priv_contpid(void * args) MCU_ROOT_EXEC_CODE;
 
 static void (* const default_handlers[SCHEDULER_NUM_SIGNALS])(int,int) = {
 		ignore_action, //NULL SIGNAL

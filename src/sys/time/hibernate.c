@@ -40,8 +40,8 @@
 #include "../scheduler/scheduler_local.h"
 
 static int set_alarm(int seconds);
-static void priv_powerdown(void * args) MCU_PRIV_EXEC_CODE;
-static void priv_hibernate(void * args) MCU_PRIV_EXEC_CODE;
+static void priv_powerdown(void * args) MCU_ROOT_EXEC_CODE;
+static void priv_hibernate(void * args) MCU_ROOT_EXEC_CODE;
 
 void priv_powerdown(void * args){
 	mcu_core_execsleep(0, (void*)CORE_DEEPSLEEP_STANDBY);

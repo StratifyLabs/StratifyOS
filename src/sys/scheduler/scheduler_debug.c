@@ -31,9 +31,9 @@ void scheduler_debug_print_tasks(){
 	int i;
 	for(i=1; i < task_get_total(); i++){
 		if ( task_enabled(i) ){
-			mcu_debug_user_printf("Task %d Details (0x%X):\n", i, task_table[i].flags);
+			mcu_debug_user_printf("Task %d Details (0x%X):\n", i, sos_task_table[i].flags);
 			mcu_debug_user_printf("\tMem Addr: 0x%X\n", (unsigned int)sos_sched_table[i].attr.stackaddr);
-			mcu_debug_user_printf("\tCurrent Stack Ptr:  0x%X\n", (unsigned int)task_table[i].sp);
+			mcu_debug_user_printf("\tCurrent Stack Ptr:  0x%X\n", (unsigned int)sos_task_table[i].sp);
 			mcu_debug_user_printf("\tStack Size: %d\n", sos_sched_table[i].attr.stacksize);
 			mcu_debug_user_printf("\tSched Priority %d\n", sos_sched_table[i].attr.schedparam.sched_priority);
 		} else {

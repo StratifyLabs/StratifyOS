@@ -30,17 +30,16 @@
 #include <dirent.h>
 #include <pthread.h>
 
-#include "sys/syscalls/process/process_start.h"
+#include "../process/process_start.h"
+#include "../scheduler/scheduler_local.h"
 
 #include "sos/sos.h"
 #include "mcu/flash.h"
 #include "mcu/debug.h"
 
 #include "sos/link.h"
-
 #include "trace.h"
 
-#include "../scheduler/scheduler_local.h"
 
 #define SERIAL_NUM_WIDTH 3
 
@@ -170,7 +169,7 @@ void link_cmd_isbootloader(link_transport_driver_t * driver, link_data_t * args)
 	args->reply.err = 0; //this is not the bootloader
 }
 
-static void priv_get_serialno(void * dest) MCU_PRIV_EXEC_CODE;
+static void priv_get_serialno(void * dest) MCU_ROOT_EXEC_CODE;
 void priv_get_serialno(void * dest){
 	core_info_t info;
 	int i, j;

@@ -42,21 +42,21 @@ typedef struct MCU_PACK {
 } qei_config_t;
 
 
-int mcu_qei_open(const devfs_handle_t * cfg) MCU_PRIV_CODE;
-int mcu_qei_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_PRIV_CODE;
-int mcu_qei_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_PRIV_CODE;
-int mcu_qei_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
-int mcu_qei_close(const devfs_handle_t * cfg) MCU_PRIV_CODE;
+int mcu_qei_open(const devfs_handle_t * cfg) MCU_ROOT_CODE;
+int mcu_qei_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_ROOT_CODE;
+int mcu_qei_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_ROOT_CODE;
+int mcu_qei_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_ROOT_CODE;
+int mcu_qei_close(const devfs_handle_t * cfg) MCU_ROOT_CODE;
 
 
-int mcu_qei_getinfo(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_qei_setattr(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_qei_setaction(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_qei_getinfo(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
+int mcu_qei_setattr(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
+int mcu_qei_setaction(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
 
-int mcu_qei_get(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_qei_getvelocity(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_qei_getindex(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_qei_reset(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_qei_get(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
+int mcu_qei_getvelocity(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
+int mcu_qei_getindex(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
+int mcu_qei_reset(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
 
 #ifdef __cplusplus
 }

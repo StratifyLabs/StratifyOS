@@ -41,21 +41,21 @@ typedef struct MCU_PACK {
 	pwm_attr_t attr; //default attributes
 } pwm_config_t;
 
-int mcu_pwm_open(const devfs_handle_t * cfg) MCU_PRIV_CODE;
-int mcu_pwm_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_PRIV_CODE;
-int mcu_pwm_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_PRIV_CODE;
-int mcu_pwm_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
-int mcu_pwm_close(const devfs_handle_t * cfg) MCU_PRIV_CODE;
+int mcu_pwm_open(const devfs_handle_t * cfg) MCU_ROOT_CODE;
+int mcu_pwm_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_ROOT_CODE;
+int mcu_pwm_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_ROOT_CODE;
+int mcu_pwm_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_ROOT_CODE;
+int mcu_pwm_close(const devfs_handle_t * cfg) MCU_ROOT_CODE;
 
-int mcu_pwm_getinfo(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_pwm_setattr(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_pwm_setaction(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_pwm_setchannel(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_pwm_getchannel(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_pwm_set(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_pwm_get(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_pwm_enable(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_pwm_disable(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_pwm_getinfo(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
+int mcu_pwm_setattr(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
+int mcu_pwm_setaction(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
+int mcu_pwm_setchannel(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
+int mcu_pwm_getchannel(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
+int mcu_pwm_set(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
+int mcu_pwm_get(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
+int mcu_pwm_enable(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
+int mcu_pwm_disable(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
 
 #ifdef __cplusplus
 }

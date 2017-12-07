@@ -14,8 +14,6 @@ RM := rm -rf
 -include src/sys/time/subdir.mk
 -include src/sys/termios/subdir.mk
 -include src/sys/sysfs/subdir.mk
--include src/sys/syscalls/process/subdir.mk
--include src/sys/syscalls/subdir.mk
 -include src/sys/socket/subdir.mk
 -include src/sys/signal/subdir.mk
 -include src/sys/sffs/subdir.mk
@@ -24,7 +22,9 @@ RM := rm -rf
 -include src/sys/sched/subdir.mk
 -include src/sys/pwd/subdir.mk
 -include src/sys/pthread/subdir.mk
+-include src/sys/process/subdir.mk
 -include src/sys/mqueue/subdir.mk
+-include src/sys/malloc/subdir.mk
 -include src/sys/link/subdir.mk
 -include src/sys/grp/subdir.mk
 -include src/sys/dirent/subdir.mk

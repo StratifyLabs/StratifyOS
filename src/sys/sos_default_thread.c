@@ -39,7 +39,7 @@ static int init_fs();
 static int startup_fs();
 static void start_filesystem(void);
 
-static void priv_core_getinfo(void * args) MCU_PRIV_EXEC_CODE;
+static void priv_core_getinfo(void * args) MCU_ROOT_EXEC_CODE;
 
 void priv_core_getinfo(void * args){
 	mcu_core_getinfo(0, args);

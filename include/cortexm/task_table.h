@@ -39,146 +39,138 @@ extern "C" {
 #define TASK_FLAGS_PARENT_MASK 0xFFFF0000
 
 
-extern task_t * task_table;
-extern int task_total;
-extern int task_rr_reload;
-extern volatile task_timer_t task_clock;
-extern volatile int task_current;
-
-static inline int task_get_rr_reload() MCU_ALWAYS_INLINE;
-int task_get_rr_reload(){
-	return task_rr_reload;
-}
+extern volatile task_t sos_task_table[];
 
 static inline void task_set_reent(int id, struct _reent * reent, struct _reent * global_reent) MCU_ALWAYS_INLINE;
 void task_set_reent(int id, struct _reent * reent, struct _reent * global_reent){
-	task_table[id].reent = reent;
-	task_table[id].global_reent = global_reent;
+	sos_task_table[id].reent = reent;
+	sos_task_table[id].global_reent = global_reent;
 }
 
 static inline void task_deassert_exec(int id) MCU_ALWAYS_INLINE;
 void task_deassert_exec(int id){
-	task_table[id].flags &= ~(TASK_FLAGS_EXEC);
+	sos_task_table[id].flags &= ~(TASK_FLAGS_EXEC);
 }
 
 static inline void task_assert_exec(int id) MCU_ALWAYS_INLINE;
 void task_assert_exec(int id){
-	task_table[id].flags |= (TASK_FLAGS_EXEC);
+	sos_task_table[id].flags |= (TASK_FLAGS_EXEC);
 }
 
 static inline int task_exec_asserted(int id) MCU_ALWAYS_INLINE;
 int task_exec_asserted(int id){
-	return ( (task_table[id].flags & (TASK_FLAGS_EXEC)) ==  TASK_FLAGS_EXEC);
+	return ( (sos_task_table[id].flags & (TASK_FLAGS_EXEC)) ==  TASK_FLAGS_EXEC);
 }
 
 static inline void task_deassert_root(int id) MCU_ALWAYS_INLINE;
 void task_deassert_root(int id){
-	task_table[id].flags &= ~(TASK_FLAGS_ROOT);
+	sos_task_table[id].flags &= ~(TASK_FLAGS_ROOT);
 }
 
 static inline void task_assert_root(int id) MCU_ALWAYS_INLINE;
 void task_assert_root(int id){
-	task_table[id].flags |= (TASK_FLAGS_ROOT);
+	sos_task_table[id].flags |= (TASK_FLAGS_ROOT);
 }
 
 static inline int task_root_asserted(int id) MCU_ALWAYS_INLINE;
 int task_root_asserted(int id){
-	return ( (task_table[id].flags & (TASK_FLAGS_ROOT)) ==  TASK_FLAGS_ROOT);
+	return ( (sos_task_table[id].flags & (TASK_FLAGS_ROOT)) ==  TASK_FLAGS_ROOT);
 }
 
 static inline void task_deassert_yield(int id) MCU_ALWAYS_INLINE;
 void task_deassert_yield(int id){
-	task_table[id].flags &= ~(TASK_FLAGS_YIELD);
+	sos_task_table[id].flags &= ~(TASK_FLAGS_YIELD);
 }
 
 static inline void task_assert_yield(int id) MCU_ALWAYS_INLINE;
 void task_assert_yield(int id){
-	task_table[id].flags |= (TASK_FLAGS_YIELD);
+	sos_task_table[id].flags |= (TASK_FLAGS_YIELD);
 }
 
 static inline int task_yield_asserted(int id) MCU_ALWAYS_INLINE;
 int task_yield_asserted(int id){
-	return ( (task_table[id].flags & (TASK_FLAGS_YIELD)) ==  TASK_FLAGS_YIELD);
+	return ( (sos_task_table[id].flags & (TASK_FLAGS_YIELD)) ==  TASK_FLAGS_YIELD);
 }
 
 static inline int task_isthread_asserted(int id) MCU_ALWAYS_INLINE;
 int task_isthread_asserted(int id){
-	return ( (task_table[id].flags & (TASK_FLAGS_IS_THREAD)) ==  TASK_FLAGS_IS_THREAD);
+	return ( (sos_task_table[id].flags & (TASK_FLAGS_IS_THREAD)) ==  TASK_FLAGS_IS_THREAD);
 }
 
 static inline void task_deassert_priv(int id) MCU_ALWAYS_INLINE;
 void task_deassert_priv(int id){
-	task_table[id].flags &= ~(TASK_FLAGS_PRIV);
+	sos_task_table[id].flags &= ~(TASK_FLAGS_PRIV);
 }
 
 static inline void task_assert_priv(int id) MCU_ALWAYS_INLINE;
 void task_assert_priv(int id){
-	task_table[id].flags |= (TASK_FLAGS_PRIV);
+	sos_task_table[id].flags |= (TASK_FLAGS_PRIV);
 }
 
 static inline void task_deassert_isfifo(int id) MCU_ALWAYS_INLINE;
 void task_deassert_isfifo(int id){
-	task_table[id].flags &= ~(TASK_FLAGS_IS_FIFO);
+	sos_task_table[id].flags &= ~(TASK_FLAGS_IS_FIFO);
 }
 
 static inline void task_assert_isfifo(int id) MCU_ALWAYS_INLINE;
 void task_assert_isfifo(int id){
-	task_table[id].flags |= (TASK_FLAGS_IS_FIFO);
+	sos_task_table[id].flags |= (TASK_FLAGS_IS_FIFO);
 }
 
 static inline int task_isfifo_asserted(int id) MCU_ALWAYS_INLINE;
 int task_isfifo_asserted(int id){
-	return ( (task_table[id].flags & (TASK_FLAGS_IS_FIFO)) ==  TASK_FLAGS_IS_FIFO);
+	return ( (sos_task_table[id].flags & (TASK_FLAGS_IS_FIFO)) ==  TASK_FLAGS_IS_FIFO);
 }
 
 
 static inline void task_set_parent(int id, int parent) MCU_ALWAYS_INLINE;
 void task_set_parent(int id, int parent){
-	task_table[id].flags &= ~TASK_FLAGS_PARENT_MASK;
-	task_table[id].flags |= parent;
+	sos_task_table[id].flags &= ~TASK_FLAGS_PARENT_MASK;
+	sos_task_table[id].flags |= parent;
 }
 
 static inline int task_get_parent(int id) MCU_ALWAYS_INLINE;
 int task_get_parent(int id){
-	return TASK_FLAGS_GET_PARENT(task_table[id].flags);
+	return TASK_FLAGS_GET_PARENT(sos_task_table[id].flags);
 }
 
 static inline int task_used_asserted(int id) MCU_ALWAYS_INLINE;
 int task_used_asserted(int id){
-	return ((task_table[id].flags & (TASK_FLAGS_USED)) == TASK_FLAGS_USED);
+	return ((sos_task_table[id].flags & (TASK_FLAGS_USED)) == TASK_FLAGS_USED);
 }
 
 static inline void task_assert_used(int id) MCU_ALWAYS_INLINE;
 void task_assert_used(int id){
-	task_table[id].flags |= (TASK_FLAGS_USED);
+	sos_task_table[id].flags |= (TASK_FLAGS_USED);
 }
 
 static inline void task_deassert_used(int id) MCU_ALWAYS_INLINE;
 void task_deassert_used(int id){
-	task_table[id].flags &= ~(TASK_FLAGS_USED);
+	sos_task_table[id].flags &= ~(TASK_FLAGS_USED);
 }
 
 static inline int task_enabled(int id) MCU_ALWAYS_INLINE;
 int task_enabled(int id){
-	return ((task_table[id].flags & (TASK_FLAGS_USED)) == TASK_FLAGS_USED);
+	return ((sos_task_table[id].flags & (TASK_FLAGS_USED)) == TASK_FLAGS_USED);
 }
 
+extern volatile int m_task_current;
 static inline int task_get_current() MCU_ALWAYS_INLINE;
 int task_get_current(){
-	return task_current;
+	return m_task_current;
 }
 
 static inline int task_get_pid(int id) MCU_ALWAYS_INLINE;
 int task_get_pid(int id){
-	return task_table[id].pid;
+	return sos_task_table[id].pid;
 }
 
 int task_get_total();
 
 static inline void task_get_timer(uint32_t * dest, int id) MCU_ALWAYS_INLINE;
 void task_get_timer(uint32_t * dest, int id){
-	dest[1] = task_table[id].timer.t_atomic[1];
-	dest[0] = task_table[id].timer.t_atomic[0];
+	dest[1] = sos_task_table[id].timer.t_atomic[1];
+	dest[0] = sos_task_table[id].timer.t_atomic[0];
 }
 
 #endif

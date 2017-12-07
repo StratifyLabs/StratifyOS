@@ -10,7 +10,7 @@
 static inline int mcu_open(const devfs_handle_t * handle,
 		int (*powered_on)(const devfs_handle_t*),
 		void (*power_on)(const devfs_handle_t*)
-) MCU_ALWAYS_INLINE MCU_PRIV_CODE;
+) MCU_ALWAYS_INLINE MCU_ROOT_CODE;
 int mcu_open(const devfs_handle_t * handle,
 		int (*powered_on)(const devfs_handle_t*),
 		void (*power_on)(const devfs_handle_t*)
@@ -26,7 +26,7 @@ static inline int mcu_ioctl(const devfs_handle_t * handle,
 		void * ctl,
 		int (*powered_on)(const devfs_handle_t*),
 		int (* const ioctl_func_table[])(const devfs_handle_t*, void*),
-		const int ioctl_func_table_size) MCU_ALWAYS_INLINE MCU_PRIV_CODE;
+		const int ioctl_func_table_size) MCU_ALWAYS_INLINE MCU_ROOT_CODE;
 int mcu_ioctl(const devfs_handle_t * handle,
 		int request,
 		void * ctl,
@@ -54,7 +54,7 @@ int mcu_ioctl(const devfs_handle_t * handle,
 static inline int mcu_read(const devfs_handle_t * handle,
 		devfs_async_t * rop,
 		int (*powered_on)(const devfs_handle_t*),
-		int (*read)(const devfs_handle_t*, devfs_async_t*) ) MCU_ALWAYS_INLINE MCU_PRIV_CODE;
+		int (*read)(const devfs_handle_t*, devfs_async_t*) ) MCU_ALWAYS_INLINE MCU_ROOT_CODE;
 int mcu_read(const devfs_handle_t * handle,
 		devfs_async_t * rop,
 		int (*powered_on)(const devfs_handle_t*),
@@ -72,7 +72,7 @@ int mcu_read(const devfs_handle_t * handle,
 static inline int mcu_write(const devfs_handle_t * handle,
 		devfs_async_t * wop,
 		int (*powered_on)(const devfs_handle_t*),
-		int (*write)(const devfs_handle_t*, devfs_async_t*) ) MCU_ALWAYS_INLINE MCU_PRIV_CODE;
+		int (*write)(const devfs_handle_t*, devfs_async_t*) ) MCU_ALWAYS_INLINE MCU_ROOT_CODE;
 int mcu_write(const devfs_handle_t* handle,
 		devfs_async_t * wop,
 		int (*powered_on)(const devfs_handle_t*),
@@ -91,7 +91,7 @@ int mcu_write(const devfs_handle_t* handle,
 
 static inline int mcu_close(const devfs_handle_t * handle,
 		int (*powered_on)(const devfs_handle_t*),
-		void (*power_off)(const devfs_handle_t*) ) MCU_ALWAYS_INLINE MCU_PRIV_CODE;
+		void (*power_off)(const devfs_handle_t*) ) MCU_ALWAYS_INLINE MCU_ROOT_CODE;
 int mcu_close(const devfs_handle_t * handle,
 		int (*powered_on)(const devfs_handle_t*),
 		void (*power_off)(const devfs_handle_t*) ){

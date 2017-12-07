@@ -38,9 +38,9 @@ int signal_priv_send(int send_tid,
 		int si_sigcode,
 		int sig_value,
 		int forward //this must be non-zero unless si_signo == SIGKILL
-		) MCU_WEAK MCU_PRIV_CODE;
-void signal_priv_activate(int * thread) MCU_PRIV_EXEC_CODE;
-void signal_priv_wait(void * args) MCU_PRIV_EXEC_CODE;
+		) MCU_WEAK MCU_ROOT_CODE;
+void signal_priv_activate(int * thread) MCU_ROOT_EXEC_CODE;
+void signal_priv_wait(void * args) MCU_ROOT_EXEC_CODE;
 
 
 //this is set if the signal received executes a user defined function

@@ -72,8 +72,8 @@ void scheduler();
 int scheduler_create_thread(void *(*p)(void*)  /*! The function to execute for the task */,
 		void * arg /*! The thread's single argument */,
 		void * mem_addr /*! The address for the new thread memory */,
-		int mem_size /*! The stack size in bytes */,
-		pthread_attr_t * attr);
+		int mem_size /*! The heap/stack size in bytes */,
+		const pthread_attr_t * attr);
 
 
 int scheduler_create_process(void (*p)(char *),
@@ -81,20 +81,13 @@ int scheduler_create_process(void (*p)(char *),
 		task_memories_t * mem,
 		void * reent);
 
-
-
 int scheduler_switch_context(void * args);
 int scheduler_get_highest_priority_blocked(void * block_object);
-
-
 
 
 #define SCHED_DEBUG 0
 #define scheduler_debug(...) do { if ( SCHED_DEBUG == 1 ){ mcu_debug_user_printf("%s:", __func__); mcu_debug_user_printf(__VA_ARGS__); } } while(0)
 #define scheduler_root_debug(...) do { if ( SCHED_DEBUG == 1 ){ mcu_debug_printf("%s:", __func__); mcu_debug_root_printf(__VA_ARGS__); } } while(0)
-
-
-
 
 
 #endif /* SCHED_FLAGS_H_ */

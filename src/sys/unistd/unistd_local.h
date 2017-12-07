@@ -46,7 +46,7 @@ typedef struct {
 	int request;
 	void * ctl;
 } u_priv_attr_t;
-void u_priv_ioctl(void * args) MCU_PRIV_EXEC_CODE;
+void u_priv_ioctl(void * args) MCU_ROOT_EXEC_CODE;
 
 
 static inline void * get_handle(int fildes) MCU_ALWAYS_INLINE;

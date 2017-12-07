@@ -139,10 +139,10 @@ typedef struct {
 
 static mq_list_t * mq_first = 0;
 
-//static void priv_send(void * args) MCU_PRIV_EXEC_CODE;
-//static void priv_receive(void * args) MCU_PRIV_EXEC_CODE;
-static void priv_wake_blocked(void * args) MCU_PRIV_EXEC_CODE;
-static void priv_block_on_mq(void * args) MCU_PRIV_EXEC_CODE;
+//static void priv_send(void * args) MCU_ROOT_EXEC_CODE;
+//static void priv_receive(void * args) MCU_ROOT_EXEC_CODE;
+static void priv_wake_blocked(void * args) MCU_ROOT_EXEC_CODE;
+static void priv_block_on_mq(void * args) MCU_ROOT_EXEC_CODE;
 
 
 static int mq_entry_size(const mq_t * mq){
@@ -202,7 +202,7 @@ static mq_t * mq_find_free(){
 	}
 
 	//no free message queues
-	new_entry = _malloc_r(task_table[0].global_reent, sizeof(mq_list_t));
+	new_entry = _malloc_r(sos_task_table[0].global_reent, sizeof(mq_list_t));
 	if( new_entry == 0 ){
 		return 0;
 	}
@@ -453,7 +453,7 @@ mqd_t mq_open(const char * name /*! the full path to the message queue */,
 		}
 
 		//Create the new message queue
-		reent_ptr = task_table[0].global_reent;
+		reent_ptr = sos_task_table[0].global_reent;
 		new_mq = mq_find_free();
 		if ( new_mq == NULL ){
 			//errno is set by malloc
@@ -536,7 +536,7 @@ int mq_close(mqd_t mqdes /*! the message queue handler */){
 	if ( (mq->status & MQ_STATUS_REFS_MASK) == 0 ){
 		//Should message queue be unlinked now?
 		if ( mq->status & MQ_STATUS_UNLINK_ON_CLOSE_MASK ){
-			_free_r(task_table[0].global_reent, mq->msg_table);
+			_free_r(sos_task_table[0].global_reent, mq->msg_table);
 			mq->msg_table = 0;
 		}
 	}
@@ -570,7 +570,7 @@ int mq_unlink(const char * name /*! the full path to the message queue */){
 	}
 
 	if ( (mq->status & MQ_STATUS_REFS_MASK) == 0 ){
-		_free_r(task_table[0].global_reent, mq->msg_table);
+		_free_r(sos_task_table[0].global_reent, mq->msg_table);
 		mq->msg_table = 0;
 	} else {
 		//Mark the message queue for deletion when all refs are done
@@ -586,7 +586,7 @@ void mq_discard(mqd_t mqdes){
 		return;
 	}
 
-	_free_r(task_table[0].global_reent, mq->msg_table);
+	_free_r(sos_task_table[0].global_reent, mq->msg_table);
 	mq->msg_table = 0;
 }
 

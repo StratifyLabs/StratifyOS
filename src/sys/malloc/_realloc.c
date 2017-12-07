@@ -17,7 +17,7 @@
  * 
  */
 
-#include "malloc_local.h"
+#include <sys/malloc/malloc_local.h>
 
 void * _realloc_r(struct _reent * reent_ptr, void * addr, size_t size){
 	u16 num_chunks;

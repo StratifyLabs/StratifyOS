@@ -20,15 +20,15 @@
 #include <mcu/local.h>
 #include "mcu/spi.h"
 
-int mcu_ssp_open(const devfs_handle_t * cfg) MCU_PRIV_CODE;
-int mcu_ssp_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_PRIV_CODE;
-int mcu_ssp_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_PRIV_CODE;
-int mcu_ssp_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
-int mcu_ssp_close(const devfs_handle_t * cfg) MCU_PRIV_CODE;
-int mcu_ssp_getinfo(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_ssp_setattr(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_ssp_setaction(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_ssp_swap(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_ssp_open(const devfs_handle_t * cfg) MCU_ROOT_CODE;
+int mcu_ssp_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_ROOT_CODE;
+int mcu_ssp_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_ROOT_CODE;
+int mcu_ssp_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_ROOT_CODE;
+int mcu_ssp_close(const devfs_handle_t * cfg) MCU_ROOT_CODE;
+int mcu_ssp_getinfo(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
+int mcu_ssp_setattr(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
+int mcu_ssp_setaction(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
+int mcu_ssp_swap(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
 
 //These functions are device specific
 extern void mcu_ssp_dev_power_on(const devfs_handle_t * handle);

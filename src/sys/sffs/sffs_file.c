@@ -41,7 +41,7 @@
 
 #define DEBUG_LEVEL 10
 
-static void execute_callback(cl_handle_t * handle) MCU_PRIV_EXEC_CODE;
+static void execute_callback(cl_handle_t * handle) MCU_ROOT_EXEC_CODE;
 static int cleanup_file(const void * cfg, block_t hdr_block, int addr, uint8_t status);
 int mark_file_closed(const void * cfg, block_t hdr_block);
 

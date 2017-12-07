@@ -37,7 +37,7 @@ u32 scheduler_timing_nanoseconds_to_clocks(int nanoseconds);
 void scheduler_timing_root_timedblock(void * block_object, struct mcu_timeval * interval);
 
 void scheduler_timing_convert_timespec(struct mcu_timeval * tv, const struct timespec * ts);
-void scheduler_timing_root_get_realtime(struct mcu_timeval * tv) MCU_PRIV_EXEC_CODE;
+void scheduler_timing_root_get_realtime(struct mcu_timeval * tv) MCU_ROOT_EXEC_CODE;
 
 
 #endif /* SCHEDULER_SCHEDULER_TIMING_H_ */

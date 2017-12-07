@@ -119,22 +119,25 @@ typedef struct {
 #define MCU_SYS_MEM __attribute__((section(".sysmem")))
 
 #ifdef __link
+#define MCU_ROOT_CODE
 #define MCU_PRIV_CODE
 #else
-#define MCU_PRIV_CODE __attribute__((section(".priv_code")))
+#define MCU_ROOT_CODE __attribute__((section(".priv_code")))
+#define MCU_PRIV_CODE MCU_ROOT_CODE
 #endif
 
 #ifdef __link
+#define MCU_ROOT_EXEC_CODE
 #define MCU_PRIV_EXEC_CODE
 #else
-#define MCU_PRIV_EXEC_CODE __attribute__((section(".priv_exec_code")))
+#define MCU_ROOT_EXEC_CODE __attribute__((section(".priv_exec_code")))
+#define MCU_PRIV_EXEC_CODE MCU_ROOT_EXEC_CODE
 #endif
 
 /*! \details This structure defines an action
  * to take when an asynchronous event occurs (such as
  * a pin change interrupt).
  *
- * \sa I_SETACTION
  */
 typedef struct {
 	u8 channel /*! The channel (a GPIO pin or timer channel) */;
@@ -194,13 +197,6 @@ typedef struct MCU_PACK {
 typedef struct {
 	u32 sn[4];
 } mcu_sn_t;
-
-#if defined __link
-#define MCU_INT_CAST(var) (void*)(u64)var
-#else
-#define MCU_INT_CAST(var) (void*)(u32)var
-#endif
-
 
 struct mcu_timeval {
 	u32 tv_sec; //SCHEDULER_TIMEVAL_SECONDS seconds each

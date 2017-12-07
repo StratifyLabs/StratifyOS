@@ -35,7 +35,7 @@
 #include "mcu/core.h"
 
 
-static void priv_update_guard(void * args) MCU_PRIV_EXEC_CODE;
+static void priv_update_guard(void * args) MCU_ROOT_EXEC_CODE;
 
 void * _sbrk_r(struct _reent * reent_ptr, ptrdiff_t incr){
 	char * stack;

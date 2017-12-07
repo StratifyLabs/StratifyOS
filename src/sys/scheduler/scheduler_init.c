@@ -37,17 +37,16 @@ volatile scheduler_fault_t m_scheduler_fault MCU_SYS_MEM;
  * \return Zero on success or an error code (see \ref caoslib_err_t)
  */
 int scheduler_init(){
-	task_table = sos_task_table;
 
 	m_scheduler_current_priority = SCHED_LOWEST_PRIORITY - 1;
 	m_scheduler_status_changed = 0;
 
-	memset((void*)task_table, 0, sizeof(task_t) * sos_board_config.task_total);
+	memset((void*)sos_task_table, 0, sizeof(task_t) * sos_board_config.task_total);
 	memset((void*)sos_sched_table, 0, sizeof(sched_task_t) * sos_board_config.task_total);
 
 	//Do basic init of task 0 so that memory allocation can happen before the scheduler starts
-	task_table[0].reent = _impure_ptr;
-	task_table[0].global_reent = _global_impure_ptr;
+	sos_task_table[0].reent = _impure_ptr;
+	sos_task_table[0].global_reent = _global_impure_ptr;
 
 	return 0;
 }

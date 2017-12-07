@@ -36,7 +36,7 @@ typedef struct {
 	int tid;
 } init_sched_task_t;
 
-static void priv_init_sched_task(init_sched_task_t * task) MCU_PRIV_EXEC_CODE;
+static void priv_init_sched_task(init_sched_task_t * task) MCU_ROOT_EXEC_CODE;
 static void cleanup_process(void * status);
 
 /*! \details This function creates a new process.
@@ -50,7 +50,7 @@ int scheduler_create_process(void (*p)(char *)  /*! The startup function (crt())
 	init_sched_task_t args;
 
 	//Start a new process
-	tid = task_new_process(
+	tid = task_create_process(
 			p,
 			cleanup_process,
 			path_arg,
@@ -99,7 +99,7 @@ void priv_init_sched_task(init_sched_task_t * task){
 	//Items inherited from parent process
 
 	//Signal mask
-	reent = (struct _reent *)task_table[id].reent;
+	reent = (struct _reent *)sos_task_table[id].reent;
 	reent->sigmask = _REENT->sigmask;
 }
 

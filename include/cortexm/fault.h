@@ -83,15 +83,15 @@ typedef struct {
 	void * handler_caller /*! The handler caller */;
 } fault_t;
 
-int mcu_fault_init() MCU_PRIV_CODE;
+int mcu_fault_init() MCU_ROOT_CODE;
 
 /*! \details This function must be provided by the application or
  * OS to handle faults.
  */
-extern void mcu_fault_event_handler(fault_t * fault) MCU_PRIV_CODE;
+extern void mcu_fault_event_handler(fault_t * fault) MCU_ROOT_CODE;
 
-int mcu_fault_save(fault_t * fault) MCU_PRIV_CODE;
-int mcu_fault_load(fault_t * fault) MCU_PRIV_CODE;
+int mcu_fault_save(fault_t * fault) MCU_ROOT_CODE;
+int mcu_fault_load(fault_t * fault) MCU_ROOT_CODE;
 
 #ifdef __cplusplus
 }

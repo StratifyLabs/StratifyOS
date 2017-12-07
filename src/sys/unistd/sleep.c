@@ -27,7 +27,7 @@
 #include <time.h>
 #include "../scheduler/scheduler_local.h"
 
-static void priv_sleep(void * args) MCU_PRIV_EXEC_CODE;
+static void priv_sleep(void * args) MCU_ROOT_EXEC_CODE;
 
 /*! \details This function causes the calling thread to sleep for \a seconds seconds.
  * \return 0

@@ -29,27 +29,27 @@
 #define SYSTICK_CTRL_COUNTFLAG (1<<16)
 
 typedef struct {
-	//uint32_t exc_return;
-	uint32_t r0;
-	uint32_t r1;
-	uint32_t r2;
-	uint32_t r3;
-	uint32_t r12;
-	uint32_t lr;
-	uint32_t pc;
-	uint32_t psr;
+	//u32 exc_return;
+	u32 r0;
+	u32 r1;
+	u32 r2;
+	u32 r3;
+	u32 r12;
+	u32 lr;
+	u32 pc;
+	u32 psr;
 
 } hw_stack_frame_t;
 
 typedef struct MCU_PACK {
-	uint32_t r4;
-	uint32_t r5;
-	uint32_t r6;
-	uint32_t r7;
-	uint32_t r8;
-	uint32_t r9;
-	uint32_t r10;
-	uint32_t r11;
+	u32 r4;
+	u32 r5;
+	u32 r6;
+	u32 r7;
+	u32 r8;
+	u32 r9;
+	u32 r10;
+	u32 r11;
 } sw_stack_frame_t;
 
 #define TASK_DEBUG 0
@@ -58,7 +58,7 @@ typedef struct MCU_PACK {
 
 extern int task_total MCU_SYS_MEM;
 extern task_t * task_table MCU_SYS_MEM;
-extern volatile int task_current MCU_SYS_MEM;
+extern volatile int m_task_current MCU_SYS_MEM;
 
 typedef struct {
 	int tid;
@@ -68,12 +68,12 @@ typedef struct {
 	struct _reent * global_reent;
 	task_memories_t * mem;
 	void * stackaddr;
-	uint32_t start;
-	uint32_t stop;
-	uint32_t r0;
-	uint32_t r1;
-	uint32_t r2;
-	uint32_t r3;
+	u32 start;
+	u32 stop;
+	u32 r0;
+	u32 r1;
+	u32 r2;
+	u32 r3;
 } new_task_t;
 
 void task_root_new_task(new_task_t * task);

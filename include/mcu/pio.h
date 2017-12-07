@@ -41,20 +41,20 @@ typedef struct MCU_PACK {
 } pio_event_data_t;
 
 
-int mcu_pio_open(const devfs_handle_t * cfg) MCU_PRIV_CODE;
-int mcu_pio_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_PRIV_CODE;
-int mcu_pio_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_PRIV_CODE;
-int mcu_pio_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
-int mcu_pio_close(const devfs_handle_t * cfg) MCU_PRIV_CODE;
+int mcu_pio_open(const devfs_handle_t * cfg) MCU_ROOT_CODE;
+int mcu_pio_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_ROOT_CODE;
+int mcu_pio_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_ROOT_CODE;
+int mcu_pio_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_ROOT_CODE;
+int mcu_pio_close(const devfs_handle_t * cfg) MCU_ROOT_CODE;
 
-int mcu_pio_getinfo(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_pio_setattr(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_pio_setaction(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_pio_getinfo(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
+int mcu_pio_setattr(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
+int mcu_pio_setaction(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
 
-int mcu_pio_setmask(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_pio_clrmask(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_pio_get(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_pio_set(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_pio_setmask(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
+int mcu_pio_clrmask(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
+int mcu_pio_get(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
+int mcu_pio_set(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
 
 
 

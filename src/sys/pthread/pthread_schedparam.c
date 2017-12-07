@@ -37,7 +37,7 @@ typedef struct {
 	int policy;
 	const struct sched_param * param;
 } priv_set_pthread_scheduling_param_t;
-static void priv_set_scheduling_param(void * args) MCU_PRIV_EXEC_CODE;
+static void priv_set_scheduling_param(void * args) MCU_ROOT_EXEC_CODE;
 
 
 /*! \details This function gets \a thread's scheduling policy and scheduling parameters and

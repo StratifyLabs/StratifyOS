@@ -48,32 +48,32 @@ extern "C" {
 #endif
 
 
-int mcu_core_open(const devfs_handle_t * cfg) MCU_PRIV_CODE;
-int mcu_core_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_PRIV_CODE;
-int mcu_core_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_PRIV_CODE;
-int mcu_core_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
-int mcu_core_close(const devfs_handle_t * cfg) MCU_PRIV_CODE;
+int mcu_core_open(const devfs_handle_t * cfg) MCU_ROOT_CODE;
+int mcu_core_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_ROOT_CODE;
+int mcu_core_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_ROOT_CODE;
+int mcu_core_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_ROOT_CODE;
+int mcu_core_close(const devfs_handle_t * cfg) MCU_ROOT_CODE;
 
-int mcu_core_getinfo(const devfs_handle_t * handle, void * arg) MCU_PRIV_CODE;
-int mcu_core_setattr(const devfs_handle_t * handle, void * arg) MCU_PRIV_CODE;
-int mcu_core_setaction(const devfs_handle_t * handle, void * arg) MCU_PRIV_CODE;
-int mcu_core_setpinfunc(const devfs_handle_t * handle, void * arg) MCU_PRIV_CODE;
-int mcu_core_setclkout(const devfs_handle_t * handle, void * arg) MCU_PRIV_CODE;
-int mcu_core_setclkdivide(const devfs_handle_t * handle, void * arg) MCU_PRIV_CODE;
-int mcu_core_getmcuboardconfig(const devfs_handle_t * handle, void * arg) MCU_PRIV_CODE;
+int mcu_core_getinfo(const devfs_handle_t * handle, void * arg) MCU_ROOT_CODE;
+int mcu_core_setattr(const devfs_handle_t * handle, void * arg) MCU_ROOT_CODE;
+int mcu_core_setaction(const devfs_handle_t * handle, void * arg) MCU_ROOT_CODE;
+int mcu_core_setpinfunc(const devfs_handle_t * handle, void * arg) MCU_ROOT_CODE;
+int mcu_core_setclkout(const devfs_handle_t * handle, void * arg) MCU_ROOT_CODE;
+int mcu_core_setclkdivide(const devfs_handle_t * handle, void * arg) MCU_ROOT_CODE;
+int mcu_core_getmcuboardconfig(const devfs_handle_t * handle, void * arg) MCU_ROOT_CODE;
 
 //below are undocumented calls that can be made by BSPs but aren't accessible to applications
 static inline int mcu_core_getclock() MCU_ALWAYS_INLINE;
 int mcu_core_getclock(){ return mcu_board_config.core_cpu_freq; }
 
-void mcu_core_get_bootloader_api(void * args) MCU_PRIV_CODE;
-void mcu_core_set_nvic_priority(int irq, int prio) MCU_PRIV_CODE;
-void mcu_core_setclock(int fclk, int fosc) MCU_PRIV_CODE;
-int mcu_core_initclock(int div) MCU_PRIV_CODE;
-void mcu_core_setclockinternal(int fclk) MCU_PRIV_CODE;
-void mcu_core_setclock_main_12mhz_72mhz() MCU_PRIV_CODE;
-int mcu_core_setusbclock(int fosc /*! The oscillator frequency */) MCU_PRIV_CODE;
-int mcu_core_invokebootloader(int port, void * arg) MCU_PRIV_CODE;
+void mcu_core_get_bootloader_api(void * args) MCU_ROOT_CODE;
+void mcu_core_set_nvic_priority(int irq, int prio) MCU_ROOT_CODE;
+void mcu_core_setclock(int fclk, int fosc) MCU_ROOT_CODE;
+int mcu_core_initclock(int div) MCU_ROOT_CODE;
+void mcu_core_setclockinternal(int fclk) MCU_ROOT_CODE;
+void mcu_core_setclock_main_12mhz_72mhz() MCU_ROOT_CODE;
+int mcu_core_setusbclock(int fosc /*! The oscillator frequency */) MCU_ROOT_CODE;
+int mcu_core_invokebootloader(int port, void * arg) MCU_ROOT_CODE;
 
 
 typedef enum {
@@ -85,11 +85,11 @@ typedef enum {
 
 
 int mcu_core_user_sleep(core_sleep_t level);
-void mcu_set_sleep_mode(int * level) MCU_PRIV_CODE;
-int mcu_core_execsleep(int port, void * arg) MCU_PRIV_CODE;
-int mcu_core_reset(int port, void * arg) MCU_PRIV_CODE;
-int mcu_core_set_pinsel_func(const mcu_pin_t * pin, core_periph_t function, int periph_port) MCU_PRIV_CODE;
-void mcu_core_getserialno(mcu_sn_t * serialno) MCU_PRIV_CODE;
+void mcu_set_sleep_mode(int * level) MCU_ROOT_CODE;
+int mcu_core_execsleep(int port, void * arg) MCU_ROOT_CODE;
+int mcu_core_reset(int port, void * arg) MCU_ROOT_CODE;
+int mcu_core_set_pinsel_func(const mcu_pin_t * pin, core_periph_t function, int periph_port) MCU_ROOT_CODE;
+void mcu_core_getserialno(mcu_sn_t * serialno) MCU_ROOT_CODE;
 
 
 

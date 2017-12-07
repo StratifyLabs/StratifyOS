@@ -44,19 +44,19 @@ typedef struct MCU_PACK {
 } uart_config_t;
 
 
-int mcu_uart_open(const devfs_handle_t * cfg) MCU_PRIV_CODE;
-int mcu_uart_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_PRIV_CODE;
-int mcu_uart_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_PRIV_CODE;
-int mcu_uart_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
-int mcu_uart_close(const devfs_handle_t * cfg) MCU_PRIV_CODE;
+int mcu_uart_open(const devfs_handle_t * cfg) MCU_ROOT_CODE;
+int mcu_uart_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_ROOT_CODE;
+int mcu_uart_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_ROOT_CODE;
+int mcu_uart_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_ROOT_CODE;
+int mcu_uart_close(const devfs_handle_t * cfg) MCU_ROOT_CODE;
 
-int mcu_uart_getinfo(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_uart_setattr(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_uart_setaction(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_uart_getinfo(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
+int mcu_uart_setattr(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
+int mcu_uart_setaction(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
 
-int mcu_uart_get(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_uart_put(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_uart_flush(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_uart_get(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
+int mcu_uart_put(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
+int mcu_uart_flush(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
 
 #ifdef __cplusplus
 }

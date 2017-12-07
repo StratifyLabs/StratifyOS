@@ -21,9 +21,9 @@
 #include "mcu/core.h"
 
 //These functions are device specific
-extern void mcu_core_dev_power_on(const devfs_handle_t * handle) MCU_PRIV_CODE;
-extern void mcu_core_dev_power_off(const devfs_handle_t * handle) MCU_PRIV_CODE;
-extern int mcu_core_dev_is_powered(const devfs_handle_t * handle) MCU_PRIV_CODE;
+extern void mcu_core_dev_power_on(const devfs_handle_t * handle) MCU_ROOT_CODE;
+extern void mcu_core_dev_power_off(const devfs_handle_t * handle) MCU_ROOT_CODE;
+extern int mcu_core_dev_is_powered(const devfs_handle_t * handle) MCU_ROOT_CODE;
 static int get_version(const devfs_handle_t * handle, void* ctl){
 	return CORE_VERSION;
 }

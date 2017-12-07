@@ -129,17 +129,17 @@ int read_task(sys_taskattr_t * task){
 			task->timer = task_root_gettime(task->tid);
 			task->mem_loc = (uint32_t)sos_sched_table[task->tid].attr.stackaddr;
 			task->mem_size = sos_sched_table[task->tid].attr.stacksize;
-			task->stack_ptr = (uint32_t)task_table[task->tid].sp;
+			task->stack_ptr = (uint32_t)sos_task_table[task->tid].sp;
 			task->prio = sos_sched_table[task->tid].priority;
 			task->prio_ceiling = sos_sched_table[task->tid].attr.schedparam.sched_priority;
 			task->is_active = (scheduler_active_asserted(task->tid) != 0) | ((scheduler_stopped_asserted(task->tid != 0)<<1));
 			task->is_thread = task_isthread_asserted( task->tid );
 
-			strncpy(task->name, ((struct _reent*)task_table[ task->tid ].global_reent)->procmem_base->proc_name, NAME_MAX);
+			strncpy(task->name, ((struct _reent*)sos_task_table[ task->tid ].global_reent)->procmem_base->proc_name, NAME_MAX);
 
-			if ( !task->is_thread && ( task_table[task->tid].reent != NULL) ){
-				task->malloc_loc = (uint32_t)&(((struct _reent*)task_table[task->tid].reent)->procmem_base->base)
-						+ ((struct _reent*)task_table[task->tid].reent)->procmem_base->size;
+			if ( !task->is_thread && ( sos_task_table[task->tid].reent != NULL) ){
+				task->malloc_loc = (uint32_t)&(((struct _reent*)sos_task_table[task->tid].reent)->procmem_base->base)
+						+ ((struct _reent*)sos_task_table[task->tid].reent)->procmem_base->size;
 			} else {
 				task->malloc_loc = 0;
 			}

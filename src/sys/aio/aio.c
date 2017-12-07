@@ -36,7 +36,7 @@
 #include "../signal/sig_local.h"
 
 
-static void priv_suspend(void * args) MCU_PRIV_EXEC_CODE;
+static void priv_suspend(void * args) MCU_ROOT_EXEC_CODE;
 static int suspend(struct aiocb *const list[], int nent, const struct timespec * timeout, bool block_on_all);
 static int data_transfer(struct aiocb * aiocbp);
 

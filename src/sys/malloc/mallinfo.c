@@ -19,7 +19,7 @@
 
 
 
-#include "malloc_local.h"
+#include <sys/malloc/malloc_local.h>
 
 struct mallinfo mallinfo(){
 	return _mallinfo_r(_REENT);

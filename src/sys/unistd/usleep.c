@@ -31,7 +31,7 @@
 #include "mcu/debug.h"
 #include "../scheduler/scheduler_local.h"
 
-static void priv_usleep(void * args) MCU_PRIV_EXEC_CODE;
+static void priv_usleep(void * args) MCU_ROOT_EXEC_CODE;
 
 /*! \details This function causes the calling thread to sleep for \a useconds microseconds.
  *

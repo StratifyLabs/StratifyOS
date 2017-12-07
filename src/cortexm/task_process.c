@@ -22,7 +22,7 @@
 #include "mcu/mcu.h"
 #include "mcu/core.h"
 
-int task_new_process(void (*p)(char*),
+int task_create_process(void (*p)(char*),
 		void (*cleanup)(void*),
 		const char * path_arg,
 		task_memories_t * mem,
@@ -55,7 +55,7 @@ int task_new_process(void (*p)(char*),
 	task.reent = (struct _reent*)reent_ptr;
 	task.global_reent = task.reent;
 
-	task.flags = TASK_FLAGS_USED | TASK_FLAGS_PARENT(task_current);
+	task.flags = TASK_FLAGS_USED | TASK_FLAGS_PARENT(m_task_current);
 
 	memcpy(&task_memories, mem, sizeof(task_memories_t));
 

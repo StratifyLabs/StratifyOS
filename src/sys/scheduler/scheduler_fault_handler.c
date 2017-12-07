@@ -91,7 +91,7 @@ void mcu_fault_event_handler(fault_t * fault){
 					//send the kill signal
 					if( signal_priv_send(0, i, SIGKILL, 0, 0, 0) < 0 ){
 						//kill manually -- for example, if the target task doesn't have enough memory to accept SIGKILL
-						task_root_del(i);
+						task_root_delete(i);
 						scheduler_root_update_on_sleep();
 					}
 					break;

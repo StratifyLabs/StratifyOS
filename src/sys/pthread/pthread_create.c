@@ -65,7 +65,7 @@
 #include "../scheduler/scheduler_local.h"
 
 
-static void priv_join_thread(void * args) MCU_PRIV_EXEC_CODE;
+static void priv_join_thread(void * args) MCU_ROOT_EXEC_CODE;
 
 /*! \details This function creates a new thread.
  * \return Zero on success or -1 with \a errno (see \ref ERRNO) set to:

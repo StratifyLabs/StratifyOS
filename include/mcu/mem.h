@@ -48,39 +48,39 @@ extern "C" {
  * \sa periph_open()
  *
  */
-int mcu_mem_open(const devfs_handle_t * cfg) MCU_PRIV_CODE;
+int mcu_mem_open(const devfs_handle_t * cfg) MCU_ROOT_CODE;
 /*! \details
  * \sa periph_read()
  *
  */
-int mcu_mem_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_PRIV_CODE;
+int mcu_mem_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_ROOT_CODE;
 /*! \details
  * \sa periph_write()
  */
-int mcu_mem_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_PRIV_CODE;
+int mcu_mem_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_ROOT_CODE;
 /*! \details
  * \sa periph_ioctl()
  *
  */
-int mcu_mem_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
+int mcu_mem_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_ROOT_CODE;
 /*! \details
  * \sa periph_close()
  */
-int mcu_mem_close(const devfs_handle_t * cfg) MCU_PRIV_CODE;
+int mcu_mem_close(const devfs_handle_t * cfg) MCU_ROOT_CODE;
 
 
-int mcu_mem_getinfo(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_mem_setattr(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_mem_setaction(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_mem_getinfo(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
+int mcu_mem_setattr(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
+int mcu_mem_setaction(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
 
-int mcu_mem_eraseaddr(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_mem_erasepage(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_mem_getpage(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_mem_getsize(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_mem_getpageinfo(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_mem_writepage(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_mem_eraseaddr(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
+int mcu_mem_erasepage(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
+int mcu_mem_getpage(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
+int mcu_mem_getsize(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
+int mcu_mem_getpageinfo(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
+int mcu_mem_writepage(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
 
-int mcu_mem_getsyspage() MCU_PRIV_CODE;
+int mcu_mem_getsyspage() MCU_ROOT_CODE;
 
 
 #ifdef __cplusplus

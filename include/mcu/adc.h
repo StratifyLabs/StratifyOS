@@ -41,26 +41,26 @@ typedef struct MCU_PACK {
 	u32 reference_mv;
 } adc_config_t;
 
-int mcu_adc_open(const devfs_handle_t * cfg) MCU_PRIV_CODE;
-int mcu_adc_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_PRIV_CODE;
-int mcu_adc_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_PRIV_CODE;
-int mcu_adc_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
-int mcu_adc_close(const devfs_handle_t * cfg) MCU_PRIV_CODE;
+int mcu_adc_open(const devfs_handle_t * cfg) MCU_ROOT_CODE;
+int mcu_adc_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_ROOT_CODE;
+int mcu_adc_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_ROOT_CODE;
+int mcu_adc_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_ROOT_CODE;
+int mcu_adc_close(const devfs_handle_t * cfg) MCU_ROOT_CODE;
 
 
-int mcu_adc_getinfo(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_adc_setattr(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_adc_setaction(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_adc_getinfo(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
+int mcu_adc_setattr(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
+int mcu_adc_setaction(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
 
-int mcu_adc_dma_open(const devfs_handle_t * cfg) MCU_PRIV_CODE;
-int mcu_adc_dma_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_PRIV_CODE;
-int mcu_adc_dma_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_PRIV_CODE;
-int mcu_adc_dma_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_PRIV_CODE;
-int mcu_adc_dma_close(const devfs_handle_t * cfg) MCU_PRIV_CODE;
+int mcu_adc_dma_open(const devfs_handle_t * cfg) MCU_ROOT_CODE;
+int mcu_adc_dma_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_ROOT_CODE;
+int mcu_adc_dma_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_ROOT_CODE;
+int mcu_adc_dma_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_ROOT_CODE;
+int mcu_adc_dma_close(const devfs_handle_t * cfg) MCU_ROOT_CODE;
 
 
-int mcu_adc_dma_setattr(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
-int mcu_adc_dma_setaction(const devfs_handle_t * handle, void * ctl) MCU_PRIV_CODE;
+int mcu_adc_dma_setattr(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
+int mcu_adc_dma_setaction(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
 
 
 #ifdef __cplusplus

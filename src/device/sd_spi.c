@@ -122,7 +122,7 @@ void state_callback(const devfs_handle_t * handle, int err, int nbyte){
 	if( state->handler.callback ){
 		*(state->nbyte) = nbyte;
 		if( nbyte < 0 ){
-			struct _reent * reent = task_table[state->op.tid].reent;
+			struct _reent * reent = sos_task_table[state->op.tid].reent;
 			reent->_errno = err;
 		}
 		state->handler.callback(state->handler.context, 0);

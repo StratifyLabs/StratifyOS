@@ -39,10 +39,10 @@ typedef struct {
 } priv_args_t;
 
 
-static void priv_open_device(void * args) MCU_PRIV_EXEC_CODE;
-static void priv_devfs_close(void * args) MCU_PRIV_EXEC_CODE;
+static void priv_open_device(void * args) MCU_ROOT_EXEC_CODE;
+static void priv_devfs_close(void * args) MCU_ROOT_EXEC_CODE;
 static int get_total(const devfs_device_t * list);
-static void ioctl_priv(void * args) MCU_PRIV_EXEC_CODE;
+static void ioctl_priv(void * args) MCU_ROOT_EXEC_CODE;
 
 int get_total(const devfs_device_t * list){
 	int total;

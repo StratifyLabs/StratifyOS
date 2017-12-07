@@ -37,7 +37,7 @@
 
 struct timeval time_of_day_offset MCU_SYS_MEM;
 
-static void priv_set_time(void * args) MCU_PRIV_EXEC_CODE;
+static void priv_set_time(void * args) MCU_ROOT_EXEC_CODE;
 
 void priv_set_time(void * args){
 	div_t d;

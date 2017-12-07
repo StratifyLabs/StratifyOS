@@ -27,13 +27,12 @@
 #define SYSTICK_MIN_CYCLES 10000
 
 
-int task_rr_reload MCU_SYS_MEM;
-task_t * task_table MCU_SYS_MEM;
-volatile int task_current MCU_SYS_MEM;
+int m_task_rr_reload MCU_SYS_MEM;
+volatile int m_task_current MCU_SYS_MEM;
 
+static void root_task_read_rr_timer(u32 * val);
 
 static void task_context_switcher();
-static void priv_task_rr_reload(void * args) MCU_PRIV_EXEC_CODE;
 
 static void system_reset(); //This is used if the OS process returns
 void system_reset(){
@@ -54,10 +53,6 @@ int task_init(int interval,
 	int i;
 	//Initialize the core system tick timer
 
-	if ( task_table == 0 ){
-		//The table must be allocated before the task manager is initialized
-		return -1;
-	}
 
 	//Initialize the main process
 	if ( system_memory == NULL ){
@@ -66,13 +61,13 @@ int task_init(int interval,
 
 	system_stack = system_memory + system_memory_size;
 
-	task_table[0].sp = system_stack - sizeof(hw_stack_frame_t);
-	task_table[0].flags = TASK_FLAGS_EXEC | TASK_FLAGS_USED | TASK_FLAGS_ROOT;
-	task_table[0].pid = 0;
-	task_table[0].reent = _impure_ptr;
-	task_table[0].global_reent = _global_impure_ptr;
+	sos_task_table[0].sp = system_stack - sizeof(hw_stack_frame_t);
+	sos_task_table[0].flags = TASK_FLAGS_EXEC | TASK_FLAGS_USED | TASK_FLAGS_ROOT;
+	sos_task_table[0].pid = 0;
+	sos_task_table[0].reent = _impure_ptr;
+	sos_task_table[0].global_reent = _global_impure_ptr;
 
-	frame = (hw_stack_frame_t *)task_table[0].sp;
+	frame = (hw_stack_frame_t *)sos_task_table[0].sp;
 	frame->r0 = 0;
 	frame->r1 = 0;
 	frame->r2 = 0;
@@ -82,12 +77,12 @@ int task_init(int interval,
 	frame->lr = (u32)system_reset;
 	frame->psr = 0x21000000; //default PSR value
 #if __FPU_USED != 0
-	task_table[0].fpscr = FPU->FPDSCR;
+	sos_task_table[0].fpscr = FPU->FPDSCR;
 #endif
 
 	//enable use of PSP
-	cortexm_set_thread_stack_ptr( (void*)task_table[0].sp );
-	task_current = 0;
+	cortexm_set_thread_stack_ptr( (void*)sos_task_table[0].sp );
+	m_task_current = 0;
 
 	//Set the interrupt priorities
 	for(i=0; i <= mcu_config.irq_total; i++){
@@ -120,7 +115,7 @@ int task_init(int interval,
 
 	//Turn on the task timer (MCU implementation dependent)
 	task_set_interval(interval);
-	task_table[0].rr_time = task_rr_reload;
+	sos_task_table[0].rr_time = m_task_rr_reload;
 
 	cortexm_set_stack_ptr( (void*)&_top_of_stack ); //reset the handler stack pointer
 	cortexm_enable_systick_irq();  //Enable context switching
@@ -139,14 +134,14 @@ int task_set_interval(int interval){
 	}
 	core_tick_freq = mcu_board_config.core_cpu_freq / reload;
 	SysTick->LOAD = reload;
-	task_rr_reload = reload;
+	m_task_rr_reload = reload;
 	SysTick->CTRL = SYSTICK_CTRL_ENABLE| //enable the timer
 			SYSTICK_CTRL_CLKSROUCE; //Internal Clock CPU
 	SCB->CCR = 0;
 	return core_tick_freq;
 }
 
-int task_new_thread(void *(*p)(void*),
+int task_create_thread(void *(*p)(void*),
 		void (*cleanup)(void*),
 		void * arg,
 		void * mem_addr,
@@ -170,13 +165,12 @@ int task_new_thread(void *(*p)(void*),
 	task.r0 = (u32)arg;
 	task.r1 = 0;
 	task.pid = pid;
-	//task.mem_size = mem_size;
 	task.flags = TASK_FLAGS_USED |
 			TASK_FLAGS_PARENT( task_get_parent(thread_zero) ) |
 			TASK_FLAGS_IS_THREAD;
-	task.reent = (struct _reent *)mem_addr;
-	task.global_reent = task_table[ thread_zero ].global_reent;
-	task.mem = &(task_table[ thread_zero ].mem);
+	task.reent = mem_addr;
+	task.global_reent = sos_task_table[ thread_zero ].global_reent;
+	task.mem = &(sos_task_table[ thread_zero ].mem);
 
 	//Do a priv call while accessing the task table so there are no interruptions
 	cortexm_svcall( (cortexm_svcall_t)task_root_new_task, &task);
@@ -190,16 +184,16 @@ void task_root_new_task(new_task_t * task){
 	for(i=1; i < task_get_total(); i++){
 		if ( !task_used_asserted(i) ){
 			//initialize the process stack pointer
-			task_table[i].pid = task->pid;
-			task_table[i].flags = task->flags;
-			task_table[i].sp = task->stackaddr - sizeof(hw_stack_frame_t) - sizeof(sw_stack_frame_t);
-			task_table[i].reent = task->reent;
-			task_table[i].global_reent = task->global_reent;
-			task_table[i].timer.t = 0;
-			task_table[i].rr_time = task_rr_reload;
-			memcpy(&(task_table[i].mem), task->mem, sizeof(task_memories_t));
+			sos_task_table[i].pid = task->pid;
+			sos_task_table[i].flags = task->flags;
+			sos_task_table[i].sp = task->stackaddr - sizeof(hw_stack_frame_t) - sizeof(sw_stack_frame_t);
+			sos_task_table[i].reent = task->reent;
+			sos_task_table[i].global_reent = task->global_reent;
+			sos_task_table[i].timer.t = 0;
+			sos_task_table[i].rr_time = m_task_rr_reload;
+			memcpy(&(sos_task_table[i].mem), task->mem, sizeof(task_memories_t));
 #if __FPU_USED != 0
-			task_table[i].fpscr = FPU->FPDSCR;
+			sos_task_table[i].fpscr = FPU->FPDSCR;
 #endif
 			break;
 		}
@@ -222,7 +216,7 @@ void task_root_new_task(new_task_t * task){
 	}
 }
 
-void task_root_del(int id){
+void task_root_delete(int id){
 	if ( (id < task_get_total() ) && (id >= 1)){
 		task_deassert_used(id);
 		task_deassert_exec(id);
@@ -232,17 +226,17 @@ void task_root_del(int id){
 
 void task_root_resetstack(int id){
 	//set the stack pointer to the original value
-	task_table[id].sp = task_table[id].mem.data.addr + task_table[id].mem.data.size;
+	sos_task_table[id].sp = sos_task_table[id].mem.data.addr + sos_task_table[id].mem.data.size;
 }
 
 void * task_get_sbrk_stack_ptr(struct _reent * reent_ptr){
 	int i;
 	void * stackaddr;
-	if ( task_table != NULL ){
+	if ( sos_task_table != NULL ){
 		for(i=0; i < task_get_total(); i++){
 
 			//If the reent and global reent are the same then this is the main thread
-			if ( (task_table[i].reent == reent_ptr) && (task_table[i].global_reent == reent_ptr) ){
+			if ( (sos_task_table[i].reent == reent_ptr) && (sos_task_table[i].global_reent == reent_ptr) ){
 
 				//If the main thread is not in use, the stack is not valid
 				if ( task_used_asserted(i) ){
@@ -252,7 +246,7 @@ void * task_get_sbrk_stack_ptr(struct _reent * reent_ptr){
 						return stackaddr;
 					} else {
 						//Return the stack value from thread 0 if another thread is running
-						return (void*)task_table[i].sp;
+						return (void*)sos_task_table[i].sp;
 					}
 				} else {
 					//The main thread is not in use, so there is no valid stack value
@@ -278,53 +272,44 @@ int task_get_thread_zero(int pid){
 	return -1;
 }
 
-static void priv_task_tmr_rd(u32 * val){
-	*val = task_rr_reload - SysTick->VAL;
+static void root_task_read_rr_timer(u32 * val){
+	*val = m_task_rr_reload - SysTick->VAL;
 }
 
 
-uint64_t task_root_gettime(int tid){
+u64 task_root_gettime(int tid){
 	u32 val;
 	if ( tid != task_get_current() ){
-		return task_table[tid].timer.t + (task_rr_reload - task_table[tid].rr_time);
+		return sos_task_table[tid].timer.t + (m_task_rr_reload - sos_task_table[tid].rr_time);
 	} else {
-		priv_task_tmr_rd(&val);
-		return task_table[tid].timer.t + val;
+		root_task_read_rr_timer(&val);
+		return sos_task_table[tid].timer.t + val;
 	}
 }
 
 
-uint64_t task_gettime(int tid){
+u64 task_gettime(int tid){
 	u32 val;
 	if ( tid != task_get_current() ){
-		return task_table[tid].timer.t + (task_rr_reload - task_table[tid].rr_time);
+		return sos_task_table[tid].timer.t + (m_task_rr_reload - sos_task_table[tid].rr_time);
 	} else {
-		cortexm_svcall((cortexm_svcall_t)priv_task_tmr_rd, &val);
-		return task_table[tid].timer.t + val;
+		cortexm_svcall((cortexm_svcall_t)root_task_read_rr_timer, &val);
+		return sos_task_table[tid].timer.t + val;
 	}
 }
 
-void priv_task_rr_reload(void * args){
-	task_table[task_get_current()].rr_time = task_rr_reload;
-}
-
-void task_reload(){
-	cortexm_svcall(priv_task_rr_reload, 0);
-}
-
-/*! \details This function changes to another process.  It is executed
- * during the core systick timer and pend SV interrupts.
- */
 void task_context_switcher(){
 	int i;
-	asm volatile ("MRS %0, psp\n\t" : "=r" (task_table[task_current].sp) );
+
+	//Save the PSP to the current task's stack pointer
+	asm volatile ("MRS %0, psp\n\t" : "=r" (sos_task_table[m_task_current].sp) );
 
 #if __FPU_USED == 1
 	void * fpu_stack;
-	if( task_current != 0 ){
+	if( m_task_current != 0 ){
 		//only do this if the task has used the FPU -- copy FPU registers to task table
-		fpu_stack = task_table[task_current].fp + 32;
-		asm volatile ("VMRS %0, fpscr\n\t" : "=r" (task_table[task_current].fpscr) );
+		fpu_stack = sos_task_table[m_task_current].fp + 32;
+		asm volatile ("VMRS %0, fpscr\n\t" : "=r" (sos_task_table[m_task_current].fpscr) );
 		asm volatile ("mov r1, %0\n\t" : : "r" (fpu_stack) );
 		asm volatile ("vstmdb r1!, {s0-s31}\n\t");
 	}
@@ -339,22 +324,21 @@ void task_context_switcher(){
 	MPU->RBAR = 0x12;
 	MPU->RASR = 0;
 #endif
-
 	cortexm_disable_interrupts(NULL);
 
 	do {
-		task_current++;
-		if ( task_current == task_get_total() ){
+		m_task_current++;
+		if ( m_task_current == task_get_total() ){
 			//The scheduler only uses OS mem -- disable the process MPU regions
-			task_current = 0;
-			if( task_table[0].rr_time < SYSTICK_MIN_CYCLES ){
-				task_table[0].rr_time = task_rr_reload;
-				task_table[0].timer.t += (task_rr_reload);
+			m_task_current = 0;
+			if( sos_task_table[0].rr_time < SYSTICK_MIN_CYCLES ){
+				sos_task_table[0].rr_time = m_task_rr_reload;
+				sos_task_table[0].timer.t += (m_task_rr_reload);
 			}
 
 			//see if all tasks have used up their RR time
 			for(i=1; i < task_get_total(); i++){
-				if ( task_exec_asserted(i) && (task_table[i].rr_time >= SYSTICK_MIN_CYCLES) ){
+				if ( task_exec_asserted(i) && (sos_task_table[i].rr_time >= SYSTICK_MIN_CYCLES) ){
 					break;
 				}
 			}
@@ -363,24 +347,24 @@ void task_context_switcher(){
 			if ( i == task_get_total() ){
 				for(i=1; i < task_get_total(); i++){
 					if ( task_exec_asserted(i) ){
-						task_table[i].timer.t += (task_rr_reload - task_table[i].rr_time);
-						task_table[i].rr_time = task_rr_reload;
+						sos_task_table[i].timer.t += (m_task_rr_reload - sos_task_table[i].rr_time);
+						sos_task_table[i].rr_time = m_task_rr_reload;
 					}
 				}
 			}
 
 			break;
-		} else if ( task_exec_asserted(task_current) ){
-			if ( (task_table[task_current].rr_time >= SYSTICK_MIN_CYCLES) || //is there time remaining on the RR
-					task_isfifo_asserted(task_current) ){ //is this a FIFO task
-				//Enable the MPU for the process code section
+		} else if ( task_exec_asserted(m_task_current) ){
+			if ( (sos_task_table[m_task_current].rr_time >= SYSTICK_MIN_CYCLES) || //is there time remaining on the RR
+					task_isfifo_asserted(m_task_current) ){ //is this a FIFO task
 #if MPU_PRESENT || __MPU_PRESENT
-				MPU->RBAR = (u32)(task_table[task_current].mem.code.addr);
-				MPU->RASR = (u32)(task_table[task_current].mem.code.size);
+				//Enable the MPU for the process code section
+				MPU->RBAR = (u32)(sos_task_table[m_task_current].mem.code.addr);
+				MPU->RASR = (u32)(sos_task_table[m_task_current].mem.code.size);
 
 				//Enable the MPU for the process data section
-				MPU->RBAR = (u32)(task_table[task_current].mem.data.addr);
-				MPU->RASR = (u32)(task_table[task_current].mem.data.size);
+				MPU->RBAR = (u32)(sos_task_table[m_task_current].mem.data.addr);
+				MPU->RASR = (u32)(sos_task_table[m_task_current].mem.data.size);
 #endif
 				break;
 			}
@@ -389,21 +373,21 @@ void task_context_switcher(){
 
 	//Enable the MPU for the task stack guard
 #if MPU_PRESENT || __MPU_PRESENT
-	MPU->RBAR = (u32)(task_table[task_current].mem.stackguard.addr);
-	MPU->RASR = (u32)(task_table[task_current].mem.stackguard.size);
+	MPU->RBAR = (u32)(sos_task_table[m_task_current].mem.stackguard.addr);
+	MPU->RASR = (u32)(sos_task_table[m_task_current].mem.stackguard.size);
 #endif
 
 	cortexm_enable_interrupts(NULL);
 
-	_impure_ptr = task_table[task_current].reent;
-	_global_impure_ptr = task_table[task_current].global_reent;
+	_impure_ptr = sos_task_table[m_task_current].reent;
+	_global_impure_ptr = sos_task_table[m_task_current].global_reent;
 
-	if ( task_isfifo_asserted(task_current) ){
+	if ( task_isfifo_asserted(m_task_current) ){
 		//disable the systick interrupt (because this is a fifo task)
 		cortexm_disable_systick_irq();
 	} else {
 		//init sys tick to the amount of time remaining
-		SysTick->LOAD = task_table[task_current].rr_time;
+		SysTick->LOAD = sos_task_table[m_task_current].rr_time;
 		SysTick->VAL = 0; //force a reload
 		//enable the systick interrupt
 		cortexm_enable_systick_irq();
@@ -412,25 +396,26 @@ void task_context_switcher(){
 #if __FPU_USED == 1
 	//only do this if the task has used the FPU
 	//task_load_fpu();
-	if( task_current != 0 ){
-		fpu_stack = task_table[task_current].fp;
-		asm volatile ("VMSR fpscr, %0\n\t" : : "r" (task_table[task_current].fpscr) );
+	if( m_task_current != 0 ){
+		fpu_stack = sos_task_table[m_task_current].fp;
+		asm volatile ("VMSR fpscr, %0\n\t" : : "r" (sos_task_table[m_task_current].fpscr) );
 		asm volatile ("mov r1, %0\n\t" : : "r" (fpu_stack) );
 		asm volatile ("vldm r1!, {s0-s31}\n\t");
 	}
 #endif
 
-	asm volatile ("MSR psp, %0\n\t" : : "r" (task_table[task_current].sp) );
+	//write the new task's stack pointer to the PSP
+	asm volatile ("MSR psp, %0\n\t" : : "r" (sos_task_table[m_task_current].sp) );
 }
 
 void task_root_switch_context(void * args){
-	task_table[task_get_current()].rr_time = SysTick->VAL; //save the RR time from the SYSTICK
+	sos_task_table[task_get_current()].rr_time = SysTick->VAL; //save the RR time from the SYSTICK
 	SCB->ICSR |= (1<<28);
 }
 
 void _task_check_countflag(){
 	if ( SysTick->CTRL & (1<<16) ){ //check the countflag
-		task_table[task_current].rr_time = 0;
+		sos_task_table[m_task_current].rr_time = 0;
 		task_context_switcher();
 	}
 }
@@ -488,8 +473,8 @@ int task_root_interrupt_call(void * args){
 
 		} else {
 			//Since this is another task, the current PSP is not touched
-			hw_frame = (hw_stack_frame_t *)(task_table[intr->tid].sp - sizeof(hw_stack_frame_t));
-			task_table[intr->tid].sp = task_table[intr->tid].sp - (sizeof(hw_stack_frame_t) + sizeof(sw_stack_frame_t));
+			hw_frame = (hw_stack_frame_t *)(sos_task_table[intr->tid].sp - sizeof(hw_stack_frame_t));
+			sos_task_table[intr->tid].sp = sos_task_table[intr->tid].sp - (sizeof(hw_stack_frame_t) + sizeof(sw_stack_frame_t));
 		}
 
 		hw_frame->r0 = intr->arg[0];

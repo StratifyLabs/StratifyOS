@@ -29,7 +29,7 @@
 #include "../scheduler/scheduler_local.h"
 #include "sig_local.h"
 
-static void priv_wait_child(void * args) MCU_PRIV_EXEC_CODE;
+static void priv_wait_child(void * args) MCU_ROOT_EXEC_CODE;
 
 typedef struct {
 	int pid;
@@ -37,7 +37,7 @@ typedef struct {
 	int tid;
 } priv_check_for_zombie_child_t;
 
-static void priv_check_for_zombie_child(void * args) MCU_PRIV_EXEC_CODE;
+static void priv_check_for_zombie_child(void * args) MCU_ROOT_EXEC_CODE;
 
 pid_t waitpid(pid_t pid, int *stat_loc, int options){
 	priv_check_for_zombie_child_t args;
@@ -126,7 +126,7 @@ void priv_check_for_zombie_child(void * args){
 								p->tid = i;
 								p->status = sos_sched_table[i].exit_status;
 								sos_sched_table[i].flags = 0;
-								task_root_del(i);
+								task_root_delete(i);
 							}
 							num_zombies++;
 						}

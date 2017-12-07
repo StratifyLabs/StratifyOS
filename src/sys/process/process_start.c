@@ -29,10 +29,10 @@
 #include <fcntl.h>
 #include <errno.h>
 #include "sos/fs/sysfs.h"
-#include <sys/syscalls/process/process_start.h>
+#include "process_start.h"
 
-#include "../../scheduler/scheduler_local.h"
-#include "../../sysfs/appfs_local.h"
+#include "../scheduler/scheduler_local.h"
+#include "../sysfs/appfs_local.h"
 
 static int reent_is_free(struct _reent * reent);
 
@@ -113,7 +113,7 @@ int process_start(const char *path_arg,
 	close(fd);
 
 
-	process_path = _malloc_r(task_table[0].global_reent, len+1);
+	process_path = _malloc_r(sos_task_table[0].global_reent, len+1);
 	if( process_path == 0 ){
 		mcu_debug_user_printf("couldn't alloc path argument in shared mem\n");
 		return -1;
@@ -135,7 +135,7 @@ int process_start(const char *path_arg,
 int reent_is_free(struct _reent * reent){
 	int i;
 	for(i=0; i < task_get_total(); i++){
-		if ( (reent == task_table[i].reent) && task_enabled(i) ){
+		if ( (reent == sos_task_table[i].reent) && task_enabled(i) ){
 			return 0;
 		}
 	}

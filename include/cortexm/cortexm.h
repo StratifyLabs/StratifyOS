@@ -28,19 +28,19 @@ extern "C" {
 
 #ifndef __link
 
-int cortexm_sleep(int level) MCU_PRIV_CODE;
+int cortexm_sleep(int level) MCU_ROOT_CODE;
 
-void cortexm_enable_interrupts(void * args) MCU_PRIV_CODE;
-void cortexm_disable_interrupts(void * args) MCU_PRIV_CODE;
-void cortexm_enable_irq(void * x) MCU_PRIV_CODE;
-void cortexm_disable_irq(void * x) MCU_PRIV_CODE;
-void cortexm_reset(void * args) MCU_PRIV_CODE;
-void cortexm_get_stack_ptr(void * ptr) MCU_PRIV_CODE;
-void cortexm_set_stack_ptr(void * ptr) MCU_PRIV_CODE;
-void cortexm_get_thread_stack_ptr(void * ptr) MCU_PRIV_CODE;
-void cortexm_set_thread_stack_ptr(void * ptr) MCU_PRIV_CODE;
-int cortexm_validate_callback(mcu_callback_t callback) MCU_PRIV_CODE;
-int cortexm_set_irq_prio(int irq, int prio) MCU_PRIV_CODE;
+void cortexm_enable_interrupts(void * args) MCU_ROOT_CODE;
+void cortexm_disable_interrupts(void * args) MCU_ROOT_CODE;
+void cortexm_enable_irq(void * x) MCU_ROOT_CODE;
+void cortexm_disable_irq(void * x) MCU_ROOT_CODE;
+void cortexm_reset(void * args) MCU_ROOT_CODE;
+void cortexm_get_stack_ptr(void * ptr) MCU_ROOT_CODE;
+void cortexm_set_stack_ptr(void * ptr) MCU_ROOT_CODE;
+void cortexm_get_thread_stack_ptr(void * ptr) MCU_ROOT_CODE;
+void cortexm_set_thread_stack_ptr(void * ptr) MCU_ROOT_CODE;
+int cortexm_validate_callback(mcu_callback_t callback) MCU_ROOT_CODE;
+int cortexm_set_irq_prio(int irq, int prio) MCU_ROOT_CODE;
 
 
 #define CORTEXM_ZERO_SUM32_COUNT(x) (sizeof(x)/sizeof(u32))
@@ -54,8 +54,8 @@ int cortexm_verify_zero_sum8(void * data, int size);
 typedef void (*cortexm_svcall_t)(void*);
 void cortexm_svcall(cortexm_svcall_t call, void * args) __attribute__((optimize("1")));
 
-void cortexm_set_unprivileged_mode() MCU_PRIV_CODE;
-void cortexm_set_thread_mode() MCU_PRIV_CODE;
+void cortexm_set_unprivileged_mode() MCU_ROOT_CODE;
+void cortexm_set_thread_mode() MCU_ROOT_CODE;
 
 void cortexm_delay_us(u32 us);
 void cortexm_delay_ms(u32 ms);
