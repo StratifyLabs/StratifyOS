@@ -72,7 +72,7 @@ link_transport_phy_t boot_link_transport_usb_open(const char * name,
 
 	dstr("USB ATTR SET\n");
 	//initialize USB device
-	usbd_control_priv_init(context);
+	usbd_control_root_init(context);
 	dstr("USB CONNECT\n");
 
 

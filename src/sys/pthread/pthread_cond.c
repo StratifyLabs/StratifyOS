@@ -38,7 +38,7 @@
 #define INIT_FLAG 30
 #define PID_MASK 0x3FFFFFFF
 
-static void priv_cond_signal(void * args) MCU_ROOT_EXEC_CODE;
+static void root_cond_signal(void * args) MCU_ROOT_EXEC_CODE;
 
 typedef struct {
 	pthread_cond_t *cond;
@@ -46,9 +46,9 @@ typedef struct {
 	int new_thread;
 	struct mcu_timeval interval;
 	int ret;
-} priv_cond_wait_t;
-static void priv_cond_wait(void  * args) MCU_ROOT_EXEC_CODE;
-static void priv_cond_broadcast(void * args) MCU_ROOT_EXEC_CODE;
+} root_cond_wait_t;
+static void root_cond_wait(void  * args) MCU_ROOT_EXEC_CODE;
+static void root_cond_broadcast(void * args) MCU_ROOT_EXEC_CODE;
 
 /*! \details This function initializes a pthread block condition.
  *
@@ -88,7 +88,7 @@ int pthread_cond_destroy(pthread_cond_t *cond){
 	return 0;
 }
 
-void priv_cond_broadcast(void * args){
+void root_cond_broadcast(void * args){
 	int prio;
 	prio = scheduler_root_unblock_all(args, SCHEDULER_UNBLOCK_COND);
 	scheduler_root_update_on_wake(prio);
@@ -111,11 +111,11 @@ int pthread_cond_broadcast(pthread_cond_t *cond){
 	}
 
 	//wake all tasks blocking on cond
-	cortexm_svcall(priv_cond_broadcast, cond);
+	cortexm_svcall(root_cond_broadcast, cond);
 	return 0;
 }
 
-void priv_cond_signal(void * args){
+void root_cond_signal(void * args){
 	int id = *((int*)args);
 	scheduler_root_assert_active(id, SCHEDULER_UNBLOCK_COND);
 	if( !scheduler_stopped_asserted(id) ){
@@ -145,14 +145,14 @@ int pthread_cond_signal(pthread_cond_t *cond){
 	new_thread = scheduler_get_highest_priority_blocked(cond);
 
 	if ( new_thread != -1 ){
-		cortexm_svcall(priv_cond_signal, &new_thread);
+		cortexm_svcall(root_cond_signal, &new_thread);
 	}
 
 	return 0;
 }
 
-void priv_cond_wait(void  * args){
-	priv_cond_wait_t * argsp = (priv_cond_wait_t*)args;
+void root_cond_wait(void  * args){
+	root_cond_wait_t * argsp = (root_cond_wait_t*)args;
 	int new_thread = argsp->new_thread;
 
 
@@ -191,7 +191,7 @@ void priv_cond_wait(void  * args){
  */
 int pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex){
 	int pid;
-	priv_cond_wait_t args;
+	root_cond_wait_t args;
 
 	if ( cond == NULL ){
 		errno = EINVAL;
@@ -219,7 +219,7 @@ int pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex){
 
 	//release the mutex and block on the cond
 	args.new_thread = scheduler_get_highest_priority_blocked(mutex);
-	cortexm_svcall(priv_cond_wait, &args);
+	cortexm_svcall(root_cond_wait, &args);
 
 	if ( args.ret == -1 ){
 		errno = EPERM;
@@ -256,7 +256,7 @@ int pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex){
  */
 int pthread_cond_timedwait(pthread_cond_t *cond, pthread_mutex_t *mutex, const struct timespec *abstime){
 	int pid;
-	priv_cond_wait_t args;
+	root_cond_wait_t args;
 
 	if ( cond == NULL ){
 		errno = EINVAL;
@@ -284,7 +284,7 @@ int pthread_cond_timedwait(pthread_cond_t *cond, pthread_mutex_t *mutex, const s
 
 	//release the mutex and block on the cond
 	args.new_thread = scheduler_get_highest_priority_blocked(mutex);
-	cortexm_svcall(priv_cond_wait, &args);
+	cortexm_svcall(root_cond_wait, &args);
 
 	if ( args.ret == -1 ){
 		errno = EPERM;

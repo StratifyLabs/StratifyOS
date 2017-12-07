@@ -40,14 +40,14 @@
 #include "../scheduler/scheduler_local.h"
 
 static int set_alarm(int seconds);
-static void priv_powerdown(void * args) MCU_ROOT_EXEC_CODE;
-static void priv_hibernate(void * args) MCU_ROOT_EXEC_CODE;
+static void root_powerdown(void * args) MCU_ROOT_EXEC_CODE;
+static void root_hibernate(void * args) MCU_ROOT_EXEC_CODE;
 
-void priv_powerdown(void * args){
+void root_powerdown(void * args){
 	mcu_core_execsleep(0, (void*)CORE_DEEPSLEEP_STANDBY);
 }
 
-void priv_hibernate(void * args){
+void root_hibernate(void * args){
 	int * seconds = (int*)args;
 	u16 save_priority;
 
@@ -62,7 +62,7 @@ void priv_hibernate(void * args){
 	}
 
 	//The WDT only runs in hibernate on certain clock sources
-	mcu_wdt_priv_reset(NULL);
+	mcu_wdt_root_reset(NULL);
 
 	//elevate task prio of caller so that nothing executes until prio is restored
 	save_priority = sos_sched_table[ task_get_current() ].priority;
@@ -81,7 +81,7 @@ void priv_hibernate(void * args){
 	mcu_core_setusbclock(mcu_board_config.core_osc_freq); //set the USB clock
 
 	//Set WDT to previous value (it only runs in deep sleep with certain clock sources)
-	mcu_wdt_priv_reset(NULL);
+	mcu_wdt_root_reset(NULL);
 
 	if( (sos_board_config.o_sys_flags & SYS_FLAG_IS_WDT_DISABLED) == 0 ){
 		if( *seconds != 0 ){
@@ -115,7 +115,7 @@ int hibernate(int seconds){
 		set_alarm(seconds);
 	}
 	mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_HIBERNATE, &seconds);
-	cortexm_svcall(priv_hibernate, &seconds);
+	cortexm_svcall(root_hibernate, &seconds);
 	mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_WAKEUP_FROM_HIBERNATE, &seconds);
 	return 0;
 }
@@ -126,7 +126,7 @@ void powerdown(int seconds){
 		set_alarm(seconds);
 	}
 	mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_POWERDOWN, &seconds);
-	cortexm_svcall(priv_powerdown, NULL);
+	cortexm_svcall(root_powerdown, NULL);
 	//device will reset after a powerdown event
 }
 

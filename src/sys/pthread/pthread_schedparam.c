@@ -36,8 +36,8 @@ typedef struct {
 	int tid;
 	int policy;
 	const struct sched_param * param;
-} priv_set_pthread_scheduling_param_t;
-static void priv_set_scheduling_param(void * args) MCU_ROOT_EXEC_CODE;
+} root_set_pthread_scheduling_param_t;
+static void root_set_scheduling_param(void * args) MCU_ROOT_EXEC_CODE;
 
 
 /*! \details This function gets \a thread's scheduling policy and scheduling parameters and
@@ -80,7 +80,7 @@ int pthread_setschedparam(pthread_t thread,
 
 	int min_prio;
 	int max_prio;
-	priv_set_pthread_scheduling_param_t args;
+	root_set_pthread_scheduling_param_t args;
 
 	if ( param == NULL ){
 		errno = EINVAL;
@@ -100,7 +100,7 @@ int pthread_setschedparam(pthread_t thread,
 		args.tid = thread;
 		args.policy = policy;
 		args.param = param;
-		cortexm_svcall(priv_set_scheduling_param, &args);
+		cortexm_svcall(root_set_scheduling_param, &args);
 		return 0;
 	}
 
@@ -110,8 +110,8 @@ int pthread_setschedparam(pthread_t thread,
 }
 
 
-void priv_set_scheduling_param(void * args){
-	priv_set_pthread_scheduling_param_t * p = (priv_set_pthread_scheduling_param_t*)args;
+void root_set_scheduling_param(void * args){
+	root_set_pthread_scheduling_param_t * p = (root_set_pthread_scheduling_param_t*)args;
 	int id;
 	id = p->tid;
 

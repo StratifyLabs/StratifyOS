@@ -36,7 +36,7 @@
 #include "unistd_fs.h"
 #include "../scheduler/scheduler_local.h"
 
-void priv_assign_handle(void * args){
+void root_assign_handle(void * args){
 	int * argp = args;
 	int i;
 	int start = *argp;
@@ -54,7 +54,7 @@ void priv_assign_handle(void * args){
 int u_new_open_file(int start){
 	int arg = start;
 
-	cortexm_svcall(priv_assign_handle, &arg);
+	cortexm_svcall(root_assign_handle, &arg);
 	if( arg < 0 ){
 		errno = EMFILE;
 	}
@@ -204,8 +204,8 @@ int u_fildes_is_bad(int fildes){
 typedef struct {
 	int err;
 	const device_t * handle;
-} priv_open_device_t;
-static void priv_open_device(void * args);
+} root_open_device_t;
+static void root_open_device(void * args);
 static int open_device(const char * name, int flags, int fildes);
 static void set_open_file(int fildes, void * handle, uint16_t flags);
 

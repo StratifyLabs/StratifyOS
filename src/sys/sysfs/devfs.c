@@ -36,11 +36,11 @@
 typedef struct {
 	int err;
 	const devfs_device_t * device;
-} priv_args_t;
+} root_args_t;
 
 
-static void priv_open_device(void * args) MCU_ROOT_EXEC_CODE;
-static void priv_devfs_close(void * args) MCU_ROOT_EXEC_CODE;
+static void root_open_device(void * args) MCU_ROOT_EXEC_CODE;
+static void root_devfs_close(void * args) MCU_ROOT_EXEC_CODE;
 static int get_total(const devfs_device_t * list);
 static void ioctl_priv(void * args) MCU_ROOT_EXEC_CODE;
 
@@ -87,8 +87,8 @@ static int find(const device_t * list, const device_t * dev){
 }
 */
 
-void priv_open_device(void * args){
-	priv_args_t * p = (priv_args_t*)args;
+void root_open_device(void * args){
+	root_args_t * p = (root_args_t*)args;
 	p->err = p->device->driver.open( &(p->device->handle) );
 }
 
@@ -135,7 +135,7 @@ int devfs_closedir(const void * cfg, void ** handle){
 }
 
 int devfs_open(const void * cfg, void ** handle, const char * path, int flags, int mode){
-	priv_args_t args;
+	root_args_t args;
 	const devfs_device_t * list = (const devfs_device_t*)cfg;
 
 	//check the flags O_CREAT, O_APPEND, O_TRUNC are not supported
@@ -148,7 +148,7 @@ int devfs_open(const void * cfg, void ** handle, const char * path, int flags, i
 	//Check to see if the device is in the list
 	args.device = load(list, path);
 	if ( args.device != NULL ){
-		cortexm_svcall(priv_open_device, &args);
+		cortexm_svcall(root_open_device, &args);
 		if ( args.err < 0 ){
 			return args.err;
 		}
@@ -232,16 +232,16 @@ void ioctl_priv(void * args){
 	p->ret = dev->driver.ioctl(&dev->handle, p->request, p->ctl);
 }
 
-void priv_devfs_close(void * args){
-	priv_args_t * p = (priv_args_t*)args;
+void root_devfs_close(void * args){
+	root_args_t * p = (root_args_t*)args;
 	p->err = p->device->driver.close(&p->device->handle);
 }
 
 int devfs_close(const void * cfg, void ** handle){
-	priv_args_t args;
+	root_args_t args;
 	args.err = 0;
 	args.device = *handle;
-	cortexm_svcall(priv_devfs_close, &args);
+	cortexm_svcall(root_devfs_close, &args);
 	*handle = NULL;
 	return args.err;
 }

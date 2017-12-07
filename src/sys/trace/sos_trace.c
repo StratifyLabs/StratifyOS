@@ -30,7 +30,7 @@
 static void sos_trace_event_addr(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len, u32 addr);
 static void sos_trace_build_event(link_trace_event_t * event, link_trace_event_id_t event_id, const void * data_ptr, size_t data_len, u32 addr, int tid, const struct timespec * spec);
 
-void sos_trace_priv_event(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len){
+void sos_trace_root_trace_event(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len){
 	register u32 lr asm("lr");
 	link_trace_event_t event;
 	if( sos_board_config.trace_event ){

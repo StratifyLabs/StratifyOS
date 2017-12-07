@@ -48,16 +48,16 @@ typedef struct {
 	bool trylock;
 	struct mcu_timeval abs_timeout;
 	int ret;
-} priv_mutex_trylock_t;
-static void priv_mutex_trylock(priv_mutex_trylock_t *args) MCU_ROOT_EXEC_CODE;
+} root_mutex_trylock_t;
+static void root_mutex_trylock(root_mutex_trylock_t *args) MCU_ROOT_EXEC_CODE;
 
 typedef struct {
 	int id;
 	pthread_mutex_t *mutex;
-} priv_mutex_unlock_t;
-static void priv_mutex_unlock(priv_mutex_unlock_t * args) MCU_ROOT_EXEC_CODE;
-static void priv_mutex_block(priv_mutex_trylock_t *args);
-static void priv_mutex_unblocked(priv_mutex_trylock_t *args) MCU_ROOT_EXEC_CODE;
+} root_mutex_unlock_t;
+static void root_mutex_unlock(root_mutex_unlock_t * args) MCU_ROOT_EXEC_CODE;
+static void root_mutex_block(root_mutex_trylock_t *args);
+static void root_mutex_unblocked(root_mutex_trylock_t *args) MCU_ROOT_EXEC_CODE;
 
 /*! \details This function initializes \a mutex with \a attr.
  * \return Zero on success or -1 with \a errno (see \ref ERRNO) set to:
@@ -175,7 +175,7 @@ int pthread_mutex_trylock(pthread_mutex_t *mutex){
  *
  */
 int pthread_mutex_unlock(pthread_mutex_t *mutex){
-	priv_mutex_unlock_t args;
+	root_mutex_unlock_t args;
 
 	if ( task_get_current() == 0 ){
 		return 0;
@@ -199,7 +199,7 @@ int pthread_mutex_unlock(pthread_mutex_t *mutex){
 	}
 
 	args.mutex = mutex;  //The Mutex
-	cortexm_svcall((cortexm_svcall_t)priv_mutex_unlock, &args);
+	cortexm_svcall((cortexm_svcall_t)root_mutex_unlock, &args);
 	return 0;
 }
 
@@ -227,7 +227,7 @@ int pthread_mutex_destroy(pthread_mutex_t *mutex){
 
 int mutex_trylock(pthread_mutex_t *mutex, bool trylock, const struct timespec * abs_timeout){
 	int id;
-	priv_mutex_trylock_t args;
+	root_mutex_trylock_t args;
 	if ( mutex == NULL ){
 		errno = EINVAL;
 		return -1;
@@ -273,10 +273,10 @@ int mutex_trylock(pthread_mutex_t *mutex, bool trylock, const struct timespec * 
 	args.mutex = mutex;
 	args.trylock = trylock;
 	scheduler_timing_convert_timespec(&args.abs_timeout, abs_timeout);
-	cortexm_svcall((cortexm_svcall_t)priv_mutex_trylock, &args);
+	cortexm_svcall((cortexm_svcall_t)root_mutex_trylock, &args);
 	if( args.ret == -2 ){
 		while( (scheduler_unblock_type(args.id) == SCHEDULER_UNBLOCK_SIGNAL)  ){
-			cortexm_svcall((cortexm_svcall_t)priv_mutex_unblocked, &args);
+			cortexm_svcall((cortexm_svcall_t)root_mutex_unblocked, &args);
 		}
 	}
 
@@ -284,26 +284,26 @@ int mutex_trylock(pthread_mutex_t *mutex, bool trylock, const struct timespec * 
 }
 
 int pthread_mutex_force_unlock(pthread_mutex_t *mutex){
-	priv_mutex_unlock_t args;
+	root_mutex_unlock_t args;
 
 	if ( mutex->flags & PTHREAD_MUTEX_FLAGS_PSHARED ){ //All pshared objects must be in shared memory space
 		if ( mutex->pid == getpid() && (mutex->lock != 0) ){
 			args.id = mutex->pthread; //Current owner of the mutex
 			args.mutex = mutex;  //The Mutex
-			cortexm_svcall((cortexm_svcall_t)priv_mutex_unlock, &args);
+			cortexm_svcall((cortexm_svcall_t)root_mutex_unlock, &args);
 		}
 	}
 
 	return 0;
 }
 
-void priv_mutex_block(priv_mutex_trylock_t *args){
+void root_mutex_block(root_mutex_trylock_t *args){
 	//block the calling mutex
 	sos_sched_table[ args->id ].block_object = args->mutex; //Elevate the priority of the task based on prio_ceiling
 	scheduler_timing_root_timedblock(args->mutex, &args->abs_timeout);
 }
 
-void priv_mutex_unblocked(priv_mutex_trylock_t *args){
+void root_mutex_unblocked(root_mutex_trylock_t *args){
 	if( args->mutex->pthread == args->id ){
 		//mutex is locked -- exit loop
 		scheduler_root_set_unblock_type(args->id, SCHEDULER_UNBLOCK_MUTEX);
@@ -311,7 +311,7 @@ void priv_mutex_unblocked(priv_mutex_trylock_t *args){
 	}
 
 	//now check to see if abs_time has expired
-	priv_mutex_block(args);
+	root_mutex_block(args);
 
 	//if the time has expired, the thread will still be active -- therefore unblock from SLEEP (not signal)
 	if( scheduler_active_asserted(args->id) ){
@@ -320,7 +320,7 @@ void priv_mutex_unblocked(priv_mutex_trylock_t *args){
 
 }
 
-void priv_mutex_trylock(priv_mutex_trylock_t *args){
+void root_mutex_trylock(root_mutex_trylock_t *args){
 	if ( args->mutex->pthread == -1 ){  //Is the mutex free
 		//The mutex is free -- lock it up
 		args->mutex->pthread = args->id; //This is to hold the mutex in case another task tries to grab it
@@ -333,13 +333,13 @@ void priv_mutex_trylock(priv_mutex_trylock_t *args){
 	} else {
 		//Mutex is not free
 		if ( args->trylock == false ){
-			priv_mutex_block(args);
+			root_mutex_block(args);
 		}
 		args->ret = -2;
 	}
 }
 
-void priv_mutex_unlock(priv_mutex_unlock_t * args){
+void root_mutex_unlock(root_mutex_unlock_t * args){
 	int new_thread;
 	int last_prio;
 	//Restore the priority to the task that is unlocking the mutex

@@ -36,7 +36,7 @@
 #include "../signal/sig_local.h"
 
 
-static void priv_suspend(void * args) MCU_ROOT_EXEC_CODE;
+static void root_suspend(void * args) MCU_ROOT_EXEC_CODE;
 static int suspend(struct aiocb *const list[], int nent, const struct timespec * timeout, bool block_on_all);
 static int data_transfer(struct aiocb * aiocbp);
 
@@ -45,7 +45,7 @@ typedef struct {
 	struct aiocb * aiocbp;
 	int read;
 	int ret;
-} priv_aio_transfer_t;
+} root_aio_transfer_t;
 
 
 /*! \details This function is not supported this version.
@@ -132,7 +132,7 @@ ssize_t aio_return(struct aiocb * aiocbp /*! a pointer to the AIO data struture 
 	}
 }
 
-void priv_suspend(void * args){
+void root_suspend(void * args){
 	int i;
 	bool suspend;
 	sysfs_aio_suspend_t * p = (sysfs_aio_suspend_t*)args;
@@ -182,7 +182,7 @@ int suspend(struct aiocb *const list[], int nent, const struct timespec * timeou
 	args.nent = nent;
 	args.block_on_all = block_on_all; //only block on one or block on all
 	scheduler_timing_convert_timespec(&args.abs_timeout, timeout);
-	cortexm_svcall(priv_suspend, &args);
+	cortexm_svcall(root_suspend, &args);
 
 	if( args.nent == -1 ){
 		return 0; //one of the AIO's in the list has already completed
@@ -316,7 +316,7 @@ int sysfs_aio_data_transfer_callback(void * context, const mcu_event_t * event){
 		//Need to send an asynchronous notification if a lio_listio call was made -- no limit to number of lio_listio calls
 		if( aiocbp->aio_sigevent.sigev_notify == SIGEV_SIGNAL ){
 			//send a signal
-			signal_priv_send(0,
+			signal_root_send(0,
 					tid,
 					aiocbp->aio_sigevent.sigev_signo,
 					SI_ASYNCIO,
@@ -331,65 +331,6 @@ int sysfs_aio_data_transfer_callback(void * context, const mcu_event_t * event){
 	return 0;
 }
 
-#if 0
-
-void priv_device_data_transfer(void * args){
-	priv_aio_transfer_t * p = (priv_aio_transfer_t*)args;
-
-	cortexm_disable_interrupts(NULL); //no switching until the transfer is started
-	//set the device callback for the read/write op
-	if ( p->read == true ){
-		//Read operation
-		p->ret = p->device->driver.read(&p->device->handle, &p->aiocbp->op);
-	} else {
-		p->ret = p->device->driver.write(&p->device->handle, &p->aiocbp->op);
-	}
-
-	sos_sched_table[task_get_current()].block_object = NULL;
-
-	cortexm_enable_interrupts(NULL);
-
-	if ( p->ret == 0 ){
-		if( p->aiocbp->op.nbyte > 0 ){
-			//AIO is in progress
-		}
-	} else if ( p->ret < 0 ){
-		//AIO was not started -- set the errno
-		errno = EIO;
-		p->ret = -1;
-	} else if ( p->ret > 0 ){
-		//The transfer happened synchronously -- call the callback manually
-		aio_data_transfer_callback(p->aiocbp, 0);
-		p->ret = 0;
-	}
-}
-
-int aio_data_transfer(struct aiocb * aiocbp){
-	priv_aio_transfer_t args;
-	open_file_t * open_file;
-
-	//! \todo make sure the fildes is valid
-
-	open_file = get_open_file(aiocbp->aio_fildes);
-	args.device = (devfs_device_t *)open_file->handle;
-	args.aiocbp = aiocbp;
-	if ( aiocbp->aio_lio_opcode == LIO_READ ){
-		args.read = true;
-	} else {
-		args.read = false;
-	}
-	args.aiocbp->op.loc = aiocbp->aio_offset;
-	args.aiocbp->op.flags = 0; //this is never a blocking call
-	args.aiocbp->op.nbyte = aiocbp->aio_nbytes;
-	args.aiocbp->op.buf = (void*)aiocbp->aio_buf;
-	args.aiocbp->op.tid = task_get_current();
-	args.aiocbp->op.handler.callback = (mcu_callback_t)aio_data_transfer_callback;
-	args.aiocbp->op.handler.context = aiocbp;
-	args.aiocbp->aio_nbytes = -1; //means status is in progress
-	cortexm_svcall(priv_device_data_transfer, &args);
-	return args.ret;
-}
-#endif
 
 /*! @} */
 

@@ -139,10 +139,10 @@ typedef struct {
 
 static mq_list_t * mq_first = 0;
 
-//static void priv_send(void * args) MCU_ROOT_EXEC_CODE;
-//static void priv_receive(void * args) MCU_ROOT_EXEC_CODE;
-static void priv_wake_blocked(void * args) MCU_ROOT_EXEC_CODE;
-static void priv_block_on_mq(void * args) MCU_ROOT_EXEC_CODE;
+//static void root_send(void * args) MCU_ROOT_EXEC_CODE;
+//static void root_receive(void * args) MCU_ROOT_EXEC_CODE;
+static void root_wake_blocked(void * args) MCU_ROOT_EXEC_CODE;
+static void root_block_on_mq(void * args) MCU_ROOT_EXEC_CODE;
 
 
 static int mq_entry_size(const mq_t * mq){
@@ -313,7 +313,7 @@ static int block_on_mq(void * block, const struct timespec * abs_timeout);
 typedef struct {
 	void * block;
 	struct mcu_timeval abs_timeout;
-} priv_block_on_mq_t;
+} root_block_on_mq_t;
 
 typedef struct {
 	mq_t * mq;
@@ -321,7 +321,7 @@ typedef struct {
 	int size;
 	int entry_size;
 	struct message * new_msg;
-} priv_send_receive_t;
+} root_send_receive_t;
 
 /*! \details This function gets the message queue attributes and stores them at \a mqstat.
  *
@@ -632,8 +632,8 @@ ssize_t mq_receive(mqd_t mqdes /*! the message queue handle */,
 
 
 /*
-void priv_receive(void * args){
-	priv_send_receive_t * p = (priv_send_receive_t*)args;
+void root_receive(void * args){
+	root_send_receive_t * p = (root_send_receive_t*)args;
 	void * ptr;
 	int current;
 
@@ -761,8 +761,8 @@ int mq_send(mqd_t mqdes /*! the message queue handle */,
 }
 
 /*
-void priv_send(void * args){
-	priv_send_receive_t * p = (priv_send_receive_t*)args;
+void root_send(void * args){
+	root_send_receive_t * p = (root_send_receive_t*)args;
 	void * ptr;
 	int i;
 	int oldest;
@@ -912,13 +912,13 @@ int mq_trysend(mqd_t mqdes, const char * msg_ptr, size_t msg_len, unsigned msg_p
 	return mq_timedsend(mqdes, msg_ptr, msg_len, msg_prio, &abs_timeout);
 }
 
-void priv_block_on_mq(void * args){
-	priv_block_on_mq_t * argsp = (priv_block_on_mq_t*)args;
+void root_block_on_mq(void * args){
+	root_block_on_mq_t * argsp = (root_block_on_mq_t*)args;
 	scheduler_timing_root_timedblock(argsp->block, &argsp->abs_timeout);
 }
 
 int block_on_mq(void * block, const struct timespec * abs_timeout){
-	priv_block_on_mq_t args;
+	root_block_on_mq_t args;
 	args.block = block;
 	if( abs_timeout != 0 ){
 		if( (abs_timeout->tv_sec == 0) && (abs_timeout->tv_nsec == 0) ){
@@ -927,7 +927,7 @@ int block_on_mq(void * block, const struct timespec * abs_timeout){
 		}
 	}
 	scheduler_timing_convert_timespec(&args.abs_timeout, abs_timeout);
-	cortexm_svcall(priv_block_on_mq, &args);
+	cortexm_svcall(root_block_on_mq, &args);
 	if ( scheduler_unblock_type( task_get_current() ) == SCHEDULER_UNBLOCK_SLEEP ){
 		errno = ETIMEDOUT;
 		return -1;
@@ -935,7 +935,7 @@ int block_on_mq(void * block, const struct timespec * abs_timeout){
 	return 0;
 }
 
-void priv_wake_blocked(void * args){
+void root_wake_blocked(void * args){
 	int * task = (int*)args;
 	int id = *task;
 	scheduler_root_assert_active(id, SCHEDULER_UNBLOCK_MQ);
@@ -948,7 +948,7 @@ void check_for_blocked_task(void * block){
 	int new_thread;
 	new_thread = scheduler_get_highest_priority_blocked(block);
 	if ( new_thread != -1 ){
-		cortexm_svcall(priv_wake_blocked, &new_thread);
+		cortexm_svcall(root_wake_blocked, &new_thread);
 	} else {
 		//See if any tasks need to be notified if a message was just sent
 	}

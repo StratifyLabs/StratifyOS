@@ -31,12 +31,12 @@
 typedef struct {
 	int code_size;
 	int data_size;
-} priv_load_data_t;
+} root_load_data_t;
 
-static void priv_load_data(void * args) MCU_ROOT_EXEC_CODE;
-void priv_load_data(void * args){
+static void root_load_data(void * args) MCU_ROOT_EXEC_CODE;
+void root_load_data(void * args){
 
-	priv_load_data_t * p = args;
+	root_load_data_t * p = args;
 	int size;
 	void * code_addr;
 	uint32_t code_size;
@@ -62,10 +62,10 @@ void priv_load_data(void * args){
 }
 
 void crt_load_data(void * global_reent, int code_size, int data_size){
-	priv_load_data_t args;
+	root_load_data_t args;
 	args.code_size = code_size;
 	args.data_size = data_size;
-	cortexm_svcall(priv_load_data, &args);
+	cortexm_svcall(root_load_data, &args);
 }
 
 char ** const crt_import_argv(char * path_arg, int * argc){

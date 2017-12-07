@@ -37,7 +37,7 @@
 
 #include "mcu/debug.h"
 
-extern void sos_priv_trace_event(void * info);
+extern void sos_root_trace_event(void * info);
 
 void mcu_fault_event_handler(fault_t * fault){
 	int i;
@@ -89,7 +89,7 @@ void mcu_fault_event_handler(fault_t * fault){
 					//reset the stack of the processes main task
 					task_root_resetstack(i);
 					//send the kill signal
-					if( signal_priv_send(0, i, SIGKILL, 0, 0, 0) < 0 ){
+					if( signal_root_send(0, i, SIGKILL, 0, 0, 0) < 0 ){
 						//kill manually -- for example, if the target task doesn't have enough memory to accept SIGKILL
 						task_root_delete(i);
 						scheduler_root_update_on_sleep();

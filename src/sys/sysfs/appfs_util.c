@@ -43,9 +43,9 @@
 
 static void appfs_util_privloadfileinfo(void * args) MCU_ROOT_EXEC_CODE;
 static int get_hdrinfo(appfs_file_t * file, int page, int type);
-static int get_filesize(const devfs_device_t * dev, priv_load_fileinfo_t * args, int filetype);
+static int get_filesize(const devfs_device_t * dev, root_load_fileinfo_t * args, int filetype);
 
-static void priv_op_erase_pages(void * args) MCU_ROOT_EXEC_CODE;
+static void root_op_erase_pages(void * args) MCU_ROOT_EXEC_CODE;
 
 static u8 calc_checksum(const char * name){
 	int i;
@@ -64,11 +64,11 @@ typedef struct {
 	devfs_async_t op;
 	int start_page;
 	int end_page;
-} priv_op_t;
+} root_op_t;
 
-void priv_op_erase_pages(void * args){
+void root_op_erase_pages(void * args){
 	int i;
-	priv_op_t * p = args;
+	root_op_t * p = args;
 	for(i=p->start_page; i <= p->end_page; i++){
 		mcu_wdt_reset();
 		p->ret = p->dev->driver.ioctl(&(p->dev->handle), I_MEM_ERASE_PAGE, (void*)i);
@@ -76,11 +76,11 @@ void priv_op_erase_pages(void * args){
 }
 
 int appfs_util_erasepages(const devfs_device_t * dev, int start_page, int end_page){
-	priv_op_t args;
+	root_op_t args;
 	args.dev = dev;
 	args.start_page = start_page;
 	args.end_page = end_page;
-	cortexm_svcall(priv_op_erase_pages, &args);
+	cortexm_svcall(root_op_erase_pages, &args);
 	return 0;
 }
 
@@ -166,7 +166,7 @@ static int find_protectable_addr(const devfs_device_t * dev, int size, int type,
 }
 
 int check_for_free_space(const devfs_device_t * dev, int start_page, int type, int size){
-	priv_load_fileinfo_t info;
+	root_load_fileinfo_t info;
 	int free_size;
 	int last_addr;
 	int last_size;
@@ -299,8 +299,8 @@ const appfs_file_t * appfs_util_getfile(appfs_handle_t * h){
 	return (appfs_file_t *)h->type.reg.beg_addr;
 }
 
-int appfs_util_priv_free_ram(const devfs_device_t * dev, appfs_handle_t * h){
-	priv_load_fileinfo_t args;
+int appfs_util_root_free_ram(const devfs_device_t * dev, appfs_handle_t * h){
+	root_load_fileinfo_t args;
 	const appfs_file_t * f;
 
 	if( h->is_install != 0 ){
@@ -319,15 +319,15 @@ int appfs_util_priv_free_ram(const devfs_device_t * dev, appfs_handle_t * h){
 		return -1;
 	}
 
-	if ( appfs_priv_ram_setusage(args.pageinfo.num, f->exec.ram_size, APPFS_MEMPAGETYPE_FREE) < 0 ){
+	if ( appfs_root_ram_setusage(args.pageinfo.num, f->exec.ram_size, APPFS_MEMPAGETYPE_FREE) < 0 ){
 		return -1;
 	}
 
 	return 0;
 }
 
-int appfs_util_priv_reclaim_ram(const devfs_device_t * dev, appfs_handle_t * h){
-	priv_load_fileinfo_t args;
+int appfs_util_root_reclaim_ram(const devfs_device_t * dev, appfs_handle_t * h){
+	root_load_fileinfo_t args;
 	const appfs_file_t * f;
 	size_t s;
 	size_t page_num;
@@ -356,7 +356,7 @@ int appfs_util_priv_reclaim_ram(const devfs_device_t * dev, appfs_handle_t * h){
 		}
 	}
 
-	if ( appfs_priv_ram_setusage(args.pageinfo.num, f->exec.ram_size, APPFS_MEMPAGETYPE_SYS) < 0 ){
+	if ( appfs_root_ram_setusage(args.pageinfo.num, f->exec.ram_size, APPFS_MEMPAGETYPE_SYS) < 0 ){
 		return -1;
 	}
 
@@ -378,7 +378,7 @@ static int mem_write_page(const devfs_device_t * dev, appfs_handle_t * h, appfs_
 	return dev->driver.ioctl(&(dev->handle), I_MEM_WRITEPAGE, &write_page);
 }
 
-int appfs_util_priv_create(const devfs_device_t * dev, appfs_handle_t * h, appfs_installattr_t * attr){
+int appfs_util_root_create(const devfs_device_t * dev, appfs_handle_t * h, appfs_installattr_t * attr){
 	int code_start_addr;
 	int type;
 	int len;
@@ -462,7 +462,7 @@ int appfs_util_priv_create(const devfs_device_t * dev, appfs_handle_t * h, appfs
 
 
 
-int appfs_util_priv_writeinstall(const devfs_device_t * dev, appfs_handle_t * h, appfs_installattr_t * attr){
+int appfs_util_root_writeinstall(const devfs_device_t * dev, appfs_handle_t * h, appfs_installattr_t * attr){
 	union {
 		const appfs_file_t * file;
 		const u32 * ptr;
@@ -639,15 +639,15 @@ int appfs_ram_setusage(int page, int size, int type){
 	u32 buf[APPFS_RAM_USAGE_WORDS];
 	memcpy(buf, mcu_ram_usage_table, APPFS_RAM_USAGE_BYTES);
 	appfs_ram_setrange(buf, page, size, type);
-	cortexm_svcall(appfs_ram_priv_saveusage, buf);
+	cortexm_svcall(appfs_ram_root_saveusage, buf);
 	return 0;
 }
 
-int appfs_priv_ram_setusage(int page, int size, int type){
+int appfs_root_ram_setusage(int page, int size, int type){
 	u32 buf[APPFS_RAM_USAGE_WORDS];
 	memcpy(buf, mcu_ram_usage_table, APPFS_RAM_USAGE_BYTES);
 	appfs_ram_setrange(buf, page, size, type);
-	appfs_ram_priv_saveusage(buf);
+	appfs_ram_root_saveusage(buf);
 	return 0;
 }
 
@@ -717,7 +717,7 @@ bool appfs_util_isexecutable(const appfs_file_t * info){
 }
 
 void appfs_util_privloadfileinfo(void * args){
-	priv_load_fileinfo_t * p = (priv_load_fileinfo_t*)args;
+	root_load_fileinfo_t * p = (root_load_fileinfo_t*)args;
 	devfs_async_t op;
 
 	if ( p->dev->driver.ioctl(
@@ -745,7 +745,7 @@ void appfs_util_privloadfileinfo(void * args){
 	p->ret = -2;
 }
 
-int appfs_util_getfileinfo(priv_load_fileinfo_t * info, const devfs_device_t * dev, int page, int type, int * size){
+int appfs_util_getfileinfo(root_load_fileinfo_t * info, const devfs_device_t * dev, int page, int type, int * size){
 	int filetype;
 	info->dev = dev;
 	info->pageinfo.num = page;
@@ -765,7 +765,7 @@ int appfs_util_getfileinfo(priv_load_fileinfo_t * info, const devfs_device_t * d
 	return filetype;
 }
 
-int get_filesize(const devfs_device_t * dev, priv_load_fileinfo_t * args, int filetype){
+int get_filesize(const devfs_device_t * dev, root_load_fileinfo_t * args, int filetype){
 	//this will start at the end of the page and count backwards until it hits a non 0xFF value
 	if ( filetype == APPFS_MEMPAGETYPE_USER ){
 		return args->fileinfo.exec.code_size + args->fileinfo.exec.data_size;
@@ -774,7 +774,7 @@ int get_filesize(const devfs_device_t * dev, priv_load_fileinfo_t * args, int fi
 	}
 }
 
-int appfs_util_lookupname(const void * cfg, const char * path, priv_load_fileinfo_t * args, int type, int * size){
+int appfs_util_lookupname(const void * cfg, const char * path, root_load_fileinfo_t * args, int type, int * size){
 	int i;
 
 	i = 0;

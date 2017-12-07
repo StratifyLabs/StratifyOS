@@ -58,19 +58,19 @@ typedef struct {
 	int tid;
 	void * stackaddr;
 	int stacksize;
-} priv_setstackguard_t;
+} root_setstackguard_t;
 
-static void priv_setstackguard(void * arg){
-	priv_setstackguard_t * p = arg;
+static void root_setstackguard(void * arg){
+	root_setstackguard_t * p = arg;
 	p->tid = task_root_set_stackguard(p->tid, p->stackaddr, p->stacksize);
 }
 
 int task_setstackguard(int tid, void * stackaddr, int stacksize){
-	priv_setstackguard_t arg;
+	root_setstackguard_t arg;
 	arg.tid = tid;
 	arg.stackaddr = stackaddr;
 	arg.stacksize = stacksize;
-	cortexm_svcall(priv_setstackguard, &arg);
+	cortexm_svcall(root_setstackguard, &arg);
 	return arg.tid;
 }
 

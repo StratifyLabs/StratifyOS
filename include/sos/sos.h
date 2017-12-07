@@ -537,7 +537,7 @@ typedef struct {
 
 void sos_trace_event(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len);
 void sos_trace_event_addr_tid(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len, u32 addr, int tid);
-void sos_trace_priv_event(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len);
+void sos_trace_root_trace_event(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len);
 
 #define STFY_SCHEDULER_TIMEVAL_SECONDS 2048
 #define STFY_USECOND_PERIOD (1000000UL * STFY_SCHEDULER_TIMEVAL_SECONDS)
@@ -590,9 +590,9 @@ extern volatile task_t sos_task_table[];
 extern const sos_board_config_t sos_board_config;
 
 void sos_led_startup();
-void sos_led_priv_enable(void * args);
-void sos_led_priv_disable(void * args);
-void sos_led_priv_error(void * args);
+void so_led_root_enable(void * args);
+void sos_led_root_disable(void * args);
+void sos_led_root_error(void * args);
 
 #endif
 

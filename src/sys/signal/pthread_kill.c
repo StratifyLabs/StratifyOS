@@ -38,7 +38,7 @@
 
 #include "mcu/debug.h"
 
-static int signal_priv_forward(int send_tid,
+static int signal_root_forward(int send_tid,
 		int tid,
 		int si_signo,
 		int si_sigcode,
@@ -46,8 +46,8 @@ static int signal_priv_forward(int send_tid,
 static void signal_forward_handler(int send_tid, int signo, int sigcode, int sigvalue);
 
 //this checks to see if sending a signal will cause a stack/heap collision in the target thread
-static void signal_priv_check_stack(void * args) MCU_ROOT_EXEC_CODE;
-void signal_priv_check_stack(void * args){
+static void signal_root_check_stack(void * args) MCU_ROOT_EXEC_CODE;
+void signal_root_check_stack(void * args){
 	int * arg = (int*)args;
 	int tid = *arg;
 	int ret = 0;
@@ -73,7 +73,7 @@ void signal_priv_check_stack(void * args){
 int devfs_signal_callback(void * context, const mcu_event_t * data){
 	//This only works if the other parts of the interrupt handler have not modified the stack
 	devfs_signal_callback_t * args = (devfs_signal_callback_t*)context;
-	if( signal_priv_send(0, args->tid, args->si_signo, args->si_sigcode, args->sig_value, 1) < 0){
+	if( signal_root_send(0, args->tid, args->si_signo, args->si_sigcode, args->sig_value, 1) < 0){
 		//return 0; //this will dis-regard the callback so additional events stop sending signals
 	}
 	return args->keep; //non-zero return means to leave callback in place
@@ -84,7 +84,7 @@ void signal_forward_handler(int send_tid, int signo, int sigcode, int sigvalue){
 	signal_send(send_tid, signo, sigcode, sigvalue);
 }
 
-int signal_priv_forward(int send_tid, int tid, int si_signo, int si_sigcode, int sig_value){
+int signal_root_forward(int send_tid, int tid, int si_signo, int si_sigcode, int sig_value){
 	task_interrupt_t intr;
 	int check_stack;
 
@@ -94,7 +94,7 @@ int signal_priv_forward(int send_tid, int tid, int si_signo, int si_sigcode, int
 			if ( si_signo < SCHEDULER_NUM_SIGNALS ){
 
 				check_stack = tid;
-				signal_priv_check_stack(&check_stack);
+				signal_root_check_stack(&check_stack);
 				if( check_stack < 0 ){
 					errno = ENOMEM;
 					return -1;
@@ -102,7 +102,7 @@ int signal_priv_forward(int send_tid, int tid, int si_signo, int si_sigcode, int
 
 				intr.tid = tid;
 				intr.handler = (task_interrupt_handler_t)signal_forward_handler;
-				intr.sync_callback = (cortexm_svcall_t)signal_priv_activate;
+				intr.sync_callback = (cortexm_svcall_t)signal_root_activate;
 				intr.sync_callback_arg = &tid;
 				intr.arg[0] = send_tid;
 				intr.arg[1] = si_signo;
@@ -120,7 +120,7 @@ int signal_priv_forward(int send_tid, int tid, int si_signo, int si_sigcode, int
 }
 
 
-int signal_priv_send(int send_tid, int tid, int si_signo, int si_sigcode, int sig_value, int forward){
+int signal_root_send(int send_tid, int tid, int si_signo, int si_sigcode, int sig_value, int forward){
 	task_interrupt_t intr;
 	int check_stack;
 
@@ -128,7 +128,7 @@ int signal_priv_send(int send_tid, int tid, int si_signo, int si_sigcode, int si
 		//If the receiving tid is currently executing, sending the signal directly will corrupt the stack
 		//So we stack a signal on task 0 and have it send the signal
 		//This only happens when priv signals are sent because the stack is in an unknown state
-		return signal_priv_forward(tid, 0, si_signo, si_sigcode, sig_value);
+		return signal_root_forward(tid, 0, si_signo, si_sigcode, sig_value);
 	}
 
 	//make sure the task id is valid
@@ -137,7 +137,7 @@ int signal_priv_send(int send_tid, int tid, int si_signo, int si_sigcode, int si
 			if ( si_signo < SCHEDULER_NUM_SIGNALS ){
 
 				check_stack = tid;
-				signal_priv_check_stack(&check_stack);
+				signal_root_check_stack(&check_stack);
 				if( check_stack < 0 ){
 					errno = ENOMEM;  //this won't always be the right errno????
 					return -1;
@@ -146,7 +146,7 @@ int signal_priv_send(int send_tid, int tid, int si_signo, int si_sigcode, int si
 
 				intr.tid = tid;
 				intr.handler = (task_interrupt_handler_t)signal_handler;
-				intr.sync_callback = (cortexm_svcall_t)signal_priv_activate;
+				intr.sync_callback = (cortexm_svcall_t)signal_root_activate;
 				intr.sync_callback_arg = &tid;
 				intr.arg[0] = send_tid;
 				intr.arg[1] = si_signo;
@@ -196,7 +196,7 @@ int signal_send(int tid, int si_signo, int si_sigcode, int sig_value){
 
 		if ( si_signo < SCHEDULER_NUM_SIGNALS ){
 			check_stack = tid;
-			cortexm_svcall(signal_priv_check_stack, &check_stack);
+			cortexm_svcall(signal_root_check_stack, &check_stack);
 			if( check_stack < 0 ){
 				errno = ENOMEM;
 				return -1;
@@ -204,7 +204,7 @@ int signal_send(int tid, int si_signo, int si_sigcode, int sig_value){
 
 			intr.tid = tid;
 			intr.handler = (task_interrupt_handler_t)signal_handler;
-			intr.sync_callback = (cortexm_svcall_t)signal_priv_activate;
+			intr.sync_callback = (cortexm_svcall_t)signal_root_activate;
 			intr.sync_callback_arg = &tid;
 			intr.arg[0] = task_get_current();
 			intr.arg[1] = si_signo;
@@ -238,7 +238,7 @@ int pthread_kill(pthread_t thread, int signo){
 	return signal_send(thread, signo, SI_USER, 0);
 }
 
-void signal_priv_activate(int * thread){
+void signal_root_activate(int * thread){
 	int id = *thread;
 	scheduler_root_deassert_stopped(id);
 	scheduler_root_assert_active(id, SCHEDULER_UNBLOCK_SIGNAL);

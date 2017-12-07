@@ -48,9 +48,9 @@ static int start_first_thread();
 volatile s8 m_scheduler_current_priority MCU_SYS_MEM;
 volatile s8 m_scheduler_status_changed MCU_SYS_MEM;
 
-static void priv_check_sleep_mode(void * args) MCU_ROOT_EXEC_CODE;
+static void root_check_sleep_mode(void * args) MCU_ROOT_EXEC_CODE;
 static int check_faults();
-static void priv_fault_logged(void * args) MCU_ROOT_EXEC_CODE;
+static void root_fault_logged(void * args) MCU_ROOT_EXEC_CODE;
 
 int scheduler_check_tid(int id){
 	if( id < task_get_total() ){
@@ -98,9 +98,9 @@ void scheduler(){
 	}
 
 	while(1){
-		cortexm_svcall(mcu_wdt_priv_reset, NULL);
+		cortexm_svcall(mcu_wdt_root_reset, NULL);
 		check_faults(); //check to see if a fault needs to be logged
-		cortexm_svcall(priv_check_sleep_mode, &do_sleep);
+		cortexm_svcall(root_check_sleep_mode, &do_sleep);
 
 		//Sleep when nothing else is going on
 		if ( do_sleep ){
@@ -112,7 +112,7 @@ void scheduler(){
 	}
 }
 
-void priv_fault_logged(void * args){
+void root_fault_logged(void * args){
 	m_scheduler_fault.fault.num = 0;
 }
 
@@ -173,14 +173,14 @@ int check_faults(){
 		mcu_debug_user_printf("ISR Caller 0x%lX %ld\n", (u32)m_scheduler_fault.fault.handler_caller, m_scheduler_fault.tid);
 		usleep(2000);
 
-		cortexm_svcall(priv_fault_logged, NULL);
+		cortexm_svcall(root_fault_logged, NULL);
 
 	}
 
 	return 0;
 }
 
-void priv_check_sleep_mode(void * args){
+void root_check_sleep_mode(void * args){
 	bool * p = (bool*)args;
 	int i;
 	*p = true;

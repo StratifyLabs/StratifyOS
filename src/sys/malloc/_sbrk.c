@@ -35,7 +35,7 @@
 #include "mcu/core.h"
 
 
-static void priv_update_guard(void * args) MCU_ROOT_EXEC_CODE;
+static void root_update_guard(void * args) MCU_ROOT_EXEC_CODE;
 
 void * _sbrk_r(struct _reent * reent_ptr, ptrdiff_t incr){
 	char * stack;
@@ -58,13 +58,13 @@ void * _sbrk_r(struct _reent * reent_ptr, ptrdiff_t incr){
 
 
 	//adjust the location of the stack guard -- always 32 bytes for processes
-	cortexm_svcall(priv_update_guard, base + size + incr);
+	cortexm_svcall(root_update_guard, base + size + incr);
 
 	reent_ptr->procmem_base->size += incr;
 	return (caddr_t) (base + size);
 }
 
-void priv_update_guard(void * args){
+void root_update_guard(void * args){
 	int tid;
 	tid = task_get_thread_zero( task_get_pid(task_get_current() ) );
 	task_root_set_stackguard(tid, args, SCHED_DEFAULT_STACKGUARD_SIZE);

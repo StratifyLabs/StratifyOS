@@ -35,8 +35,8 @@
 #include "../scheduler/scheduler_local.h"
 #include "../signal/sig_local.h"
 
-static void priv_stop_threads(int * send_signal) MCU_ROOT_EXEC_CODE;
-static void priv_zombie_process(int * signal_sent) MCU_ROOT_EXEC_CODE;
+static void root_stop_threads(int * send_signal) MCU_ROOT_EXEC_CODE;
+static void root_zombie_process(int * signal_sent) MCU_ROOT_EXEC_CODE;
 
 static int get_exec_flags();
 
@@ -70,16 +70,16 @@ void _exit(int __status){
 	__status = (send_signal << 8) | tmp;
 	send_signal = __status;
 
-	cortexm_svcall((cortexm_svcall_t)priv_stop_threads, &send_signal);
+	cortexm_svcall((cortexm_svcall_t)root_stop_threads, &send_signal);
 
 	while(1){ //if the process turns in to a zombie it should resume zombie mode if it receives a signal
 		//This process will be a zombie process until it is disabled by the parent
-		cortexm_svcall((cortexm_svcall_t)priv_zombie_process, &send_signal);
+		cortexm_svcall((cortexm_svcall_t)root_zombie_process, &send_signal);
 	}
 }
 
 
-void priv_stop_threads(int * send_signal){
+void root_stop_threads(int * send_signal){
 	int i;
 	int tmp;
 	struct _reent * parent_reent;
@@ -140,7 +140,7 @@ void priv_stop_threads(int * send_signal){
 			if ( (tmp == task_get_pid(i)) && (task_enabled(i)) ){
 				options = 1;
 				errno = 0;
-				if( signal_priv_send(
+				if( signal_root_send(
 						task_get_current(),
 						i,
 						SIGCHLD,
@@ -168,7 +168,7 @@ int get_exec_flags(){
 	return hdr->exec.o_flags;
 }
 
-void priv_zombie_process(int * signal_sent){
+void root_zombie_process(int * signal_sent){
 	if ( *signal_sent == false ){
 		//discard this thread immediately
 		sos_sched_table[task_get_current()].flags = 0;

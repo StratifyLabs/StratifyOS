@@ -39,15 +39,15 @@ static int init_fs();
 static int startup_fs();
 static void start_filesystem(void);
 
-static void priv_core_getinfo(void * args) MCU_ROOT_EXEC_CODE;
+static void root_core_getinfo(void * args) MCU_ROOT_EXEC_CODE;
 
-void priv_core_getinfo(void * args){
+void root_core_getinfo(void * args){
 	mcu_core_getinfo(0, args);
 }
 
 void check_reset_source(void){
 	core_info_t info;
-	cortexm_svcall(priv_core_getinfo, &info);
+	cortexm_svcall(root_core_getinfo, &info);
 	if( info.o_flags & CORE_FLAG_IS_RESET_SOFTWARE ){
 		SOS_TRACE_MESSAGE("soft reset");
 	} else if( info.o_flags & CORE_FLAG_IS_RESET_POR ){

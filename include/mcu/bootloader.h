@@ -29,7 +29,7 @@
 typedef struct MCU_PACK {
 	u32 code_size /*! The number of bytes occupied by the bootloader (so the OS knows not to erase the bootloader) */;
 	void (*exec)(void * args) /*! Execute the bootlaoder */;
-	void (*usbd_control_priv_init)(void * context) /*! Use this to handle standard USB packet is using same USB setup as bootloader */;
+	void (*usbd_control_root_init)(void * context) /*! Use this to handle standard USB packet is using same USB setup as bootloader */;
 	void (*event)(int, void*) /*! Invoke the board events (encryption, decryption, custom code) */;
 } bootloader_api_t;
 

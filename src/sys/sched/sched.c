@@ -36,8 +36,8 @@ typedef struct {
 	int tid;
 	int policy;
 	const struct sched_param * param;
-} priv_set_scheduling_param_t;
-static void priv_set_scheduling_param(void * args) MCU_ROOT_EXEC_CODE;
+} root_set_scheduling_param_t;
+static void root_set_scheduling_param(void * args) MCU_ROOT_EXEC_CODE;
 
 /*! \file */
 static int get_pid_task(pid_t pid){
@@ -151,7 +151,7 @@ int sched_rr_get_interval(pid_t pid, struct timespec * ts){
  *
  */
 int sched_setparam(pid_t pid, const struct sched_param * param){
-	priv_set_scheduling_param_t args;
+	root_set_scheduling_param_t args;
 	//get task for pid thread 0
 	args.tid = get_pid_task(pid);
 	if ( args.tid < 0 ){
@@ -168,7 +168,7 @@ int sched_setparam(pid_t pid, const struct sched_param * param){
 	}
 
 	args.param = param;
-	cortexm_svcall(priv_set_scheduling_param, &args);
+	cortexm_svcall(root_set_scheduling_param, &args);
 	return 0;
 }
 
@@ -180,7 +180,7 @@ int sched_setparam(pid_t pid, const struct sched_param * param){
  *
  */
 int sched_setscheduler(pid_t pid, int policy, const struct sched_param * param){
-	priv_set_scheduling_param_t args;
+	root_set_scheduling_param_t args;
 	//get task for pid thread 0
 	args.tid = get_pid_task(pid);
 	if ( args.tid < 0 ){
@@ -201,7 +201,7 @@ int sched_setscheduler(pid_t pid, int policy, const struct sched_param * param){
 
 		args.policy = policy;
 		args.param = param;
-		cortexm_svcall(priv_set_scheduling_param, &args);
+		cortexm_svcall(root_set_scheduling_param, &args);
 		return 0;
 	default:
 		errno = EINVAL;
@@ -219,8 +219,8 @@ int sched_yield(){
 	return 0;
 }
 
-void priv_set_scheduling_param(void * args){
-	priv_set_scheduling_param_t * p = (priv_set_scheduling_param_t*)args;
+void root_set_scheduling_param(void * args){
+	root_set_scheduling_param_t * p = (root_set_scheduling_param_t*)args;
 	int id;
 	id = p->tid;
 

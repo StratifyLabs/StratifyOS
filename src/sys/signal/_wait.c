@@ -29,18 +29,18 @@
 #include "../scheduler/scheduler_local.h"
 #include "sig_local.h"
 
-static void priv_wait_child(void * args) MCU_ROOT_EXEC_CODE;
+static void root_wait_child(void * args) MCU_ROOT_EXEC_CODE;
 
 typedef struct {
 	int pid;
 	int status;
 	int tid;
-} priv_check_for_zombie_child_t;
+} root_check_for_zombie_child_t;
 
-static void priv_check_for_zombie_child(void * args) MCU_ROOT_EXEC_CODE;
+static void root_check_for_zombie_child(void * args) MCU_ROOT_EXEC_CODE;
 
 pid_t waitpid(pid_t pid, int *stat_loc, int options){
-	priv_check_for_zombie_child_t args;
+	root_check_for_zombie_child_t args;
 
 	if ( (pid < -1) || (pid == 0) ){
 		errno = ENOTSUP;
@@ -52,7 +52,7 @@ pid_t waitpid(pid_t pid, int *stat_loc, int options){
 		args.tid = 0;
 		args.pid = pid;
 		if ( !(options & WNOHANG) ){
-			cortexm_svcall(priv_wait_child, &args);
+			cortexm_svcall(root_wait_child, &args);
 			//sleep here and wait for the signal to arrive
 		}
 
@@ -61,7 +61,7 @@ pid_t waitpid(pid_t pid, int *stat_loc, int options){
 		if( args.tid == 0 ){
 			if( SIGCHLD_ASSERTED() ){
 				//signal has arrived -- check again for the zombie
-				cortexm_svcall(priv_check_for_zombie_child, &args);
+				cortexm_svcall(root_check_for_zombie_child, &args);
 			} else if ( !(options & WNOHANG) ){
 				errno = EINTR;
 				return -1;
@@ -99,10 +99,10 @@ pid_t _wait(int *stat_loc){
 	return waitpid(-1, stat_loc, 0);
 }
 
-void priv_check_for_zombie_child(void * args){
+void root_check_for_zombie_child(void * args){
 	int num_children;
-	priv_check_for_zombie_child_t * p;
-	p = (priv_check_for_zombie_child_t*)args;
+	root_check_for_zombie_child_t * p;
+	p = (root_check_for_zombie_child_t*)args;
 	int i;
 	int num_zombies;
 	int current_pid;
@@ -151,12 +151,12 @@ void priv_check_for_zombie_child(void * args){
 	}
 }
 
-void priv_wait_child(void * args){
+void root_wait_child(void * args){
 	//see if SIGCHLD is blocked and the status is available now
-	priv_check_for_zombie_child_t * p;
-	p = (priv_check_for_zombie_child_t*)args;
+	root_check_for_zombie_child_t * p;
+	p = (root_check_for_zombie_child_t*)args;
 
-	priv_check_for_zombie_child(args);
+	root_check_for_zombie_child(args);
 	if( p->tid == 0 ){
 		scheulder_root_assert_stopped(task_get_current());
 		scheduler_root_update_on_stopped(); //causes the currently executing thread to sleep

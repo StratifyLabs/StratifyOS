@@ -22,7 +22,7 @@
 #include "appfs_local.h"
 
 
-void appfs_ram_priv_saveusage(void * args){
+void appfs_ram_root_saveusage(void * args){
 	memcpy(mcu_ram_usage_table, args, APPFS_RAM_PAGES);
 }
 

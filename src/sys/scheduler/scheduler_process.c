@@ -36,7 +36,7 @@ typedef struct {
 	int tid;
 } init_sched_task_t;
 
-static void priv_init_sched_task(init_sched_task_t * task) MCU_ROOT_EXEC_CODE;
+static void root_init_sched_task(init_sched_task_t * task) MCU_ROOT_EXEC_CODE;
 static void cleanup_process(void * status);
 
 /*! \details This function creates a new process.
@@ -62,7 +62,7 @@ int scheduler_create_process(void (*p)(char *)  /*! The startup function (crt())
 		//update the scheduler table using a privileged call
 		args.tid = tid;
 		args.mem = mem;
-		cortexm_svcall((cortexm_svcall_t)priv_init_sched_task, &args);
+		cortexm_svcall((cortexm_svcall_t)root_init_sched_task, &args);
 	} else {
 		return -1;
 	}
@@ -70,7 +70,7 @@ int scheduler_create_process(void (*p)(char *)  /*! The startup function (crt())
 	return task_get_pid( tid );
 }
 
-void priv_init_sched_task(init_sched_task_t * task){
+void root_init_sched_task(init_sched_task_t * task){
 	uint32_t stackguard;
 	struct _reent * reent;
 	int id = task->tid;

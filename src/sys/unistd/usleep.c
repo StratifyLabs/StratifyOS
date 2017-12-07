@@ -31,7 +31,7 @@
 #include "mcu/debug.h"
 #include "../scheduler/scheduler_local.h"
 
-static void priv_usleep(void * args) MCU_ROOT_EXEC_CODE;
+static void root_usleep(void * args) MCU_ROOT_EXEC_CODE;
 
 /*! \details This function causes the calling thread to sleep for \a useconds microseconds.
  *
@@ -66,7 +66,7 @@ int usleep(useconds_t useconds){
 		} else {
 			//clocks is greater than 4800 -- there is time to change to another task
 			useconds -= (600 / tmp);
-			cortexm_svcall(priv_usleep, &useconds);
+			cortexm_svcall(root_usleep, &useconds);
 		}
 	} else {
 		errno = EINVAL;
@@ -75,7 +75,7 @@ int usleep(useconds_t useconds){
 	return 0;
 }
 
-void priv_usleep(void * args){
+void root_usleep(void * args){
 	useconds_t * p;
 	struct mcu_timeval abs_time;
 	p = (useconds_t*)args;

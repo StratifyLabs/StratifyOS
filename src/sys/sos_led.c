@@ -30,23 +30,23 @@ void sos_led_startup(){
 	if( mcu_board_config.led.port != 255 ){
 		for(i=0; i < 100; i++){
 			duty = i*factor;
-			cortexm_svcall(sos_led_priv_enable, 0);
+			cortexm_svcall(so_led_root_enable, 0);
 			usleep(duty);
-			cortexm_svcall(sos_led_priv_disable, 0);
+			cortexm_svcall(sos_led_root_disable, 0);
 			usleep(100*factor - duty);
 		}
 
 		for(i=0; i < 100; i++){
 			duty = i*factor;
-			cortexm_svcall(sos_led_priv_enable, 0);
+			cortexm_svcall(so_led_root_enable, 0);
 			usleep(100*factor - duty);
-			cortexm_svcall(sos_led_priv_disable, 0);
+			cortexm_svcall(sos_led_root_disable, 0);
 			usleep(duty);
 		}
 	}
 }
 
-void sos_led_priv_enable(void * args){
+void so_led_root_enable(void * args){
 	if( mcu_board_config.led.port != 255 ){
 		pio_attr_t attr;
 		devfs_handle_t handle;
@@ -62,7 +62,7 @@ void sos_led_priv_enable(void * args){
 	}
 }
 
-void sos_led_priv_disable(void * args){
+void sos_led_root_disable(void * args){
 	if( mcu_board_config.led.port != 255 ){
 		pio_attr_t attr;
 		devfs_handle_t handle;
@@ -73,11 +73,11 @@ void sos_led_priv_disable(void * args){
 	}
 }
 
-void sos_led_priv_error(void * args){
+void sos_led_root_error(void * args){
 	while(1){
-		sos_led_priv_enable(0);
+		so_led_root_enable(0);
 		cortexm_delay_ms(50);
-		sos_led_priv_disable(0);
+		sos_led_root_disable(0);
 		cortexm_delay_ms(50);
 	}
 }

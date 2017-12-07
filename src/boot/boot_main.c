@@ -37,7 +37,7 @@ extern u32 _etext;
 const bootloader_api_t mcu_core_bootloader_api = {
 		.code_size = (u32)&_etext,
 		.exec = exec_bootloader,
-		.usbd_control_priv_init = usbd_control_priv_init,
+		.usbd_control_root_init = usbd_control_root_init,
 		.event = boot_event
 };
 

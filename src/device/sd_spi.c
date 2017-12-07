@@ -472,7 +472,7 @@ int sd_spi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 				}
 				timeout++;
 				//reset wdt
-				mcu_wdt_priv_reset(0);
+				mcu_wdt_root_reset(0);
 			} while( (resp.r1.u8 != 0x00) && (timeout < timeout_value) );
 
 			if( timeout == timeout_value ){

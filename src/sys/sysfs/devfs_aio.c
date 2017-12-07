@@ -24,13 +24,13 @@ typedef struct {
 	struct aiocb * aiocbp;
 	int read;
 	int ret;
-} priv_aio_transfer_t;
+} root_aio_transfer_t;
 
 //static int data_transfer_callback(struct aiocb * aiocbp, const void * ignore);
-static void priv_device_data_transfer(void * args);
+static void root_device_data_transfer(void * args);
 
-void priv_device_data_transfer(void * args){
-	priv_aio_transfer_t * p = (priv_aio_transfer_t*)args;
+void root_device_data_transfer(void * args){
+	root_aio_transfer_t * p = (root_aio_transfer_t*)args;
 
 	cortexm_disable_interrupts(NULL); //no switching until the transfer is started
 	//set the device callback for the read/write op
@@ -60,7 +60,7 @@ void priv_device_data_transfer(void * args){
 }
 
 int devfs_aio_data_transfer(const devfs_device_t * device, struct aiocb * aiocbp){
-	priv_aio_transfer_t args;
+	root_aio_transfer_t args;
 	args.device = device;
 	args.aiocbp = aiocbp;
 	if ( aiocbp->aio_lio_opcode == LIO_READ ){
@@ -76,6 +76,6 @@ int devfs_aio_data_transfer(const devfs_device_t * device, struct aiocb * aiocbp
 	args.aiocbp->op.handler.callback = sysfs_aio_data_transfer_callback;
 	args.aiocbp->op.handler.context = aiocbp;
 	args.aiocbp->aio_nbytes = -1; //means status is in progress
-	cortexm_svcall(priv_device_data_transfer, &args);
+	cortexm_svcall(root_device_data_transfer, &args);
 	return args.ret;
 }

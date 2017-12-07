@@ -43,19 +43,19 @@ typedef struct {
 	devfs_async_t async;
 	volatile int is_read;
 	int ret;
-} priv_device_data_transfer_t;
+} root_device_data_transfer_t;
 
 
-static void priv_check_op_complete(void * args);
-static void priv_device_data_transfer(void * args) MCU_ROOT_EXEC_CODE;
-static int priv_data_transfer_callback(void * context, const mcu_event_t * data) MCU_ROOT_CODE;
+static void root_check_op_complete(void * args);
+static void root_device_data_transfer(void * args) MCU_ROOT_EXEC_CODE;
+static int root_data_transfer_callback(void * context, const mcu_event_t * data) MCU_ROOT_CODE;
 static void clear_device_action(const void * config, const devfs_device_t * device, int loc, int is_read);
 
-int priv_data_transfer_callback(void * context, const mcu_event_t * event){
+int root_data_transfer_callback(void * context, const mcu_event_t * event){
 	//activate all tasks that are blocked on this signal
 	int i;
 	int new_priority;
-	priv_device_data_transfer_t * args = (priv_device_data_transfer_t*)context;
+	root_device_data_transfer_t * args = (root_device_data_transfer_t*)context;
 
 
 	new_priority = -1;
@@ -91,8 +91,8 @@ int priv_data_transfer_callback(void * context, const mcu_event_t * event){
 }
 
 
-void priv_check_op_complete(void * args){
-	priv_device_data_transfer_t * p = (priv_device_data_transfer_t*)args;
+void root_check_op_complete(void * args){
+	root_device_data_transfer_t * p = (root_device_data_transfer_t*)args;
 
 	if( p->is_read != ARGS_READ_DONE ){
 		if ( p->ret == 0 ){
@@ -109,8 +109,8 @@ void priv_check_op_complete(void * args){
 	}
 }
 
-void priv_device_data_transfer(void * args){
-	priv_device_data_transfer_t * p = (priv_device_data_transfer_t*)args;
+void root_device_data_transfer(void * args){
+	root_device_data_transfer_t * p = (root_device_data_transfer_t*)args;
 	const devfs_device_t * dev = p->device;
 
 	if ( p->is_read != 0 ){
@@ -122,7 +122,7 @@ void priv_device_data_transfer(void * args){
 		p->ret = dev->driver.write(&(dev->handle), &(p->async));
 	}
 
-	priv_check_op_complete(args);
+	root_check_op_complete(args);
 
 }
 
@@ -141,7 +141,7 @@ void clear_device_action(const void * config, const devfs_device_t * device, int
 
 int devfs_data_transfer(const void * config, const devfs_device_t * device, int flags, int loc, void * buf, int nbyte, int is_read){
 	int tmp;
-	volatile priv_device_data_transfer_t args;
+	volatile root_device_data_transfer_t args;
 
 	if ( nbyte == 0 ){
 		return 0;
@@ -156,7 +156,7 @@ int devfs_data_transfer(const void * config, const devfs_device_t * device, int 
 	args.async.loc = loc;
 	args.async.flags = flags;
 	args.async.buf = buf;
-	args.async.handler.callback = priv_data_transfer_callback;
+	args.async.handler.callback = root_data_transfer_callback;
 	args.async.handler.context = (void*)&args;
 	args.async.tid = task_get_current();
 
@@ -169,7 +169,7 @@ int devfs_data_transfer(const void * config, const devfs_device_t * device, int 
 		args.async.nbyte = nbyte;
 
 		//This transfers the data
-		cortexm_svcall(priv_device_data_transfer, (void*)&args);
+		cortexm_svcall(root_device_data_transfer, (void*)&args);
 
 		//We arrive here if the data is done transferring or there is no data to transfer and O_NONBLOCK is set
 		//or if there was an error
@@ -185,7 +185,7 @@ int devfs_data_transfer(const void * config, const devfs_device_t * device, int 
 			}
 
 			//check again if the op is complete
-			cortexm_svcall(priv_check_op_complete, (void*)&args);
+			cortexm_svcall(root_check_op_complete, (void*)&args);
 		}
 
 

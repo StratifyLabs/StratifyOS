@@ -27,7 +27,7 @@
 #include <time.h>
 #include "../scheduler/scheduler_local.h"
 
-static void priv_sleep(void * args) MCU_ROOT_EXEC_CODE;
+static void root_sleep(void * args) MCU_ROOT_EXEC_CODE;
 
 /*! \details This function causes the calling thread to sleep for \a seconds seconds.
  * \return 0
@@ -45,12 +45,12 @@ unsigned int sleep(unsigned int seconds /*! The number of seconds to sleep */){
 			interval.tv_sec = d.quot;
 			interval.tv_usec = d.rem;
 		}
-		cortexm_svcall(priv_sleep, &interval);
+		cortexm_svcall(root_sleep, &interval);
 	}
 	return 0;
 }
 
-void priv_sleep(void * args){
+void root_sleep(void * args){
 	struct mcu_timeval * p;
 	struct mcu_timeval abs_time;
 	p = (struct mcu_timeval*)args;

@@ -32,15 +32,15 @@
 
 void signal_handler(int tid, int si_signo, int si_sigcode_si_tid, union sigval sig_value);
 int signal_send(int tid, int si_signo, int si_sigcode, int sig_value);
-int signal_priv_send(int send_tid,
+int signal_root_send(int send_tid,
 		int tid,
 		int si_signo,
 		int si_sigcode,
 		int sig_value,
 		int forward //this must be non-zero unless si_signo == SIGKILL
 		) MCU_WEAK MCU_ROOT_CODE;
-void signal_priv_activate(int * thread) MCU_ROOT_EXEC_CODE;
-void signal_priv_wait(void * args) MCU_ROOT_EXEC_CODE;
+void signal_root_activate(int * thread) MCU_ROOT_EXEC_CODE;
+void signal_root_wait(void * args) MCU_ROOT_EXEC_CODE;
 
 
 //this is set if the signal received executes a user defined function

@@ -42,7 +42,7 @@
 #define ANALYZE_PATH_RAM 4
 #define ANALYZE_PATH_RAM_DIR 5
 
-static void priv_ioctl(void * args);
+static void root_ioctl(void * args);
 
 static int analyze_path(const char * path, const char ** name, int * mem_type){
 	int elements;
@@ -109,7 +109,7 @@ static bool is_sys(const char * name){
 int appfs_init(const void * cfg){
 	int i;
 	mem_info_t info;
-	priv_load_fileinfo_t priv_file_info;
+	root_load_fileinfo_t root_file_info;
 	uint32_t buf[APPFS_RAM_USAGE_WORDS];
 	const devfs_device_t * dev;
 	dev = cfg;
@@ -124,29 +124,29 @@ int appfs_init(const void * cfg){
 	//now scan each flash page to see what RAM is used
 	dev->driver.ioctl(&(dev->handle), I_MEM_GETINFO, &info);
 	for(i=0; i < info.flash_pages; i++){
-		if ( (appfs_util_getfileinfo(&priv_file_info, dev, i, MEM_FLAG_IS_FLASH, NULL) == APPFS_MEMPAGETYPE_USER) && (appfs_util_isexecutable(&priv_file_info.fileinfo) == true) ){
+		if ( (appfs_util_getfileinfo(&root_file_info, dev, i, MEM_FLAG_IS_FLASH, NULL) == APPFS_MEMPAGETYPE_USER) && (appfs_util_isexecutable(&root_file_info.fileinfo) == true) ){
 
 			//get the RAM page associated with the data start
-			priv_file_info.pageinfo.o_flags = MEM_FLAG_IS_QUERY;
-			priv_file_info.pageinfo.addr = (int)priv_file_info.fileinfo.exec.ram_start;
-			if ( dev->driver.ioctl(&(dev->handle), I_MEM_GETPAGEINFO, &priv_file_info.pageinfo) < 0 ){
+			root_file_info.pageinfo.o_flags = MEM_FLAG_IS_QUERY;
+			root_file_info.pageinfo.addr = (int)root_file_info.fileinfo.exec.ram_start;
+			if ( dev->driver.ioctl(&(dev->handle), I_MEM_GETPAGEINFO, &root_file_info.pageinfo) < 0 ){
 				continue;
 			}
 
 			appfs_ram_setrange(buf,
-					(int)priv_file_info.pageinfo.num,
-					priv_file_info.fileinfo.exec.ram_size,
+					(int)root_file_info.pageinfo.num,
+					root_file_info.fileinfo.exec.ram_size,
 					APPFS_MEMPAGETYPE_SYS);
 		}
 	}
-	cortexm_svcall(appfs_ram_priv_saveusage, buf);
+	cortexm_svcall(appfs_ram_root_saveusage, buf);
 	return 0;
 }
 
 int appfs_startup(const void * cfg){
 	int i;
 	mem_info_t info;
-	priv_load_fileinfo_t priv_file_info;
+	root_load_fileinfo_t root_file_info;
 	task_memories_t mem;
 	int started;
 	const devfs_device_t * dev;
@@ -157,24 +157,24 @@ int appfs_startup(const void * cfg){
 	started = 0;
 	dev->driver.ioctl(&(dev->handle), I_MEM_GETINFO, &info);
 	for(i=0; i < info.flash_pages; i++){
-		if (appfs_util_getfileinfo(&priv_file_info, dev, i, MEM_FLAG_IS_FLASH, NULL) == APPFS_MEMPAGETYPE_USER ){
-			if ( (appfs_util_isexecutable(&priv_file_info.fileinfo) == true) &&
-					(priv_file_info.fileinfo.exec.o_flags & APPFS_FLAG_IS_STARTUP) ){
+		if (appfs_util_getfileinfo(&root_file_info, dev, i, MEM_FLAG_IS_FLASH, NULL) == APPFS_MEMPAGETYPE_USER ){
+			if ( (appfs_util_isexecutable(&root_file_info.fileinfo) == true) &&
+					(root_file_info.fileinfo.exec.o_flags & APPFS_FLAG_IS_STARTUP) ){
 
 				//start the process
-				mem.code.addr = (void*)priv_file_info.fileinfo.exec.code_start;
-				mem.code.size = priv_file_info.fileinfo.exec.code_size;
-				mem.data.addr = (void*)priv_file_info.fileinfo.exec.ram_start;
-				mem.data.size = priv_file_info.fileinfo.exec.ram_size;
+				mem.code.addr = (void*)root_file_info.fileinfo.exec.code_start;
+				mem.code.size = root_file_info.fileinfo.exec.code_size;
+				mem.data.addr = (void*)root_file_info.fileinfo.exec.ram_start;
+				mem.data.size = root_file_info.fileinfo.exec.ram_size;
 
-				if ( scheduler_create_process((void*)priv_file_info.fileinfo.exec.startup,
+				if ( scheduler_create_process((void*)root_file_info.fileinfo.exec.startup,
 						0,
 						&mem,
-						(void*)priv_file_info.fileinfo.exec.ram_start) >= 0 ){
+						(void*)root_file_info.fileinfo.exec.ram_start) >= 0 ){
 					started++;
-					mcu_debug_user_printf("Started %s\n", priv_file_info.fileinfo.hdr.name);
+					mcu_debug_user_printf("Started %s\n", root_file_info.fileinfo.hdr.name);
 				} else {
-					mcu_debug_user_printf("Failed to start %s\n", priv_file_info.fileinfo.hdr.name);
+					mcu_debug_user_printf("Failed to start %s\n", root_file_info.fileinfo.hdr.name);
 				}
 
 			}
@@ -191,7 +191,7 @@ int appfs_mkfs(const void* cfg){
 int appfs_open(const void * cfg, void ** handle, const char * path, int flags, int mode){
 	int ret;
 	appfs_handle_t * h;
-	priv_load_fileinfo_t args;
+	root_load_fileinfo_t args;
 	int path_type;
 	int mem_type;
 	int size;
@@ -260,7 +260,7 @@ int appfs_open(const void * cfg, void ** handle, const char * path, int flags, i
 
 int appfs_unlink(const void* cfg, const char * path){
 	//this will erase the page associated with the filename -- system files are read-only
-	priv_load_fileinfo_t args;
+	root_load_fileinfo_t args;
 	int start_page;
 	int tmp;
 	int end_page;
@@ -333,7 +333,7 @@ int appfs_unlink(const void* cfg, const char * path){
 
 int appfs_fstat(const void* cfg, void * handle, struct stat * st){
 	appfs_handle_t * h;
-	priv_load_fileinfo_t args;
+	root_load_fileinfo_t args;
 	int size;
 
 	h = handle;
@@ -364,7 +364,7 @@ int appfs_fstat(const void* cfg, void * handle, struct stat * st){
 }
 
 int appfs_stat(const void* cfg, const char * path, struct stat * st){
-	priv_load_fileinfo_t args;
+	root_load_fileinfo_t args;
 	appfs_handle_t handle;
 	int path_type;
 	int mem_type;
@@ -454,7 +454,7 @@ int appfs_read_async(const void* cfg, void * handle, devfs_async_t * op){
 #endif
 
 
-void priv_read(void * args){
+void root_read(void * args){
 	sysfs_read_t * p = args;
 
 	devfs_async_t async;
@@ -498,7 +498,7 @@ int appfs_read(const void * cfg, void * handle, int flags, int loc, void * buf, 
 	args.buf = buf;
 	args.nbyte = nbyte;
 
-	cortexm_svcall(priv_read, &args);
+	cortexm_svcall(root_read, &args);
 	return args.ret;
 
 }
@@ -533,7 +533,7 @@ int appfs_opendir(const void* cfg, void ** handle, const char * path){
 
 
 
-void priv_ioctl(void * args){
+void root_ioctl(void * args){
 	sysfs_ioctl_t * a = args;
 	appfs_handle_t * h = a->handle;
 	int request = a->request;
@@ -555,7 +555,7 @@ void priv_ioctl(void * args){
 		if( !h->is_install ){
 			errno = ENOTSUP;
 		} else {
-			a->ret = appfs_util_priv_writeinstall(a->cfg, h, attr);
+			a->ret = appfs_util_root_writeinstall(a->cfg, h, attr);
 		}
 		break;
 
@@ -563,7 +563,7 @@ void priv_ioctl(void * args){
 		if( !h->is_install ){
 			errno = ENOTSUP;
 		} else {
-			a->ret = appfs_util_priv_create(a->cfg, h, attr);
+			a->ret = appfs_util_root_create(a->cfg, h, attr);
 		}
 
 		break;
@@ -573,7 +573,7 @@ void priv_ioctl(void * args){
 		if( h->is_install ){
 			errno = ENOTSUP;
 		} else {
-			a->ret =  appfs_util_priv_free_ram(a->cfg, h);
+			a->ret =  appfs_util_root_free_ram(a->cfg, h);
 		}
 		break;
 
@@ -581,7 +581,7 @@ void priv_ioctl(void * args){
 		if( h->is_install ){
 			errno = ENOTSUP;
 		} else {
-			a->ret = appfs_util_priv_reclaim_ram(a->cfg, h);
+			a->ret = appfs_util_root_reclaim_ram(a->cfg, h);
 		}
 		break;
 
@@ -614,7 +614,7 @@ int appfs_ioctl(const void * cfg, void * handle, int request, void * ctl){
 	args.handle = handle;
 	args.request = request;
 	args.ctl = ctl;
-	cortexm_svcall(priv_ioctl, &args);
+	cortexm_svcall(root_ioctl, &args);
 	return args.ret;
 
 }
@@ -622,7 +622,7 @@ int appfs_ioctl(const void * cfg, void * handle, int request, void * ctl){
 
 static int readdir_mem(const void* cfg, int loc, struct dirent * entry, int type){
 	//this needs to load page number loc and see what the file is
-	priv_load_fileinfo_t args;
+	root_load_fileinfo_t args;
 
 	if ( appfs_util_getfileinfo(&args, cfg, loc, type, NULL) < 0 ){
 		return -1;

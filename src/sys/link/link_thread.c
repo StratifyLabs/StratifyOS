@@ -169,8 +169,8 @@ void link_cmd_isbootloader(link_transport_driver_t * driver, link_data_t * args)
 	args->reply.err = 0; //this is not the bootloader
 }
 
-static void priv_get_serialno(void * dest) MCU_ROOT_EXEC_CODE;
-void priv_get_serialno(void * dest){
+static void root_get_serialno(void * dest) MCU_ROOT_EXEC_CODE;
+void root_get_serialno(void * dest){
 	core_info_t info;
 	int i, j;
 	char * p = dest;
@@ -186,7 +186,7 @@ void priv_get_serialno(void * dest){
 void link_cmd_readserialno(link_transport_driver_t * driver, link_data_t * args){
 	char serialno[LINK_PACKET_DATA_SIZE];
 	memset(serialno, 0, LINK_PACKET_DATA_SIZE);
-	cortexm_svcall(priv_get_serialno, serialno);
+	cortexm_svcall(root_get_serialno, serialno);
 
 	args->reply.err = strlen(serialno);
 	args->reply.err_number = 0;

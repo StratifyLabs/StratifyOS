@@ -65,7 +65,7 @@
 #include "../scheduler/scheduler_local.h"
 
 
-static void priv_join_thread(void * args) MCU_ROOT_EXEC_CODE;
+static void root_join_thread(void * args) MCU_ROOT_EXEC_CODE;
 
 /*! \details This function creates a new thread.
  * \return Zero on success or -1 with \a errno (see \ref ERRNO) set to:
@@ -138,7 +138,7 @@ int pthread_join(pthread_t thread, void ** value_ptr){
 
 
 			do {
-				cortexm_svcall(priv_join_thread, &thread);
+				cortexm_svcall(root_join_thread, &thread);
 				if ( thread < 0 ){
 					errno = ESRCH;
 					return -1;
@@ -157,7 +157,7 @@ int pthread_join(pthread_t thread, void ** value_ptr){
 	return -1;
 }
 
-void priv_join_thread(void * args){
+void root_join_thread(void * args){
 	int * p = (int*)args;
 	int id = *p;
 

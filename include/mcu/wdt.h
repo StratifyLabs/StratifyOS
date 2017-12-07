@@ -94,7 +94,7 @@ int mcu_wdt_init( int mode /*! The WDT mode to use (see \ref wdt_mode_t) */,
  */
 void mcu_wdt_reset();
 
-void mcu_wdt_priv_reset(void * args) MCU_ROOT_CODE;
+void mcu_wdt_root_reset(void * args) MCU_ROOT_CODE;
 
 int mcu_wdt_setaction(int (*action)(const void *, void *)) MCU_ROOT_CODE;
 

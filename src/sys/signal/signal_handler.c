@@ -42,8 +42,8 @@ static void stop_action(int signo, int flags);
 static void continue_action(int signo, int flags);
 static void ignore_action(int signo, int flags);
 
-static void priv_stoppid(void * args) MCU_ROOT_EXEC_CODE;
-static void priv_contpid(void * args) MCU_ROOT_EXEC_CODE;
+static void root_stoppid(void * args) MCU_ROOT_EXEC_CODE;
+static void root_contpid(void * args) MCU_ROOT_EXEC_CODE;
 
 static void (* const default_handlers[SCHEDULER_NUM_SIGNALS])(int,int) = {
 		ignore_action, //NULL SIGNAL
@@ -174,7 +174,7 @@ void terminate_action(int signo, int flags){
 	_exit(signo<<8);
 }
 
-void priv_stoppid(void * args){
+void root_stoppid(void * args){
 	int pid = task_get_pid( task_get_current() );
 	int i;
 
@@ -192,7 +192,7 @@ void priv_stoppid(void * args){
 	scheduler_root_update_on_stopped(); //causes the currently executing thread to sleep
 }
 
-void priv_contpid(void * args){
+void root_contpid(void * args){
 	int highest_prio = 0;
 	int prio;
 	int pid = task_get_pid( task_get_current() );
@@ -233,7 +233,7 @@ void stop_action(int signo, int flags){
 	}
 
 	//Set the status of the process to WSTOPPED
-	cortexm_svcall(priv_stoppid, NULL);
+	cortexm_svcall(root_stoppid, NULL);
 
 }
 
@@ -244,7 +244,7 @@ void continue_action(int signo, int flags){
 	}
 
 	//Set the status of the process to WCONTINUED
-	cortexm_svcall(priv_contpid, NULL);
+	cortexm_svcall(root_contpid, NULL);
 }
 
 void ignore_action(int signo, int flags){

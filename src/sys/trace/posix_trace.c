@@ -122,9 +122,9 @@ static int exec_trace_event(mqd_t mqdes, struct posix_trace_event_info * info, c
 typedef struct {
 	trace_id_t id;
 	int ret;
-} priv_trace_id_t;
-static void priv_set_trace_id(void * args);
-static void priv_shutdown_trace_id(void * args);
+} root_trace_id_t;
+static void root_set_trace_id(void * args);
+static void root_shutdown_trace_id(void * args);
 
 static int trace_timedgetnext_event(trace_id_t id,
 		struct posix_trace_event_info * event,
@@ -147,7 +147,7 @@ int posix_trace_close(trace_id_t id){
 }
 
 
-void priv_count_trace_id(void * args){
+void root_count_trace_id(void * args){
 	pid_t * pid = (pid_t*)args;
 	int i;
 	int ret = 0;
@@ -161,8 +161,8 @@ void priv_count_trace_id(void * args){
 	*pid = ret;
 }
 
-void priv_set_trace_id(void * args){
-	priv_trace_id_t * p = args;
+void root_set_trace_id(void * args){
+	root_trace_id_t * p = args;
 	int i;
 	p->ret = 0;
 	for(i=0; i < task_get_total(); i++){
@@ -180,7 +180,7 @@ int posix_trace_create(pid_t pid, const trace_attr_t * attr, trace_id_t * id){
 	trace_id_handle_t trace_handle;
 	struct mq_attr mattr;
 	size_t msg_size;
-	priv_trace_id_t args;
+	root_trace_id_t args;
 	trace_attr_t tmp_attr;
 	int oflag;
 	//create a new trace stream for pid -- create a new message queue and tell the target pid it is being traced
@@ -200,7 +200,7 @@ int posix_trace_create(pid_t pid, const trace_attr_t * attr, trace_id_t * id){
 	pid_t tmp_pid;
 	tmp_pid = pid;
 	//check to see if there are any tasks with the target ID -- if not, don't create the trace
-	cortexm_svcall(priv_count_trace_id, &tmp_pid);
+	cortexm_svcall(root_count_trace_id, &tmp_pid);
 	if( tmp_pid == 0 ){
 		errno = ESRCH;
 		return -1;
@@ -243,7 +243,7 @@ int posix_trace_create(pid_t pid, const trace_attr_t * attr, trace_id_t * id){
 
 	args.id = *id;
 	args.ret = 0;
-	cortexm_svcall(priv_set_trace_id, &args);
+	cortexm_svcall(root_set_trace_id, &args);
 
 	return 0;
 }
@@ -523,9 +523,9 @@ int posix_trace_set_filter(trace_id_t id, const trace_event_set_t * event_set, i
 	return 0;
 }
 
-void priv_shutdown_trace_id(void * args){
+void root_shutdown_trace_id(void * args){
 	int i;
-	priv_trace_id_t * p = args;
+	root_trace_id_t * p = args;
 	for(i=0; i < task_get_total(); i++){
 		if( scheduler_trace_id(i) == p->id ){
 			scheduler_root_set_trace_id(i, 0);
@@ -535,13 +535,13 @@ void priv_shutdown_trace_id(void * args){
 
 int posix_trace_shutdown(trace_id_t id){
 	//free all resources associated with this stream id
-	priv_trace_id_t args;
+	root_trace_id_t args;
 
 	id = trace_get_ptr(id);
 	if( is_invalid(id) ){ return -1; }
 
 	args.id = id;
-	cortexm_svcall(priv_shutdown_trace_id, &args);
+	cortexm_svcall(root_shutdown_trace_id, &args);
 	mq_discard(id->mq);
 	memset(id, 0, sizeof(trace_id_handle_t));
 	return 0;

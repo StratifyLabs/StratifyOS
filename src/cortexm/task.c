@@ -437,8 +437,8 @@ void mcu_core_pendsv_handler(){
 }
 
 
-static void priv_task_restore(void * args) MCU_NAKED;
-void priv_task_restore(void * args){
+static void root_task_restore(void * args) MCU_NAKED;
+void root_task_restore(void * args){
 	asm volatile ("push {lr}\n\t");
 	u32 pstack;
 
@@ -455,7 +455,7 @@ void priv_task_restore(void * args){
 
 void task_restore(){
 	//handlers inserted with task_interrupt() must call this function when the task completes in order to restore the stack
-	cortexm_svcall(priv_task_restore, NULL);
+	cortexm_svcall(root_task_restore, NULL);
 }
 
 int task_root_interrupt_call(void * args){

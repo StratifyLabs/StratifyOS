@@ -80,7 +80,7 @@ int sys_26_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 			if( (task_get_pid(i) == killattr->id) &&
 					!task_isthread_asserted(i)
 			){
-				signal_priv_send(task_get_current(),
+				signal_root_send(task_get_current(),
 						i,
 						killattr->si_signo,
 						killattr->si_sigcode,
@@ -90,7 +90,7 @@ int sys_26_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 		}
 		return 0;
 	case I_SYS_PTHREADKILL:
-		return signal_priv_send(task_get_current(),
+		return signal_root_send(task_get_current(),
 				killattr->id,
 				killattr->si_signo,
 				killattr->si_sigcode,
