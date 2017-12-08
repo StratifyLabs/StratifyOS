@@ -87,7 +87,6 @@ int usbd_control_handler(void * context_object, const mcu_event_t * usb_event /*
 				usbd_control_dataout_stage(context);
 				if (context->data.nbyte == 0){
 					if (usbd_control_setup_request_type(context) == USBD_REQUEST_STANDARD){
-						mcu_debug_root_printf("standard stall\n");
 						stall(context);
 					} else if( execute_class_handler(context, usb_event) == 0 ){
 						stall(context);

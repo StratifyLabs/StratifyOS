@@ -120,7 +120,6 @@ void signal_handler(int tid, int si_signo, int si_sigcode, union sigval sig_valu
 		}
 
 		if ( si_signo == SIGCHLD ){
-			mcu_debug_user_printf("ASSERT SIGCHLD\n");
 			SIGCHLD_ASSERT();
 		}
 

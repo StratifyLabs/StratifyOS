@@ -316,11 +316,6 @@ void set_last_chunk(malloc_chunk_t * chunk){
 int malloc_chunk_is_free(malloc_chunk_t * chunk){
 	if( cortexm_verify_zero_sum32(chunk, CORTEXM_ZERO_SUM32_COUNT(malloc_chunk_header_t)) == 0){
 		//This chunk is corrupt
-		mcu_debug_user_printf("me:%d %d %ld 0x%08lX\n",
-				chunk->header.task_id,
-				chunk->header.num_chunks,
-				chunk->header.actual_size,
-				chunk->header.checksum);
 		malloc_process_fault(chunk);
 		return -1;
 	}

@@ -300,7 +300,6 @@ u64 task_gettime(int tid){
 
 void task_context_switcher(){
 	int i;
-
 	//Save the PSP to the current task's stack pointer
 	asm volatile ("MRS %0, psp\n\t" : "=r" (sos_task_table[m_task_current].sp) );
 
@@ -413,22 +412,22 @@ void task_root_switch_context(void * args){
 	SCB->ICSR |= (1<<28);
 }
 
-void _task_check_countflag(){
+void task_check_count_flag(){
 	if ( SysTick->CTRL & (1<<16) ){ //check the countflag
 		sos_task_table[m_task_current].rr_time = 0;
 		task_context_switcher();
 	}
 }
 
-void mcu_core_systick_handler() MCU_NAKED;
+void mcu_core_systick_handler() MCU_NAKED MCU_WEAK;
 void mcu_core_systick_handler(){
 	task_save_context();
-	_task_check_countflag();
+	task_check_count_flag();
 	task_load_context();
 	task_return_context();
 }
 
-void mcu_core_pendsv_handler() MCU_NAKED;
+void mcu_core_pendsv_handler() MCU_NAKED MCU_WEAK;
 void mcu_core_pendsv_handler(){
 	task_save_context();
 	task_context_switcher();

@@ -194,7 +194,6 @@ int task_mpu_calc_protection(task_memories_t * mem){
 	);
 
 	if ( err < 0 ){
-		//mcu_debug_user_printf("bad code 0x%X 0x%X %d\n", mem->code.addr, mem->code.size, err);
 		return err;
 	}
 
@@ -214,7 +213,6 @@ int task_mpu_calc_protection(task_memories_t * mem){
 	);
 
 	if ( err < 0 ){
-		//mcu_debug_user_printf("bad data 0x%X 0x%X %d\n", mem->data.addr, mem->data.size, err);
 		return err;
 	}
 

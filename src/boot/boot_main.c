@@ -237,9 +237,7 @@ void gled_on(){
 	}
 }
 
-/*! \details This function turns the green LED off by setting the line to high impedance.
- *
- */
+
 void gled_off(){
 	if( mcu_board_config.led.port != 255 ){
 		pio_attr_t attr;
@@ -251,10 +249,14 @@ void gled_off(){
 	}
 }
 
+//prevent linkage to real handlers
 void mcu_core_fault_handler(){}
 void mcu_core_hardfault_handler(){}
 void mcu_core_memfault_handler(){}
 void mcu_core_busfault_handler(){}
 void mcu_core_usagefault_handler(){}
+void mcu_core_systick_handler(){}
+void mcu_core_svcall_handler(){}
+void mcu_core_pendsv_handler(){}
 
 /*! @} */

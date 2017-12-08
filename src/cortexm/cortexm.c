@@ -106,6 +106,7 @@ void cortexm_svcall(cortexm_svcall_t call, void * args){
 	asm volatile("SVC 0\n");
 }
 
+void mcu_core_svcall_handler() MCU_WEAK;
 void mcu_core_svcall_handler(){
 	register u32 * frame;
 	register cortexm_svcall_t call;

@@ -24,11 +24,11 @@
 extern int fault_dev_save(const fault_t * fault);
 extern int fault_dev_load(fault_t * fault);
 
-void hardfault_handler(u32 fault_status, hw_stack_frame_t * handler_stack);
-void busfault_handler(u32 bus_status, hw_stack_frame_t * handler_stack);
-void memfault_handler(u32 mem_status, hw_stack_frame_t * handler_stack);
-void usagefault_handler(u32 usage_status, hw_stack_frame_t * handler_stack);
-void wdtfault_handler(hw_stack_frame_t * handler_stack);
+static void hardfault_handler(u32 fault_status, hw_stack_frame_t * handler_stack);
+static void busfault_handler(u32 bus_status, hw_stack_frame_t * handler_stack);
+static void memfault_handler(u32 mem_status, hw_stack_frame_t * handler_stack);
+static void usagefault_handler(u32 usage_status, hw_stack_frame_t * handler_stack);
+static void wdtfault_handler(hw_stack_frame_t * handler_stack);
 
 
 #define get_pc(stack_reg) (((hw_stack_frame_t*)(stack_reg))->pc)
