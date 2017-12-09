@@ -59,44 +59,7 @@ static void root_mutex_unlock(root_mutex_unlock_t * args) MCU_ROOT_EXEC_CODE;
 static void root_mutex_block(root_mutex_trylock_t *args);
 static void root_mutex_unblocked(root_mutex_trylock_t *args) MCU_ROOT_EXEC_CODE;
 
-/*! \details This function initializes \a mutex with \a attr.
- * \return Zero on success or -1 with \a errno (see \ref ERRNO) set to:
- * - EINVAL: mutex is NULL
- */
-int pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *attr){
-	if ( mutex == NULL ){
-		errno = EINVAL;
-		return -1;
-	}
 
-	mutex->flags = PTHREAD_MUTEX_FLAGS_INITIALIZED;
-
-	if ( attr == NULL ){
-		mutex->prio_ceiling = PTHREAD_MUTEX_PRIO_CEILING;
-		if ( task_get_current() == 0 ){
-			mutex->pid = 0;
-		} else {
-			mutex->pid = task_get_pid( task_get_current() );
-		}
-		mutex->lock = 0;
-		mutex->pthread = -1;
-		return 0;
-	}
-
-	if ( attr->process_shared == true ){
-		//Enter priv mode to modify a shared object
-		mutex->flags |= (PTHREAD_MUTEX_FLAGS_PSHARED);
-	}
-
-	if ( attr->recursive ){
-		mutex->flags |= (PTHREAD_MUTEX_FLAGS_RECURSIVE);
-	}
-	mutex->prio_ceiling = attr->prio_ceiling;
-	mutex->pid = task_get_pid( task_get_current() );
-	mutex->lock = 0;
-	mutex->pthread = -1;
-	return 0;
-}
 
 /*! \details This function locks \a mutex.  If \a mutex cannot be locked immediately,
  * the thread is blocked until \a mutex is available.

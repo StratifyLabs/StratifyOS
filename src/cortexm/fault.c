@@ -103,6 +103,7 @@ void hardfault_handler(u32 fault_status, hw_stack_frame_t * handler_stack){
 
 
 
+void mcu_core_wdt_isr() MCU_WEAK;
 void mcu_core_wdt_isr(){
 	register void * handler_stack;
 	asm volatile ("MRS %0, msp\n\t" : "=r" (handler_stack) );

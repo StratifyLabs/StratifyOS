@@ -1,4 +1,5 @@
 
+#include "mcu/arch.h"
 
 //#include "config.h"
 #include <sys/lock.h>
@@ -258,5 +259,10 @@ void mcu_core_usagefault_handler(){}
 void mcu_core_systick_handler(){}
 void mcu_core_svcall_handler(){}
 void mcu_core_pendsv_handler(){}
+void mcu_core_wdt_isr(){}
+
+int pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *attr){
+	return 0;
+}
 
 /*! @} */

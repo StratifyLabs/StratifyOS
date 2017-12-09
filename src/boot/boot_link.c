@@ -25,6 +25,7 @@
 #include <errno.h>
 #include <stdbool.h>
 #include <sys/fcntl.h>
+#include "mcu/arch.h"
 #include "sos/sos.h"
 #include "cortexm/cortexm.h"
 #include "mcu/core.h"

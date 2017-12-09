@@ -17,7 +17,8 @@
 
 
 
-#include <stdint.h>
+#include <string.h>
+#include "mcu/arch.h"
 #include "mcu/boot_debug.h"
 
 #ifdef ___debug

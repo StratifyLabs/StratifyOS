@@ -21,31 +21,37 @@
 #include "mcu/mcu.h"
 #include "mcu/core.h"
 
+#if defined __armv7m
+#define TICK_DIV 1000000
+#else
+//The cortex m4 seems to run cortexm_delay_loop about 10 times faster than the cortex m3
+#define TICK_DIV 100000
+#endif
 
-//This is 6 clock cycles per loop
-void _delay_loop_1(uint32_t __count){
+void cortexm_delay_loop(u32 ticks) __attribute__((optimize("0")));
+void cortexm_delay_loop(u32 ticks){
 	asm volatile (
-			"L_%=:"	"subs	%0, #1" "\n\t"
+			"L_%=:"
+			"subs	%0, #1" "\n\t"
 			"uxth	%0, %0" "\n\t"
 			"cmp	%0, #0" "\n\t"
 			"bne.n	L_%=" "\n\t"
-			: "=r" (__count)
-			: "0" (__count)
+			: "=r" (ticks)
+			: "0" (ticks)
 			);
 }
 
-static inline void _delay_us(uint32_t __us) MCU_ALWAYS_INLINE __attribute__((optimize("3")));
+void cortexm_delay_us(u32 us){
+	u32 ticks;
+	ticks = mcu_board_config.core_cpu_freq / TICK_DIV;
+	ticks *= us;
+	ticks /= 6;
 
-static inline void _delay_us(uint32_t __us){
-	uint32_t __ticks;
-	__ticks = mcu_board_config.core_cpu_freq / 1000000;
-	__ticks *= __us;
-	__ticks /= 6;
-	_delay_loop_1(__ticks);
+	//this loop makes 6 cycles
+	cortexm_delay_loop(ticks);
+
 }
-
-void cortexm_delay_us(u32 us){ _delay_us(us); }
-void cortexm_delay_ms(u32 ms){ _delay_us(ms*1000); }
+void cortexm_delay_ms(u32 ms){ cortexm_delay_us(ms*1000); }
 
 void cortexm_assign_zero_sum32(void * data, int count){
 	u32 sum = 0;

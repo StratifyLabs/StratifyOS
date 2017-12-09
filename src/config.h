@@ -27,11 +27,7 @@
 #endif
 
 #if defined __armv7em
-#if __FPU_USED
 #define ARCH "armv7em-fpu"
-#else
-#define ARCH "armv7em"
-#endif
 #define SCHED_USECOND_TMR_RESET_OC 0
 #define SCHED_USECOND_TMR_SLEEP_OC 1
 #define PTHREAD_DEFAULT_STACK_SIZE 1536

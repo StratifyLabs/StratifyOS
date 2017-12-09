@@ -21,8 +21,7 @@
 #define DEBUG_BOOTLOADER_H_
 
 #ifdef ___debug
-#include "mcu/debug.h"
-
+#include "mcu/types.h"
 
 /*! \details This function converts x to a string (signed integer)
  * and outputs the string using the write function.
