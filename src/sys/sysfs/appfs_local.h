@@ -90,15 +90,15 @@ bool appfs_util_isexecutable(const appfs_file_t * info);
 //ram access
 extern u32 _ram_pages;
 #define APPFS_RAM_PAGES ((u32)(&_ram_pages))
-#define APPFS_RAM_USAGE_BITS_SIZE (APPFS_RAM_PAGES*2) //size of usage in bits (2 bits per page)
-#define APPFS_RAM_USAGE_WORDS (APPFS_RAM_USAGE_BITS_SIZE/16)
-#define APPFS_RAM_USAGE_BYTES (APPFS_RAM_USAGE_WORDS*4)
+#define APPFS_RAM_USAGE_WORDS_SIZE APPFS_RAM_USAGE_WORDS(APPFS_RAM_PAGES)
 
-int appfs_ram_getusage(int page);
-int appfs_ram_setusage(int page, int size, int type);
-int appfs_root_ram_setusage(int page, int size, int type) MCU_ROOT_EXEC_CODE;
+void appfs_ram_initusage(void * buf);
+void appfs_ram_getusage_all(void * buf);
+int appfs_ram_getusage(u32 page);
+int appfs_ram_setusage(u32 page, u32 size, int type);
+int appfs_ram_root_setusage(u32 page, u32 size, int type) MCU_ROOT_EXEC_CODE;
 void appfs_ram_root_saveusage(void * args) MCU_ROOT_EXEC_CODE;
-void appfs_ram_setrange(u32 * buf, int page, int size, int usage);
+void appfs_ram_setrange(u32 * buf, u32 page, u32 size, int usage);
 
 
 #endif /* APPFS_LOCAL_H_ */

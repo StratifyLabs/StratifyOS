@@ -80,7 +80,7 @@ int mcu_mem_getsize(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
 int mcu_mem_getpageinfo(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
 int mcu_mem_writepage(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
 
-int mcu_mem_getsyspage() MCU_ROOT_CODE;
+int mcu_mem_getsyspage();
 
 
 #ifdef __cplusplus

@@ -319,7 +319,7 @@ int appfs_util_root_free_ram(const devfs_device_t * dev, appfs_handle_t * h){
 		return -1;
 	}
 
-	if ( appfs_root_ram_setusage(args.pageinfo.num, f->exec.ram_size, APPFS_MEMPAGETYPE_FREE) < 0 ){
+	if ( appfs_ram_root_setusage(args.pageinfo.num, f->exec.ram_size, APPFS_MEMPAGETYPE_FREE) < 0 ){
 		return -1;
 	}
 
@@ -356,7 +356,7 @@ int appfs_util_root_reclaim_ram(const devfs_device_t * dev, appfs_handle_t * h){
 		}
 	}
 
-	if ( appfs_root_ram_setusage(args.pageinfo.num, f->exec.ram_size, APPFS_MEMPAGETYPE_SYS) < 0 ){
+	if ( appfs_ram_root_setusage(args.pageinfo.num, f->exec.ram_size, APPFS_MEMPAGETYPE_SYS) < 0 ){
 		return -1;
 	}
 
@@ -632,23 +632,6 @@ int appfs_util_root_writeinstall(const devfs_device_t * dev, appfs_handle_t * h,
 
 	//now write buffer
 	return mem_write_page(dev, h, attr);
-}
-
-
-int appfs_ram_setusage(int page, int size, int type){
-	u32 buf[APPFS_RAM_USAGE_WORDS];
-	memcpy(buf, mcu_ram_usage_table, APPFS_RAM_USAGE_BYTES);
-	appfs_ram_setrange(buf, page, size, type);
-	cortexm_svcall(appfs_ram_root_saveusage, buf);
-	return 0;
-}
-
-int appfs_root_ram_setusage(int page, int size, int type){
-	u32 buf[APPFS_RAM_USAGE_WORDS];
-	memcpy(buf, mcu_ram_usage_table, APPFS_RAM_USAGE_BYTES);
-	appfs_ram_setrange(buf, page, size, type);
-	appfs_ram_root_saveusage(buf);
-	return 0;
 }
 
 int appfs_util_getflashpagetype(appfs_header_t * info){

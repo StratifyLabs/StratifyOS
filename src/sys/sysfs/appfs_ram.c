@@ -21,42 +21,70 @@
 #include "cortexm/mpu.h"
 #include "appfs_local.h"
 
+static void set_ram_usage(u32 * buf, u32 page, int usage);
+
+int appfs_ram_setusage(u32 page, u32 size, int type){
+	u32 buf[APPFS_RAM_USAGE_WORDS_SIZE];
+	appfs_ram_getusage_all(buf);
+	appfs_ram_setrange(buf, page, size, type);
+	cortexm_svcall(appfs_ram_root_saveusage, buf);
+	return 0;
+}
+
+int appfs_ram_root_setusage(u32 page, u32 size, int type){
+	u32 buf[APPFS_RAM_USAGE_WORDS_SIZE];
+	appfs_ram_getusage_all(buf);
+	appfs_ram_setrange(buf, page, size, type);
+	appfs_ram_root_saveusage(buf);
+	return 0;
+}
+
 
 void appfs_ram_root_saveusage(void * args){
-	memcpy(mcu_ram_usage_table, args, APPFS_RAM_PAGES);
+	memcpy(mcu_ram_usage_table, args, APPFS_RAM_USAGE_WORDS_SIZE*sizeof(u32));
 }
 
-//this is a privileged call
-static void set_ram_usage(uint32_t * buf, int page, int usage){
-	u32 block;
-	u32 shift;
-	block = page >> 4;
-	shift = (page & 0xF) * 2;
-	buf[block] &= ~(APPFS_MEMPAGETYPE_MASK << (shift)); //clear the bits
-	buf[block] |= ((usage & APPFS_MEMPAGETYPE_MASK) << (shift));  //set the bits
-}
-
-void appfs_ram_setrange(uint32_t * buf, int page, int size, int usage){
+void appfs_ram_setrange(u32 * buf, u32 page, u32 size, int usage){
 	int i;
 	int pages;
 	size = mpu_getnextpowerof2(size);
 	pages = (size + MCU_RAM_PAGE_SIZE - 1) / MCU_RAM_PAGE_SIZE;
-	for(i=page; i < (pages+page); i++){
+	for(i=page; i < (page+pages); i++){
 		set_ram_usage(buf, i, usage);
 	}
 }
 
-int appfs_ram_getusage(int page){
+int appfs_ram_getusage(u32 page){
 	int block;
 	int shift;
 	if ( (u32)page < APPFS_RAM_PAGES){
-		block = page / 16;
-		shift = (page % 16) * 2;
+		block = page >> 4;
+		shift = (page & 0xF) * 2;
 		return ( (mcu_ram_usage_table[block] >> (shift)) & APPFS_MEMPAGETYPE_MASK );
 	} else {
 		return -1;
 	}
 }
+
+void appfs_ram_getusage_all(void * buf){
+	memcpy(buf, mcu_ram_usage_table, APPFS_RAM_USAGE_WORDS_SIZE*sizeof(u32));
+}
+
+void appfs_ram_initusage(void * buf){
+	memset(buf, 0, APPFS_RAM_USAGE_WORDS_SIZE*sizeof(u32));
+}
+
+static void set_ram_usage(u32 * buf, u32 page, int usage){
+	u32 block;
+	u32 shift;
+	if( page < APPFS_RAM_PAGES ){
+		block = page >> 4;
+		shift = (page & 0xF) * 2;
+		buf[block] &= ~(APPFS_MEMPAGETYPE_MASK << (shift)); //clear the bits
+		buf[block] |= ((usage & APPFS_MEMPAGETYPE_MASK) << (shift));  //set the bits
+	}
+}
+
 
 
 

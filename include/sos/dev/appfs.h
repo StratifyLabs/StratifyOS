@@ -24,6 +24,8 @@
 
 
 #include "sos/link/types.h"
+#define APPFS_RAM_USAGE_WORDS(x) ((x*2+31)/32)
+
 
 #define APPFS_PAGE_SIZE 256
 typedef struct {

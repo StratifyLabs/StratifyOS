@@ -110,18 +110,17 @@ int appfs_init(const void * cfg){
 	int i;
 	mem_info_t info;
 	root_load_fileinfo_t root_file_info;
-	uint32_t buf[APPFS_RAM_USAGE_WORDS];
+	u32 buf[APPFS_RAM_USAGE_WORDS_SIZE];
 	const devfs_device_t * dev;
 	dev = cfg;
 
 	//the RAM usage table needs to be initialized
-	memset(buf, 0, APPFS_RAM_USAGE_BYTES);
+	appfs_ram_initusage(buf);
 
-	//first mark the RAM used by the OS using _data and _edata, etc
+	//first mark the RAM used by the OS according to the system memory size
+	appfs_ram_setrange(buf, mcu_mem_getsyspage(), sos_board_config.sys_memory_size, APPFS_MEMPAGETYPE_SYS);
 
-	appfs_ram_setrange(buf, APPFS_RAM_PAGES, sos_board_config.sys_memory_size, APPFS_MEMPAGETYPE_SYS);
-
-	//now scan each flash page to see what RAM is used
+	//now scan each flash page to see what RAM is used by applications
 	dev->driver.ioctl(&(dev->handle), I_MEM_GETINFO, &info);
 	for(i=0; i < info.flash_pages; i++){
 		if ( (appfs_util_getfileinfo(&root_file_info, dev, i, MEM_FLAG_IS_FLASH, NULL) == APPFS_MEMPAGETYPE_USER) && (appfs_util_isexecutable(&root_file_info.fileinfo) == true) ){
@@ -134,12 +133,14 @@ int appfs_init(const void * cfg){
 			}
 
 			appfs_ram_setrange(buf,
-					(int)root_file_info.pageinfo.num,
+					root_file_info.pageinfo.num,
 					root_file_info.fileinfo.exec.ram_size,
 					APPFS_MEMPAGETYPE_SYS);
 		}
 	}
 	cortexm_svcall(appfs_ram_root_saveusage, buf);
+
+	mcu_debug_user_printf("Page 64 usage is %d\n", appfs_ram_getusage(64));
 	return 0;
 }
 
