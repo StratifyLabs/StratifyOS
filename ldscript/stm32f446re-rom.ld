@@ -16,7 +16,7 @@ SECTIONS {
 	_esys = .;
 
   . = 0;
-  INCLUDE ldscripts/common.ld
+  INCLUDE ldscripts/common-stm32.ld
 }
 
 PROVIDE ( _end = . );

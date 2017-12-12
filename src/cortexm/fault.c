@@ -123,9 +123,7 @@ void wdtfault_handler(hw_stack_frame_t * handler_stack){
 	fault.handler_pc = (void*)handler_stack->pc;
 	fault.handler_caller = (void*)handler_stack->lr;
 
-	mcu_fault_event_handler(&fault);
-
-	mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_FATAL, "WDT");
+	mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_WDT_TIMEOUT, &fault);
 }
 
 void mcu_core_memfault_handler() MCU_WEAK;

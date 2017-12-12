@@ -263,9 +263,13 @@ link_transport_phy_t link_phy_open(const char * name, int baudrate){
 	int fd;
 	struct termios options;
 
+	if( strnlen(name, 1024) > 1000 ){
+		return LINK_PHY_OPEN_ERROR;
+	}
 	//build the path
 	strcpy(path, "/dev/");
 	strcat(path, name);
+
 
 	//open serial port
 	fd = open(name, O_RDWR | O_NOCTTY | O_NONBLOCK);
