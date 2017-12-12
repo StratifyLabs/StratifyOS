@@ -168,6 +168,7 @@ void boot_link_cmd_ioctl(link_transport_driver_t * driver, link_data_t * args){
 
 	switch(args->op.ioctl.request){
 	case I_BOOTLOADER_ERASE:
+		dstr("erase\n");
 		//the erase takes awhile -- so send the reply a little early
 		link_transport_slavewrite(driver, &args->reply, sizeof(args->reply), NULL, NULL);
 		//set this to zero so caller doesn't execute the slavewrite again
@@ -185,6 +186,7 @@ void boot_link_cmd_ioctl(link_transport_driver_t * driver, link_data_t * args){
 
 	case I_BOOTLOADER_GETINFO:
 		//write data to io_buf
+		dstr("info\n");
 		attr.version = BCDVERSION;
 		mcu_core_getserialno((mcu_sn_t*)(attr.serialno));
 
@@ -200,6 +202,7 @@ void boot_link_cmd_ioctl(link_transport_driver_t * driver, link_data_t * args){
 		break;
 
 	case I_BOOTLOADER_RESET:
+		dstr("rst\n");
 		if( args->op.ioctl.arg == 0 ){
 			boot_event(BOOT_EVENT_RESET, 0);
 			boot_link_cmd_reset(driver, args);
@@ -209,9 +212,7 @@ void boot_link_cmd_ioctl(link_transport_driver_t * driver, link_data_t * args){
 		}
 		break;
 	case I_BOOTLOADER_WRITEPAGE:
-
 		dstr("wp\n");
-
 		err = link_transport_slaveread(driver, &wattr, size, NULL, NULL);
 		if( err < 0 ){
 			dstr("failed to read data\n");
@@ -241,6 +242,7 @@ void boot_link_cmd_ioctl(link_transport_driver_t * driver, link_data_t * args){
 
 void boot_link_cmd_read(link_transport_driver_t * driver, link_data_t * args){
 	args->reply.err = read_flash(driver, args->op.read.addr, args->op.read.nbyte);
+	dint(args->reply.err); dstr("\n");
 	return;
 }
 
@@ -315,8 +317,6 @@ int read_flash_callback(void * context, void * buf, int nbyte){
 int read_flash(link_transport_driver_t * driver, int loc, int nbyte){
 	return link_transport_slavewrite(driver, NULL, nbyte, read_flash_callback, &loc);
 }
-
-
 
 
 /*! @} */
