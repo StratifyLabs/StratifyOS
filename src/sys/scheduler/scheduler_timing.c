@@ -223,12 +223,13 @@ int open_usecond_tmr(){
 	if( (info.o_flags & TMR_FLAG_IS_AUTO_RELOAD) == 0 ){
 		//The reset OC is only needed if TMR_FLAG_IS_AUTO_RELOAD is not supported
 		//Set the reset output compare value to reset the clock every 32 seconds
-		chan_req.loc = SCHED_USECOND_TMR_RESET_OC;
-		chan_req.value = STFY_USECOND_PERIOD; //overflow every SCHEDULER_TIMEVAL_SECONDS seconds
-		err = mcu_tmr_setchannel(&tmr, &chan_req);
-		if(err){ return -1; }
+		//chan_req.loc = SCHED_USECOND_TMR_RESET_OC;
+		//chan_req.value = STFY_USECOND_PERIOD; //overflow every SCHEDULER_TIMEVAL_SECONDS seconds
+		//err = mcu_tmr_setchannel(&tmr, &chan_req);
+		//if(err){ return -1; }
 
 		attr.channel.loc = SCHED_USECOND_TMR_RESET_OC;
+		attr.channel.value = STFY_USECOND_PERIOD;
 		attr.o_flags = TMR_FLAG_SET_CHANNEL | TMR_FLAG_IS_CHANNEL_RESET_ON_MATCH;
 		err = mcu_tmr_setattr(&tmr, &attr);
 		if ( err ){

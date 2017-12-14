@@ -182,6 +182,13 @@ typedef struct MCU_PACK {
 	u32 value;
 } mcu_channel_t;
 
+static inline mcu_channel_t mcu_channel(u32 loc, u32 value){
+	mcu_channel_t channel;
+	channel.loc = loc;
+	channel.value = value;
+	return channel;
+}
+
 #define I_MCU_GETVERSION 0
 #define I_MCU_GETINFO 1
 #define I_MCU_SETATTR 2

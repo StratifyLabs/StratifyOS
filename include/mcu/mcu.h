@@ -160,6 +160,7 @@ extern const mcu_board_config_t mcu_board_config;
 extern u32 mcu_ram_usage_table[];
 
 
+
 #ifdef __cplusplus
 }
 #endif
