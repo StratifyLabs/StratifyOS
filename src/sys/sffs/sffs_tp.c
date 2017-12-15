@@ -20,7 +20,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/sffs/sffs_local.h>
+#include "sffs_local.h"
 #include <sys/sffs/sffs_tp.h>
 #include <time.h>
 

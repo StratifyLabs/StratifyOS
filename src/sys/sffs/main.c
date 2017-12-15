@@ -24,12 +24,12 @@
 #include <string.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <sys/sffs/sffs_block.h>
+#include "sffs_block.h"
 #include <sys/sffs/sffs_diag.h>
-#include <sys/sffs/sffs_dir.h>
-#include <sys/sffs/sffs_file.h>
-#include <sys/sffs/sffs_local.h>
-#include <sys/sffs/sffs_serialno.h>
+#include "sffs_dir.h"
+#include "sffs_file.h"
+#include "sffs_local.h"
+#include "sffs_serialno.h"
 #include <sys/sffs/sffs_tp.h>
 
 #include "sffs.h"

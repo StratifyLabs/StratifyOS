@@ -64,6 +64,12 @@ int sst25vf_ssp_read(const devfs_handle_t * cfg, devfs_async_t * rop);
 int sst25vf_ssp_write(const devfs_handle_t * cfg, devfs_async_t * wop);
 int sst25vf_ssp_close(const devfs_handle_t * cfg);
 
+int sst25vf_ssp_tmr_open(const devfs_handle_t * cfg);
+int sst25vf_ssp_tmr_ioctl(const devfs_handle_t * cfg, int request, void * ctl);
+int sst25vf_ssp_tmr_read(const devfs_handle_t * cfg, devfs_async_t * rop);
+int sst25vf_ssp_tmr_write(const devfs_handle_t * cfg, devfs_async_t * wop);
+int sst25vf_ssp_tmr_close(const devfs_handle_t * cfg);
+
 
 
 #endif /* DEV_MICROCHIP_SST25VF_H_ */

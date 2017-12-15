@@ -24,11 +24,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/sffs/sffs_diag.h>
-#include <sys/sffs/sffs_dir.h>
-#include <sys/sffs/sffs_filelist.h>
+#include "sffs_dir.h"
+#include "sffs_filelist.h"
 #include <sys/sffs/sffs_list.h>
-#include <sys/sffs/sffs_local.h>
-#include <sys/sffs/sffs_serialno.h>
+#include "sffs_local.h"
+#include "sffs_serialno.h"
 #include <unistd.h>
 
 

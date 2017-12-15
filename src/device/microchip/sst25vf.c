@@ -35,6 +35,7 @@ int sst25vf_open(const devfs_handle_t * handle){
 	devfs_handle_t pio_handle;
 	pio_handle.port = config->cs.port;
 	pio_handle.config = 0;
+	pio_handle.state = 0;
 
 	err = mcu_spi_open(handle);
 	if ( err < 0 ){
@@ -54,6 +55,7 @@ int sst25vf_open(const devfs_handle_t * handle){
 
 
 	sst25vf_share_write_disable(handle);
+	sst25vf_share_write_ebsy(handle); //enable SO
 
 
 	//Now ping the device to see if it responds
@@ -171,13 +173,14 @@ int continue_spi_write(void * context, const mcu_event_t * event){
 		assert_delay();
 		sst25vf_share_assert_cs(handle);
 		state->op.nbyte = 3;
+
 		mcu_spi_write(handle, &(state->op));
 		state->buf += tmp;
 		state->nbyte -= tmp;
+
 	} else {
 
 		sst25vf_share_write_disable(handle);
-		sst25vf_share_write_dbsy(handle);
 
 		sst25vf_share_read_status(handle);
 
@@ -190,23 +193,24 @@ int continue_spi_write(void * context, const mcu_event_t * event){
 int complete_spi_write(void * context, const mcu_event_t * event){
 	const devfs_handle_t * handle = context;
 	mcu_action_t action;
-	devfs_handle_t pio_handle;
 	sst25vf_config_t * sst_cfg = (sst25vf_config_t*)handle->config;
-
-
-	//configure the GPIO to interrupt on a rising edge
-	action.handler.context = (void*)handle;
-	action.handler.callback = (mcu_callback_t)continue_spi_write;
-	action.channel = sst_cfg->spi.attr.pin_assignment.miso.pin;
-	action.o_events = MCU_EVENT_FLAG_RISING;
-	action.prio = 0;
+	devfs_handle_t pio_handle;
+	u32 pio_value;
 	pio_handle.port = sst_cfg->spi.attr.pin_assignment.miso.port;
 	pio_handle.config = 0;
-	mcu_pio_setaction(&pio_handle, &action);
+	pio_handle.state = 0;
 
 	sst25vf_share_deassert_cs(handle);
 	assert_delay();
 	sst25vf_share_assert_cs(handle);
+
+	do {
+		pio_value = mcu_pio_get(&pio_handle, &action);
+	} while( (pio_value & (1<<sst_cfg->spi.attr.pin_assignment.miso.pin)) == 0);
+
+	continue_spi_write(context, event);
+
+
 	return 0;
 }
 
@@ -232,7 +236,6 @@ int sst25vf_write(const devfs_handle_t * handle, devfs_async_t * wop){
 	state->buf = wop->buf;
 	state->nbyte = wop->nbyte;
 
-	sst25vf_share_write_ebsy(handle);
 	sst25vf_share_write_enable(handle);
 
 
@@ -265,7 +268,6 @@ int sst25vf_write(const devfs_handle_t * handle, devfs_async_t * wop){
 	state->op.buf_const = state->cmd;
 	state->op.nbyte = 6;
 	state->op.loc = 0;
-
 
 	sst25vf_share_assert_cs(handle);
 	err = mcu_spi_write(handle, &state->op);

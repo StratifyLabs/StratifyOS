@@ -47,30 +47,26 @@ extern int pthread_mutex_force_unlock(pthread_mutex_t *mutex);
 
 #define DEBUG_LEVEL 1
 
-#ifndef __SIM__
-static pthread_mutex_t __cl_lock_object;
-#endif
-
-
 void sffs_unlock(const void * cfg){ //force unlock when a process exits
+	const sffs_config_t * config = cfg;
 #ifndef __SIM__
-	pthread_mutex_force_unlock(&__cl_lock_object);
+	pthread_mutex_force_unlock(&config->state->mutex);
 #endif
 }
 
-static void lock_sffs(){
+static void lock_sffs(const sffs_config_t * config){
 #ifndef __SIM__
-	if ( pthread_mutex_lock(&__cl_lock_object) < 0 ){
+	if ( pthread_mutex_lock(&config->state->mutex) < 0 ){
 		sffs_error("Failed to lock sffs %d\n", errno);
 	}
-	sffs_dev_setdelay_mutex(&__cl_lock_object);
+	sffs_dev_setdelay_mutex(&config->state->mutex);
 #endif
 }
 
-static void unlock_sffs(){
+static void unlock_sffs(const sffs_config_t * config){
 	sffs_dev_setdelay_mutex(NULL);
 #ifndef __SIM__
-	if ( pthread_mutex_unlock(&__cl_lock_object) < 0 ){
+	if ( pthread_mutex_unlock(&config->state->mutex) < 0 ){
 		sffs_error("Failed to unlock sffs %d\n", errno);
 	}
 #endif
@@ -109,7 +105,7 @@ int sffs_init(const void * cfg){
 	pthread_mutexattr_setprioceiling(&mutexattr, 19);
 	pthread_mutexattr_settype(&mutexattr, PTHREAD_MUTEX_RECURSIVE);
 
-	if ( pthread_mutex_init(&__cl_lock_object, &mutexattr) ){
+	if ( pthread_mutex_init(&cfgp->state->mutex, &mutexattr) ){
 		return -1;
 	}
 #endif
@@ -175,7 +171,7 @@ int sffs_init(const void * cfg){
 int sffs_mkfs(const void * cfg){
 	int ret;
 	const sffs_config_t * cfgp = cfg;
-	lock_sffs();
+	lock_sffs(cfgp);
 	ret = 0;
 	cfgp->open_file->fs = cfgp->devfs;
 	sffs_debug(DEBUG_LEVEL, "Erase device\n");
@@ -189,7 +185,7 @@ int sffs_mkfs(const void * cfg){
 			cfgp->open_file->fs = NULL;
 		}
 	}
-	unlock_sffs();
+	unlock_sffs(cfgp);
 	return ret;
 }
 
@@ -199,7 +195,7 @@ int sffs_fstat(const void * cfg, void * handle, struct stat * stat){
 	int ret;
 	ret = 0;
 
-	lock_sffs();
+	lock_sffs(cfg);
 	if ( (ret = sffs_block_load(cfg, h->hdr_block, &tmp)) < 0 ){
 		sffs_error("failed to load header block\n");
 		errno = EIO;
@@ -214,7 +210,7 @@ int sffs_fstat(const void * cfg, void * handle, struct stat * stat){
 		stat->st_mtime = 0;
 	}
 
-	unlock_sffs();
+	unlock_sffs(cfg);
 	return ret;
 }
 
@@ -225,7 +221,7 @@ int sffs_stat(const void * cfg, const char * path, struct stat * stat){
 
 	CL_TP(CL_PROB_RARE);
 
-	lock_sffs();
+	lock_sffs(cfg);
 	sffs_debug(DEBUG_LEVEL, "path:%s\n", path);
 	ret = sffs_dir_exists(cfg, path, &entry, R_OK);
 	if ( ret < 0 ){
@@ -252,7 +248,7 @@ int sffs_stat(const void * cfg, const char * path, struct stat * stat){
 			ret = 0;
 		}
 	}
-	unlock_sffs();
+	unlock_sffs(cfg);
 	return ret;
 }
 
@@ -260,7 +256,7 @@ int sffs_unlink(const void * cfg, const char * path){
 	sffs_dir_lookup_t entry;
 	int ret;
 
-	lock_sffs();
+	lock_sffs(cfg);
 
 	ret = sffs_dir_exists(cfg, path, &entry, W_OK);
 	if ( ret < 0 ){
@@ -293,7 +289,7 @@ int sffs_unlink(const void * cfg, const char * path){
 	}
 
 	sffs_unlink_unlock:
-	unlock_sffs();
+	unlock_sffs(cfg);
 	return ret;
 }
 
@@ -312,7 +308,7 @@ int sffs_open(const void * cfg, void ** handle, const char * path, int flags, in
 
 	amode = sysfs_getamode(flags);
 
-	lock_sffs();
+	lock_sffs(cfg);
 
 	//lock
 	if ( (err = sffs_dir_exists(cfg, path, &entry, amode)) < 0 ){
@@ -392,7 +388,7 @@ int sffs_open(const void * cfg, void ** handle, const char * path, int flags, in
 	CL_TP_DESC(CL_PROB_IMPROBABLE, "file has been opened");
 	sffs_open_unlock:
 	*handle = h;
-	unlock_sffs();
+	unlock_sffs(cfg);
 	return ret;
 }
 
@@ -423,7 +419,7 @@ int sffs_read(const void * cfg, void * handle, int flags, int loc, void * buf, i
 		return op.nbyte;
 	}
 
-	lock_sffs();
+	lock_sffs(cfg);
 
 	if ( sffs_file_finishread(cfg, handle) < 0 ){
 		ret = -1;
@@ -431,7 +427,7 @@ int sffs_read(const void * cfg, void * handle, int flags, int loc, void * buf, i
 		ret = op.nbyte;
 	}
 
-	unlock_sffs();
+	unlock_sffs(cfg);
 	return ret;
 }
 
@@ -467,13 +463,13 @@ int sffs_write(const void * cfg, void * handle, int flags, int loc, const void *
 		return op.nbyte;
 	}
 
-	lock_sffs();
+	lock_sffs(cfg);
 	if ( sffs_file_finishwrite(cfg, handle) < 0 ){
 		ret = -1;
 	} else {
 		ret = op.nbyte;
 	}
-	unlock_sffs();
+	unlock_sffs(cfg);
 	return ret;
 }
 
@@ -482,11 +478,11 @@ int sffs_close(const void * cfg, void ** handle){
 	void * h;
 	CL_TP(CL_PROB_COMMON);
 	h = *handle;
-	lock_sffs();
+	lock_sffs(cfg);
 	ret = sffs_file_close(cfg, h);
 	*handle = NULL;
 	free(h);
-	unlock_sffs();
+	unlock_sffs(cfg);
 	if( ret < 0 ){
 		errno = EIO;
 	}
@@ -517,7 +513,7 @@ int sffs_readdir_r(const void * cfg, void * handle, int loc, struct dirent * ent
 		return -1;
 	}
 
-	lock_sffs();
+	lock_sffs(cfg);
 
 	sffs_debug(DEBUG_LEVEL, "initialize list\n");
 	if ( cl_snlist_init(cfg, &sn_list, sffs_serialno_getlistblock(cfg) ) < 0 ){
@@ -547,7 +543,7 @@ int sffs_readdir_r(const void * cfg, void * handle, int loc, struct dirent * ent
 	}
 
 	sffs_readdir_unlock:
-	unlock_sffs();
+	unlock_sffs(cfg);
 	//errno is not changed
 	return ret;
 }

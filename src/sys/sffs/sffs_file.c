@@ -30,13 +30,13 @@
 #endif
 
 
-#include <sys/sffs/sffs_block.h>
-#include <sys/sffs/sffs_local.h>
+#include "sffs_block.h"
+#include "sffs_local.h"
 
-#include <sys/sffs/sffs_filelist.h>
-#include <sys/sffs/sffs_serialno.h>
-#include <sys/sffs/sffs_dir.h>
-#include <sys/sffs/sffs_file.h>
+#include "sffs_filelist.h"
+#include "sffs_serialno.h"
+#include "sffs_dir.h"
+#include "sffs_file.h"
 
 
 #define DEBUG_LEVEL 10

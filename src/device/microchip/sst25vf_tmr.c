@@ -20,6 +20,7 @@
 
 #include <errno.h>
 #include <unistd.h>
+#include "sos/sos.h"
 #include "mcu/pio.h"
 #include "mcu/spi.h"
 #include "mcu/tmr.h"
@@ -29,43 +30,35 @@
 static void complete_spi_write(const devfs_handle_t * cfg, uint32_t ignore);
 static void continue_spi_write(const devfs_handle_t * cfg, uint32_t ignore);
 
-int sst25vf_tmr_open(const devfs_handle_t * cfg){
+int sst25vf_tmr_open(const devfs_handle_t * handle){
 	int err;
 	u8 status;
 	pio_attr_t attr;
-	const sst25vf_config_t * config = cfg->config;
+	const sst25vf_config_t * config = handle->config;
 	devfs_handle_t pio_handle;
+	pio_handle.port = config->cs.port;
+	pio_handle.config = 0;
 
-	/*
-	spi_attr_t spi_cfg;
-	spi_cfg.pin_assign = cfg->pin_assign;
-	spi_cfg.width = cfg->pcfg.spi.width;
-	spi_cfg.mode = cfg->pcfg.spi.mode;
-	spi_cfg.format = cfg->pcfg.spi.format;
-	spi_cfg.bitrate = cfg->bitrate;
-	spi_cfg.master = SPI_ATTR_MASTER;
-	 */
-	err = mcu_spi_open(cfg);
+	err = mcu_spi_open(handle);
 	if ( err < 0 ){
 		return err;
 	}
 
-	if( (err = mcu_spi_ioctl(cfg, I_SPI_SETATTR, (void*)&(config->spi.attr))) < 0 ){
+	if( (err = mcu_spi_setattr(handle, (void*)&(config->spi.attr))) < 0 ){
 		return err;
 	}
 
-	sst25vf_share_deassert_cs(cfg);
+	sst25vf_share_deassert_cs(handle);
 	attr.o_pinmask = (1<<config->cs.pin);
 	attr.o_flags = PIO_FLAG_SET_OUTPUT | PIO_FLAG_IS_DIRONLY;
-	pio_handle.port = config->cs.port;
 	mcu_pio_setattr(&pio_handle, &attr);
 
-	sst25vf_share_write_disable(cfg);
+	sst25vf_share_write_disable(handle);
 
 	//Now ping the device to see if it responds
-	sst25vf_share_power_up(cfg);
-	sst25vf_share_global_protect(cfg);
-	status = sst25vf_share_read_status(cfg);
+	sst25vf_share_power_up(handle);
+	sst25vf_share_global_protect(handle);
+	status = sst25vf_share_read_status(handle);
 
 	if ( status != 0x9C ){
 		//Global protect command failed
@@ -74,11 +67,11 @@ int sst25vf_tmr_open(const devfs_handle_t * cfg){
 	}
 
 
-	if ( sst25vf_share_global_unprotect(cfg) ){
+	if ( sst25vf_share_global_unprotect(handle) ){
 		errno = EIO;
 		return -1;
 	}
-	status = sst25vf_share_read_status(cfg);
+	status = sst25vf_share_read_status(handle);
 
 	if ( status != 0x80 ){
 		//global unprotect failed
@@ -129,14 +122,14 @@ void continue_spi_write(const devfs_handle_t * cfg, uint32_t ignore){
 	mcu_action_t action;
 	uint8_t * addrp;
 	devfs_handle_t tmr_handle;
-	tmr_handle.port = sst_cfg->spi.attr.pin_assignment.miso.port;
+	tmr_handle.port = sst_cfg->wp.port;
 	//should be called 10 us after complete_spi_write() executes
 
 	//Disable the TMR interrupt
 	action.handler.callback = 0;
 	action.handler.context = 0;
 	action.o_events = MCU_EVENT_FLAG_NONE;
-	action.channel = sst_cfg->spi.attr.pin_assignment.miso.pin;
+	action.channel = sst_cfg->wp.pin;
 	action.prio = 0;
 	mcu_tmr_disable(&tmr_handle, 0);
 	mcu_tmr_setaction(&tmr_handle, &action);
@@ -180,7 +173,7 @@ void complete_spi_write(const devfs_handle_t * cfg, uint32_t ignore){
 	mcu_channel_t channel;
 	sst25vf_config_t * sst_cfg = (sst25vf_config_t*)cfg->config;
 	devfs_handle_t tmr_handle;
-	tmr_handle.port = sst_cfg->spi.attr.pin_assignment.miso.port;
+	tmr_handle.port = sst_cfg->wp.port;
 
 	sst25vf_share_deassert_cs(cfg);
 
@@ -191,15 +184,15 @@ void complete_spi_write(const devfs_handle_t * cfg, uint32_t ignore){
 	action.o_events = MCU_EVENT_FLAG_MATCH;
 	action.prio = 0;
 
-	channel.loc = sst_cfg->spi.attr.pin_assignment.miso.pin;
+	channel.loc = sst_cfg->wp.pin;
 
 	//turn the timer off
 	mcu_tmr_disable(&tmr_handle, 0);
 	mcu_tmr_setaction(&tmr_handle, &action);
 	tval = mcu_tmr_get(&tmr_handle, NULL);
 	channel.value = tval + 20;
-	if( channel.value > (1000000*2048) ){
-		channel.value -= (1000000*2048);
+	if( channel.value > (STFY_USECOND_PERIOD) ){
+		channel.value -= (STFY_USECOND_PERIOD);
 	}
 	mcu_tmr_setchannel(&tmr_handle, &channel);
 

@@ -21,9 +21,9 @@
 #include <stdio.h>
 #include <stddef.h>
 
-#include <sys/sffs/sffs_block.h>
+#include "sffs_block.h"
 #include <sys/sffs/sffs_scratch.h>
-#include <sys/sffs/sffs_serialno.h>
+#include "sffs_serialno.h"
 
 #define DEBUG_LEVEL 10
 

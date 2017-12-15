@@ -7,18 +7,21 @@ C_SRCS += \
 ../src/device/microchip/sst25vf.c \
 ../src/device/microchip/sst25vf_share.c \
 ../src/device/microchip/sst25vf_ssp.c \
+../src/device/microchip/sst25vf_ssp_tmr.c \
 ../src/device/microchip/sst25vf_tmr.c 
 
 OBJS += \
 ./src/device/microchip/sst25vf.o \
 ./src/device/microchip/sst25vf_share.o \
 ./src/device/microchip/sst25vf_ssp.o \
+./src/device/microchip/sst25vf_ssp_tmr.o \
 ./src/device/microchip/sst25vf_tmr.o 
 
 C_DEPS += \
 ./src/device/microchip/sst25vf.d \
 ./src/device/microchip/sst25vf_share.d \
 ./src/device/microchip/sst25vf_ssp.d \
+./src/device/microchip/sst25vf_ssp_tmr.d \
 ./src/device/microchip/sst25vf_tmr.d 
 
 

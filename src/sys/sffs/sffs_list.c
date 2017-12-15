@@ -24,7 +24,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <sys/sffs/sffs_block.h>
+#include "sffs_block.h"
 #include <sys/sffs/sffs_list.h>
 
 #define DEBUG_LEVEL 10

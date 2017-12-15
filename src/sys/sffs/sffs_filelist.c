@@ -19,7 +19,7 @@
 
 #include <stddef.h>
 
-#include <sys/sffs/sffs_filelist.h>
+#include "sffs_filelist.h"
 #include <sys/sffs/sffs_list.h>
 
 

@@ -24,7 +24,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <sys/sffs/sffs_block.h>
+#include "sffs_block.h"
 #include <sys/sffs/sffs_dev.h>
 #include <sys/sffs/sffs_scratch.h>
 #include <sys/sffs/sffs_tp.h>

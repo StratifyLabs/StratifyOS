@@ -27,9 +27,9 @@
 #include <errno.h>
 #include "sos/fs/sysfs.h"
 
-#include <sys/sffs/sffs_dir.h>
+#include "sffs_dir.h"
 #include <sys/sffs/sffs_list.h>
-#include <sys/sffs/sffs_serialno.h>
+#include "sffs_serialno.h"
 
 #define DEBUG_LEVEL 10
 #define PROB_FAILURE 0.0

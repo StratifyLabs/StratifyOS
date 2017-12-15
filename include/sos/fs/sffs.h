@@ -32,6 +32,7 @@ typedef struct {
 	int serialno_killed;
 	int serialno;
 	drive_info_t dattr;
+	pthread_mutex_t mutex;
 } sffs_state_t;
 
 typedef struct {

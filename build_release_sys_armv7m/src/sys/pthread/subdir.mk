@@ -12,6 +12,7 @@ C_SRCS += \
 ../src/sys/pthread/pthread_condattr.c \
 ../src/sys/pthread/pthread_create.c \
 ../src/sys/pthread/pthread_mutex.c \
+../src/sys/pthread/pthread_mutex_init.c \
 ../src/sys/pthread/pthread_mutexattr.c \
 ../src/sys/pthread/pthread_mutexattr_init.c \
 ../src/sys/pthread/pthread_rwlock.c \
@@ -28,6 +29,7 @@ OBJS += \
 ./src/sys/pthread/pthread_condattr.o \
 ./src/sys/pthread/pthread_create.o \
 ./src/sys/pthread/pthread_mutex.o \
+./src/sys/pthread/pthread_mutex_init.o \
 ./src/sys/pthread/pthread_mutexattr.o \
 ./src/sys/pthread/pthread_mutexattr_init.o \
 ./src/sys/pthread/pthread_rwlock.o \
@@ -44,6 +46,7 @@ C_DEPS += \
 ./src/sys/pthread/pthread_condattr.d \
 ./src/sys/pthread/pthread_create.d \
 ./src/sys/pthread/pthread_mutex.d \
+./src/sys/pthread/pthread_mutex_init.d \
 ./src/sys/pthread/pthread_mutexattr.d \
 ./src/sys/pthread/pthread_mutexattr_init.d \
 ./src/sys/pthread/pthread_rwlock.d \

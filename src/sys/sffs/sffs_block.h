@@ -21,7 +21,7 @@
 #ifndef SFFS_BLOCK_H_
 #define SFFS_BLOCK_H_
 
-#include "../sffs/sffs_local.h"
+#include "sffs_local.h"
 
 /*! \details This function finds a free data block.  The data block will
  * be marked as "allocated" when this function returns.  The function will try to allocate
