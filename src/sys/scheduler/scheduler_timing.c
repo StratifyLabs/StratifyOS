@@ -123,8 +123,10 @@ void scheduler_timing_convert_timespec(struct mcu_timeval * tv, const struct tim
 void scheduler_timing_root_get_realtime(struct mcu_timeval * tv){
 	devfs_handle_t tmr_handle;
 	tmr_handle.port = sos_board_config.clk_usecond_tmr;
+	mcu_tmr_disable(&tmr_handle, 0);
 	tv->tv_sec = sched_usecond_counter;
 	tv->tv_usec = (u32)mcu_tmr_get(&tmr_handle, NULL);
+	mcu_tmr_enable(&tmr_handle, 0);
 }
 
 int root_handle_usecond_overflow_event(void * context, const mcu_event_t * data){
@@ -139,16 +141,17 @@ int root_handle_usecond_match_event(void * context, const mcu_event_t * data){
 	u32 tmp;
 	int new_priority;
 	mcu_channel_t chan_req;
-	static const u32 overflow = (STFY_USECOND_PERIOD);
 	u32 current_match;
 	devfs_handle_t tmr_handle;
 	tmr_handle.port = sos_board_config.clk_usecond_tmr;
+	tmr_handle.config = 0;
+	tmr_handle.state = 0;
 
 	//Initialize variables
 	chan_req.loc = SCHED_USECOND_TMR_SLEEP_OC;
 	chan_req.value = STFY_USECOND_PERIOD + 1;
 	new_priority = SCHED_LOWEST_PRIORITY - 1;
-	next = overflow;
+	next = STFY_USECOND_PERIOD;
 
 	mcu_tmr_disable(&tmr_handle, 0);
 	current_match = mcu_tmr_get(&tmr_handle, NULL);
@@ -156,6 +159,7 @@ int root_handle_usecond_match_event(void * context, const mcu_event_t * data){
 	for(i=1; i < task_get_total(); i++){
 		if ( task_enabled(i) && !scheduler_active_asserted(i) ){ //enabled and inactive tasks only
 			tmp = sos_sched_table[i].wake.tv_usec;
+
 			//compare the current clock to the wake time
 			if ( (sos_sched_table[i].wake.tv_sec < sched_usecond_counter) ||
 					( (sos_sched_table[i].wake.tv_sec == sched_usecond_counter) && (tmp <= current_match) )
@@ -173,7 +177,7 @@ int root_handle_usecond_match_event(void * context, const mcu_event_t * data){
 			}
 		}
 	}
-	if ( next < overflow ){
+	if ( next < STFY_USECOND_PERIOD ){
 		chan_req.value = next;
 	}
 	mcu_tmr_setchannel(&tmr_handle, &chan_req);

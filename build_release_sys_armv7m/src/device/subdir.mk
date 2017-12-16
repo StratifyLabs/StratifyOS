@@ -4,13 +4,13 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
+../src/device/cfifo.c \
 ../src/device/devfifo.c \
 ../src/device/ffifo.c \
 ../src/device/fifo.c \
 ../src/device/full.c \
 ../src/device/led_pio.c \
 ../src/device/led_pwm.c \
-../src/device/mcfifo.c \
 ../src/device/null.c \
 ../src/device/random.c \
 ../src/device/sd_spi.c \
@@ -23,13 +23,13 @@ C_SRCS += \
 ../src/device/zero.c 
 
 OBJS += \
+./src/device/cfifo.o \
 ./src/device/devfifo.o \
 ./src/device/ffifo.o \
 ./src/device/fifo.o \
 ./src/device/full.o \
 ./src/device/led_pio.o \
 ./src/device/led_pwm.o \
-./src/device/mcfifo.o \
 ./src/device/null.o \
 ./src/device/random.o \
 ./src/device/sd_spi.o \
@@ -42,13 +42,13 @@ OBJS += \
 ./src/device/zero.o 
 
 C_DEPS += \
+./src/device/cfifo.d \
 ./src/device/devfifo.d \
 ./src/device/ffifo.d \
 ./src/device/fifo.d \
 ./src/device/full.d \
 ./src/device/led_pio.d \
 ./src/device/led_pwm.d \
-./src/device/mcfifo.d \
 ./src/device/null.d \
 ./src/device/random.d \
 ./src/device/sd_spi.d \
