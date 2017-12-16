@@ -18,16 +18,16 @@
  */
 
 
-#ifndef DEV_MCFIFO_H_
-#define DEV_MCFIFO_H_
+#ifndef DEV_CFIFO_H_
+#define DEV_CFIFO_H_
 
 #include "fifo.h"
-#include "sos/dev/mcfifo.h"
+#include "sos/dev/cfifo.h"
 
 typedef struct MCU_PACK {
 	u32 * owner_array;
 	fifo_state_t * fifo_state_array;
-} mcfifo_state_t;
+} cfifo_state_t;
 
 /*! \brief MCFIFO Configuration
  * \details This structure defines the static MCFIFO configuration.
@@ -37,16 +37,16 @@ typedef struct MCU_PACK {
 	u16 count /*! The number of channels */;
 	u16 size /*! The size of the buffer (only size-1 is usable) */;
 	const fifo_config_t * fifo_config_array;
-} mcfifo_config_t;
+} cfifo_config_t;
 
-int mcfifo_open(const devfs_handle_t * handle);
-int mcfifo_ioctl(const devfs_handle_t * handle, int request, void * ctl);
-int mcfifo_read(const devfs_handle_t * handle, devfs_async_t * async);
-int mcfifo_write(const devfs_handle_t * handle, devfs_async_t * async);
-int mcfifo_close(const devfs_handle_t * handle);
-
-
+int cfifo_open(const devfs_handle_t * handle);
+int cfifo_ioctl(const devfs_handle_t * handle, int request, void * ctl);
+int cfifo_read(const devfs_handle_t * handle, devfs_async_t * async);
+int cfifo_write(const devfs_handle_t * handle, devfs_async_t * async);
+int cfifo_close(const devfs_handle_t * handle);
 
 
-#endif /* DEV_MCFIFO_H_ */
+
+
+#endif /* DEV_CFIFO_H_ */
 

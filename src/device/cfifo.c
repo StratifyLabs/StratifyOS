@@ -21,35 +21,35 @@
 #include <errno.h>
 #include <stddef.h>
 #include "mcu/debug.h"
-#include "device/mcfifo.h"
+#include "device/cfifo.h"
 
-static u32 get_ready_channels(const mcfifo_config_t * config, mcfifo_state_t * state);
+static u32 get_ready_channels(const cfifo_config_t * config, cfifo_state_t * state);
 
-int mcfifo_open(const devfs_handle_t * handle){
+int cfifo_open(const devfs_handle_t * handle){
 	return 0;
 }
 
-int mcfifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
-	const mcfifo_config_t * config = handle->config;
-	mcfifo_state_t * state = handle->state;
-	mcfifo_fiforequest_t * fifo_request = ctl;
-	mcfifo_info_t * info = ctl;
+int cfifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
+	const cfifo_config_t * config = handle->config;
+	cfifo_state_t * state = handle->state;
+	cfifo_fiforequest_t * fifo_request = ctl;
+	cfifo_info_t * info = ctl;
 	mcu_channel_t * channel = ctl;
 	mcu_action_t * action = ctl;
 
 	switch(request){
-	case I_MCFIFO_GETVERSION: return MCFIFO_VERSION;
-	case I_MCFIFO_GETINFO:
-		memset(info, 0, sizeof(mcfifo_info_t));
+	case I_CFIFO_GETVERSION: return CFIFO_VERSION;
+	case I_CFIFO_GETINFO:
+		memset(info, 0, sizeof(cfifo_info_t));
 		info->size = config->size;
 		info->count = config->count;
 		info->o_ready = get_ready_channels(config, state);
 		return 0;
 
-	case I_MCFIFO_SETATTR:
+	case I_CFIFO_SETATTR:
 		return 0;
 
-	case I_MCFIFO_GETOWNER:
+	case I_CFIFO_GETOWNER:
 		if( channel->loc < config->count ){
 			channel->value = state->owner_array[channel->loc];
 			return 0;
@@ -58,7 +58,7 @@ int mcfifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 		}
 		return -1;
 
-	case I_MCFIFO_SETOWNER:
+	case I_CFIFO_SETOWNER:
 		if( channel->loc < config->count ){
 			state->owner_array[channel->loc] = channel->value;
 			return 0;
@@ -67,7 +67,7 @@ int mcfifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 		}
 		return -1;
 
-	case I_MCFIFO_FIFOREQUEST:
+	case I_CFIFO_FIFOREQUEST:
 		if( fifo_request->channel < config->count ){
 
 			return fifo_ioctl_local(
@@ -97,11 +97,11 @@ int mcfifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 	return -1;
 }
 
-int mcfifo_read(const devfs_handle_t * handle, devfs_async_t * async){
+int cfifo_read(const devfs_handle_t * handle, devfs_async_t * async){
 	u32 loc = (u32)async->loc;
 	int ret = -1;
-	const mcfifo_config_t * config = handle->config;
-	mcfifo_state_t * state = handle->state;
+	const cfifo_config_t * config = handle->config;
+	cfifo_state_t * state = handle->state;
 
 
 	if( loc < config->count ){
@@ -112,11 +112,11 @@ int mcfifo_read(const devfs_handle_t * handle, devfs_async_t * async){
 	return ret;
 }
 
-int mcfifo_write(const devfs_handle_t * handle, devfs_async_t * async){
+int cfifo_write(const devfs_handle_t * handle, devfs_async_t * async){
 	u32 loc = (u32)async->loc;
 	int ret = -1;
-	const mcfifo_config_t * config = handle->config;
-	mcfifo_state_t * state = handle->state;
+	const cfifo_config_t * config = handle->config;
+	cfifo_state_t * state = handle->state;
 
 	if( loc < config->count ){
 		ret = fifo_write_local(&config->fifo_config_array[loc], &state->fifo_state_array[loc], async);
@@ -126,11 +126,11 @@ int mcfifo_write(const devfs_handle_t * handle, devfs_async_t * async){
 	return ret;
 }
 
-int mcfifo_close(const devfs_handle_t * handle){
+int cfifo_close(const devfs_handle_t * handle){
 	return 0;
 }
 
-u32 get_ready_channels(const mcfifo_config_t * config, mcfifo_state_t * state){
+u32 get_ready_channels(const cfifo_config_t * config, cfifo_state_t * state){
 	u32 o_ready;
 	fifo_info_t info;
 	fifo_state_t * fifo_state;

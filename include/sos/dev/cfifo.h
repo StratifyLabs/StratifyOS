@@ -32,17 +32,17 @@
 
 /*! \file  */
 
-#ifndef SOS_DEV_MCFIFO_H_
-#define SOS_DEV_MCFIFO_H_
+#ifndef SOS_DEV_CFIFO_H_
+#define SOS_DEV_CFIFO_H_
 
 #include "fifo.h"
 #include "mcu/types.h"
 
-#define MCFIFO_VERSION (0x030000)
-#define MCFIFO_IOC_CHAR 'M'
+#define CFIFO_VERSION (0x030000)
+#define CFIFO_IOC_CHAR 'M'
 
 enum {
-	MCFIFO_FLAG_NONE = 0,
+	CFIFO_FLAG_NONE = 0,
 };
 
 typedef struct MCU_PACK {
@@ -51,7 +51,7 @@ typedef struct MCU_PACK {
 	u16 size /*! The size of each channel */;
 	u32 o_ready /*! Bitmask of channels with at least one byte */;
 	u32 resd[8];
-} mcfifo_info_t;
+} cfifo_info_t;
 
 
 /*! \brief FIFO Attributes
@@ -61,27 +61,27 @@ typedef struct MCU_PACK {
 typedef struct MCU_PACK {
 	u32 o_flags /*! Fifo flags */;
 	u32 resd[8];
-} mcfifo_attr_t;
+} cfifo_attr_t;
 
 typedef struct MCU_PACK {
 	u32 channel;
 	int request;
 	void * ctl;
-} mcfifo_fiforequest_t;
+} cfifo_fiforequest_t;
 
-#define I_MCFIFO_GETVERSION _IOCTL(MCFIFO_IOC_CHAR, I_MCU_GETVERSION)
-#define I_MCFIFO_GETINFO _IOCTLR(MCFIFO_IOC_CHAR, 0, mcfifo_info_t)
-#define I_MCFIFO_SETATTR _IOCTLW(MCFIFO_IOC_CHAR, 1, mcfifo_attr_t)
+#define I_CFIFO_GETVERSION _IOCTL(CFIFO_IOC_CHAR, I_MCU_GETVERSION)
+#define I_CFIFO_GETINFO _IOCTLR(CFIFO_IOC_CHAR, 0, cfifo_info_t)
+#define I_CFIFO_SETATTR _IOCTLW(CFIFO_IOC_CHAR, 1, cfifo_attr_t)
 
-#define I_MCFIFO_GETOWNER _IOCTLRW(MCFIFO_IOC_CHAR, 2, mcu_channel_t)
-#define I_MCFIFO_SETOWNER _IOCTLW(MCFIFO_IOC_CHAR, 3, mcu_channel_t)
+#define I_CFIFO_GETOWNER _IOCTLRW(CFIFO_IOC_CHAR, 2, mcu_channel_t)
+#define I_CFIFO_SETOWNER _IOCTLW(CFIFO_IOC_CHAR, 3, mcu_channel_t)
 
-#define I_MCFIFO_FIFOREQUEST _IOCTLRW(MCFIFO_IOC_CHAR, 4, mcfifo_fiforequest_t)
-
-
+#define I_CFIFO_FIFOREQUEST _IOCTLRW(CFIFO_IOC_CHAR, 4, cfifo_fiforequest_t)
 
 
-#endif /* SOS_DEV_MCFIFO_H_ */
+
+
+#endif /* SOS_DEV_CFIFO_H_ */
 
 
 /*! @} */

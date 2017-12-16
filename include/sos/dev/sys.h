@@ -46,11 +46,13 @@ extern "C" {
 #define SYS_IOC_CHAR 's'
 
 enum {
-	SYS_FLAG_IS_STDIO_FIFO = (1<<0),
-	SYS_FLAG_IS_STDIO_VCP = (1<<1),
-	SYS_FLAG_IS_WDT_DISABLED = (1<<2),
-	SYS_FLAG_IS_REQUEST = (1<<3),
-	SYS_FLAG_IS_TRACE = (1<<4)
+	SYS_FLAG_IS_STDIO_FIFO /*! Indicates STDIO are independent FIFOs */ = (1<<0),
+	SYS_FLAG_IS_STDIO_VCP /*! Deprecated */ = (1<<1),
+	SYS_FLAG_IS_WDT_DISABLED /*! Disables the WDT */ = (1<<2),
+	SYS_FLAG_IS_REQUEST /*! Deprecated */ = (1<<3),
+	SYS_FLAG_IS_TRACE /*! Deprecated */ = (1<<4),
+	SYS_FLAG_IS_STDIO_CFIFO /*! STDIO is a with channels 0:stdout 1:stdin 2: stderr */ = (1<<5),
+	SYS_FLAG_IS_STDIO_CFIFO_SHARE_OUTERR /*! Used with SYS_FLAG_IS_STDIO_CFIFO to indicate stderr and stdout are the same channel (0) */ = (1<<6)
 };
 
 typedef struct MCU_PACK {
