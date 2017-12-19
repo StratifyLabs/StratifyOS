@@ -173,8 +173,8 @@ int cortexm_set_irq_prio(int irq, int prio){
 	prio = mcu_config.irq_middle_prio - prio;
 
 	//zero priority is reserved for exceptions
-	if( prio < 1 ){
-		prio = 1;
+	if( prio < 4 ){
+		prio = 4;
 	}
 
 	//ensure lowest priority (highest value) is not exceeded

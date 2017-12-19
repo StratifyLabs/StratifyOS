@@ -89,13 +89,14 @@ int task_init(int interval,
 		mcu_core_set_nvic_priority(i, mcu_config.irq_middle_prio); //mark as middle priority
 	}
 
-	mcu_core_set_nvic_priority(SysTick_IRQn, mcu_config.irq_middle_prio); //lower priority so they don't interrupt the hardware
-	mcu_core_set_nvic_priority(PendSV_IRQn, mcu_config.irq_middle_prio);
+	mcu_core_set_nvic_priority(SysTick_IRQn, mcu_config.irq_middle_prio+1); //lower priority so they don't interrupt the hardware
+	mcu_core_set_nvic_priority(PendSV_IRQn, mcu_config.irq_middle_prio+1);
 	mcu_core_set_nvic_priority(SVCall_IRQn, mcu_config.irq_middle_prio-1); //elevate this so it isn't interrupted by peripheral hardware
 #if !defined MCU_NO_HARD_FAULT
 	mcu_core_set_nvic_priority(HardFault_IRQn, 2);
 #endif
 
+	//priority 1 is used for the WDT
 	mcu_core_set_nvic_priority(DebugMonitor_IRQn, 0);
 	mcu_core_set_nvic_priority(MemoryManagement_IRQn, 3);
 	mcu_core_set_nvic_priority(BusFault_IRQn, 3);
