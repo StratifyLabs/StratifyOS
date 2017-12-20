@@ -11,20 +11,21 @@
 #ifdef __win32
 #define TIMEOUT_VALUE 500
 #else
-#define TIMEOUT_VALUE 5000
+#define INITIAL_TIMEOUT_VALUE 500 //used for first ping
+#define TIMEOUT_VALUE 5000 //used for more complex operations
 #endif
 
 
 #define pkt_checksum(pktp) ((pktp)->data[(pktp)->size])
 
 static int wait_ack(link_transport_mdriver_t * driver, uint8_t checksum, int timeout);
-static int timeout_value = TIMEOUT_VALUE;
+static int m_timeout_value = TIMEOUT_VALUE;
 
 void link_transport_mastersettimeout(int t){
 	if ( t == 0 ){
-		timeout_value = TIMEOUT_VALUE;
+		m_timeout_value = TIMEOUT_VALUE;
 	} else {
-		timeout_value = t;
+		m_timeout_value = t;
 	}
 }
 
@@ -38,12 +39,12 @@ int link_transport_masterread(link_transport_mdriver_t * driver, void * buf, int
 	p = buf;
 	do {
 
-		if( (err = link_transport_wait_start(&driver->dev, &pkt, timeout_value)) < 0 ){
+		if( (err = link_transport_wait_start(&driver->dev, &pkt, m_timeout_value)) < 0 ){
 			driver->dev.flush(driver->dev.handle);
 			return err;
 		}
 
-		if( (err = link_transport_wait_packet(&driver->dev, &pkt, timeout_value)) < 0 ){
+		if( (err = link_transport_wait_packet(&driver->dev, &pkt, m_timeout_value)) < 0 ){
 			driver->dev.flush(driver->dev.handle);
 			return err;
 		}
@@ -97,7 +98,7 @@ int link_transport_masterwrite(link_transport_mdriver_t * driver, const void * b
 		}
 
 		//received ack of the checksum
-		if( (err = wait_ack(driver, pkt_checksum(&pkt), timeout_value)) < 0 ){
+		if( (err = wait_ack(driver, pkt_checksum(&pkt), INITIAL_TIMEOUT_VALUE)) < 0 ){
 			link_error("wait ack failed");
 			driver->dev.flush(driver->dev.handle);
 			return err;
