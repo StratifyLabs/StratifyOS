@@ -39,23 +39,23 @@ void root_load_data(void * args){
 	root_load_data_t * p = args;
 	int size;
 	void * code_addr;
-	uint32_t code_size;
+	u32 code_size;
 	void * src_addr;
 	void * dest_addr;
 
 	//sanity check the size
-	size =  mpu_size((uint32_t)sos_task_table[ task_get_current() ].mem.data.size);
-	if( p->data_size < size ){
+	size =  mpu_size((u32)sos_task_table[ task_get_current() ].mem.data.size);
+	if( p->data_size < size ){ //p->data_size is the total amount of RAM available to the application
 		size = p->data_size;
 	}
 
 	code_size = p->code_size;
-	if( code_size > mpu_size((uint32_t)sos_task_table[ task_get_current() ].mem.code.size) ){
+	if( code_size > mpu_size((u32)sos_task_table[ task_get_current() ].mem.code.size) ){
 		return;
 	}
 
-	dest_addr = mpu_addr((uint32_t)sos_task_table[ task_get_current() ].mem.data.addr);
-	code_addr = mpu_addr((uint32_t)sos_task_table[ task_get_current() ].mem.code.addr);
+	dest_addr = mpu_addr((u32)sos_task_table[ task_get_current() ].mem.data.addr);
+	code_addr = mpu_addr((u32)sos_task_table[ task_get_current() ].mem.code.addr);
 	code_size = p->code_size;
 	src_addr = code_addr + code_size;
 	memcpy(dest_addr, src_addr, size);
@@ -82,6 +82,7 @@ char ** const crt_import_argv(char * path_arg, int * argc){
 		return 0;
 	}
 
+	//this needs to be strnlen -- security
 	len = strlen(path_arg);
 
 

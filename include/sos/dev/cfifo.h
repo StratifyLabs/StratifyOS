@@ -65,9 +65,17 @@ typedef struct MCU_PACK {
 
 typedef struct MCU_PACK {
 	u32 channel;
-	int request;
-	void * ctl;
 } cfifo_fiforequest_t;
+
+typedef struct MCU_PACK {
+	u32 channel;
+	fifo_attr_t attr;
+} cfifo_fifoattr_t;
+
+typedef struct MCU_PACK {
+	u32 channel;
+	fifo_info_t info;
+} cfifo_fifoinfo_t;
 
 #define I_CFIFO_GETVERSION _IOCTL(CFIFO_IOC_CHAR, I_MCU_GETVERSION)
 #define I_CFIFO_GETINFO _IOCTLR(CFIFO_IOC_CHAR, 0, cfifo_info_t)
@@ -76,7 +84,11 @@ typedef struct MCU_PACK {
 #define I_CFIFO_GETOWNER _IOCTLRW(CFIFO_IOC_CHAR, 2, mcu_channel_t)
 #define I_CFIFO_SETOWNER _IOCTLW(CFIFO_IOC_CHAR, 3, mcu_channel_t)
 
-#define I_CFIFO_FIFOREQUEST _IOCTLRW(CFIFO_IOC_CHAR, 4, cfifo_fiforequest_t)
+#define I_CFIFO_FIFOINIT _IOCTLW(CFIFO_IOC_CHAR, 4, cfifo_fiforequest_t)
+#define I_CFIFO_FIFOFLUSH _IOCTLW(CFIFO_IOC_CHAR, 5, cfifo_fiforequest_t)
+#define I_CFIFO_FIFOEXIT _IOCTLW(CFIFO_IOC_CHAR, 6, cfifo_fiforequest_t)
+#define I_CFIFO_FIFOSETATTR _IOCTLW(CFIFO_IOC_CHAR, 7, cfifo_fifoattr_t)
+#define I_CFIFO_FIFOGETINFO _IOCTLRW(CFIFO_IOC_CHAR, 8, cfifo_fifoinfo_t)
 
 
 

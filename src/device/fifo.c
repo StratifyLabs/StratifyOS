@@ -129,10 +129,13 @@ int fifo_read_buffer(const fifo_config_t * cfgp, fifo_state_t * state, char * bu
 }
 
 
-int fifo_write_buffer(const fifo_config_t * cfgp, fifo_state_t * state, const char * buf){
+int fifo_write_buffer(const fifo_config_t * cfgp, fifo_state_t * state, const char * buf, int non_blocking){
 	int i;
 	int size = cfgp->size;
-	int writeblock = fifo_is_writeblock(state);
+	int writeblock = 1;
+	if( non_blocking == 0 ){
+		writeblock = fifo_is_writeblock(state);
+	}
 	for(i=0; i < state->wop_len; i++){
 		if( fifo_is_write_ok(state, size, writeblock) ){
 			cfgp->buffer[state->head] = buf[i];
@@ -195,7 +198,7 @@ void fifo_cancel_wop(fifo_state_t * state){
 int fifo_data_transmitted(const fifo_config_t * cfgp, fifo_state_t * state){
 	int bytes_written;
 	if( state->wop != NULL ){
-		if( (bytes_written = fifo_write_buffer(cfgp, state, state->wop->buf_const)) > 0 ){
+		if( (bytes_written = fifo_write_buffer(cfgp, state, state->wop->buf_const, 0)) > 0 ){
 			execute_write_callback(state, bytes_written, MCU_EVENT_FLAG_WRITE_COMPLETE);
 		}
 	}
@@ -306,6 +309,7 @@ int fifo_read(const devfs_handle_t * handle, devfs_async_t * rop){
 
 int fifo_write_local(const fifo_config_t * cfgp, fifo_state_t * state, devfs_async_t * wop){
 	int bytes_written;
+	int non_blocking;
 
 	if ( state->wop != NULL ){
 		wop->nbyte = EBUSY;
@@ -313,9 +317,10 @@ int fifo_write_local(const fifo_config_t * cfgp, fifo_state_t * state, devfs_asy
 	}
 
 	state->wop_len = wop->nbyte;
-	bytes_written = fifo_write_buffer(cfgp, state, wop->buf_const); //see if there are bytes in the buffer
+	non_blocking = ((wop->flags & O_NONBLOCK) != 0);
+	bytes_written = fifo_write_buffer(cfgp, state, wop->buf_const, non_blocking); //see if there are bytes in the buffer
 	if ( bytes_written == 0 ){
-		if( wop->flags & O_NONBLOCK ){
+		if( non_blocking ){
 			errno = EAGAIN;
 			bytes_written = -1;
 		} else {

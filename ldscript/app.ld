@@ -56,6 +56,7 @@ SECTIONS {
          *(.global_reent)
          *(.data)
          *(.data.*)
+            . = ALIGN(4);
          } >ram AT>flash
   _edata = .;
   _bss = .;

@@ -33,6 +33,8 @@ int cfifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 	const cfifo_config_t * config = handle->config;
 	cfifo_state_t * state = handle->state;
 	cfifo_fiforequest_t * fifo_request = ctl;
+	cfifo_fifoattr_t * fifo_attr = ctl;
+	cfifo_fifoinfo_t * fifo_info = ctl;
 	cfifo_info_t * info = ctl;
 	mcu_channel_t * channel = ctl;
 	mcu_action_t * action = ctl;
@@ -67,19 +69,32 @@ int cfifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 		}
 		return -1;
 
-	case I_CFIFO_FIFOREQUEST:
-		if( fifo_request->channel < config->count ){
+	case I_CFIFO_FIFOINIT:
+		return fifo_ioctl_local(config->fifo_config_array + fifo_request->channel,
+				state->fifo_state_array + fifo_request->channel,
+				I_FIFO_INIT,
+				0);
+	case I_CFIFO_FIFOFLUSH:
+		return fifo_ioctl_local(config->fifo_config_array + fifo_request->channel,
+				state->fifo_state_array + fifo_request->channel,
+				I_FIFO_FLUSH,
+				0);
+	case I_CFIFO_FIFOEXIT:
+		return fifo_ioctl_local(config->fifo_config_array + fifo_request->channel,
+				state->fifo_state_array + fifo_request->channel,
+				I_FIFO_EXIT,
+				0);
+	case I_CFIFO_FIFOSETATTR:
+		return fifo_ioctl_local(config->fifo_config_array + fifo_attr->channel,
+				state->fifo_state_array + fifo_attr->channel,
+				I_FIFO_SETATTR,
+				&fifo_attr->attr);
+	case I_CFIFO_FIFOGETINFO:
+		return fifo_ioctl_local(config->fifo_config_array + fifo_info->channel,
+				state->fifo_state_array + fifo_info->channel,
+				I_FIFO_GETINFO,
+				&fifo_info->info);
 
-			return fifo_ioctl_local(
-					config->fifo_config_array + fifo_request->channel,
-					state->fifo_state_array + fifo_request->channel,
-					fifo_request->request,
-					fifo_request->ctl);
-
-		} else {
-			errno = EINVAL;
-		}
-		return -1;
 
 	case I_MCU_SETACTION:
 		//mcu action channel to figure out which fifo
