@@ -204,6 +204,7 @@ void link_cmd_readserialno(link_transport_driver_t * driver, link_data_t * args)
 
 void link_cmd_open(link_transport_driver_t * driver, link_data_t * args){
 	char path[PATH_MAX];
+	errno = 0;
 	args->reply.err = link_transport_slaveread(driver, path, args->op.open.path_size, NULL, NULL);
 	args->reply.err = open(path, args->op.open.flags, args->op.open.mode);
 	if ( args->reply.err < 0 ){
@@ -231,6 +232,7 @@ void link_cmd_link(link_transport_driver_t * driver, link_data_t * args){
 void link_cmd_ioctl(link_transport_driver_t * driver, link_data_t * args){
 	int err;
 	u16 size;
+	errno = 0;
 	size = _IOCTL_SIZE(args->op.ioctl.request);
 	char io_buf[size];
 	if ( _IOCTL_IOCTLW(args->op.ioctl.request) != 0 ){ //this means data is being sent over the bulk interrupt
@@ -277,7 +279,8 @@ void link_cmd_ioctl(link_transport_driver_t * driver, link_data_t * args){
 }
 
 void link_cmd_read(link_transport_driver_t * driver, link_data_t * args){
-	if( args->op.ioctl.fildes != driver->handle ){
+	if( args->op.read.fildes != driver->handle ){
+		errno = 0;
 		args->reply.err = read_device(driver, args->op.read.fildes, args->op.read.nbyte);
 	}  else {
 		args->reply.err = -1;
@@ -290,8 +293,9 @@ void link_cmd_read(link_transport_driver_t * driver, link_data_t * args){
 }
 
 void link_cmd_write(link_transport_driver_t * driver, link_data_t * args){
-	if( args->op.ioctl.fildes != driver->handle ){
-		args->reply.err = write_device(driver, args->op.write.addr, args->op.write.nbyte);
+	if( args->op.write.fildes != driver->handle ){
+		errno = 0;
+		args->reply.err = write_device(driver, args->op.write.fildes, args->op.write.nbyte);
 	}  else {
 		args->reply.err = -1;
 		args->reply.err_number = EBADF;
@@ -300,15 +304,6 @@ void link_cmd_write(link_transport_driver_t * driver, link_data_t * args){
 		link_debug("Failed to write (%d)\n", errno);
 		args->reply.err_number = errno;
 	}
-}
-
-void link_cmd_read_flash(link_transport_driver_t * driver, link_data_t * args){
-}
-
-void link_cmd_write_flash(link_transport_driver_t * driver, link_data_t * args){
-}
-
-void link_cmd_erase_flash(link_transport_driver_t * driver, link_data_t * args){
 }
 
 void link_cmd_close(link_transport_driver_t * driver, link_data_t * args){

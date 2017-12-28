@@ -38,7 +38,7 @@ int link_open(link_transport_mdriver_t * driver, const char * path, int flags, .
 		mode = 0;
 	}
 
-	link_debug(LINK_DEBUG_MESSAGE, "open %s 0%o 0x%X using 0x%llX", path, mode, flags, (uint64_t)driver->dev.handle);
+	link_debug(LINK_DEBUG_MESSAGE, "open %s 0%o 0x%X using 0x%llX", path, mode, flags, (u64)driver->dev.handle);
 
 
 	op.open.cmd = LINK_CMD_OPEN;
@@ -49,7 +49,7 @@ int link_open(link_transport_mdriver_t * driver, const char * path, int flags, .
 	link_debug(LINK_DEBUG_MESSAGE, "Write open op (0x%lX)", (long unsigned int)driver->dev.handle);
 	err = link_transport_masterwrite(driver, &op, sizeof(link_open_t));
 	if ( err < 0 ){
-		link_error("failed to write open op with handle %llX", (uint64_t)driver->dev.handle);
+		link_error("failed to write open op with handle %llX", (u64)driver->dev.handle);
 		return link_handle_err(driver, err);
 	}
 

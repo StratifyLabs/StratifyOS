@@ -38,16 +38,16 @@ typedef struct MCU_PACK {
 
 typedef struct MCU_PACK {
 	link_cmd_t cmd;
-	int32_t fildes;
-	int32_t request;
+	s32 fildes;
+	s32 request;
 	u32 arg;
 } link_ioctl_t;
 
 typedef struct MCU_PACK {
 	link_cmd_t cmd;
 	union {
-		int32_t fildes;
-		u32 addr;
+		s32 fildes;
+		u32 addr; //used with bootloader
 	};
 	u32 nbyte;
 } link_read_t;
@@ -55,15 +55,15 @@ typedef struct MCU_PACK {
 typedef struct MCU_PACK {
 	link_cmd_t cmd;
 	union {
-		int32_t fildes;
-		u32 addr;
+		s32 fildes;
+		u32 addr; //used with bootloader
 	};
 	u32 nbyte;
 } link_write_t;
 
 typedef struct MCU_PACK {
 	link_cmd_t cmd;
-	int32_t fildes;
+	s32 fildes;
 } link_close_t;
 
 typedef struct MCU_PACK {
@@ -73,9 +73,9 @@ typedef struct MCU_PACK {
 
 typedef struct MCU_PACK {
 	link_cmd_t cmd;
-	int32_t fildes;
-	int32_t offset;
-	int32_t whence;
+	s32 fildes;
+	s32 offset;
+	s32 whence;
 } link_lseek_t;
 
 typedef struct MCU_PACK {
@@ -85,13 +85,13 @@ typedef struct MCU_PACK {
 
 typedef struct MCU_PACK {
 	link_cmd_t cmd;
-	int32_t fildes;
+	s32 fildes;
 } link_fstat_t;
 
 typedef struct MCU_PACK {
 	link_cmd_t cmd;
 	u32 path_size;
-	int32_t mode;
+	s32 mode;
 } link_mkdir_t;
 
 typedef struct MCU_PACK {
@@ -106,35 +106,35 @@ typedef struct MCU_PACK {
 
 typedef struct MCU_PACK {
 	link_cmd_t cmd;
-	int32_t dirp;
+	s32 dirp;
 } link_readdir_t;
 
 typedef struct MCU_PACK {
-	int32_t err;
-	int32_t err_number;
-	int32_t d_ino;
+	s32 err;
+	s32 err_number;
+	s32 d_ino;
 	u32 d_name_size;
 } link_readdir_reply_t;
 
 typedef struct MCU_PACK {
 	link_cmd_t cmd;
-	int32_t dirp;
+	s32 dirp;
 } link_closedir_t;
 
 typedef struct MCU_PACK {
 	link_cmd_t cmd;
-	int32_t dirp;
+	s32 dirp;
 } link_rewinddir_t;
 
 typedef struct MCU_PACK {
 	link_cmd_t cmd;
-	int32_t dirp;
+	s32 dirp;
 } link_telldir_t;
 
 typedef struct MCU_PACK {
 	link_cmd_t cmd;
-	int32_t dirp;
-	int32_t loc;
+	s32 dirp;
+	s32 loc;
 } link_seekdir_t;
 
 typedef struct MCU_PACK {
@@ -239,8 +239,8 @@ typedef union {
 } link_op_t;
 
 typedef struct MCU_PACK {
-	int32_t err;
-	int32_t err_number;
+	s32 err;
+	s32 err_number;
 } link_reply_t;
 
 //Commands

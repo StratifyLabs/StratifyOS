@@ -19,6 +19,7 @@ int link_transport_slaveread(link_transport_driver_t * driver, void * buf, int n
 	int bytes;
 	uint8_t checksum;
 	int err;
+	int ret;
 
 	bytes = 0;
 	p = buf;
@@ -64,9 +65,9 @@ int link_transport_slaveread(link_transport_driver_t * driver, void * buf, int n
 			p += pkt.size;
 			send_ack(driver, LINK_PACKET_ACK, checksum);
 		} else {
-			if( callback(context, pkt.data, pkt.size) < 0 ){
+			if( (ret = callback(context, pkt.data, pkt.size)) < 0 ){
 				send_ack(driver, LINK_PACKET_NACK, checksum);
-				return -5;
+				return ret;
 			} else {
 				bytes += pkt.size;
 				if( send_ack(driver, LINK_PACKET_ACK, checksum) < 0 ){
@@ -124,7 +125,9 @@ int link_transport_slavewrite(link_transport_driver_t * driver, const void * buf
 
 	} while( (bytes < nbyte) && (pkt.size == LINK_PACKET_DATA_SIZE) );
 
-
+	if( callback && (bytes == 0) ){
+		bytes = ret;
+	}
 
 	return bytes;
 }
