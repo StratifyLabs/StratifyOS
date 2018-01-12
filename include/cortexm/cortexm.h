@@ -62,6 +62,9 @@ void cortexm_delay_ms(u32 ms);
 
 void cortexm_set_vector_table_addr(void * addr);
 
+void cortexm_wdtfault_handler(void * stack);
+
+
 #define r(x) register long x asm("lr")
 
 #endif

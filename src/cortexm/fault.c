@@ -28,7 +28,6 @@ static void hardfault_handler(u32 fault_status, hw_stack_frame_t * handler_stack
 static void busfault_handler(u32 bus_status, hw_stack_frame_t * handler_stack);
 static void memfault_handler(u32 mem_status, hw_stack_frame_t * handler_stack);
 static void usagefault_handler(u32 usage_status, hw_stack_frame_t * handler_stack);
-static void wdtfault_handler(hw_stack_frame_t * handler_stack);
 
 
 #define get_pc(stack_reg) (((hw_stack_frame_t*)(stack_reg))->pc)
@@ -100,26 +99,16 @@ void hardfault_handler(u32 fault_status, hw_stack_frame_t * handler_stack){
 	mcu_fault_event_handler(&fault);
 }
 
-
-
-
-void mcu_core_wdt_isr() MCU_WEAK;
-void mcu_core_wdt_isr(){
-	register void * handler_stack;
-	asm volatile ("MRS %0, msp\n\t" : "=r" (handler_stack) );
-
-	wdtfault_handler(handler_stack);
-}
-
-void wdtfault_handler(hw_stack_frame_t * handler_stack){
+void cortexm_wdtfault_handler(void * stack){
 	fault_t fault;
-	hw_stack_frame_t * stack;
-	cortexm_get_thread_stack_ptr( &stack );
+	hw_stack_frame_t * handler_stack = stack;
+	hw_stack_frame_t * user_stack;
+	cortexm_get_thread_stack_ptr( &user_stack );
 
 	fault.num = MCU_FAULT_WDT;
 	fault.addr = (void*)-1;
-	fault.pc = (void*)stack->pc;
-	fault.caller = (void*)stack->lr;
+	fault.pc = (void*)user_stack->pc;
+	fault.caller = (void*)user_stack->lr;
 	fault.handler_pc = (void*)handler_stack->pc;
 	fault.handler_caller = (void*)handler_stack->lr;
 
