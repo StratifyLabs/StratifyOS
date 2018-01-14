@@ -287,7 +287,6 @@ void * _malloc_r(struct _reent * reent_ptr, size_t size){
 void malloc_set_chunk_used(struct _reent * reent, malloc_chunk_t * chunk, u16 num_chunks, u32 actual_size){
 	chunk->header.num_chunks = num_chunks;
 	chunk->header.actual_size = actual_size;
-	//chunk->signature = ~(num_chunks ^ actual_size);
 	if( (reent == _REENT) && ( task_isthread_asserted( task_get_current() )) ){
 		chunk->header.task_id = task_get_current();
 	} else {
@@ -301,7 +300,6 @@ void malloc_set_chunk_free(malloc_chunk_t * chunk, u16 free_chunks){
 	chunk->header.actual_size = 0;
 	chunk->header.num_chunks = free_chunks;
 	cortexm_assign_zero_sum32(chunk, CORTEXM_ZERO_SUM32_COUNT(malloc_chunk_header_t));
-	//chunk->signature = ~(chunk->header.num_chunks ^ 0);
 }
 
 void set_last_chunk(malloc_chunk_t * chunk){
@@ -309,14 +307,13 @@ void set_last_chunk(malloc_chunk_t * chunk){
 	chunk->header.num_chunks = 0;
 	chunk->header.actual_size = 0;
 	cortexm_assign_zero_sum32(chunk, CORTEXM_ZERO_SUM32_COUNT(malloc_chunk_header_t));
-	//chunk->signature = ~(0 ^ 0);
 }
 
 
 int malloc_chunk_is_free(malloc_chunk_t * chunk){
 	if( cortexm_verify_zero_sum32(chunk, CORTEXM_ZERO_SUM32_COUNT(malloc_chunk_header_t)) == 0){
 		//This chunk is corrupt
-		malloc_process_fault(chunk);
+		malloc_process_fault(((void*)chunk) + 1);
 		return -1;
 	}
 

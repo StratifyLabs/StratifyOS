@@ -135,10 +135,18 @@ int task_set_interval(int interval){
 	core_tick_freq = mcu_board_config.core_cpu_freq / reload;
 	SysTick->LOAD = reload;
 	m_task_rr_reload = reload;
-	SysTick->CTRL = SYSTICK_CTRL_ENABLE| //enable the timer
-			SYSTICK_CTRL_CLKSROUCE; //Internal Clock CPU
+	task_start_tick();
 	SCB->CCR = 0;
 	return core_tick_freq;
+}
+
+void task_start_tick(){
+	SysTick->CTRL = SYSTICK_CTRL_ENABLE| //enable the timer
+			SYSTICK_CTRL_CLKSROUCE; //Internal Clock CPU
+}
+
+void task_stop_tick(){
+	SysTick->CTRL = 0;
 }
 
 int task_create_thread(void *(*p)(void*),

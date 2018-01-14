@@ -40,6 +40,8 @@ int task_init(int interval /*! The minimum interval (in ms) between context swit
 		void * system_stack /*! A pointer to the top (highest address) of the system stack */,
 		int system_stack_size /*! The number of bytes used for the system stack */) MCU_ROOT_CODE;
 
+void task_start_tick();
+void task_stop_tick();
 
 int task_init_mpu(void * system_memory, int system_memory_size) MCU_ROOT_CODE;
 
