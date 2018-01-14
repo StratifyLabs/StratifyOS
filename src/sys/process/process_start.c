@@ -125,6 +125,10 @@ int process_start(const char *path_arg,
 			&mem,
 			(void*)startup.exec.ram_start);
 
+	if( err < 0 ){
+		_free_r(sos_task_table[0].global_reent, process_path);
+	}
+
 	mcu_debug_user_printf("process_start:returned %d\n", err);
 
 	return err;
