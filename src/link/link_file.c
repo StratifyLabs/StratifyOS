@@ -138,6 +138,8 @@ int link_ioctl_delay(link_transport_mdriver_t * driver, int fildes, int request,
 	if( delay > 0 ){
 		link_debug(LINK_DEBUG_MESSAGE, "Delay for %dms", delay);
 		driver->dev.wait(delay);
+		driver->dev.wait(delay);
+		driver->dev.wait(delay);
 	}
 
 	if( _IOCTL_IOCTLR(request) ){

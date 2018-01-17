@@ -210,8 +210,8 @@ int open_usecond_tmr(){
 
 	memset(&attr, 0, sizeof(tmr_attr_t));
 	attr.freq = 1000000;
-	attr.o_flags = TMR_FLAG_SET_TIMER | TMR_FLAG_IS_SOURCE_CPU;
-	attr.period = STFY_USECOND_PERIOD; //only works if TMR_FLAG_IS_AUTO_RELOAD is set
+	attr.o_flags = TMR_FLAG_SET_TIMER | TMR_FLAG_IS_SOURCE_CPU | TMR_FLAG_IS_AUTO_RELOAD;
+	attr.period = STFY_USECOND_PERIOD; //only works if TMR_FLAG_IS_AUTO_RELOAD is supported
 	memset(&attr.pin_assignment, 0xff, sizeof(tmr_pin_assignment_t));
 
 	err = mcu_tmr_setattr(&tmr, &attr);
@@ -226,11 +226,7 @@ int open_usecond_tmr(){
 
 	if( (info.o_flags & TMR_FLAG_IS_AUTO_RELOAD) == 0 ){
 		//The reset OC is only needed if TMR_FLAG_IS_AUTO_RELOAD is not supported
-		//Set the reset output compare value to reset the clock every 32 seconds
-		//chan_req.loc = SCHED_USECOND_TMR_RESET_OC;
-		//chan_req.value = STFY_USECOND_PERIOD; //overflow every SCHEDULER_TIMEVAL_SECONDS seconds
-		//err = mcu_tmr_setchannel(&tmr, &chan_req);
-		//if(err){ return -1; }
+		//Set the reset output compare value to reset the clock every STFY_USECOND_PERIOD
 
 		attr.channel.loc = SCHED_USECOND_TMR_RESET_OC;
 		attr.channel.value = STFY_USECOND_PERIOD;

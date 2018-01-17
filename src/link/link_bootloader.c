@@ -127,6 +127,8 @@ int link_eraseflash(link_transport_mdriver_t * driver){
 
 	driver->dev.wait(500);
 	driver->dev.wait(500);
+	driver->dev.wait(500);
+	driver->dev.wait(500);
 	return 0;
 }
 
