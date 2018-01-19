@@ -135,6 +135,9 @@ int check_run_app(){
 		return 0;
 	}
 
+	hw_req_handle.port = boot_board_config.hw_req.port;
+	hw_req_handle.config = 0;
+	hw_req_handle.state = 0;
 	pio_attr.o_pinmask = (1<<boot_board_config.hw_req.pin);
 
 	if( boot_board_config.o_flags & BOOT_BOARD_CONFIG_FLAG_HW_REQ_PULLUP ){
@@ -148,7 +151,6 @@ int check_run_app(){
 	cortexm_delay_us(500);
 
 	if( boot_board_config.hw_req.port != 0xff ){
-		hw_req_handle.port = boot_board_config.hw_req.port;
 		hw_req_value = ((mcu_pio_get(&hw_req_handle, 0) & pio_attr.o_pinmask) != 0);
 
 		if( boot_board_config.o_flags & BOOT_BOARD_CONFIG_FLAG_HW_REQ_ACTIVE_HIGH ){

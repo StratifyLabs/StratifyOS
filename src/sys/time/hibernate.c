@@ -64,14 +64,14 @@ void root_prepare_hibernate(void * args){
 
 	//elevate task prio of caller so that nothing executes until prio is restored
 	m_scheduler_current_priority = SCHED_HIGHEST_PRIORITY+1;
+
+	mcu_core_prepare_deepsleep(CORE_DEEPSLEEP);
 }
 
 void root_post_hibernate(void * args){
 	cortexm_disable_interrupts(0);
-	mcu_core_initclock(1); //Set the main clock
-	mcu_core_setusbclock(mcu_board_config.core_osc_freq); //set the USB clock
-
 	mcu_wdt_root_reset(NULL);
+	mcu_core_recover_deepsleep(CORE_DEEPSLEEP);
 
 	//restore task prio
 	m_scheduler_current_priority = sos_sched_table[ task_get_current() ].priority;
@@ -81,26 +81,17 @@ void root_post_hibernate(void * args){
 		mcu_wdt_setinterval(SCHED_RR_DURATION * 10 * sos_board_config.task_total + 5);
 	}
 
-
 	cortexm_enable_interrupts(0);
 	scheduler_root_update_on_stopped(); //check to see if any higher prio tasks are ready to execute since the prio dropped
 }
 
 void root_hibernate(void * args){
-
 	root_prepare_hibernate(args);
-	//mcu_core_set_nvic_priority(SVCall_IRQn, mcu_config.irq_middle_prio+2); //allow interrupts to wake from sleep
 
-	//cortexm_enable_interrupts(0);
 	mcu_core_execsleep(0, (void*)CORE_DEEPSLEEP);
-	//cortexm_disable_interrupts(0);
-
-	//mcu_core_set_nvic_priority(SVCall_IRQn, mcu_config.irq_middle_prio-1); //restore SV call interrupt priority
 
 	//reinitialize the Clocks
 	root_post_hibernate(args);
-
-
 }
 
 int set_alarm(int seconds){

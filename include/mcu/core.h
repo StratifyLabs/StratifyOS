@@ -83,6 +83,9 @@ typedef enum {
 	CORE_DEEPSLEEP_STANDBY /*! Turn the device off (lose SRAM) */
 } core_sleep_t;
 
+void mcu_core_prepare_deepsleep(int level);
+void mcu_core_recover_deepsleep(int level);
+
 
 int mcu_core_user_sleep(core_sleep_t level);
 void mcu_set_sleep_mode(int * level) MCU_ROOT_CODE;
