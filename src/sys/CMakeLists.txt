@@ -96,6 +96,7 @@ if( ${SOS_BUILD_CONFIG} STREQUAL arm )
       ${SOURCES_PREFIX}/unistd/_write.c
       ${SOURCES_PREFIX}/unistd/access.c
       ${SOURCES_PREFIX}/unistd/chmod.c
+      ${SOURCES_PREFIX}/unistd/chown.c
       ${SOURCES_PREFIX}/unistd/ioctl.c
       ${SOURCES_PREFIX}/unistd/lstat.c
       ${SOURCES_PREFIX}/unistd/mkdir.c

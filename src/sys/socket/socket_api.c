@@ -28,7 +28,6 @@
 //int read(int s, void *mem, size_t len);
 //int write(int s, const void *dataptr, size_t size);
 
-#if HAVE_LWIP_SOCKETS_H
 
 int accept(int s, struct sockaddr *addr, socklen_t *addrlen){
 	return sos_board_config.socket_api->accept(s & ~FILDES_SOCKET_FLAG, addr, addrlen);
@@ -116,6 +115,8 @@ int writev(int s, const struct iovec *iov, int iovcnt){
 int select(int maxfdp1, fd_set *readset, fd_set *writeset, fd_set *exceptset, struct timeval *timeout){
 	return sos_board_config.socket_api->select(maxfdp1, readset, writeset, exceptset, timeout);
 }
+
+#if HAVE_LWIP_SOCKETS_H
 
 const sos_socket_api_t lwip_socket_api = {
 		.accept = lwip_accept,

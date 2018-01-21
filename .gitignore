@@ -4,3 +4,6 @@
 
 
 *.user
+cmake_*
+
+*.gch
