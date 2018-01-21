@@ -28,6 +28,7 @@
 //int read(int s, void *mem, size_t len);
 //int write(int s, const void *dataptr, size_t size);
 
+#if HAVE_LWIP_SOCKETS_H
 
 int accept(int s, struct sockaddr *addr, socklen_t *addrlen){
 	return sos_board_config.socket_api->accept(s & ~FILDES_SOCKET_FLAG, addr, addrlen);
@@ -141,6 +142,4 @@ const sos_socket_api_t lwip_socket_api = {
 		.fcntl = lwip_fcntl
 };
 
-
-
-
+#endif

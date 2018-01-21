@@ -26,7 +26,18 @@
  * If LWIP isn't installed in the SDK, any apps that use sockets will get an error.
  *
  */
+
+#if HAVE_LWIP_SOCKETS_H
 #include <lwip/sockets.h>
+#else
+#include <sys/time.h>
+#include "mcu/types.h"
+typedef u32 socklen_t;
+typedef u32 fd_set;
+struct sockaddr;
+struct msghdr;
+struct iovec;
+#endif //HAVE_LWIP_SOCKETS_H
 
 //these functions are for sockets only
 int accept(int s, struct sockaddr *addr, socklen_t *addrlen);
@@ -49,8 +60,7 @@ int socket(int domain, int type, int protocol);
 
 //these functions are currently only for sockets but should be supported on non-sockets as well
 int writev(int s, const struct iovec *iov, int iovcnt);
-int select(int maxfdp1, fd_set *readset, fd_set *writeset, fd_set *exceptset,
-		struct timeval *timeout);
+int select(int maxfdp1, fd_set *readset, fd_set *writeset, fd_set *exceptset, struct timeval *timeout);
 
 //these are support on both sockets and non-sockets
 //int read(int s, void *mem, size_t len);
