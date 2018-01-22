@@ -7,6 +7,8 @@ if( ${SOS_BUILD_CONFIG} STREQUAL arm )
   add_subdirectory(cortexm)
   list(APPEND SOURCELIST ${SOURCES})
 
+  list(APPEND SOURCELIST ${SRC_SOURCES_PREFIX}/config.h)
+
   set(SOURCES_PREFIX ${SRC_SOURCES_PREFIX}/device)
   add_subdirectory(device)
   list(APPEND SOURCELIST ${SOURCES})

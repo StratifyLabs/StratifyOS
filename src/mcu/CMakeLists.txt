@@ -13,6 +13,7 @@ if( ${SOS_BUILD_CONFIG} STREQUAL arm )
       ${SOURCES_PREFIX}/flash.c
       ${SOURCES_PREFIX}/i2c.c
       ${SOURCES_PREFIX}/i2s.c
+      ${SOURCES_PREFIX}/local.h
       ${SOURCES_PREFIX}/link_transport_slave.c
       ${SOURCES_PREFIX}/mci.c
       ${SOURCES_PREFIX}/mcu_debug.c

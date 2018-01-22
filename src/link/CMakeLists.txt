@@ -13,5 +13,6 @@ if( ${SOS_BUILD_CONFIG} STREQUAL link )
       ${SOURCES_PREFIX}/link_sys_attr.c
       ${SOURCES_PREFIX}/link_time.c
       ${SOURCES_PREFIX}/link.c
+      ${SOURCES_PREFIX}/link_local.h
       PARENT_SCOPE)
   endif()

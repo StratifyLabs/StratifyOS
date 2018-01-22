@@ -7,6 +7,7 @@ if( ${SOS_BUILD_CONFIG} STREQUAL arm )
       ${SOURCES_PREFIX}/microchip/sst25vf_ssp.c
       ${SOURCES_PREFIX}/microchip/sst25vf_tmr.c
       ${SOURCES_PREFIX}/microchip/sst25vf.c
+      ${SOURCES_PREFIX}/microchip/sst25vf_local.h
       ${SOURCES_PREFIX}/cfifo.c
       ${SOURCES_PREFIX}/devfifo.c
       ${SOURCES_PREFIX}/ffifo.c
@@ -16,6 +17,7 @@ if( ${SOS_BUILD_CONFIG} STREQUAL arm )
       ${SOURCES_PREFIX}/led_pwm.c
       ${SOURCES_PREFIX}/null.c
       ${SOURCES_PREFIX}/random.c
+      ${SOURCES_PREFIX}/sd_spi_local.h
       ${SOURCES_PREFIX}/sd_spi.c
       ${SOURCES_PREFIX}/sd_ssp.c
       ${SOURCES_PREFIX}/tty_uart.c

@@ -16,6 +16,7 @@ if( ${SOS_BUILD_CONFIG} STREQUAL arm )
       ${SOURCES_PREFIX}/malloc/mallinfo.c
       ${SOURCES_PREFIX}/malloc/malloc_stats.c
       ${SOURCES_PREFIX}/malloc/malloc.c
+      ${SOURCES_PREFIX}/malloc/malloc_local.h
       ${SOURCES_PREFIX}/malloc/mallocr.c
       ${SOURCES_PREFIX}/malloc/mlock.c
       ${SOURCES_PREFIX}/malloc/realloc.c
@@ -24,6 +25,7 @@ if( ${SOS_BUILD_CONFIG} STREQUAL arm )
       ${SOURCES_PREFIX}/process/install.c
       ${SOURCES_PREFIX}/process/launch.c
       ${SOURCES_PREFIX}/process/process_start.c
+      ${SOURCES_PREFIX}/process/process_start.h
       ${SOURCES_PREFIX}/pthread/pthread_attr_init.c
       ${SOURCES_PREFIX}/pthread/pthread_attr.c
       ${SOURCES_PREFIX}/pthread/pthread_cancel.c
@@ -43,27 +45,35 @@ if( ${SOS_BUILD_CONFIG} STREQUAL arm )
       ${SOURCES_PREFIX}/scheduler/scheduler_debug.c
       ${SOURCES_PREFIX}/scheduler/scheduler_fault_handler.c
       ${SOURCES_PREFIX}/scheduler/scheduler_fault.c
+      ${SOURCES_PREFIX}/scheduler/scheduler_fault.h
+      ${SOURCES_PREFIX}/scheduler/scheduler_flags.h
       ${SOURCES_PREFIX}/scheduler/scheduler_init.c
       ${SOURCES_PREFIX}/scheduler/scheduler_process.c
       ${SOURCES_PREFIX}/scheduler/scheduler_root.c
+      ${SOURCES_PREFIX}/scheduler/scheduler_root.h
       ${SOURCES_PREFIX}/scheduler/scheduler_thread.c
       ${SOURCES_PREFIX}/scheduler/scheduler_timing.c
+      ${SOURCES_PREFIX}/scheduler/scheduler_timing.h
       ${SOURCES_PREFIX}/scheduler/scheduler.c
+      ${SOURCES_PREFIX}/scheduler/scheduler_local.h
       ${SOURCES_PREFIX}/semaphore/sem.c
       ${SOURCES_PREFIX}/signal/_kill.c
       ${SOURCES_PREFIX}/signal/_wait.c
       ${SOURCES_PREFIX}/signal/pthread_kill.c
       ${SOURCES_PREFIX}/signal/sig_realtime.c
+      ${SOURCES_PREFIX}/signal/sig_local.h
       ${SOURCES_PREFIX}/signal/signal_handler.c
       ${SOURCES_PREFIX}/signal/signal.c
       ${SOURCES_PREFIX}/signal/sigset.c
       ${SOURCES_PREFIX}/socket/socket_api.c
+      ${SOURCES_PREFIX}/sysfs/appfs_local.h
       ${SOURCES_PREFIX}/sysfs/appfs_ram.c
       ${SOURCES_PREFIX}/sysfs/appfs_util.c
       ${SOURCES_PREFIX}/sysfs/appfs.c
       ${SOURCES_PREFIX}/sysfs/devfs_aio.c
       ${SOURCES_PREFIX}/sysfs/devfs_data_transfer.c
       ${SOURCES_PREFIX}/sysfs/devfs.c
+      ${SOURCES_PREFIX}/sysfs/devfs_local.h
       ${SOURCES_PREFIX}/sysfs/rootfs.c
       ${SOURCES_PREFIX}/sysfs/sysfs_file.c
       ${SOURCES_PREFIX}/sysfs/sysfs.c
@@ -104,6 +114,8 @@ if( ${SOS_BUILD_CONFIG} STREQUAL arm )
       ${SOURCES_PREFIX}/unistd/sleep.c
       ${SOURCES_PREFIX}/unistd/uidgid.c
       ${SOURCES_PREFIX}/unistd/usleep.c
+      ${SOURCES_PREFIX}/unistd/unistd_fs.h
+      ${SOURCES_PREFIX}/unistd/unistd_local.h
       ${SOURCES_PREFIX}/libgcc.c
       ${SOURCES_PREFIX}/sos_default_thread.c
       ${SOURCES_PREFIX}/sos_led.c
