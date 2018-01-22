@@ -1,4 +1,4 @@
-/* Copyright 2011-2016 Tyler Gilbert; 
+/* Copyright 2011-2016 Tyler Gilbert;
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 #ifndef _MCU_DEBUG_H_
@@ -36,6 +36,9 @@ extern "C" {
 #include "sos/fs/devfs.h"
 #include "uart.h"
 
+#if defined __debug
+#define ___debug
+#endif
 
 #if !defined ___debug
 #define mcu_debug_init() 0
@@ -47,14 +50,9 @@ extern "C" {
 #define MCU_DEBUG 1
 int mcu_debug_init();
 void mcu_debug_root_write_uart(const char * buffer, int nbyte);
-
-
 int mcu_debug_user_printf(const char * format, ...);
 int mcu_debug_root_printf(const char * format, ...);
-
 #define mcu_debug_printf mcu_debug_root_printf
-
-
 #endif
 
 

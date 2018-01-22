@@ -116,6 +116,8 @@ int select(int maxfdp1, fd_set *readset, fd_set *writeset, fd_set *exceptset, st
 	return sos_board_config.socket_api->select(maxfdp1, readset, writeset, exceptset, timeout);
 }
 
+#if HAVE_LWIP_SOCKETS_H
+
 const sos_socket_api_t lwip_socket_api = {
 		.accept = lwip_accept,
 		.bind = lwip_bind,
@@ -141,6 +143,4 @@ const sos_socket_api_t lwip_socket_api = {
 		.fcntl = lwip_fcntl
 };
 
-
-
-
+#endif
