@@ -4,3 +4,4 @@
 
 
 *.user
+/build_release_link/
