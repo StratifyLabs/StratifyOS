@@ -15,6 +15,8 @@
 #define TIMEOUT_VALUE 5000 //used for more complex operations
 #endif
 
+#define INITIAL_TIMEOUT_VALUE 500 //used for first ping
+
 
 #define pkt_checksum(pktp) ((pktp)->data[(pktp)->size])
 
