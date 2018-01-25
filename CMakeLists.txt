@@ -1,6 +1,5 @@
 cmake_minimum_required (VERSION 3.6)
 
-
 set(SOS_TOOLCHAIN_CMAKE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 set(SOS_LIB_NAME sos)
 
