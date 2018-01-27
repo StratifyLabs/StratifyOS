@@ -8,22 +8,25 @@ if(HAVE_LWIP_SOCKETS_H)
 endif()
 
 #Add sys sources
+file(GLOB CMAKE_SOURCES ${CMAKE_SOURCE_DIR}/cmake/*)
+file(GLOB LDSCRIPT_SOURCES ${CMAKE_SOURCE_DIR}/ldscript/*)
 set(SOURCES "")
 set(SOURCES_PREFIX ${CMAKE_SOURCE_DIR}/src)
 add_subdirectory(src)
-set(SYS_SOURCELIST ${SOURCES})
+file(GLOB_RECURSE HEADER_FILES ${CMAKE_SOURCE_DIR}/include/* )
+set(SYS_SOURCELIST ${SOURCES} ${CMAKE_SOURCES} ${LDSCRIPT_SOURCES} ${HEADER_FILES})
 
 #Add sys sources
 set(SOURCES "")
 set(SOURCES_PREFIX ${CMAKE_SOURCE_DIR}/src/crt)
 add_subdirectory(src/crt)
-set(CRT_SOURCELIST ${SOURCES})
+set(CRT_SOURCELIST ${SOURCES} ${HEADER_FILES})
 
 #Add sys sources
 set(SOURCES "")
 set(SOURCES_PREFIX ${CMAKE_SOURCE_DIR}/src/boot)
 add_subdirectory(src/boot)
-set(BOOT_SOURCELIST ${SOURCES})
+set(BOOT_SOURCELIST ${SOURCES} ${HEADER_FILES})
 
 set(SOS_LIB_INCLUDE_DIRECTORIES src include include/posix)
 set(SOS_LIB_OPTION sys)

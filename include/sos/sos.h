@@ -590,7 +590,7 @@ extern volatile task_t sos_task_table[];
 extern const sos_board_config_t sos_board_config;
 
 void sos_led_startup();
-void so_led_root_enable(void * args);
+void sos_led_root_enable(void * args);
 void sos_led_root_disable(void * args);
 void sos_led_root_error(void * args);
 

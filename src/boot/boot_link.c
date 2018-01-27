@@ -40,9 +40,6 @@ static bool is_erased = false;
 const devfs_handle_t flash_dev = { .port = 0 };
 
 
-void gled_on();
-void gled_off();
-
 static int read_flash(link_transport_driver_t * driver, int loc, int nbyte);
 static int read_flash_callback(void * context, void * buf, int nbyte);
 
@@ -262,29 +259,29 @@ void erase_flash(link_transport_driver_t * driver){
 
 	while(mcu_flash_erasepage(FLASH_PORT, (void*)page++) != 0 ){
 		//these are the bootloader pages and won't be erased
-		gled_on();
+        sos_led_root_enable(0);
 		driver->wait(1);
-		gled_off();
-		args.bytes = page;
+        sos_led_root_disable(0);
+        args.bytes = page;
 		boot_event(BOOT_EVENT_FLASH_ERASE, &args);
 	}
 
 
 	//erase the flash pages -- ends when an erase on an invalid page is attempted
 	while( mcu_flash_erasepage(FLASH_PORT, (void*)page++) == 0 ){
-		gled_on();
-		driver->wait(1);
-		gled_off();
-		args.bytes = page;
+        sos_led_root_enable(0);
+        driver->wait(1);
+        sos_led_root_disable(0);
+        args.bytes = page;
 		boot_event(BOOT_EVENT_FLASH_ERASE, &args);
 	}
 
-	gled_on();
+    sos_led_root_enable(0);
 }
 
 void boot_link_cmd_reset(link_transport_driver_t * driver, link_data_t * args){
-	gled_off();
-	u32 * dfu_sw_req;
+    sos_led_root_disable(0);
+    u32 * dfu_sw_req;
 	driver->wait(500);
 	driver->close(&(driver->handle));
 	dfu_sw_req = (u32*)boot_board_config.sw_req_loc;

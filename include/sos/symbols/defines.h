@@ -136,14 +136,12 @@
 #define sched_yield 0
 #endif
 
-
-#if SYMBOLS_USE_IPRINTF != 0
-#define fprintf fiprintf
-#define printf iprintf
-#define snprintf sniprintf
-#define vfprintf vfiprintf
-#define vsnprintf vsniprintf
-#define vsprintf vsiprintf
+#if SYMBOLS_IGNORE_SCANF != 0
+#define scanf 0
+#define sscanf 0
+#define vsscanf 0
+#define vscanf 0
+#define vfscanf 0
 #endif
 
 #if SYMBOLS_IGNORE_STDIO_FILE != 0
@@ -164,7 +162,12 @@
 #define fsetpos 0
 #define ftell 0
 #define fwrite 0
+#define fflush 0
 #define fprintf 0
+#define vfprintf 0
+#define rewind 0
+#define fputwc 0
+#define clearerr 0
 #endif
 
 #if SYMBOLS_IGNORE_SIGNAL != 0
@@ -197,7 +200,7 @@
 #define pthread_mutexattr_settype 0
 #define pthread_mutexattr_init 0
 #define pthread_mutexattr_destroy 0
-#define pthread_mutex_init 0
+//#define pthread_mutex_init 0 //This is used by CRT must be present
 #define pthread_mutex_lock 0
 #define pthread_mutex_trylock 0
 #define pthread_mutex_unlock 0
@@ -423,6 +426,58 @@
 #define sendto 0
 #define socket 0
 #define select 0
+#endif
+
+#if SYMBOLS_IGNORE_TIME != 0
+#define asctime 0
+#define asctime_r 0
+#define clock 0
+#define clock_getres 0
+#define clock_gettime 0
+#define clock_settime 0
+#define ctime 0
+#define ctime_r 0
+#define difftime 0
+#define getdate 0
+#define gmtime 0
+#define gmtime_r 0
+#define localtime 0
+#define localtime_r 0
+#define mktime 0
+#define strftime 0
+#define strptime 0
+#define time 0
+#endif
+
+#if SYMBOLS_IGNORE_RAND != 0
+#define rand 0
+#define srand 0
+#endif
+
+#if SYMBOLS_USE_IPRINTF != 0
+#if SYMBOLS_IGNORE_STDIO_FILE == 0
+#define fprintf fiprintf
+#define vfprintf vfiprintf
+#endif
+#define sprintf siprintf
+#define printf iprintf
+#define vprintf viprintf
+#define snprintf sniprintf
+#define vsnprintf vsniprintf
+#define vsprintf vsiprintf
+
+#if SYMBOLS_IGNORE_SCANF == 0
+#define scanf iscanf
+#define sscanf siscanf
+#define vsscanf vsiscanf
+#define vscanf viscanf
+#if SYMBOLS_IGNORE_STDIO_FILE == 0
+#define fscanf fiscanf
+#define vfscanf vfiscanf
+#endif
+#endif
+#define strtod 0
+#define strtof 0
 #endif
 
 

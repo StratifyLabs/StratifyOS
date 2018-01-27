@@ -4,6 +4,7 @@
 //#include "config.h"
 #include <sys/lock.h>
 #include "mcu/mcu.h"
+#include "sos/sos.h"
 #include "sos/dev/usb.h"
 #include "sos/fs/devfs.h"
 #include "cortexm/cortexm.h"
@@ -18,8 +19,6 @@
 #include "boot_config.h"
 
 
-#define USBD_DFU_TRANSFER_SIZE 1024
-char dnload_buf[USBD_DFU_TRANSFER_SIZE];
 #define SW_BOOT_APP_OVERRIDE 0x55664422
 
 void exec_bootloader(void * args){
@@ -43,10 +42,6 @@ const bootloader_api_t mcu_core_bootloader_api = {
 };
 
 
-
-void gled_on();
-void gled_off();
-
 void init_hw();
 
 static void * stack_ptr;
@@ -63,25 +58,19 @@ void delay_ms(int ms){
 }
 
 void led_flash(){
-	gled_on();
+    sos_led_root_enable(0);
 	delay_ms(500);
-	gled_off();
-	delay_ms(500);
-}
-
-void led_error(){
-	while(1){
-		led_flash();
-	}
+    sos_led_root_disable(0);
+    delay_ms(500);
 }
 
 void led_flash_run_bootloader(){
 	int i;
 	for(i=0; i < 3; i++){
-		gled_on();
-		delay_ms(3);
-		gled_off();
-		delay_ms(3);
+        sos_led_root_enable(0);
+        delay_ms(3);
+        sos_led_root_disable(0);
+        delay_ms(3);
 	}
 }
 
@@ -92,15 +81,18 @@ void run_bootloader();
 /*! \details
  */
 int boot_main(){
-	stack_ptr = (void*)(((uint32_t*)boot_board_config.program_start_addr)[0]);
-	app_reset = (void (*)())( (((uint32_t*)boot_board_config.program_start_addr)[1]) );
 
-	boot_event(BOOT_EVENT_START, 0);
+    boot_event(BOOT_EVENT_START, 0);
+
+    stack_ptr = (void*)(((u32*)boot_board_config.program_start_addr)[0]);
+    app_reset = (void (*)())( (((u32*)boot_board_config.program_start_addr)[1]) );
 
 	if ( check_run_app() ){
+        boot_event(BOOT_EVENT_RUN_APP, 0);
 		app_reset();
 		while(1);
 	} else {
+        boot_event(BOOT_EVENT_RUN_BOOTLOADER, 0);
 		led_flash_run_bootloader();
 		run_bootloader();
 	}
@@ -129,7 +121,7 @@ int check_run_app(){
 	pio_attr_t pio_attr;
 	devfs_handle_t hw_req_handle;
 
-	if ( (uint32_t)stack_ptr == 0xFFFFFFFF ){
+    if ( (u32)stack_ptr == 0xFFFFFFFF ){
 		//code is not valid
 		*bootloader_start = 0;
 		return 0;
@@ -183,25 +175,24 @@ static int debug_write_func(const void * buf, int nbyte){
 #endif
 
 void init_hw(){
-	mcu_core_initclock(1);
-	cortexm_enable_interrupts(NULL); //Enable the interrupts
 
+    mcu_core_initclock(1);
+    cortexm_enable_interrupts(NULL); //Enable the interrupts
 	delay_ms(50);
 
-
-#ifdef DEBUG_BOOTLOADER
+#if defined DEBUG_BOOTLOADER
 	u32 * bootloader_start = (u32*)boot_board_config.sw_req_loc;
 	devfs_handle_t handle;
 	handle.port = boot_board_config.hw_req.port;
-	mcu_debug_init();
+
+
+    if( mcu_debug_init() < 0 ){
+        sos_led_root_error(0);
+    }
 	dsetmode(0);
 	dsetwritefunc(debug_write_func);
 
-	dstr("STARTING UP\n");
-
-	if ( (uint32_t)stack_ptr == 0xFFFFFFFF ){
-		dstr("Stack pointer is invalid\n");
-	}
+    dstr("Booting\n");
 
 	if ( !(mcu_pio_get(&handle, 0) & (1<<boot_board_config.hw_req.pin)) ){
 		dstr("Hardware bootloader request\n");
@@ -212,41 +203,12 @@ void init_hw(){
 	}
 
 
-	dstr("STACK: "); dhex((uint32_t)stack_ptr); dstr("\n");
-	dstr("APP: "); dhex((uint32_t)app_reset); dstr("\n");
+    dstr("STACK:"); dhex((u32)stack_ptr); dstr("\n");
+    dstr("APP:"); dhex((u32)app_reset); dstr("\n");
 #endif
 
 	boot_event(BOOT_EVENT_INIT, 0);
 
-}
-
-void gled_on(){
-	if( mcu_board_config.led.port != 255 ){
-		pio_attr_t attr;
-		devfs_handle_t handle;
-		handle.port = mcu_board_config.led.port;
-		attr.o_pinmask = (1<<mcu_board_config.led.pin);
-		attr.o_flags = PIO_FLAG_SET_OUTPUT | PIO_FLAG_IS_DIRONLY;
-		mcu_pio_setattr(&handle, &attr);
-		if( mcu_board_config.o_flags & MCU_BOARD_CONFIG_FLAG_LED_ACTIVE_HIGH ){
-			//LED is active low
-			mcu_pio_setmask(&handle, (void*)attr.o_pinmask);
-		} else {
-			mcu_pio_clrmask(&handle, (void*)attr.o_pinmask);
-		}
-	}
-}
-
-
-void gled_off(){
-	if( mcu_board_config.led.port != 255 ){
-		pio_attr_t attr;
-		devfs_handle_t handle;
-		handle.port = mcu_board_config.led.port;
-		attr.o_pinmask = (1<<mcu_board_config.led.pin);
-		attr.o_flags = PIO_FLAG_SET_INPUT | PIO_FLAG_IS_DIRONLY;
-		mcu_pio_setattr(&handle, &attr);
-	}
 }
 
 //prevent linkage to real handlers

@@ -20,7 +20,7 @@
 #ifndef DEBUG_BOOTLOADER_H_
 #define DEBUG_BOOTLOADER_H_
 
-#ifdef ___debug
+#if defined ___debug || defined __debug
 #include "mcu/types.h"
 
 /*! \details This function converts x to a string (signed integer)
@@ -59,6 +59,8 @@ void dsetwritefunc(int (*func)(const void *, int));
  *
  */
 void dsetmode(int leading_zeros);
+
+#define DEBUG_BOOTLOADER 1
 
 #else
 #define dstr(a)

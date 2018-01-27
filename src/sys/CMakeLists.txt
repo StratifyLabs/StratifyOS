@@ -138,8 +138,9 @@ if( ${SOS_BUILD_CONFIG} STREQUAL arm )
       ${SOURCES_PREFIX}/unistd/unistd_local.h
       ${SOURCES_PREFIX}/libgcc.c
       ${SOURCES_PREFIX}/sos_default_thread.c
-      ${SOURCES_PREFIX}/sos_led.c
-      ${SOURCES_PREFIX}/sos_main.c
+			${SOURCES_PREFIX}/sos_led.c
+			${SOURCES_PREFIX}/sos_led_root.c
+			${SOURCES_PREFIX}/sos_main.c
       ${SOURCES_PREFIX}/symbols.c
       ${SOURCES_PREFIX}/sys_23_dev.c
       ${SOURCES_PREFIX}/sys_26_dev.c

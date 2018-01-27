@@ -140,7 +140,6 @@ int appfs_init(const void * cfg){
 	}
 	cortexm_svcall(appfs_ram_root_saveusage, buf);
 
-	mcu_debug_user_printf("Page 64 usage is %d\n", appfs_ram_getusage(64));
 	return 0;
 }
 
@@ -566,7 +565,6 @@ void root_ioctl(void * args){
 		} else {
 			a->ret = appfs_util_root_create(a->cfg, h, attr);
 		}
-
 		break;
 
 		//These calls work with the specific applications

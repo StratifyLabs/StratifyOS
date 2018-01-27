@@ -48,8 +48,12 @@ static int open_pio(mcu_pin_t pin, int active_high){
 	char path[PATH_MAX];
 	int fd;
 	pio_attr_t attr;
+    int len;
 
-	snprintf(path, PATH_MAX, "/dev/pio%d", pin.port);
+    strncpy(path, "/dev/pio", PATH_MAX-2);
+    len = strnlen(path, PATH_MAX-2);
+    path[len] = pin.port + '0';
+    path[len+1] = 0;
 
 	fd = open(path, O_RDWR);
 	if( fd < 0 ){
