@@ -187,6 +187,7 @@
 #define sigismember 0
 #define sigfillset 0
 #define sigemptyset 0
+#define raise 0
 #endif
 
 #if SYMBOLS_IGNORE_PTHREAD_MUTEX != 0
@@ -200,7 +201,7 @@
 #define pthread_mutexattr_settype 0
 #define pthread_mutexattr_init 0
 #define pthread_mutexattr_destroy 0
-//#define pthread_mutex_init 0 //This is used by CRT must be present
+//#define pthread_mutex_init 0 //This is used by CRT -- must be present
 #define pthread_mutex_lock 0
 #define pthread_mutex_trylock 0
 #define pthread_mutex_unlock 0
@@ -222,6 +223,14 @@
 #define pthread_condattr_setpshared 0
 #define pthread_condattr_getclock 0
 #define pthread_condattr_setclock 0
+#endif
+
+#if SYMBOLS_IGNORE_PTHREAD != 0
+#define pthread_create 0
+#define pthread_join 0
+#define pthread_getschedparam 0
+#define pthread_setschedparam 0
+#define pthread_cancel 0
 #endif
 
 #if SYMBOLS_IGNORE_AIO != 0
@@ -431,10 +440,6 @@
 #if SYMBOLS_IGNORE_TIME != 0
 #define asctime 0
 #define asctime_r 0
-#define clock 0
-#define clock_getres 0
-#define clock_gettime 0
-#define clock_settime 0
 #define ctime 0
 #define ctime_r 0
 #define difftime 0
@@ -447,6 +452,13 @@
 #define strftime 0
 #define strptime 0
 #define time 0
+#endif
+
+#if SYMBOLS_IGNORE_CLOCK != 0
+#define clock 0
+#define clock_getres 0
+#define clock_gettime 0
+#define clock_settime 0
 #endif
 
 #if SYMBOLS_IGNORE_RAND != 0
