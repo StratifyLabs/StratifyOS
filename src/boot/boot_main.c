@@ -68,9 +68,9 @@ void led_flash_run_bootloader(){
 	int i;
 	for(i=0; i < 3; i++){
         sos_led_root_enable(0);
-        delay_ms(3);
+        delay_ms(50);
         sos_led_root_disable(0);
-        delay_ms(3);
+        delay_ms(50);
 	}
 }
 
@@ -93,7 +93,6 @@ int boot_main(){
 		while(1);
 	} else {
         boot_event(BOOT_EVENT_RUN_BOOTLOADER, 0);
-		led_flash_run_bootloader();
 		run_bootloader();
 	}
 
@@ -104,8 +103,11 @@ int boot_main(){
 void run_bootloader(){
 	init_hw();
 
+    led_flash_run_bootloader();
+
 	//initialize link and run link update
 	dstr("LINK Start\n");
+
 	boot_link_update((void*)boot_board_config.link_transport_driver);
 	while(1);
 }
@@ -177,15 +179,8 @@ static int debug_write_func(const void * buf, int nbyte){
 void init_hw(){
 
     mcu_core_initclock(1);
-    cortexm_enable_interrupts(NULL); //Enable the interrupts
-	delay_ms(50);
 
 #if defined DEBUG_BOOTLOADER
-	u32 * bootloader_start = (u32*)boot_board_config.sw_req_loc;
-	devfs_handle_t handle;
-	handle.port = boot_board_config.hw_req.port;
-
-
     if( mcu_debug_init() < 0 ){
         sos_led_root_error(0);
     }
@@ -194,21 +189,12 @@ void init_hw(){
 
     dstr("Booting\n");
 
-	if ( !(mcu_pio_get(&handle, 0) & (1<<boot_board_config.hw_req.pin)) ){
-		dstr("Hardware bootloader request\n");
-	}
-
-	if ( *bootloader_start == boot_board_config.sw_req_value ){
-		dstr("Software bootloader request\n");
-	}
-
-
     dstr("STACK:"); dhex((u32)stack_ptr); dstr("\n");
     dstr("APP:"); dhex((u32)app_reset); dstr("\n");
 #endif
-
+    delay_ms(50);
+    cortexm_enable_interrupts(NULL); //Enable the interrupts
 	boot_event(BOOT_EVENT_INIT, 0);
-
 }
 
 //prevent linkage to real handlers

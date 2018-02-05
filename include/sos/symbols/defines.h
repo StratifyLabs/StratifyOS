@@ -162,12 +162,12 @@
 #define fsetpos 0
 #define ftell 0
 #define fwrite 0
-#define fflush 0
 #define fprintf 0
 #define vfprintf 0
 #define rewind 0
 #define fputwc 0
 #define clearerr 0
+//#define fflush 0
 #endif
 
 #if SYMBOLS_IGNORE_SIGNAL != 0

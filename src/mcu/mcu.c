@@ -57,41 +57,58 @@ const void * mcu_select_attr(const devfs_handle_t * handle, void * ctl){
 	return ctl;
 }
 
+const void * mcu_select_pin_assignment(const void * attr_pin_assignment,
+                                    const void * config_pin_assignment,
+                                    int count){
+    int i;
+    int is_default = 1;
+    const void * pin_assignment;
+    for(i=0; i < count; i++){
+        const mcu_pin_t * pin = mcu_pin_at(attr_pin_assignment, i);
+        if( mcu_is_port_valid(pin->port) ){
+            is_default = 0;
+            break;
+        }
+    }
+
+    if( is_default && (config_pin_assignment != 0) ){
+        pin_assignment = config_pin_assignment;
+    } else {
+        pin_assignment = attr_pin_assignment;
+    }
+
+    return pin_assignment;
+}
+
 int mcu_set_pin_assignment(
 		const void * attr_pin_assignment,
 		const void * config_pin_assignment,
 		int count,
 		int periph,
 		int periph_port,
-		void (*configure_pin)(const mcu_pin_t *, void*), void * arg){
+        void (*pre_configure_pin)(const mcu_pin_t *, void*),
+        void (*post_configure_pin)(const mcu_pin_t *, void*),
+        void * arg){
 	int i;
-	int is_default = 1;
 	const void * pin_assignment;
-	for(i=0; i < count; i++){
-		const mcu_pin_t * pin = mcu_pin_at(attr_pin_assignment, i);
-		if( mcu_is_port_valid(pin->port) ){
-			is_default = 0;
-			break;
-		}
-	}
 
-	if( is_default && (config_pin_assignment != 0) ){
-		pin_assignment = config_pin_assignment;
-	} else {
-		pin_assignment = attr_pin_assignment;
-	}
+    pin_assignment = mcu_select_pin_assignment(attr_pin_assignment, config_pin_assignment, count);
 
 	for(i=0; i < count; i++){
 		const mcu_pin_t * pin = mcu_pin_at(pin_assignment, i);
 		if( mcu_is_port_valid(pin->port) ){
 
-			if( configure_pin ){
-				configure_pin(pin,arg);
+            if( pre_configure_pin ){
+                pre_configure_pin(pin,arg);
 			}
 
 			if ( mcu_core_set_pinsel_func(pin, periph, periph_port) ){
 				return -1;
 			}
+
+            if( post_configure_pin ){
+                post_configure_pin(pin,arg);
+            }
 		}
 	}
 	return 0;

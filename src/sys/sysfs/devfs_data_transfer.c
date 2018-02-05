@@ -177,10 +177,10 @@ int devfs_data_transfer(const void * config, const devfs_device_t * device, int 
 				&& ((volatile int)args.is_read != ARGS_READ_DONE) ){
 
 			if( (args.ret == 0) && (args.async.nbyte == 0) ){
-				//no data was transferred
+                //no data was transferred -- operation was interrupted by a signal
 				clear_device_action(config, device, loc, args.is_read);
 				errno = EINTR;
-				//return the number of bytes transferred
+                //return an error
 				return -1;
 			}
 

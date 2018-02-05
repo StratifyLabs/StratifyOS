@@ -89,9 +89,10 @@ int mcu_sync_io(const devfs_handle_t * cfg,
 		int flags);
 
 typedef struct MCU_PACK {
-	u16 irq_total;
-	u16 irq_middle_prio;
-	u16 usb_logical_endpoint_count;
+    u16 irq_total /* Total number of interrupts */;
+    u16 irq_middle_prio /* Middle priority value */;
+    u16 usb_logical_endpoint_count /* Number of logical endpoints */;
+    u16 delay_factor /* factor to multiply by when calculating delays (depends on memory performance) */;
 } mcu_config_t;
 
 extern const mcu_config_t mcu_config;
@@ -112,7 +113,13 @@ int mcu_set_pin_assignment(const void * attr_pin_assignment,
 		int count,
 		int periph,
 		int periph_port,
-		void (*configure_pin)(const mcu_pin_t *, void *), void * arg) MCU_ROOT_CODE;
+        void (*pre_configure_pin)(const mcu_pin_t *, void *),
+        void (*post_configure_pin)(const mcu_pin_t *, void*),
+        void * arg) MCU_ROOT_CODE;
+
+const void * mcu_select_pin_assignment(const void * attr_pin_assignment,
+                                    const void * config_pin_assignment,
+                                    int count) MCU_ROOT_CODE;
 
 #endif
 

@@ -100,7 +100,9 @@ enum {
 	I2C_ERROR_MASTER_ACK /*! The master could not create an ACK */,
 	I2C_ERROR_BUS_BUSY /*! The Bus is busy (happens with multi-masters on bus) */,
 	I2C_ERROR_LONG_SLEW,
-	I2C_ERROR_ARBITRATION_LOST /*! Arbitration lost on multi-master bus */
+    I2C_ERROR_ARBITRATION_LOST /*! Arbitration lost on multi-master bus */,
+    I2C_ERROR_TIMEOUT /*! Timeout error */,
+    I2C_ERROR_OVERFLOW /*! Overflow error */,
 };
 
 /*! \brief I2C Info Data Structure */
