@@ -54,7 +54,9 @@ enum {
 	BOOT_EVENT_FLASH_ERASE /*! Called when the link protocol erases the flash */,
 	BOOT_EVENT_ENCRYPT /*! Called when the bootloader needs something encrypted */,
 	BOOT_EVENT_DECRYPT /*! Called when the bootloader needs something decrypted */,
-	BOOT_EVENT_TOTAL
+    BOOT_EVENT_RUN_APP /*! Called just before the bootloader runs the user code */,
+    BOOT_EVENT_RUN_BOOTLOADER /*! Called just before the bootloader runs the bootloader code (no app or bootloader was requested)*/,
+    BOOT_EVENT_TOTAL
 };
 
 

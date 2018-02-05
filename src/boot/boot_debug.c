@@ -1,4 +1,4 @@
-/* Copyright 2011-2016 Tyler Gilbert;
+/* Copyright 2011-2018 Tyler Gilbert;
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -21,7 +21,7 @@
 #include "mcu/arch.h"
 #include "mcu/boot_debug.h"
 
-#ifdef ___debug
+#if defined ___debug || __debug
 
 #define BUF_SIZE 36
 
@@ -30,8 +30,8 @@ static int (*writefunc)(const void *, int);
 
 static char Htoc(int nibble);
 static char htoc(int nibble);
-static int ditoa(char dest[BUF_SIZE], int32_t num, int width);
-static int dutoa(char dest[BUF_SIZE], uint32_t num, int base, char upper, int width);
+static int ditoa(char dest[BUF_SIZE], s32 num, int width);
+static int dutoa(char dest[BUF_SIZE], u32 num, int base, char upper, int width);
 static void dwrite(char * str);
 
 void dsetmode(int leading_zeros){

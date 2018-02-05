@@ -30,7 +30,7 @@ void sos_led_startup(){
 	if( mcu_board_config.led.port != 255 ){
 		for(i=0; i < 100; i++){
 			duty = i*factor;
-			cortexm_svcall(so_led_root_enable, 0);
+            cortexm_svcall(sos_led_root_enable, 0);
 			usleep(duty);
 			cortexm_svcall(sos_led_root_disable, 0);
 			usleep(100*factor - duty);
@@ -38,47 +38,11 @@ void sos_led_startup(){
 
 		for(i=0; i < 100; i++){
 			duty = i*factor;
-			cortexm_svcall(so_led_root_enable, 0);
+            cortexm_svcall(sos_led_root_enable, 0);
 			usleep(100*factor - duty);
 			cortexm_svcall(sos_led_root_disable, 0);
 			usleep(duty);
 		}
-	}
-}
-
-void so_led_root_enable(void * args){
-	if( mcu_board_config.led.port != 255 ){
-		pio_attr_t attr;
-		devfs_handle_t handle;
-		handle.port = mcu_board_config.led.port;
-		attr.o_pinmask = (1<<mcu_board_config.led.pin);
-		attr.o_flags = PIO_FLAG_SET_OUTPUT | PIO_FLAG_IS_DIRONLY;
-		mcu_pio_setattr(&handle, &attr);
-		if( mcu_board_config.o_flags & MCU_BOARD_CONFIG_FLAG_LED_ACTIVE_HIGH ){
-			mcu_pio_setmask(&handle, (void*)(1<<mcu_board_config.led.pin));
-		} else {
-			mcu_pio_clrmask(&handle, (void*)(1<<mcu_board_config.led.pin));
-		}
-	}
-}
-
-void sos_led_root_disable(void * args){
-	if( mcu_board_config.led.port != 255 ){
-		pio_attr_t attr;
-		devfs_handle_t handle;
-		handle.port = mcu_board_config.led.port;
-		attr.o_flags = PIO_FLAG_SET_INPUT | PIO_FLAG_IS_DIRONLY;
-		attr.o_pinmask = (1<<mcu_board_config.led.pin);
-		mcu_pio_setattr(&handle, &attr);
-	}
-}
-
-void sos_led_root_error(void * args){
-	while(1){
-		so_led_root_enable(0);
-		cortexm_delay_ms(50);
-		sos_led_root_disable(0);
-		cortexm_delay_ms(50);
 	}
 }
 

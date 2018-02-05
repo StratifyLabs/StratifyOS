@@ -57,6 +57,26 @@ if( ${SOS_BUILD_CONFIG} STREQUAL arm )
       ${SOURCES_PREFIX}/scheduler/scheduler.c
       ${SOURCES_PREFIX}/scheduler/scheduler_local.h
       ${SOURCES_PREFIX}/semaphore/sem.c
+      ${SOURCES_PREFIX}/sffs/sffs_block.c
+      ${SOURCES_PREFIX}/sffs/sffs_block.h
+      ${SOURCES_PREFIX}/sffs/sffs_dev.c
+      ${SOURCES_PREFIX}/sffs/sffs_dev.h
+      ${SOURCES_PREFIX}/sffs/sffs_dir.c
+      ${SOURCES_PREFIX}/sffs/sffs_dir.h
+      ${SOURCES_PREFIX}/sffs/sffs_file.c
+      ${SOURCES_PREFIX}/sffs/sffs_file.h
+      ${SOURCES_PREFIX}/sffs/sffs_filelist.c
+      ${SOURCES_PREFIX}/sffs/sffs_filelist.h
+      ${SOURCES_PREFIX}/sffs/sffs_list.c
+      ${SOURCES_PREFIX}/sffs/sffs_list.h
+      ${SOURCES_PREFIX}/sffs/sffs_local.h
+      ${SOURCES_PREFIX}/sffs/sffs_scratch.c
+      ${SOURCES_PREFIX}/sffs/sffs_scratch.h
+      ${SOURCES_PREFIX}/sffs/sffs_serialno.c
+      ${SOURCES_PREFIX}/sffs/sffs_serialno.h
+      ${SOURCES_PREFIX}/sffs/sffs_tp.c
+      ${SOURCES_PREFIX}/sffs/sffs_tp.h
+      ${SOURCES_PREFIX}/sffs/sffs.c
       ${SOURCES_PREFIX}/signal/_kill.c
       ${SOURCES_PREFIX}/signal/_wait.c
       ${SOURCES_PREFIX}/signal/pthread_kill.c
@@ -118,8 +138,9 @@ if( ${SOS_BUILD_CONFIG} STREQUAL arm )
       ${SOURCES_PREFIX}/unistd/unistd_local.h
       ${SOURCES_PREFIX}/libgcc.c
       ${SOURCES_PREFIX}/sos_default_thread.c
-      ${SOURCES_PREFIX}/sos_led.c
-      ${SOURCES_PREFIX}/sos_main.c
+			${SOURCES_PREFIX}/sos_led.c
+			${SOURCES_PREFIX}/sos_led_root.c
+			${SOURCES_PREFIX}/sos_main.c
       ${SOURCES_PREFIX}/symbols.c
       ${SOURCES_PREFIX}/sys_23_dev.c
       ${SOURCES_PREFIX}/sys_26_dev.c

@@ -245,8 +245,17 @@ int open_usecond_tmr(){
 		if (err ){
 			return -1;
 		}
-
-	}
+    } else {
+        action.prio = 0;
+        action.channel = 0; //doesn't matter
+        action.o_events = MCU_EVENT_FLAG_OVERFLOW;
+        action.handler.callback = root_handle_usecond_overflow_event;
+        action.handler.context = 0;
+        err = mcu_tmr_setaction(&tmr, &action);
+        if (err ){
+            return -1;
+        }
+    }
 
 	//Turn the timer on
 	err = mcu_tmr_enable(&tmr, 0);

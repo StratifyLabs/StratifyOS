@@ -47,6 +47,7 @@ int install(const char * path,
 	appfs_installattr_t attr;
 	struct stat st;
 	char name[NAME_MAX];
+    int len;
 
 	if( stat(path, &st) < 0 ){
 		mcu_debug_user_printf("Can't find path %s\n", path);
@@ -79,13 +80,16 @@ int install(const char * path,
 
 			if( attr.loc == 0 ){
 				hdr = (appfs_file_t*)attr.buffer;
-				strcpy(name, sysfs_getfilename(path,0));
+                strncpy(name, sysfs_getfilename(path,0), NAME_MAX-1);
 				//update the header for the image to be installed
 				if( options & APPFS_FLAG_IS_UNIQUE ){
-					snprintf(hdr->hdr.name, NAME_MAX-1, "%s%X", name, launch_count);
+                    strncpy(hdr->hdr.name, name, NAME_MAX-1);
+                    len = strnlen(hdr->hdr.name, NAME_MAX-2);
+                    hdr->hdr.name[len] = (launch_count % 10) + '0';
+                    hdr->hdr.name[len+1] = 0;
 					launch_count++;
 				} else {
-					strcpy(hdr->hdr.name, name);
+                    strncpy(hdr->hdr.name, name, NAME_MAX-1);
 				}
 				hdr->exec.o_flags = options;
 				if( ram_size > 0 ){
@@ -118,10 +122,11 @@ int install(const char * path,
 
 	if( exec_path ){
 		if( options & APPFS_FLAG_IS_FLASH ){
-			snprintf(exec_path, PATH_MAX-1, "/app/flash/%s", name);
+            strncpy(exec_path, "/app/flash/", PATH_MAX-1);
 		} else {
-			snprintf(exec_path, PATH_MAX-1, "/app/ram/%s", name);
-		}
+            strncpy(exec_path, "/app/ram/", PATH_MAX-1);
+        }
+        strncat(exec_path, name, PATH_MAX-1);
 	}
 
 	return 0;

@@ -22,43 +22,41 @@
 #include "scheduler_local.h"
 
 void scheduler_fault_build_trace_string(char * dest){
-	sprintf(dest, "F%X:0x%lX",
-			m_scheduler_fault.fault.num,
-			(u32)m_scheduler_fault.fault.addr
-	);
-	return;
 	char hex_buffer[9];
 	strcpy(dest, "F");
 	htoa(hex_buffer, m_scheduler_fault.fault.num);
 	strcat(dest, hex_buffer);
-	strcat(dest, ":A");
-	htoa(hex_buffer, (u32)m_scheduler_fault.fault.handler_pc);
-	strcat(dest, hex_buffer);
-	strcat(dest, ":C");
-	htoa(hex_buffer, (u32)m_scheduler_fault.fault.caller);
-	strcat(dest, "\n");
+    strcat(dest, ":0x");
+    htoa(hex_buffer, (u32)m_scheduler_fault.fault.addr);
 }
 
 void scheduler_fault_build_string(char * dest){
-	sprintf(dest, "F%X:A%lX:PC%lX:C%lX:HA%lX:HC%lX\n",
-			m_scheduler_fault.fault.num,
-			(u32)m_scheduler_fault.fault.addr,
-			(u32)m_scheduler_fault.fault.pc,
-			(u32)m_scheduler_fault.fault.caller,
-			(u32)m_scheduler_fault.fault.handler_pc,
-			(u32)m_scheduler_fault.fault.handler_caller
-	);
-	return;
 	char hex_buffer[9];
 	strcpy(dest, "F");
 	htoa(hex_buffer, m_scheduler_fault.fault.num);
 	strcat(dest, hex_buffer);
+
 	strcat(dest, ":A");
-	htoa(hex_buffer, (u32)m_scheduler_fault.fault.handler_pc);
+    htoa(hex_buffer, (u32)m_scheduler_fault.fault.addr);
 	strcat(dest, hex_buffer);
+
+    strcat(dest, ":PC");
+    htoa(hex_buffer, (u32)m_scheduler_fault.fault.pc);
+    strcat(dest, hex_buffer);
+
 	strcat(dest, ":C");
 	htoa(hex_buffer, (u32)m_scheduler_fault.fault.caller);
-	strcat(dest, "\n");
+    strcat(dest, hex_buffer);
+
+    strcat(dest, ":HA");
+    htoa(hex_buffer, (u32)m_scheduler_fault.fault.handler_pc);
+    strcat(dest, hex_buffer);
+
+    strcat(dest, ":HC");
+    htoa(hex_buffer, (u32)m_scheduler_fault.fault.handler_caller);
+    strcat(dest, hex_buffer);
+
+    strcat(dest, "\n");
 }
 
 void htoa(char * dest, int num){

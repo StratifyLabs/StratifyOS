@@ -1,4 +1,4 @@
-/* Copyright 2011-2016 Tyler Gilbert; 
+/* Copyright 2011-2016 Tyler Gilbert;
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 
@@ -32,7 +32,7 @@
 #undef __FPU_USED
 #include "arch/lpc/lpc_arch.h"
 #define ARCH_DEFINED
-#elif (defined __stm32f446xx)
+#elif (defined __stm32f446xx) || (defined __stm32f401xc)
 #undef __FPU_USED
 #include "arch/stm32/stm32_arch.h"
 #define ARCH_DEFINED
@@ -120,5 +120,3 @@ typedef void * mcu_target_ptr_t;
 
 
 #endif /* ARCH_H_ */
-
-
