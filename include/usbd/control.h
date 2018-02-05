@@ -91,12 +91,24 @@ static inline int usbd_control_setup_interface(usbd_control_t * context){
 	return context->setup_packet.wIndex.b[0];
 }
 
+static inline u16 usbd_control_setup_index(usbd_control_t * context){
+    return context->setup_packet.wIndex.w;
+}
+
+static inline u16 usbd_control_setup_value(usbd_control_t * context){
+    return context->setup_packet.wValue.w;
+}
+
 static inline int usbd_control_setup_request(usbd_control_t * context){
 	return context->setup_packet.bRequest;
 }
 
 static inline int usbd_control_setup_request_direction(usbd_control_t * context){
 	return context->setup_packet.bmRequestType.bitmap_t.dir;
+}
+
+static inline int usbd_control_setup_request_recipient(usbd_control_t * context){
+    return context->setup_packet.bmRequestType.bitmap_t.recipient;
 }
 
 static inline void usbd_control_prepare_buffer(usbd_control_t * context){
