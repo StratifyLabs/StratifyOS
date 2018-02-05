@@ -52,7 +52,9 @@ int link_transport_wait_start(link_transport_driver_t * driver, link_pkt_t * pkt
 				return LINK_PROT_ERROR;
 			}
 		} else {
+#if !defined __WINDOWS
 			driver->wait(1);
+#endif
 			count++;
 			if( count == timeout ){
 				return LINK_PROT_ERROR;

@@ -140,9 +140,9 @@ int wait_ack(link_transport_mdriver_t * driver, uint8_t checksum, int timeout){
 			p += ret;
 			count = 0;
 		} else {
-//#ifndef __WINDOWS
+#ifndef __WINDOWS
 			driver->dev.wait(1);
-//#endif
+#endif
 			count+=1;
 			if( count >= timeout ){
 				link_error("timeout");
@@ -158,4 +158,3 @@ int wait_ack(link_transport_mdriver_t * driver, uint8_t checksum, int timeout){
 
 	return ack.ack;
 }
-

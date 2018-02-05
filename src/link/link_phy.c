@@ -1,4 +1,4 @@
-/* Copyright 2011-2016 Tyler Gilbert; 
+/* Copyright 2011-2016 Tyler Gilbert;
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -122,8 +122,8 @@ link_transport_phy_t link_phy_open(const char * name, int baudrate){
 
 	COMMTIMEOUTS timeouts={0};
 	timeouts.ReadIntervalTimeout=MAXDWORD;
-	timeouts.ReadTotalTimeoutConstant=0;
-	timeouts.ReadTotalTimeoutMultiplier=0;
+	timeouts.ReadTotalTimeoutConstant=1;
+	timeouts.ReadTotalTimeoutMultiplier=MAXDWORD;
 	timeouts.WriteTotalTimeoutConstant=0;
 	timeouts.WriteTotalTimeoutMultiplier=0;
 	if(!SetCommTimeouts(handle->handle, &timeouts)){
@@ -133,6 +133,7 @@ link_transport_phy_t link_phy_open(const char * name, int baudrate){
 		free(handle);
 		return LINK_PHY_OPEN_ERROR;
 	}
+
 
 	return handle;
 }
@@ -414,7 +415,3 @@ int link_phy_lock(link_transport_phy_t phy){
 int link_phy_unlock(link_transport_phy_t phy){
 	return 0;;
 }
-
-
-
-
