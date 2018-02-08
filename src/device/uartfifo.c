@@ -54,7 +54,7 @@ static int data_received(void * context, const mcu_event_t * data){
 int uartfifo_open(const devfs_handle_t * handle){
 	uartfifo_state_t * state = handle->state;
 	fifo_flush(&(state->fifo));
-	state->fifo.rop = NULL;
+	state->fifo.read_async = NULL;
 	//setup the device to write to the fifo when data arrives
 	if( mcu_uart_open(handle) < 0 ){
 		return -1;
@@ -107,7 +107,7 @@ int uartfifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 int uartfifo_read(const devfs_handle_t * handle, devfs_async_t * rop){
 	const uartfifo_config_t * cfgp = handle->config;
 	uartfifo_state_t * state = handle->state;
-	return fifo_read_local(&(cfgp->fifo), &(state->fifo), rop);
+    return fifo_read_local(&(cfgp->fifo), &(state->fifo), rop, 1);
 }
 
 int uartfifo_write(const devfs_handle_t * handle, devfs_async_t * wop){

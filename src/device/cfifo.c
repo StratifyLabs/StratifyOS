@@ -120,7 +120,7 @@ int cfifo_read(const devfs_handle_t * handle, devfs_async_t * async){
 
 
 	if( loc < config->count ){
-		ret = fifo_read_local(config->fifo_config_array + loc, state->fifo_state_array + loc, async);
+        ret = fifo_read_local(config->fifo_config_array + loc, state->fifo_state_array + loc, async, 1);
 	} else {
 		errno = EINVAL;
 	}
@@ -134,7 +134,7 @@ int cfifo_write(const devfs_handle_t * handle, devfs_async_t * async){
 	cfifo_state_t * state = handle->state;
 
 	if( loc < config->count ){
-		ret = fifo_write_local(&config->fifo_config_array[loc], &state->fifo_state_array[loc], async);
+        ret = fifo_write_local(&config->fifo_config_array[loc], &state->fifo_state_array[loc], async, 1);
 	} else {
 		errno = EINVAL;
 	}

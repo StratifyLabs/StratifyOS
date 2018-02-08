@@ -1,5 +1,4 @@
 
-
 if( ${SOS_BUILD_CONFIG} STREQUAL arm )
     set(SOURCES ${SOURCES}
       ${SOURCES_PREFIX}/microchip/sst25vf_share.c
@@ -12,7 +11,9 @@ if( ${SOS_BUILD_CONFIG} STREQUAL arm )
       ${SOURCES_PREFIX}/devfifo.c
       ${SOURCES_PREFIX}/ffifo.c
       ${SOURCES_PREFIX}/fifo.c
-      ${SOURCES_PREFIX}/full.c
+			${SOURCES_PREFIX}/i2s_ffifo.c
+			${SOURCES_PREFIX}/i2s_spi_ffifo.c
+			${SOURCES_PREFIX}/full.c
       ${SOURCES_PREFIX}/led_pio.c
       ${SOURCES_PREFIX}/led_pwm.c
       ${SOURCES_PREFIX}/null.c

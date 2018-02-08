@@ -27,10 +27,10 @@
 typedef struct MCU_PACK {
 	u16 head;
 	u16 tail;
-	u16 rop_len;
-	u16 wop_len;
-	devfs_async_t * rop;
-	devfs_async_t * wop;
+    u16 read_len;
+    u16 write_len;
+    devfs_async_t * read_async;
+    devfs_async_t * write_async;
 	u32 o_flags;
 } fifo_state_t;
 
@@ -45,9 +45,15 @@ typedef struct MCU_PACK {
 
 int fifo_open(const devfs_handle_t * handle);
 int fifo_ioctl(const devfs_handle_t * handle, int request, void * ctl);
-int fifo_read(const devfs_handle_t * handle, devfs_async_t * rop);
-int fifo_write(const devfs_handle_t * handle, devfs_async_t * wop);
+int fifo_read(const devfs_handle_t * handle, devfs_async_t * async);
+int fifo_write(const devfs_handle_t * handle, devfs_async_t * async);
 int fifo_close(const devfs_handle_t * handle);
+
+int fifo_open_local(const fifo_config_t * config, fifo_state_t * state);
+int fifo_close_local(const fifo_config_t * config, fifo_state_t * state);
+int fifo_write_local(const fifo_config_t * config, fifo_state_t * state, devfs_async_t * async, int allow_callback);
+int fifo_read_local(const fifo_config_t * config, fifo_state_t * state, devfs_async_t * async, int allow_callback);
+int fifo_ioctl_local(const fifo_config_t * config, fifo_state_t * state, int request, void * ctl);
 
 
 //helper functions for implementing FIFOs
@@ -75,10 +81,7 @@ int fifo_write_buffer(const fifo_config_t * cfgp, fifo_state_t * state, const ch
 
 int fifo_data_transmitted(const fifo_config_t * cfgp, fifo_state_t * state);
 void fifo_data_received(const fifo_config_t * cfgp, fifo_state_t * state);
-int fifo_write_local(const fifo_config_t * cfgp, fifo_state_t * state, devfs_async_t * wop);
-int fifo_read_local(const fifo_config_t * cfgp, fifo_state_t * state, devfs_async_t * rop);
 
-int fifo_ioctl_local(const fifo_config_t * cfgp, fifo_state_t * state, int request, void * ctl);
 
 
 void fifo_cancel_rop(fifo_state_t * state);

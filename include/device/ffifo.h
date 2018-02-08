@@ -31,10 +31,10 @@
 typedef struct MCU_PACK {
 	u16 head;
 	u16 tail;
-	u16 rop_len;
-	u16 wop_len;
-	devfs_async_t * rop;
-	devfs_async_t * wop;
+    u16 read_len;
+    u16 write_len;
+    devfs_async_t * read_async;
+    devfs_async_t * write_async;
 	u32 o_flags;
 } ffifo_state_t;
 
@@ -47,18 +47,27 @@ typedef struct MCU_PACK {
 	char * buffer /*! A pointer to the buffer */;
 } ffifo_config_t;
 
-int ffifo_open(const devfs_handle_t * cfg);
-int ffifo_ioctl(const devfs_handle_t * cfg, int request, void * ctl);
-int ffifo_read(const devfs_handle_t * cfg, devfs_async_t * rop);
-int ffifo_write(const devfs_handle_t * cfg, devfs_async_t * wop);
-int ffifo_close(const devfs_handle_t * cfg);
+int ffifo_open(const devfs_handle_t * handle);
+int ffifo_ioctl(const devfs_handle_t * handle, int request, void * ctl);
+int ffifo_read(const devfs_handle_t * handle, devfs_async_t * async);
+int ffifo_write(const devfs_handle_t * handle, devfs_async_t * async);
+int ffifo_close(const devfs_handle_t * handle);
+
+int ffifo_open_local(const ffifo_config_t * config, ffifo_state_t * state);
+int ffifo_close_local(const ffifo_config_t * config, ffifo_state_t * state);
+int ffifo_ioctl_local(const ffifo_config_t * config, ffifo_state_t * state, int request, void * ctl);
+int ffifo_write_local(const ffifo_config_t * config, ffifo_state_t * state, devfs_async_t * async, int allow_callback);
+int ffifo_read_local(const ffifo_config_t * config, ffifo_state_t * state, devfs_async_t * async, int allow_callback);
 
 
-char * ffifo_get_frame(const ffifo_config_t * cfgp, u16 frame);
+int ffifo_read_buffer(const ffifo_config_t * config, ffifo_state_t * state, char * buf, int len);
+int ffifo_write_buffer(const ffifo_config_t * config, ffifo_state_t * state, const char * buf, int len);
+
+char * ffifo_get_frame(const ffifo_config_t * config, u16 frame);
 
 //helper functions for implementing FIFOs
 void ffifo_flush(ffifo_state_t * state);
-void ffifo_getinfo(ffifo_info_t * info, const ffifo_config_t * cfgp, ffifo_state_t * state);
+void ffifo_getinfo(ffifo_info_t * info, const ffifo_config_t * config, ffifo_state_t * state);
 
 void ffifo_inc_head(ffifo_state_t * state, u16 count);
 void ffifo_inc_tail(ffifo_state_t * state, u16 count);
@@ -76,13 +85,10 @@ void ffifo_set_notify_write(ffifo_state_t * state, int value);
 int ffifo_is_overflow(ffifo_state_t * state);
 void ffifo_set_overflow(ffifo_state_t * state, int value);
 
-int ffifo_read_buffer(const ffifo_config_t * cfgp, ffifo_state_t * state, char * buf, int len);
-int ffifo_write_buffer(const ffifo_config_t * cfgp, ffifo_state_t * state, const char * buf, int len);
-
 void ffifo_data_transmitted(const ffifo_config_t * cfgp, ffifo_state_t * state);
 void ffifo_data_received(const ffifo_config_t * cfgp, ffifo_state_t * state);
-int ffifo_write_local(const ffifo_config_t * cfgp, ffifo_state_t * state, devfs_async_t * wop);
-int ffifo_read_local(const ffifo_config_t * cfgp, ffifo_state_t * state, devfs_async_t * rop);
+
+
 
 void ffifo_cancel_rop(ffifo_state_t * state);
 void ffifo_cancel_wop(ffifo_state_t * state);
