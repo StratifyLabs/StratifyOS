@@ -17,64 +17,7 @@
  *
  */
 
-#include <mcu/local.h>
+#include "sos/fs/devfs.h"
 #include "mcu/i2s.h"
 
-
-//These functions are device specific
-extern void mcu_i2s_spi_dma_dev_power_on(const devfs_handle_t * handle);
-extern void mcu_i2s_spi_dma_dev_power_off(const devfs_handle_t * handle);
-extern int mcu_i2s_spi_dma_dev_is_powered(const devfs_handle_t * handle);
-extern int mcu_i2s_spi_dma_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop);
-extern int mcu_i2s_spi_dma_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop);
-static int get_version(const devfs_handle_t * handle, void* ctl){
-    return I2S_VERSION;
-}
-
-int (* const spi_ioctl_func_table[I_MCU_TOTAL + I_I2S_TOTAL])(const devfs_handle_t*, void*) = {
-        get_version,
-        mcu_i2s_spi_dma_getinfo,
-        mcu_i2s_spi_dma_setattr,
-        mcu_i2s_spi_dma_setaction,
-        mcu_i2s_spi_dma_mute,
-        mcu_i2s_spi_dma_unmute
-};
-
-int mcu_i2s_spi_dma_open(const devfs_handle_t * cfg){
-    return mcu_open(cfg,
-            mcu_i2s_spi_dma_dev_is_powered,
-            mcu_i2s_spi_dma_dev_power_on);
-}
-
-int mcu_i2s_spi_dma_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
-    return mcu_ioctl(cfg,
-            request,
-            ctl,
-            mcu_i2s_spi_dma_dev_is_powered,
-            spi_ioctl_func_table,
-            I_MCU_TOTAL + I_SPI_TOTAL);
-}
-
-
-
-int mcu_i2s_spi_dma_read(const devfs_handle_t * cfg, devfs_async_t * rop){
-    return mcu_read(cfg, rop,
-            mcu_i2s_spi_dma_dev_is_powered,
-            mcu_i2s_spi_dma_dev_read);
-
-}
-
-
-int mcu_i2s_spi_dma_write(const devfs_handle_t * cfg, devfs_async_t * wop){
-    return mcu_write(cfg, wop,
-            mcu_i2s_spi_dma_dev_is_powered,
-            mcu_i2s_spi_dma_dev_write);
-
-}
-
-int mcu_i2s_spi_dma_close(const devfs_handle_t * cfg){
-    return mcu_close(cfg, mcu_i2s_spi_dma_dev_is_powered, mcu_i2s_spi_dma_dev_power_off);
-}
-
-
-
+DEVFS_MCU_DRIVER_IOCTL_FUNCTION(i2s_spi_dma, I2S_VERSION, I_MCU_TOTAL + I_I2S_TOTAL, mcu_i2s_spi_dma_mute, mcu_i2s_spi_dma_unmute)

@@ -1,4 +1,4 @@
-/* Copyright 2011-2016 Tyler Gilbert; 
+/* Copyright 2011-2016 Tyler Gilbert;
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -13,15 +13,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
-#include "variant.h"
+#include "sos/fs/devfs.h"
 #include "mcu/i2s.h"
 
-MCU_DRIVER_DECLARATION(i2s, I2S_VERSION)
-DEVFS_MCU_DRIVER_IOCTL_FUNCTION_TABLE(i2s, I_MCU_TOTAL + I_I2S_TOTAL, mcu_i2s_mute, mcu_i2s_unmute)
-MCU_DRIVER_DECLARATION_LOCAL(i2s, I_MCU_TOTAL + I_I2S_TOTAL)
-
-
+DEVFS_MCU_DRIVER_IOCTL_FUNCTION(i2s, I2S_VERSION, I_MCU_TOTAL + I_I2S_TOTAL, mcu_i2s_mute, mcu_i2s_unmute)

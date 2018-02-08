@@ -17,56 +17,10 @@
  * 
  */
 
-#include <mcu/local.h>
+#include "sos/fs/devfs.h"
 #include "mcu/dac.h"
 
-//These functions are device specific
-extern void mcu_dac_dev_power_on(const devfs_handle_t * handle);
-extern void mcu_dac_dev_power_off(const devfs_handle_t * handle);
-extern int mcu_dac_dev_is_powered(const devfs_handle_t * handle);
-extern int mcu_dac_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop);
-static int get_version(const devfs_handle_t * handle, void* ctl){
-	return DAC_VERSION;
-}
 
-int (* const dac_ioctl_func_table[I_MCU_TOTAL + I_DAC_TOTAL])(const devfs_handle_t*, void*) = {
-		get_version,
-		mcu_dac_getinfo,
-		mcu_dac_setattr,
-		mcu_dac_setaction,
-		mcu_dac_get,
-		mcu_dac_set
-
-};
-
-int mcu_dac_open(const devfs_handle_t * cfg){
-	return mcu_open(cfg, mcu_dac_dev_is_powered, mcu_dac_dev_power_on);
-}
-
-int mcu_dac_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
-	return mcu_ioctl(cfg,
-			request,
-			ctl,
-			mcu_dac_dev_is_powered,
-			dac_ioctl_func_table,
-			I_MCU_TOTAL + I_DAC_TOTAL);
-}
-
-
-
-int mcu_dac_read(const devfs_handle_t * cfg, devfs_async_t * rop){
-	errno = ENOTSUP;
-	return -1;
-}
-
-
-int mcu_dac_write(const devfs_handle_t * cfg, devfs_async_t * wop){
-	return mcu_write(cfg, wop, mcu_dac_dev_is_powered, mcu_dac_dev_write);
-
-}
-
-int mcu_dac_close(const devfs_handle_t * cfg){
-	return mcu_close(cfg, mcu_dac_dev_is_powered, mcu_dac_dev_power_off);
-}
+DEVFS_MCU_DRIVER_IOCTL_FUNCTION(dac, DAC_VERSION, I_MCU_TOTAL + I_DAC_TOTAL, mcu_dac_get, mcu_dac_set)
 
 

@@ -1,4 +1,4 @@
-/* Copyright 2011-2016 Tyler Gilbert; 
+/* Copyright 2011-2016 Tyler Gilbert;
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -13,17 +13,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
-#include "variant.h"
+#include "sos/fs/devfs.h"
 #include "mcu/spi.h"
 
-
-MCU_DRIVER_DECLARATION(spi , SPI_VERSION)
-DEVFS_MCU_DRIVER_IOCTL_FUNCTION_TABLE(spi, I_MCU_TOTAL + I_SPI_TOTAL, mcu_spi_swap)
-MCU_DRIVER_DECLARATION_LOCAL(spi, I_MCU_TOTAL + I_SPI_TOTAL)
-
-
-
+DEVFS_MCU_DRIVER_IOCTL_FUNCTION(spi, SPI_VERSION, I_MCU_TOTAL + I_SPI_TOTAL, mcu_spi_swap)

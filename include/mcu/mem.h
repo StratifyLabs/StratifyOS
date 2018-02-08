@@ -73,13 +73,11 @@ int mcu_mem_getinfo(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
 int mcu_mem_setattr(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
 int mcu_mem_setaction(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
 
-int mcu_mem_eraseaddr(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
 int mcu_mem_erasepage(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
-int mcu_mem_getpage(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
-int mcu_mem_getsize(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
 int mcu_mem_getpageinfo(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
 int mcu_mem_writepage(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
 
+//Non ioctl call - used directly by Stratify OS appfs
 int mcu_mem_getsyspage();
 
 

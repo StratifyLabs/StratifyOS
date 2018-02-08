@@ -56,7 +56,6 @@ int mcu_qei_setaction(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
 int mcu_qei_get(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
 int mcu_qei_getvelocity(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
 int mcu_qei_getindex(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
-int mcu_qei_reset(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
 
 #ifdef __cplusplus
 }
