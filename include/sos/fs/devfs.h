@@ -93,7 +93,27 @@ const devfs_handle_t * devfs_lookup_handle(const devfs_device_t * list, const ch
 		.driver.read = driver_name##_read, \
 		.driver.write = driver_name##_write
 
+#define DEVFS_DRIVER_DECLARTION_OPEN(driver_name) int driver_name##_open(const devfs_handle_t *) MCU_ROOT_CODE
+#define DEVFS_DRIVER_DECLARTION_CLOSE(driver_name) int driver_name##_close(const devfs_handle_t *) MCU_ROOT_CODE
+#define DEVFS_DRIVER_DECLARTION_IOCTL(driver_name) int driver_name##_ioctl(const devfs_handle_t *, int, void *) MCU_ROOT_CODE
+#define DEVFS_DRIVER_DECLARTION_READ(driver_name) int driver_name##_read(const devfs_handle_t *, devfs_async_t *) MCU_ROOT_CODE
+#define DEVFS_DRIVER_DECLARTION_WRITE(driver_name) int driver_name##_write(const devfs_handle_t *, devfs_async_t *) MCU_ROOT_CODE
 
+#define DEVFS_DRIVER_DECLARTION(driver_name) DEVFS_DRIVER_DECLARTION_OPEN(driver_name); \
+    DEVFS_DRIVER_DECLARTION_CLOSE(driver_name); \
+    DEVFS_DRIVER_DECLARTION_IOCTL(driver_name); \
+    DEVFS_DRIVER_DECLARTION_READ(driver_name); \
+    DEVFS_DRIVER_DECLARTION_WRITE(driver_name)
+
+#define DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, request) int driver_name##_##request (const devfs_handle_t *, void *) MCU_ROOT_CODE
+
+#define DEVFS_MCU_DRIVER_IOCTL_FUNCTION_TABLE(driver_name, ioctl_total, ...) \
+    int (* const mcu_##driver_name##_ioctl_func_table[ioctl_total])(const devfs_handle_t*, void*) = { \
+            mcu_##driver_name##_get_version, \
+            mcu_##driver_name##_getinfo, \
+            mcu_##driver_name##_setattr, \
+            mcu_##driver_name##_setaction, \
+            __VA_ARGS__ };
 
 #define DEVFS_DEVICE(device_name, periph_name, handle_port, handle_config, handle_state, mode_value, uid_value, device_type) { \
 		.name = device_name, \

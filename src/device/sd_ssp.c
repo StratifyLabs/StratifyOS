@@ -38,6 +38,6 @@
 #define sd_spi_close sd_ssp_close
 
 
-#include <device/sd_spi.c>
+#include "sd_spi.c"
 
 

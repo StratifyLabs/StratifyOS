@@ -17,63 +17,13 @@
  * 
  */
 
-#include <mcu/local.h>
+#include "variant.h"
 #include "mcu/spi.h"
 
 
-//These functions are device specific
-extern void mcu_spi_dev_power_on(const devfs_handle_t * handle);
-extern void mcu_spi_dev_power_off(const devfs_handle_t * handle);
-extern int mcu_spi_dev_is_powered(const devfs_handle_t * handle);
-extern int mcu_spi_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop);
-extern int mcu_spi_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop);
-static int get_version(const devfs_handle_t * handle, void* ctl){
-	return SPI_VERSION;
-}
-
-int (* const spi_ioctl_func_table[I_MCU_TOTAL + I_SPI_TOTAL])(const devfs_handle_t*, void*) = {
-		get_version,
-		mcu_spi_getinfo,
-		mcu_spi_setattr,
-		mcu_spi_setaction,
-		mcu_spi_swap,
-};
-
-int mcu_spi_open(const devfs_handle_t * cfg){
-	return mcu_open(cfg,
-			mcu_spi_dev_is_powered,
-			mcu_spi_dev_power_on);
-}
-
-int mcu_spi_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
-	return mcu_ioctl(cfg,
-			request,
-			ctl,
-			mcu_spi_dev_is_powered,
-			spi_ioctl_func_table,
-			I_MCU_TOTAL + I_SPI_TOTAL);
-}
-
-
-
-int mcu_spi_read(const devfs_handle_t * cfg, devfs_async_t * rop){
-	return mcu_read(cfg, rop,
-			mcu_spi_dev_is_powered,
-			mcu_spi_dev_read);
-
-}
-
-
-int mcu_spi_write(const devfs_handle_t * cfg, devfs_async_t * wop){
-	return mcu_write(cfg, wop,
-			mcu_spi_dev_is_powered,
-			mcu_spi_dev_write);
-
-}
-
-int mcu_spi_close(const devfs_handle_t * cfg){
-	return mcu_close(cfg, mcu_spi_dev_is_powered, mcu_spi_dev_power_off);
-}
+MCU_DRIVER_DECLARATION(spi , SPI_VERSION)
+DEVFS_MCU_DRIVER_IOCTL_FUNCTION_TABLE(spi, I_MCU_TOTAL + I_SPI_TOTAL, mcu_spi_swap)
+MCU_DRIVER_DECLARATION_LOCAL(spi, I_MCU_TOTAL + I_SPI_TOTAL)
 
 
 

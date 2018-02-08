@@ -50,18 +50,21 @@ typedef struct MCU_PACK {
 	u32 value;
 } i2s_event_t;
 
-int mcu_i2s_open(const devfs_handle_t * cfg) MCU_ROOT_CODE;
-int mcu_i2s_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_ROOT_CODE;
-int mcu_i2s_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_ROOT_CODE;
-int mcu_i2s_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_ROOT_CODE;
-int mcu_i2s_close(const devfs_handle_t * cfg) MCU_ROOT_CODE;
+#define MCU_I2S_IOCTL_REQUEST_DECLARATION(driver_name) \
+    DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, getinfo); \
+    DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, setattr); \
+    DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, setaction); \
+    DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, mute); \
+    DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, unmute)
 
-int mcu_i2s_getinfo(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
-int mcu_i2s_setattr(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
-int mcu_i2s_setaction(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
-int mcu_i2s_mute(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
-int mcu_i2s_unmute(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
 
+#define MCU_I2S_DRIVER_DECLARATION(variant) \
+    DEVFS_DRIVER_DECLARTION(variant); \
+    MCU_I2S_IOCTL_REQUEST_DECLARATION(variant)
+
+MCU_I2S_DRIVER_DECLARATION(mcu_i2s);
+MCU_I2S_DRIVER_DECLARATION(mcu_i2s_spi);
+MCU_I2S_DRIVER_DECLARATION(mcu_i2s_spi_dma);
 
 #ifdef __cplusplus
 }

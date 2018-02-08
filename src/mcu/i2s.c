@@ -17,64 +17,11 @@
  * 
  */
 
-#include <mcu/local.h>
+#include "variant.h"
 #include "mcu/i2s.h"
 
-//These functions are device specific
-extern void mcu_i2s_dev_power_on(const devfs_handle_t * handle);
-extern void mcu_i2s_dev_power_off(const devfs_handle_t * handle);
-extern int mcu_i2s_dev_is_powered(const devfs_handle_t * handle);
-extern int mcu_i2s_dev_read(const devfs_handle_t * cfg, devfs_async_t * rop);
-extern int mcu_i2s_dev_write(const devfs_handle_t * cfg, devfs_async_t * wop);
-static int get_version(const devfs_handle_t * handle, void* ctl){
-	return I2S_VERSION;
-}
-
-int (* const i2s_ioctl_func_table[I_MCU_TOTAL + I_I2S_TOTAL])(const devfs_handle_t*, void*) = {
-		get_version,
-		mcu_i2s_getinfo,
-		mcu_i2s_setattr,
-		mcu_i2s_setaction,
-		mcu_i2s_mute,
-		mcu_i2s_unmute
-};
-
-
-int mcu_i2s_open(const devfs_handle_t * cfg){
-	return mcu_open(cfg,
-			mcu_i2s_dev_is_powered,
-			mcu_i2s_dev_power_on);
-}
-
-int mcu_i2s_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
-	return mcu_ioctl(cfg,
-			request,
-			ctl,
-			mcu_i2s_dev_is_powered,
-			i2s_ioctl_func_table,
-			I_MCU_TOTAL + I_I2S_TOTAL);
-}
-
-
-
-int mcu_i2s_read(const devfs_handle_t * cfg, devfs_async_t * rop){
-	return mcu_read(cfg, rop,
-			mcu_i2s_dev_is_powered,
-			mcu_i2s_dev_read);
-
-}
-
-
-int mcu_i2s_write(const devfs_handle_t * cfg, devfs_async_t * wop){
-	return mcu_write(cfg, wop,
-			mcu_i2s_dev_is_powered,
-			mcu_i2s_dev_write);
-
-}
-
-int mcu_i2s_close(const devfs_handle_t * cfg){
-	return mcu_close(cfg, mcu_i2s_dev_is_powered, mcu_i2s_dev_power_off);
-}
-
+MCU_DRIVER_DECLARATION(i2s, I2S_VERSION)
+DEVFS_MCU_DRIVER_IOCTL_FUNCTION_TABLE(i2s, I_MCU_TOTAL + I_I2S_TOTAL, mcu_i2s_mute, mcu_i2s_unmute)
+MCU_DRIVER_DECLARATION_LOCAL(i2s, I_MCU_TOTAL + I_I2S_TOTAL)
 
 

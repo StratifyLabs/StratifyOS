@@ -60,8 +60,11 @@ int mcu_dac_dma_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_ROOT_
 int mcu_dac_dma_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_ROOT_CODE;
 int mcu_dac_dma_close(const devfs_handle_t * cfg) MCU_ROOT_CODE;
 
+int mcu_dac_dma_getinfo(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
 int mcu_dac_dma_setattr(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
 int mcu_dac_dma_setaction(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
+int mcu_dac_dma_get(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
+int mcu_dac_dma_set(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
 
 
 #ifdef __cplusplus

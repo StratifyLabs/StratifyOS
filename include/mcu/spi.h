@@ -41,33 +41,22 @@ typedef struct MCU_PACK {
 	spi_attr_t attr; //default attributes
 } spi_config_t;
 
-int mcu_spi_open(const devfs_handle_t * cfg) MCU_ROOT_CODE;
-int mcu_spi_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_ROOT_CODE;
-int mcu_spi_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_ROOT_CODE;
-int mcu_spi_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_ROOT_CODE;
-int mcu_spi_close(const devfs_handle_t * cfg) MCU_ROOT_CODE;
 
-int mcu3_spi_open(const devfs_handle_t * handle) MCU_ROOT_CODE;
-int mcu3_spi_read(const devfs_handle_t * handle, devfs_async_t * rop) MCU_ROOT_CODE;
-int mcu3_spi_write(const devfs_handle_t * handle, devfs_async_t * wop) MCU_ROOT_CODE;
-int mcu3_spi_ioctl(const devfs_handle_t * handle, int request, void * ctl) MCU_ROOT_CODE;
-int mcu3_spi_close(const devfs_handle_t * handle) MCU_ROOT_CODE;
-
-int mcu_spi_getinfo(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
-int mcu_spi_setattr(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
-int mcu_spi_setaction(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
-int mcu_spi_swap(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
+#define MCU_SPI_IOCTL_REQUEST_DECLARATION(driver_name) \
+    DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, getinfo); \
+    DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, setattr); \
+    DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, setaction); \
+    DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, swap)
 
 
-int mcu_ssp_open(const devfs_handle_t * cfg) MCU_ROOT_CODE;
-int mcu_ssp_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_ROOT_CODE;
-int mcu_ssp_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_ROOT_CODE;
-int mcu_ssp_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_ROOT_CODE;
-int mcu_ssp_close(const devfs_handle_t * cfg) MCU_ROOT_CODE;
-int mcu_ssp_getinfo(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
-int mcu_ssp_setattr(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
-int mcu_ssp_setaction(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
-int mcu_ssp_swap(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
+#define MCU_SPI_DRIVER_DECLARATION(variant) \
+    DEVFS_DRIVER_DECLARTION(variant); \
+    MCU_SPI_IOCTL_REQUEST_DECLARATION(variant)
+
+MCU_SPI_DRIVER_DECLARATION(mcu_spi);
+MCU_SPI_DRIVER_DECLARATION(mcu_spi_dma);
+MCU_SPI_DRIVER_DECLARATION(mcu_ssp);
+
 
 #ifdef __cplusplus
 }

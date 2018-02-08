@@ -17,8 +17,8 @@
  *
  */
 
-#ifndef SD_SPI_H_
-#define SD_SPI_H_
+#ifndef SD_SPI_LOCAL_H_
+#define SD_SPI_LOCAL_H_
 
 #include "sos/dev/drive.h"
 #include "device/sd_spi.h"
@@ -126,4 +126,4 @@ typedef struct MCU_PACK {
 #define I_SDSPI_TOTAL 2
 
 
-#endif /* SD_SPI_H_ */
+#endif /* SD_SPI_LOCAL_H_ */
