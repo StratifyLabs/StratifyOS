@@ -70,6 +70,11 @@ typedef struct MCU_PACK {
 
 typedef bootloader_info_t bootloader_attr_t;
 
+typedef struct MCU_PACK {
+    uint32_t version;
+    uint32_t serialno[4];
+    uint32_t startaddr;
+} bootloader_attr_legacy_t;
 
 
 /*! \brief This is the size of a bootloader flash page.
@@ -104,6 +109,9 @@ typedef struct MCU_PACK {
  */
 #define I_BOOTLOADER_GETINFO _IOCTLR(BOOTLOADER_IOC_IDENT_CHAR, 1, bootloader_info_t)
 #define I_BOOTLOADER_ATTR I_BOOTLOADER_GETINFO
+
+#define I_BOOTLOADER_GETATTR_LEGACY _IOCTLR(BOOTLOADER_IOC_IDENT_CHAR, 1, bootloader_attr_legacy_t)
+
 
 /*! \brief See below for details.
  * \details This request invokes a reset.  The third IOCTL argument is a

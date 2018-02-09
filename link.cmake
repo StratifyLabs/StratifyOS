@@ -3,7 +3,8 @@
 #Add sources to the project
 set(SOURCES_PREFIX ${CMAKE_SOURCE_DIR}/src)
 add_subdirectory(src)
-list(APPEND SOS_LIB_SOURCELIST ${SOURCES})
+file(GLOB_RECURSE HEADERS ${CMAKE_SOURCE_DIR}/include/*)
+list(APPEND SOS_LIB_SOURCELIST ${SOURCES} ${HEADERS})
 
 set(SOS_LIB_TYPE release)
 set(SOS_LIB_OPTION link)

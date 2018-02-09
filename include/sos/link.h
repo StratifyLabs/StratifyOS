@@ -133,6 +133,10 @@ int link_get_sys_info(link_transport_mdriver_t * driver, sys_info_t * sys_info);
 
 int link_isbootloader(link_transport_mdriver_t * driver);
 int link_bootloader_attr(link_transport_mdriver_t * driver, bootloader_attr_t * attr, u32 id);
+
+int link_isbootloader_legacy(link_transport_mdriver_t * driver);
+int link_bootloader_attr_legacy(link_transport_mdriver_t * driver, bootloader_attr_t * attr, u32 id);
+
 int link_readserialno(link_transport_mdriver_t * driver, char * serialno, int len);
 int link_reset(link_transport_mdriver_t * driver);
 

@@ -25,12 +25,34 @@
 
 static int reset_device(link_transport_mdriver_t * driver, int invoke_bootloader);
 
-int link_bootloader_attr(link_transport_mdriver_t * driver, bootloader_attr_t * attr, uint32_t id){
+int link_bootloader_attr(link_transport_mdriver_t * driver, bootloader_attr_t * attr, u32 id){
 	if( link_ioctl(driver, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_GETINFO, attr) < 0 ){
 		return -1;
 	}
 
 	return 0;
+}
+
+int link_bootloader_attr_legacy(link_transport_mdriver_t * driver, bootloader_attr_t * attr, u32 id){
+    bootloader_attr_legacy_t legacy_attr;
+    if( link_ioctl(driver, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_GETATTR_LEGACY, &legacy_attr) < 0 ){
+        return -1;
+    }
+
+    memcpy(attr, &legacy_attr, sizeof(legacy_attr));
+    attr->hardware_id = 0x00000001; //CoAction Hero is the only board with legacy bootloader installed
+
+    return 0;
+}
+
+int link_isbootloader_legacy(link_transport_mdriver_t * driver){
+    bootloader_attr_t attr;
+
+    if( link_bootloader_attr_legacy(driver, &attr, 0) < 0 ){
+        return 0;
+    }
+
+    return 1;
 }
 
 int link_isbootloader(link_transport_mdriver_t * driver){
@@ -40,27 +62,27 @@ int link_isbootloader(link_transport_mdriver_t * driver){
 		return 0;
 	}
 
-	/*
-	bootloader_attr_t attr;
-	bootloader_attr_14x_t attr_14x;
+    bootloader_attr_legacy_t legacy_attr;
 
-	if( link_ioctl(handle, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_GETINFO, &attr) < 0 ){
+    if( link_ioctl(driver, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_GETATTR_LEGACY, &legacy_attr) < 0 ){
+        return 0;
+    } else {
+        printf("Legacy version is 0x%X\n", legacy_attr.version);
+        fflush(stdout);
 
-		attr_14x.version = 0;
-		link_ioctl(handle, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_GETINFO_14X, &attr_14x);
-			//If this fails, no bootloader
+        memcpy(&attr, &legacy_attr, sizeof(legacy_attr));
+        attr.hardware_id = 0x00000006; //CoAction Hero -- only board with legacy bootloader installed
 
-		if( (attr_14x.version == 0x150) ||
-				(attr_14x.version == 0x140) ||
-				(attr_14x.version == 0x132) ||
-				(attr_14x.version == 0x131) ||
-				(attr_14x.version == 0x130) ){
-			link_debug(LINK_DEBUG_WARNING, "Failed to respond to ioctl 0x%X", attr_14x.version);
+        if( (legacy_attr.version == 0x150) ||
+                (legacy_attr.version == 0x140) ||
+                (legacy_attr.version == 0x132) ||
+                (legacy_attr.version == 0x131) ||
+                (legacy_attr.version == 0x130) ){
+            link_debug(LINK_DEBUG_WARNING, "Failed to respond to ioctl 0x%X", legacy_attr.version);
 			return 0;
 		}
 
 	}
-	 */
 
 	link_debug(LINK_DEBUG_MESSAGE, "Bootloader Version is 0x%X", attr.version);
 
