@@ -32,7 +32,7 @@
 #undef __FPU_USED
 #include "arch/lpc/lpc_arch.h"
 #define ARCH_DEFINED
-#elif (defined __stm32f446xx) || (defined __stm32f401xc)
+#elif (defined __stm32f446xx) || (defined __stm32f401xc) || (defined __stm32f411xe)
 #undef __FPU_USED
 #include "arch/stm32/stm32_arch.h"
 #define ARCH_DEFINED

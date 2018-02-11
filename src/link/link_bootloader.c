@@ -62,30 +62,6 @@ int link_isbootloader(link_transport_mdriver_t * driver){
 		return 0;
 	}
 
-    bootloader_attr_legacy_t legacy_attr;
-
-    if( link_ioctl(driver, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_GETATTR_LEGACY, &legacy_attr) < 0 ){
-        return 0;
-    } else {
-        printf("Legacy version is 0x%X\n", legacy_attr.version);
-        fflush(stdout);
-
-        memcpy(&attr, &legacy_attr, sizeof(legacy_attr));
-        attr.hardware_id = 0x00000006; //CoAction Hero -- only board with legacy bootloader installed
-
-        if( (legacy_attr.version == 0x150) ||
-                (legacy_attr.version == 0x140) ||
-                (legacy_attr.version == 0x132) ||
-                (legacy_attr.version == 0x131) ||
-                (legacy_attr.version == 0x130) ){
-            link_debug(LINK_DEBUG_WARNING, "Failed to respond to ioctl 0x%X", legacy_attr.version);
-			return 0;
-		}
-
-	}
-
-	link_debug(LINK_DEBUG_MESSAGE, "Bootloader Version is 0x%X", attr.version);
-
 	//If the above succeeds, the bootloader is present
 	return 1;
 }

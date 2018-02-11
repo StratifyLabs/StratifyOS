@@ -114,7 +114,10 @@ typedef enum {
 	CORE_PERIPH_QSPI /*! Quad SPI */,
 	CORE_PERIPH_USART /*! USART */,
 	CORE_PERIPH_SDIO /*! SD Input/output */,
-	CORE_PERIPH_TOTAL
+    CORE_PERIPH_SPDIF /*! SPDIF */,
+    CORE_PERIPH_HDMI /*! HDMI CEC */,
+    CORE_PERIPH_MCO /*! MCO Pins */,
+    CORE_PERIPH_TOTAL
 } core_periph_t;
 
 
