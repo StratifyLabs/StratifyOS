@@ -1,4 +1,4 @@
-/* Copyright 2011-2016 Tyler Gilbert; 
+/* Copyright 2011-2018 Tyler Gilbert;
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -22,6 +22,10 @@ extern "C" void * operator new(size_t size){
 }
 
 extern "C" void operator delete(void * p){
+    free(p);
+}
+
+extern "C" void operator delete(void * p, unsigned int size){
     free(p);
 }
 

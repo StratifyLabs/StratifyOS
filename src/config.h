@@ -6,12 +6,12 @@
 #include "mcu/debug.h"
 
 #if MCU_DEBUG
-#define VERSION "3.3.3d"
+#define VERSION "3.3.4d"
 #else
-#define VERSION "3.3.3"
+#define VERSION "3.3.4"
 #endif
 
-#define BCD_VERSION 0x333
+#define BCD_VERSION 0x334
 
 
 #include <stdint.h>

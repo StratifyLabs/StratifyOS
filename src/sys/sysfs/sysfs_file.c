@@ -26,19 +26,14 @@ int sysfs_file_open(sysfs_file_t * file, const char * name, int mode){
 	int ret;
 	struct stat st;
 	const sysfs_t * fs = file->fs;
-	ret = fs->open(
-			fs->config,
-			&(file->handle),
-			name,
-			file->flags,
-			mode);
+    ret = fs->open(fs->config, &(file->handle), name, file->flags, mode);
 
 	if( ret < 0 ){
 		return -1;
 	}
 
 	if( fs->fstat(fs->config, file->handle, &st) == 0 ){
-		if( st.st_mode & S_IFCHR ){
+        if( (st.st_mode & S_IFMT) == S_IFCHR ){
 			file->flags |= O_CHAR;
 		}
 	}
