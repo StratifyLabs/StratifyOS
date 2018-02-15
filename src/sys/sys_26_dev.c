@@ -41,7 +41,7 @@ static int read_task(sys_taskattr_t * task);
 
 uint8_t sys_euid MCU_SYS_MEM;
 
-extern u8 _flash_start;
+extern u32 _text;
 
 int sys_26_open(const devfs_handle_t * cfg){
 	return 0;
@@ -69,7 +69,7 @@ int sys_26_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 		strncpy(info->stdout_name, sos_board_config.stdout_dev, NAME_MAX-1);
 		strncpy(info->name, sos_board_config.sys_name, NAME_MAX-1);
 		mcu_core_getserialno(&(info->serial));
-        info->hardware_id = *((u32*)(&_flash_start + BOOTLOADER_HARDWARE_ID_OFFSET));
+        info->hardware_id = *((u32*)(&_text + BOOTLOADER_HARDWARE_ID_OFFSET/sizeof(u32)));
         return 0;
 	case I_SYS_GETTASK:
 		return read_task(ctl);
