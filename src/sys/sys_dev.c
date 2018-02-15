@@ -26,6 +26,7 @@
 #include "config.h"
 #include <errno.h>
 #include "sos/dev/sys.h"
+#include "sos/dev/bootloader.h"
 #include "mcu/core.h"
 #include "device/sys.h"
 #include "mcu/debug.h"
@@ -39,7 +40,9 @@ extern void mcu_core_hardware_id();
 
 static int read_task(sys_taskattr_t * task);
 
-uint8_t sys_euid MCU_SYS_MEM;
+extern u32 _text;
+
+u8 sys_euid MCU_SYS_MEM;
 
 int sys_open(const devfs_handle_t * cfg){
 	return 0;
@@ -49,8 +52,8 @@ int sys_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 	sys_id_t * id = ctl;
 	sys_info_t * info = ctl;
 	sys_killattr_t * killattr = ctl;
-
 	int i;
+
 	switch(request){
 	case  I_SYS_GETINFO:
 		memset(info, 0, sizeof(sys_info_t));
@@ -68,8 +71,8 @@ int sys_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 		strncpy(info->name, sos_board_config.sys_name, NAME_MAX-1);
 		strncpy(info->trace_name, sos_board_config.trace_dev, NAME_MAX-1);
 		mcu_core_getserialno(&(info->serial));
-		info->hardware_id = (u32)mcu_core_hardware_id;
-		return 0;
+        info->hardware_id = *((u32*)(&_text + BOOTLOADER_HARDWARE_ID_OFFSET/sizeof(u32)));
+        return 0;
 	case I_SYS_GETTASK:
 		return read_task(ctl);
 
