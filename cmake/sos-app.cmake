@@ -25,7 +25,7 @@ set(LINKER_FLAGS "-nostartfiles -nostdlib -L${TOOLCHAIN_LIB_DIR}/${BUILD_LIBRARY
 
 add_executable(${SOS_APP_NAME}_${SOS_APP_ARCH}.elf ${SOS_APP_SOURCELIST} StratifySettings.json StratifyLocalSettings.json)
 add_custom_target(bin_${SOS_APP_NAME}_${SOS_APP_ARCH} DEPENDS ${SOS_APP_NAME}_${SOS_APP_ARCH}.elf COMMAND ${CMAKE_OBJCOPY} -j .text -j .data -O binary ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${SOS_APP_NAME}_${SOS_APP_ARCH}.elf ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${SOS_APP_NAME})
-add_custom_target(asm_${SOS_APP_NAME}_${SOS_APP_ARCH} DEPENDS bin_${SOS_APP_NAME}_${SOS_APP_ARCH} COMMAND ${CMAKE_OBJDUMP} -S -j .text -j .priv_code -j .data -j .bss -j .sysmem -d ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${SOS_APP_NAME}_${SOS_APP_ARCH}.elf > ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${SOS_APP_NAME}.S)
+add_custom_target(asm_${SOS_APP_NAME}_${SOS_APP_ARCH} DEPENDS bin_${SOS_APP_NAME}_${SOS_APP_ARCH} COMMAND ${CMAKE_OBJDUMP} -S -j .text -j .priv_code -j .data -j .bss -j .sysmem -d ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${SOS_APP_NAME}_${SOS_APP_ARCH}.elf > ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${SOS_APP_NAME}.lst)
 add_custom_target(size_${SOS_APP_ARCH} DEPENDS asm_${SOS_APP_NAME}_${SOS_APP_ARCH} COMMAND ${CMAKE_SIZE} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${SOS_APP_NAME}_${SOS_APP_ARCH}.elf)
 add_custom_target(${SOS_APP_ARCH} ALL DEPENDS size_${SOS_APP_ARCH})
 
