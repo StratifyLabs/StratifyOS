@@ -17,7 +17,7 @@
  * 
  */
 
-/*! \addtogroup SPI Serial Peripheral Interface (SPI) Master
+/*! \addtogroup SPI Serial Peripheral Interface (SPI)
  * @{
  *
  * \ingroup IFACE_DEV
@@ -28,10 +28,31 @@
  * is in the \ref IFACE_DEV section.
  *
  *
- * The following is an example of how to read/write the SPI in an OS environment:
+ * The following is an example of how to read/write the SPI from an application:
  *
  * \code
+ * #include <unistd.h>
+ * #include <fcntl.h>
+ * #include <dev/sos/spi.h>
  *
+ * int fd;
+ * char buffer[32];
+ * spi_attr_t attr;
+ * fd = open("/dev/spi0", O_RDWR);
+ *
+ * attr.o_flags = SPI_FLAG_SET_MASTER | SPI_FLAG_IS_MODE0 | SPI_FLAG_IS_FORMAT_SPI;
+ * attr.width = 8;
+ * attr.freq = 1000000;
+ * attr.pin_assignment.mosi = mcu_pin(0,0);
+ * attr.pin_assignment.miso = mcu_pin(0,1);
+ * attr.pin_assignment.sck = mcu_pin(0,2);
+ * attr.pin_assignment.cs = mcu_pin(0xff,0xff); //only used by slave
+ * ioctl(fd, I_SPI_SETATTR, &attr);
+ *
+ * read(fd, buffer, 32);
+ * write(fd, buffer, 32);
+ *
+ * close(fd);
  * \endcode
  *
  */
