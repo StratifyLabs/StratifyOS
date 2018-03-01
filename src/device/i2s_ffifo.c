@@ -13,9 +13,10 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
+
 
 #include <errno.h>
 #include <string.h>
@@ -34,24 +35,24 @@ int i2s_event_write_complete(void * context, const mcu_event_t * event){
     int ret;
 
     //now if there is data available, copy it to the outgoing frame buffer
-    if( (ret = ffifo_read_buffer(&(config->tx_ffifo),
-            &(state->tx_ffifo),
-            state->i2s_tx_frame_buffer,
-            I2S_FFIFO_FRAME_SIZE)) <= 0 ){
+    if( (ret = ffifo_read_buffer(&(config->tx.ffifo),
+                                 &(state->tx.ffifo),
+                                 config->tx.frame_buffer,
+                                 config->frame_buffer_size)) <= 0 ){
         //if there is no data, just write zeros to the output
-        memset(state->i2s_tx_frame_buffer, 0, I2S_FFIFO_FRAME_SIZE);
-        state->tx_count++;
+        memset(config->tx.frame_buffer, 0, config->frame_buffer_size);
+        state->tx.count++;
     }
 
     //these transfer members values may get modified by the driver
-    state->i2s_write_async.buf = state->i2s_tx_frame_buffer;
-    state->i2s_write_async.nbyte = I2S_FFIFO_FRAME_SIZE;
-    if( mcu_i2s_write(handle, &(state->i2s_write_async)) < 0 ){
-        state->tx_err = errno;
+    state->tx.i2s_async.buf = config->tx.frame_buffer;
+    state->tx.i2s_async.nbyte = config->frame_buffer_size;
+    if( mcu_i2s_write(handle, &(state->tx.i2s_async)) < 0 ){
+        state->tx.error = errno;
     }
 
     if( ret > 0 ){
-        ffifo_data_transmitted(&(config->tx_ffifo), &(state->tx_ffifo));
+        ffifo_data_transmitted(&(config->tx.ffifo), &(state->tx.ffifo));
     }
 
     //because mcu_i2s_write() reassigns the callback value -- returning 0 will null the callback
@@ -60,25 +61,25 @@ int i2s_event_write_complete(void * context, const mcu_event_t * event){
 
 int i2s_event_data_ready(void * context, const mcu_event_t * event){
     const devfs_handle_t * handle = context;
-    const i2s_ffifo_config_t * dcfg = handle->config;
+    const i2s_ffifo_config_t * config = handle->config;
     i2s_ffifo_state_t * state = handle->state;
 
     //write data to the receive buffer
-    ffifo_write_buffer(&(dcfg->rx_ffifo),
-            &(state->rx_ffifo),
-            state->i2s_rx_frame_buffer,
-            I2S_FFIFO_FRAME_SIZE);
+    ffifo_write_buffer(&(config->rx.ffifo),
+                       &(state->rx.ffifo),
+                       config->rx.frame_buffer,
+                       config->frame_buffer_size);
 
-    state->rx_count++;
+    state->rx.count++;
 
-    state->i2s_read_async.buf = state->i2s_rx_frame_buffer;
-    state->i2s_read_async.nbyte = I2S_FFIFO_FRAME_SIZE;
+    state->rx.i2s_async.buf = config->rx.frame_buffer;
+    state->rx.i2s_async.nbyte = config->frame_buffer_size;
 
-    if( mcu_i2s_read(handle, &(state->i2s_read_async)) < 0 ){
-        state->rx_err = errno;
+    if( mcu_i2s_read(handle, &(state->rx.i2s_async)) < 0 ){
+        state->rx.error = errno;
     }
 
-    ffifo_data_received(&(dcfg->rx_ffifo), &(state->rx_ffifo));
+    ffifo_data_received(&(config->rx.ffifo), &(state->rx.ffifo));
 
     return 1;
 }
@@ -89,96 +90,110 @@ int i2s_ffifo_open(const devfs_handle_t * handle){
 
     if( mcu_i2s_open(handle) <  0 ){ return -1; }
 
-    if( ffifo_open_local(&config->tx_ffifo, &state->tx_ffifo) < 0 ){
+    if( ffifo_open_local(&config->tx.ffifo, &state->tx.ffifo) < 0 ){
         return -1;
     }
 
-    return ffifo_open_local(&config->rx_ffifo, &state->rx_ffifo);
+    return ffifo_open_local(&config->rx.ffifo, &state->rx.ffifo);
 }
 
 int i2s_ffifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
-    const i2s_ffifo_config_t * dcfg = handle->config;
+    const i2s_ffifo_config_t * config = handle->config;
     i2s_ffifo_state_t * state = handle->state;
     i2s_ffifo_attr_t * attr = ctl;
     i2s_ffifo_info_t * info = ctl;
     mcu_action_t * action = ctl;
 
     switch(request){
-    case I_FFIFO_INIT:
-        //the driver reads the I2S TX FIFO to write to the I2S
-        state->i2s_write_async.loc = 0;
-        state->i2s_write_async.tid = task_get_current();
-        state->i2s_write_async.flags = O_RDWR;
-        state->i2s_write_async.buf = state->i2s_tx_frame_buffer;
-        state->i2s_write_async.nbyte = I2S_FFIFO_FRAME_SIZE;
-        state->i2s_write_async.handler.context = (void*)handle;
-        state->i2s_write_async.handler.callback = i2s_event_write_complete;
-        memset(state->i2s_tx_frame_buffer, 0, I2S_FFIFO_FRAME_SIZE);
-
-        //the driver writes the I2S RX FIFO that is read from the I2S
-        state->i2s_read_async.loc = 0;
-        state->i2s_read_async.tid = task_get_current();
-        state->i2s_read_async.flags = O_RDWR;
-        state->i2s_read_async.buf = state->i2s_rx_frame_buffer;
-        state->i2s_read_async.nbyte = I2S_FFIFO_FRAME_SIZE;
-        state->i2s_read_async.handler.context = (void*)handle;
-        state->i2s_read_async.handler.callback = i2s_event_data_ready;
-        memset(state->i2s_rx_frame_buffer, 0, I2S_FFIFO_FRAME_SIZE);
-
-        state->tx_count = 0;
-        state->rx_count = 0;
-        state->tx_err = 0;
-        state->rx_err = 0;
-
-        state->tx_ffifo.read_async = NULL;
-        state->tx_ffifo.write_async = NULL;
-        state->rx_ffifo.read_async = NULL;
-        state->rx_ffifo.write_async = NULL;
-        ffifo_flush(&(state->tx_ffifo));
-        ffifo_flush(&(state->rx_ffifo));
-
-#if 0
-        //start writing data to the I2S -- zeros are written if there is no data in the fifo
-        if( mcu_i2s_write(handle, &(state->i2s_write_op)) < 0 ){
+    case I_I2S_SETATTR:
+        if( mcu_i2s_ioctl(handle, request, ctl) < 0 ){
             return -1;
         }
+        /* no break */
+    case I_FFIFO_INIT:
+        //the driver reads the I2S TX FIFO to write to the I2S
+        if( config->tx.frame_buffer ){
+            state->tx.i2s_async.loc = 0;
+            state->tx.i2s_async.tid = task_get_current();
+            state->tx.i2s_async.flags = O_RDWR;
+            state->tx.i2s_async.buf = config->tx.frame_buffer;
+            state->tx.i2s_async.nbyte = config->frame_buffer_size;
+            state->tx.i2s_async.handler.context = (void*)handle;
+            state->tx.i2s_async.handler.callback = i2s_event_write_complete;
+            memset(config->tx.frame_buffer, 0, config->frame_buffer_size);
 
-        //on the first call the FIFO is full of zeros
-        if( mcu_i2s_read(handle, &(state->i2s_read_op)) > 0 ){
-            //start reading and running the callback
-            if( mcu_i2s_read(handle, &(state->i2s_read_op)) < 0 ){
+            state->tx.count = 0;
+            state->tx.error = 0;
+
+            state->tx.ffifo.read_async = 0;
+            state->tx.ffifo.write_async = 0;
+            ffifo_flush(&(state->tx.ffifo));
+
+            //start writing data to the I2S -- zeros are written if there is no data in the fifo
+            if( mcu_i2s_write(handle, &(state->tx.i2s_async)) < 0 ){
                 return -1;
             }
         }
-#endif
+
+
+        if( config->rx.frame_buffer ){
+
+            //the driver writes the I2S RX FIFO that is read from the I2S
+            state->rx.i2s_async.loc = 0;
+            state->rx.i2s_async.tid = task_get_current();
+            state->rx.i2s_async.flags = O_RDWR;
+            state->rx.i2s_async.buf = config->rx.frame_buffer;
+            state->rx.i2s_async.nbyte = config->frame_buffer_size;
+            state->rx.i2s_async.handler.context = (void*)handle;
+            state->rx.i2s_async.handler.callback = i2s_event_data_ready;
+            memset(config->rx.frame_buffer, 0, config->frame_buffer_size);
+
+            state->rx.error = 0;
+            state->rx.count = 0;
+
+
+            state->rx.ffifo.read_async = 0;
+            state->rx.ffifo.write_async = 0;
+            ffifo_flush(&(state->rx.ffifo));
+
+
+            //on the first call the FIFO is full of zeros and returns immediately
+            if( mcu_i2s_read(handle, &(state->rx.i2s_async)) > 0 ){
+                //start reading and running the callback
+                if( mcu_i2s_read(handle, &(state->rx.i2s_async)) < 0 ){
+                    return -1;
+                }
+            }
+        }
+
         return 0;
 
     case I_FFIFO_FLUSH:
-        ffifo_flush(&(state->tx_ffifo));
-        ffifo_flush(&(state->rx_ffifo));
+        ffifo_flush(&(state->tx.ffifo));
+        ffifo_flush(&(state->rx.ffifo));
         return 0;
 
     case I_FFIFO_SETATTR:
         if( attr->tx.o_flags & FFIFO_FLAG_SET_WRITEBLOCK ){
-            ffifo_set_writeblock(&(state->tx_ffifo), 1);
+            ffifo_set_writeblock(&(state->tx.ffifo), 1);
         } else {
-            ffifo_set_writeblock(&(state->tx_ffifo), 0);
+            ffifo_set_writeblock(&(state->tx.ffifo), 0);
         }
 
         if( attr->rx.o_flags & FFIFO_FLAG_SET_WRITEBLOCK ){
-            ffifo_set_writeblock(&(state->rx_ffifo), 1);
+            ffifo_set_writeblock(&(state->rx.ffifo), 1);
         } else {
-            ffifo_set_writeblock(&(state->rx_ffifo), 0);
+            ffifo_set_writeblock(&(state->rx.ffifo), 0);
         }
         return 0;
 
     case I_FFIFO_GETINFO:
-        ffifo_getinfo(&(info->tx), &(dcfg->tx_ffifo), &(state->tx_ffifo));
-        ffifo_getinfo(&(info->rx), &(dcfg->rx_ffifo), &(state->rx_ffifo));
-        info->tx_count = state->tx_count;
-        info->rx_count = state->rx_count;
-        info->tx_err = state->tx_err;
-        info->rx_err = state->rx_err;
+        ffifo_getinfo(&(info->tx.ffifo), &(config->tx.ffifo), &(state->tx.ffifo));
+        ffifo_getinfo(&(info->rx.ffifo), &(config->rx.ffifo), &(state->rx.ffifo));
+        info->tx.count = state->tx.count;
+        info->rx.count = state->rx.count;
+        info->tx.error = state->tx.error;
+        info->rx.error = state->rx.error;
         return 0;
 
     case I_MCU_SETACTION:
@@ -186,13 +201,13 @@ int i2s_ffifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
         //this needs to handle cancelling wop/rop of tx and rx fifos
         if( (action->o_events & MCU_EVENT_FLAG_DATA_READY) && (action->handler.callback == 0) ){
             //cancel the ffifo rx
-            ffifo_cancel_rop(&(state->rx_ffifo));
+            ffifo_cancel_rop(&(state->rx.ffifo));
         }
 
         //this needs to handle cancelling wop/rop of tx and rx fifos
         if( (action->o_events & MCU_EVENT_FLAG_WRITE_COMPLETE) && (action->handler.callback == 0) ){
             //cancel the ffifo rx
-            ffifo_cancel_wop(&(state->tx_ffifo));
+            ffifo_cancel_wop(&(state->tx.ffifo));
         }
 
         return 0;
@@ -208,7 +223,7 @@ int i2s_ffifo_read(const devfs_handle_t * handle, devfs_async_t * rop){
 
     //disable interrupts to prevent elevated prio I2S from interrupting the read
     cortexm_disable_interrupts(0);
-    ret = ffifo_read_local(&(config->rx_ffifo), &(state->rx_ffifo), rop, 0);
+    ret = ffifo_read_local(&(config->rx.ffifo), &(state->rx.ffifo), rop, 0);
     cortexm_enable_interrupts(0);
     return ret;
 }
@@ -220,7 +235,7 @@ int i2s_ffifo_write(const devfs_handle_t * handle, devfs_async_t * async){
 
     //I2S interrupt can't fire while writing the local buffer
     cortexm_disable_interrupts(0);
-    ret = ffifo_write_local(&(config->tx_ffifo), &(state->tx_ffifo), async, 0);
+    ret = ffifo_write_local(&(config->tx.ffifo), &(state->tx.ffifo), async, 0);
     cortexm_enable_interrupts(0);
     return ret;
 }
@@ -228,8 +243,8 @@ int i2s_ffifo_write(const devfs_handle_t * handle, devfs_async_t * async){
 int i2s_ffifo_close(const devfs_handle_t * handle){
     const i2s_ffifo_config_t * config = handle->config;
     i2s_ffifo_state_t * state = handle->state;
-    ffifo_close_local(&(config->tx_ffifo), &(state->tx_ffifo));
-    ffifo_close_local(&(config->rx_ffifo), &(state->rx_ffifo));
+    ffifo_close_local(&(config->tx.ffifo), &(state->tx.ffifo));
+    ffifo_close_local(&(config->rx.ffifo), &(state->rx.ffifo));
     return mcu_i2s_close(handle);
 }
 

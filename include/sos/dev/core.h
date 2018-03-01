@@ -117,6 +117,8 @@ typedef enum {
     CORE_PERIPH_SPDIF /*! SPDIF */,
     CORE_PERIPH_HDMI /*! HDMI CEC */,
     CORE_PERIPH_MCO /*! MCO Pins */,
+    CORE_PERIPH_DFSDM /*! DFSDM Pins */,
+    CORE_PERIPH_FMP_I2C /*! Fast Mode Plus I2C */,
     CORE_PERIPH_TOTAL
 } core_periph_t;
 

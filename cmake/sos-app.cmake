@@ -19,8 +19,14 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/${BUILD_NAME} CACHE INTER
 
 file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
+if(SOS_APP_OPTIMIZATION)
+	set(BUILD_OPTIMIZATION ${SOS_APP_OPTIMIZATION})
+else()
+	set(BUILD_OPTIMIZATION "-Os")
+endif()
+
 set(BUILD_LIBRARIES ${SOS_APP_LIBRARIES} api sos_crt)
-set(BUILD_FLAGS -mlong-calls -march=${SOS_APP_ARCH} ${BUILD_FLOAT_OPTIONS})
+set(BUILD_FLAGS -mlong-calls -march=${SOS_APP_ARCH} ${BUILD_FLOAT_OPTIONS} ${BUILD_OPTIMIZATION})
 set(LINKER_FLAGS "-nostartfiles -nostdlib -L${TOOLCHAIN_LIB_DIR}/${BUILD_LIBRARY_DIR}/${BUILD_FLOAT}/. -Wl,-Map,${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${SOS_APP_NAME}_${SOS_APP_ARCH}.map,--defsym=_app_ram_size=${SOS_APP_RAM_SIZE},--gc-sections -Tldscripts/app.ld -u crt")
 
 add_executable(${SOS_APP_NAME}_${SOS_APP_ARCH}.elf ${SOS_APP_SOURCELIST} StratifySettings.json StratifyLocalSettings.json)

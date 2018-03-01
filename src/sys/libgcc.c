@@ -24,7 +24,7 @@
 #if 1
 /*
 export PATH=$PATH:/Applications/StratifyLabs-SDK/Tools/gcc/bin
-cd /Applications/StratifyLabs-SDK/Tools/gcc/lib/gcc/arm-none-eabi/5.4.1/armv7e-m/fpu/fpv5-sp-d16
+cd /Applications/StratifyLabs-SDK/Tools/gcc/lib/gcc/arm-none-eabi/6.3.1/thumb/v7e-m/fpv4-sp/hard
 arm-none-eabi-objcopy \
 	-W __aeabi_fmul \
 	-W __aeabi_dmul \

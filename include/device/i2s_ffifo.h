@@ -40,35 +40,42 @@ typedef struct MCU_PACK {
 } i2s_ffifo_attr_t;
 
 typedef struct MCU_PACK {
-    ffifo_info_t tx;
-    ffifo_info_t rx;
-    u32 rx_count;
-    u32 tx_count;
-    s32 tx_err;
-    s32 rx_err;
+    ffifo_info_t ffifo;
+    u32 count;
+    s32 error;
+} i2s_ffifo_channel_info_t;
+
+typedef struct MCU_PACK {
+    i2s_ffifo_channel_info_t rx;
+    i2s_ffifo_channel_info_t tx;
 } i2s_ffifo_info_t;
 
 
 #define I2S_FFIFO_FRAME_SIZE (8*16) //Each left and right sample is 8 bytes -- this is 16 complete samples from each channel
 
 typedef struct {
-    ffifo_state_t tx_ffifo;
-    ffifo_state_t rx_ffifo;
-    devfs_async_t i2s_write_async;
-    devfs_async_t i2s_read_async;
-    char i2s_tx_frame_buffer[I2S_FFIFO_FRAME_SIZE];
-    char i2s_rx_frame_buffer[I2S_FFIFO_FRAME_SIZE];
-    u32 rx_count;
-    u32 tx_count;
-    s32 tx_err;
-    s32 rx_err;
+    ffifo_state_t ffifo;
+    devfs_async_t i2s_async;
+    char * i2s_frame_buffer;
+    u32 count;
+    s32 error;
+} i2s_ffifo_channel_state_t;
+
+typedef struct {
+    i2s_ffifo_channel_state_t rx;
+    i2s_ffifo_channel_state_t tx;
 } i2s_ffifo_state_t;
 
+typedef struct {
+    ffifo_config_t ffifo;
+    char * frame_buffer;
+} i2s_ffifo_channel_config_t;
 
 typedef struct {
     i2s_config_t i2s;
-    ffifo_config_t tx_ffifo;
-    ffifo_config_t rx_ffifo;
+    u32 frame_buffer_size;
+    i2s_ffifo_channel_config_t tx;
+    i2s_ffifo_channel_config_t rx;
 } i2s_ffifo_config_t;
 
 
@@ -77,6 +84,12 @@ int i2s_ffifo_ioctl(const devfs_handle_t * handle, int request, void * ctl);
 int i2s_ffifo_read(const devfs_handle_t * handle, devfs_async_t * async);
 int i2s_ffifo_write(const devfs_handle_t * handle, devfs_async_t * async);
 int i2s_ffifo_close(const devfs_handle_t * handle);
+
+int i2s_spi_ffifo_open(const devfs_handle_t * handle);
+int i2s_spi_ffifo_ioctl(const devfs_handle_t * handle, int request, void * ctl);
+int i2s_spi_ffifo_read(const devfs_handle_t * handle, devfs_async_t * async);
+int i2s_spi_ffifo_write(const devfs_handle_t * handle, devfs_async_t * async);
+int i2s_spi_ffifo_close(const devfs_handle_t * handle);
 
 
 

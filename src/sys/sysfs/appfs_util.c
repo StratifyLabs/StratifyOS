@@ -41,8 +41,8 @@
 #define APPFS_REWRITE_KERNEL_ADDR (0x00FF8000)
 #define APPFS_REWRITE_KERNEL_ADDR_MASK (0x7FFF)
 
-static void appfs_util_privloadfileinfo(void * args) MCU_ROOT_EXEC_CODE;
-static int get_hdrinfo(appfs_file_t * file, int page, int type);
+static void appfs_util_root_load_file_info(void * args) MCU_ROOT_EXEC_CODE;
+static int get_header_info(appfs_file_t * file, int page, int type);
 static int get_filesize(const devfs_device_t * dev, root_load_fileinfo_t * args, int filetype);
 
 static void root_op_erase_pages(void * args) MCU_ROOT_EXEC_CODE;
@@ -183,7 +183,7 @@ int check_for_free_space(const devfs_device_t * dev, int start_page, int type, i
 
 	do {
 		if ( type == MEM_FLAG_IS_FLASH ){
-			appfs_util_privloadfileinfo(&info);
+            appfs_util_root_load_file_info(&info);
 		} else {
 			appfs_util_getpageinfo(dev, &info.pageinfo);
 		}
@@ -647,7 +647,7 @@ int appfs_util_getflashpagetype(appfs_header_t * info){
 	len = strnlen(info->name, NAME_MAX-2);
 	if ( (len == NAME_MAX - 2) || //check if the name is short enough
 			(len != strspn(info->name, sysfs_validset)) || //check if only valid characters are present
-			(info->name[NAME_MAX-1] != calc_checksum(info->name)) || //check for the second terminating zero
+            (info->name[NAME_MAX-1] != calc_checksum(info->name)) || //check for a valid checksum
 			(len == 0)
 	){
 		for(i=0; i < NAME_MAX; i++){
@@ -673,7 +673,7 @@ int appfs_util_getpagetype(appfs_header_t * info, int page, int type){
 	return appfs_ram_getusage(page);
 }
 
-int get_hdrinfo(appfs_file_t * file, int page, int type){
+int get_header_info(appfs_file_t * file, int page, int type){
 	char hex_num[9];
 	int page_type;
 	page_type = appfs_util_getpagetype(&file->hdr, page, type);
@@ -706,7 +706,7 @@ bool appfs_util_isexecutable(const appfs_file_t * info){
 	return true;
 }
 
-void appfs_util_privloadfileinfo(void * args){
+void appfs_util_root_load_file_info(void * args){
 	root_load_fileinfo_t * p = (root_load_fileinfo_t*)args;
 	devfs_async_t op;
 
@@ -736,23 +736,23 @@ void appfs_util_privloadfileinfo(void * args){
 }
 
 int appfs_util_getfileinfo(root_load_fileinfo_t * info, const devfs_device_t * dev, int page, int type, int * size){
-	int filetype;
+    int file_type;
 	info->dev = dev;
 	info->pageinfo.num = page;
 	info->pageinfo.o_flags = type;
-	cortexm_svcall(appfs_util_privloadfileinfo, info);
+    cortexm_svcall(appfs_util_root_load_file_info, info);
 	if ( info->ret < 0 ){
 		return -1;
 	}
 
 	//get the header info for free and sys files
-	filetype = get_hdrinfo(&(info->fileinfo), page, type);
+    file_type = get_header_info(&(info->fileinfo), page, type);
 
 	if ( size != NULL ){
-		*size = get_filesize(dev, info, filetype);
+        *size = get_filesize(dev, info, file_type);
 	}
 
-	return filetype;
+    return file_type;
 }
 
 int get_filesize(const devfs_device_t * dev, root_load_fileinfo_t * args, int filetype){
