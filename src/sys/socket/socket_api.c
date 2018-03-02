@@ -85,17 +85,14 @@ int send(int s, const void *dataptr, size_t size, int flags){
 	return sos_board_config.socket_api->send(s & ~FILDES_SOCKET_FLAG, dataptr, size, flags);
 }
 
-
 int sendmsg(int s, const struct msghdr *message, int flags){
 	return sos_board_config.socket_api->sendmsg(s & ~FILDES_SOCKET_FLAG, message, flags);
 }
-
 
 int sendto(int s, const void *dataptr, size_t size, int flags,
 		const struct sockaddr *to, socklen_t tolen){
 	return sos_board_config.socket_api->sendto(s & ~FILDES_SOCKET_FLAG, dataptr, size, flags, to, tolen);
 }
-
 
 int socket(int domain, int type, int protocol){
 	int s;
