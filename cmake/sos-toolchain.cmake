@@ -32,15 +32,18 @@ endif()
 include(${CMAKE_CURRENT_LIST_DIR}/sos-gcc-toolchain.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/sos-build-flags.cmake)
 
-set(TOOLCHAIN_C_FLAGS "-Wall -mthumb -D__StratifyOS__ -ffunction-sections -fdata-sections -fomit-frame-pointer" CACHE INTERNAL "common c compiler flags")
-set(TOOLCHAIN_CXX_FLAGS "-fno-rtti -fno-exceptions -fno-threadsafe-statics -fno-unwind-tables -fno-use-cxa-atexit" CACHE INTERNAL "common c compiler flags")
-set(TOOLCHAIN_ASM_FLAGS "-mthumb" CACHE INTERNAL "common asm compiler flags")
-set(TOOLCHAIN_FLOAT_OPTIONS_ARMV7EM_FPU -mfloat-abi=hard -mfpu=fpv4-sp-d16 -U__SOFTFP__ -D__FPU_USED CACHE INTERNAL "armv7em_fpu build float options")
+set(TOOLCHAIN_C_FLAGS ${SOS_BUILD_C_FLAGS} CACHE INTERNAL "common c compiler flags")
+set(TOOLCHAIN_CXX_FLAGS ${SOS_BUILD_CXX_FLAGS} CACHE INTERNAL "common c compiler flags")
+set(TOOLCHAIN_ASM_FLAGS ${SOS_BUILD_ASM_FLAGS} CACHE INTERNAL "common asm compiler flags")
+set(TOOLCHAIN_FLOAT_OPTIONS_ARMV7EM_FPU ${SOS_BUILD_FLOAT_OPTIONS_ARMV7EM_FPU} CACHE INTERNAL "armv7em_fpu build float options")
+set(TOOLCHAIN_FLOAT_OPTIONS_ARMV7EM_FPUV5 ${SOS_BUILD_FLOAT_OPTIONS_ARMV7EM_FPUV5} CACHE INTERNAL "armv7em_fpu build float options")
 
 set(TOOLCHAIN_FLOAT_DIR_ARMV7M ${SOS_BUILD_FLOAT_DIR_ARMV7M} CACHE INTERNAL "armv7m build float dir")
 set(TOOLCHAIN_FLOAT_DIR_ARMV7EM_FPU ${SOS_BUILD_FLOAT_DIR_ARMV7EM_FPU} CACHE INTERNAL "armv7m build float dir")
+set(TOOLCHAIN_FLOAT_DIR_ARMV7EM_FPUV5 ${SOS_BUILD_FLOAT_DIR_ARMV7EM_FPUV5} CACHE INTERNAL "armv7m build float dir")
 set(TOOLCHAIN_INSTALL_DIR_ARMV7M ${SOS_BUILD_INSTALL_DIR_ARMV7M} CACHE INTERNAL "armv7m build install dir")
 set(TOOLCHAIN_INSTALL_DIR_ARMV7EM_FPU ${SOS_BUILD_INSTALL_DIR_ARMV7EM_FPU} CACHE INTERNAL "armv7m build install dir")
+set(TOOLCHAIN_INSTALL_DIR_ARMV7EM_FPUV5 ${SOS_BUILD_INSTALL_DIR_ARMV7EM_FPUV5} CACHE INTERNAL "armv7m build install dir")
 
 
 set(CMAKE_VERBOSE_MAKEFILE TRUE CACHE INTERNAL "verbose make")

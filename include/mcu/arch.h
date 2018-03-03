@@ -37,6 +37,27 @@
 #undef __FPU_USED
 #include "arch/stm32/stm32_arch.h"
 #define ARCH_DEFINED
+#elif defined __armv7em_fpuv5
+#define __CHECK_DEVICE_DEFINES
+#define __FPU_PRESENT 1
+#define ARM_MATH_CM7 1
+#undef __FPU_USED
+#define ARCH_DEFINED
+typedef enum IRQn
+{
+/******  Cortex-M4 Processor Exceptions Numbers ***************************************************/
+  NonMaskableInt_IRQn           = -14,      /*!< 2 Non Maskable Interrupt                         */
+  HardFault_IRQn                = -13,              /*!<   3  Hard Fault, all classes of Fault                                 */
+  MemoryManagement_IRQn         = -12,      /*!< 4 Cortex-M3 Memory Management Interrupt          */
+  BusFault_IRQn                 = -11,      /*!< 5 Cortex-M3 Bus Fault Interrupt                  */
+  UsageFault_IRQn               = -10,      /*!< 6 Cortex-M3 Usage Fault Interrupt                */
+  SVCall_IRQn                   = -5,       /*!< 11 Cortex-M3 SV Call Interrupt                   */
+  DebugMonitor_IRQn             = -4,       /*!< 12 Cortex-M3 Debug Monitor Interrupt             */
+  PendSV_IRQn                   = -2,       /*!< 14 Cortex-M3 Pend SV Interrupt                   */
+  SysTick_IRQn                  = -1,       /*!< 15 Cortex-M3 System Tick Interrupt               */
+} IRQn_Type;
+#define __MPU_PRESENT 1
+#include "arch/cmsis/core_cm7.h"
 #elif defined __armv7em
 #define __CHECK_DEVICE_DEFINES
 #define __FPU_PRESENT 1
