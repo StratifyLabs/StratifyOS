@@ -1,6 +1,6 @@
 # StratifyOS
 
-A Powerful embedded RTOS for the ARM Cortex M microcontrollers.
+Stratify OS is an microcontroller RTOS for the ARM Cortex M architecture. It is designed to make it dead simple to use the powerful hardware features of the ARM Cortex M.
 
 ## License
 
