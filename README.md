@@ -1,6 +1,18 @@
 # StratifyOS
 
-Stratify OS is an microcontroller RTOS for the ARM Cortex M architecture. It is designed to make it dead simple to use the powerful hardware features of the ARM Cortex M.
+Stratify OS is an microcontroller RTOS for the ARM Cortex M architecture. It is designed to make it dead simple to use the [powerful hardware features of the ARM Cortex M](https://stratifylabs.co/user%20guides/2018/03/06/How-Stratify-OS-Levarages-ARM-Cortex-M/):
+
+- MPU
+- SysTick and PendSV
+- SVCall
+- Thread and Handler Mode
+- NVIC
+- FPU
+- Cache (Cortex M7)
+
+These hardware features are integrated into the OS in such a way that applications take full advantage of them without even knowing they exist!
+
+You can find resources for getting started in the [Stratify SDK documentation](https://stratifylabs.co/docs/).
 
 ## License
 
