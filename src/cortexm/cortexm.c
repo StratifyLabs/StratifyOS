@@ -177,6 +177,8 @@ int cortexm_set_irq_prio(int irq, int prio){
 }
 
 void cortexm_set_vector_table_addr(void * addr){
+#if defined SCB
 	SCB->VTOR = (uint32_t)addr;
+#endif
 }
 

@@ -33,10 +33,8 @@ set(SOS_LIB_OPTION sys)
 set(SOS_LIB_TYPE release)
 set(SOS_LIB_BUILD_FLAGS "")
 set(SOS_LIB_SOURCELIST ${SYS_SOURCELIST})
-set(SOS_LIB_ARCH armv7-m)
-include(${SOS_TOOLCHAIN_CMAKE_PATH}/sos-lib.cmake)
-set(SOS_LIB_ARCH armv7e-m)
-include(${SOS_TOOLCHAIN_CMAKE_PATH}/sos-lib.cmake)
+include(${SOS_TOOLCHAIN_CMAKE_PATH}/sos-lib-std.cmake)
+
 
 set(SOS_LIB_OPTION sys)
 set(SOS_LIB_TYPE debug)
@@ -57,7 +55,6 @@ include(${SOS_TOOLCHAIN_CMAKE_PATH}/sos-lib-std.cmake)
 
 set(SOS_LIB_TYPE debug)
 set(SOS_LIB_SOURCELIST ${BOOT_SOURCELIST})
-set(SOS_LIB_ARCH armv7-m)
 include(${SOS_TOOLCHAIN_CMAKE_PATH}/sos-lib-std.cmake)
 
 install(DIRECTORY include/cortexm include/device include/mcu include/sos include/usbd DESTINATION include)

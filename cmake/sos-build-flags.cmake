@@ -2,8 +2,6 @@
 set(SOS_BUILD_C_FLAGS "-Wall -mthumb -D__StratifyOS__ -ffunction-sections -fdata-sections -fomit-frame-pointer")
 set(SOS_BUILD_CXX_FLAGS "-fno-rtti -fno-exceptions -fno-threadsafe-statics -fno-unwind-tables -fno-use-cxa-atexit")
 set(SOS_BUILD_ASM_FLAGS "-mthumb")
-set(SOS_BUILD_FLOAT_OPTIONS_ARMV7EM_FPU -mfloat-abi=hard -mfpu=fpv4-sp-d16 -U__SOFTFP__ -D__FPU_USED)
-set(SOS_BUILD_FLOAT_OPTIONS_ARMV7EM_FPUV5 -mfloat-abi=hard -mfpu=fpv5-d16 -U__SOFTFP__ -D__FPU_USED)
 
 
 # v7m or v7em for M3 or M4 ISA
@@ -14,10 +12,70 @@ set(SOS_BUILD_FLOAT_OPTIONS_ARMV7EM_FPUV5 -mfloat-abi=hard -mfpu=fpv5-d16 -U__SO
 #These are values for SOS_LIB_ARCH, SOS_BSP_ARCH and SOS_APP_ARCH
 
 
-set(SOS_BUILD_FLOAT_DIR_ARMV7M ".")
-set(SOS_BUILD_FLOAT_DIR_ARMV7EM_FPU "fpv4-sp/hard")
-set(SOS_BUILD_FLOAT_DIR_ARMV7EM_FPUV5 "fpv5/hard")
+set(SOS_BUILD_FLOAT_OPTIONS_V7M -march=armv7-m)
+set(SOS_BUILD_FLOAT_OPTIONS_V7EM -march=armv7e-m)
+set(SOS_BUILD_FLOAT_OPTIONS_V7EM_F4SS -march=armv7e-m -mfloat-abi=soft -mfpu=fpv4-sp-d16 -U__SOFTFP__ -D__FPU_USED)
+set(SOS_BUILD_FLOAT_OPTIONS_V7EM_F4SH -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -U__SOFTFP__ -D__FPU_USED)
+set(SOS_BUILD_FLOAT_OPTIONS_V7EM_F5SS -march=armv7e-m -mfloat-abi=soft -mfpu=fpv4-sp-d16 -U__SOFTFP__ -D__FPU_USED)
+set(SOS_BUILD_FLOAT_OPTIONS_V7EM_F5SH -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -U__SOFTFP__ -D__FPU_USED)
+set(SOS_BUILD_FLOAT_OPTIONS_V7EM_F5DS -march=armv7e-m -mfloat-abi=soft -mfpu=fpv5-d16 -U__SOFTFP__ -D__FPU_USED)
+set(SOS_BUILD_FLOAT_OPTIONS_V7EM_F5DH -march=armv7e-m -mfloat-abi=hard -mfpu=fpv5-d16 -U__SOFTFP__ -D__FPU_USED)
 
-set(SOS_BUILD_INSTALL_DIR_ARMV7M "thumb/v7-m")
-set(SOS_BUILD_INSTALL_DIR_ARMV7EM_FPU "thumb/v7e-m")
-set(SOS_BUILD_INSTALL_DIR_ARMV7EM_FPUV5 "thumb/v7e-m")
+set(SOS_BUILD_FLOAT_DIR_V7M ".")
+set(SOS_BUILD_FLOAT_DIR_V7EM ".")
+set(SOS_BUILD_FLOAT_DIR_V7EM_F4SS "fpv4-sp/softfp") #single precision soft ABI
+set(SOS_BUILD_FLOAT_DIR_V7EM_F4SH "fpv4-sp/hard")   #single precision hard ABI
+set(SOS_BUILD_FLOAT_DIR_V7EM_F5SS "fpv5-sp/softfp") #single precision soft ABI
+set(SOS_BUILD_FLOAT_DIR_V7EM_F5SH "fpv5-sp/hard")   #single precision hard ABI
+set(SOS_BUILD_FLOAT_DIR_V7EM_F5DS "fpv5/softfp")    #double precision soft ABI
+set(SOS_BUILD_FLOAT_DIR_V7EM_F5DH "fpv5/hard")      #double precision hard ABI
+
+set(SOS_BUILD_INSTALL_DIR_V7M "thumb/v7-m")         #thumb ARMV7M
+set(SOS_BUILD_INSTALL_DIR_V7EM "thumb/v7e-m")       #thumb ARMV7EM
+
+string(COMPARE EQUAL "${SOS_BUILD_ARCH}" v7m IS_V7M)
+string(COMPARE EQUAL "${SOS_BUILD_ARCH}" v7em IS_V7EM)
+string(COMPARE EQUAL "${SOS_BUILD_ARCH}" v7em_f4ss IS_V7EM_F4SS)
+string(COMPARE EQUAL "${SOS_BUILD_ARCH}" v7em_f4sh IS_V7EM_F4SH)
+string(COMPARE EQUAL "${SOS_BUILD_ARCH}" v7em_f5ss IS_V7EM_F5SS)
+string(COMPARE EQUAL "${SOS_BUILD_ARCH}" v7em_f5sh IS_V7EM_F5SH)
+string(COMPARE EQUAL "${SOS_BUILD_ARCH}" v7em_f5ds IS_V7EM_F5DS)
+string(COMPARE EQUAL "${SOS_BUILD_ARCH}" v7em_f5dh IS_V7EM_F5DH)
+
+if(IS_V7M) #armv7m soft float
+	set(SOS_BUILD_INSTALL_DIR ${SOS_BUILD_INSTALL_DIR_V7M})
+	set(SOS_BUILD_FLOAT_DIR ${SOS_BUILD_FLOAT_DIR_V7M})
+	set(SOS_BUILD_FLOAT_OPTIONS ${SOS_BUILD_FLOAT_OPTIONS_V7M})
+elseif(IS_V7EM) #armv7m soft float
+	set(SOS_BUILD_INSTALL_DIR ${SOS_BUILD_INSTALL_DIR_V7EM})
+	set(SOS_BUILD_FLOAT_DIR ${SOS_BUILD_FLOAT_DIR_V7EM})
+	set(SOS_BUILD_FLOAT_OPTIONS ${SOS_BUILD_FLOAT_OPTIONS_V7EM})
+elseif(IS_V7EM_F4SS) #armv7em fpu4 single precision soft abi
+	set(SOS_BUILD_INSTALL_DIR ${SOS_BUILD_INSTALL_DIR_V7EM_F4SS})
+	set(SOS_BUILD_FLOAT_DIR ${SOS_BUILD_FLOAT_DIR_V7EM_F4SS})
+	set(SOS_BUILD_FLOAT_OPTIONS ${SOS_BUILD_FLOAT_OPTIONS_V7EM_F4SS})
+elseif(IS_V7EM_F4SH) #armv7em fpu4 single precision hard abi
+	set(SOS_BUILD_INSTALL_DIR ${SOS_BUILD_INSTALL_DIR_V7EM_F4SH})
+	set(SOS_BUILD_FLOAT_DIR ${SOS_BUILD_FLOAT_DIR_V7EM_F4SH})
+	set(SOS_BUILD_FLOAT_OPTIONS ${SOS_BUILD_FLOAT_OPTIONS_V7EM_F4SH})
+elseif(IS_V7EM_F5SS) #armv7em fpu5 single precision soft abi
+	set(SOS_BUILD_INSTALL_DIR ${SOS_BUILD_INSTALL_DIR_V7EM_F5SS})
+	set(SOS_BUILD_FLOAT_DIR ${SOS_BUILD_FLOAT_DIR_V7EM_F5SS})
+	set(SOS_BUILD_FLOAT_OPTIONS ${SOS_BUILD_FLOAT_OPTIONS_V7EM_F5SS})
+elseif(IS_V7EM_F5SH) #armv7em fpu5 single precision hard abi
+	set(SOS_BUILD_INSTALL_DIR ${SOS_BUILD_INSTALL_DIR_V7EM_F5SH})
+	set(SOS_BUILD_FLOAT_DIR ${SOS_BUILD_FLOAT_DIR_V7EM_F5SH})
+	set(SOS_BUILD_FLOAT_OPTIONS ${SOS_BUILD_FLOAT_OPTIONS_V7EM_F5SH})
+elseif(IS_V7EM_F5DS) #armv7em fpu5 double precision soft abi
+	set(SOS_BUILD_INSTALL_DIR ${SOS_BUILD_INSTALL_DIR_V7EM_F5DS})
+	set(SOS_BUILD_FLOAT_DIR ${SOS_BUILD_FLOAT_DIR_V7EM_F5DS})
+	set(SOS_BUILD_FLOAT_OPTIONS ${SOS_BUILD_FLOAT_OPTIONS_V7EM_F5DS})
+elseif(IS_V7EM_F5DH) #armv7em fpu5 double precision hard abi
+	set(SOS_BUILD_INSTALL_DIR ${SOS_BUILD_INSTALL_DIR_V7EM_F5DH})
+	set(SOS_BUILD_FLOAT_DIR ${SOS_BUILD_FLOAT_DIR_V7EM_F5DH})
+	set(SOS_BUILD_FLOAT_OPTIONS ${SOS_BUILD_FLOAT_OPTIONS_V7EM_F5DH})
+elseif( SOS_BUILD_ARCH STREQUAL link )
+	set(SOS_BUILD_INSTALL_DIR ".")
+	set(SOS_BUILD_FLOAT_OPTIONS "")
+	set(SOS_BUILD_FLOAT_DIR ".")
+endif()

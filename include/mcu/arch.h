@@ -28,6 +28,14 @@
 #include <stdlib.h>
 #include "types.h"
 
+#define SCHED_USECOND_TMR_RESET_OC 0
+#define SCHED_USECOND_TMR_SLEEP_OC 1
+#define PTHREAD_DEFAULT_STACK_SIZE 1536
+#define MALLOC_CHUNK_SIZE 64
+#define MALLOC_SBRK_JUMP_SIZE 128
+#define SCHED_FIRST_THREAD_STACK_SIZE 2048
+#define SCHED_DEFAULT_STACKGUARD_SIZE 32
+
 #if (defined __lpc17xx) || (defined __lpc177x_8x) || (defined __lpc407x_8x) || (defined __lpc43xx)
 #undef __FPU_USED
 #include "arch/lpc/lpc_arch.h"
@@ -37,69 +45,106 @@
 #undef __FPU_USED
 #include "arch/stm32/stm32_arch.h"
 #define ARCH_DEFINED
-#elif defined __armv7em_fpuv5
+#else
+
+typedef enum IRQn
+{
+/******  Cortex-M4 Processor Exceptions Numbers ***************************************************/
+  NonMaskableInt_IRQn           = -14,      /*!< 2 Non Maskable Interrupt                         */
+  HardFault_IRQn                = -13,              /*!<   3  Hard Fault, all classes of Fault                                 */
+  MemoryManagement_IRQn         = -12,      /*!< 4 Cortex-M3 Memory Management Interrupt          */
+  BusFault_IRQn                 = -11,      /*!< 5 Cortex-M3 Bus Fault Interrupt                  */
+  UsageFault_IRQn               = -10,      /*!< 6 Cortex-M3 Usage Fault Interrupt                */
+  SVCall_IRQn                   = -5,       /*!< 11 Cortex-M3 SV Call Interrupt                   */
+  DebugMonitor_IRQn             = -4,       /*!< 12 Cortex-M3 Debug Monitor Interrupt             */
+  PendSV_IRQn                   = -2,       /*!< 14 Cortex-M3 Pend SV Interrupt                   */
+  SysTick_IRQn                  = -1,       /*!< 15 Cortex-M3 System Tick Interrupt               */
+} IRQn_Type;
+
+#define __MPU_PRESENT 1
+#define ARCH_DEFINED 1
+#define __NVIC_PRIO_BITS 8
+
+#if defined __v7em_f5ss || defined __v7em_f5sh || defined __v7em_f5ds || defined __v7em_f5dh
+
+#define __ICACHE_PRESENT 0
+#define __DCACHE_PRESENT 0
+#define __DTCM_PRESENT 0
+#define __CM7_REV 1
+#define __Vendor_SysTickConfig 0
+#endif
+
+#if defined __v7m
+#define ARCH "v7m"
+
+#define __FPU_PRESENT 0
+#define ARM_MATH_CM3 1
+#undef __FPU_USED
+#include "arch/cmsis/core_cm3.h"
+
+#elif defined __v7em
+#define ARCH "v7em"
+#define __FPU_PRESENT 0
+#define ARM_MATH_CM4 1
+#undef __FPU_USED
+#include "arch/cmsis/core_cm4.h"
+
+#elif defined __v7em_f4ss
+#define ARCH "v7em_f4ss"
+
+#define __FPU_PRESENT 1
+#define ARM_MATH_CM4 1
+#undef __FPU_USED
+#include "arch/cmsis/core_cm4.h"
+
+#elif defined __v7em_f4sh
+#define ARCH "v7em_f4sh"
+
+#define __FPU_PRESENT 1
+#define ARM_MATH_CM4 1
+#undef __FPU_USED
+#include "arch/cmsis/core_cm4.h"
+
+#elif defined __v7em_f5ss
+#define ARCH "v7em_f5ss"
+
 #define __CHECK_DEVICE_DEFINES
 #define __FPU_PRESENT 1
 #define ARM_MATH_CM7 1
 #undef __FPU_USED
-#define ARCH_DEFINED
-typedef enum IRQn
-{
-/******  Cortex-M4 Processor Exceptions Numbers ***************************************************/
-  NonMaskableInt_IRQn           = -14,      /*!< 2 Non Maskable Interrupt                         */
-  HardFault_IRQn                = -13,              /*!<   3  Hard Fault, all classes of Fault                                 */
-  MemoryManagement_IRQn         = -12,      /*!< 4 Cortex-M3 Memory Management Interrupt          */
-  BusFault_IRQn                 = -11,      /*!< 5 Cortex-M3 Bus Fault Interrupt                  */
-  UsageFault_IRQn               = -10,      /*!< 6 Cortex-M3 Usage Fault Interrupt                */
-  SVCall_IRQn                   = -5,       /*!< 11 Cortex-M3 SV Call Interrupt                   */
-  DebugMonitor_IRQn             = -4,       /*!< 12 Cortex-M3 Debug Monitor Interrupt             */
-  PendSV_IRQn                   = -2,       /*!< 14 Cortex-M3 Pend SV Interrupt                   */
-  SysTick_IRQn                  = -1,       /*!< 15 Cortex-M3 System Tick Interrupt               */
-} IRQn_Type;
-#define __MPU_PRESENT 1
 #include "arch/cmsis/core_cm7.h"
-#elif defined __armv7em
+
+#elif defined __v7em_f5sh
+#define ARCH "v7em_f5sh"
+
 #define __CHECK_DEVICE_DEFINES
 #define __FPU_PRESENT 1
-#define ARM_MATH_CM4 1
+#define ARM_MATH_CM7 1
 #undef __FPU_USED
-#define ARCH_DEFINED
-typedef enum IRQn
-{
-/******  Cortex-M4 Processor Exceptions Numbers ***************************************************/
-  NonMaskableInt_IRQn           = -14,      /*!< 2 Non Maskable Interrupt                         */
-  HardFault_IRQn                = -13,              /*!<   3  Hard Fault, all classes of Fault                                 */
-  MemoryManagement_IRQn         = -12,      /*!< 4 Cortex-M3 Memory Management Interrupt          */
-  BusFault_IRQn                 = -11,      /*!< 5 Cortex-M3 Bus Fault Interrupt                  */
-  UsageFault_IRQn               = -10,      /*!< 6 Cortex-M3 Usage Fault Interrupt                */
-  SVCall_IRQn                   = -5,       /*!< 11 Cortex-M3 SV Call Interrupt                   */
-  DebugMonitor_IRQn             = -4,       /*!< 12 Cortex-M3 Debug Monitor Interrupt             */
-  PendSV_IRQn                   = -2,       /*!< 14 Cortex-M3 Pend SV Interrupt                   */
-  SysTick_IRQn                  = -1,       /*!< 15 Cortex-M3 System Tick Interrupt               */
-} IRQn_Type;
-#define __MPU_PRESENT 1
-#include "arch/cmsis/core_cm4.h"
-#elif defined __armv7m
+#include "arch/cmsis/core_cm7.h"
+
+#elif defined __v7em_f5ds
+#define ARCH "v7em_f5ds"
+
 #define __CHECK_DEVICE_DEFINES
-#define __FPU_PRESENT 0
-#define ARM_MATH_CM3 1
+#define __FPU_PRESENT 1
+#define ARM_MATH_CM7 1
 #undef __FPU_USED
-#define ARCH_DEFINED
-typedef enum IRQn
-{
-/******  Cortex-M3 Processor Exceptions Numbers ***************************************************/
-  NonMaskableInt_IRQn           = -14,      /*!< 2 Non Maskable Interrupt                         */
-  HardFault_IRQn                = -13,              /*!<   3  Hard Fault, all classes of Fault                                 */
-  MemoryManagement_IRQn         = -12,      /*!< 4 Cortex-M3 Memory Management Interrupt          */
-  BusFault_IRQn                 = -11,      /*!< 5 Cortex-M3 Bus Fault Interrupt                  */
-  UsageFault_IRQn               = -10,      /*!< 6 Cortex-M3 Usage Fault Interrupt                */
-  SVCall_IRQn                   = -5,       /*!< 11 Cortex-M3 SV Call Interrupt                   */
-  DebugMonitor_IRQn             = -4,       /*!< 12 Cortex-M3 Debug Monitor Interrupt             */
-  PendSV_IRQn                   = -2,       /*!< 14 Cortex-M3 Pend SV Interrupt                   */
-  SysTick_IRQn                  = -1,       /*!< 15 Cortex-M3 System Tick Interrupt               */
-} IRQn_Type;
-#define __MPU_PRESENT 1
-#include "arch/cmsis/core_cm3.h"
+#include "arch/cmsis/core_cm7.h"
+
+#elif defined __v7em_f5dh
+#define ARCH "v7em_f5dh"
+
+#define __CHECK_DEVICE_DEFINES
+#define __FPU_PRESENT 1
+#define ARM_MATH_CM7 1
+#undef __FPU_USED
+#include "arch/cmsis/core_cm7.h"
+
+#else
+#error "No ARM Arch is defined"
+#endif
+
 #endif
 
 #ifdef __link

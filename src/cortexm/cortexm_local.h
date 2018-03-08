@@ -28,12 +28,16 @@
 
 static inline void cortexm_enable_systick_irq() MCU_ALWAYS_INLINE;
 void cortexm_enable_systick_irq(){
+#if defined SysTick
 	SysTick->CTRL |= SYSTICK_CTRL_TICKINT;
+#endif
 }
 
 static inline void cortexm_disable_systick_irq() MCU_ALWAYS_INLINE;
 void cortexm_disable_systick_irq(){
+#if defined SysTick
 	SysTick->CTRL &= ~SYSTICK_CTRL_TICKINT;
+#endif
 }
 
 #endif /* CORTEXM_LOCAL_H_ */
