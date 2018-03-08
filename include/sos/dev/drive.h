@@ -17,7 +17,7 @@
  * 
  */
 
-/*! \addtogroup DRIVE Disk
+/*! \addtogroup DRIVE Drive
  * @{
  *
  *
@@ -40,16 +40,19 @@
 #define DRIVE_IOC_IDENT_CHAR 'd'
 
 enum {
-	DRIVE_FLAG_PROTECT = (1<<0),
-	DRIVE_FLAG_UNPROTECT = (1<<1),
-	DRIVE_FLAG_ERASE_BLOCKS = (1<<2),
-	DRIVE_FLAG_ERASE_DEVICE = (1<<3),
-	DRIVE_FLAG_POWERDOWN = (1<<4),
-	DRIVE_FLAG_POWERUP = (1<<5),
-	DRIVE_FLAG_INIT = (1<<6)
+    DRIVE_FLAG_PROTECT /*! Enables driver write protection. */ = (1<<0),
+    DRIVE_FLAG_UNPROTECT /*! Disables driver write protection. */ = (1<<1),
+    DRIVE_FLAG_ERASE_BLOCKS /*! Erases blocks on disk (use start and end to specify which blocks). */ = (1<<2),
+    DRIVE_FLAG_ERASE_DEVICE /*! Erases the drive. */ = (1<<3),
+    DRIVE_FLAG_POWERDOWN /*! Puts the drive in power down mode. */ = (1<<4),
+    DRIVE_FLAG_POWERUP /*! Powers up the driver (after power down). */ = (1<<5),
+    DRIVE_FLAG_INIT /*! Initializes the drive. */ = (1<<6)
 } drive_flags_t;
 
-/*! \brief Disk attributes
+/*! \brief Drive Info
+ * \details This is the data structure for accessing
+ * information about the device.
+ *
  */
 typedef struct MCU_PACK {
 	u32 o_flags /*! Attribute flags supported by this driver */;
@@ -64,15 +67,23 @@ typedef struct MCU_PACK {
 	u32 resd[8];
 } drive_info_t;
 
+
+/*! \brief Drive Attributes
+ * \details This is the data structure used with setting drive attributes.
+ *
+ */
 typedef struct MCU_PACK {
-	u32 o_flags;
-	u32 start;
-	u32 end;
+    u32 o_flags /*! Drive flags such as \ref DRIVE_FLAG_INIT */;
+    u32 start /*! Start block (used with \ref DRIVE_FLAG_ERASE_BLOCKS) */;
+    u32 end /*! End block (used with \ref DRIVE_FLAG_ERASE_BLOCKS) */;
 	u32 resd[8];
 } drive_attr_t;
 
+/*! \details Gets the driver version. */
 #define I_DRIVE_GETVERSION _IOCTL(DRIVE_IOC_IDENT_CHAR, I_MCU_GETVERSION)
+/*! \details Gets the drive info (drive_info_t). */
 #define I_DRIVE_GETINFO _IOCTLR(DRIVE_IOC_IDENT_CHAR, I_MCU_GETINFO, drive_info_t)
+/*! \details Sets the drive attributes (\sa drive_attr_t). */
 #define I_DRIVE_SETATTR _IOCTLW(DRIVE_IOC_IDENT_CHAR, I_MCU_SETATTR, drive_attr_t)
 #define I_DRIVE_SETACTION _IOCTLW(DRIVE_IOC_IDENT_CHAR, I_MCU_SETATTR, mcu_action_t)
 

@@ -58,7 +58,7 @@ enum {
 typedef struct MCU_PACK {
 	char kernel_version[8] /*!  The OS (kernel) Version */;
 	char sys_version[8] /*!  The System (board) Version */;
-	char arch[16] /*!  The target architecture (lpc17xx, lpc13xx, etc) */;
+    char arch[16] /*!  The target architecture (armv7m, armv7em, etc) */;
 	u32 signature /*!  Ths OS library signature used to ensure proper build system is used for applications */;
 	u32 security /*!  Security flags (see \ref sys_security_flags_t)*/;
 	u32 cpu_freq /*!  The CPU clock frequency */;
