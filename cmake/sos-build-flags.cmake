@@ -1,4 +1,5 @@
 
+
 set(SOS_BUILD_C_FLAGS "-Wall -mthumb -D__StratifyOS__ -ffunction-sections -fdata-sections -fomit-frame-pointer")
 set(SOS_BUILD_CXX_FLAGS "-fno-rtti -fno-exceptions -fno-threadsafe-statics -fno-unwind-tables -fno-use-cxa-atexit")
 set(SOS_BUILD_ASM_FLAGS "-mthumb")
@@ -41,6 +42,8 @@ string(COMPARE EQUAL "${SOS_BUILD_ARCH}" v7em_f5ss IS_V7EM_F5SS)
 string(COMPARE EQUAL "${SOS_BUILD_ARCH}" v7em_f5sh IS_V7EM_F5SH)
 string(COMPARE EQUAL "${SOS_BUILD_ARCH}" v7em_f5ds IS_V7EM_F5DS)
 string(COMPARE EQUAL "${SOS_BUILD_ARCH}" v7em_f5dh IS_V7EM_F5DH)
+
+set(IS_NOT_LINK 1)
 
 if(IS_V7M) #armv7m soft float
 	set(SOS_BUILD_INSTALL_DIR ${SOS_BUILD_INSTALL_DIR_V7M})
@@ -86,4 +89,15 @@ elseif( SOS_BUILD_ARCH STREQUAL link )
 	set(SOS_BUILD_INSTALL_DIR ".")
 	set(SOS_BUILD_FLOAT_DIR ".")
 	set(SOS_BUILD_FLOAT_OPTIONS "")
+	set(IS_NOT_LINK 0)
+endif()
+
+if(IS_NOT_LINK)
+	set(SOS_BUILD_SYSTEM_INCLUDES
+		${CMAKE_INSTALL_PREFIX}/../lib/gcc/arm-none-eabi/${CMAKE_CXX_COMPILER_VERSION}/include
+		${CMAKE_INSTALL_PREFIX}/../lib/gcc/arm-none-eabi/${CMAKE_CXX_COMPILER_VERSION}/include-fixed
+		${CMAKE_INSTALL_PREFIX}/include
+		${CMAKE_INSTALL_PREFIX}/include/c++/${CMAKE_CXX_COMPILER_VERSION}
+		${CMAKE_INSTALL_PREFIX}/include/c++/${CMAKE_CXX_COMPILER_VERSION}/${TOOLCHAIN_HOST}
+		)
 endif()
