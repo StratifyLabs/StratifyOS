@@ -2,8 +2,10 @@
 
 set(SOS_BUILD_ARCH ${SOS_LIB_ARCH})
 include(${SOS_TOOLCHAIN_CMAKE_PATH}/sos-build-flags.cmake)
-set(CMAKE_VERBOSE_MAKEFILE TRUE)
 
+if(SOS_LIB_VERBOSE)
+	set(CMAKE_VERBOSE_MAKEFILE TRUE)
+endif()
 
 set(SUFFIX "")
 
