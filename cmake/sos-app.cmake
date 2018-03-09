@@ -1,19 +1,9 @@
 
-set(CMAKE_VERBOSE_MAKEFILE TRUE CACHE INTERNAL "verbose make")
+set(SOS_BUILD_ARCH ${SOS_APP_ARCH})
+include(${SOS_TOOLCHAIN_CMAKE_PATH}/sos-build-flags.cmake)
+set(CMAKE_VERBOSE_MAKEFILE TRUE)
 
-if( ${SOS_APP_ARCH} STREQUAL armv7-m )
-	set(BUILD_NAME "build_release_armv7m")
-	set(BUILD_DEVICE "armv7m")
-	set(BUILD_FLOAT ${TOOLCHAIN_FLOAT_DIR_ARMV7M})
-	set(BUILD_FLOAT_OPTIONS "")
-	set(BUILD_LIBRARY_DIR ${TOOLCHAIN_INSTALL_DIR_ARMV7M})
-else()
-	set(BUILD_NAME "build_release_armv7em_fpu")
-	set(BUILD_FLOAT "${TOOLCHAIN_FLOAT_DIR_ARMV7EM_FPU}")
-	set(BUILD_DEVICE "armv7em")
-	set(BUILD_FLOAT_OPTIONS ${TOOLCHAIN_FLOAT_OPTIONS_ARMV7EM_FPU})
-	set(BUILD_LIBRARY_DIR ${TOOLCHAIN_INSTALL_DIR_ARMV7EM_FPU})
-endif()
+set(BUILD_NAME build_release_${SOS_APP_ARCH})
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/${BUILD_NAME} CACHE INTERNAL "runtime output")
 
@@ -26,8 +16,8 @@ else()
 endif()
 
 set(BUILD_LIBRARIES ${SOS_APP_LIBRARIES} api sos_crt)
-set(BUILD_FLAGS -mlong-calls -march=${SOS_APP_ARCH} ${BUILD_FLOAT_OPTIONS} ${BUILD_OPTIMIZATION})
-set(LINKER_FLAGS "-nostartfiles -nostdlib -L${TOOLCHAIN_LIB_DIR}/${BUILD_LIBRARY_DIR}/${BUILD_FLOAT}/. -Wl,-Map,${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${SOS_APP_NAME}_${SOS_APP_ARCH}.map,--defsym=_app_ram_size=${SOS_APP_RAM_SIZE},--gc-sections -Tldscripts/app.ld -u crt")
+set(BUILD_FLAGS -mlong-calls ${SOS_BUILD_FLOAT_OPTIONS} ${BUILD_OPTIMIZATION})
+set(LINKER_FLAGS "-nostartfiles -nostdlib -L${TOOLCHAIN_LIB_DIR}/${SOS_BUILD_INSTALL_DIR}/${SOS_BUILD_FLOAT_DIR}/. -Wl,-Map,${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${SOS_APP_NAME}_${SOS_APP_ARCH}.map,--defsym=_app_ram_size=${SOS_APP_RAM_SIZE},--gc-sections -Tldscripts/app.ld -u crt")
 
 add_executable(${SOS_APP_NAME}_${SOS_APP_ARCH}.elf ${SOS_APP_SOURCELIST} StratifySettings.json StratifyLocalSettings.json)
 add_custom_target(bin_${SOS_APP_NAME}_${SOS_APP_ARCH} DEPENDS ${SOS_APP_NAME}_${SOS_APP_ARCH}.elf COMMAND ${CMAKE_OBJCOPY} -j .text -j .data -O binary ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${SOS_APP_NAME}_${SOS_APP_ARCH}.elf ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${SOS_APP_NAME})
@@ -35,7 +25,7 @@ add_custom_target(asm_${SOS_APP_NAME}_${SOS_APP_ARCH} DEPENDS bin_${SOS_APP_NAME
 add_custom_target(size_${SOS_APP_ARCH} DEPENDS asm_${SOS_APP_NAME}_${SOS_APP_ARCH} COMMAND ${CMAKE_SIZE} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${SOS_APP_NAME}_${SOS_APP_ARCH}.elf)
 add_custom_target(${SOS_APP_ARCH} ALL DEPENDS size_${SOS_APP_ARCH})
 
-target_compile_definitions(${SOS_APP_NAME}_${SOS_APP_ARCH}.elf PUBLIC __${BUILD_DEVICE} __StratifyOS__ ${SOS_APP_DEFINITIONS})
+target_compile_definitions(${SOS_APP_NAME}_${SOS_APP_ARCH}.elf PUBLIC __${SOS_APP_ARCH} __StratifyOS__ ${SOS_APP_DEFINITIONS})
 target_link_libraries(${SOS_APP_NAME}_${SOS_APP_ARCH}.elf ${BUILD_LIBRARIES})
 set_target_properties(${SOS_APP_NAME}_${SOS_APP_ARCH}.elf PROPERTIES LINK_FLAGS ${LINKER_FLAGS})
 target_compile_options(${SOS_APP_NAME}_${SOS_APP_ARCH}.elf PUBLIC ${BUILD_FLAGS})
