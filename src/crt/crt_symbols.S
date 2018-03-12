@@ -2,13 +2,13 @@
 
 
 
-#if defined __armv7m
+#if defined __v7m
 #define __CORTEX_M 3
-#else
+#elif defined __v7em || defined __v7em_f4sh || defined __v7em_f4ss
 #define __CORTEX_M 4
+#elif defined __v7em_f5sh || defined __v7em_f5ss || defined __v7em_f5dh || defined __v7em_f5ds
+#define __CORTEX_M 7
 #endif
-
-
 
 
 #define LINK_ADDR (0xDEFF8001 + (__LINE__ - 16) * 4)

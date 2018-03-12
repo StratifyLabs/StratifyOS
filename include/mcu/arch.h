@@ -41,7 +41,8 @@
 #include "arch/lpc/lpc_arch.h"
 #define ARCH_DEFINED
 #elif (defined __stm32f446xx) || (defined __stm32f401xc) || (defined __stm32f411xe) \
-    || (defined __stm32f417xx) || (defined __stm32f412zx) || (defined __stm32f429xx)
+    || (defined __stm32f417xx) || (defined __stm32f412zx) || (defined __stm32f429xx) \
+    || (defined __stm32f746xx) || (defined __stm32f723xx) || (defined __stm32f767xx)
 #undef __FPU_USED
 #include "arch/stm32/stm32_arch.h"
 #define ARCH_DEFINED
