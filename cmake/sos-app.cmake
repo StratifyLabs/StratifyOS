@@ -34,4 +34,8 @@ target_link_libraries(${BUILD_TARGET} ${BUILD_LIBRARIES})
 set_target_properties(${BUILD_TARGET} PROPERTIES LINK_FLAGS ${LINKER_FLAGS})
 target_compile_options(${BUILD_TARGET} PUBLIC ${BUILD_FLAGS})
 
+if(SOS_APP_INCLUDE_DIRECTORIES)
+	target_include_directories(${BUILD_TARGET} PUBLIC ${SOS_APP_INCLUDE_DIRECTORIES})
+endif()
+
 target_include_directories(${BUILD_TARGET} PUBLIC ${SOS_BUILD_SYSTEM_INCLUDES})

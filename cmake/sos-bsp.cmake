@@ -64,6 +64,7 @@ target_compile_definitions(${BUILD_TARGET} PUBLIC __StratifyOS__ __${BUILD_TYPE}
 target_link_libraries(${BUILD_TARGET} ${BUILD_EXTRA_LIBRARIES} ${BUILD_LIBRARIES})
 set_target_properties(${BUILD_TARGET} PROPERTIES LINK_FLAGS ${LINKER_FLAGS})
 target_compile_options(${BUILD_TARGET} PUBLIC ${BUILD_FLAGS})
+
 if(SOS_BSP_INCLUDE_DIRECTORIES)
 	target_include_directories(${BUILD_TARGET} PUBLIC ${SOS_BSP_INCLUDE_DIRECTORIES})
 endif()

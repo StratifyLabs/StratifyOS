@@ -18,8 +18,8 @@
  */
 
 
-#ifndef DEV_FIFO_H_
-#define DEV_FIFO_H_
+#ifndef DEVICE_FIFO_H_
+#define DEVICE_FIFO_H_
 
 #include "sos/dev/fifo.h"
 #include "sos/fs/devfs.h"
@@ -82,12 +82,17 @@ int fifo_write_buffer(const fifo_config_t * cfgp, fifo_state_t * state, const ch
 int fifo_data_transmitted(const fifo_config_t * cfgp, fifo_state_t * state);
 void fifo_data_received(const fifo_config_t * cfgp, fifo_state_t * state);
 
-
-
 void fifo_cancel_rop(fifo_state_t * state);
 void fifo_cancel_wop(fifo_state_t * state);
 
 
+#define FIFO_DEFINE_CONFIG(fifo_size, fifo_buffer) .size = fifo_size, .buffer = fifo_buffer
 
-#endif /* DEV_FIFO_H_ */
+#define FIFO_DECLARE_CONFIG_STATE(fifo_name,\
+    fifo_buffer_size ) \
+    fifo_state_t fifo_name##_state MCU_SYS_MEM; \
+    char fifo_name##_buffer[fifo_buffer_size] MCU_SYS_MEM; \
+    const fifo_config_t fifo_name##_config = { FIFO_DEFINE_CONFIG(fifo_buffer_size, fifo_name##_buffer) }
+
+#endif /* DEVICE_FIFO_H_ */
 

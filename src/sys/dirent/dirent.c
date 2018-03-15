@@ -25,7 +25,7 @@
  * interface.
  *
  * \code
- * #include "sos/dev/sys/dirent.h"
+ * #include <dirent.h>
  * #include <stdio.h>
  *
  * void show_directory(){

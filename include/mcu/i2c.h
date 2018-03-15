@@ -43,15 +43,32 @@ typedef struct MCU_PACK {
 	i2c_attr_t attr; //default attributes
 } i2c_config_t;
 
-int mcu_i2c_open(const devfs_handle_t * cfg) MCU_ROOT_CODE;
-int mcu_i2c_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_ROOT_CODE;
-int mcu_i2c_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_ROOT_CODE;
-int mcu_i2c_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_ROOT_CODE;
-int mcu_i2c_close(const devfs_handle_t * cfg) MCU_ROOT_CODE;
+int mcu_i2c_open(const devfs_handle_t * handle) MCU_ROOT_CODE;
+int mcu_i2c_read(const devfs_handle_t * handle, devfs_async_t * async) MCU_ROOT_CODE;
+int mcu_i2c_write(const devfs_handle_t * handle, devfs_async_t * async) MCU_ROOT_CODE;
+int mcu_i2c_ioctl(const devfs_handle_t * handle, int request, void * ctl) MCU_ROOT_CODE;
+int mcu_i2c_close(const devfs_handle_t * handle) MCU_ROOT_CODE;
 
 int mcu_i2c_getinfo(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
 int mcu_i2c_setattr(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
 int mcu_i2c_setaction(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
+
+#define I2C_DEFINE_ATTR_MASTER(i2c_attr_flags, \
+    i2c_attr_freq, \
+    i2c_attr_sda_port, i2c_attr_sda_pin, \
+    i2c_attr_scl_port, i2c_attr_scl_pin) \
+    .o_flags = i2c_attr_flags, .freq = i2c_attr_freq, \
+    .pin_assignment.scl = {i2c_attr_scl_port, i2c_attr_scl_pin}, \
+    .pin_assignment.sda = {i2c_attr_sda_port, i2c_attr_sda_pin}
+
+#define I2C_DECLARE_CONFIG_MASTER(i2c_name, \
+    i2c_attr_flags, \
+    i2c_attr_freq, \
+    i2c_attr_sda_port, i2c_attr_sda_pin, \
+    i2c_attr_scl_port, i2c_attr_scl_pin) \
+    i2c_config_t i2c_name##_config = { \
+       .attr = { I2C_DEFINE_ATTR_MASTER(i2c_attr_flags, i2c_attr_freq, i2c_attr_sda_port, i2c_attr_sda_pin, i2c_attr_scl_port, i2c_attr_scl_pin) } \
+    }
 
 
 #ifdef __cplusplus

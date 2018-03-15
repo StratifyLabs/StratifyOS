@@ -88,13 +88,18 @@ void ffifo_set_overflow(ffifo_state_t * state, int value);
 void ffifo_data_transmitted(const ffifo_config_t * cfgp, ffifo_state_t * state);
 void ffifo_data_received(const ffifo_config_t * cfgp, ffifo_state_t * state);
 
-
-
 void ffifo_cancel_rop(ffifo_state_t * state);
 void ffifo_cancel_wop(ffifo_state_t * state);
 
 
+#define FFIFO_DEFINE_CONFIG(ffifo_frame_count, ffifo_frame_size, ffifo_buffer) .count = ffifo_frame_count, .frame_size = ffifo_frame_size, .buffer = ffifo_buffer
 
+#define FFIFO_DECLARE_CONFIG_STATE(ffifo_name,\
+    ffifo_frame_count, \
+    ffifo_frame_size ) \
+    ffifo_state_t ffifo_name##_state MCU_SYS_MEM; \
+    char ffifo_name##_buffer[fifo_frame_size * fifo_frame_count] MCU_SYS_MEM; \
+    const ffifo_config_t ffifo_name##_config = { FFIFO_DEFINE_CONFIG(ffifo_frame_count, ffifo_frame_size, ffifo_name##_buffer) }
 
 
 #endif /* DEV_FFIFO_H_ */

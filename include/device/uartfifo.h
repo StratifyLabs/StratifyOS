@@ -52,6 +52,30 @@ int uartfifo_read(const devfs_handle_t * cfg, devfs_async_t * rop);
 int uartfifo_write(const devfs_handle_t * cfg, devfs_async_t * wop);
 int uartfifo_close(const devfs_handle_t * cfg);
 
+#define UARTFIFO_DECLARE_CONFIG_STATE(uart_fifo_name,\
+    uart_fifo_buffer_size, \
+    uart_attr_flags, \
+    uart_attr_width, \
+    uart_attr_freq, \
+    uart_attr_tx_port, uart_attr_tx_pin, \
+    uart_attr_rx_port, uart_attr_rx_pin, \
+    uart_attr_cts_port, uart_attr_cts_pin, \
+    uart_attr_rts_port, uart_attr_rts_pin ) \
+    uartfifo_state_t uart_fifo_name##_state MCU_SYS_MEM; \
+    char uart_fifo_name##_buffer[uart_fifo_buffer_size] MCU_SYS_MEM; \
+    const uartfifo_config_t uart_fifo_name##_config = { \
+       .uart = { .attr = { UART_DEFINE_ATTR( uart_attr_flags, \
+             uart_attr_width, \
+             uart_attr_freq, \
+             uart_attr_tx_port, uart_attr_tx_pin, \
+             uart_attr_rx_port, uart_attr_rx_pin, \
+             uart_attr_cts_port, uart_attr_cts_pin, \
+             uart_attr_rts_port, uart_attr_rts_pin ) }\
+       }, \
+       .fifo = { .size = uart_fifo_buffer_size, .buffer = uart_fifo_name##_buffer } \
+    }
+
+
 #ifdef __cplusplus
 }
 #endif
