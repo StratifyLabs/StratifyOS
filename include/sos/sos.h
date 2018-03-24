@@ -563,7 +563,7 @@ typedef struct {
  * configuration data.
  */
 typedef struct MCU_PACK {
-	u8 clk_usecond_tmr /*! tmr used for usecond counter */;
+    u8 clk_usecond_tmr /*! Hardware timer used for usecond counter */;
 	u8 task_total /*! Total number of supported tasks */;
 	u16 start_stack_size /*! Stack size of the first thread (when in doubt use SOS_DEFAULT_START_STACK_SIZE) */;
 	const char * stdin_dev /*! Device used for standard input */;
@@ -588,6 +588,14 @@ typedef struct MCU_PACK {
 extern volatile sched_task_t sos_sched_table[];
 extern volatile task_t sos_task_table[];
 extern const sos_board_config_t sos_board_config;
+
+
+#define SOS_DECLARE_TASK_TABLE(task_count) \
+    volatile sched_task_t sos_sched_table[task_count] MCU_SYS_MEM; \
+    volatile task_t sos_task_table[task_count] MCU_SYS_MEM
+
+#define SOS_USER_ROOT 0
+#define SOS_USER 1
 
 void sos_led_startup();
 void sos_led_root_enable(void * args);

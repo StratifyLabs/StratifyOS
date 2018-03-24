@@ -97,6 +97,15 @@ typedef enum {
 } mcu_event_flag_t;
 
 typedef enum {
+    MCU_ERROR_NONE /*! 0: No Error */,
+    MCU_ERROR_INVALID_PIN_ASSINGMENT /*! 1: Invalid Pin Assignment */,
+    MCU_ERROR_INVALID_FREQUENCY /*! 2: Invalid Frequency */,
+    MCU_ERROR_INVALID_CHANNEL_LOCATION /*! 3: Invalid Channel Location */,
+    MCU_ERROR_INVALID_CHANNEL_VALUE /*! 4: Invalid Channel Value */,
+    MCU_ERROR_I2C_ACK_ERROR /*! 6: I2C Ack Error */
+} mcu_error_t;
+
+typedef enum {
 	MCU_CHANNEL_FLAG_IS_INPUT = 0x80
 } mcu_channel_flag_t;
 

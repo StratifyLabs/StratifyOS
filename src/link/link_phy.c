@@ -26,6 +26,7 @@
 
 #include "link_local.h"
 
+#define MAX_DEVICE_PATH 1024
 
 #if defined __win32 || defined __win64
 #include <windows.h>
@@ -43,7 +44,6 @@ typedef struct {
 int link_phy_getname(char * dest, const char * last, int len){
 	int com_port;
 	char buffer[12];
-
 
 	if( strlen(last) == 0 ){
 		com_port = 0;
@@ -200,6 +200,7 @@ void link_phy_flush(link_transport_phy_t handle){
 
 typedef struct {
 	int fd;
+    char device_path[MAX_DEVICE_PATH];
 } link_phy_container_t;
 
 //This is the mac osx prefix -- this needs to be in a list so it can also check bluetooth
@@ -259,17 +260,14 @@ int link_phy_getname(char * dest, const char * last, int len){
 
 
 link_transport_phy_t link_phy_open(const char * name, int baudrate){
-	char path[1024];
-	link_transport_phy_t phy;
+    link_transport_phy_t phy;
 	int fd;
 	struct termios options;
+    link_phy_container_t * container;
 
-	if( strnlen(name, 1024) > 1000 ){
-		return LINK_PHY_OPEN_ERROR;
-	}
-	//build the path
-	strcpy(path, "/dev/");
-	strcat(path, name);
+    if( strnlen(name, MAX_DEVICE_PATH) >= MAX_DEVICE_PATH ){
+        return LINK_PHY_OPEN_ERROR;
+    }
 
 
 	//open serial port
@@ -314,39 +312,58 @@ link_transport_phy_t link_phy_open(const char * name, int baudrate){
 		return LINK_PHY_OPEN_ERROR;
 	}
 
+
 	phy = malloc(sizeof(link_phy_container_t));
-	((link_phy_container_t*)phy)->fd = fd;
+    container = phy;
+    if( phy == 0 ){
+        close(fd);
+        return LINK_PHY_OPEN_ERROR;
+    }
+
+    container->fd = fd;
+    strncpy(container->device_path, name, MAX_DEVICE_PATH);
+
 	link_phy_flush(phy);
 	return phy;
 }
 
 int link_phy_status(link_transport_phy_t handle){
-	struct termios options;
-	link_phy_container_t * phy = handle;
-	if( handle == LINK_PHY_OPEN_ERROR ){
-		return LINK_PHY_ERROR;
-	}
-	if( tcgetattr(phy->fd, &options) < 0 ){
-		return LINK_PHY_ERROR;
-	}
+    link_phy_container_t * phy = handle;
+
+    if( access(phy->device_path, F_OK) < 0 ){
+        //file does not exist
+
+        printf("NO Access to %s\n", phy->device_path);
+        fflush(stdout);
+
+        return LINK_PHY_ERROR;
+    }
 	return 0;
 }
 
 int link_phy_write(link_transport_phy_t handle, const void * buf, int nbyte){
 	struct termios options;
 	link_phy_container_t * phy = handle;
+    int tmp;
+    int ret;
 
 	if( handle == LINK_PHY_OPEN_ERROR ){
 		return LINK_PHY_ERROR;
 	}
 
-	if( tcgetattr(phy->fd, &options) < 0 ){
+    if( link_phy_status(handle) < 0 ){
 		return LINK_PHY_ERROR;
 	}
 
-	if( write(phy->fd, buf, nbyte) != nbyte ){
-		return LINK_PHY_ERROR;
-	}
+    tmp = errno;
+    ret = write(phy->fd, buf, nbyte);
+    if( ret < 0 ){
+        if ( errno == EAGAIN ){
+            errno = tmp;
+            return 0;
+        }
+        return LINK_PHY_ERROR;
+    }
 
 	return nbyte;
 }
@@ -355,7 +372,6 @@ int link_phy_read(link_transport_phy_t handle, void * buf, int nbyte){
 	int ret;
 	int tmp;
 	link_phy_container_t * phy = handle;
-	struct termios options;
 
 	if( handle == LINK_PHY_OPEN_ERROR ){
 		return LINK_PHY_ERROR;
@@ -363,9 +379,9 @@ int link_phy_read(link_transport_phy_t handle, void * buf, int nbyte){
 
 	tmp = errno;
 
-	if( tcgetattr(phy->fd, &options) < 0 ){
-		return LINK_PHY_ERROR;
-	}
+    if( link_phy_status(handle) < 0 ){
+        return LINK_PHY_ERROR;
+    }
 
 	ret = read(phy->fd, buf, nbyte);
 	if( ret < 0 ){
@@ -387,12 +403,12 @@ int link_phy_close(link_transport_phy_t * handle){
 	*handle = LINK_PHY_OPEN_ERROR;
 	int fd = phy->fd;
 	free(phy);
-	fflush(stdout);
-	if( close(fd) < 0 ){
+
+    if( close(fd) < 0 ){
 		return LINK_PHY_ERROR;
 	}
-	fflush(stdout);
-	return 0;
+
+    return 0;
 }
 
 void link_phy_wait(int msec){
@@ -413,5 +429,5 @@ int link_phy_lock(link_transport_phy_t phy){
 }
 
 int link_phy_unlock(link_transport_phy_t phy){
-	return 0;;
+    return 0;
 }

@@ -65,10 +65,6 @@ extern int link_errno;
 #define LINK_VID 0x20A0
 #define LINK_PID 0x413B
 
-
-
-
-
 void link_load_default_driver(link_transport_mdriver_t * driver);
 
 

@@ -120,7 +120,6 @@ int mcu_set_pin_assignment(const void * attr_pin_assignment,
 const void * mcu_select_pin_assignment(const void * attr_pin_assignment,
                                     const void * config_pin_assignment,
                                     int count) MCU_ROOT_CODE;
-
 #endif
 
 enum {
@@ -148,21 +147,31 @@ enum {
 	MCU_BOARD_CONFIG_EVENT_TOTAL
 };
 
+
+/*! \brief MCU Board Configuration Type
+ * \details The MCU Board configuration gives data
+ * that tells Stratify OS how the MCU is used on the board.
+ *
+ */
 typedef struct MCU_PACK {
 	u32 core_osc_freq;
 	u32 core_cpu_freq;
 	u32 core_periph_freq;
 	u32 usb_max_packet_zero;
-	u32 o_flags;
-	void (*event_handler)(int, void*);
-	mcu_pin_t led;
-	u8 debug_uart_port;
-	uart_attr_t debug_uart_attr;
+    u32 o_flags /*! MCU flags such as MCU_BOARD_CONFIG_FLAG_LED_ACTIVE_HIGH */;
+    void (*event_handler)(int, void*) /*! A callback to an event handler that gets, for example, MCU_BOARD_CONFIG_EVENT_FATAL on a fatal event */;
+    mcu_pin_t led /*! A pin on the board that drives an LED. Use {0xff, 0xff} if not available. */;
+    u8 debug_uart_port /*! The port used for the UART debugger. This is only used for _debug builds */;
+    uart_attr_t debug_uart_attr /*! The UART attributes for the UART debugger. */;
 	u8 resd;
 	void * usb_rx_buffer;
 	u16 usb_rx_buffer_size;
+    const void * arch_config /*! A pointer to MCU architecture specific data, for example, stm32_arch_config_t */;
 } mcu_board_config_t;
 
+/*! \brief MCU Board configuration variable
+ * \details This variable must be provided by the board support package.
+ */
 extern const mcu_board_config_t mcu_board_config;
 extern u32 mcu_ram_usage_table[];
 
