@@ -28,12 +28,19 @@
 
 #define MAX_DEVICE_PATH 1024
 
+static int check_name_length(const char * name){
+    if( strnlen(name, MAX_DEVICE_PATH) >= MAX_DEVICE_PATH ){
+        return -1;
+    }
+    return 0;
+}
+
 #if defined __win32 || defined __win64
 #include <windows.h>
 
 typedef struct {
 	HANDLE handle;
-	char name[32];
+    char name[MAX_DEVICE_PATH];
 } link_phy_container_t;
 
 
@@ -62,7 +69,6 @@ int link_phy_getname(char * dest, const char * last, int len){
 		}
 	}
 
-
 	sprintf(buffer, "%s%d", COM_PORT_NAME, com_port);
 	strcpy(dest, buffer);
 
@@ -70,11 +76,26 @@ int link_phy_getname(char * dest, const char * last, int len){
 }
 
 int link_phy_status(link_transport_phy_t handle){
+    link_phy_container_t * phy = handle;
+    HANDLE test_handle;
+    DWORD err;
 
-	//ping the device to see if link is attached
+    test_handle = CreateFile(phy->name, GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+    if( test_handle == INVALID_HANDLE_VALUE ){
+        err = GetLastError();
+        if( err == 5 ){
+            //all is well
+            return 0;
+        }
+    } else {
+        CloseHandle(test_handle);
+        err = 100;
+    }
 
+    printf("LAST ERROR: %d\n", err);
+    fflush(stdout);
 
-	return 0;
+    return -1;
 }
 
 
@@ -83,13 +104,17 @@ link_transport_phy_t link_phy_open(const char * name, int baudrate){
 	link_phy_container_t * handle;
 	DCB params;
 
+    if( check_name_length(name) < 0 ){
+        return LINK_PHY_OPEN_ERROR;
+    }
+
 	handle = malloc(sizeof(link_phy_container_t));
 	if( handle == 0 ){
 		return LINK_PHY_OPEN_ERROR;
 	}
 
-	memset(((link_phy_container_t*)handle)->name, 0, 32);
-	strncpy(handle->name, name, 31);
+    memset(handle->name, 0, MAX_DEVICE_PATH);
+    strncpy(handle->name, name, MAX_DEVICE_PATH-1);
 
 	handle->handle = CreateFile(name, GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
 	if( handle->handle == INVALID_HANDLE_VALUE ){
@@ -140,10 +165,17 @@ link_transport_phy_t link_phy_open(const char * name, int baudrate){
 
 int link_phy_write(link_transport_phy_t handle, const void * buf, int nbyte){
 	DWORD bytes_written;
+    link_phy_container_t * phy = handle;
+
 	if( handle == LINK_PHY_OPEN_ERROR){
 		return LINK_PHY_ERROR;
 	}
-	if( !WriteFile(((link_phy_container_t*)handle)->handle, buf, nbyte, &bytes_written, NULL) ){
+
+    if( link_phy_status(handle) < 0 ){
+        return LINK_PHY_ERROR;
+    }
+
+    if( !WriteFile(phy->handle, buf, nbyte, &bytes_written, NULL) ){
 		link_error("Failed to write %d bytes from handle:%d\n", nbyte, (int)handle);
 		return LINK_PHY_ERROR;
 	}
@@ -152,10 +184,17 @@ int link_phy_write(link_transport_phy_t handle, const void * buf, int nbyte){
 
 int link_phy_read(link_transport_phy_t handle, void * buf, int nbyte){
 	DWORD bytes_read;
+    link_phy_container_t * phy = handle;
+
 	if( handle == LINK_PHY_OPEN_ERROR){
 		return LINK_PHY_ERROR;
 	}
-	if( !ReadFile(((link_phy_container_t*)handle)->handle, buf, nbyte, &bytes_read, NULL) ){
+
+    if( link_phy_status(handle) < 0 ){
+        return LINK_PHY_ERROR;
+    }
+
+    if( !ReadFile(phy->handle, buf, nbyte, &bytes_read, NULL) ){
 		link_error("Failed to read %d bytes from handle:%d\n", nbyte, (int)handle);
 		return LINK_PHY_ERROR;
 	}
