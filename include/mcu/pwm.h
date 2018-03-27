@@ -57,6 +57,37 @@ int mcu_pwm_get(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
 int mcu_pwm_enable(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
 int mcu_pwm_disable(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
 
+#define PWM_DEFINE_ATTR(attr_flags, \
+    attr_freq, \
+    attr_period, \
+    attr_channel0_port, attr_channel0_pin, \
+    attr_channel1_port, attr_channel1_pin, \
+    attr_channel2_port, attr_channel2_pin, \
+    attr_channel3_port, attr_channel3_pin ) \
+    .o_flags = attr_flags, .freq = attr_freq, .period = attr_period, .channel = {0, 0},\
+    .pin_assignment.channel[0] = {attr_channel0_port, attr_channel0_pin}, \
+    .pin_assignment.channel[1] = {attr_channel1_port, attr_channel1_pin}, \
+    .pin_assignment.channel[2] = {attr_channel2_port, attr_channel2_pin}, \
+    .pin_assignment.channel[3] = {attr_channel3_port, attr_channel3_pin}
+
+#define PWM_DECLARE_CONFIG(name, \
+    attr_flags, \
+    attr_freq, \
+    attr_period, \
+    attr_channel0_port, attr_channel0_pin, \
+    attr_channel1_port, attr_channel1_pin, \
+    attr_channel2_port, attr_channel2_pin, \
+    attr_channel3_port, attr_channel3_pin) \
+    pwm_config_t name##_config = { \
+    .attr = { PWM_DEFINE_ATTR(attr_flags, \
+    attr_freq, \
+    attr_period, \
+    attr_channel0_port, attr_channel0_pin, \
+    attr_channel1_port, attr_channel1_pin, \
+    attr_channel2_port, attr_channel2_pin, \
+    attr_channel3_port, attr_channel3_pin) } \
+}
+
 #ifdef __cplusplus
 }
 #endif
