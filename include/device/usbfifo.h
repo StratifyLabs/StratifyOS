@@ -57,6 +57,17 @@ int usbfifo_read(const devfs_handle_t * cfg, devfs_async_t * rop);
 int usbfifo_write(const devfs_handle_t * cfg, devfs_async_t * wop);
 int usbfifo_close(const devfs_handle_t * cfg);
 
+#define USBFIFO_DECLARE_CONFIG_STATE(usb_fifo_name,\
+    usb_fifo_buffer_size, \
+    usb_attr_endpoint, \
+    usb_attr_endpoint_size ) \
+    usbfifo_state_t usb_fifo_name##_state MCU_SYS_MEM; \
+    char usb_fifo_name##_buffer[usb_fifo_buffer_size] MCU_SYS_MEM; \
+    const usbfifo_config_t usb_fifo_name##_config = { \
+       .endpoint = usb_attr_endpoint, \
+       .endpoint_size = usb_attr_endpoint_size, \
+       .fifo = { .size = usb_fifo_buffer_size, .buffer = usb_fifo_name##_buffer } \
+    }
 
 #endif /* DEV_USBFIFO_H_ */
 

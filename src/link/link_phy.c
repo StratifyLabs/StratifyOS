@@ -15,6 +15,7 @@
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>. */
 
 
+#include <string.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
