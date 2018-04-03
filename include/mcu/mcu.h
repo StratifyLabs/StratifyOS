@@ -162,10 +162,8 @@ typedef struct MCU_PACK {
     void (*event_handler)(int, void*) /*! A callback to an event handler that gets, for example, MCU_BOARD_CONFIG_EVENT_FATAL on a fatal event */;
     mcu_pin_t led /*! A pin on the board that drives an LED. Use {0xff, 0xff} if not available. */;
     u8 debug_uart_port /*! The port used for the UART debugger. This is only used for _debug builds */;
+    u8 resd;
     uart_attr_t debug_uart_attr /*! The UART attributes for the UART debugger. */;
-	u8 resd;
-	void * usb_rx_buffer;
-	u16 usb_rx_buffer_size;
     const void * arch_config /*! A pointer to MCU architecture specific data, for example, stm32_arch_config_t */;
 } mcu_board_config_t;
 
