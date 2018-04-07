@@ -539,8 +539,10 @@ void sos_trace_event(link_trace_event_id_t event_id, const void * data_ptr, size
 void sos_trace_event_addr_tid(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len, u32 addr, int tid);
 void sos_trace_root_trace_event(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len);
 
-#define STFY_SCHEDULER_TIMEVAL_SECONDS 2048
-#define STFY_USECOND_PERIOD (1000000UL * STFY_SCHEDULER_TIMEVAL_SECONDS)
+#define SOS_SCHEDULER_TIMEVAL_SECONDS 2048
+#define STFY_SCHEDULER_TIMEVAL_SECONDS SOS_SCHEDULER_TIMEVAL_SECONDS
+#define SOS_USECOND_PERIOD (1000000UL * SOS_SCHEDULER_TIMEVAL_SECONDS)
+#define STFY_USECOND_PERIOD SOS_USECOND_PERIOD
 
 typedef struct {
 	pthread_attr_t attr /*! This holds the task's pthread attributes */;
