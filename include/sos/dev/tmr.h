@@ -90,8 +90,8 @@ typedef struct MCU_PACK {
 
 typedef struct MCU_PACK {
 	u32 o_flags;
-	tmr_pin_assignment_t pin_assignment;
-	u32 freq; /*! The timer frequency */;
+    tmr_pin_assignment_t pin_assignment;
+    u32 freq /*! The timer frequency */;
 	u32 period /*! If this value is non-zero, the timer will reset when it matches this value (if supported) */;
 	mcu_channel_t channel;
 	u32 resd[8];

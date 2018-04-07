@@ -37,6 +37,19 @@ enum {
 	LED_FLAG_DISABLE /*! Turn the LED off (use with LED_FLAG_IS_HIGH_IMPEDANCE) */ = (1<<4),
 };
 
+/*! \brief LED status data structure
+ * \details This data structure is written to the
+ * LED to apply the settings.
+ *
+ *
+ */
+typedef struct MCU_PACK {
+    u8 brightness;
+    u8 red;
+    u8 green;
+    u8 blue;
+} led_status_t;
+
 /*! \brief I2S IO Attributes
  *  \details This structure defines how the control structure
  * for configuring the I2S port.
