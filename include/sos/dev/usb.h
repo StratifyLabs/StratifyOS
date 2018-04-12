@@ -72,6 +72,7 @@ typedef enum {
 	USB_FLAG_IS_SOF_ENABLED = (1<<16),
 	USB_FLAG_IS_LOW_POWER_MODE_ENABLED = (1<<17),
 	USB_FLAG_IS_VBUS_SENSING_ENABLED = (1<<18),
+    USB_FLAG_IS_HIGH_SPEED = (1<<19)
 } usb_flag_t;
 
 

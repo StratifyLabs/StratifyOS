@@ -28,7 +28,7 @@ int mcu_sync_io_complete(void * context, const mcu_event_t * data){
 	return 0;
 }
 
-int mcu_sync_io(const devfs_handle_t * cfg,
+int mcu_sync_io(const devfs_handle_t * handle,
 		int (*func)(const devfs_handle_t * cfg, devfs_async_t * op),
 		int loc,
 		const void * buf,
@@ -51,7 +51,7 @@ int mcu_sync_io(const devfs_handle_t * cfg,
 	op.handler.callback = mcu_sync_io_complete;
 	op.tid = 0;
 
-	ret = func(cfg, &op);
+    ret = func(handle, &op);
 
 	if( ret == 0 ){
 
