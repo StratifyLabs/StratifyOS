@@ -93,8 +93,13 @@ function(sos_build_lib PROJECT_PATH IS_INSTALL CONFIG)
 		set(TARGET all)
 	endif()
 
+
 	execute_process(COMMAND ${CMAKE_EXEC} ${GENERATOR} .. WORKING_DIRECTORY ${BUILD_PATH} RESULT_VARIABLE RESULT)
 	if(RESULT)
+		message(FATAL_ERROR " Failed to generate using " ${CMAKE_EXEC} ".. " ${GENERATOR} "	in " ${BUILD_PATH})
+	endif()
+	if(CONFIG STREQUAL "link")
+		#Sometimes there is a problem building if cmake is only run once
 		message(FATAL_ERROR " Failed to generate using " ${CMAKE_EXEC} ".. " ${GENERATOR} "	in " ${BUILD_PATH})
 	endif()
 	if(SOS_BUILD_CLEAN_ALL)
