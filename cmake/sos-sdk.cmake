@@ -150,7 +150,4 @@ function(sos_sdk_build_qt_lib PATH PROJECT CONFIG)
 	execute_process(COMMAND ${SOS_SDK_MAKE_EXEC} install WORKING_DIRECTORY ${PATH}/build_${CONFIG})
 endfunction()
 
-##[
-aa
-##]
 
