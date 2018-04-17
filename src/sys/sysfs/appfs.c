@@ -69,7 +69,6 @@ static int analyze_path(const char * path, const char ** name, int * mem_type){
 			return ANALYZE_PATH_RAM_DIR;
 		}
 
-		errno = ENOENT;
 		return ANALYZE_PATH_NOENT;
 
 	} else if ( elements == 2 ){
@@ -84,7 +83,6 @@ static int analyze_path(const char * path, const char ** name, int * mem_type){
 		}
 
 	} else if ( elements > 2 ){
-		errno = ENOENT;
 		return ANALYZE_PATH_NOENT;
 	}
 
@@ -214,8 +212,7 @@ int appfs_open(const void * cfg, void ** handle, const char * path, int flags, i
 	switch(path_type){
 	case ANALYZE_PATH_INSTALL:
 		if( (flags & O_ACCMODE) != O_WRONLY ){
-			errno = EINVAL;
-			ret = -1;
+            ret = SYSFS_SET_RETURN(EINVAL);
 		}
 		h->is_install = 1;
 		break;
@@ -224,13 +221,11 @@ int appfs_open(const void * cfg, void ** handle, const char * path, int flags, i
 	case ANALYZE_PATH_FLASH:
 		h->is_install = 0;
 		if( (flags & O_ACCMODE) != O_RDONLY ){
-			errno = EROFS;
-			ret = -1;
+            ret = SYSFS_SET_RETURN(EROFS);
 		}
 		break;
 	default:
-		errno = ENOENT;
-		return -1;
+        ret = SYSFS_SET_RETURN(ENOENT);
 	}
 
 	if( ret == 0 ){
@@ -244,8 +239,7 @@ int appfs_open(const void * cfg, void ** handle, const char * path, int flags, i
 				h->type.reg.size = size;
 				h->type.reg.mode = args.fileinfo.hdr.mode;
 			} else { //the file does not already exist
-				errno = ENOENT;
-				ret = -1;
+                ret = SYSFS_SET_RETURN(ENOENT);
 			}
 		}
 	}
@@ -274,14 +268,12 @@ int appfs_unlink(const void* cfg, const char * path){
 
 	//sys and free files cannot be deleted
 	if ( is_sys(name) || is_free(name) ){
-		errno = ENOTSUP;
-		return -1;
+        return SYSFS_SET_RETURN(ENOTSUP);
 	}
 
 	//see if path exists
 	if ( appfs_util_lookupname(cfg, name, &args, mem_type, NULL) < 0 ){
-		errno = ENOENT;
-		return -1;
+        return SYSFS_SET_RETURN(ENOENT);
 	}
 
 
@@ -309,7 +301,7 @@ int appfs_unlink(const void* cfg, const char * path){
 		//The Ram size is the code size + the data size round up to the next power of 2 to account for memory protection
 		tmp = mpu_getnextpowerof2(args.fileinfo.exec.code_size + args.fileinfo.exec.data_size);
 		if ( appfs_ram_setusage(args.pageinfo.num, tmp, APPFS_MEMPAGETYPE_FREE) < 0 ){
-			return -1;
+            return SYSFS_SET_RETURN(EIO);
 		}
 	}
 
@@ -320,11 +312,11 @@ int appfs_unlink(const void* cfg, const char * path){
 		args.pageinfo.o_flags = MEM_FLAG_IS_QUERY;
 
 		if ( appfs_util_getpageinfo(cfg, &args.pageinfo) ){
-			return -1;
+            return SYSFS_SET_RETURN(EIO);
 		}
 
 		if ( appfs_ram_setusage(args.pageinfo.num, args.fileinfo.exec.ram_size, APPFS_MEMPAGETYPE_FREE) < 0 ){
-			return -1;
+            return SYSFS_SET_RETURN(EIO);
 		}
 	}
 
@@ -372,7 +364,7 @@ int appfs_stat(const void* cfg, const char * path, struct stat * st){
 	const char * name;
 
 	if ( (path_type = analyze_path(path, &name, &mem_type)) < 0 ){
-		return -1;
+        return SYSFS_SET_RETURN(ENOENT);
 	}
 
 	switch(path_type){
@@ -410,8 +402,7 @@ int appfs_stat(const void* cfg, const char * path, struct stat * st){
 		handle.is_install = 0;
 		//see if the path matches the name of any pages
 		if ( appfs_util_lookupname(cfg, name, &args, mem_type, &size) < 0 ){
-			errno = ENOENT;
-			return -1;
+            return SYSFS_SET_RETURN(ENOENT);
 		}
 		if( args.fileinfo.hdr.mode == 0444 ){
 			size -= sizeof(appfs_file_t);
@@ -425,34 +416,6 @@ int appfs_stat(const void* cfg, const char * path, struct stat * st){
 
 	return appfs_fstat(cfg, &handle, st);
 }
-
-#if 0
-int appfs_read_async(const void* cfg, void * handle, devfs_async_t * op){
-	const devfs_device_t * dev;
-	appfs_handle_t * h;
-
-	h = handle;
-	dev = cfg;
-
-	if( h->type.reg.mode == 0444 ){
-		op->loc += sizeof(appfs_file_t);
-	}
-
-	if ( op->loc >= h->type.reg.size ){
-		op->nbyte = 0;
-		return -1; //return EOF
-	}
-
-	//read should not go past the end of the file
-	if ( (op->loc + op->nbyte) >= (h->type.reg.size) ){
-		op->nbyte = h->type.reg.size - op->loc;
-	}
-
-	op->loc = (int)h->type.reg.beg_addr + op->loc;
-	return dev->driver.read(&(dev->handle), op);
-}
-#endif
-
 
 void root_read(void * args){
 	sysfs_read_t * p = args;
@@ -504,8 +467,7 @@ int appfs_read(const void * cfg, void * handle, int flags, int loc, void * buf, 
 }
 
 int appfs_write(const void * cfg, void * handle, int flags, int loc, const void * buf, int nbyte){
-	errno = EROFS;
-	return -1;
+    return SYSFS_SET_RETURN(EROFS);
 }
 
 
@@ -525,8 +487,7 @@ int appfs_opendir(const void* cfg, void ** handle, const char * path){
 	} else if ( strcmp(path, "ram") == 0 ){
 		*handle = (void*)2;
 	} else {
-		errno = ENOENT;
-		return -1;
+        return SYSFS_SET_RETURN(ENOENT);
 	}
 	return 0;
 }
@@ -553,7 +514,7 @@ void root_ioctl(void * args){
 	//INSTALL and CREATE only with with the special .install file
 	case I_APPFS_INSTALL:
 		if( !h->is_install ){
-			errno = ENOTSUP;
+            a->ret = SYSFS_SET_RETURN(ENOTSUP);
 		} else {
 			a->ret = appfs_util_root_writeinstall(a->cfg, h, attr);
 		}
@@ -561,8 +522,8 @@ void root_ioctl(void * args){
 
 	case I_APPFS_CREATE:
 		if( !h->is_install ){
-			errno = ENOTSUP;
-		} else {
+            a->ret = SYSFS_SET_RETURN(ENOTSUP);
+        } else {
 			a->ret = appfs_util_root_create(a->cfg, h, attr);
 		}
 		break;
@@ -570,24 +531,24 @@ void root_ioctl(void * args){
 		//These calls work with the specific applications
 	case I_APPFS_FREE_RAM:
 		if( h->is_install ){
-			errno = ENOTSUP;
-		} else {
+            a->ret = SYSFS_SET_RETURN(ENOTSUP);
+        } else {
 			a->ret =  appfs_util_root_free_ram(a->cfg, h);
 		}
 		break;
 
 	case I_APPFS_RECLAIM_RAM:
 		if( h->is_install ){
-			errno = ENOTSUP;
-		} else {
+            a->ret = SYSFS_SET_RETURN(ENOTSUP);
+        } else {
 			a->ret = appfs_util_root_reclaim_ram(a->cfg, h);
 		}
 		break;
 
 	case I_APPFS_GETINFO:
 		if( h->is_install ){
-			errno = ENOTSUP;
-		} else {
+            a->ret = SYSFS_SET_RETURN(ENOTSUP);
+        } else {
 			f = appfs_util_getfile(h);
 			info->mode = f->hdr.mode;
 			info->o_flags = f->exec.o_flags;
@@ -601,8 +562,8 @@ void root_ioctl(void * args){
 		break;
 
 	default:
-		errno = EINVAL;
-		break;
+        a->ret = SYSFS_SET_RETURN(EINVAL);
+        break;
 	}
 
 }
@@ -624,7 +585,7 @@ static int readdir_mem(const void* cfg, int loc, struct dirent * entry, int type
 	root_load_fileinfo_t args;
 
 	if ( appfs_util_getfileinfo(&args, cfg, loc, type, NULL) < 0 ){
-		return -1;
+        return SYSFS_SET_RETURN(ENOENT);
 	}
 
 	strncpy(entry->d_name, args.fileinfo.hdr.name, NAME_MAX);
@@ -645,7 +606,7 @@ static int readdir_root(const void * cfg, int loc, struct dirent * entry){
 		strncpy(entry->d_name, "ram", NAME_MAX);
 		break;
 	default:
-		return -1;
+        return SYSFS_SET_RETURN(ENOENT);
 	}
 	entry->d_ino = loc;
 	return 0;

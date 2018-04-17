@@ -57,7 +57,9 @@ enum {
     I2S_FLAG_IS_FORMAT_LSB /*! Set this bit for LSB format */ = (1<<11),
     I2S_FLAG_IS_MCK_ENABLED /*! Set this bit to enable the mclk output */ = (1<<12),
     I2S_FLAG_IS_FORMAT_PCM_SHORT /*! Set this bit for PCM Short format*/ = (1<<13),
-    I2S_FLAG_IS_FORMAT_PCM_LONG /*! Set this bit for PCM Long format*/ = (1<<14)
+    I2S_FLAG_IS_FORMAT_PCM_LONG /*! Set this bit for PCM Long format*/ = (1<<14),
+    I2S_FLAG_IS_WIDTH_16_EXTENDED /*! I2S has 16-bits of data in 32-bit blocks */ = (1<<15)
+
 };
 
 /*! \brief I2S IO Attributes

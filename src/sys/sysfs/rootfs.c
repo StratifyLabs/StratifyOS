@@ -62,15 +62,13 @@ int rootfs_stat(const void * cfg, const char * path, struct stat * st){
 	//find the mount point of the path
 	fs = sysfs_find(buffer, false);
 	if ( fs == NULL ){
-		errno = ENOENT;
-		return -1;
+        return SYSFS_SET_RETURN(ENOENT);
 	}
 
 	//If the fs is not root, but the mount path says root then the path doesn't exist
 	if( (is_root == 0) ){
 		if( (fs->mount_path[1] == 0) ){
-			errno = ENOENT;
-			return -1;
+            return SYSFS_SET_RETURN(ENOENT);
 		}
 	}
 
@@ -82,8 +80,7 @@ int rootfs_stat(const void * cfg, const char * path, struct stat * st){
 int rootfs_opendir(const void* cfg, void ** handle, const char * path){
 	//if path is not "/", then there is an error
 	if ( strcmp(path, "") != 0 ){
-		errno = ENOENT;
-		return -1;
+        return SYSFS_SET_RETURN(ENOENT);
 	}
 	//assign the handle value
 	*handle = NULL;
@@ -123,14 +120,3 @@ int rootfs_closedir(const void* cfg, void ** handle){
 	return 0;
 }
 
-int rootfs_not_sup(){
-	errno = ENOTSUP;
-	return -1;
-}
-
-void * rootfs_not_sup_null(){
-	errno = ENOTSUP;
-	return NULL;
-}
-
-void rootfs_not_sup_void(){}

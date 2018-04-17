@@ -198,7 +198,7 @@ int sffs_fstat(const void * cfg, void * handle, struct stat * stat){
 	lock_sffs(cfg);
 	if ( (ret = sffs_block_load(cfg, h->hdr_block, &tmp)) < 0 ){
 		sffs_error("failed to load header block\n");
-		errno = EIO;
+        ret = SYSFS_SET_RETURN(EIO);
 	} else {
 		stat->st_ino = h->segment_data.hdr.serialno;
 		stat->st_size = h->size;
@@ -229,8 +229,7 @@ int sffs_stat(const void * cfg, const char * path, struct stat * stat){
 	} else if ( ret != SFFS_DIR_PATH_EXISTS ){
 		//path does not exist
 		sffs_error("path does not exist\n");
-		errno = ENOENT;
-		ret = -1;
+        ret = SYSFS_SET_RETURN(ENOENT);
 	} else {
 		//open the file
 		sffs_debug(DEBUG_LEVEL, "open file\n");
@@ -266,8 +265,7 @@ int sffs_unlink(const void * cfg, const char * path){
 
 	if ( ret != SFFS_DIR_PATH_EXISTS ){
 		//path does not exist
-		errno = ENOENT;
-		ret = -1;
+        ret = SYSFS_SET_RETURN(ENOENT);
 		goto sffs_unlink_unlock;
 	}
 
@@ -277,8 +275,7 @@ int sffs_unlink(const void * cfg, const char * path){
 
 	if ( sffs_serialno_get(cfg, entry.serialno, SFFS_SNLIST_ITEM_STATUS_OPEN, NULL) != BLOCK_INVALID ){
 		//the file is open -- cannot delete
-		errno = EACCES;
-		ret = -1;
+        ret = SYSFS_SET_RETURN(EACCES);
 		goto sffs_unlink_unlock;
 	}
 
@@ -313,8 +310,7 @@ int sffs_open(const void * cfg, void ** handle, const char * path, int flags, in
 	//lock
 	if ( (err = sffs_dir_exists(cfg, path, &entry, amode)) < 0 ){
 		//unlock
-		errno = ENOTDIR;
-		ret = -1;
+        ret = SYSFS_SET_RETURN(ENOTDIR);
 		h = NULL;
 		goto sffs_open_unlock;
 	}
@@ -324,8 +320,7 @@ int sffs_open(const void * cfg, void ** handle, const char * path, int flags, in
 	//See if there is a slot for an open file
 	h = malloc(sizeof(cl_handle_t));
 	if ( h == NULL ){
-		//errno should be set by malloc
-		ret = -1;
+        ret = SYSFS_SET_RETURN(ENOMEM);
 		goto sffs_open_unlock;
 	}
 
@@ -335,26 +330,22 @@ int sffs_open(const void * cfg, void ** handle, const char * path, int flags, in
 		//The file already exists
 		if ( (flags & O_EXCL) && (flags & O_CREAT) ){
 			//it is an error to try to exclusively create a file that already exists
-			errno = EEXIST;
-			ret = -1;
+            ret = SYSFS_SET_RETURN(EEXIST);
 		} else if ( flags & O_TRUNC ){
 
 			//truncate file (use the same serialno)
 			sffs_debug(DEBUG_LEVEL, "create new file (old file truncated on close)\n");
 			if ( sffs_file_open(cfg, h, entry.serialno, amode, true) < 0 ){
-				errno = ENOSPC;
-				ret = -1;
+                ret = SYSFS_SET_RETURN(ENOSPC);
 			}
 
 		} else {
 			//open the existing file
 			if ( sffs_file_open(cfg, h, entry.serialno, amode, false) < 0 ){
-				errno = ENOSPC;
-				ret = -1;
+                ret = SYSFS_SET_RETURN(ENOSPC);
 			} else  if ( h->size < 0 ){
 				//There is an error with this file -- it is likely corrupt
-				errno = EFBIG;
-				ret = -1;
+                ret = SYSFS_SET_RETURN(EFBIG);
 			}
 		}
 	} else if ( err == SFFS_DIR_PARENT_EXISTS ){ //does the path exist?
@@ -363,20 +354,17 @@ int sffs_open(const void * cfg, void ** handle, const char * path, int flags, in
 			//printf("Create brand new file\n");
 			entry.serialno = sffs_serialno_new(cfg);
 			if ( sffs_file_new(cfg, h, name, mode, &entry, BLOCK_TYPE_FILE_HDR, amode) < 0 ){
-				errno = ENOSPC;
-				ret = -1;
+                ret = SYSFS_SET_RETURN(ENOSPC);
 			}
 
 		} else {
 			sffs_debug(DEBUG_LEVEL, "file %s does not exist\n", path);
-			errno = ENOENT;
-			ret = -1;
+            ret = SYSFS_SET_RETURN(ENOENT);
 		}
 	} else {
 		//Path does not exist
 		sffs_debug(DEBUG_LEVEL, "file %s does not exist here\n", path);
-		errno = ENOENT;
-		ret = -1;
+        ret = SYSFS_SET_RETURN(ENOENT);
 	}
 
 	//unlock()
@@ -411,8 +399,7 @@ int sffs_read(const void * cfg, void * handle, int flags, int loc, void * buf, i
 
 	if ( (h->amode & R_OK) == 0 ){
 		sffs_error("no read access\n");
-		errno = EACCES;
-		return -1;
+        return SYSFS_SET_RETURN(EACCES);
 	}
 
 	if ( sffs_file_startread(cfg, handle) == nbyte ){
@@ -455,8 +442,7 @@ int sffs_write(const void * cfg, void * handle, int flags, int loc, const void *
 
 	if ( (h->amode & W_OK) == 0 ){
 		sffs_error("no write access\n");
-		errno = EACCES;
-		return -1;
+        return SYSFS_SET_RETURN(EACCES);
 	}
 
 	if ( sffs_file_startwrite(cfg, handle) == nbyte ){
@@ -484,7 +470,7 @@ int sffs_close(const void * cfg, void ** handle){
 	free(h);
 	unlock_sffs(cfg);
 	if( ret < 0 ){
-		errno = EIO;
+        ret = SYSFS_SET_RETURN(EIO);
 	}
 	return ret;
 }
@@ -492,8 +478,7 @@ int sffs_close(const void * cfg, void ** handle){
 int sffs_opendir(const void * cfg, void ** handle, const char * path){
 
 	if( path[0] != 0 ){
-		errno = ENOTDIR;
-		return -1;
+        return SYSFS_SET_RETURN(ENOTDIR);
 	}
 
 	*handle = OPENDIR_HANDLE;
@@ -509,15 +494,14 @@ int sffs_readdir_r(const void * cfg, void * handle, int loc, struct dirent * ent
 	int ret;
 
 	if ( handle != OPENDIR_HANDLE ){
-		errno = EBADF;
-		return -1;
-	}
+        return SYSFS_SET_RETURN(EBADF);
+    }
 
 	lock_sffs(cfg);
 
 	sffs_debug(DEBUG_LEVEL, "initialize list\n");
 	if ( cl_snlist_init(cfg, &sn_list, sffs_serialno_getlistblock(cfg) ) < 0 ){
-		ret = -1;
+        ret = SYSFS_SET_RETURN(EIO);
 		goto sffs_readdir_unlock;
 	}
 
@@ -529,7 +513,7 @@ int sffs_readdir_r(const void * cfg, void * handle, int loc, struct dirent * ent
 			if ( count == loc ){
 				if ( sffs_block_load(cfg, item.block, &hdr_sffs_block_data) ){
 					sffs_error("failed to load block %d for serialno:%d\n", item.block, item.serialno);
-					ret = -1;
+                    ret = SYSFS_SET_RETURN(EIO);
 					goto sffs_readdir_unlock;
 				}
 
@@ -544,15 +528,13 @@ int sffs_readdir_r(const void * cfg, void * handle, int loc, struct dirent * ent
 
 	sffs_readdir_unlock:
 	unlock_sffs(cfg);
-	//errno is not changed
 	return ret;
 }
 
 
 int sffs_closedir(const void * cfg, void ** handle){
 	if ( *handle != OPENDIR_HANDLE ){
-		errno = EBADF;
-		return -1;
+        return SYSFS_SET_RETURN(EBADF);
 	}
 	*handle = 0;
 	return 0;

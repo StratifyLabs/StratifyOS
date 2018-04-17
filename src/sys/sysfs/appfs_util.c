@@ -261,10 +261,6 @@ static int find_protectable_free(const devfs_device_t * dev, int type, int size,
 
 	} while( start_addr >= 0 );
 
-	if( smallest_space_addr == -1 ){
-		errno = ENOSPC;
-	}
-
 	*page = smallest_space_page;
 
 	return smallest_space_addr;
@@ -305,8 +301,7 @@ int appfs_util_root_free_ram(const devfs_device_t * dev, appfs_handle_t * h){
 	const appfs_file_t * f;
 
 	if( h->is_install != 0 ){
-		errno = EBADF;
-		return -1;
+        return SYSFS_SET_RETURN(EBADF);
 	}
 
 	//the RAM info is stored in flash
@@ -316,12 +311,11 @@ int appfs_util_root_free_ram(const devfs_device_t * dev, appfs_handle_t * h){
 	args.pageinfo.o_flags = MEM_FLAG_IS_QUERY;
 
 	if ( appfs_util_getpageinfo(dev, &args.pageinfo) < 0 ){
-		errno = EINVAL;
-		return -1;
+        return SYSFS_SET_RETURN(EINVAL);
 	}
 
 	if ( appfs_ram_root_setusage(args.pageinfo.num, f->exec.ram_size, APPFS_MEMPAGETYPE_FREE) < 0 ){
-		return -1;
+        return SYSFS_SET_RETURN(EIO);
 	}
 
 	return 0;
@@ -334,8 +328,7 @@ int appfs_util_root_reclaim_ram(const devfs_device_t * dev, appfs_handle_t * h){
 	size_t page_num;
 
 	if( h->is_install ){
-		errno = EBADF;
-		return -1;
+        return SYSFS_SET_RETURN(EBADF);
 	}
 
 	//the RAM info is store in flash
@@ -345,20 +338,19 @@ int appfs_util_root_reclaim_ram(const devfs_device_t * dev, appfs_handle_t * h){
 	args.pageinfo.o_flags = MEM_FLAG_IS_QUERY;
 
 	if ( appfs_util_getpageinfo(dev, &args.pageinfo) ){
-		return -1;
+        return SYSFS_SET_RETURN(EIO);
 	}
 
 	page_num = args.pageinfo.num;
 
 	for(s=0; s < f->exec.ram_size; s += MCU_RAM_PAGE_SIZE ){
 		if( appfs_ram_getusage(page_num++) !=  APPFS_MEMPAGETYPE_FREE ){
-			errno = ENOMEM;
-			return -1;
+            return SYSFS_SET_RETURN(ENOMEM);
 		}
 	}
 
 	if ( appfs_ram_root_setusage(args.pageinfo.num, f->exec.ram_size, APPFS_MEMPAGETYPE_SYS) < 0 ){
-		return -1;
+        return SYSFS_SET_RETURN(EIO);
 	}
 
 	return 0;
@@ -369,8 +361,7 @@ static int mem_write_page(const devfs_device_t * dev, appfs_handle_t * h, appfs_
 	mem_writepage_t write_page;
 
 	if( (attr->loc + attr->nbyte) > (h->type.install.code_size + h->type.install.data_size) ){
-		errno = EINVAL;
-		return -1;
+        return SYSFS_SET_RETURN(EINVAL);
 	}
 
 	write_page.addr = h->type.install.code_start + attr->loc;
@@ -388,22 +379,19 @@ int appfs_util_root_create(const devfs_device_t * dev, appfs_handle_t * h, appfs
 	dest = (appfs_file_t*)attr->buffer;
 
 	if ( h->is_install == false ){
-		errno = EBADF;
-		return -1;
+        return SYSFS_SET_RETURN(EBADF);
 	}
 
 	if ( attr->loc == 0 ){
 
 		//This is the header data -- make sure it is complete
 		if ( attr->nbyte < sizeof(appfs_file_t) ){
-			errno = ENOTSUP;
-			return -1;
+            return SYSFS_SET_RETURN(ENOTSUP);
 		}
 
 
 		if( dest->exec.signature != APPFS_CREATE_SIGNATURE ){
-			errno = EINVAL;
-			return -3;
+            return SYSFS_SET_RETURN(EINVAL);
 		}
 
 		//make sure the name is valid
@@ -427,8 +415,7 @@ int appfs_util_root_create(const devfs_device_t * dev, appfs_handle_t * h, appfs
 		//find space for the code
 		code_start_addr = find_protectable_free(dev, type, dest->exec.code_size, &page);
 		if ( code_start_addr == -1 ){
-			//errno is set to ENOSPC by find_protectable_free
-			return -1;
+            return SYSFS_SET_RETURN(ENOSPC);
 		}
 
 		//remove the header for read only flash files
@@ -451,8 +438,7 @@ int appfs_util_root_create(const devfs_device_t * dev, appfs_handle_t * h, appfs
 	} else {
 		if ( (attr->loc & 0x03) ){
 			//this is not a word aligned write
-			errno = ENOTSUP;
-			return -1;
+            return SYSFS_SET_RETURN(EINVAL);
 		}
 	}
 
@@ -480,8 +466,7 @@ int appfs_util_root_writeinstall(const devfs_device_t * dev, appfs_handle_t * h,
 	s32 loc_err = 0;
 
 	if ( h->is_install == false ){
-		errno = EBADF;
-		return -1;
+        return SYSFS_SET_RETURN(EBADF);
 	}
 
 	union {
@@ -495,8 +480,7 @@ int appfs_util_root_writeinstall(const devfs_device_t * dev, appfs_handle_t * h,
 		//This is the header data -- make sure it is complete
 		if ( attr->nbyte < sizeof(appfs_file_t) ){
             mcu_debug_root_printf("APPFS: Page size is less than min\n");
-			errno = ENOTSUP;
-			return -1;
+            return SYSFS_SET_RETURN(ENOTSUP);
 		}
 
 		//make sure the name is valid
@@ -524,8 +508,7 @@ int appfs_util_root_writeinstall(const devfs_device_t * dev, appfs_handle_t * h,
 		//is signature correct
 		if ( src.file->exec.signature != symbols_table[0] ){
             mcu_debug_root_printf("APPFS: Not executable\n");
-			errno = ENOEXEC;
-			return -1;
+            return SYSFS_SET_RETURN(ENOEXEC);
 		}
 
 		//check the options
@@ -544,7 +527,7 @@ int appfs_util_root_writeinstall(const devfs_device_t * dev, appfs_handle_t * h,
 		code_start_addr = find_protectable_free(dev, type, code_size, &code_page);
 		if ( code_start_addr == -1 ){
             mcu_debug_root_printf("APPFS: No exec region available\n");
-			return -1;
+            return SYSFS_SET_RETURN(ENOSPC);
 		}
 
 		if ( !((src.file->exec.o_flags) & APPFS_FLAG_IS_FLASH) ){ //for RAM app's mark the RAM usage
@@ -573,7 +556,7 @@ int appfs_util_root_writeinstall(const devfs_device_t * dev, appfs_handle_t * h,
 
 			}
             mcu_debug_root_printf("APPFS: No RAM region available %d\n", ram_size);
-			return -1;
+            return SYSFS_SET_RETURN(ENOSPC);
 		}
 
 		h->type.install.code_start = (u32)code_start_addr;
@@ -598,7 +581,6 @@ int appfs_util_root_writeinstall(const devfs_device_t * dev, appfs_handle_t * h,
 				h->type.install.kernel_symbols_total,
 				&loc_err);
 
-		errno = 0;
 		for(i=sizeof(appfs_file_t) >> 2; i < attr->nbyte >> 2; i++){
 			dest.buf[i] = translate_value(src.ptr[i],
 					h->type.install.rewrite_mask,
@@ -608,8 +590,7 @@ int appfs_util_root_writeinstall(const devfs_device_t * dev, appfs_handle_t * h,
 					&loc_err);
 			if( loc_err != 0 ){
                 mcu_debug_root_printf("APPFS: Code relocation error %d\n", loc_err);
-				errno = EIO;
-				return -1 - loc_err;
+                return SYSFS_SET_RETURN_WITH_VALUE(EIO, loc_err);
 			}
 		}
 
@@ -617,8 +598,7 @@ int appfs_util_root_writeinstall(const devfs_device_t * dev, appfs_handle_t * h,
 
 		if ( (attr->loc & 0x03) ){
 			//this is not a word aligned write
-			errno = ENOTSUP;
-			return -1;
+            return SYSFS_SET_RETURN(EINVAL);
 		}
 		for(i=0; i < attr->nbyte >> 2; i++){
 			dest.buf[i] = translate_value(src.ptr[i],
@@ -629,8 +609,7 @@ int appfs_util_root_writeinstall(const devfs_device_t * dev, appfs_handle_t * h,
 					&loc_err);
 			if( loc_err != 0 ){
                 mcu_debug_root_printf("APPFS: Code relocation error %d\n", loc_err);
-				errno = EIO;
-				return -1 - loc_err;
+                return SYSFS_SET_RETURN_WITH_VALUE(EIO, loc_err);
 			}
 		}
 	}
@@ -770,7 +749,6 @@ int appfs_util_lookupname(const void * cfg, const char * path, root_load_fileinf
 	i = 0;
 
 	if ( strnlen(path, NAME_MAX-2) == NAME_MAX-2 ){
-		errno = ENAMETOOLONG;
 		return -1;
 	}
 

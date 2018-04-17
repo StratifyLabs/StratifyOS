@@ -671,6 +671,7 @@ int send_cmd(const devfs_handle_t * cfg, uint8_t cmd, uint32_t arg, uint8_t * re
 	int ret;
 	int retries;
 	sd_spi_r_t resp;
+    memset(&resp, 0, sizeof(resp));
 	memset(buffer, 0xFF, CMD_FRAME_SIZE);
 	buffer[0] = 0x40 | cmd;
 	buffer[1] = arg >> 24;

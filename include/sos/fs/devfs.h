@@ -19,7 +19,7 @@
 
 #include <sys/dirent.h>
 #include "mcu/types.h"
-#include "sos/fs/sysfs.h"
+#include "sysfs.h"
 
 #define DEVFS_GET_PORT(x) (x->port)
 

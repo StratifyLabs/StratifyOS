@@ -106,6 +106,7 @@ int open(const char * name, int flags, ... );
 
 int _open(const char * name, int flags, ...) {
 	int tmp;
+    int ret;
 	int fildes;
 	va_list ap;
 	int mode;
@@ -163,9 +164,9 @@ int _open(const char * name, int flags, ...) {
 
 	set_open_file(fildes, fs, (void*)1, flags);
 
-	if( sysfs_file_open(get_open_file(fildes), sysfs_stripmountpath(fs, name), mode) <  0){
+    if( (ret = sysfs_file_open(get_open_file(fildes), sysfs_stripmountpath(fs, name), mode)) <  0){
 		u_reset_fildes(fildes);
-		return -1;
+        return ret;
 	}
 
 	if ( flags & O_APPEND ){

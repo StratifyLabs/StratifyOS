@@ -179,9 +179,7 @@ int devfs_data_transfer(const void * config, const devfs_device_t * device, int 
 			if( (args.ret == 0) && (args.async.nbyte == 0) ){
                 //no data was transferred -- operation was interrupted by a signal
 				clear_device_action(config, device, loc, args.is_read);
-				errno = EINTR;
-                //return an error
-				return -1;
+                return SYSFS_SET_RETURN(EINTR);
 			}
 
 			//check again if the op is complete
@@ -202,19 +200,19 @@ int devfs_data_transfer(const void * config, const devfs_device_t * device, int 
 			} else if ( args.async.nbyte == 0 ){
 				//There was no data to read/write -- try again
 				if (args.async.flags & O_NONBLOCK ){
-					errno = ENODATA;
-					return -1;
+                    return SYSFS_SET_RETURN(ENODATA);
 				}
-
 			} else if ( args.async.nbyte < 0 ){
 				//there was an error executing the operation (or the operation was cancelled)
-				return -1;
+                return SYSFS_SET_RETURN(EIO);
 			}
 		} else if ( args.ret < 0 ){
 			//there was an error starting the operation (such as EAGAIN)
 			if( args.ret == -101010 ){
-				errno = ENXIO; //this is a rare/strange error where cortexm_svcall fails to run properly
-			}
+                args.ret = SYSFS_SET_RETURN(EIO); //this is a rare/strange error where cortexm_svcall fails to run properly
+            } else {
+                SYSFS_PROCESS_RETURN(args.ret);
+            }
 			return args.ret;
 		}
 	} while ( args.ret == 0 );

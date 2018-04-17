@@ -51,7 +51,7 @@ void root_device_data_transfer(void * args){
 		}
 	} else if ( p->ret < 0 ){
 		//AIO was not started -- errno is set by the driver
-		p->ret = -1;
+        //p->ret = -1;
 	} else if ( p->ret > 0 ){
 		//The transfer happened synchronously -- call the callback manually
 		sysfs_aio_data_transfer_callback(p->aiocbp, 0);

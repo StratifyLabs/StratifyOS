@@ -18,6 +18,7 @@
 #ifndef _MCU_TYPES_H_
 #define _MCU_TYPES_H_
 
+#include <errno.h>
 #include <stdint.h>
 #include <stdbool.h>
 #if !defined __link

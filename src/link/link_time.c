@@ -66,7 +66,6 @@ int link_gettime(link_transport_mdriver_t * driver, struct link_tm * t){
 			t);
 	if( ret < 0 ){
 		link_error("Failed to I_RTC_GET");
-		return -1;
 	}
 
 	link_debug(LINK_DEBUG_MESSAGE, "Close RTC fildes");

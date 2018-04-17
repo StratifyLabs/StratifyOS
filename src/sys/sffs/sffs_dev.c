@@ -85,20 +85,19 @@ int sffs_dev_write(const void * cfg, int loc, const void * buf, int nbyte){
 	char buffer[nbyte];
 	const sffs_config_t * cfgp = cfg;
 	if ( cfgp->open_file->fs == NULL ){
-		errno = ENODEV;
-		return -1;
+        return SYSFS_SET_RETURN(ENODEV);
 	}
 	cfgp->open_file->loc = loc;
 	ret = sysfs_file_write(cfgp->open_file, buf, nbyte);
 	if( ret != nbyte ){
 		//mcu_debug_user_printf("Only wrote %d bytes\n", ret);
-		return -1;
+        return SYSFS_SET_RETURN(EIO);
 	}
 	memset(buffer, 0, nbyte);
 	cfgp->open_file->loc = loc;
 	sysfs_file_read(cfgp->open_file, buffer, nbyte);
 	if ( memcmp(buffer, buf, nbyte) != 0 ){
-		return -1;
+        return SYSFS_SET_RETURN(EIO);
 	}
 
 	return ret;
@@ -107,8 +106,7 @@ int sffs_dev_write(const void * cfg, int loc, const void * buf, int nbyte){
 int sffs_dev_read(const void * cfg, int loc, void * buf, int nbyte){
 	const sffs_config_t * cfgp = cfg;
 	if ( cfgp->open_file->fs == NULL ){
-		errno = ENODEV;
-		return -1;
+        return SYSFS_SET_RETURN(ENODEV);
 	}
 	cfgp->open_file->loc = loc;
 	return sysfs_file_read(cfgp->open_file, buf, nbyte);
@@ -119,8 +117,7 @@ int sffs_dev_erase(const void * cfg){
 	const sffs_config_t * cfgp = cfg;
 	drive_attr_t attr;
 	if ( cfgp->open_file->fs == NULL ){
-		errno = ENODEV;
-		return -1;
+        return SYSFS_SET_RETURN(ENODEV);
 	}
 	int usec;
 	attr.o_flags = DRIVE_FLAG_ERASE_DEVICE;
@@ -140,8 +137,7 @@ int sffs_dev_erasesection(const void * cfg, int loc){
 	int usec;
 	cfgp = cfg;
 	if ( cfgp->open_file->fs == NULL ){
-		errno = ENODEV;
-		return -1;
+        return SYSFS_SET_RETURN(ENODEV);
 	}
 
 	attr.o_flags = DRIVE_FLAG_ERASE_BLOCKS;

@@ -32,15 +32,21 @@
 #include "types.h"
 #include "aio.h"
 
-#ifdef __SIM__
-#include "sim_device.h"
-#else
-#include "sos/fs/devfs.h"
-#endif
-
 #if defined __cplusplus
 extern "C" {
 #endif
+
+
+//Encodes the error number and the line number ex: return SYSFS_SET_RETURN(EINVAL);
+#define SYSFS_SET_RETURN(error_number) (-1*(error_number | (__LINE__ << 16)))
+#define SYSFS_SET_RETURN_WITH_VALUE(error_number, value) (-1*(error_number | (value << 16)))
+
+#define SYSFS_GET_RETURN_ERRNO(value) ( (-1*value) & 0xffff)
+#define SYSFS_GET_RETURN(value) ( -1*((-1* value) >> 16))
+
+//Takes a value created using SYSFS_SET_RETURN() and pulls out the errno (assigns to errno) then assigns the __LINE__ number to value
+#define SYSFS_PROCESS_RETURN(value) do { if( value < -1 ) { errno = SYSFS_GET_RETURN_ERRNO(value); value = SYSFS_GET_RETURN(value); } } while(0)
+
 
 
 int sysfs_notsup();

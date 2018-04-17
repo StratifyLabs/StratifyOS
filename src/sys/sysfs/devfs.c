@@ -73,19 +73,6 @@ const devfs_handle_t * devfs_lookup_handle(const devfs_device_t * list, const ch
 	return 0;
 }
 
-/*
-static int find(const device_t * list, const device_t * dev){
-	int i;
-	i = 0;
-	while( list[i].name != NULL ){
-		if (&list[i] == dev){
-			return i;
-		}
-		i++;
-	}
-	return -1;
-}
-*/
 
 void root_open_device(void * args){
 	root_args_t * p = (root_args_t*)args;
@@ -105,11 +92,10 @@ int devfs_opendir(const void * cfg, void ** handle, const char * path){
 		//there is only one valid folder (the top)
 			dev = load(list, path);
 		if ( dev == 0 ){
-			errno = ENOENT;
+            return SYSFS_SET_RETURN(ENOENT);
 		} else {
-			errno = ENOTDIR;
+            return SYSFS_SET_RETURN(ENOTDIR);
 		}
-		return -1;
 	}
 	*handle = NULL;
 	return 0;
@@ -125,8 +111,7 @@ int devfs_readdir_r(const void * cfg, void * handle, int loc, struct dirent * en
 		entry->d_ino = loc;
 		return 0;
 	}
-	errno = ENOENT;
-	return -1;
+    return SYSFS_SET_RETURN(ENOENT);
 }
 
 int devfs_closedir(const void * cfg, void ** handle){
@@ -140,8 +125,7 @@ int devfs_open(const void * cfg, void ** handle, const char * path, int flags, i
 
 	//check the flags O_CREAT, O_APPEND, O_TRUNC are not supported
 	if ( (flags & O_APPEND) | (flags & O_CREAT) | (flags & O_TRUNC) ){
-		errno = ENOTSUP;
-		return -1;
+        return SYSFS_SET_RETURN(ENOTSUP);
 	}
 
 
@@ -155,8 +139,7 @@ int devfs_open(const void * cfg, void ** handle, const char * path, int flags, i
 		*handle = (void*)args.device;
 		return 0;
 	}
-	errno = ENOENT;
-	return -1;
+    return SYSFS_SET_RETURN(ENOENT);
 }
 
 int devfs_fstat(const void * cfg, void * handle, struct stat * st){
@@ -181,8 +164,7 @@ int devfs_stat(const void * cfg, const char * path, struct stat * st){
 
 	dev = load(list, path);
 	if ( dev == NULL ){
-		errno = ENOENT;
-		return -1;
+        return SYSFS_SET_RETURN(ENOENT);
 	}
 	return devfs_fstat(cfg, (void*)dev, st);
 }

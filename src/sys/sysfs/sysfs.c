@@ -41,7 +41,9 @@ int mkfs(const char * path){
 		return -1;
 	}
 
-	return fs->mkfs(fs->config);
+    int ret = fs->mkfs(fs->config);
+    SYSFS_PROCESS_RETURN(ret);
+    return ret;
 }
 
 int mount(const char * path){
@@ -53,7 +55,9 @@ int mount(const char * path){
 		return -1;
 	}
 
-	return fs->mount(fs->config);
+    int ret =  fs->mount(fs->config);
+    SYSFS_PROCESS_RETURN(ret);
+    return ret;
 }
 
 int unmount(const char * path){
@@ -63,7 +67,9 @@ int unmount(const char * path){
 		errno = ENOENT;
 		return -1;
 	}
-	return fs->unmount(fs->config);
+    int ret =  fs->unmount(fs->config);
+    SYSFS_PROCESS_RETURN(ret);
+    return ret;
 }
 
 int sysfs_always_mounted(const void * cfg){
@@ -266,8 +272,7 @@ void sysfs_unlock(){
 
 
 int sysfs_notsup(){
-	errno = ENOTSUP;
-	return -1;
+    return SYSFS_SET_RETURN(ENOTSUP);
 }
 
 void * sysfs_notsup_null(){
