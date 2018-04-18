@@ -120,6 +120,7 @@ int check_run_app(){
 	//! \todo Check to see if end of text is less than app program start
 	u32 * bootloader_start = (u32*)boot_board_config.sw_req_loc;
 	u32 hw_req_value;
+    u32 pio_value;
 	pio_attr_t pio_attr;
 	devfs_handle_t hw_req_handle;
 
@@ -145,7 +146,8 @@ int check_run_app(){
 	cortexm_delay_us(500);
 
 	if( boot_board_config.hw_req.port != 0xff ){
-		hw_req_value = ((mcu_pio_get(&hw_req_handle, 0) & pio_attr.o_pinmask) != 0);
+        mcu_pio_get(&hw_req_handle, &pio_value);
+        hw_req_value = ((pio_value & pio_attr.o_pinmask) != 0);
 
 		if( boot_board_config.o_flags & BOOT_BOARD_CONFIG_FLAG_HW_REQ_ACTIVE_HIGH ){
 			if( hw_req_value ){ //pin is high and pin is active high

@@ -86,7 +86,7 @@ void scheduler_timing_root_timedblock(void * block_object, struct mcu_timeval * 
 			}
 
 			//See if abs_time is in the past
-			now = (u32)mcu_tmr_get(&tmr_handle, NULL);
+            mcu_tmr_get(&tmr_handle, &now);
 			if( abs_time->tv_usec > (now+40) ){ //needs to be enough in the future to allow the OC to be set before the timer passes it
 				mcu_tmr_setchannel(&tmr_handle, &chan_req);
 				time_sleep = true;
@@ -125,7 +125,7 @@ void scheduler_timing_root_get_realtime(struct mcu_timeval * tv){
 	tmr_handle.port = sos_board_config.clk_usecond_tmr;
 	mcu_tmr_disable(&tmr_handle, 0);
 	tv->tv_sec = sched_usecond_counter;
-	tv->tv_usec = (u32)mcu_tmr_get(&tmr_handle, NULL);
+    mcu_tmr_get(&tmr_handle, &(tv->tv_usec));
 	mcu_tmr_enable(&tmr_handle, 0);
 }
 
@@ -154,7 +154,7 @@ int root_handle_usecond_match_event(void * context, const mcu_event_t * data){
 	next = STFY_USECOND_PERIOD;
 
 	mcu_tmr_disable(&tmr_handle, 0);
-	current_match = mcu_tmr_get(&tmr_handle, NULL);
+    mcu_tmr_get(&tmr_handle, &current_match);
 
 	for(i=1; i < task_get_total(); i++){
 		if ( task_enabled(i) && !scheduler_active_asserted(i) ){ //enabled and inactive tasks only

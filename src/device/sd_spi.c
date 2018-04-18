@@ -370,17 +370,15 @@ int sd_spi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 		o_flags = attr->o_flags;
 		if( o_flags & (DRIVE_FLAG_ERASE_BLOCKS|DRIVE_FLAG_ERASE_DEVICE) ){
 			if( state->flags & FLAG_PROTECTED ){
-				errno = EROFS;
-				return -1;
-			}
+                return SYSFS_SET_RETURN(EROFS);
+            }
 
 			if( o_flags & DRIVE_FLAG_ERASE_BLOCKS ){
 
 				//erase blocks in a sequence
 				if( is_busy(handle) != 0 ){
-					errno = EBUSY;
-					return -1;
-				}
+                    return SYSFS_SET_RETURN(EBUSY);
+                }
 				return erase_blocks(handle, attr->start, attr->end);
 			}
 		}
@@ -393,8 +391,8 @@ int sd_spi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 
 			if( mcu_spi_setattr(handle, &spi_attr) < 0 ){
 				mcu_debug_printf("SD_SPI: setattr failed\n");
-				return -2;
-			}
+                return SYSFS_SET_RETURN(EIO);
+            }
 
 
 			cortexm_delay_us(500);
@@ -406,29 +404,25 @@ int sd_spi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 			spi_transfer(handle, 0, 0, CMD_FRAME_SIZE*6);
 			cortexm_delay_us(LONG_DELAY);
 
-
 			cortexm_delay_us(500);
 
 			resp.r1 = exec_cmd_r1(handle, SDSPI_CMD0_GO_IDLE_STATE, 0, 0);
 			if( resp.r1.start == 1 ){
-				errno = EIO;
 				mcu_debug_printf("SD_SPI: Failed GO IDLE\n");
-				return -4;
-			}
+                return SYSFS_SET_RETURN(EIO);
+            }
 
 			if( resp.r1.idle != 1 ){
-				errno = EIO;
 				mcu_debug_printf("SD_SPI: Failed No IDLE 0x%X\n", resp.r1.u8);
-				return -5;
-			}
+                return SYSFS_SET_RETURN(EIO);
+            }
 
 			//send CMD8
 			resp.r3 = exec_cmd_r3(handle, SDSPI_CMD8_SEND_IF_COND, 0x01AA);
 			if( resp.r3.r1.u8 != 0x01 ){
-				errno = EIO;
 				mcu_debug_printf("SD_SPI: Failed NO IF COND\n");
-				return -6;
-			}
+                return SYSFS_SET_RETURN(EIO);
+            }
 
 			//disable write protection (SD Cards only)
 			resp.r1 = exec_cmd_r1(handle, SDSPI_CMD28_SET_WRITE_PROT, 0, 0);
@@ -438,19 +432,17 @@ int sd_spi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 				//set block len
 				resp.r1 = exec_cmd_r1(handle, SDSPI_CMD16_SET_BLOCKLEN, BLOCK_SIZE, 0);
 				if( resp.r1.u8 != 0x01 ){
-					errno = EIO;
 					mcu_debug_printf("SD_SPI: Failed NO 16 BLOCK LEN\n");
-					return -7;
-				}
+                    return SYSFS_SET_RETURN(EIO);
+                }
 			}
 
 			//enable checksums
 			resp.r1 = exec_cmd_r1(handle, SDSPI_CMD59_CRC_ON_OFF, 0xFFFFFFFF, 0);
 			if( resp.r1.u8 != 0x01 ){
-				errno = EIO;
 				mcu_debug_printf("SD_SPI: Failed NO 59\n");
-				return -7;
-			}
+                return SYSFS_SET_RETURN(EIO);
+            }
 
 			timeout = 0;
 
@@ -459,33 +451,30 @@ int sd_spi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 			do {
 				resp.r1 = exec_cmd_r1(handle, SDSPI_CMD55_APP_CMD, 0, 0);  //send 55
 				if( resp.r1.u8 != 0x01 ){
-					errno = EIO;
 					mcu_debug_printf("SD_SPI: Failed NO 55\n");
-					return -7;
-				}
+                    return SYSFS_SET_RETURN(EIO);
+                }
 
 				resp.r1 = exec_cmd_r1(handle, SDSPI_ACMD41_SD_SEND_OP_COND, 1<<30, 0);  //indicate that HC is supported
 				if( (resp.r1.u8 != 0x01) && (resp.r1.u8 != 0x00) ){  //this takes awhile to return to zero
-					errno = EIO;
 					mcu_debug_printf("SD_SPI: Failed HC?\n");
-					return -8;
-				}
+                    return SYSFS_SET_RETURN(EIO);
+                }
 				timeout++;
 				//reset wdt
 				mcu_wdt_root_reset(0);
 			} while( (resp.r1.u8 != 0x00) && (timeout < timeout_value) );
 
 			if( timeout == timeout_value ){
-				errno = EIO;
 				mcu_debug_printf("SD_SPI: Failed TIMEOUT\n");
-				return -9;
+                return SYSFS_SET_RETURN(EIO);
 			}
 
 			memcpy(&spi_attr, &(config->spi.attr), sizeof(spi_attr_t));
 			if( mcu_spi_setattr(handle, &spi_attr) < 0 ){
 				mcu_debug_printf("SD_SPI: Failed BITRATE\n");
-				return -10;
-			}
+                return SYSFS_SET_RETURN(EIO);
+            }
 
 			assert_cs(handle);
 			cortexm_delay_us(LONG_DELAY);
@@ -510,8 +499,7 @@ int sd_spi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 	case I_DRIVE_GETINFO:
 
 		if( is_busy(handle) != 0 ){
-			errno = EBUSY;
-			return -1;
+            return SYSFS_SET_RETURN(EBUSY);
 		}
 
 		assert_cs(handle);
@@ -527,8 +515,7 @@ int sd_spi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 
 		//This is from CSD C_Size and TRANS_SPEED
 		if( exec_csd(handle, buffer) < 0 ){
-			errno = EIO;
-			return -1;
+            return SYSFS_SET_RETURN(EIO);
 		}
 
 		uint32_t block_len;
@@ -548,8 +535,7 @@ int sd_spi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 
 		//need to read Status to get AU_Size, ERASE_SIZE, ERASE_TIMEOUT
 		if( get_status(handle, buffer) < 0 ){
-			errno = EIO;
-			return -2;
+            return SYSFS_SET_RETURN(EIO);
 		}
 		info->erase_block_size = (16*1024) << ((buffer[10]-1) >> 4);
 		//ERASE_TIMEOUT divided by ERASE_SIZE
@@ -671,7 +657,7 @@ int send_cmd(const devfs_handle_t * cfg, uint8_t cmd, uint32_t arg, uint8_t * re
 	int ret;
 	int retries;
 	sd_spi_r_t resp;
-    memset(&resp, 0, sizeof(resp));
+    //memset(&resp, 0, sizeof(resp));
 	memset(buffer, 0xFF, CMD_FRAME_SIZE);
 	buffer[0] = 0x40 | cmd;
 	buffer[1] = arg >> 24;
@@ -679,6 +665,8 @@ int send_cmd(const devfs_handle_t * cfg, uint8_t cmd, uint32_t arg, uint8_t * re
 	buffer[3] = arg >> 8;
 	buffer[4] = arg;
 	buffer[5] = mcu_calc_crc7(0, buffer, 5);
+
+    resp.r1.crc_error = 1;
 
 	retries = 0;
 	do {

@@ -192,7 +192,6 @@ int continue_spi_write(void * context, const mcu_event_t * event){
 
 int complete_spi_write(void * context, const mcu_event_t * event){
 	const devfs_handle_t * handle = context;
-	mcu_action_t action;
 	sst25vf_config_t * sst_cfg = (sst25vf_config_t*)handle->config;
 	devfs_handle_t pio_handle;
 	u32 pio_value;
@@ -205,11 +204,10 @@ int complete_spi_write(void * context, const mcu_event_t * event){
 	sst25vf_share_assert_cs(handle);
 
 	do {
-		pio_value = mcu_pio_get(&pio_handle, &action);
+        mcu_pio_get(&pio_handle, &pio_value);
 	} while( (pio_value & (1<<sst_cfg->spi.attr.pin_assignment.miso.pin)) == 0);
 
 	continue_spi_write(context, event);
-
 
 	return 0;
 }

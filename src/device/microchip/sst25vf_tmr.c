@@ -189,7 +189,7 @@ void complete_spi_write(const devfs_handle_t * cfg, uint32_t ignore){
 	//turn the timer off
 	mcu_tmr_disable(&tmr_handle, 0);
 	mcu_tmr_setaction(&tmr_handle, &action);
-	tval = mcu_tmr_get(&tmr_handle, NULL);
+    mcu_tmr_get(&tmr_handle, &tval);
 	channel.value = tval + 20;
 	if( channel.value > (STFY_USECOND_PERIOD) ){
 		channel.value -= (STFY_USECOND_PERIOD);
