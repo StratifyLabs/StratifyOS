@@ -39,13 +39,13 @@ extern "C" {
 
 
 //Encodes the error number and the line number ex: return SYSFS_SET_RETURN(EINVAL);
-#define SYSFS_SET_RETURN(error_number) (-1*(error_number | (__LINE__ << 16)))
-#define SYSFS_SET_RETURN_WITH_VALUE(error_number, value) (-1*(error_number | (value << 16)))
+#define SYSFS_SET_RETURN(error_number) (-1*(error_number | (__LINE__ << 8)))
+#define SYSFS_SET_RETURN_WITH_VALUE(error_number, value) (-1*(error_number | (value << 8)))
 #define SYSFS_RETURN_SUCCESS (0)
 #define SYSFS_RETURN_EOF (-1)
 
-#define SYSFS_GET_RETURN_ERRNO(value) ( (-1*value) & 0xffff)
-#define SYSFS_GET_RETURN(value) ( -1*((-1* value) >> 16))
+#define SYSFS_GET_RETURN_ERRNO(value) ( (-1*value) & 0xff)
+#define SYSFS_GET_RETURN(value) ( -1*( (-1* value) >> 8))
 
 //Takes a value created using SYSFS_SET_RETURN() and pulls out the errno (assigns to errno) then assigns the __LINE__ number to value
 #define SYSFS_PROCESS_RETURN(value) do { if( value < -1 ) { errno = SYSFS_GET_RETURN_ERRNO(value); value = SYSFS_GET_RETURN(value); } } while(0)

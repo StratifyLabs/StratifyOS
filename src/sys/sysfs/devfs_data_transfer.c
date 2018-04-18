@@ -210,8 +210,6 @@ int devfs_data_transfer(const void * config, const devfs_device_t * device, int 
 			//there was an error starting the operation (such as EAGAIN)
 			if( args.ret == -101010 ){
                 args.ret = SYSFS_SET_RETURN(EIO); //this is a rare/strange error where cortexm_svcall fails to run properly
-            } else {
-                SYSFS_PROCESS_RETURN(args.ret);
             }
 			return args.ret;
 		}
