@@ -53,6 +53,11 @@ function(sos_sdk_pull PROJECT_PATH)
 	endif()
 endfunction()
 
+function(sos_sdk_git_status PROJECT_PATH)
+	message(STATUS "GIT STATUS OF " ${PROJECT_PATH})
+	execute_process(COMMAND ${SOS_SDK_GIT_EXEC} status WORKING_DIRECTORY ${PROJECT_PATH})
+endfunction()
+
 function(sos_sdk_clone REPO_URL WORKSPACE_PATH)
 	execute_process(COMMAND ${SOS_SDK_GIT_EXEC} clone ${REPO_URL} WORKING_DIRECTORY ${WORKSPACE_PATH} OUTPUT_VARIABLE OUTPUT RESULT_VARIABLE RESULT)
 	message(STATUS "git clone " ${REPO_URL} to ${WORKSPACE_PATH} "\n" ${OUTPUT})
