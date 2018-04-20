@@ -61,6 +61,7 @@ void root_load_data(void * args){
 	memcpy(dest_addr, src_addr, size);
 }
 
+//global_reent but it can't be removed without spinning the application signature
 void crt_load_data(void * global_reent, int code_size, int data_size){
 	root_load_data_t args;
 	args.code_size = code_size;
@@ -77,14 +78,16 @@ char ** const crt_import_argv(char * path_arg, int * argc){
 	int count;
 	int len;
 
-	if( path_arg == 0 ){
-		*argc = 0;
+    *argc = 0;
+
+    if( path_arg == 0 ){
 		return 0;
 	}
 
 	//this needs to be strnlen -- security
-	len = strlen(path_arg);
+    len = strlen(path_arg) + 1;
 
+    mcu_debug_user_printf("alloc arg_buffer %d\n", len);
 
 	arg_buffer = malloc(len);
 	if( arg_buffer == 0 ){
@@ -107,6 +110,7 @@ char ** const crt_import_argv(char * path_arg, int * argc){
 
 	argv = malloc(sizeof(char*)*count);
 	if( argv == 0 ){
+        free(arg_buffer);
 		return 0;
 	}
 

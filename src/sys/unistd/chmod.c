@@ -46,7 +46,9 @@ int chmod(const char *path, mode_t mode){
 
 	fs = sysfs_find(path, true);
 	if ( fs != NULL ){
-		return fs->chmod(fs->config, sysfs_stripmountpath(fs, path), mode);
+        int ret = fs->chmod(fs->config, sysfs_stripmountpath(fs, path), mode);
+        SYSFS_PROCESS_RETURN(ret);
+        return ret;
 	}
 	errno = ENOENT;
 	return -1;

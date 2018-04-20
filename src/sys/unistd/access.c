@@ -47,6 +47,7 @@ static int check_permissions(int file_mode, int file_uid, int file_gid, int amod
 int access(const char * path, int amode){
 	const sysfs_t * fs;
 	struct stat st;
+    int ret;
 
 	//Do a safe check of the path string length
 	if ( sysfs_ispathinvalid(path) == true ){
@@ -59,8 +60,9 @@ int access(const char * path, int amode){
 		return-1;
 	}
 
-	if ( fs->stat(fs->config, sysfs_stripmountpath(fs, path), &st) < 0 ){
-		return -1;
+    if ( (ret = fs->stat(fs->config, sysfs_stripmountpath(fs, path), &st)) < 0 ){
+        SYSFS_PROCESS_RETURN(ret);
+        return ret;
 	}
 
 	return check_permissions(st.st_mode, st.st_uid, st.st_gid, amode);

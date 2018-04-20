@@ -113,12 +113,15 @@ int process_start(const char *path_arg,
 	close(fd);
 
 
+    //this gets freed in crt_sys.c by the process that is launched
 	process_path = _malloc_r(sos_task_table[0].global_reent, len+1);
 	if( process_path == 0 ){
 		mcu_debug_user_printf("couldn't alloc path argument in shared mem\n");
 		return -1;
 	}
 	strcpy(process_path, path_arg);
+
+    mcu_debug_user_printf("process start: execute %s\n", process_path);
 
 	err = scheduler_create_process((void*)startup.exec.startup,
 			process_path,

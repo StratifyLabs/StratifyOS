@@ -49,7 +49,7 @@ int launch(const char * path,
 
 
 	if( args != 0 ){
-		if( strlen(args) > PATH_ARG_MAX - PATH_MAX ){
+        if( strnlen(args, PATH_ARG_MAX) > PATH_ARG_MAX - PATH_MAX ){
 			errno=ENAMETOOLONG;
 			return -1;
 		}
@@ -69,18 +69,17 @@ int launch(const char * path,
 			return -1;
 		}
 
-
 	} else {
-		strcpy(exec_path, path);
+        strncpy(exec_path, path, PATH_ARG_MAX-1);
 	}
 
 	if( exec_dest != 0 ){
-		strcpy(exec_dest, exec_path);
+        strncpy(exec_dest, exec_path, PATH_MAX-1);
 	}
 
 	if( args ){
-		strcat(exec_path, " ");
-		strcat(exec_path, args);
+        strncat(exec_path, " ", PATH_ARG_MAX-1);
+        strncat(exec_path, args, PATH_ARG_MAX-1);
 	}
 
 	return process_start(exec_path, envp);

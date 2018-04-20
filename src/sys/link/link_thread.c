@@ -376,8 +376,8 @@ void link_cmd_fstat(link_transport_driver_t * driver, link_data_t * args){
 	struct stat st;
 	struct link_stat lst;
 	args->reply.err = fstat(args->op.fstat.fildes, (struct stat*)&st);
-	if ( args->reply.err == -1 ){
-		args->reply.err_number = errno;
+    if ( args->reply.err < 0 ){
+        args->reply.err_number = errno;
 	}
 
 	translate_link_stat(&lst, &st);
@@ -402,7 +402,7 @@ void link_cmd_mkdir(link_transport_driver_t * driver, link_data_t * args){
 	char path[PATH_MAX];
 	link_transport_slaveread(driver, path, args->op.mkdir.path_size, NULL, NULL);
 	args->reply.err = mkdir(path, args->op.mkdir.mode);
-	if ( args->reply.err == -1 ){
+    if ( args->reply.err < 0 ){
 		args->reply.err_number = errno;
 	}
 
@@ -412,8 +412,8 @@ void link_cmd_rmdir(link_transport_driver_t * driver, link_data_t * args){
 	char path[PATH_MAX];
 	link_transport_slaveread(driver, path, args->op.rmdir.path_size, NULL, NULL);
 	args->reply.err = rmdir(path);
-	if ( args->reply.err == -1 ){
-		args->reply.err_number = errno;
+    if ( args->reply.err < 0 ){
+        args->reply.err_number = errno;
 	}
 
 }
@@ -495,8 +495,8 @@ void link_cmd_chown(link_transport_driver_t * driver, link_data_t * args){
 		return;
 	}
 	args->reply.err = chown(path, args->op.chown.uid, args->op.chown.gid);
-	if ( args->reply.err == -1 ){
-		args->reply.err_number = errno;
+    if ( args->reply.err < 0 ){
+        args->reply.err_number = errno;
 	}
 
 }
@@ -510,8 +510,8 @@ void link_cmd_chmod(link_transport_driver_t * driver, link_data_t * args){
 		return;
 	}
 	args->reply.err = chmod(path, args->op.chmod.mode);
-	if ( args->reply.err == -1 ){
-		args->reply.err_number = errno;
+    if ( args->reply.err < 0 ){
+        args->reply.err_number = errno;
 	}
 }
 

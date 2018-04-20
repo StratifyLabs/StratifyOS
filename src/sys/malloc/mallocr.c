@@ -244,6 +244,7 @@ void * _malloc_r(struct _reent * reent_ptr, size_t size){
 
 			//See if the memory is corrupt
 			if ( is_memory_corrupt(reent_ptr) ){
+                mcu_debug_user_printf("Memory Corrupt 0x%lX\n", (u32)reent_ptr);
 				malloc_process_fault(reent_ptr); //this will exit the process
 				__malloc_unlock(reent_ptr);
 				errno = ENOMEM;
@@ -313,6 +314,7 @@ void set_last_chunk(malloc_chunk_t * chunk){
 int malloc_chunk_is_free(malloc_chunk_t * chunk){
 	if( cortexm_verify_zero_sum32(chunk, CORTEXM_ZERO_SUM32_COUNT(malloc_chunk_header_t)) == 0){
 		//This chunk is corrupt
+        mcu_debug_user_printf("Corrupt Chunk 0x%lX\n", (u32)chunk);
 		malloc_process_fault(((void*)chunk) + 1);
 		return -1;
 	}

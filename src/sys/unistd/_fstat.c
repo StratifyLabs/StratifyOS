@@ -51,7 +51,9 @@ int _fstat(int fildes, struct stat *buf){
 	memset (buf, 0, sizeof (* buf));
 	fs = get_fs(fildes);
 	if ( fs != NULL ){
-		return fs->fstat(fs->config, handle, buf);
+        int ret = fs->fstat(fs->config, handle, buf);
+        SYSFS_PROCESS_RETURN(ret);
+        return ret;
 	} else {
 		errno = EBADF;
 		return -1;

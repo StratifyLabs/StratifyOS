@@ -44,9 +44,11 @@ int rmdir(const char *path){
 
 	fs = sysfs_find(path, true);
 	if ( fs != NULL ){
-		return fs->rmdir(fs->config,
+        int ret = fs->rmdir(fs->config,
 				sysfs_stripmountpath(fs, path)
 				);
+        SYSFS_PROCESS_RETURN(ret);
+        return ret;
 	}
 	errno = ENOENT;
 	return -1;
