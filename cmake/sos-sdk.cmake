@@ -62,7 +62,7 @@ endfunction()
 
 function(sos_sdk_clone_or_pull PROJECT_PATH REPO_URL WORKSPACE_PATH)
 	#if ${PROJECT_PATH} directory doesn't exist -- clone from the URL
-	if(EXISTS ${PROJECT_PATH})
+	if(EXISTS ${PROJECT_PATH}/.git)
 		message(STATUS ${PROJECT_PATH} " already exists: pulling")
 		sos_sdk_pull(${PROJECT_PATH})
 	else()
