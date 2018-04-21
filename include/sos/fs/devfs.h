@@ -75,14 +75,11 @@ typedef struct {
  */
 int devfs_signal_callback(void * context, const mcu_event_t * data);
 
-
-
-
-
 extern const devfs_device_t devfs_list[];
 
 const devfs_handle_t * devfs_lookup_handle(const devfs_device_t * list, const char * name);
-
+const devfs_device_t * devfs_lookup_device(const devfs_device_t * list, const char * device_name);
+int devfs_lookup_name(const devfs_device_t * list, const devfs_device_t * device, char name[NAME_MAX]);
 
 #define DEVFS_MODE(mode_value, uid_value, type) .mode = mode_value | type, \
 		.uid = uid_value
