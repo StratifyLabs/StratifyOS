@@ -79,9 +79,8 @@ typedef enum {
     SWITCHBOARD_FLAG_IS_CONNECTED /*! Used in o_flags of switchboard_connection_t for status */ = (1<<3),
     SWITCHBOARD_FLAG_IS_READING_ASYNC /*! Used in o_flags of switchboard_connection_t for status */ = (1<<4),
     SWITCHBOARD_FLAG_IS_WRITING_ASYNC /*! Used in o_flags of switchboard_connection_t for status */ = (1<<5),
-    SWITCHBOARD_FLAG_IS_PRIMARY_BUFFER_USED /*! Used in o_flags of switchboard_connection_t for status */ = (1<<6),
-    SWITCHBOARD_FLAG_IS_SECONDARY_BUFFER_USED /*! Used in o_flags of switchboard_connection_t for status */ = (1<<7),
-    SWITCHBOARD_FLAG_SET_TRANSACTION_LIMIT /*! Use with SWITCHBOARD_FLAG_CONNECT to specify a transaction limit other than the default */ = (1<<8)
+    SWITCHBOARD_FLAG_IS_STOPPED_ON_ERROR /*! The connection has stopped because of an error (nbyte has the error code) */ = (1<<6),
+    SWITCHBOARD_FLAG_SET_TRANSACTION_LIMIT /*! Use with SWITCHBOARD_FLAG_CONNECT to specify a transaction limit other than the default */ = (1<<7)
 } switchboard_flag_t;
 
 
@@ -117,12 +116,12 @@ typedef struct MCU_PACK {
  *
  */
 typedef struct MCU_PACK {
+    u32 o_flags /*! Bitmask flags for connection state */;
     u16 idx /*! Connection index of total */;
-    u16 o_flags /*! Bitmask flags for connection state */;
+    u16 transaction_limit /*! The maximum number of synchronous transactions that can occur before aborting */;
     switchboard_terminal_t input /*! Input device (device that is read) */;
     switchboard_terminal_t output /*! Output device (device that is written) */;
     s32 nbyte /*! Number of bytes to transfer (packet size for persisent connections); will be negative when reading to indicate an error */;
-    u16 transaction_limit /*! The maximum number of synchronous transactions that can occur before aborting */;
 } switchboard_connection_t;
 
 /*!
@@ -146,11 +145,8 @@ typedef switchboard_connection_t switchboard_status_t;
  * to connect and disconnect terminals.
  *
  */
-typedef struct MCU_PACK {
-    u32 o_flags /*! Flag bitmask such as SWITCHBOARD_FLAG_CONNECT */;
-    switchboard_connection_t connection /*! The switchboard connection details. */;
-    u32 resd[8];
-} switchboard_attr_t;
+typedef switchboard_connection_t switchboard_attr_t;
+
 
 
 #define I_SWITCHBOARD_GETVERSION _IOCTL(SWITCHBOARD_IOC_IDENT_CHAR, I_MCU_GETVERSION)

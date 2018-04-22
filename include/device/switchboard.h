@@ -34,15 +34,16 @@ typedef struct {
     switchboard_state_terminal_t output;
     u32 nbyte; //total number of bytes -- set to 0 for persistent connections
     void * buffer[2]; //circular buffer pointers
+    u16 bytes_in_buffer[2];
     u16 transaction_limit;
-    u16 resd;
+    u16 packet_size;
 } switchboard_state_t;
 
 typedef struct {
     const devfs_device_t * devfs_list; //pointer to the list of devices that contains the switchboard
     u16 connection_count; //max number of connections allowed
     u16 connection_buffer_size; //actual bytes available per transaction
-    u16 transaction_limit; //max 65535 means users can place this so high it triggers the WDT
+    u16 transaction_limit; //max 65535 means users can't make this so high it triggers the WDT
     u16 resd;
     void * buffer; //array of buffers (connection_count * 2 * connection_buffer_size)
 } switchboard_config_t;

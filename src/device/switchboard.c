@@ -32,9 +32,12 @@ static int update_priority(const devfs_device_t * device, const switchboard_term
 static int handle_data_ready(void * context, const mcu_event_t * event);
 static int handle_write_complete(void * context, const mcu_event_t * event);
 static int read_then_write_until_async(switchboard_state_t * state);
-static void complete_read(switchboard_state_t * state);
+static void complete_read(switchboard_state_t * state, int bytes_read);
 static void complete_write(switchboard_state_t * state);
 static void update_bytes_transferred(switchboard_state_t * state, switchboard_state_terminal_t * terminal);
+static void switch_input_buffer(switchboard_state_t * state, int bytes_read);
+static void switch_output_buffer(switchboard_state_t * state);
+static int write_to_device(switchboard_state_t * state);
 
 int switchboard_open(const devfs_handle_t * handle){
 
@@ -70,7 +73,7 @@ int switchboard_ioctl(const devfs_handle_t * handle, int request, void * ctl){
         if( o_flags & SWITCHBOARD_FLAG_CONNECT ){
             //is connection idx available?
 
-            if( attr->connection.idx < config->connection_count ){
+            if( attr->idx < config->connection_count ){
                 return create_connection(config, state, attr);
             } else {
                 return SYSFS_SET_RETURN(EINVAL);
@@ -93,27 +96,33 @@ int switchboard_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 int switchboard_read(const devfs_handle_t * handle, devfs_async_t * async){
     const switchboard_config_t * config = handle->config;
     switchboard_state_t * state = handle->state;
-    switchboard_status_t * status;
     if( (async->nbyte == sizeof(switchboard_connection_t)) && (async->loc % sizeof(switchboard_connection_t) == 0) ){
         u32 idx = async->loc / sizeof(switchboard_connection_t);
         if( idx < config->connection_count ){
-            status = async->buf;
-            status->idx = idx;
-            state->o_flags = state[idx].o_flags;
-            if( state[idx].o_flags & SWITCHBOARD_FLAG_IS_PERSISTENT ){
-                state->nbyte = state[idx].input.async.nbyte;
+            switchboard_status_t * status = async->buf;
+
+            if( state->o_flags != 0 ){
+                status->idx = idx;
+                state->o_flags = state[idx].o_flags;
+                if( state[idx].o_flags & SWITCHBOARD_FLAG_IS_PERSISTENT ){
+                    state->nbyte = state[idx].input.async.nbyte;
+                } else {
+                    status->nbyte = state[idx].nbyte;
+                }
+
+                if( get_terminal(config, &state[idx].input, &status->input) < 0 ){
+                    return SYSFS_SET_RETURN(EIO);
+                }
+                if( get_terminal(config, &state[idx].output, &status->output) < 0 ){
+                    return SYSFS_SET_RETURN(EIO);
+                }
             } else {
-                status->nbyte = state[idx].nbyte;
+                //connection is not used
+                memset(status, 0, sizeof(switchboard_connection_t));
+                status->idx = idx;
             }
-
-            if( get_terminal(config, &state[idx].input, &status->input) < 0 ){
-                return SYSFS_SET_RETURN(EIO);
-            }
-            if( get_terminal(config, &state[idx].output, &status->output) < 0 ){
-                return SYSFS_SET_RETURN(EIO);
-            }
-
             return sizeof(switchboard_connection_t);
+
         } else {
             return SYSFS_RETURN_EOF;
         }
@@ -142,7 +151,7 @@ int update_priority(const devfs_device_t * device, const switchboard_terminal_t 
 }
 
 int create_connection(const switchboard_config_t * config, switchboard_state_t * state, const switchboard_attr_t * attr){
-    int idx = attr->connection.idx;
+    int idx = attr->idx;
 
     if( state[idx].o_flags != 0 ){
         return SYSFS_SET_RETURN(EBUSY);
@@ -150,26 +159,26 @@ int create_connection(const switchboard_config_t * config, switchboard_state_t *
 
     memset(state + idx, 0, sizeof(switchboard_state_t));
 
-    state[idx].input.device = devfs_lookup_device(config->devfs_list, attr->connection.input.name); //lookup input device from attr->input.name
+    state[idx].input.device = devfs_lookup_device(config->devfs_list, attr->input.name); //lookup input device from attr->input.name
     if( state[idx].input.device == 0 ){
         return SYSFS_SET_RETURN(ENOENT);
     }
 
-    state[idx].output.device = devfs_lookup_device(config->devfs_list, attr->connection.output.name); //lookup input device from attr->input.name
+    state[idx].output.device = devfs_lookup_device(config->devfs_list, attr->output.name); //lookup input device from attr->input.name
     if( state[idx].output.device == 0 ){
         return SYSFS_SET_RETURN(ENOENT);
     }
 
-    if( update_priority(state[idx].input.device, &attr->connection.input, MCU_EVENT_FLAG_DATA_READY) < 0 ){
+    if( update_priority(state[idx].input.device, &attr->input, MCU_EVENT_FLAG_DATA_READY) < 0 ){
         return SYSFS_SET_RETURN(EIO);
     }
 
-    if( update_priority(state[idx].output.device, &attr->connection.output, MCU_EVENT_FLAG_WRITE_COMPLETE) < 0 ){
+    if( update_priority(state[idx].output.device, &attr->output, MCU_EVENT_FLAG_WRITE_COMPLETE) < 0 ){
         return SYSFS_SET_RETURN(EIO);
     }
 
     if( attr->o_flags & SWITCHBOARD_FLAG_SET_TRANSACTION_LIMIT ){
-        state[idx].transaction_limit = attr->connection.transaction_limit;
+        state[idx].transaction_limit = attr->transaction_limit;
     } else {
         state[idx].transaction_limit = config->transaction_limit;
     }
@@ -177,7 +186,7 @@ int create_connection(const switchboard_config_t * config, switchboard_state_t *
     state[idx].buffer[0] = config->buffer + idx*2*config->connection_buffer_size;
     state[idx].buffer[1] = config->buffer + (idx*2+1)*config->connection_buffer_size;
 
-    state[idx].nbyte = attr->connection.nbyte; //total number of bytes to transfer OR packet size for persistent connections (must be less than buffer size)
+    state[idx].nbyte = attr->nbyte; //total number of bytes to transfer OR packet size for persistent connections (must be less than buffer size)
 
     state[idx].o_flags = SWITCHBOARD_FLAG_IS_CONNECTED;
     if( attr->o_flags & SWITCHBOARD_FLAG_IS_PERSISTENT ){
@@ -188,23 +197,35 @@ int create_connection(const switchboard_config_t * config, switchboard_state_t *
             state[idx].nbyte = config->connection_buffer_size;
         }
 
-        state[idx].input.async.nbyte = state[idx].nbyte;
+        state[idx].packet_size = state[idx].nbyte;
+        if( state[idx].packet_size > config->connection_buffer_size ){
+            state[idx].packet_size = config->connection_buffer_size;
+        }
+
         state[idx].nbyte = 0;
+
+    } else {
+
+        //nbyte is total number of bytes
+        state[idx].packet_size = config->connection_buffer_size;
+        if( state[idx].packet_size > state[idx].nbyte ){
+            state[idx].packet_size = state[idx].nbyte;
+        }
     }
 
     state[idx].input.async.tid = task_get_current();
     state[idx].input.async.flags = O_RDWR;
-    state[idx].input.async.loc = attr->connection.input.loc;
+    state[idx].input.async.loc = attr->input.loc;
     state[idx].input.async.handler.callback = handle_data_ready;
     state[idx].input.async.handler.context = state + idx;
     state[idx].input.async.buf = state[idx].buffer[0];
-    state[idx].input.async.nbyte = attr->connection.nbyte;
+    state[idx].input.async.nbyte = state[idx].packet_size;
 
     memcpy(&state[idx].output.async, &state[idx].input.async, sizeof(devfs_async_t));
 
     //output is the same except the callback and the location (channel)
     state[idx].output.async.handler.callback = handle_write_complete;
-    state[idx].output.async.loc = attr->connection.output.loc;
+    state[idx].output.async.loc = attr->output.loc;
 
 
     //start reading into the primary buffer -- mark it as used
@@ -216,7 +237,7 @@ int create_connection(const switchboard_config_t * config, switchboard_state_t *
 }
 
 int destroy_connection(const switchboard_config_t * config, switchboard_state_t * state, const switchboard_attr_t * attr){
-    int idx = attr->connection.idx;
+    int idx = attr->idx;
     state[idx].o_flags = 0;
     state[idx].nbyte = -1; //force ongoing transactions to stop
     return 0;
@@ -230,37 +251,6 @@ int get_terminal(const switchboard_config_t * config,
     return devfs_lookup_name(config->devfs_list, state_terminal->device, terminal->name);
 }
 
-/*
- *
- * If read and write are always sync -- an error occurs. This will
- * be some kind of sync max level (connection to the same fifo)
- *
- * sync read -> write until async read, async write or overload error
- *
- * START: read then write until async -> waiting for read or waiting for write
- *
- * handle_data_ready():
- *   if waiting for write: drop the data and start
- *   another read on the same buffer.
- *
- *   if not waiting for write: write then read
- *
- * handle_write_complete():
- *   if waiting for read: don't do anything
- *
- *   if not waiting for read: read and write until async
- *
- * Two flags (conditions): waiting for read AND waiting for write
- *
- * If waiting for read AND waiting for write: don't do anything when write completes
- *
- * If waiting for write when read completes: drop data and wait for write
- * to complete - when write completes: try to read again
- *
- *
- *
- */
-
 //switch happens after data is read
 int is_ready_to_read_device(switchboard_state_t * state){
 
@@ -269,25 +259,29 @@ int is_ready_to_read_device(switchboard_state_t * state){
         return 0;
     }
 
-    if( state->input.async.nbyte <= 0 ){
+    if( state->input.async.nbyte < 0 ){
         //all reads complete or an error occurred
         return 0;
     }
 
+    int buffer_is_free;
     if( state->input.async.buf == state->buffer[0] ){
-        return (state->o_flags & SWITCHBOARD_FLAG_IS_PRIMARY_BUFFER_USED) == 0;
+        buffer_is_free = (state->bytes_in_buffer[0] == 0);
     } else {
-        return (state->o_flags & SWITCHBOARD_FLAG_IS_SECONDARY_BUFFER_USED) == 0;
+        buffer_is_free = (state->bytes_in_buffer[1] == 0);
     }
+    return buffer_is_free;
 }
 
 //switch happens after data is written -- so previous buffer will be unused
-void switch_input_buffer(switchboard_state_t * state){
+void switch_input_buffer(switchboard_state_t * state, int bytes_read){
     if( state->input.async.buf == state->buffer[0] ){
-        state->o_flags |= SWITCHBOARD_FLAG_IS_PRIMARY_BUFFER_USED;
+        //the read completed on this buffer -- set the number of bytes read
+        state->bytes_in_buffer[0] = bytes_read;
+
         state->input.async.buf = state->buffer[1];
     } else {
-        state->o_flags |= SWITCHBOARD_FLAG_IS_SECONDARY_BUFFER_USED;
+        state->bytes_in_buffer[1] = bytes_read;
         state->input.async.buf = state->buffer[0];
     }
 }
@@ -295,10 +289,10 @@ void switch_input_buffer(switchboard_state_t * state){
 //switch happens after data is written -- so previous buffer will be unused
 void switch_output_buffer(switchboard_state_t * state){
     if( state->output.async.buf == state->buffer[0] ){
-        state->o_flags &= ~SWITCHBOARD_FLAG_IS_PRIMARY_BUFFER_USED;
+        state->bytes_in_buffer[0] = 0; //bytes were written
         state->output.async.buf = state->buffer[1];
     } else {
-        state->o_flags &= ~SWITCHBOARD_FLAG_IS_SECONDARY_BUFFER_USED;
+        state->bytes_in_buffer[1] = 0; //bytes were written
         state->output.async.buf = state->buffer[0];
     }
 }
@@ -307,24 +301,32 @@ int is_ready_to_write_device(switchboard_state_t * state){
 
     if( state->o_flags & SWITCHBOARD_FLAG_IS_WRITING_ASYNC ){
         //a write is already in progress
+        mcu_debug_root_printf("write busy async\n");
         return 0;
     }
 
-    if( state->output.async.nbyte <= 0 ){
+    if( state->output.async.nbyte < 0 ){
         //all writes are complete or an error occurred
+        mcu_debug_root_printf("write error async\n");
         return 0;
     }
 
     if( state->output.async.buf == state->buffer[0] ){
-        return (state->o_flags & SWITCHBOARD_FLAG_IS_PRIMARY_BUFFER_USED) != 0;
+        state->output.async.nbyte = state->bytes_in_buffer[0];
     } else {
-        return (state->o_flags & SWITCHBOARD_FLAG_IS_SECONDARY_BUFFER_USED) != 0;
+        state->output.async.nbyte = state->bytes_in_buffer[1];
     }
+
+    mcu_debug_root_printf("write bytes: %d\n", state->output.async.nbyte);
+
+    //there there are bytes in the buffer, then the device is ready to bw written
+    return state->output.async.nbyte > 0;
+
 }
 
-void complete_read(switchboard_state_t * state){
+void complete_read(switchboard_state_t * state, int bytes_read){
     update_bytes_transferred(state, &state->input);
-    switch_input_buffer(state);
+    switch_input_buffer(state, bytes_read);
 }
 
 void update_bytes_transferred(switchboard_state_t * state, switchboard_state_terminal_t * terminal){
@@ -352,6 +354,7 @@ int write_to_device(switchboard_state_t * state){
     int ret = 0;
 
     if( is_ready_to_write_device(state) ){ //is there a buffer with data that needs to be written?
+        mcu_debug_root_printf("write:%d\n", state->output.async.nbyte);
         ret = state->output.device->driver.write(&state->output.device->handle, &state->output.async);
         if( ret == 0 ){
             //waiting for write
@@ -369,13 +372,15 @@ int read_from_device(switchboard_state_t * state){
     int ret = 0;
 
     if( is_ready_to_read_device(state) ){ //is there a buffer available
+        mcu_debug_root_printf("read %d\n", state->input.async.nbyte);
         ret = state->input.device->driver.read(&state->input.device->handle, &state->input.async);
         if( ret == 0 ){
             //waiting for write
             state->o_flags |= SWITCHBOARD_FLAG_IS_READING_ASYNC;
+            mcu_debug_root_printf("read async\n");
         } else if( ret > 0 ){
             //syncrhonous read completed
-            complete_read(state);
+            complete_read(state, ret);
         }
     }
     return ret;
@@ -413,10 +418,21 @@ int handle_data_ready(void * context, const mcu_event_t * event){
 
     //not waiting for ASYNC data to read anymore
     state->o_flags &= ~SWITCHBOARD_FLAG_IS_READING_ASYNC;
-    complete_read(state);
 
-    //this will try to start another read before writing in case there is a synchronous write delay
-    read_then_write_until_async(state);
+    mcu_debug_root_printf("data ready %d\n", state->input.async.nbyte);
+
+    if( state->input.async.nbyte < 0 ){
+        //error -- no more action
+        state->nbyte = state->input.async.nbyte;
+    } else {
+        complete_read(state, state->input.async.nbyte);
+
+        //restore async to packet size if less than the packet size was read
+        state->input.async.nbyte = state->packet_size;
+
+        //this will try to start another read before writing in case there is a synchronous write delay
+        read_then_write_until_async(state);
+    }
 
     return 0;
 }
@@ -426,12 +442,17 @@ int handle_write_complete(void * context, const mcu_event_t * event){
 
     //not waiting for ASYNC data to write anymore
     state->o_flags &= ~SWITCHBOARD_FLAG_IS_WRITING_ASYNC;
-    complete_write(state); //this frees the buffer that was just written
+    if( state->output.async.nbyte < 0 ){
+        //write error occurred -- abort connection
+        state->nbyte = state->output.async.nbyte;
+    } else {
+        complete_write(state); //this frees the buffer that was just written
 
-    //try to start another write operation in case there is a synchronous read delay
-    write_to_device(state);
+        //try to start another write operation in case there is a synchronous read delay
+        write_to_device(state);
 
-    read_then_write_until_async(state);
+        read_then_write_until_async(state);
+    }
 
     return 0;
 }
