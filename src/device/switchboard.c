@@ -27,7 +27,7 @@
 
 static int create_connection(const switchboard_config_t * config, switchboard_state_t * state, const switchboard_attr_t * attr);
 static int destroy_connection(const switchboard_config_t * config, switchboard_state_t * state, const switchboard_attr_t * attr);
-static int get_terminal(const switchboard_config_t * config, switchboard_state_terminal_t * state_terminal, switchboard_terminal_t * terminal);
+static int get_terminal(const switchboard_config_t * config, const switchboard_state_terminal_t * state_terminal, switchboard_terminal_t * terminal);
 static int update_priority(const devfs_device_t * device, const switchboard_terminal_t * terminal, u32 o_events);
 static int handle_data_ready(void * context, const mcu_event_t * event);
 static int handle_write_complete(void * context, const mcu_event_t * event);
@@ -101,11 +101,11 @@ int switchboard_read(const devfs_handle_t * handle, devfs_async_t * async){
         if( idx < config->connection_count ){
             switchboard_status_t * status = async->buf;
 
-            if( state->o_flags != 0 ){
+            if( state[idx].o_flags != 0 ){
                 status->idx = idx;
-                state->o_flags = state[idx].o_flags;
+                status->o_flags = state[idx].o_flags;
                 if( state[idx].o_flags & SWITCHBOARD_FLAG_IS_PERSISTENT ){
-                    state->nbyte = state[idx].input.async.nbyte;
+                    status->nbyte = state[idx].packet_size;
                 } else {
                     status->nbyte = state[idx].nbyte;
                 }
@@ -113,9 +113,11 @@ int switchboard_read(const devfs_handle_t * handle, devfs_async_t * async){
                 if( get_terminal(config, &state[idx].input, &status->input) < 0 ){
                     return SYSFS_SET_RETURN(EIO);
                 }
+
                 if( get_terminal(config, &state[idx].output, &status->output) < 0 ){
                     return SYSFS_SET_RETURN(EIO);
                 }
+
             } else {
                 //connection is not used
                 memset(status, 0, sizeof(switchboard_connection_t));
@@ -141,6 +143,7 @@ int switchboard_close(const devfs_handle_t * handle){
 
 
 int update_priority(const devfs_device_t * device, const switchboard_terminal_t * terminal, u32 o_events){
+    return 0;
     mcu_action_t action;
     memset(&action, 0, sizeof(action));
     action.channel = terminal->loc;
@@ -244,7 +247,7 @@ int destroy_connection(const switchboard_config_t * config, switchboard_state_t 
 }
 
 int get_terminal(const switchboard_config_t * config,
-                 switchboard_state_terminal_t * state_terminal,
+                 const switchboard_state_terminal_t * state_terminal,
                  switchboard_terminal_t * terminal){
     terminal->loc = state_terminal->async.loc;
     terminal->bytes_transferred = state_terminal->bytes_transferred;
@@ -301,13 +304,11 @@ int is_ready_to_write_device(switchboard_state_t * state){
 
     if( state->o_flags & SWITCHBOARD_FLAG_IS_WRITING_ASYNC ){
         //a write is already in progress
-        mcu_debug_root_printf("write busy async\n");
         return 0;
     }
 
     if( state->output.async.nbyte < 0 ){
         //all writes are complete or an error occurred
-        mcu_debug_root_printf("write error async\n");
         return 0;
     }
 
@@ -317,8 +318,6 @@ int is_ready_to_write_device(switchboard_state_t * state){
         state->output.async.nbyte = state->bytes_in_buffer[1];
     }
 
-    mcu_debug_root_printf("write bytes: %d\n", state->output.async.nbyte);
-
     //there there are bytes in the buffer, then the device is ready to bw written
     return state->output.async.nbyte > 0;
 
@@ -327,6 +326,9 @@ int is_ready_to_write_device(switchboard_state_t * state){
 void complete_read(switchboard_state_t * state, int bytes_read){
     update_bytes_transferred(state, &state->input);
     switch_input_buffer(state, bytes_read);
+
+    //restore async to packet size if less than the packet size was read
+    state->input.async.nbyte = state->packet_size;
 }
 
 void update_bytes_transferred(switchboard_state_t * state, switchboard_state_terminal_t * terminal){
@@ -354,7 +356,6 @@ int write_to_device(switchboard_state_t * state){
     int ret = 0;
 
     if( is_ready_to_write_device(state) ){ //is there a buffer with data that needs to be written?
-        mcu_debug_root_printf("write:%d\n", state->output.async.nbyte);
         ret = state->output.device->driver.write(&state->output.device->handle, &state->output.async);
         if( ret == 0 ){
             //waiting for write
@@ -372,12 +373,12 @@ int read_from_device(switchboard_state_t * state){
     int ret = 0;
 
     if( is_ready_to_read_device(state) ){ //is there a buffer available
-        mcu_debug_root_printf("read %d\n", state->input.async.nbyte);
+        //mcu_debug_root_printf("ready to read:%d\n", state->input.async.nbyte);
         ret = state->input.device->driver.read(&state->input.device->handle, &state->input.async);
         if( ret == 0 ){
             //waiting for write
+            //mcu_debug_root_printf("read async:%d\n", state->input.async.nbyte);
             state->o_flags |= SWITCHBOARD_FLAG_IS_READING_ASYNC;
-            mcu_debug_root_printf("read async\n");
         } else if( ret > 0 ){
             //syncrhonous read completed
             complete_read(state, ret);
@@ -419,16 +420,11 @@ int handle_data_ready(void * context, const mcu_event_t * event){
     //not waiting for ASYNC data to read anymore
     state->o_flags &= ~SWITCHBOARD_FLAG_IS_READING_ASYNC;
 
-    mcu_debug_root_printf("data ready %d\n", state->input.async.nbyte);
-
     if( state->input.async.nbyte < 0 ){
         //error -- no more action
         state->nbyte = state->input.async.nbyte;
     } else {
         complete_read(state, state->input.async.nbyte);
-
-        //restore async to packet size if less than the packet size was read
-        state->input.async.nbyte = state->packet_size;
 
         //this will try to start another read before writing in case there is a synchronous write delay
         read_then_write_until_async(state);

@@ -70,7 +70,7 @@ int devfs_lookup_name(const devfs_device_t * list, const devfs_device_t * device
     i = 0;
     while( devfs_is_terminator(&(list[i])) == 0 ){
         if( device == (list + i) ){
-            name[NAME_MAX] = 0;
+            name[NAME_MAX-1] = 0;
             strncpy(name, list[i].name, NAME_MAX-1);
             return 0;
         }
