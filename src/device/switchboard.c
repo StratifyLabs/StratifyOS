@@ -26,7 +26,10 @@
 
 
 static int create_connection(const switchboard_config_t * config, switchboard_state_t * state, const switchboard_attr_t * attr);
+static void abort_connection(switchboard_state_t * state);
 static int destroy_connection(const switchboard_config_t * config, switchboard_state_t * state, const switchboard_attr_t * attr);
+static int open_terminal(const switchboard_state_terminal_t * state_terminal);
+static int close_terminal(const switchboard_state_terminal_t * state_terminal);
 static int get_terminal(const switchboard_config_t * config, const switchboard_state_terminal_t * state_terminal, switchboard_terminal_t * terminal);
 static int update_priority(const devfs_device_t * device, const switchboard_terminal_t * terminal, u32 o_events);
 static int handle_data_ready(void * context, const mcu_event_t * event);
@@ -143,7 +146,6 @@ int switchboard_close(const devfs_handle_t * handle){
 
 
 int update_priority(const devfs_device_t * device, const switchboard_terminal_t * terminal, u32 o_events){
-    return 0;
     mcu_action_t action;
     memset(&action, 0, sizeof(action));
     action.channel = terminal->loc;
@@ -170,14 +172,6 @@ int create_connection(const switchboard_config_t * config, switchboard_state_t *
     state[idx].output.device = devfs_lookup_device(config->devfs_list, attr->output.name); //lookup input device from attr->input.name
     if( state[idx].output.device == 0 ){
         return SYSFS_SET_RETURN(ENOENT);
-    }
-
-    if( update_priority(state[idx].input.device, &attr->input, MCU_EVENT_FLAG_DATA_READY) < 0 ){
-        return SYSFS_SET_RETURN(EIO);
-    }
-
-    if( update_priority(state[idx].output.device, &attr->output, MCU_EVENT_FLAG_WRITE_COMPLETE) < 0 ){
-        return SYSFS_SET_RETURN(EIO);
     }
 
     if( attr->o_flags & SWITCHBOARD_FLAG_SET_TRANSACTION_LIMIT ){
@@ -230,13 +224,40 @@ int create_connection(const switchboard_config_t * config, switchboard_state_t *
     state[idx].output.async.handler.callback = handle_write_complete;
     state[idx].output.async.loc = attr->output.loc;
 
+    if( open_terminal(&state->input) < 0 ){
+        memset(state + idx, 0, sizeof(switchboard_state_t));
+        return SYSFS_SET_RETURN(EIO);
+    }
+
+    if( open_terminal(&state->output) < 0 ){
+        close_terminal(&state->input);
+        memset(state + idx, 0, sizeof(switchboard_state_t));
+        return SYSFS_SET_RETURN(EIO);
+    }
+
+    if( update_priority(state[idx].input.device, &attr->input, MCU_EVENT_FLAG_DATA_READY) < 0 ){
+        abort_connection(state + idx);
+        return SYSFS_SET_RETURN(EIO);
+    }
+
+    if( update_priority(state[idx].output.device, &attr->output, MCU_EVENT_FLAG_WRITE_COMPLETE) < 0 ){
+        abort_connection(state + idx);
+        return SYSFS_SET_RETURN(EIO);
+    }
 
     //start reading into the primary buffer -- mark it as used
     if( read_then_write_until_async(state + idx) < 0 ){
+        abort_connection(state + idx);
         return SYSFS_SET_RETURN(EIO);
     }
 
     return 0;
+}
+
+void abort_connection(switchboard_state_t * state){
+    close_terminal(&state->input);
+    close_terminal(&state->output);
+    memset(state + idx, 0, sizeof(switchboard_state_t));
 }
 
 int destroy_connection(const switchboard_config_t * config, switchboard_state_t * state, const switchboard_attr_t * attr){
@@ -245,6 +266,21 @@ int destroy_connection(const switchboard_config_t * config, switchboard_state_t 
     state[idx].nbyte = -1; //force ongoing transactions to stop
     return 0;
 }
+
+void close_connection(switchboard_state_t * state, u32 o_flags){
+    close_terminal(&state->input);
+    close_terminal(&state->output);
+    state->o_flags = o_flags;
+}
+
+int open_terminal(const switchboard_state_terminal_t * state_terminal){
+    return state_terminal->device->driver.open(&state_terminal->device->handle);
+}
+
+int close_terminal(const switchboard_state_terminal_t * state_terminal){
+    return state_terminal->device->driver.close(&state_terminal->device->handle);
+}
+
 
 int get_terminal(const switchboard_config_t * config,
                  const switchboard_state_terminal_t * state_terminal,
@@ -393,6 +429,7 @@ int read_then_write_until_async(switchboard_state_t * state){
 
     //an error has occurred -- abort the connection
     if( state->nbyte < 0 ){
+        close_connection(state, state->o_flags | SWITCHBOARD_FLAG_IS_STOPPED_ON_ERROR);
         return 0;
     }
 
@@ -409,6 +446,7 @@ int read_then_write_until_async(switchboard_state_t * state){
 
     if( ret < 0 ){
         state->nbyte = ret;
+        close_connection(state, state->o_flags | SWITCHBOARD_FLAG_IS_STOPPED_ON_ERROR);
     }
 
     return ret;
@@ -446,9 +484,9 @@ int handle_write_complete(void * context, const mcu_event_t * event){
 
         //try to start another write operation in case there is a synchronous read delay
         write_to_device(state);
-
-        read_then_write_until_async(state);
     }
+
+    read_then_write_until_async(state);
 
     return 0;
 }
