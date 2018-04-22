@@ -37,8 +37,7 @@ int full_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 }
 
 int full_write(const devfs_handle_t * cfg, devfs_async_t * wop){
-	errno = ENOSPC;
-	return -1;
+    return SYSFS_SET_RETURN(ENOSPC);
 }
 
 int full_close(const devfs_handle_t * cfg){

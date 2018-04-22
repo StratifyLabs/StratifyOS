@@ -65,21 +65,18 @@ int sst25vf_open(const devfs_handle_t * handle){
 
 	if ( status != 0x9C ){
 		//Global protect command failed
-		errno = EIO;
-		return -1;
+        return SYSFS_SET_RETURN(EIO);
 	}
 
 
 	if ( sst25vf_share_global_unprotect(handle) ){
-		errno = EIO;
-		return -1;
+        return SYSFS_SET_RETURN(EIO);
 	}
 	status = sst25vf_share_read_status(handle);
 
 	if ( status != 0x80 ){
 		//global unprotect failed
-		errno = EIO;
-		return -1;
+        return SYSFS_SET_RETURN(EIO);
 	}
 
 	state->prot = 0;
@@ -105,13 +102,11 @@ int sst25vf_read(const devfs_handle_t * handle, devfs_async_t * rop){
 
 
 	if ( state->handler.callback ){
-		errno = EBUSY;
-		return -1;
+        return SYSFS_SET_RETURN(EBUSY);
 	}
 
 	if ( rop->loc >= dcfg->size ){
-		errno = EINVAL;
-		return -1;
+        return SYSFS_SET_RETURN(EINVAL);
 	}
 
 	state->handler.callback = rop->handler.callback;
@@ -220,13 +215,11 @@ int sst25vf_write(const devfs_handle_t * handle, devfs_async_t * wop){
 	//sst25vf_config_t * sst_cfg = (sst25vf_config_t*)handle->config;
 
 	if( state->prot == 1 ){
-		errno = EROFS;
-		return -1;
+        return SYSFS_SET_RETURN(EROFS);
 	}
 
 	if ( state->handler.callback ){
-		errno = EBUSY;
-		return -1;
+        return SYSFS_SET_RETURN(EBUSY);
 	}
 
 	//This is the final callback and context when all the writing is done

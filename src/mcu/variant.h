@@ -60,10 +60,10 @@
         mcu_##driver_name##_dev_write); }
 
 #define MCU_DRIVER_DECLARATION_LOCAL_NO_WRITE(driver_name) int mcu_##driver_name##_write(const devfs_handle_t * handle, devfs_async_t * rop){ \
-    errno = ENOTSUP; return -1; }
+    return SYSFS_SET_RETURN(ENOTSUP); }
 
 #define MCU_DRIVER_DECLARATION_LOCAL_NO_READ(driver_name) int mcu_##driver_name##_write(const devfs_handle_t * handle, devfs_async_t * rop){ \
-    errno = ENOTSUP; return -1; }
+    return SYSFS_SET_RETURN(ENOTSUP); }
 
 #define MCU_DRIVER_DECLARATION_LOCAL_CLOSE(driver_name) int mcu_##driver_name##_close(const devfs_handle_t * handle){ \
     return mcu_close(handle, mcu_##driver_name##_dev_is_powered, mcu_##driver_name##_dev_power_off); }

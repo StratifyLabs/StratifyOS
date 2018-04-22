@@ -80,8 +80,7 @@ int uartfifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 			fifo_cancel_rop(&(state->fifo));
 			return 0;
 		}
-		errno = ENOTSUP;
-		return -1;
+        return SYSFS_SET_RETURN(ENOTSUP);
 	case I_UART_FLUSH:
 	case I_FIFO_FLUSH:
 		fifo_flush(&(state->fifo));

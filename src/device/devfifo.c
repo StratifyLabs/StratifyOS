@@ -156,8 +156,7 @@ int devfifo_read(const devfs_handle_t * cfg, devfs_async_t * rop){
 	bytes_read = read_buffer(cfgp, state, rop); //see if there are bytes in the buffer
 	if ( bytes_read == 0 ){
 		if( (rop->flags & O_NONBLOCK) ){
-			errno = EAGAIN;
-			bytes_read = -1;
+            bytes_read = SYSFS_SET_RETURN(EAGAIN);
 		} else {
 			state->rop = rop;
 			state->len = rop->nbyte;

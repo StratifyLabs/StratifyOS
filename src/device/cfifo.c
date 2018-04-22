@@ -56,18 +56,16 @@ int cfifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 			channel->value = state->owner_array[channel->loc];
 			return 0;
 		} else {
-			errno = EINVAL;
-		}
-		return -1;
+            return SYSFS_SET_RETURN(EINVAL);
+        }
 
 	case I_CFIFO_SETOWNER:
 		if( channel->loc < config->count ){
 			state->owner_array[channel->loc] = channel->value;
 			return 0;
 		} else {
-			errno = EINVAL;
+            return SYSFS_SET_RETURN(EINVAL);
 		}
-		return -1;
 
 	case I_CFIFO_FIFOINIT:
 		return fifo_ioctl_local(config->fifo_config_array + fifo_request->channel,
@@ -108,13 +106,12 @@ int cfifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 		}
 	}
 
-	errno = EINVAL;
-	return -1;
+    return SYSFS_SET_RETURN(EINVAL);
 }
 
 int cfifo_read(const devfs_handle_t * handle, devfs_async_t * async){
 	u32 loc = (u32)async->loc;
-	int ret = -1;
+    int ret;
 	const cfifo_config_t * config = handle->config;
 	cfifo_state_t * state = handle->state;
 
@@ -122,21 +119,21 @@ int cfifo_read(const devfs_handle_t * handle, devfs_async_t * async){
 	if( loc < config->count ){
         ret = fifo_read_local(config->fifo_config_array + loc, state->fifo_state_array + loc, async, 1);
 	} else {
-		errno = EINVAL;
-	}
+        ret = SYSFS_SET_RETURN(EINVAL);
+    }
 	return ret;
 }
 
 int cfifo_write(const devfs_handle_t * handle, devfs_async_t * async){
 	u32 loc = (u32)async->loc;
-	int ret = -1;
+    int ret;
 	const cfifo_config_t * config = handle->config;
 	cfifo_state_t * state = handle->state;
 
 	if( loc < config->count ){
         ret = fifo_write_local(&config->fifo_config_array[loc], &state->fifo_state_array[loc], async, 1);
 	} else {
-		errno = EINVAL;
+        ret = SYSFS_SET_RETURN(EINVAL);
 	}
 	return ret;
 }

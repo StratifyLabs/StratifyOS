@@ -55,8 +55,7 @@ int mcu_ioctl(const devfs_handle_t * handle,
 
 
 	if ( !powered_on(handle) ){
-		errno = EIO;
-		return -200;
+        return SYSFS_SET_RETURN(EIO);
 	}
 
 	periph_request = _IOCTL_NUM(request);
@@ -65,8 +64,7 @@ int mcu_ioctl(const devfs_handle_t * handle,
 		return ioctl_func_table[periph_request](handle, ctl);
 	}
 
-	errno = EINVAL;
-	return -300;
+    return SYSFS_SET_RETURN(EINVAL);
 }
 
 static inline int mcu_read(const devfs_handle_t * handle,
@@ -80,8 +78,7 @@ int mcu_read(const devfs_handle_t * handle,
 
 	//Make sure the device is powered up
 	if ( !powered_on(handle) ){
-		errno = EIO;
-		return -1;
+        return SYSFS_SET_RETURN(EIO);
 	}
 
 	return read(handle, rop);
@@ -98,8 +95,7 @@ int mcu_write(const devfs_handle_t* handle,
 
 	//Make sure the device is powered up
 	if ( !powered_on(handle) ){
-		errno = EIO;
-		return -1;
+        return SYSFS_SET_RETURN(EIO);
 	}
 
 	return write(handle, wop);
