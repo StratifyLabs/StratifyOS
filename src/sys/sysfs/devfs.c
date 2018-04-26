@@ -224,7 +224,7 @@ int devfs_ioctl(const void * cfg, void * handle, int request, void * ctl){
 
 void ioctl_priv(void * args){
 	sysfs_ioctl_t * p = args;
-	const devfs_device_t * dev = (const devfs_device_t*)p->handle;
+	const devfs_device_t * dev = (const devfs_device_t*)p->handle;    
 	p->ret = dev->driver.ioctl(&dev->handle, p->request, p->ctl);
 }
 

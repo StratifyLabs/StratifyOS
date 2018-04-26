@@ -120,19 +120,19 @@ void cortexm_reset(void * args){
 	NVIC_SystemReset();
 }
 
-void cortexm_disable_irq(void * x){
-	NVIC_DisableIRQ((IRQn_Type)x);
+void cortexm_disable_irq(s16 x){
+    NVIC_DisableIRQ(x);
 }
 
-void cortexm_enable_irq(void * x){
-	NVIC_EnableIRQ((IRQn_Type)x);
+void cortexm_enable_irq(s16 x){
+    NVIC_EnableIRQ(x);
 }
 
-void cortexm_disable_interrupts(void * args){
+void cortexm_disable_interrupts(){
 	asm volatile ("cpsid i");
 }
 
-void cortexm_enable_interrupts(void * args){
+void cortexm_enable_interrupts(){
 	asm volatile ("cpsie i");
 }
 
@@ -155,7 +155,7 @@ void cortexm_set_thread_stack_ptr(void * ptr){
 	asm volatile ("MSR psp, %0\n\t" : : "r" (ptr) );
 }
 
-int cortexm_set_irq_prio(int irq, int prio){
+int cortexm_set_irq_priority(int irq, int prio){
 
 	//calculate the relative priority (lower value is higher priority)
 	prio = mcu_config.irq_middle_prio - prio;

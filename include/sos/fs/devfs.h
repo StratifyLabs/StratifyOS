@@ -117,11 +117,18 @@ int devfs_mcu_ioctl(const devfs_handle_t * handle,
 
     periph_request = _IOCTL_NUM(request);
 
+    //check the MCU IDENT request
+
     if ( periph_request < ioctl_func_table_size ) {
         return ioctl_func_table[periph_request](handle, ctl);
     }
     return -1;
 }
+
+#define DEVFS_DRIVER_IS_BUSY(transfer, async) \
+    if( transfer ){ return SYSFS_SET_RETURN(EBUSY); } \
+    if( async->nbyte == 0 ){ return 0; } \
+    transfer = async
 
 #define DEVFS_MCU_DRIVER_IOCTL_FUNCTION(driver_name, version, ioctl_total, ...) \
     int mcu_##driver_name##_getversion(const devfs_handle_t * handle, void * ctl){ return version; } \

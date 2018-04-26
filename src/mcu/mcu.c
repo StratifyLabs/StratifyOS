@@ -21,10 +21,59 @@
 #include "mcu/mcu.h"
 #include "mcu/core.h"
 
+static int mcu_execute_transfer_event_handler(mcu_event_handler_t * handler, u32 o_events, void * data);
+
 void mcu_board_execute_event_handler(int event, void * args){
 	if( mcu_board_config.event_handler != 0 ){
 		mcu_board_config.event_handler(event, args);
 	}
+}
+
+void mcu_execute_transfer_handlers(devfs_transfer_handler_t * transfer_handler, void * data, int nbyte, u32 o_flags){
+    if( transfer_handler->read ){
+        devfs_async_t * async = transfer_handler->read;
+        transfer_handler->read = 0;
+        async->nbyte = nbyte;
+        mcu_execute_transfer_event_handler(&async->handler, o_flags | MCU_EVENT_FLAG_DATA_READY, data);
+    }
+
+    if( transfer_handler->write ){
+        devfs_async_t * async = transfer_handler->write;
+        transfer_handler->write = 0;
+        async->nbyte = nbyte;
+        mcu_execute_transfer_event_handler(&async->handler, o_flags | MCU_EVENT_FLAG_WRITE_COMPLETE, data);
+    }
+}
+
+int mcu_execute_read_handler(devfs_transfer_handler_t * transfer_handler, void * data, int nbyte){
+    if( transfer_handler->read ){
+        devfs_async_t * async = transfer_handler->read;
+        transfer_handler->read = 0;
+        async->nbyte = nbyte;
+        return mcu_execute_transfer_event_handler(&async->handler, MCU_EVENT_FLAG_DATA_READY, data);
+    }
+    return 0;
+}
+
+int mcu_execute_write_handler(devfs_transfer_handler_t * transfer_handler, void * data, int nbyte){
+    if( transfer_handler->write ){
+        devfs_async_t * async = transfer_handler->write;
+        transfer_handler->write = 0;
+        async->nbyte = nbyte;
+        return mcu_execute_transfer_event_handler(&async->handler, MCU_EVENT_FLAG_WRITE_COMPLETE, data);
+    }
+    return 0;
+}
+
+int mcu_execute_transfer_event_handler(mcu_event_handler_t * handler, u32 o_events, void * data){
+    int ret = 0;
+    mcu_event_t event;
+    if( handler->callback ){
+        event.o_events = o_events;
+        event.data = data;
+        ret = handler->callback(handler->context, &event);
+    }
+    return ret;
 }
 
 
@@ -47,11 +96,10 @@ int mcu_execute_event_handler(mcu_event_handler_t * handler, u32 o_events, void 
 
 const void * mcu_select_attr(const devfs_handle_t * handle, void * ctl){
 	if( ctl == 0 ){
-		if( handle->config == 0 ){
+        if( handle->config != 0 ){
             return handle->config;
         }
 	}
-
 	return ctl;
 }
 

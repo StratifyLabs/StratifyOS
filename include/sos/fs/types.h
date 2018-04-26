@@ -61,6 +61,12 @@ typedef struct MCU_PACK {
 } devfs_driver_t;
 
 
+typedef struct MCU_PACK {
+    devfs_async_t * read; //used with read operations
+    devfs_async_t * write; //used with write operations
+} devfs_transfer_handler_t;
+
+//mcu_execute_read_complete(devfs_transfer_handler_t * transfer_handler);
 
 typedef struct {
 	char name[NAME_MAX] /*! The name of the device */;

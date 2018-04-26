@@ -169,7 +169,7 @@ void root_suspend(void * args){
 	}
 
 	//enable interrupts
-	cortexm_enable_interrupts(NULL);
+    cortexm_enable_interrupts();
 
 }
 

@@ -102,7 +102,8 @@ typedef struct MCU_PACK {
     u32 loc /*! The location of the terminal (block location or channel depending on the device) */;
     u32 bytes_transferred /*! Number of bytes transferred on the terminal */;
     s8 priority /*! Hardware interrupt priority elevation */;
-    s8 resd[3]; //alignment
+    u8 device_type /*! Block or character device */;
+    s16 resd; //alignment
 } switchboard_terminal_t;
 
 

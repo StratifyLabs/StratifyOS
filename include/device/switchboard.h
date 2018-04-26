@@ -32,7 +32,7 @@ typedef struct {
     u32 o_flags;
     switchboard_state_terminal_t input;
     switchboard_state_terminal_t output;
-    u32 nbyte; //total number of bytes -- set to 0 for persistent connections
+    s32 nbyte; //total number of bytes -- set to 0 for persistent connections
     void * buffer[2]; //circular buffer pointers
     u16 bytes_in_buffer[2];
     u16 transaction_limit;
@@ -60,7 +60,7 @@ int switchboard_close(const devfs_handle_t * handle);
 
 #define SWITCHBOARD_DECLARE_CONFIG_STATE(switchboard_name, devfs_list_value, connection_count_value, connection_buffer_size_value, \
     transaction_limit_value ) \
-    char switchboard_name##_buffer[connection_count_value*connection_buffer_size_value*2] MCU_SYS_MEM; \
+    char switchboard_name##_buffer[connection_count_value*connection_buffer_size_value*2]; \
     switchboard_state_t switchboard_name##_state[connection_count_value] MCU_SYS_MEM; \
     const switchboard_config_t switchboard_name##_config = { \
       .devfs_list = devfs_list_value, \

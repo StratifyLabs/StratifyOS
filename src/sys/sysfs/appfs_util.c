@@ -140,7 +140,6 @@ static int find_protectable_addr(const devfs_device_t * dev, int size, int type,
 		pageinfo.num = i;
 		pageinfo.o_flags = type;
 		if ( dev->driver.ioctl(&(dev->handle), I_MEM_GETPAGEINFO, &pageinfo) < 0 ){
-            mcu_debug_root_printf("APPFS: Failed to get page info %d\n", pageinfo.num);
 			return -1;
 		}
 

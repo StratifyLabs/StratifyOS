@@ -38,18 +38,18 @@ int _main(){
 
 	if ( scheduler_init() < 0 ){ //Initialize the data used for the scheduler
 		mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_FATAL, "main sched init");
-		cortexm_disable_interrupts(NULL);
+        cortexm_disable_interrupts();
 		while(1){}
 	}
 
 	if ( scheduler_start(sos_board_config.start, 10) < 0 ){
 		mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_FATAL, "main sched start");
-		cortexm_disable_interrupts(NULL);
+        cortexm_disable_interrupts();
 		while(1){}
 	}
 
 	mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_FATAL, "main sched failed");
-	cortexm_disable_interrupts(NULL);
+    cortexm_disable_interrupts();
 	while(1){}
 	return 0;
 }
@@ -61,7 +61,7 @@ int _main(){
 void init_hw(){
 	mcu_core_initclock(1);
 	mcu_fault_init();
-	cortexm_enable_interrupts(NULL); //Enable the interrupts
+    cortexm_enable_interrupts(); //Enable the interrupts
 }
 
 int kernel_request(int request, void * data){

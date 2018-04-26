@@ -222,9 +222,9 @@ int i2s_ffifo_read(const devfs_handle_t * handle, devfs_async_t * rop){
     int ret;
 
     //disable interrupts to prevent elevated prio I2S from interrupting the read
-    cortexm_disable_interrupts(0);
+    cortexm_disable_interrupts();
     ret = ffifo_read_local(&(config->rx.ffifo), &(state->rx.ffifo), rop, 0);
-    cortexm_enable_interrupts(0);
+    cortexm_enable_interrupts();
     return ret;
 }
 

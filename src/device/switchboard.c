@@ -107,7 +107,7 @@ int switchboard_read(const devfs_handle_t * handle, devfs_async_t * async){
             if( state[idx].o_flags != 0 ){
                 status->idx = idx;
                 status->o_flags = state[idx].o_flags;
-                if( state[idx].o_flags & SWITCHBOARD_FLAG_IS_PERSISTENT ){
+                if( (state[idx].o_flags & SWITCHBOARD_FLAG_IS_PERSISTENT) && (state[idx].nbyte >= 0) ){
                     status->nbyte = state[idx].packet_size;
                 } else {
                     status->nbyte = state[idx].nbyte;
@@ -142,8 +142,6 @@ int switchboard_write(const devfs_handle_t * handle, devfs_async_t * async){
 int switchboard_close(const devfs_handle_t * handle){
     return 0;
 }
-
-
 
 int update_priority(const devfs_device_t * device, const switchboard_terminal_t * terminal, u32 o_events){
     mcu_action_t action;
@@ -195,10 +193,6 @@ int create_connection(const switchboard_config_t * config, switchboard_state_t *
         }
 
         state[idx].packet_size = state[idx].nbyte;
-        if( state[idx].packet_size > config->connection_buffer_size ){
-            state[idx].packet_size = config->connection_buffer_size;
-        }
-
         state[idx].nbyte = 0;
 
     } else {
@@ -257,7 +251,7 @@ int create_connection(const switchboard_config_t * config, switchboard_state_t *
 void abort_connection(switchboard_state_t * state){
     close_terminal(&state->input);
     close_terminal(&state->output);
-    memset(state + idx, 0, sizeof(switchboard_state_t));
+    memset(state, 0, sizeof(switchboard_state_t));
 }
 
 int destroy_connection(const switchboard_config_t * config, switchboard_state_t * state, const switchboard_attr_t * attr){
@@ -298,8 +292,9 @@ int is_ready_to_read_device(switchboard_state_t * state){
         return 0;
     }
 
-    if( state->input.async.nbyte < 0 ){
+    if( (state->input.async.nbyte <= 0) || (state->nbyte < 0) ){
         //all reads complete or an error occurred
+        mcu_debug_root_printf("can't read error\n");
         return 0;
     }
 
@@ -309,6 +304,11 @@ int is_ready_to_read_device(switchboard_state_t * state){
     } else {
         buffer_is_free = (state->bytes_in_buffer[1] == 0);
     }
+
+    if( buffer_is_free == 0 ){
+        mcu_debug_root_printf("No buffers\n");
+    }
+
     return buffer_is_free;
 }
 
@@ -317,7 +317,6 @@ void switch_input_buffer(switchboard_state_t * state, int bytes_read){
     if( state->input.async.buf == state->buffer[0] ){
         //the read completed on this buffer -- set the number of bytes read
         state->bytes_in_buffer[0] = bytes_read;
-
         state->input.async.buf = state->buffer[1];
     } else {
         state->bytes_in_buffer[1] = bytes_read;
@@ -340,11 +339,13 @@ int is_ready_to_write_device(switchboard_state_t * state){
 
     if( state->o_flags & SWITCHBOARD_FLAG_IS_WRITING_ASYNC ){
         //a write is already in progress
+        mcu_debug_root_printf("async busy\n");
         return 0;
     }
 
-    if( state->output.async.nbyte < 0 ){
+    if( (state->output.async.nbyte < 0) || (state->nbyte < 0) ){
         //all writes are complete or an error occurred
+        mcu_debug_root_printf("no bytes %d %d\n", state->output.async.nbyte, state->nbyte);
         return 0;
     }
 
@@ -362,15 +363,15 @@ int is_ready_to_write_device(switchboard_state_t * state){
 void complete_read(switchboard_state_t * state, int bytes_read){
     update_bytes_transferred(state, &state->input);
     switch_input_buffer(state, bytes_read);
-
-    //restore async to packet size if less than the packet size was read
-    state->input.async.nbyte = state->packet_size;
+    if( state->input.async.nbyte > 0 ){
+        state->input.async.nbyte = state->packet_size;
+    }
 }
 
 void update_bytes_transferred(switchboard_state_t * state, switchboard_state_terminal_t * terminal){
     terminal->bytes_transferred += terminal->async.nbyte;
-    if( state->nbyte > 0 ){
-        //check to see how many bytes to read
+    if( state->nbyte > 0 ){ //state nbyte is set to 0 to persistnet connections
+        //check to see how many bytes to transfer for non-persistent connections
         if( state->nbyte - terminal->bytes_transferred > terminal->async.nbyte ){
             terminal->async.nbyte = state->nbyte - terminal->bytes_transferred;
         }
@@ -399,6 +400,8 @@ int write_to_device(switchboard_state_t * state){
         } else if( ret > 0 ){
             //buffer is free
             complete_write(state);
+        } else {
+            state->nbyte = ret;
         }
     }
     return ret;
@@ -409,15 +412,18 @@ int read_from_device(switchboard_state_t * state){
     int ret = 0;
 
     if( is_ready_to_read_device(state) ){ //is there a buffer available
-        //mcu_debug_root_printf("ready to read:%d\n", state->input.async.nbyte);
+        if( state->input.async.nbyte != state->packet_size ){
+            mcu_debug_root_printf("not packet size:%d\n", state->input.async.nbyte);
+        }
         ret = state->input.device->driver.read(&state->input.device->handle, &state->input.async);
         if( ret == 0 ){
             //waiting for write
-            //mcu_debug_root_printf("read async:%d\n", state->input.async.nbyte);
             state->o_flags |= SWITCHBOARD_FLAG_IS_READING_ASYNC;
         } else if( ret > 0 ){
             //syncrhonous read completed
             complete_read(state, ret);
+        } else {
+            state->nbyte = ret;
         }
     }
     return ret;
@@ -429,6 +435,7 @@ int read_then_write_until_async(switchboard_state_t * state){
 
     //an error has occurred -- abort the connection
     if( state->nbyte < 0 ){
+        mcu_debug_root_printf("Close connection\n");
         close_connection(state, state->o_flags | SWITCHBOARD_FLAG_IS_STOPPED_ON_ERROR);
         return 0;
     }
@@ -445,6 +452,7 @@ int read_then_write_until_async(switchboard_state_t * state){
     } while( ret > 0 && (transactions < state->transaction_limit) );
 
     if( ret < 0 ){
+        mcu_debug_root_printf("Stopped on error\n");
         state->nbyte = ret;
         close_connection(state, state->o_flags | SWITCHBOARD_FLAG_IS_STOPPED_ON_ERROR);
     }
@@ -460,6 +468,7 @@ int handle_data_ready(void * context, const mcu_event_t * event){
 
     if( state->input.async.nbyte < 0 ){
         //error -- no more action
+        mcu_debug_root_printf("f\n", -1*state->input.async.nbyte);
         state->nbyte = state->input.async.nbyte;
     } else {
         complete_read(state, state->input.async.nbyte);
@@ -478,6 +487,7 @@ int handle_write_complete(void * context, const mcu_event_t * event){
     state->o_flags &= ~SWITCHBOARD_FLAG_IS_WRITING_ASYNC;
     if( state->output.async.nbyte < 0 ){
         //write error occurred -- abort connection
+        mcu_debug_root_printf("write failed 0x%lX\n", -1*state->output.async.nbyte);
         state->nbyte = state->output.async.nbyte;
     } else {
         complete_write(state); //this frees the buffer that was just written
