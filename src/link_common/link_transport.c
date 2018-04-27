@@ -57,8 +57,8 @@ int link_transport_wait_start(link_transport_driver_t * driver, link_pkt_t * pkt
 #endif
 			count++;
 			if( count == timeout ){
-				return LINK_PROT_ERROR;
-			}
+                return LINK_TIMEOUT_ERROR;
+            }
 		}
 	} while( bytes_read != 1);
 	return 0;
@@ -103,7 +103,7 @@ int link_transport_wait_packet(link_transport_driver_t * driver, link_pkt_t * pk
 			driver->wait(1);
 			count++;
 			if( count == timeout ){
-				return LINK_PROT_ERROR;
+                return LINK_TIMEOUT_ERROR;
 			}
 		}
 

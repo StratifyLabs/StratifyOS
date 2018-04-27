@@ -133,26 +133,26 @@ int wait_ack(link_transport_mdriver_t * driver, uint8_t checksum, int timeout){
 		}
 
 		if( ret > 0 ){
-			link_debug(LINK_DEBUG_MESSAGE, "Got %d bytes", ret);
-		}
-		if( ret > 0 ){
+            link_debug(LINK_DEBUG_MESSAGE, "Got %d bytes: %X", ret, *p);
 			bytes_read += ret;
 			p += ret;
 			count = 0;
 		} else {
-#ifndef __WINDOWS
+#ifndef __win32
 			driver->dev.wait(1);
 #endif
 			count+=1;
 			if( count >= timeout ){
-				link_error("timeout");
-				return LINK_PROT_ERROR;
-			}
+                link_error("timeout %d of %d (%d) -- %d >= %d",
+                           ack.checksum, checksum, ack.ack, count, timeout);
+                return LINK_TIMEOUT_ERROR;
+            }
 		}
 	} while(bytes_read < sizeof(ack));
 
 
 	if( ack.checksum != checksum ){
+        link_debug(LINK_DEBUG_WARNING, "Checksum failed 0x%X != 0x%X (0x%X)", ack.checksum, checksum, ack.ack);
 		return LINK_PROT_ERROR;
 	}
 

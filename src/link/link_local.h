@@ -34,6 +34,8 @@ extern "C" {
 
 #define LINK_MAX_SN_SIZE 512
 
+#define LINK_DEVICE_PRESENT_BUT_NOT_BOOTLOADER (-8183650)
+
 
 int link_handle_err(link_transport_mdriver_t * driver, int err);
 

@@ -26,8 +26,14 @@
 static int reset_device(link_transport_mdriver_t * driver, int invoke_bootloader);
 
 int link_bootloader_attr(link_transport_mdriver_t * driver, bootloader_attr_t * attr, u32 id){
-	if( link_ioctl(driver, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_GETINFO, attr) < 0 ){
-		return -1;
+    link_errno = 0;
+    int ret = link_ioctl(driver, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_GETINFO, attr);
+    if( ret < 0 ){
+        if( link_errno == 9 ){ //EBADF
+            link_debug(LINK_DEBUG_MESSAGE, "Device is present but is not a bootloader");
+            return LINK_DEVICE_PRESENT_BUT_NOT_BOOTLOADER;
+        }
+        return -1;
 	}
 
 	return 0;
@@ -35,7 +41,13 @@ int link_bootloader_attr(link_transport_mdriver_t * driver, bootloader_attr_t * 
 
 int link_bootloader_attr_legacy(link_transport_mdriver_t * driver, bootloader_attr_t * attr, u32 id){
     bootloader_attr_legacy_t legacy_attr;
-    if( link_ioctl(driver, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_GETATTR_LEGACY, &legacy_attr) < 0 ){
+    int ret;
+    link_errno = 0;
+    if( (ret = link_ioctl(driver, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_GETATTR_LEGACY, &legacy_attr)) < 0 ){
+        if( link_errno != 0 ){
+            link_debug(LINK_DEBUG_MESSAGE, "Legacy Device is present but is not a bootloader");
+            return LINK_DEVICE_PRESENT_BUT_NOT_BOOTLOADER;
+        }
         return -1;
     }
 
@@ -47,20 +59,26 @@ int link_bootloader_attr_legacy(link_transport_mdriver_t * driver, bootloader_at
 
 int link_isbootloader_legacy(link_transport_mdriver_t * driver){
     bootloader_attr_t attr;
-
-    if( link_bootloader_attr_legacy(driver, &attr, 0) < 0 ){
+    int ret = link_bootloader_attr_legacy(driver, &attr, 0);
+    if( ret == LINK_DEVICE_PRESENT_BUT_NOT_BOOTLOADER ){
         return 0;
+    } else if ( ret < 0 ){
+        return -1;
     }
-
     return 1;
 }
 
 int link_isbootloader(link_transport_mdriver_t * driver){
 	bootloader_attr_t attr;
+    int ret;
 
-	if( link_bootloader_attr(driver, &attr, 0) < 0 ){
-		return 0;
-	}
+    ret = link_bootloader_attr(driver, &attr, 0);
+
+    if( ret == LINK_DEVICE_PRESENT_BUT_NOT_BOOTLOADER ){
+        return 0;
+    } else if ( ret < 0 ){
+        return -1;
+    }
 
 	//If the above succeeds, the bootloader is present
 	return 1;

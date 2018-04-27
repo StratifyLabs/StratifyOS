@@ -35,6 +35,8 @@ struct link_tm {
 #define LINK_NAME_MAX 24
 #define LINK_PATH_MAX 64
 
+#define LINK_TIMEOUT_ERROR (-4)
+
 /*! \details There was an error on the physical layer trying to send/receive data
  * to/from the device.  This error can happen if the device is unexpectedly unplugged.
  */
