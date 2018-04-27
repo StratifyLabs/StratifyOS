@@ -32,7 +32,7 @@ static void root_device_data_transfer(void * args);
 void root_device_data_transfer(void * args){
 	root_aio_transfer_t * p = (root_aio_transfer_t*)args;
 
-	cortexm_disable_interrupts(NULL); //no switching until the transfer is started
+    cortexm_disable_interrupts(); //no switching until the transfer is started
 	//set the device callback for the read/write op
 	if ( p->read == 1 ){
 		//Read operation
@@ -43,7 +43,7 @@ void root_device_data_transfer(void * args){
 
 	sos_sched_table[task_get_current()].block_object = NULL;
 
-	cortexm_enable_interrupts(NULL);
+    cortexm_enable_interrupts();
 
 	if ( p->ret == 0 ){
 		if( p->aiocbp->op.nbyte > 0 ){

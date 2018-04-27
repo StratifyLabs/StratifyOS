@@ -384,7 +384,7 @@ void task_context_switcher(){
 	MPU->RASR = (u32)(sos_task_table[m_task_current].mem.stackguard.size);
 #endif
 
-	cortexm_enable_interrupts(NULL);
+    cortexm_enable_interrupts();
 
 	_impure_ptr = sos_task_table[m_task_current].reent;
 	_global_impure_ptr = sos_task_table[m_task_current].global_reent;

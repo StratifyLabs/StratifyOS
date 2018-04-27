@@ -62,21 +62,18 @@ int sst25vf_tmr_open(const devfs_handle_t * handle){
 
 	if ( status != 0x9C ){
 		//Global protect command failed
-		errno = EIO;
-		return -1;
+        return SYSFS_SET_RETURN(EIO);
 	}
 
 
 	if ( sst25vf_share_global_unprotect(handle) ){
-		errno = EIO;
-		return -1;
+        return SYSFS_SET_RETURN(EIO);
 	}
 	status = sst25vf_share_read_status(handle);
 
 	if ( status != 0x80 ){
 		//global unprotect failed
-		errno = EIO;
-		return -1;
+        return SYSFS_SET_RETURN(EIO);
 	}
 
 	//The device is ready to use
@@ -206,8 +203,7 @@ int sst25vf_tmr_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	sst25vf_state_t * state = (sst25vf_state_t*)cfg->state;
 
 	if ( state->buf != NULL ){
-		errno = EBUSY;
-		return -1;
+        return SYSFS_SET_RETURN(EBUSY);
 	}
 
 	//This is the final callback and context when all the writing is done

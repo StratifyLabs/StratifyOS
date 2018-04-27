@@ -195,7 +195,7 @@ void init_hw(){
     dstr("APP:"); dhex((u32)app_reset); dstr("\n");
 #endif
     delay_ms(50);
-    cortexm_enable_interrupts(NULL); //Enable the interrupts
+    cortexm_enable_interrupts(); //Enable the interrupts
 	boot_event(BOOT_EVENT_INIT, 0);
 }
 

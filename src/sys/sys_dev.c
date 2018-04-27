@@ -105,18 +105,15 @@ int sys_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 	default:
 		break;
 	}
-	errno = EINVAL;
-	return -1;
+    return SYSFS_SET_RETURN(EINVAL);
 }
 
 int sys_read(const devfs_handle_t * cfg, devfs_async_t * rop){
-	errno = ENOTSUP;
-	return -1;
+    return SYSFS_SET_RETURN(ENOTSUP);
 }
 
 int sys_write(const devfs_handle_t * cfg, devfs_async_t * wop){
-	errno = ENOTSUP;
-	return -1;
+    return SYSFS_SET_RETURN(ENOTSUP);
 }
 
 int sys_close(const devfs_handle_t * cfg){
@@ -154,10 +151,9 @@ int read_task(sys_taskattr_t * task){
 			task->is_enabled = 0;
 			ret = 0;
 		}
-		errno = 0;
 	} else {
-		errno = ESRCH;
-		ret = -1;
+        //Stratify Link freezes up if this doesn't return -1 -- needs to be fixed
+        ret = SYSFS_SET_RETURN_WITH_VALUE(ESRCH, 1);
 	}
 
 	return ret;

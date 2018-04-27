@@ -100,6 +100,9 @@ extern const mcu_config_t mcu_config;
 void mcu_board_execute_event_handler(int event, void * args);
 
 int mcu_execute_event_handler(mcu_event_handler_t * handler, u32 o_events, void * data);
+int mcu_execute_read_handler(devfs_transfer_handler_t * transfer_handler, void * data, int nbyte);
+int mcu_execute_write_handler(devfs_transfer_handler_t * transfer_handler, void * data, int nbyte);
+void mcu_execute_transfer_handlers(devfs_transfer_handler_t * transfer_handler, void * data, int nbyte, u32 o_flags);
 
 static inline const mcu_pin_t * mcu_pin_at(const void * start, int i){
 	const mcu_pin_t * p = (const mcu_pin_t *)start;

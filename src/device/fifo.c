@@ -268,8 +268,7 @@ int fifo_ioctl_local(const fifo_config_t * config, fifo_state_t * state, int req
 		}
 
 		//fifo doesn't store a local handler so it can't set an arbitrary action
-		errno = ENOTSUP;
-		return -1;
+        return SYSFS_SET_RETURN(ENOTSUP);
 	case I_FIFO_INIT:
         state->read_async = NULL;
         state->write_async = NULL;
@@ -293,24 +292,21 @@ int fifo_ioctl_local(const fifo_config_t * config, fifo_state_t * state, int req
 		}
 		return 0;
 	}
-	errno = EINVAL;
-	return -1;
+    return SYSFS_SET_RETURN(EINVAL);
 }
 
 int fifo_read_local(const fifo_config_t * config, fifo_state_t * state, devfs_async_t * async, int allow_callback){
 	int bytes_read;
 
     if ( state->read_async != NULL ){
-		errno = EBUSY; //the device is temporarily unavailable
-		return -1;
+        return SYSFS_SET_RETURN(EBUSY);
 	}
 
     state->read_len = async->nbyte;
     bytes_read = fifo_read_buffer(config, state, async->buf); //see if there are bytes in the buffer
 	if ( bytes_read == 0 ){
         if( (async->flags & O_NONBLOCK) ){
-			errno = EAGAIN;
-			bytes_read = -1;
+            bytes_read = SYSFS_SET_RETURN(EAGAIN);
 		} else {
             state->read_async = async;
             state->read_len = async->nbyte; //total number of bytes to read
@@ -329,8 +325,8 @@ int fifo_write_local(const fifo_config_t * config, fifo_state_t * state, devfs_a
 	int non_blocking;
 
     if ( state->write_async != NULL ){
-        async->nbyte = EBUSY;
-		return -1; //caller will block until FIFO is ready to write
+        mcu_debug_root_printf("FIFO is busy\n");
+        return SYSFS_SET_RETURN(EBUSY);
 	}
 
     state->write_len = async->nbyte;
@@ -338,12 +334,11 @@ int fifo_write_local(const fifo_config_t * config, fifo_state_t * state, devfs_a
     bytes_written = fifo_write_buffer(config, state, async->buf_const, non_blocking); //see if there are bytes in the buffer
 	if ( bytes_written == 0 ){
 		if( non_blocking ){
-			errno = EAGAIN;
-			bytes_written = -1;
+            bytes_written = SYSFS_SET_RETURN(EAGAIN);
 		} else {
             state->write_async = async;
             state->write_len = async->nbyte;
-            async->nbyte = 0;
+            async->nbyte = 0; //number of bytes written so far
 		}
 	}
 

@@ -44,12 +44,10 @@ int led_pwm_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 		return led_setattr(handle, ctl);
 
 	case I_LED_SETACTION:
-		errno = ENOTSUP;
-		return -1;
+        return SYSFS_SET_RETURN(ENOTSUP);
 
 	default:
-		errno = EINVAL;
-		return -1;
+        return SYSFS_SET_RETURN(EINVAL);
 
 	}
 
@@ -57,13 +55,11 @@ int led_pwm_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 }
 
 int led_pwm_read(const devfs_handle_t * handle, devfs_async_t * rop){
-	errno = ENOTSUP;
-	return -1;
+    return SYSFS_SET_RETURN(ENOTSUP);
 }
 
 int led_pwm_write(const devfs_handle_t * handle, devfs_async_t * wop){
-	errno = ENOTSUP;
-	return -1;
+    return SYSFS_SET_RETURN(ENOTSUP);
 }
 
 int led_pwm_close(const devfs_handle_t * handle){

@@ -78,8 +78,7 @@ int random_read(const devfs_handle_t * handle, devfs_async_t * async){
 }
 
 int random_write(const devfs_handle_t * handle, devfs_async_t * async){
-    errno = ENOTSUP;
-    return -1;
+    return SYSFS_SET_RETURN(ENOTSUP);
 }
 
 int random_close(const devfs_handle_t * handle){

@@ -98,7 +98,7 @@ void ffifo_cancel_wop(ffifo_state_t * state);
     ffifo_frame_count, \
     ffifo_frame_size ) \
     ffifo_state_t ffifo_name##_state MCU_SYS_MEM; \
-    char ffifo_name##_buffer[ffifo_frame_size * ffifo_frame_count] MCU_SYS_MEM; \
+    char ffifo_name##_buffer[ffifo_frame_size * ffifo_frame_count]; \
     const ffifo_config_t ffifo_name##_config = { FFIFO_DEFINE_CONFIG(ffifo_frame_count, ffifo_frame_size, ffifo_name##_buffer) }
 
 

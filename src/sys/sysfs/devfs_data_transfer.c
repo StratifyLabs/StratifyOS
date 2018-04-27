@@ -27,6 +27,7 @@
 #include <stdarg.h>
 #include <sys/stat.h>
 #include <errno.h>
+#include "mcu/debug.h"
 
 #include "mcu/mcu.h"
 #include "../scheduler/scheduler_local.h"
@@ -84,7 +85,9 @@ int root_data_transfer_callback(void * context, const mcu_event_t * event){
 		}
 	}
 
-	args->is_read = ARGS_READ_DONE;
+    if( args->is_read == ARGS_READ_READ ){
+        args->is_read = ARGS_READ_DONE;
+    }
 	scheduler_root_update_on_wake(new_priority);
 
 	return 0;
@@ -116,10 +119,10 @@ void root_device_data_transfer(void * args){
 	if ( p->is_read != 0 ){
 		//Read operation
 		p->ret = dev->driver.read(&(dev->handle), &(p->async));
-		//p->ret = p->fs->read_async(p->fs->config, p->handle, &p->op);
-	} else {
-		//p->ret = p->fs->write_async(p->fs->config, p->handle, &p->op);
-		p->ret = dev->driver.write(&(dev->handle), &(p->async));
+        //p->ret = p->fs->read_async(p->fs->config, p->handle, &p->op);
+    } else {
+        //p->ret = p->fs->write_async(p->fs->config, p->handle, &p->op);
+        p->ret = dev->driver.write(&(dev->handle), &(p->async));
 	}
 
 	root_check_op_complete(args);
@@ -140,7 +143,6 @@ void clear_device_action(const void * config, const devfs_device_t * device, int
 
 
 int devfs_data_transfer(const void * config, const devfs_device_t * device, int flags, int loc, void * buf, int nbyte, int is_read){
-	int tmp;
 	volatile root_device_data_transfer_t args;
 
 	if ( nbyte == 0 ){
@@ -156,11 +158,9 @@ int devfs_data_transfer(const void * config, const devfs_device_t * device, int 
 	args.async.loc = loc;
 	args.async.flags = flags;
 	args.async.buf = buf;
-	args.async.handler.callback = root_data_transfer_callback;
-	args.async.handler.context = (void*)&args;
+    args.async.handler.callback = root_data_transfer_callback;
+    args.async.handler.context = (void*)&args;
 	args.async.tid = task_get_current();
-
-	tmp = 0;
 
 	//privilege call for the operation
 	do {
@@ -186,37 +186,30 @@ int devfs_data_transfer(const void * config, const devfs_device_t * device, int 
 			cortexm_svcall(root_check_op_complete, (void*)&args);
 		}
 
-
-		if ( args.ret > 0 ){
-			//The operation happened synchronously
-			tmp = args.ret;
-			break;
-		} else if ( args.ret == 0 ){
+        if ( args.ret == 0 ){
 			//the operation happened asynchronously
 			if ( args.async.nbyte > 0 ){
 				//The operation has completed and transferred args.async.nbyte bytes
-				tmp = args.async.nbyte;
-				break;
+                args.ret = args.async.nbyte;
 			} else if ( args.async.nbyte == 0 ){
-				//There was no data to read/write -- try again
+                //There was no data to read/write -- try again ??? not sure if this is right
 				if (args.async.flags & O_NONBLOCK ){
-                    return SYSFS_SET_RETURN(ENODATA);
+                    args.ret = SYSFS_SET_RETURN(ENODATA);
 				}
 			} else if ( args.async.nbyte < 0 ){
 				//there was an error executing the operation (or the operation was cancelled)
-                return SYSFS_SET_RETURN(EIO);
+                args.ret = args.async.nbyte;
 			}
 		} else if ( args.ret < 0 ){
 			//there was an error starting the operation (such as EAGAIN)
 			if( args.ret == -101010 ){
                 args.ret = SYSFS_SET_RETURN(EIO); //this is a rare/strange error where cortexm_svcall fails to run properly
             }
-			return args.ret;
 		}
 	} while ( args.ret == 0 );
 
 
-	return tmp;
+    return args.ret;
 }
 
 

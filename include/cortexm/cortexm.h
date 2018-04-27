@@ -30,17 +30,17 @@ extern "C" {
 
 int cortexm_sleep(int level) MCU_ROOT_CODE;
 
-void cortexm_enable_interrupts(void * args) MCU_ROOT_CODE;
-void cortexm_disable_interrupts(void * args) MCU_ROOT_CODE;
-void cortexm_enable_irq(void * x) MCU_ROOT_CODE;
-void cortexm_disable_irq(void * x) MCU_ROOT_CODE;
+void cortexm_enable_interrupts() MCU_ROOT_CODE;
+void cortexm_disable_interrupts() MCU_ROOT_CODE;
+void cortexm_enable_irq(s16 x) MCU_ROOT_CODE;
+void cortexm_disable_irq(s16 x) MCU_ROOT_CODE;
 void cortexm_reset(void * args) MCU_ROOT_CODE;
 void cortexm_get_stack_ptr(void * ptr) MCU_ROOT_CODE;
 void cortexm_set_stack_ptr(void * ptr) MCU_ROOT_CODE;
 void cortexm_get_thread_stack_ptr(void * ptr) MCU_ROOT_CODE;
 void cortexm_set_thread_stack_ptr(void * ptr) MCU_ROOT_CODE;
 int cortexm_validate_callback(mcu_callback_t callback) MCU_ROOT_CODE;
-int cortexm_set_irq_prio(int irq, int prio) MCU_ROOT_CODE;
+int cortexm_set_irq_priority(int irq, int prio) MCU_ROOT_CODE;
 
 
 #define CORTEXM_ZERO_SUM32_COUNT(x) (sizeof(x)/sizeof(u32))

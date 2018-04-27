@@ -69,7 +69,7 @@ void root_prepare_hibernate(void * args){
 }
 
 void root_post_hibernate(void * args){
-	cortexm_disable_interrupts(0);
+    cortexm_disable_interrupts();
 	mcu_wdt_root_reset(NULL);
 	mcu_core_recover_deepsleep(CORE_DEEPSLEEP);
 
@@ -81,7 +81,7 @@ void root_post_hibernate(void * args){
 		mcu_wdt_setinterval(SCHED_RR_DURATION * 10 * sos_board_config.task_total + 5);
 	}
 
-	cortexm_enable_interrupts(0);
+    cortexm_enable_interrupts();
 	scheduler_root_update_on_stopped(); //check to see if any higher prio tasks are ready to execute since the prio dropped
 }
 

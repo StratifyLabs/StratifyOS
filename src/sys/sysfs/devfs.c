@@ -53,10 +53,10 @@ int get_total(const devfs_device_t * list){
 	return total;
 }
 
-static const devfs_device_t * load(const devfs_device_t * list, const char * device_name){
+const devfs_device_t * devfs_lookup_device(const devfs_device_t * list, const char * device_name){
 	int i;
 	i = 0;
-	while( devfs_is_terminator(&(list[i])) == false ){
+    while( devfs_is_terminator(&(list[i])) == 0 ){
 		if ( strncmp(device_name, list[i].name, NAME_MAX) == 0 ){
 			return &list[i];
 		}
@@ -65,8 +65,22 @@ static const devfs_device_t * load(const devfs_device_t * list, const char * dev
 	return 0;
 }
 
+int devfs_lookup_name(const devfs_device_t * list, const devfs_device_t * device, char name[NAME_MAX]){
+    int i;
+    i = 0;
+    while( devfs_is_terminator(&(list[i])) == 0 ){
+        if( device == (list + i) ){
+            name[NAME_MAX-1] = 0;
+            strncpy(name, list[i].name, NAME_MAX-1);
+            return 0;
+        }
+        i++;
+    }
+    return -1;
+}
+
 const devfs_handle_t * devfs_lookup_handle(const devfs_device_t * list, const char * name){
-	const devfs_device_t * device = load(list, name);
+    const devfs_device_t * device = devfs_lookup_device(list, name);
 	if( device != 0 ){
 		return &(device->handle);
 	}
@@ -90,7 +104,7 @@ int devfs_opendir(const void * cfg, void ** handle, const char * path){
 
 	if ( strncmp(path, "", PATH_MAX) != 0 ){
 		//there is only one valid folder (the top)
-			dev = load(list, path);
+            dev = devfs_lookup_device(list, path);
 		if ( dev == 0 ){
             return SYSFS_SET_RETURN(ENOENT);
 		} else {
@@ -130,7 +144,7 @@ int devfs_open(const void * cfg, void ** handle, const char * path, int flags, i
 
 
 	//Check to see if the device is in the list
-	args.device = load(list, path);
+    args.device = devfs_lookup_device(list, path);
 	if ( args.device != NULL ){
 		cortexm_svcall(root_open_device, &args);
 		if ( args.err < 0 ){
@@ -162,7 +176,7 @@ int devfs_stat(const void * cfg, const char * path, struct stat * st){
 	const devfs_device_t * list = (const devfs_device_t*)cfg;
 	const devfs_device_t * dev;
 
-	dev = load(list, path);
+    dev = devfs_lookup_device(list, path);
 	if ( dev == NULL ){
         return SYSFS_SET_RETURN(ENOENT);
 	}
@@ -210,7 +224,7 @@ int devfs_ioctl(const void * cfg, void * handle, int request, void * ctl){
 
 void ioctl_priv(void * args){
 	sysfs_ioctl_t * p = args;
-	const devfs_device_t * dev = (const devfs_device_t*)p->handle;
+	const devfs_device_t * dev = (const devfs_device_t*)p->handle;    
 	p->ret = dev->driver.ioctl(&dev->handle, p->request, p->ctl);
 }
 

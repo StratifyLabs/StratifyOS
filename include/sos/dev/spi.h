@@ -1,4 +1,4 @@
-/* Copyright 2011-2016 Tyler Gilbert; 
+/* Copyright 2011-2018 Tyler Gilbert;
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -55,6 +55,43 @@
  * close(fd);
  * \endcode
  *
+ * For full duplex operation use:
+ *
+ * \code
+ * #include <unistd.h>
+ * #include <fcntl.h>
+ * #include <dev/sos/spi.h>
+ *
+ * int fd;
+ * spi_attr_t attr;
+ * fd = open("/dev/spi0", O_RDWR);
+ * char read_buffer[32];
+ * char write_buffer[32];
+ * struct aiocb aio;
+ *
+ *
+ * attr.o_flags = SPI_FLAG_SET_MASTER | SPI_FLAG_IS_MODE0 | SPI_FLAG_IS_FORMAT_SPI | SPI_FLAG_IS_FULL_DUPLEX;
+ * attr.width = 8;
+ * attr.freq = 1000000;
+ * attr.pin_assignment.mosi = mcu_pin(0,0);
+ * attr.pin_assignment.miso = mcu_pin(0,1);
+ * attr.pin_assignment.sck = mcu_pin(0,2);
+ * attr.pin_assignment.cs = mcu_pin(0xff,0xff); //only used by slave
+ * ioctl(fd, I_SPI_SETATTR, &attr);
+ *
+ * aio.aio_buf = read_buffer;
+ * aio.aio_nbytes = 32;
+ * aio.aio_fildes = fd;
+ *
+ * aio_read(fd, &aio); //this won't do anything on the bus
+ * write(fd, write_buffer, 32); //this will read to read_buffer and write from write_buffer
+ *
+ * printf("AIO return is %d\n", aio_return(&aio)); //AIO completes when the write completes
+ *
+ * close(fd);
+ * \endcode
+ *
+ *
  */
 
 /*! \file
@@ -64,8 +101,6 @@
 
 #ifndef SOS_DEV_SPI_H_
 #define SOS_DEV_SPI_H_
-
-#include <stdint.h>
 
 #include "mcu/types.h"
 
@@ -87,8 +122,8 @@ typedef enum {
 	SPI_FLAG_IS_MODE3 /*! SPI Mode 3 */ = (1<<6),
 	SPI_FLAG_SET_MASTER /*! SPI Master */ = (1<<7),
 	SPI_FLAG_SET_SLAVE /*! SPI Slave */ = (1<<8),
-	SPI_FLAG_IS_FULL_DUPLEX /*! Full duplex mode (data is written first then read into the same buffer) */ = (1<<9),
-	SPI_FLAG_IS_HALF_DUPLEX /*! Half duplex mode (default mode) */ = (1<<10),
+    SPI_FLAG_IS_FULL_DUPLEX /*! Full duplex mode (data must be read async when written syncronously) */ = (1<<9),
+    SPI_FLAG_IS_HALF_DUPLEX /*! Half duplex mode (default mode - will be used if SPI_FLAG_IS_FULL_DUPLEX not set) */ = (1<<10),
 } spi_flag_t;
 
 typedef struct MCU_PACK {

@@ -44,7 +44,6 @@ int sffs_dir_lookup(const void * cfg, const char * path, sffs_dir_lookup_t * des
 
 	sffs_debug(DEBUG_LEVEL, "initialize list\n");
 	if ( cl_snlist_init(cfg, &sn_list, sffs_serialno_getlistblock(cfg) ) < 0 ){
-		errno = 1;
 		return -1;
 	}
 
@@ -60,7 +59,6 @@ int sffs_dir_lookup(const void * cfg, const char * path, sffs_dir_lookup_t * des
 
 			if ( sffs_block_load(cfg, item.block, &hdr_sffs_block_data) ){
 				sffs_error("failed to load block %d for serialno:%d\n", item.block, item.serialno);
-				errno = 2;
 				return -1;
 			}
 

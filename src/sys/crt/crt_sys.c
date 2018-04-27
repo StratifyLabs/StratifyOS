@@ -87,8 +87,6 @@ char ** const crt_import_argv(char * path_arg, int * argc){
 	//this needs to be strnlen -- security
     len = strlen(path_arg) + 1;
 
-    mcu_debug_user_printf("alloc arg_buffer %d\n", len);
-
 	arg_buffer = malloc(len);
 	if( arg_buffer == 0 ){
 		//since we couldn't allocate memory in the application, free the memory allocated on global
