@@ -80,7 +80,12 @@ typedef enum {
     SWITCHBOARD_FLAG_IS_READING_ASYNC /*! Used in o_flags of switchboard_connection_t for status */ = (1<<4),
     SWITCHBOARD_FLAG_IS_WRITING_ASYNC /*! Used in o_flags of switchboard_connection_t for status */ = (1<<5),
     SWITCHBOARD_FLAG_IS_STOPPED_ON_ERROR /*! The connection has stopped because of an error (nbyte has the error code) */ = (1<<6),
-    SWITCHBOARD_FLAG_SET_TRANSACTION_LIMIT /*! Use with SWITCHBOARD_FLAG_CONNECT to specify a transaction limit other than the default */ = (1<<7)
+    SWITCHBOARD_FLAG_SET_TRANSACTION_LIMIT /*! Use with SWITCHBOARD_FLAG_CONNECT to specify a transaction limit other than the default */ = (1<<7),
+    SWITCHBOARD_FLAG_IS_FILL_ZERO /*! If no data is available on a non-blocking input, a packet full of zeros is sent to the output */ = (1<<8),
+    SWITCHBOARD_FLAG_IS_INPUT_NON_BLOCKING /*! The connection input terminal should operate in non-blocking mode (return immediately if no data is available) */ = (1<<9),
+    SWITCHBOARD_FLAG_IS_OUTPUT_NON_BLOCKING /*! The connection output terminal should operate in non-blocking mode (return immediately if no data is available) */ = (1<<10),
+
+
 } switchboard_flag_t;
 
 

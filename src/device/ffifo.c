@@ -20,6 +20,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <stddef.h>
+#include "cortexm/cortexm.h"
 #include "mcu/debug.h"
 #include "sos/dev/ffifo.h"
 #include "device/ffifo.h"
@@ -50,7 +51,7 @@ void execute_write_callback(ffifo_state_t * state, int nbyte, u32 o_events){
 }
 
 char * ffifo_get_frame(const ffifo_config_t * cfgp, u16 frame){
-    return cfgp->buffer + frame * cfgp->frame_size;
+    return cfgp->buffer + (frame * cfgp->frame_size);
 }
 
 void ffifo_inc_tail(ffifo_state_t * state, u16 count){
@@ -65,14 +66,10 @@ void ffifo_inc_head(ffifo_state_t * state, u16 count){
     if ( state->head == count ){
         state->head = 0;
     }
-
-    if ( state->head == state->tail ){
-        state->tail++;
-        if ( state->tail == count ){
-            state->tail = 0;
-        }
-        ffifo_set_overflow(state, 1);
-    }
+    //if ( state->head == state->tail ){
+    //    ffifo_inc_tail(state, count);
+    //    ffifo_set_overflow(state, 1);
+    //}
 }
 
 int ffifo_is_write_ok(ffifo_state_t * state, u16 count, int writeblock){
@@ -80,11 +77,18 @@ int ffifo_is_write_ok(ffifo_state_t * state, u16 count, int writeblock){
     if( ((state->tail == 0) && (state->head == count-1)) ||
             ((state->head) + 1 == state->tail)
             ){
-        if( writeblock ){
+
+        if( writeblock /*|| (state->o_flags & FIFO_FLAG_IS_READ_BUSY)*/ ){
             //cannot write anymore data at this time
             ret = 0;
         } else {
             //OK to write but it will cause an overflow
+
+            if( state->o_flags & FIFO_FLAG_IS_READ_BUSY ){
+
+                state->o_flags |= FIFO_FLAG_IS_WRITE_WHILE_READ_BUSY;
+            }
+
             ffifo_inc_tail(state, count);
             ffifo_set_overflow(state, 1);
         }
@@ -122,15 +126,34 @@ int ffifo_read_buffer(const ffifo_config_t * cfgp, ffifo_state_t * state, char *
     int i;
     u16 count = cfgp->count;
     u16 frame_size = cfgp->frame_size;
+    const void * frame;
+    u16 head;
+    u16 tail;
+    int read_was_clobbered = 0;
     for(i=0; i < len; i += frame_size){
-        if ( state->head == state->tail ){
-            //there is no more data in the buffer to read
-            break;
-        } else {
-            memcpy(buf, ffifo_get_frame(cfgp, state->tail), frame_size);
-            buf += frame_size;
+
+        head = state->head;
+        tail = state->tail;
+
+        if ( head != tail ){
+
+            state->o_flags |= FIFO_FLAG_IS_READ_BUSY;
+            frame = ffifo_get_frame(cfgp, state->tail);
+            memcpy(buf, frame, frame_size);
             ffifo_inc_tail(state, count);
+
+            if( state->o_flags & FIFO_FLAG_IS_WRITE_WHILE_READ_BUSY ){
+                read_was_clobbered = 1;
+            }
+            state->o_flags &= ~(FIFO_FLAG_IS_WRITE_WHILE_READ_BUSY|FIFO_FLAG_IS_READ_BUSY);
+
+            if( read_was_clobbered ){
+                return i;
+            }
+
+            buf += frame_size;
         }
+
     }
     return i; //number of bytes read
 }
@@ -140,15 +163,21 @@ int ffifo_write_buffer(const ffifo_config_t * cfgp, ffifo_state_t * state, const
     int i;
     u16 count = cfgp->count;
     u16 frame_size = cfgp->frame_size;
+    void * frame;
     int writeblock = ffifo_is_writeblock(state);
     for(i=0; i < len; i+=frame_size){
+
         if( ffifo_is_write_ok(state, count, writeblock) ){
-            memcpy( ffifo_get_frame(cfgp, state->head), buf, frame_size);
-            buf += frame_size;
+            frame = ffifo_get_frame(cfgp, state->head);
+            memcpy( frame, buf, frame_size);
+
+            //don't inc head until the data is copied
             ffifo_inc_head(state, count);
+            buf += frame_size;
         } else {
             break;
         }
+
     }
     return i; //number of frames written
 }
@@ -338,7 +367,7 @@ int ffifo_write_local(const ffifo_config_t * config, ffifo_state_t * state, devf
 
     bytes_written = ffifo_write_buffer(config, state, async->buf_const, async->nbyte); //see if there are bytes in the buffer
     if ( bytes_written == 0 ){
-        if( async->flags & O_NONBLOCK ){
+        if( (async->flags & O_NONBLOCK) /*&& (ffifo_is_writeblock(state) != 0)*/ ){
             bytes_written = SYSFS_SET_RETURN(EAGAIN);
         } else {
             state->write_async = async;

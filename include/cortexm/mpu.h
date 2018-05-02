@@ -145,7 +145,7 @@ static inline u32 mpu_size(u32 rasr){
 	u32 shift;
 	shift = ((rasr >> 1) & 0x1F) + 1;
 	return (1<<shift);
-};
+}
 
 
 int mpu_getnextpowerof2(int size);

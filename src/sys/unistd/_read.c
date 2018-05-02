@@ -48,8 +48,6 @@
 int read(int fildes, void *buf, size_t nbyte);
 
 int _read(int fildes, void *buf, size_t nbyte){
-	char * bufp;
-	int loc;
 	sysfs_file_t * file;
 
 	fildes = u_fildes_is_bad(fildes);
@@ -57,19 +55,6 @@ int _read(int fildes, void *buf, size_t nbyte){
 		//check to see if fildes is a socket
 		errno = EBADF;
 		return -1;
-	}
-
-	//This code will ensure that the process has permissions to access the specified memory
-	//because reading is done in ISR (privileged mode) it will override the MPU
-	if ( nbyte > 0 ){
-		bufp = (char*)buf;
-		//write the memory location to see if a fault happens
-		loc = bufp[0];
-		bufp[0] = 0;
-		bufp[0] = loc;
-		loc = bufp[nbyte-1];
-		bufp[nbyte-1] = 0;
-		bufp[nbyte-1] = loc;
 	}
 
 	if( fildes & FILDES_SOCKET_FLAG ){

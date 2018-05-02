@@ -58,7 +58,6 @@ int _write(int fildes, const void *buf, size_t nbyte) {
 		return -1;
 	}
 
-
 	if( fildes & FILDES_SOCKET_FLAG ){
 		if( sos_board_config.socket_api != 0 ){
 			return sos_board_config.socket_api->write(fildes, buf, nbyte);

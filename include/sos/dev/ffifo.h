@@ -43,7 +43,7 @@
 
 enum {
 	FFIFO_FLAG_SET_WRITEBLOCK = FIFO_FLAG_SET_WRITEBLOCK /*! Write block flag */,
-	FFIFO_FLAG_IS_OVERFLOW = FIFO_FLAG_IS_OVERFLOW /*! Overflow flag */,
+    FFIFO_FLAG_IS_OVERFLOW = FIFO_FLAG_IS_OVERFLOW /*! Overflow flag (if set with FFIFO_FLAG_SET_WRITEBLOCK, write block is disabled) */,
 	FFIFO_FLAG_NOTIFY_WRITE = FIFO_FLAG_NOTIFY_WRITE /*! Notify on write */,
 	FFIFO_FLAG_NOTIFY_READ = FIFO_FLAG_NOTIFY_READ /*! Notify on read */,
 };

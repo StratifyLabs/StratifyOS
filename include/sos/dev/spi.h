@@ -132,20 +132,25 @@ typedef struct MCU_PACK {
 	u32 resd[8];
 } spi_info_t;
 
-#define SPI_PIN_ASSIGNMENT_COUNT 4
-
+/*! \brief SPI Pin Assignment Data
+ *
+ */
 typedef struct MCU_PACK {
-	mcu_pin_t miso;
-	mcu_pin_t mosi;
-	mcu_pin_t sck;
-	mcu_pin_t cs;
+    mcu_pin_t miso /*! MISO pin */;
+    mcu_pin_t mosi /*! MOSI pin */;
+    mcu_pin_t sck /*! Serial clock pin */;
+    mcu_pin_t cs /*! Chip select pin */;
 } spi_pin_assignment_t;
 
+
+/*! \brief SPI Set Attributes Data
+ *
+ */
 typedef struct MCU_PACK {
-	u32 o_flags;
-	spi_pin_assignment_t pin_assignment;
-	u32 freq;
-	u8 width;
+    u32 o_flags /*! Flag bitmask */;
+    spi_pin_assignment_t pin_assignment /*! Pin Assignment */;
+    u32 freq /*! Target operating frequency */;
+    u8 width /*! Width for transactions */;
 	u32 resd[8];
 } spi_attr_t;
 

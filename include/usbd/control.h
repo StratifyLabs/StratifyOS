@@ -103,6 +103,10 @@ static inline int usbd_control_setup_request(usbd_control_t * context){
 	return context->setup_packet.bRequest;
 }
 
+static inline int usbd_control_setup_length(usbd_control_t * context){
+    return context->setup_packet.wLength;
+}
+
 static inline int usbd_control_setup_request_direction(usbd_control_t * context){
 	return context->setup_packet.bmRequestType.bitmap_t.dir;
 }

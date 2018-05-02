@@ -22,6 +22,7 @@
 #include "mcu/core.h"
 #include "mcu/mcu.h"
 #include "mcu/boot_debug.h"
+#include "mcu/debug.h"
 #include "usbd/control.h"
 
 #define USBD_EP_MASK (USBD_ENDPOINT_ADDRESS_IN|(mcu_config.usb_logical_endpoint_count-1))
@@ -130,7 +131,7 @@ int usbd_standard_request_handle_setup(usbd_control_t * context){
 		break;
 
 	case USBD_REQUEST_STANDARD_SET_INTERFACE:
-		if ( usbd_standard_request_set_interface(context) ) {
+        if ( usbd_standard_request_set_interface(context) ) {
 			usbd_control_statusin_stage(context);
 			return 1;
 		}
@@ -391,7 +392,7 @@ u32 usbd_standard_request_set_interface(usbd_control_t * context){
 				alternate_setting = ((usbd_interface_descriptor_t *)dptr)->bAlternateSetting;
 				mask = 0;
 				if ((interface_number == context->setup_packet.wIndex.b[0]) && (alternate_setting == context->setup_packet.wValue.b[0])) {
-					ret = true;
+                    ret = 1;
 					if( interface_number < USBD_ALT_SETTING_SIZE ){
 						prev_interface_number = context->alt_setting[interface_number];
 						context->alt_setting[interface_number] = (u8)alternate_setting;

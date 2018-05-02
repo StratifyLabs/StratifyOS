@@ -44,7 +44,7 @@ void task_start_tick();
 void task_stop_tick();
 
 int task_init_mpu(void * system_memory, int system_memory_size) MCU_ROOT_CODE;
-
+int task_validate_memory(void * target, int size);
 
 int task_create_process(void (*p)(char*) /*! The function to execute for the process */,
 		void (*cleanup)(void*) /*! The function to call when the process returns */,

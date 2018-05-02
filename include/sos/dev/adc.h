@@ -55,12 +55,18 @@ extern "C" {
 #endif
 
 #define ADC_IOC_IDENT_CHAR 'a'
+#define ADC_VERSION (0x030000)
 
 
 typedef enum {
 	ADC_FLAG_SET_CONVERTER = (1<<0),
 	ADC_FLAG_IS_LEFT_JUSTIFIED = (1<<1),
 	ADC_FLAG_IS_RIGHT_JUSTIFIED = (1<<2),
+    ADC_FLAG_SET_MASTER /*! Used with MCUs that have more than one ADC that can operate in master/slave mode */ = (1<<3),
+    ADC_FLAG_SET_SLAVE /*! Used with MCUs that have more than one ADC that can operate in master/slave mode */ = (1<<4),
+    ADC_FLAG_SET_TRIGGER /*! Used to trigger the ADC read on some event (like a timer) */ = (1<<5),
+    ADC_FLAG_SET_CHANNELS /*! Configure the channels withouth changing ADC settings */ = (1<<6),
+    ADC_FLAG_IS_SCAN_MODE /*! ADC will read every enabled channel when reading rather than the channel based on the location value */ = (1<<7)
 } adc_flag_t;
 
 typedef struct MCU_PACK {
@@ -70,7 +76,8 @@ typedef struct MCU_PACK {
 	u32 maximum /*! The maximum value returned by the ADC */;
 	u32 reference_mv /*! The reference voltage in millivolts */;
 	u8 resolution /*! The number of bits supported by the ADC */;
-	u8 resd_align[3];
+    u8 bytes_per_sample /*! The number of bytes in each sample */;
+    u8 resd_align[2];
 	u32 resd[8];
 } adc_info_t;
 
@@ -82,10 +89,13 @@ typedef struct MCU_PACK {
 } adc_pin_assignment_t;
 
 typedef struct MCU_PACK {
-	u32 o_flags;
-	adc_pin_assignment_t pin_assignment;
-	u32 freq;
-	u32 resd[8];
+    u32 o_flags /*! The flag bitmask used with the ADC */;
+    adc_pin_assignment_t pin_assignment /*! The pins to assigned to the ADC */;
+    u32 freq /*! Target frequency when setting ADC */;
+    mcu_pin_t trigger /*! Pin or Timer trigger */;
+    u8 resd8[2];
+    u32 o_scan_channel_mask /*! The channels to scan when using flags ADC_FLAG_SET_CONVERTER | ADC_FLAG_IS_SCAN_MODE */;
+    u32 resd[6];
 } adc_attr_t;
 
 #define I_ADC_GETVERSION _IOCTL(ADC_IOC_IDENT_CHAR, I_MCU_GETVERSION)

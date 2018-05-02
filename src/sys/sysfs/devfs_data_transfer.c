@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 /*! \addtogroup UNISTD
@@ -40,10 +40,10 @@
 #define ARGS_READ_DONE 2
 
 typedef struct {
-	const void * device;
-	devfs_async_t async;
-	volatile int is_read;
-	int ret;
+    const void * device;
+    devfs_async_t async;
+    volatile int is_read;
+    int ret;
 } root_device_data_transfer_t;
 
 
@@ -53,160 +53,163 @@ static int root_data_transfer_callback(void * context, const mcu_event_t * data)
 static void clear_device_action(const void * config, const devfs_device_t * device, int loc, int is_read);
 
 int root_data_transfer_callback(void * context, const mcu_event_t * event){
-	//activate all tasks that are blocked on this signal
-	int i;
-	int new_priority;
-	root_device_data_transfer_t * args = (root_device_data_transfer_t*)context;
+    //activate all tasks that are blocked on this signal
+    int i;
+    int new_priority;
+    root_device_data_transfer_t * args = (root_device_data_transfer_t*)context;
 
 
-	new_priority = -1;
-	if ( (uint32_t)args->async.tid < task_get_total() ){
+    new_priority = -1;
+    if ( (uint32_t)args->async.tid < task_get_total() ){
 
-		if ( scheduler_inuse_asserted(args->async.tid) ){
-			if( event->o_events & MCU_EVENT_FLAG_CANCELED ){
-				args->async.nbyte = -1; //ignore any data transferred and return an error
-			}
-		}
+        if ( scheduler_inuse_asserted(args->async.tid) ){
+            if( event->o_events & MCU_EVENT_FLAG_CANCELED ){
+                args->async.nbyte = -1; //ignore any data transferred and return an error
+            }
+        }
 
-		if ( scheduler_inuse_asserted(args->async.tid) && !scheduler_stopped_asserted(args->async.tid) ){ //check to see if the process terminated or stopped
-			new_priority = sos_sched_table[args->async.tid].priority;
-		}
-	}
+        if ( scheduler_inuse_asserted(args->async.tid) && !scheduler_stopped_asserted(args->async.tid) ){ //check to see if the process terminated or stopped
+            new_priority = sos_sched_table[args->async.tid].priority;
+        }
+    }
 
-	//check to see if any tasks are waiting for this device
-	for(i = 1; i < task_get_total(); i++){
-		if ( task_enabled(i) && scheduler_inuse_asserted(i) ){
-			if ( sos_sched_table[i].block_object == (args->device + args->is_read) ){
-				scheduler_root_assert_active(i, SCHEDULER_UNBLOCK_TRANSFER);
-				if( !scheduler_stopped_asserted(i) && (sos_sched_table[i].priority > new_priority) ){
-					new_priority = sos_sched_table[i].priority;
-				}
-			}
-		}
-	}
+    //check to see if any tasks are waiting for this device
+    for(i = 1; i < task_get_total(); i++){
+        if ( task_enabled(i) && scheduler_inuse_asserted(i) ){
+            if ( sos_sched_table[i].block_object == (args->device + args->is_read) ){
+                scheduler_root_assert_active(i, SCHEDULER_UNBLOCK_TRANSFER);
+                if( !scheduler_stopped_asserted(i) && (sos_sched_table[i].priority > new_priority) ){
+                    new_priority = sos_sched_table[i].priority;
+                }
+            }
+        }
+    }
 
     if( args->is_read == ARGS_READ_READ ){
         args->is_read = ARGS_READ_DONE;
     }
-	scheduler_root_update_on_wake(new_priority);
+    scheduler_root_update_on_wake(new_priority);
 
-	return 0;
+    return 0;
 }
 
 
 void root_check_op_complete(void * args){
-	root_device_data_transfer_t * p = (root_device_data_transfer_t*)args;
+    root_device_data_transfer_t * p = (root_device_data_transfer_t*)args;
 
-	if( p->is_read != ARGS_READ_DONE ){
-		if ( p->ret == 0 ){
-			if ( (p->async.nbyte >= 0) //wait for the operation to complete or for data to arrive
-			){
-				//Block waiting for the operation to complete or new data to be ready
-				sos_sched_table[ task_get_current() ].block_object = (void*)p->device + p->is_read;
-				//switch tasks until a signal becomes available
-				scheduler_root_update_on_sleep();
-			}
-		} else {
-			p->is_read = ARGS_READ_DONE;
-		}
-	}
+    if( p->is_read != ARGS_READ_DONE ){
+        if ( p->ret == 0 ){
+            if ( (p->async.nbyte >= 0) //wait for the operation to complete or for data to arrive
+                 ){
+                //Block waiting for the operation to complete or new data to be ready
+                sos_sched_table[ task_get_current() ].block_object = (void*)p->device + p->is_read;
+                //switch tasks until a signal becomes available
+                scheduler_root_update_on_sleep();
+            }
+        } else {
+            p->is_read = ARGS_READ_DONE;
+        }
+    }
 }
 
 void root_device_data_transfer(void * args){
-	root_device_data_transfer_t * p = (root_device_data_transfer_t*)args;
-	const devfs_device_t * dev = p->device;
+    root_device_data_transfer_t * p = (root_device_data_transfer_t*)args;
+    const devfs_device_t * dev = p->device;
 
-	if ( p->is_read != 0 ){
-		//Read operation
-		p->ret = dev->driver.read(&(dev->handle), &(p->async));
-        //p->ret = p->fs->read_async(p->fs->config, p->handle, &p->op);
+    //check async.buf and async.nbyte to ensure if belongs to the process
+    //EPERM if it fails Issue #127
+    if( task_validate_memory(p->async.buf, p->async.nbyte) < 0 ){
+        p->ret = SYSFS_SET_RETURN(EPERM);
     } else {
-        //p->ret = p->fs->write_async(p->fs->config, p->handle, &p->op);
-        p->ret = dev->driver.write(&(dev->handle), &(p->async));
-	}
+        if ( p->is_read != 0 ){
+            //Read operation
+            p->ret = dev->driver.read(&(dev->handle), &(p->async));
+        } else {
+            p->ret = dev->driver.write(&(dev->handle), &(p->async));
+        }
+    }
 
-	root_check_op_complete(args);
-
+    root_check_op_complete(args);
 }
 
 void clear_device_action(const void * config, const devfs_device_t * device, int loc, int is_read){
-	mcu_action_t action;
-	memset(&action, 0, sizeof(mcu_action_t));
-	if( is_read ){
-		action.o_events = MCU_EVENT_FLAG_DATA_READY;
-	} else {
-		action.o_events = MCU_EVENT_FLAG_WRITE_COMPLETE;
-	}
-	action.channel = loc;
-	devfs_ioctl(config, (void*)device, I_MCU_SETACTION, &action);
+    mcu_action_t action;
+    memset(&action, 0, sizeof(mcu_action_t));
+    if( is_read ){
+        action.o_events = MCU_EVENT_FLAG_DATA_READY;
+    } else {
+        action.o_events = MCU_EVENT_FLAG_WRITE_COMPLETE;
+    }
+    action.channel = loc;
+    devfs_ioctl(config, (void*)device, I_MCU_SETACTION, &action);
 }
 
 
 int devfs_data_transfer(const void * config, const devfs_device_t * device, int flags, int loc, void * buf, int nbyte, int is_read){
-	volatile root_device_data_transfer_t args;
+    volatile root_device_data_transfer_t args;
 
-	if ( nbyte == 0 ){
-		return 0;
-	}
+    if ( nbyte == 0 ){
+        return 0;
+    }
 
-	args.device = device;
-	if( is_read ){
-		args.is_read = ARGS_READ_READ;
-	} else {
-		args.is_read = ARGS_READ_WRITE;
-	}
-	args.async.loc = loc;
-	args.async.flags = flags;
-	args.async.buf = buf;
+    args.device = device;
+    if( is_read ){
+        args.is_read = ARGS_READ_READ;
+    } else {
+        args.is_read = ARGS_READ_WRITE;
+    }
+    args.async.loc = loc;
+    args.async.flags = flags;
+    args.async.buf = buf;
     args.async.handler.callback = root_data_transfer_callback;
     args.async.handler.context = (void*)&args;
-	args.async.tid = task_get_current();
+    args.async.tid = task_get_current();
 
-	//privilege call for the operation
-	do {
+    //privilege call for the operation
+    do {
 
-		args.ret = -101010;
-		args.async.nbyte = nbyte;
+        args.ret = -101010;
+        args.async.nbyte = nbyte;
 
-		//This transfers the data
-		cortexm_svcall(root_device_data_transfer, (void*)&args);
+        //This transfers the data
+        cortexm_svcall(root_device_data_transfer, (void*)&args);
 
-		//We arrive here if the data is done transferring or there is no data to transfer and O_NONBLOCK is set
-		//or if there was an error
-		while( (scheduler_unblock_type(task_get_current()) == SCHEDULER_UNBLOCK_SIGNAL)
-				&& ((volatile int)args.is_read != ARGS_READ_DONE) ){
+        //We arrive here if the data is done transferring or there is no data to transfer and O_NONBLOCK is set
+        //or if there was an error
+        while( (scheduler_unblock_type(task_get_current()) == SCHEDULER_UNBLOCK_SIGNAL)
+               && ((volatile int)args.is_read != ARGS_READ_DONE) ){
 
-			if( (args.ret == 0) && (args.async.nbyte == 0) ){
+            if( (args.ret == 0) && (args.async.nbyte == 0) ){
                 //no data was transferred -- operation was interrupted by a signal
-				clear_device_action(config, device, loc, args.is_read);
+                clear_device_action(config, device, loc, args.is_read);
                 return SYSFS_SET_RETURN(EINTR);
-			}
+            }
 
-			//check again if the op is complete
-			cortexm_svcall(root_check_op_complete, (void*)&args);
-		}
+            //check again if the op is complete
+            cortexm_svcall(root_check_op_complete, (void*)&args);
+        }
 
         if ( args.ret == 0 ){
-			//the operation happened asynchronously
-			if ( args.async.nbyte > 0 ){
-				//The operation has completed and transferred args.async.nbyte bytes
+            //the operation happened asynchronously
+            if ( args.async.nbyte > 0 ){
+                //The operation has completed and transferred args.async.nbyte bytes
                 args.ret = args.async.nbyte;
-			} else if ( args.async.nbyte == 0 ){
+            } else if ( args.async.nbyte == 0 ){
                 //There was no data to read/write -- try again ??? not sure if this is right
-				if (args.async.flags & O_NONBLOCK ){
+                if (args.async.flags & O_NONBLOCK ){
                     args.ret = SYSFS_SET_RETURN(ENODATA);
-				}
-			} else if ( args.async.nbyte < 0 ){
-				//there was an error executing the operation (or the operation was cancelled)
+                }
+            } else if ( args.async.nbyte < 0 ){
+                //there was an error executing the operation (or the operation was cancelled)
                 args.ret = args.async.nbyte;
-			}
-		} else if ( args.ret < 0 ){
-			//there was an error starting the operation (such as EAGAIN)
-			if( args.ret == -101010 ){
+            }
+        } else if ( args.ret < 0 ){
+            //there was an error starting the operation (such as EAGAIN)
+            if( args.ret == -101010 ){
                 args.ret = SYSFS_SET_RETURN(EIO); //this is a rare/strange error where cortexm_svcall fails to run properly
             }
-		}
-	} while ( args.ret == 0 );
+        }
+    } while ( args.ret == 0 );
 
 
     return args.ret;

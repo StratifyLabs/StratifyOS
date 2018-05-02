@@ -43,7 +43,6 @@ static void switch_output_buffer(switchboard_state_t * state);
 static int write_to_device(switchboard_state_t * state);
 
 int switchboard_open(const devfs_handle_t * handle){
-
     //check to make sure everything is valid
 
     return 0;
@@ -155,6 +154,7 @@ int update_priority(const devfs_device_t * device, const switchboard_terminal_t 
 
 int create_connection(const switchboard_config_t * config, switchboard_state_t * state, const switchboard_attr_t * attr){
     int idx = attr->idx;
+    int i;
 
     if( state[idx].o_flags != 0 ){
         return SYSFS_SET_RETURN(EBUSY);
@@ -172,6 +172,19 @@ int create_connection(const switchboard_config_t * config, switchboard_state_t *
         return SYSFS_SET_RETURN(ENOENT);
     }
 
+    //check to see if the input or output is already an active connection
+    for(i=0; i < config->connection_count; i++){
+        if( i != idx ){
+            if( state[idx].input.device == state[i].input.device ){
+                return SYSFS_SET_RETURN(EBUSY);
+            }
+
+            if( state[idx].output.device == state[i].output.device ){
+                return SYSFS_SET_RETURN(EBUSY);
+            }
+        }
+    }
+
     if( attr->o_flags & SWITCHBOARD_FLAG_SET_TRANSACTION_LIMIT ){
         state[idx].transaction_limit = attr->transaction_limit;
     } else {
@@ -184,6 +197,9 @@ int create_connection(const switchboard_config_t * config, switchboard_state_t *
     state[idx].nbyte = attr->nbyte; //total number of bytes to transfer OR packet size for persistent connections (must be less than buffer size)
 
     state[idx].o_flags = SWITCHBOARD_FLAG_IS_CONNECTED;
+    if( attr->o_flags & SWITCHBOARD_FLAG_IS_FILL_ZERO ){
+        state[idx].o_flags |= SWITCHBOARD_FLAG_IS_FILL_ZERO;
+    }
     if( attr->o_flags & SWITCHBOARD_FLAG_IS_PERSISTENT ){
         state[idx].o_flags |= SWITCHBOARD_FLAG_IS_PERSISTENT;
 
@@ -206,6 +222,9 @@ int create_connection(const switchboard_config_t * config, switchboard_state_t *
 
     state[idx].input.async.tid = task_get_current();
     state[idx].input.async.flags = O_RDWR;
+    if( attr->o_flags & SWITCHBOARD_FLAG_IS_INPUT_NON_BLOCKING ){
+        state[idx].input.async.flags |= O_NONBLOCK;
+    }
     state[idx].input.async.loc = attr->input.loc;
     state[idx].input.async.handler.callback = handle_data_ready;
     state[idx].input.async.handler.context = state + idx;
@@ -217,6 +236,10 @@ int create_connection(const switchboard_config_t * config, switchboard_state_t *
     //output is the same except the callback and the location (channel)
     state[idx].output.async.handler.callback = handle_write_complete;
     state[idx].output.async.loc = attr->output.loc;
+    state[idx].output.async.flags = O_RDWR;
+    if( attr->o_flags & SWITCHBOARD_FLAG_IS_OUTPUT_NON_BLOCKING ){
+        state[idx].output.async.flags |= O_NONBLOCK;
+    }
 
     if( open_terminal(&state->input) < 0 ){
         memset(state + idx, 0, sizeof(switchboard_state_t));
@@ -306,7 +329,7 @@ int is_ready_to_read_device(switchboard_state_t * state){
     }
 
     if( buffer_is_free == 0 ){
-        mcu_debug_root_printf("No buffers\n");
+        //mcu_debug_root_printf("No buffers\n");
     }
 
     return buffer_is_free;
@@ -348,6 +371,7 @@ int is_ready_to_write_device(switchboard_state_t * state){
         mcu_debug_root_printf("no bytes %d %d\n", state->output.async.nbyte, state->nbyte);
         return 0;
     }
+
 
     if( state->output.async.buf == state->buffer[0] ){
         state->output.async.nbyte = state->bytes_in_buffer[0];
@@ -391,6 +415,7 @@ void complete_write(switchboard_state_t * state){
 int write_to_device(switchboard_state_t * state){
     //start writing the output device
     int ret = 0;
+    int errno_value;
 
     if( is_ready_to_write_device(state) ){ //is there a buffer with data that needs to be written?
         ret = state->output.device->driver.write(&state->output.device->handle, &state->output.async);
@@ -401,7 +426,13 @@ int write_to_device(switchboard_state_t * state){
             //buffer is free
             complete_write(state);
         } else {
-            state->nbyte = ret;
+            errno_value = SYSFS_GET_RETURN_ERRNO(ret);
+            if( errno_value == EAGAIN ){
+                //write device is set up in non-blocking mode -- just ignore the error and keep the connection going
+                ret = 0;
+            } else {
+                state->nbyte = ret;
+            }
         }
     }
     return ret;
@@ -410,6 +441,7 @@ int write_to_device(switchboard_state_t * state){
 int read_from_device(switchboard_state_t * state){
     //start writing the output device
     int ret = 0;
+    int errno_value;
 
     if( is_ready_to_read_device(state) ){ //is there a buffer available
         if( state->input.async.nbyte != state->packet_size ){
@@ -423,7 +455,20 @@ int read_from_device(switchboard_state_t * state){
             //syncrhonous read completed
             complete_read(state, ret);
         } else {
-            state->nbyte = ret;
+            errno_value = SYSFS_GET_RETURN_ERRNO(ret);
+            if( errno_value == EAGAIN ){
+                //read device is set up in non-blocking mode
+
+                if( state->o_flags & SWITCHBOARD_FLAG_IS_FILL_ZERO ){
+                    memset(state->input.async.buf, 0, state->input.async.nbyte);
+                    ret = state->input.async.nbyte;
+                    complete_read(state, ret);
+                } else {
+                    ret = 0;
+                }
+            } else {
+                state->nbyte = ret;
+            }
         }
     }
     return ret;

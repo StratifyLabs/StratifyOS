@@ -33,8 +33,8 @@ typedef union {
 
 
 typedef struct {
-	void * addr /*! The address of the memory */;
-	u32 size /*! The size of the memory */;
+    void * addr /*! The address of the memory as input, converted to RBAR after process starts */;
+    u32 size /*! The size of the memory as input, converted to RASR after task starts */;
 } task_memory_t;
 
 

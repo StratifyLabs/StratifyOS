@@ -317,6 +317,13 @@ typedef struct MCU_PACK {
 	usbd_endpoint_descriptor_t data_in /* Endpoint:  Bulk in */;
 } usbd_cdc_configuration_descriptor_t;
 
+typedef struct MCU_PACK {
+    u32 rate;
+    u8 stop_bits;
+    u8 parity;
+    u8 width;
+} usbd_cdc_line_coding_request_t;
+
 
 #endif /* MCU_USBD_CDC_H_ */
 

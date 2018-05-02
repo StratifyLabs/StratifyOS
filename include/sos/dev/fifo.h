@@ -42,13 +42,15 @@
 
 enum {
 	FIFO_FLAG_NONE = 0,
-	FIFO_FLAG_SET_WRITEBLOCK = (1<<0) /*! Write block flag */,
-	FIFO_FLAG_IS_OVERFLOW = (1<<1) /*! Overflow flag */,
-	FIFO_FLAG_NOTIFY_WRITE = (1<<2) /*! Notify on write */,
-	FIFO_FLAG_NOTIFY_READ = (1<<3) /*! Notify on read */,
-	FIFO_FLAG_INIT = (1<<4) /*! Initialize the FIFO */,
-	FIFO_FLAG_EXIT = (1<<5) /*! Shutdown the FIFO */,
-	FIFO_FLAG_FLUSH = (1<<6) /*! Flush the FIFO */
+    FIFO_FLAG_SET_WRITEBLOCK /*! Write block flag */ = (1<<0),
+    FIFO_FLAG_IS_OVERFLOW /*! Overflow flag */ = (1<<1),
+    FIFO_FLAG_NOTIFY_WRITE /*! Notify on write */ = (1<<2),
+    FIFO_FLAG_NOTIFY_READ /*! Notify on read */ = (1<<3),
+    FIFO_FLAG_INIT /*! Initialize the FIFO */ = (1<<4),
+    FIFO_FLAG_EXIT /*! Shutdown the FIFO */ = (1<<5),
+    FIFO_FLAG_FLUSH /*! Flush the FIFO */ = (1<<6),
+    FIFO_FLAG_IS_READ_BUSY /*! Set internally when FIFO is reading */ = (1<<7),
+    FIFO_FLAG_IS_WRITE_WHILE_READ_BUSY /*! Set internally when FIFO is written while reading */ = (1<<8)
 };
 
 typedef struct MCU_PACK {

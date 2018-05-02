@@ -1,4 +1,4 @@
-/* Copyright 2011-2016 Tyler Gilbert; 
+/* Copyright 2011-2018 Tyler Gilbert;
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -23,6 +23,19 @@
 static int init_os_memory_protection(task_memories_t * os_mem);
 int task_mpu_calc_protection(task_memories_t * mem);
 
+int task_validate_memory(void * target, int size){
+    //does target fit in the current memory protection
+    u32 task_address = (u32)mpu_addr((u32)sos_task_table[task_get_current()].mem.data.addr);
+    u32 task_size = mpu_size(sos_task_table[task_get_current()].mem.data.size);
+    u32 target_address = (u32)target;
+    u32 target_size = (u32)size;
+    if( (target_address >= task_address) &&
+            (target_address+target_size <= task_address + task_size) ){
+        return 0;
+    }
+    //target and size overflow the memory
+    return -1;
+}
 
 int task_init_mpu(void * system_memory, int system_memory_size){
 	task_memories_t os_mem;
