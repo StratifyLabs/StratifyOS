@@ -282,9 +282,7 @@ void root_sem_post(void * args){
 	int id = *((int*)args);
 	sos_sched_table[id].block_object = NULL;
 	scheduler_root_assert_active(id, SCHEDULER_UNBLOCK_SEMAPHORE);
-	if( !scheduler_stopped_asserted(id) ){
-		scheduler_root_update_on_wake( sos_sched_table[id].priority );
-	}
+    scheduler_root_update_on_wake(id, task_get_priority(id));
 }
 
 /*! \details This function unlocks (increments) the value of

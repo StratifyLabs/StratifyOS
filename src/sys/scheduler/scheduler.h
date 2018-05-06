@@ -52,7 +52,7 @@
 extern "C" {
 #endif
 
-int scheduler_start(void * (*init)(void*), int priority);
+int scheduler_start(void * (*init)(void*));
 int scheduler_init();
 
 //Schedule Debugging

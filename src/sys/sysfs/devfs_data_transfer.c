@@ -68,8 +68,8 @@ int root_data_transfer_callback(void * context, const mcu_event_t * event){
             }
         }
 
-        if ( scheduler_inuse_asserted(args->async.tid) && !scheduler_stopped_asserted(args->async.tid) ){ //check to see if the process terminated or stopped
-            new_priority = sos_sched_table[args->async.tid].priority;
+        if ( scheduler_inuse_asserted(args->async.tid) && !task_stopped_asserted(args->async.tid) ){ //check to see if the process terminated or stopped
+            new_priority = task_get_priority( args->async.tid );
         }
     }
 
@@ -78,8 +78,8 @@ int root_data_transfer_callback(void * context, const mcu_event_t * event){
         if ( task_enabled(i) && scheduler_inuse_asserted(i) ){
             if ( sos_sched_table[i].block_object == (args->device + args->is_read) ){
                 scheduler_root_assert_active(i, SCHEDULER_UNBLOCK_TRANSFER);
-                if( !scheduler_stopped_asserted(i) && (sos_sched_table[i].priority > new_priority) ){
-                    new_priority = sos_sched_table[i].priority;
+                if( !task_stopped_asserted(i) && (task_get_priority(i) > new_priority) ){
+                    new_priority = task_get_priority(i);
                 }
             }
         }
@@ -88,7 +88,7 @@ int root_data_transfer_callback(void * context, const mcu_event_t * event){
     if( args->is_read == ARGS_READ_READ ){
         args->is_read = ARGS_READ_DONE;
     }
-    scheduler_root_update_on_wake(new_priority);
+    scheduler_root_update_on_wake(-1, new_priority);
 
     return 0;
 }

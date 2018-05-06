@@ -37,10 +37,6 @@ volatile scheduler_fault_t m_scheduler_fault MCU_SYS_MEM;
  * \return Zero on success or an error code (see \ref caoslib_err_t)
  */
 int scheduler_init(){
-
-	m_scheduler_current_priority = SCHED_LOWEST_PRIORITY - 1;
-	m_scheduler_status_changed = 0;
-
 	memset((void*)sos_task_table, 0, sizeof(task_t) * sos_board_config.task_total);
 	memset((void*)sos_sched_table, 0, sizeof(sched_task_t) * sos_board_config.task_total);
 
@@ -55,21 +51,21 @@ int scheduler_init(){
  * called after all peripherals are initialized and interrupts are on.
  * \return Zero on success or an error code
  */
-int scheduler_start(void * (*init)(void*), int priority){
-
+int scheduler_start(void * (*init)(void*)){
+    int ret;
 	sos_sched_table[0].init = init;
-	sos_sched_table[0].priority = priority;
 	sos_sched_table[0].attr.stackaddr = &_data;
 	sos_sched_table[0].attr.stacksize = sos_board_config.sys_memory_size;
 
-	//Start the scheduler in a new thread
-	if ( task_init(SCHED_RR_DURATION,
-			scheduler, //run the scheduler
-			NULL, //Let the task init function figure out where the stack needs to be and the heap size
-			sos_board_config.sys_memory_size)
-	){
-		return -1;
-	}
+    ret = task_init(SCHED_RR_DURATION,
+                   scheduler, //run the scheduler
+                   NULL, //Let the task init function figure out where the stack needs to be and the heap size
+                   sos_board_config.sys_memory_size);
+
+    if( ret < 0 ){
+        return -1;
+    }
+
 
 	//Program never gets to this point
 	return -1;
@@ -79,7 +75,7 @@ int scheduler_start(void * (*init)(void*), int priority){
 int scheduler_prepare(){
 
 	if ( mcu_debug_init() < 0 ){
-		cortexm_disable_interrupts(NULL);
+        cortexm_disable_interrupts();
 		mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_FATAL, (void*)"dbgi");
 	}
 

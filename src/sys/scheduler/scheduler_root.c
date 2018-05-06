@@ -41,7 +41,7 @@ void scheduler_root_set_trace_id(int tid, trace_id_t id){
 }
 
 void scheduler_root_assert_active(int id, int unblock_type){
-	sos_sched_table[id].flags |= (1<< SCHEDULER_TASK_FLAG_ACTIVE);
+    task_assert_active(id);
 	scheduler_root_set_unblock_type(id, unblock_type);
 	scheduler_root_deassert_aiosuspend(id);
 	//Remove all blocks (mutex, timing, etc)
@@ -51,17 +51,8 @@ void scheduler_root_assert_active(int id, int unblock_type){
 }
 
 void scheduler_root_deassert_active(int id){
-	sos_sched_table[id].flags &= ~(1<< SCHEDULER_TASK_FLAG_ACTIVE);
+    task_deassert_active(id);
 	task_deassert_exec(id);  //stop executing the task
-	scheduler_root_assert_status_change(); //notify the scheduler a task has changed status
-}
-
-void scheduler_root_assert_status_change(){
-	m_scheduler_status_changed = 1;
-}
-
-inline void scheduler_root_deassert_status_change(){
-	m_scheduler_status_changed = 0;
 }
 
 void scheduler_root_stop_task(int id){

@@ -35,6 +35,7 @@
 #include <malloc.h>
 #include <sys/scheduler/scheduler_local.h>
 
+#include "sched.h"
 #include "../unistd/unistd_local.h"
 #include "mcu/wdt.h"
 #include "mcu/debug.h"
@@ -44,9 +45,6 @@
 
 
 static int start_first_thread();
-
-volatile s8 m_scheduler_current_priority MCU_SYS_MEM;
-volatile s8 m_scheduler_status_changed MCU_SYS_MEM;
 
 static void root_check_sleep_mode(void * args) MCU_ROOT_EXEC_CODE;
 static int check_faults();
@@ -80,7 +78,6 @@ int scheduler_check_tid(int id){
  */
 void scheduler(){
 	u8 do_sleep;
-	scheduler_root_assert_status_change();
 
 	//This interval needs to be long enough to allow for flash writes
 	if( (sos_board_config.o_sys_flags & SYS_FLAG_IS_WDT_DISABLED) == 0 ){
@@ -107,7 +104,8 @@ void scheduler(){
 			mcu_core_user_sleep(CORE_SLEEP);
 		} else {
 			//Otherwise switch to the active task
-			cortexm_svcall(task_root_switch_context, NULL);
+            sched_yield();
+            //cortexm_svcall(task_root_switch_context, NULL);
 		}
 	}
 }
@@ -181,39 +179,39 @@ int check_faults(){
 }
 
 void root_check_sleep_mode(void * args){
-	bool * p = (bool*)args;
+    int * p = (int*)args;
 	int i;
-	*p = true;
+    *p = 1;
 	for(i=1; i < task_get_total(); i++){
-		if ( task_enabled(i) && scheduler_active_asserted(i) ){
-			*p = false;
+        if ( task_exec_asserted(i) ){
+            *p = 0;
 			return;
 		}
 	}
 }
 
+//Called when the task stops or drops in priority (e.g., releases a mutex)
 void scheduler_root_update_on_stopped(){
 	int i;
-	int new_priority;
+    s8 next_priority;
 
-	m_scheduler_current_priority = SCHED_LOWEST_PRIORITY - 1;
-	new_priority = m_scheduler_current_priority;
-	//start with process 1 -- 0 is the scheduler process
+    //Issue #130
+    cortexm_disable_interrupts();
+    next_priority = SCHED_LOWEST_PRIORITY;
 	for(i=1; i < task_get_total(); i++){
-		//Find the highest priority of all active processes
+        //Find the highest priority of all active tasks
 		if ( task_enabled(i) &&
-				scheduler_active_asserted(i) &&
-				!scheduler_stopped_asserted(i) &&
-				(scheduler_priority(i) > new_priority) ){
-			new_priority = scheduler_priority(i);
+                task_active_asserted(i) &&
+                !task_stopped_asserted(i) &&
+                (task_get_priority(i) > next_priority) ){
+            next_priority = task_get_priority(i);
 		}
 	}
+    task_set_current_priority(next_priority);
+    cortexm_enable_interrupts();
 
-	if ( new_priority >= SCHED_LOWEST_PRIORITY ){
-		scheduler_root_update_on_wake(new_priority);
-	} else {
-		task_root_switch_context(NULL);
-	}
+    //this will cause an interrupt to execute but at a lower IRQ priority
+    task_root_switch_context();
 }
 
 
@@ -222,36 +220,27 @@ void scheduler_root_update_on_sleep(){
 	scheduler_root_update_on_stopped();
 }
 
-void scheduler_root_update_on_wake(int new_priority){
-	int i;
-	bool switch_context;
+//called when a task wakes up
+void scheduler_root_update_on_wake(int id, int new_priority){
+    //Issue #130
+    if( new_priority < task_get_current_priority() ){
+        return; //no action needed if the waking task is of lower priority than the currently executing priority
+    }
 
-	if (new_priority > m_scheduler_current_priority){
-		switch_context = true;
-		m_scheduler_current_priority = new_priority;
-	} else if (new_priority == m_scheduler_current_priority){
-		switch_context = false;
-	} else {
-		scheduler_root_assert_status_change();
-		return;
-	}
+    if( (id > 0) && task_stopped_asserted(id) ){
+        return; //this task is stopped on a signal and shouldn't be considered
+    }
 
-	for(i=1; i < task_get_total(); i++){
-		if ( task_enabled(i) && scheduler_active_asserted(i) && !scheduler_stopped_asserted(i) && ( scheduler_priority(i) == m_scheduler_current_priority ) ){
-			//Enable process execution for highest active priority tasks
-			task_assert_exec(i);
-		} else {
-			//Disable process execution for lower priority tasks
-			task_deassert_exec(i);
-		}
-	}
 
-	if ( switch_context == true ){
-		task_root_switch_context(NULL);
-	}
+    //elevate the priority (changes only if new_priority is higher than current
+    task_elevate_current_priority(new_priority);
+
+    //execute the context switcher but at a lower priority
+    task_root_switch_context();
 }
 
 
+//this is called from user space?
 int scheduler_get_highest_priority_blocked(void * block_object){
 	int priority;
 	int i;
@@ -262,9 +251,9 @@ int scheduler_get_highest_priority_blocked(void * block_object){
 	new_thread = -1;
 	for(i=1; i < task_get_total(); i++){
 		if ( task_enabled(i) ){
-			if ( (sos_sched_table[i].block_object == block_object) && ( !scheduler_active_asserted(i) ) ){
+            if ( (sos_sched_table[i].block_object == block_object) && ( !task_active_asserted(i) ) ){
 				//it's waiting for the block -- give the block to the highest priority and waiting longest
-				if( !scheduler_stopped_asserted(i) && (sos_sched_table[i].attr.schedparam.sched_priority > priority) ){
+                if( !task_stopped_asserted(i) && (sos_sched_table[i].attr.schedparam.sched_priority > priority) ){
 					//! \todo Find the task that has been waiting the longest time
 					new_thread = i;
 					priority = sos_sched_table[i].attr.schedparam.sched_priority;
@@ -274,17 +263,17 @@ int scheduler_get_highest_priority_blocked(void * block_object){
 	}
 	return new_thread;
 }
-
+//This is only called from SVcall so it is always synchronous -- no re-entrancy issues with it
 int scheduler_root_unblock_all(void * block_object, int unblock_type){
 	int i;
 	int priority;
 	priority = SCHED_LOWEST_PRIORITY - 1;
 	for(i=1; i < task_get_total(); i++){
 		if ( task_enabled(i) ){
-			if ( (sos_sched_table[i].block_object == block_object) && ( !scheduler_active_asserted(i) ) ){
+            if ( (sos_sched_table[i].block_object == block_object) && ( !task_active_asserted(i) ) ){
 				//it's waiting for the semaphore -- give the semaphore to the highest priority and waiting longest
 				scheduler_root_assert_active(i, unblock_type);
-				if( !scheduler_stopped_asserted(i) && (sos_sched_table[i].attr.schedparam.sched_priority > priority)  ){
+                if( !task_stopped_asserted(i) && (sos_sched_table[i].attr.schedparam.sched_priority > priority)  ){
 					priority = sos_sched_table[i].attr.schedparam.sched_priority;
 				}
 			}
@@ -313,7 +302,6 @@ int start_first_thread(){
 	PTHREAD_ATTR_SET_DETACH_STATE((&attr), PTHREAD_CREATE_DETACHED);
 	PTHREAD_ATTR_SET_SCHED_POLICY((&attr), SCHED_RR);
 	attr.schedparam.sched_priority = 21; //not the default priority
-
 
 	err = scheduler_create_thread(init,
 			sos_board_config.start_args,

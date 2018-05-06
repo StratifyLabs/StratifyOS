@@ -38,12 +38,13 @@ typedef struct {
 	const struct sched_param * param;
 } root_set_scheduling_param_t;
 static void root_set_scheduling_param(void * args) MCU_ROOT_EXEC_CODE;
+static void root_yield(void * args) MCU_ROOT_EXEC_CODE;
 
 /*! \file */
 static int get_pid_task(pid_t pid){
 	int i;
 	for(i=0; i < task_get_total(); i++){
-		if ( (task_get_pid(i) == pid) && !task_isthread_asserted(i) ){
+        if ( (task_get_pid(i) == pid) && !task_thread_asserted(i) ){
 			return i;
 		}
 	}
@@ -215,8 +216,14 @@ int sched_setscheduler(pid_t pid, int policy, const struct sched_param * param){
  * \return Zero
  */
 int sched_yield(){
-	cortexm_svcall(task_root_switch_context, NULL);
+    cortexm_svcall(root_yield, 0);
 	return 0;
+}
+
+
+void root_yield(void * args){
+    task_assert_yield( task_get_current() );
+    task_root_switch_context();
 }
 
 void root_set_scheduling_param(void * args){
@@ -229,9 +236,9 @@ void root_set_scheduling_param(void * args){
 	memcpy((void*)&sos_sched_table[id].attr.schedparam, p->param, sizeof(struct sched_param));
 
 	if ( p->policy == SCHED_FIFO ){
-		task_assert_isfifo(id);
+        task_assert_fifo(id);
 	} else {
-		task_deassert_isfifo(id);
+        task_deassert_fifo(id);
 	}
 
 }

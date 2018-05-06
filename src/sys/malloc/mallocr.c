@@ -288,7 +288,7 @@ void * _malloc_r(struct _reent * reent_ptr, size_t size){
 void malloc_set_chunk_used(struct _reent * reent, malloc_chunk_t * chunk, u16 num_chunks, u32 actual_size){
 	chunk->header.num_chunks = num_chunks;
 	chunk->header.actual_size = actual_size;
-	if( (reent == _REENT) && ( task_isthread_asserted( task_get_current() )) ){
+	if( (reent == _REENT) && ( task_thread_asserted( task_get_current() )) ){
 		chunk->header.task_id = task_get_current();
 	} else {
 		chunk->header.task_id = 0;

@@ -75,9 +75,7 @@ u64 task_root_gettime(int tid) MCU_ROOT_CODE;
 int task_set_interval(int interval /*! The context switching interval in ms */) MCU_ROOT_CODE;
 void task_root_delete(int id /*! The task to delete */) MCU_ROOT_CODE;
 
-void task_root_switch_context(void*) MCU_ROOT_CODE;
-
-
+void task_root_switch_context() MCU_ROOT_CODE;
 void task_root_resetstack(int id) MCU_ROOT_CODE;
 
 
@@ -94,6 +92,10 @@ int task_interrupt(task_interrupt_t * intr);
 void task_root_interrupt(void * args) MCU_ROOT_CODE;
 int task_mpu_calc_protection(task_memories_t * mem);
 u32 task_interrupt_stacksize();
+
+s8 task_get_current_priority();
+void task_set_current_priority(s8 value);
+void task_elevate_current_priority(s8 value);
 
 #endif
 

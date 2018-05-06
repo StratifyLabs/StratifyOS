@@ -178,7 +178,7 @@ void root_stoppid(void * args){
 	int i;
 
 	i = task_get_current();
-	if( task_isthread_asserted(i) ){
+	if( task_thread_asserted(i) ){
 		scheulder_root_assert_stopped(i);
 	} else {
 		for(i=1; i < task_get_total(); i++){
@@ -199,8 +199,8 @@ void root_contpid(void * args){
 
 	i = task_get_current();
 
-	if( task_isthread_asserted(i) ){
-		scheduler_root_deassert_stopped(i);
+	if( task_thread_asserted(i) ){
+        task_deassert_stopped(i);
 		highest_prio = scheduler_priority(i);
 	} else {
 		for(i=1; i < task_get_total(); i++){
@@ -214,7 +214,7 @@ void root_contpid(void * args){
 		}
 	}
 
-	scheduler_root_update_on_wake( highest_prio );
+    scheduler_root_update_on_wake(-1, highest_prio);
 }
 
 void stop_action(int signo, int flags){

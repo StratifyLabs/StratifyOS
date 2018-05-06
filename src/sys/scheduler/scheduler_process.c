@@ -85,14 +85,13 @@ void root_init_sched_task(init_sched_task_t * task){
 
 	sos_sched_table[id].attr.stackaddr = task->mem->data.addr; //Beginning of process data memory
 	sos_sched_table[id].attr.stacksize = task->mem->data.size; //Size of the memory (not just the stack)
-	sos_sched_table[id].priority = 0; //This is the default starting priority priority
 	sos_sched_table[id].attr.schedparam.sched_priority = 0; //This is the priority to revert to after being escalated
 
 	sos_sched_table[id].wake.tv_sec = SCHEDULER_TIMEVAL_SEC_INVALID;
 	sos_sched_table[id].wake.tv_usec = 0;
 	scheduler_root_assert_active(id, 0);
 	scheduler_root_assert_inuse(id);
-	scheduler_root_update_on_wake( sos_sched_table[id].priority );
+    scheduler_root_update_on_wake(id, task_get_priority(id));
 	stackguard = (uint32_t)task->mem->data.addr + task->mem->data.size - 128;
 	task_root_set_stackguard(id, (void*)stackguard, SCHED_DEFAULT_STACKGUARD_SIZE);
 

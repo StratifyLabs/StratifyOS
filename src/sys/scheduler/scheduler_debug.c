@@ -46,7 +46,7 @@ void scheduler_debug_print_active(){
 	int i;
 	mcu_debug_user_printf("Active Tasks:\n");
 	for(i=1; i < task_get_total(); i++){
-		if ( scheduler_active_asserted(i) ){
+		if ( task_active_asserted(i) ){
 			mcu_debug_user_printf("\t%d\n", i);
 		}
 	}

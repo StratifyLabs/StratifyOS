@@ -1,4 +1,4 @@
-/* Copyright 2011-2016 Tyler Gilbert; 
+/* Copyright 2011-2018 Tyler Gilbert;
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -81,17 +81,16 @@ void mcu_fault_event_handler(fault_t * fault){
 	} else {
 
 		//send a signal to kill the task
-
 		for(i=1; i < task_get_total(); i++){
 			if ( task_get_pid(i) == pid ){
 
-				if( task_isthread_asserted(i) == 0 ){
+				if( task_thread_asserted(i) == 0 ){
 					//reset the stack of the processes main task
 					task_root_resetstack(i);
 					//send the kill signal
 					if( signal_root_send(0, i, SIGKILL, 0, 0, 0) < 0 ){
 						//kill manually -- for example, if the target task doesn't have enough memory to accept SIGKILL
-						task_root_delete(i);
+                        task_root_delete(i);
 						scheduler_root_update_on_sleep();
 					}
 					break;

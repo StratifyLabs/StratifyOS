@@ -62,10 +62,12 @@ typedef struct {
 } task_thread_t;
 
 
-typedef struct {
+typedef struct MCU_PACK {
 	volatile void * sp /*! The task stack pointer */;
 	int pid /*! The process id */;
-	volatile int flags /*! Status flags */;
+    volatile s8 priority /*! Task priority */;
+    volatile u8 flags /*! Status flags */;
+    volatile u16 parent /*! Parent process ID */;
 	volatile task_timer_t timer /*! The task timer */;
 	task_memories_t mem /*! The task memories */;
 	void * global_reent /*! Points to process re-entrancy data */;

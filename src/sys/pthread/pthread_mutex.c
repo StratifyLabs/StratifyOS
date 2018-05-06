@@ -277,7 +277,7 @@ void root_mutex_unblocked(root_mutex_trylock_t *args){
 	root_mutex_block(args);
 
 	//if the time has expired, the thread will still be active -- therefore unblock from SLEEP (not signal)
-	if( scheduler_active_asserted(args->id) ){
+    if( task_active_asserted(args->id) ){
 		scheduler_root_set_unblock_type(args->id, SCHEDULER_UNBLOCK_SLEEP);
 	}
 
@@ -288,9 +288,12 @@ void root_mutex_trylock(root_mutex_trylock_t *args){
 		//The mutex is free -- lock it up
 		args->mutex->pthread = args->id; //This is to hold the mutex in case another task tries to grab it
 		args->mutex->pid = task_get_pid(args->id);
-		if ( args->mutex->prio_ceiling > sos_sched_table[ args->id ].priority ){
-			sos_sched_table[ args->id ].priority = args->mutex->prio_ceiling; //Elevate the priority of the task based on prio_ceiling
-		}
+        if ( args->mutex->prio_ceiling > task_get_priority(args->id) ){
+            task_set_priority( args->id, args->mutex->prio_ceiling ); //Elevate the priority of the task based on prio_ceiling
+
+            //see the task manager that the priority has changed
+            task_set_current_priority(args->mutex->prio_ceiling);
+        }
 		args->mutex->lock = 1; //This is the lock count
 		args->ret = 0;
 	} else {
@@ -304,31 +307,27 @@ void root_mutex_trylock(root_mutex_trylock_t *args){
 
 void root_mutex_unlock(root_mutex_unlock_t * args){
 	int new_thread;
-	int last_prio;
+
 	//Restore the priority to the task that is unlocking the mutex
-	sos_sched_table[args->id].priority = sos_sched_table[args->id].attr.schedparam.sched_priority;
-	last_prio = m_scheduler_current_priority;
-	m_scheduler_current_priority = sos_sched_table[args->id].priority;
+    task_set_priority(args->id, sos_sched_table[args->id].attr.schedparam.sched_priority);
 	sos_sched_table[args->id].block_object = NULL;
 
 	//check to see if another task is waiting for the mutex
 	new_thread = scheduler_get_highest_priority_blocked(args->mutex);
 
-	if ( new_thread != -1 ){
+    if ( new_thread > 0 ){
 		args->mutex->pthread = new_thread;
 		args->mutex->pid = task_get_pid(new_thread);
 		args->mutex->lock = 1;
-		sos_sched_table[new_thread].priority = args->mutex->prio_ceiling;
+        task_set_priority(new_thread, args->mutex->prio_ceiling);
 		scheduler_root_assert_active(new_thread, SCHEDULER_UNBLOCK_MUTEX);
-		if( !scheduler_stopped_asserted(new_thread) ){
-			scheduler_root_update_on_wake(sos_sched_table[new_thread].priority);
-		}
-	} else {
+        scheduler_root_update_on_wake(new_thread, task_get_priority(new_thread));
+    } else {
 		args->mutex->lock = 0;
 		args->mutex->pthread = -1; //The mutex is up for grabs
-		if ( last_prio > m_scheduler_current_priority ){
-			scheduler_root_update_on_wake(sos_sched_table[args->id].priority); //The priority was downgraded
-		}
+        if( task_get_priority(args->id) < task_get_current_priority() ){
+            scheduler_root_update_on_stopped();
+        }
 	}
 }
 

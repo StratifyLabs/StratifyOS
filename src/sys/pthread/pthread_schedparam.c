@@ -119,9 +119,9 @@ void root_set_scheduling_param(void * args){
 	memcpy((void*)&sos_sched_table[id].attr.schedparam, p->param, sizeof(struct sched_param));
 
 	if ( p->policy == SCHED_FIFO ){
-		task_assert_isfifo(id);
+		task_assert_fifo(id);
 	} else {
-		task_deassert_isfifo(id);
+		task_deassert_fifo(id);
 	}
 
 }

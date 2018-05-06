@@ -22,14 +22,12 @@
 
 #include "mcu/types.h"
 
-#define SCHEDULER_TASK_FLAG_ACTIVE 4
 #define SCHEDULER_TASK_FLAG_INUSE 5
 #define SCHEDULER_TASK_FLAG_WAITCHILD 6
 #define SCHEDULER_TASK_FLAG_SIGCAUGHT 7
 #define SCHEDULER_TASK_FLAG_AIOSUSPEND 8
 #define SCHEDULER_TASK_FLAG_ZOMBIE 9
 #define SCHEDULER_TASK_FLAG_LISTIOSUSPEND 10
-#define SCHEDULER_TASK_FLAG_STOPPED 11
 #define SCHEDULER_TASK_FLAG_ROOT_SYNC 12
 #define SCHEDULER_TASK_FLAG_UNBLOCK_MASK 0x0F
 
@@ -54,12 +52,10 @@ void scheduler_root_deassert(int id, int flag);
 
 void scheduler_root_update_on_sleep();
 void scheduler_root_update_on_stopped();
-void scheduler_root_update_on_wake(int new_priority);
+void scheduler_root_update_on_wake(int id, int new_priority);
 
 void scheduler_root_assert_active(int id, int unblock_type);
 void scheduler_root_deassert_active(int id);
-void scheduler_root_assert_status_change();
-void scheduler_root_deassert_status_change();
 void scheduler_root_set_trace_id(int tid, trace_id_t id);
 void scheduler_root_assert_sync(void * args) MCU_ROOT_CODE;
 int scheduler_root_unblock_all(void * block_object, int unblock_type);

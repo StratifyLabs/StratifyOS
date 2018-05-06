@@ -44,13 +44,6 @@ int sys_23_close(const devfs_handle_t * handle);
 
 extern uint8_t sys_euid;
 
-#define SYS_USER 0
-#define SYS_ROOT 1
-
-#define sys_isroot() ( task_root_asserted( task_get_current() ) )
-#define sys_setuser() ( task_deassert_root( task_get_current() ) )
-#define sys_setroot() ( task_assert_root( task_get_current() ) )
-
 
 
 

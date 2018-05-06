@@ -289,9 +289,7 @@ int sysfs_aio_data_transfer_callback(void * context, const mcu_event_t * event){
 				for(i=0; i < p->nent; i++){
 					if ( aiocbp == p->list[i] ){ //If this is true the thread is blocked on the operation that is currently completing
 						scheduler_root_assert_active(tid, SCHEDULER_UNBLOCK_AIO);
-						if( !scheduler_stopped_asserted(tid) ){
-							scheduler_root_update_on_wake(sos_sched_table[tid].priority);
-						}
+                        scheduler_root_update_on_wake(tid, task_get_priority(tid) );
 						break;
 					}
 				}
@@ -306,9 +304,7 @@ int sysfs_aio_data_transfer_callback(void * context, const mcu_event_t * event){
 
 				if( wakeup == true ){
 					scheduler_root_assert_active(tid, SCHEDULER_UNBLOCK_AIO);
-					if( !scheduler_stopped_asserted(tid) ){
-						scheduler_root_update_on_wake(sos_sched_table[tid].priority);
-					}
+                    scheduler_root_update_on_wake(tid, task_get_priority(tid));
 				}
 			}
 		}

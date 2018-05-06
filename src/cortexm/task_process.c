@@ -55,7 +55,9 @@ int task_create_process(void (*p)(char*),
 	task.reent = (struct _reent*)reent_ptr;
 	task.global_reent = task.reent;
 
-	task.flags = TASK_FLAGS_USED | TASK_FLAGS_PARENT(m_task_current);
+    task.flags = TASK_FLAGS_USED;
+    task.parent = task_get_current();
+    task.priority = 0;
 
 	memcpy(&task_memories, mem, sizeof(task_memories_t));
 

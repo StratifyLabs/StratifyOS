@@ -33,7 +33,7 @@
  *
  * It is also well-suited for streaming audio
  * from one interface to another (say from
- * I2S input to a USB audio class endpoint.
+ * I2S input to a USB audio class endpoint).
  *
  * The switchboard is configured using ioctl calls.
  *
@@ -51,6 +51,51 @@
  * }
  *
  * \endcode
+ *
+ * When making switchboard connections, one must consider
+ * input of the throughput vs input of the output. If the output has a higher
+ * throughput than the input, the terminals can be connected directly.
+ * For example, a 115200 bps UART could be directly connected to a SPI at 1MHz.
+ *
+ * - UART (ASYNC) -> SPI (ASYNC)
+ *
+ * If the output and input have similar or identical throughput values, they should
+ * be connected through a fifo rather than directly. This is the approach for
+ * I2S to USB.
+ *
+ * - I2S (ASYNC) -> FFIFO (SYNC NON-BLOCKING)
+ * - FFIFO (SYNC NON-BLOCKING) -> USB (ASYNC)
+ *
+ * The FFIFO should be configured to allow overflowing. This ensures that if the
+ * USB is slightly slower than the I2S a packet will simply be dropped rather
+ * than having the switchboard connection stop on a write error.
+ *
+ * The switchboard can also be used to buffer serial slave data in FIFOs. The UART
+ * is the best example, where any bytes that arrive are written to a FIFO. But
+ * the SPI and I2C can also be configured as slaves connected to FIFOs.
+ *
+ * UART (ASYNC) -> FIFO (SYNC NON-BLOCKING)
+ *
+ * The application can then poll the FIFO or receive a signal when data arrives.
+ *
+ * Adjusting priority must be done with care. Marking an input as high
+ * priority will cause writes to the output to be executed in a high priority context.
+ * This can cause problems with some drivers that share one interrupt between
+ * multiple channels. For example, when connecting:
+ *
+ * I2S (High Priority) -> USB (Normal Priority)
+ *
+ * the USB will be written with a high priority. This may cause the USB
+ * interrupt service routine to be interrupted causing undefined results. The solution
+ * is to add a FIFO
+ *
+ * I2S (High Priority) -> FFIFO (SYNC NON-BLOCKING)
+ * FFIFO (SYNC NON-BLOCKING) -> USB (Normal Priority)
+ *
+ * Using this scheme all USB channels are executed at the same priority level.
+ *
+ *
+ *
  *
  */
 

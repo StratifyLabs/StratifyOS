@@ -63,7 +63,9 @@ extern volatile int m_task_current MCU_SYS_MEM;
 typedef struct {
 	int tid;
 	int pid;
-	int flags;
+    u8 flags;
+    s8 priority;
+    u16 parent;
 	struct _reent * reent;
 	struct _reent * global_reent;
 	task_memories_t * mem;

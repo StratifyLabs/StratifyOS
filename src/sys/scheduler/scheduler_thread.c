@@ -53,9 +53,10 @@ int scheduler_create_thread(void *(*p)(void*), void * arg, void * mem_addr, int 
 	//start a new thread
 	id = task_create_thread(p, cleanup_thread, arg, mem_addr, mem_size, task_get_pid( task_get_current() ) );
 
+
 	if ( id > 0 ){
-		activate_thread(id, mem_addr, attr);
-	}
+        activate_thread(id, mem_addr, attr);
+    }
 
 	return id;
 }
@@ -99,20 +100,20 @@ void root_activate_thread(root_activate_thread_t * args){
 	reent = (struct _reent *)sos_task_table[id].reent;
 	reent->sigmask = _REENT->sigmask;
 
-	sos_sched_table[args->id].priority = args->attr->schedparam.sched_priority;
+    task_set_priority( args->id, args->attr->schedparam.sched_priority );
 	if ( PTHREAD_ATTR_GET_SCHED_POLICY( (&(sos_sched_table[id].attr)) ) == SCHED_FIFO ){
-		task_assert_isfifo(id);
+		task_assert_fifo(id);
 	} else {
-		task_deassert_isfifo(id);
+		task_deassert_fifo(id);
 	}
 
 	sos_sched_table[id].wake.tv_sec = SCHEDULER_TIMEVAL_SEC_INVALID;
 	sos_sched_table[id].wake.tv_usec = 0;
-	scheduler_root_assert_active(id, 0);
+    scheduler_root_assert_active(id, 0);
 	scheduler_root_assert_inuse(id);
 
 	task_root_set_stackguard(id, args->stackguard, SCHED_DEFAULT_STACKGUARD_SIZE);
-	scheduler_root_update_on_wake(sos_sched_table[id].priority);
+    scheduler_root_update_on_wake(id, task_get_priority(id));
 }
 
 void cleanup_thread(void * status){
@@ -179,7 +180,7 @@ void root_cleanup(void * args){
 	}
 
 	sos_sched_table[task_get_current()].flags = 0;
-	task_root_delete(task_get_current());
+    task_root_delete(task_get_current());
 	scheduler_root_update_on_sleep();
 }
 

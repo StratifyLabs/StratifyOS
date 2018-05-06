@@ -939,9 +939,7 @@ void root_wake_blocked(void * args){
 	int * task = (int*)args;
 	int id = *task;
 	scheduler_root_assert_active(id, SCHEDULER_UNBLOCK_MQ);
-	if( !scheduler_stopped_asserted(id) ){
-		scheduler_root_update_on_wake(sos_sched_table[id].priority);
-	}
+    scheduler_root_update_on_wake(id, task_get_priority(id));
 }
 
 void check_for_blocked_task(void * block){

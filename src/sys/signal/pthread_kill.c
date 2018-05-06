@@ -242,7 +242,7 @@ void signal_root_activate(int * thread){
 	int id = *thread;
 	scheduler_root_deassert_stopped(id);
 	scheduler_root_assert_active(id, SCHEDULER_UNBLOCK_SIGNAL);
-	scheduler_root_update_on_wake( scheduler_priority(id) );
+    scheduler_root_update_on_wake(id, scheduler_priority(id));
 }
 
 

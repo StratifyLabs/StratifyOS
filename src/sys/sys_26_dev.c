@@ -80,7 +80,7 @@ int sys_26_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 	case I_SYS_KILL:
 		for(i = 1; i < task_get_total(); i++){
 			if( (task_get_pid(i) == killattr->id) &&
-					!task_isthread_asserted(i)
+					!task_thread_asserted(i)
 			){
 				signal_root_send(task_get_current(),
 						i,
@@ -131,10 +131,10 @@ int read_task(sys_taskattr_t * task){
 			task->mem_loc = (uint32_t)sos_sched_table[task->tid].attr.stackaddr;
 			task->mem_size = sos_sched_table[task->tid].attr.stacksize;
 			task->stack_ptr = (uint32_t)sos_task_table[task->tid].sp;
-			task->prio = sos_sched_table[task->tid].priority;
+            task->prio = task_get_priority(task->tid);
 			task->prio_ceiling = sos_sched_table[task->tid].attr.schedparam.sched_priority;
-			task->is_active = (scheduler_active_asserted(task->tid) != 0) | ((scheduler_stopped_asserted(task->tid != 0)<<1));
-			task->is_thread = task_isthread_asserted( task->tid );
+			task->is_active = (task_active_asserted(task->tid) != 0) | ((task_stopped_asserted(task->tid != 0)<<1));
+			task->is_thread = task_thread_asserted( task->tid );
 
 			strncpy(task->name, ((struct _reent*)sos_task_table[ task->tid ].global_reent)->procmem_base->proc_name, NAME_MAX);
 

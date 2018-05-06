@@ -554,7 +554,6 @@ typedef struct {
 	pthread_mutex_t * signal_delay_mutex /*! The mutex to lock if the task cannot be interrupted */;
 	volatile struct mcu_timeval wake /*! When to wake the task */;
 	volatile u16 flags /*! This indicates whether the process is active or not */;
-	volatile u16 priority /*! The current priority */;
 	trace_id_t trace_id /*! Trace ID is PID is being traced (0 otherwise) */;
 } sched_task_t;
 

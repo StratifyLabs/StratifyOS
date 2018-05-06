@@ -91,7 +91,7 @@ int pthread_cond_destroy(pthread_cond_t *cond){
 void root_cond_broadcast(void * args){
 	int prio;
 	prio = scheduler_root_unblock_all(args, SCHEDULER_UNBLOCK_COND);
-	scheduler_root_update_on_wake(prio);
+    scheduler_root_update_on_wake(-1, prio);
 }
 
 /*! \details This function wakes all threads that are blocked on \a cond.
@@ -118,9 +118,7 @@ int pthread_cond_broadcast(pthread_cond_t *cond){
 void root_cond_signal(void * args){
 	int id = *((int*)args);
 	scheduler_root_assert_active(id, SCHEDULER_UNBLOCK_COND);
-	if( !scheduler_stopped_asserted(id) ){
-		scheduler_root_update_on_wake( sos_sched_table[id].priority );
-	}
+    scheduler_root_update_on_wake(id, task_get_priority(id));
 }
 
 /*! \details This function wakes the highest priority thread
@@ -159,13 +157,13 @@ void root_cond_wait(void  * args){
 	if ( argsp->mutex->pthread == task_get_current() ){
 		//First unlock the mutex
 		//Restore the priority to the task that is unlocking the mutex
-		sos_sched_table[task_get_current()].priority = sos_sched_table[task_get_current()].attr.schedparam.sched_priority;
+        task_set_priority(task_get_current(), sos_sched_table[task_get_current()].attr.schedparam.sched_priority);
 
 		if ( new_thread != -1 ){
 			argsp->mutex->pthread = new_thread;
 			argsp->mutex->pid = task_get_pid(new_thread);
 			argsp->mutex->lock = 1;
-			sos_sched_table[new_thread].priority = argsp->mutex->prio_ceiling;
+            task_set_priority(new_thread, argsp->mutex->prio_ceiling);
 			scheduler_root_assert_active(new_thread, SCHEDULER_UNBLOCK_MUTEX);
 		} else {
 			argsp->mutex->lock = 0;

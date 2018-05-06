@@ -42,7 +42,7 @@ int _main(){
 		while(1){}
 	}
 
-	if ( scheduler_start(sos_board_config.start, 10) < 0 ){
+    if ( scheduler_start(sos_board_config.start) < 0 ){
 		mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_FATAL, "main sched start");
         cortexm_disable_interrupts();
 		while(1){}

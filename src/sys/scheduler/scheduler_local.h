@@ -43,29 +43,14 @@
 
 #define SCHEDULER_NUM_SIGNALS 32
 
-extern volatile s8 m_scheduler_current_priority;
-extern volatile s8 m_scheduler_status_changed;
 extern volatile scheduler_fault_t m_scheduler_fault;
 
 
-static inline int scheduler_priority(int id) MCU_ALWAYS_INLINE;
-int scheduler_priority(int id){ return sos_sched_table[id].priority; };
-
-static inline trace_id_t scheduler_trace_id(int id) MCU_ALWAYS_INLINE;
-trace_id_t scheduler_trace_id(int id){ return sos_sched_table[id].trace_id; };
-
-
-static inline int scheduler_current_priority() MCU_ALWAYS_INLINE;
-int scheduler_current_priority(){ return m_scheduler_current_priority; };
-
-static inline int scheduler_status_change_asserted() MCU_ALWAYS_INLINE;
-inline int scheduler_status_change_asserted(){
-	return m_scheduler_status_changed;
-}
-
+static inline int scheduler_priority(int id){ return task_get_priority(id); }
+static inline trace_id_t scheduler_trace_id(int id){ return sos_sched_table[id].trace_id; }
+static inline int scheduler_current_priority(){ return task_get_current_priority(); }
 
 int scheduler_check_tid(int id);
-
 int scheduler_prepare();
 void scheduler();
 

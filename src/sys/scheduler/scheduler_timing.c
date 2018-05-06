@@ -157,7 +157,7 @@ int root_handle_usecond_match_event(void * context, const mcu_event_t * data){
     mcu_tmr_get(&tmr_handle, &current_match);
 
 	for(i=1; i < task_get_total(); i++){
-		if ( task_enabled(i) && !scheduler_active_asserted(i) ){ //enabled and inactive tasks only
+        if ( task_enabled(i) && !task_active_asserted(i) ){ //enabled and inactive tasks only
 			tmp = sos_sched_table[i].wake.tv_usec;
 
 			//compare the current clock to the wake time
@@ -165,9 +165,9 @@ int root_handle_usecond_match_event(void * context, const mcu_event_t * data){
 					( (sos_sched_table[i].wake.tv_sec == sched_usecond_counter) && (tmp <= current_match) )
 			){
 				//wake this task
-				sos_sched_table[i].wake.tv_sec = SCHEDULER_TIMEVAL_SEC_INVALID;
+                sos_sched_table[i].wake.tv_sec = SCHEDULER_TIMEVAL_SEC_INVALID; //this line is duplicated in scheduler_root_assert_active()
 				scheduler_root_assert_active(i, SCHEDULER_UNBLOCK_SLEEP);
-				if( !scheduler_stopped_asserted(i) && (scheduler_priority(i) > new_priority) ){
+                if( !task_stopped_asserted(i) && (scheduler_priority(i) > new_priority) ){
 					new_priority = scheduler_priority(i);
 				}
 
@@ -182,7 +182,7 @@ int root_handle_usecond_match_event(void * context, const mcu_event_t * data){
 	}
 	mcu_tmr_setchannel(&tmr_handle, &chan_req);
 
-	scheduler_root_update_on_wake(new_priority);
+    scheduler_root_update_on_wake(-1, new_priority);
 
 	mcu_tmr_enable(&tmr_handle, 0);
 
