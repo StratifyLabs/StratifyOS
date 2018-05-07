@@ -63,7 +63,7 @@ void root_prepare_hibernate(void * args){
 	mcu_wdt_root_reset(NULL);
 
 	//elevate task prio of caller so that nothing executes until prio is restored
-    task_set_current_priority(SCHED_HIGHEST_PRIORITY+1);
+    task_root_set_current_priority(SCHED_HIGHEST_PRIORITY+1);
 	mcu_core_prepare_deepsleep(CORE_DEEPSLEEP);
 }
 
@@ -73,7 +73,7 @@ void root_post_hibernate(void * args){
 	mcu_core_recover_deepsleep(CORE_DEEPSLEEP);
 
 	//restore task prio
-    task_set_current_priority( task_get_priority(task_get_current()) );
+    task_root_set_current_priority( task_get_priority(task_get_current()) );
 
 	if( (sos_board_config.o_sys_flags & SYS_FLAG_IS_WDT_DISABLED) == 0 ){
 		//Set WDT to previous value (it only runs in deep sleep with certain clock sources)

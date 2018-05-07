@@ -292,7 +292,7 @@ void root_mutex_trylock(root_mutex_trylock_t *args){
             task_set_priority( args->id, args->mutex->prio_ceiling ); //Elevate the priority of the task based on prio_ceiling
 
             //see the task manager that the priority has changed
-            task_set_current_priority(args->mutex->prio_ceiling);
+            task_root_set_current_priority(args->mutex->prio_ceiling);
         }
 		args->mutex->lock = 1; //This is the lock count
 		args->ret = 0;

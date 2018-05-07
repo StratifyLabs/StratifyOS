@@ -75,6 +75,15 @@ void mcu_core_setclock_main_12mhz_72mhz() MCU_ROOT_CODE;
 int mcu_core_setusbclock(int fosc /*! The oscillator frequency */) MCU_ROOT_CODE;
 int mcu_core_invokebootloader(int port, void * arg) MCU_ROOT_CODE;
 
+void mcu_core_enable_cache() MCU_ROOT_CODE;
+void mcu_core_disable_cache() MCU_ROOT_CODE;
+void mcu_core_invalidate_instruction_cache() MCU_ROOT_CODE;
+void mcu_core_clean_data_cache() MCU_ROOT_CODE;
+void mcu_core_invalidate_data_cache() MCU_ROOT_CODE;
+void mcu_core_clean_data_cache_block(void * addr, u32 size) MCU_ROOT_CODE;
+void mcu_core_invalidate_data_cache_block(void * addr, u32 size) MCU_ROOT_CODE;
+
+
 
 typedef enum {
 	CORE_SLEEP /*! Sleep mode */,

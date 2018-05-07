@@ -207,7 +207,7 @@ void scheduler_root_update_on_stopped(){
             next_priority = task_get_priority(i);
 		}
 	}
-    task_set_current_priority(next_priority);
+    task_root_set_current_priority(next_priority);
     cortexm_enable_interrupts();
 
     //this will cause an interrupt to execute but at a lower IRQ priority
@@ -233,7 +233,7 @@ void scheduler_root_update_on_wake(int id, int new_priority){
 
 
     //elevate the priority (changes only if new_priority is higher than current
-    task_elevate_current_priority(new_priority);
+    task_root_elevate_current_priority(new_priority);
 
     //execute the context switcher but at a lower priority
     task_root_switch_context();

@@ -517,6 +517,7 @@ void root_ioctl(void * args){
             a->ret = SYSFS_SET_RETURN(ENOTSUP);
 		} else {
 			a->ret = appfs_util_root_writeinstall(a->cfg, h, attr);
+            mcu_core_invalidate_instruction_cache();
 		}
 		break;
 
@@ -525,6 +526,7 @@ void root_ioctl(void * args){
             a->ret = SYSFS_SET_RETURN(ENOTSUP);
         } else {
 			a->ret = appfs_util_root_create(a->cfg, h, attr);
+            mcu_core_invalidate_data_cache();
 		}
 		break;
 

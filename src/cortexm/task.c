@@ -26,34 +26,29 @@
 
 #define SYSTICK_MIN_CYCLES 10000
 
-
 volatile s8 m_task_current_priority MCU_SYS_MEM;
 int m_task_rr_reload MCU_SYS_MEM;
 volatile int m_task_current MCU_SYS_MEM;
-
 static void root_task_read_rr_timer(u32 * val);
+static int set_systick_interval(int interval) MCU_ROOT_CODE;
+static void start_systick();
+static void switch_contexts();
 
-static void task_context_switcher();
+#if 0 // this isn't used
+static void stop_systick();
+#endif
+
 
 static void system_reset(); //This is used if the OS process returns
 void system_reset(){
     cortexm_svcall(cortexm_reset, NULL);
 }
 
+int task_get_total(){ return sos_board_config.task_total; }
+s8 task_get_current_priority(){ return m_task_current_priority; }
+void task_root_set_current_priority(s8 value){ m_task_current_priority = value; }
 
-int task_get_total(){
-    return sos_board_config.task_total;
-}
-
-s8 task_get_current_priority(){
-    return m_task_current_priority;
-}
-
-void task_set_current_priority(s8 value){
-    m_task_current_priority = value;
-}
-
-void task_elevate_current_priority(s8 value){
+void task_root_elevate_current_priority(s8 value){
     cortexm_disable_interrupts();
     if( value > m_task_current_priority ){
         m_task_current_priority = value;
@@ -132,8 +127,10 @@ int task_init(int interval,
     FPU->FPCCR = 0; //don't automatically save the FPU registers -- save them manually
 #endif
 
+    mcu_core_enable_cache();
+
     //Turn on the task timer (MCU implementation dependent)
-    task_set_interval(interval);
+    set_systick_interval(interval);
     sos_task_table[0].rr_time = m_task_rr_reload;
 
     cortexm_set_stack_ptr( (void*)&_top_of_stack ); //reset the handler stack pointer
@@ -142,7 +139,7 @@ int task_init(int interval,
     return 0;
 }
 
-int task_set_interval(int interval){
+int set_systick_interval(int interval){
     u32 reload;
     int core_tick_freq;
     reload = (mcu_board_config.core_cpu_freq * interval + 500) / 1000;
@@ -154,19 +151,19 @@ int task_set_interval(int interval){
     core_tick_freq = mcu_board_config.core_cpu_freq / reload;
     SysTick->LOAD = reload;
     m_task_rr_reload = reload;
-    task_start_tick();
+    start_systick();
     SCB->CCR = 0;
     return core_tick_freq;
 }
 
-void task_start_tick(){
+void start_systick(){
     SysTick->CTRL = SYSTICK_CTRL_ENABLE| //enable the timer
             SYSTICK_CTRL_CLKSROUCE; //Internal Clock CPU
 }
 
-void task_stop_tick(){
-    SysTick->CTRL = 0;
-}
+#if 0 //this isn't used
+void stop_systick(){ SysTick->CTRL = 0; }
+#endif
 
 int task_create_thread(void *(*p)(void*),
                        void (*cleanup)(void*),
@@ -325,7 +322,7 @@ u64 task_gettime(int tid){
     }
 }
 
-void task_context_switcher(){
+void switch_contexts(){
     int i;
     //Save the PSP to the current task's stack pointer
     asm volatile ("MRS %0, psp\n\t" : "=r" (sos_task_table[m_task_current].sp) );
@@ -460,7 +457,7 @@ void task_root_switch_context(void * args){
 void task_check_count_flag(){
     if ( SysTick->CTRL & (1<<16) ){ //check the countflag
         sos_task_table[m_task_current].rr_time = 0;
-        task_context_switcher();
+        switch_contexts();
     }
 }
 
@@ -499,7 +496,7 @@ void mcu_core_pendsv_handler(){
     //switch contexts if current task is not executing or it wants to yield
     if( (task_exec_asserted(task_get_current()) == 0) || task_yield_asserted(task_get_current()) ){
         task_deassert_yield(task_get_current());
-        task_context_switcher();
+        switch_contexts();
     }
 
     task_load_context();
