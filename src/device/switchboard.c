@@ -41,10 +41,10 @@ static void update_bytes_transferred(switchboard_state_t * state, switchboard_st
 static void switch_input_buffer(switchboard_state_t * state, int bytes_read);
 static void switch_output_buffer(switchboard_state_t * state);
 static int write_to_device(switchboard_state_t * state);
+static int check_for_stopped_or_destroyed(switchboard_state_t * state);
 
 int switchboard_open(const devfs_handle_t * handle){
     //check to make sure everything is valid
-
     return 0;
 }
 
@@ -71,28 +71,17 @@ int switchboard_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 
     case I_SWITCHBOARD_SETATTR:
         o_flags = attr->o_flags;
-
-        if( o_flags & SWITCHBOARD_FLAG_CONNECT ){
-            //is connection idx available?
-
-            if( attr->id < config->connection_count ){
-                return create_connection(config, state, attr);
-            } else {
-                return SYSFS_SET_RETURN(EINVAL);
-            }
-
-        } else if( o_flags & SWITCHBOARD_FLAG_DISCONNECT ){
-            ret = destroy_connection(config, state, attr);
-            if( ret < 0 ){
-                return ret;
+        ret = 0;
+        if( attr->id < config->connection_count ){
+            if( o_flags & SWITCHBOARD_FLAG_CONNECT ){
+                ret = create_connection(config, state, attr);
+            } else if( o_flags & SWITCHBOARD_FLAG_DISCONNECT ){
+                ret = destroy_connection(config, state, attr);
             }
         }
-        break;
-
-    default:
-        return 0;
+        return ret;
     }
-    return 0;
+    return SYSFS_SET_RETURN(EINVAL);
 }
 
 int switchboard_read(const devfs_handle_t * handle, devfs_async_t * async){
@@ -155,10 +144,6 @@ int update_priority(const devfs_device_t * device, const switchboard_terminal_t 
 int create_connection(const switchboard_config_t * config, switchboard_state_t * state, const switchboard_attr_t * attr){
     u16 id = attr->id;
     int i;
-
-    if( id >= config->connection_count ){
-        return SYSFS_SET_RETURN(EINVAL);
-    }
 
     if( state[id].o_flags != 0 ){
         return SYSFS_SET_RETURN(EBUSY);
@@ -282,9 +267,19 @@ void abort_connection(switchboard_state_t * state){
 }
 
 int destroy_connection(const switchboard_config_t * config, switchboard_state_t * state, const switchboard_attr_t * attr){
-    int idx = attr->id;
-    state[idx].o_flags |= SWITCHBOARD_FLAG_IS_DESTROYED;
-    state[idx].nbyte = -1; //force ongoing transactions to stop
+    u16 id = attr->id;
+
+    if( (state[id].o_flags & SWITCHBOARD_FLAG_IS_CONNECTED) == 0 ){
+        return 0;
+    }
+
+    if( state[id].o_flags & SWITCHBOARD_FLAG_IS_STOPPED_ON_ERROR ){
+        memset(state + id, 0, sizeof(switchboard_state_t));
+    } else {
+        //connection is still on going -- it will clear
+        state[id].o_flags |= SWITCHBOARD_FLAG_IS_DESTROYED;
+        state[id].nbyte = SYSFS_SET_RETURN(ENOEXEC); //force ongoing transactions to stop
+    }
     return 0;
 }
 
@@ -476,19 +471,26 @@ int read_from_device(switchboard_state_t * state){
     return ret;
 }
 
-int read_then_write_until_async(switchboard_state_t * state){
-    int ret;
-    int transactions = 0;
-
-    //an error has occurred -- abort the connection
+int check_for_stopped_or_destroyed(switchboard_state_t * state){
     if( state->nbyte < 0 ){
-        mcu_debug_root_printf("Close connection\n");
         u32 o_flags = 0;
         if( (state->o_flags & SWITCHBOARD_FLAG_IS_DESTROYED) == 0 ){
             //this was destroyed by the user
             o_flags = state->o_flags | SWITCHBOARD_FLAG_IS_STOPPED_ON_ERROR;
+            mcu_debug_root_printf("Stopped on error\n");
         }
+        mcu_debug_root_printf("Close connection\n");
         close_connection(state, o_flags);
+        return 1;
+    }
+    return 0;
+}
+
+int read_then_write_until_async(switchboard_state_t * state){
+    int ret;
+    int transactions = 0;
+
+    if( check_for_stopped_or_destroyed(state) ){
         return 0;
     }
 
@@ -496,18 +498,11 @@ int read_then_write_until_async(switchboard_state_t * state){
         ret = read_from_device(state);
         if( ret == 0 ){ //read is either async or both buffers full
             ret = write_to_device(state);
-            //if write is sync (ret > 0) and a buffer will be available for reading
-            //if write is async (ret == 0) and connection needs to wait until data is done writing
-            //if error (ret < 0 ) -- writing is stopped -- still might have SWITCHBOARD_FLAG_IS_READING_ASYNC
         }
         transactions++;
     } while( ret > 0 && (transactions < state->transaction_limit) );
 
-    if( ret < 0 ){
-        mcu_debug_root_printf("Stopped on error\n");
-        state->nbyte = ret;
-        close_connection(state, state->o_flags | SWITCHBOARD_FLAG_IS_STOPPED_ON_ERROR);
-    }
+    check_for_stopped_or_destroyed(state);
 
     return ret;
 }
