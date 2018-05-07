@@ -129,8 +129,7 @@ typedef enum {
     SWITCHBOARD_FLAG_IS_FILL_ZERO /*! If no data is available on a non-blocking input, a packet full of zeros is sent to the output */ = (1<<8),
     SWITCHBOARD_FLAG_IS_INPUT_NON_BLOCKING /*! The connection input terminal should operate in non-blocking mode (return immediately if no data is available) */ = (1<<9),
     SWITCHBOARD_FLAG_IS_OUTPUT_NON_BLOCKING /*! The connection output terminal should operate in non-blocking mode (return immediately if no data is available) */ = (1<<10),
-
-
+    SWITCHBOARD_FLAG_IS_DESTROYED /*! The connection has been destroyed (this flag is self clearing) */ = (1<<11),
 } switchboard_flag_t;
 
 
@@ -168,7 +167,7 @@ typedef struct MCU_PACK {
  */
 typedef struct MCU_PACK {
     u32 o_flags /*! Bitmask flags for connection state */;
-    u16 idx /*! Connection index of total */;
+    u16 id /*! Connection id of total */;
     u16 transaction_limit /*! The maximum number of synchronous transactions that can occur before aborting */;
     switchboard_terminal_t input /*! Input device (device that is read) */;
     switchboard_terminal_t output /*! Output device (device that is written) */;

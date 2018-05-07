@@ -75,7 +75,7 @@ int switchboard_ioctl(const devfs_handle_t * handle, int request, void * ctl){
         if( o_flags & SWITCHBOARD_FLAG_CONNECT ){
             //is connection idx available?
 
-            if( attr->idx < config->connection_count ){
+            if( attr->id < config->connection_count ){
                 return create_connection(config, state, attr);
             } else {
                 return SYSFS_SET_RETURN(EINVAL);
@@ -99,31 +99,31 @@ int switchboard_read(const devfs_handle_t * handle, devfs_async_t * async){
     const switchboard_config_t * config = handle->config;
     switchboard_state_t * state = handle->state;
     if( (async->nbyte == sizeof(switchboard_connection_t)) && (async->loc % sizeof(switchboard_connection_t) == 0) ){
-        u32 idx = async->loc / sizeof(switchboard_connection_t);
-        if( idx < config->connection_count ){
+        u32 id = async->loc / sizeof(switchboard_connection_t);
+        if( id < config->connection_count ){
             switchboard_status_t * status = async->buf;
 
-            if( state[idx].o_flags != 0 ){
-                status->idx = idx;
-                status->o_flags = state[idx].o_flags;
-                if( (state[idx].o_flags & SWITCHBOARD_FLAG_IS_PERSISTENT) && (state[idx].nbyte >= 0) ){
-                    status->nbyte = state[idx].packet_size;
+            if( state[id].o_flags != 0 ){
+                status->id = id;
+                status->o_flags = state[id].o_flags;
+                if( (state[id].o_flags & SWITCHBOARD_FLAG_IS_PERSISTENT) && (state[id].nbyte >= 0) ){
+                    status->nbyte = state[id].packet_size;
                 } else {
-                    status->nbyte = state[idx].nbyte;
+                    status->nbyte = state[id].nbyte;
                 }
 
-                if( get_terminal(config, &state[idx].input, &status->input) < 0 ){
+                if( get_terminal(config, &state[id].input, &status->input) < 0 ){
                     return SYSFS_SET_RETURN(EIO);
                 }
 
-                if( get_terminal(config, &state[idx].output, &status->output) < 0 ){
+                if( get_terminal(config, &state[id].output, &status->output) < 0 ){
                     return SYSFS_SET_RETURN(EIO);
                 }
 
             } else {
                 //connection is not used
                 memset(status, 0, sizeof(switchboard_connection_t));
-                status->idx = idx;
+                status->id = id;
             }
             return sizeof(switchboard_connection_t);
 
@@ -153,118 +153,122 @@ int update_priority(const devfs_device_t * device, const switchboard_terminal_t 
 }
 
 int create_connection(const switchboard_config_t * config, switchboard_state_t * state, const switchboard_attr_t * attr){
-    int idx = attr->idx;
+    u16 id = attr->id;
     int i;
 
-    if( state[idx].o_flags != 0 ){
+    if( id >= config->connection_count ){
+        return SYSFS_SET_RETURN(EINVAL);
+    }
+
+    if( state[id].o_flags != 0 ){
         return SYSFS_SET_RETURN(EBUSY);
     }
 
-    memset(state + idx, 0, sizeof(switchboard_state_t));
+    memset(state + id, 0, sizeof(switchboard_state_t));
 
-    state[idx].input.device = devfs_lookup_device(config->devfs_list, attr->input.name); //lookup input device from attr->input.name
-    if( state[idx].input.device == 0 ){
+    state[id].input.device = devfs_lookup_device(config->devfs_list, attr->input.name); //lookup input device from attr->input.name
+    if( state[id].input.device == 0 ){
         return SYSFS_SET_RETURN(ENOENT);
     }
 
-    state[idx].output.device = devfs_lookup_device(config->devfs_list, attr->output.name); //lookup input device from attr->input.name
-    if( state[idx].output.device == 0 ){
+    state[id].output.device = devfs_lookup_device(config->devfs_list, attr->output.name); //lookup input device from attr->input.name
+    if( state[id].output.device == 0 ){
         return SYSFS_SET_RETURN(ENOENT);
     }
 
     //check to see if the input or output is already an active connection
     for(i=0; i < config->connection_count; i++){
-        if( i != idx ){
-            if( state[idx].input.device == state[i].input.device ){
+        if( i != id ){
+            if( state[id].input.device == state[i].input.device ){
                 return SYSFS_SET_RETURN(EBUSY);
             }
 
-            if( state[idx].output.device == state[i].output.device ){
+            if( state[id].output.device == state[i].output.device ){
                 return SYSFS_SET_RETURN(EBUSY);
             }
         }
     }
 
     if( attr->o_flags & SWITCHBOARD_FLAG_SET_TRANSACTION_LIMIT ){
-        state[idx].transaction_limit = attr->transaction_limit;
+        state[id].transaction_limit = attr->transaction_limit;
     } else {
-        state[idx].transaction_limit = config->transaction_limit;
+        state[id].transaction_limit = config->transaction_limit;
     }
 
-    state[idx].buffer[0] = config->buffer + idx*2*config->connection_buffer_size;
-    state[idx].buffer[1] = config->buffer + (idx*2+1)*config->connection_buffer_size;
+    state[id].buffer[0] = config->buffer + id*2*config->connection_buffer_size;
+    state[id].buffer[1] = config->buffer + (id*2+1)*config->connection_buffer_size;
 
-    state[idx].nbyte = attr->nbyte; //total number of bytes to transfer OR packet size for persistent connections (must be less than buffer size)
+    state[id].nbyte = attr->nbyte; //total number of bytes to transfer OR packet size for persistent connections (must be less than buffer size)
 
-    state[idx].o_flags = SWITCHBOARD_FLAG_IS_CONNECTED;
-    if( attr->o_flags & SWITCHBOARD_FLAG_IS_FILL_ZERO ){
-        state[idx].o_flags |= SWITCHBOARD_FLAG_IS_FILL_ZERO;
-    }
+    state[id].o_flags = SWITCHBOARD_FLAG_IS_CONNECTED;
+
+    state[id].o_flags |= (attr->o_flags & (SWITCHBOARD_FLAG_IS_FILL_ZERO | SWITCHBOARD_FLAG_IS_INPUT_NON_BLOCKING | SWITCHBOARD_FLAG_IS_OUTPUT_NON_BLOCKING));
+
     if( attr->o_flags & SWITCHBOARD_FLAG_IS_PERSISTENT ){
-        state[idx].o_flags |= SWITCHBOARD_FLAG_IS_PERSISTENT;
+        state[id].o_flags |= SWITCHBOARD_FLAG_IS_PERSISTENT;
 
         //for persistent connections, nbyte can't be larger than the buffer
-        if( state[idx].nbyte > config->connection_buffer_size ){
-            state[idx].nbyte = config->connection_buffer_size;
+        if( state[id].nbyte > config->connection_buffer_size ){
+            state[id].nbyte = config->connection_buffer_size;
         }
 
-        state[idx].packet_size = state[idx].nbyte;
-        state[idx].nbyte = 0;
+        state[id].packet_size = state[id].nbyte;
+        state[id].nbyte = 0;
 
     } else {
 
         //nbyte is total number of bytes
-        state[idx].packet_size = config->connection_buffer_size;
-        if( state[idx].packet_size > state[idx].nbyte ){
-            state[idx].packet_size = state[idx].nbyte;
+        state[id].packet_size = config->connection_buffer_size;
+        if( state[id].packet_size > state[id].nbyte ){
+            state[id].packet_size = state[id].nbyte;
         }
     }
 
-    state[idx].input.async.tid = task_get_current();
-    state[idx].input.async.flags = O_RDWR;
+    state[id].input.async.tid = task_get_current();
+    state[id].input.async.flags = O_RDWR;
     if( attr->o_flags & SWITCHBOARD_FLAG_IS_INPUT_NON_BLOCKING ){
-        state[idx].input.async.flags |= O_NONBLOCK;
+        state[id].input.async.flags |= O_NONBLOCK;
     }
-    state[idx].input.async.loc = attr->input.loc;
-    state[idx].input.async.handler.callback = handle_data_ready;
-    state[idx].input.async.handler.context = state + idx;
-    state[idx].input.async.buf = state[idx].buffer[0];
-    state[idx].input.async.nbyte = state[idx].packet_size;
+    state[id].input.async.loc = attr->input.loc;
+    state[id].input.async.handler.callback = handle_data_ready;
+    state[id].input.async.handler.context = state + id;
+    state[id].input.async.buf = state[id].buffer[0];
+    state[id].input.async.nbyte = state[id].packet_size;
 
-    memcpy(&state[idx].output.async, &state[idx].input.async, sizeof(devfs_async_t));
+    memcpy(&state[id].output.async, &state[id].input.async, sizeof(devfs_async_t));
 
     //output is the same except the callback and the location (channel)
-    state[idx].output.async.handler.callback = handle_write_complete;
-    state[idx].output.async.loc = attr->output.loc;
-    state[idx].output.async.flags = O_RDWR;
+    state[id].output.async.handler.callback = handle_write_complete;
+    state[id].output.async.loc = attr->output.loc;
+    state[id].output.async.flags = O_RDWR;
     if( attr->o_flags & SWITCHBOARD_FLAG_IS_OUTPUT_NON_BLOCKING ){
-        state[idx].output.async.flags |= O_NONBLOCK;
+        state[id].output.async.flags |= O_NONBLOCK;
     }
 
     if( open_terminal(&state->input) < 0 ){
-        memset(state + idx, 0, sizeof(switchboard_state_t));
+        memset(state + id, 0, sizeof(switchboard_state_t));
         return SYSFS_SET_RETURN(EIO);
     }
 
     if( open_terminal(&state->output) < 0 ){
         close_terminal(&state->input);
-        memset(state + idx, 0, sizeof(switchboard_state_t));
+        memset(state + id, 0, sizeof(switchboard_state_t));
         return SYSFS_SET_RETURN(EIO);
     }
 
-    if( update_priority(state[idx].input.device, &attr->input, MCU_EVENT_FLAG_DATA_READY) < 0 ){
-        abort_connection(state + idx);
+    if( update_priority(state[id].input.device, &attr->input, MCU_EVENT_FLAG_DATA_READY) < 0 ){
+        abort_connection(state + id);
         return SYSFS_SET_RETURN(EIO);
     }
 
-    if( update_priority(state[idx].output.device, &attr->output, MCU_EVENT_FLAG_WRITE_COMPLETE) < 0 ){
-        abort_connection(state + idx);
+    if( update_priority(state[id].output.device, &attr->output, MCU_EVENT_FLAG_WRITE_COMPLETE) < 0 ){
+        abort_connection(state + id);
         return SYSFS_SET_RETURN(EIO);
     }
 
     //start reading into the primary buffer -- mark it as used
-    if( read_then_write_until_async(state + idx) < 0 ){
-        abort_connection(state + idx);
+    if( read_then_write_until_async(state + id) < 0 ){
+        abort_connection(state + id);
         return SYSFS_SET_RETURN(EIO);
     }
 
@@ -278,8 +282,8 @@ void abort_connection(switchboard_state_t * state){
 }
 
 int destroy_connection(const switchboard_config_t * config, switchboard_state_t * state, const switchboard_attr_t * attr){
-    int idx = attr->idx;
-    state[idx].o_flags = 0;
+    int idx = attr->id;
+    state[idx].o_flags |= SWITCHBOARD_FLAG_IS_DESTROYED;
     state[idx].nbyte = -1; //force ongoing transactions to stop
     return 0;
 }
@@ -297,7 +301,6 @@ int open_terminal(const switchboard_state_terminal_t * state_terminal){
 int close_terminal(const switchboard_state_terminal_t * state_terminal){
     return state_terminal->device->driver.close(&state_terminal->device->handle);
 }
-
 
 int get_terminal(const switchboard_config_t * config,
                  const switchboard_state_terminal_t * state_terminal,
@@ -317,7 +320,7 @@ int is_ready_to_read_device(switchboard_state_t * state){
 
     if( (state->input.async.nbyte <= 0) || (state->nbyte < 0) ){
         //all reads complete or an error occurred
-        mcu_debug_root_printf("can't read error\n");
+        mcu_debug_root_printf("can't read error %d %d\n", state->input.async.nbyte, state->nbyte);
         return 0;
     }
 
@@ -362,13 +365,12 @@ int is_ready_to_write_device(switchboard_state_t * state){
 
     if( state->o_flags & SWITCHBOARD_FLAG_IS_WRITING_ASYNC ){
         //a write is already in progress
-        mcu_debug_root_printf("async busy\n");
         return 0;
     }
 
     if( (state->output.async.nbyte < 0) || (state->nbyte < 0) ){
         //all writes are complete or an error occurred
-        mcu_debug_root_printf("no bytes %d %d\n", state->output.async.nbyte, state->nbyte);
+        mcu_debug_root_printf("can't write error %d %d\n", state->output.async.nbyte, state->nbyte);
         return 0;
     }
 
@@ -481,7 +483,12 @@ int read_then_write_until_async(switchboard_state_t * state){
     //an error has occurred -- abort the connection
     if( state->nbyte < 0 ){
         mcu_debug_root_printf("Close connection\n");
-        close_connection(state, state->o_flags | SWITCHBOARD_FLAG_IS_STOPPED_ON_ERROR);
+        u32 o_flags = 0;
+        if( (state->o_flags & SWITCHBOARD_FLAG_IS_DESTROYED) == 0 ){
+            //this was destroyed by the user
+            o_flags = state->o_flags | SWITCHBOARD_FLAG_IS_STOPPED_ON_ERROR;
+        }
+        close_connection(state, o_flags);
         return 0;
     }
 
