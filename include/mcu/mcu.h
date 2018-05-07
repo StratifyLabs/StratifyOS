@@ -127,7 +127,8 @@ const void * mcu_select_pin_assignment(const void * attr_pin_assignment,
 
 enum {
 	MCU_BOARD_CONFIG_FLAG_LED_ACTIVE_HIGH /*! When set, the board LED is active high */ = (1<<0),
-	MCU_BOARD_CONFIG_FLAG_SAFE_SVCALL /*! When set, the svcall can only be used by the kernel */ = (1<<1)
+    MCU_BOARD_CONFIG_FLAG_SAFE_SVCALL /*! When set, the svcall can only be used by the kernel */ = (1<<1),
+    MCU_BOARD_CONFIG_FLAG_ENABLE_CACHE /*! When set, the svcall can only be used by the kernel */ = (1<<2)
 };
 
 enum {
