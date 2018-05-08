@@ -35,7 +35,10 @@ typedef struct {
 	int tid;
 	int si_signo;
 	int si_sigcode;
-	int sig_value;
+    union {
+        int sig_value;
+        void * sig_ptr;
+    };
 	int keep;
 } devfs_signal_callback_t;
 

@@ -37,6 +37,7 @@ typedef struct {
     u16 bytes_in_buffer[2];
     u16 transaction_limit;
     u16 packet_size;
+    mcu_event_handler_t event_handler;
 } switchboard_state_t;
 
 typedef struct {

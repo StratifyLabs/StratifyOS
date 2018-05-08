@@ -127,7 +127,7 @@ int signal_root_send(int send_tid, int tid, int si_signo, int si_sigcode, int si
 	if( ( (tid == task_get_current()) ) && (forward != 0) ){
 		//If the receiving tid is currently executing, sending the signal directly will corrupt the stack
 		//So we stack a signal on task 0 and have it send the signal
-		//This only happens when priv signals are sent because the stack is in an unknown state
+        //This only happens when root signals are sent because the stack is in an unknown state
 		return signal_root_forward(tid, 0, si_signo, si_sigcode, sig_value);
 	}
 
@@ -139,8 +139,7 @@ int signal_root_send(int send_tid, int tid, int si_signo, int si_sigcode, int si
 				check_stack = tid;
 				signal_root_check_stack(&check_stack);
 				if( check_stack < 0 ){
-					errno = ENOMEM;  //this won't always be the right errno????
-					return -1;
+                    return SYSFS_SET_RETURN(ENOMEM);
 				}
 
 
@@ -154,16 +153,13 @@ int signal_root_send(int send_tid, int tid, int si_signo, int si_sigcode, int si
 				intr.arg[3] = sig_value;
 				task_root_interrupt(&intr);
 			} else {
-				errno = EINVAL;
-				return -1;
+                return SYSFS_SET_RETURN(EINVAL);
 			}
 		} else {
-			errno = EINVAL;
-			return -1;
+            return SYSFS_SET_RETURN(EINVAL);
 		}
 	} else {
-		errno = ESRCH;
-		return -1;
+        return SYSFS_SET_RETURN(ESRCH);
 	}
 	return 0;
 }

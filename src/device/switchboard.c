@@ -53,6 +53,7 @@ int switchboard_ioctl(const devfs_handle_t * handle, int request, void * ctl){
     switchboard_state_t * state = handle->state;
     switchboard_attr_t * attr = ctl;
     switchboard_info_t * info = ctl;
+    mcu_action_t * action = ctl;
     int ret;
     u32 o_flags;
 
@@ -80,6 +81,22 @@ int switchboard_ioctl(const devfs_handle_t * handle, int request, void * ctl){
             }
         }
         return ret;
+
+    case I_MCU_SETACTION:
+    case I_SWITCHBOARD_SETACTION:
+        if( action->channel < config->connection_count ){
+            u16 id = action->channel;
+            if( action->handler.callback == 0 ){
+                mcu_execute_event_handler(&state[id].event_handler, MCU_EVENT_FLAG_CANCELED, 0);
+            }
+
+            state[id].event_handler = action->handler;
+            return 0;
+        } else {
+            return SYSFS_SET_RETURN(EINVAL);
+        }
+
+
     }
     return SYSFS_SET_RETURN(EINVAL);
 }
@@ -474,13 +491,16 @@ int read_from_device(switchboard_state_t * state){
 int check_for_stopped_or_destroyed(switchboard_state_t * state){
     if( state->nbyte < 0 ){
         u32 o_flags = 0;
+        u32 o_events = MCU_EVENT_FLAG_STOP;
+        mcu_debug_root_printf("Close connection %d:%d\n", SYSFS_GET_RETURN_ERRNO(state->nbyte), SYSFS_GET_RETURN(state->nbyte));
         if( (state->o_flags & SWITCHBOARD_FLAG_IS_DESTROYED) == 0 ){
             //this was destroyed by the user
             o_flags = state->o_flags | SWITCHBOARD_FLAG_IS_STOPPED_ON_ERROR;
+            o_events = MCU_EVENT_FLAG_ERROR | MCU_EVENT_FLAG_CANCELED;
             mcu_debug_root_printf("Stopped on error\n");
         }
-        mcu_debug_root_printf("Close connection\n");
         close_connection(state, o_flags);
+        mcu_execute_event_handler(&state->event_handler, o_events, 0);
         return 1;
     }
     return 0;
