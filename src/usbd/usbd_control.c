@@ -50,7 +50,7 @@ void usbd_control_root_init(void * args){
     action.channel = 0;
     action.handler.context = context;
     action.handler.callback = usbd_control_handler;
-    action.o_events = MCU_EVENT_FLAG_DATA_READY | MCU_EVENT_FLAG_WRITE_COMPLETE;
+    action.o_events = MCU_EVENT_FLAG_DATA_READY | MCU_EVENT_FLAG_WRITE_COMPLETE | MCU_EVENT_FLAG_SETUP;
     action.prio = 0;
     if( mcu_usb_setaction(context->handle, &action) < 0 ){
         mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_FATAL, "usbd control setaction");
@@ -70,6 +70,7 @@ int usbd_control_handler(void * context_object, const mcu_event_t * usb_event /*
     if ( o_events & MCU_EVENT_FLAG_SETUP ){
         //read the setup packet
         usbd_control_handler_setup_stage(context);
+
     }
 
     if ( o_events & MCU_EVENT_FLAG_SETUP ){
