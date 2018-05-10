@@ -152,6 +152,8 @@ int ffifo_read_buffer(const ffifo_config_t * cfgp, ffifo_state_t * state, char *
             }
 
             buf += frame_size;
+        } else {
+            break;
         }
 
     }
