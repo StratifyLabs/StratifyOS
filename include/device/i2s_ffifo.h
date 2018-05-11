@@ -51,12 +51,9 @@ typedef struct MCU_PACK {
 } i2s_ffifo_info_t;
 
 
-#define I2S_FFIFO_FRAME_SIZE (8*16) //Each left and right sample is 8 bytes -- this is 16 complete samples from each channel
-
 typedef struct {
     ffifo_state_t ffifo;
     devfs_async_t i2s_async;
-    char * i2s_frame_buffer;
     u32 count;
     s32 error;
 } i2s_ffifo_channel_state_t;
@@ -67,15 +64,9 @@ typedef struct {
 } i2s_ffifo_state_t;
 
 typedef struct {
-    ffifo_config_t ffifo;
-    char * frame_buffer;
-} i2s_ffifo_channel_config_t;
-
-typedef struct {
     i2s_config_t i2s;
-    u32 frame_buffer_size;
-    i2s_ffifo_channel_config_t tx;
-    i2s_ffifo_channel_config_t rx;
+    ffifo_config_t tx;
+    ffifo_config_t rx;
 } i2s_ffifo_config_t;
 
 

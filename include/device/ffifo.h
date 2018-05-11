@@ -21,6 +21,8 @@
 #ifndef DEVICE_FFIFO_H_
 #define DEVICE_FFIFO_H_
 
+
+#include "device/fifo.h"
 #include "sos/dev/ffifo.h"
 #include "sos/fs/devfs.h"
 
@@ -29,12 +31,8 @@
  *
  */
 typedef struct MCU_PACK {
-	u16 head;
-	u16 tail;
-    u16 read_len;
-    u16 write_len;
-    devfs_async_t * read_async;
-    devfs_async_t * write_async;
+    volatile fifo_atomic_position_t atomic_position;
+    devfs_transfer_handler_t transfer_handler;
 	u32 o_flags;
 } ffifo_state_t;
 
@@ -59,6 +57,9 @@ int ffifo_ioctl_local(const ffifo_config_t * config, ffifo_state_t * state, int 
 int ffifo_write_local(const ffifo_config_t * config, ffifo_state_t * state, devfs_async_t * async, int allow_callback);
 int ffifo_read_local(const ffifo_config_t * config, ffifo_state_t * state, devfs_async_t * async, int allow_callback);
 
+//returns a pointer to the next place to write
+void * ffifo_get_head(const ffifo_config_t * config, ffifo_state_t * state);
+void * ffifo_get_tail(const ffifo_config_t * config, ffifo_state_t * state);
 
 int ffifo_read_buffer(const ffifo_config_t * config, ffifo_state_t * state, char * buf, int len);
 int ffifo_write_buffer(const ffifo_config_t * config, ffifo_state_t * state, const char * buf, int len);
@@ -67,7 +68,7 @@ char * ffifo_get_frame(const ffifo_config_t * config, u16 frame);
 
 //helper functions for implementing FIFOs
 void ffifo_flush(ffifo_state_t * state);
-void ffifo_getinfo(ffifo_info_t * info, const ffifo_config_t * config, ffifo_state_t * state);
+int ffifo_getinfo(ffifo_info_t * info, const ffifo_config_t * config, ffifo_state_t * state);
 
 void ffifo_inc_head(ffifo_state_t * state, u16 count);
 void ffifo_inc_tail(ffifo_state_t * state, u16 count);

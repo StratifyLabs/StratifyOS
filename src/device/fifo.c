@@ -23,59 +23,25 @@
 #include "mcu/debug.h"
 #include "device/fifo.h"
 
-static void execute_write_callback(fifo_state_t * state, int nbyte, u32 o_events);
-static void execute_read_callback(fifo_state_t * state, int nbyte, u32 o_events);
-
-
-void execute_read_callback(fifo_state_t * state, int nbyte, u32 o_events){
-    if( state->read_async != NULL ){
-        state->read_async->nbyte = nbyte;
-        mcu_execute_event_handler(&(state->read_async->handler), o_events, 0);
-        if( state->read_async->handler.callback == 0 ){
-            state->read_async = 0;
-        }
-    }
-}
-
-void execute_write_callback(fifo_state_t * state, int nbyte, u32 o_events){
-    if( state->write_async != NULL ){
-        state->write_async->nbyte = nbyte;
-        mcu_execute_event_handler(&(state->write_async->handler), o_events, 0);
-        if( state->write_async->handler.callback == 0 ){
-            state->write_async = 0;
-        }
-    }
-}
-
 
 void fifo_inc_tail(fifo_state_t * state, int size){
-    state->tail++;
-    if ( state->tail == size ){
-        state->tail = 0;
+    state->atomic_position.access.tail++;
+    if ( state->atomic_position.access.tail == size ){
+        state->atomic_position.access.tail = 0;
     }
 }
 
 void fifo_inc_head(fifo_state_t * state, int size){
-    state->head++;
-    if ( state->head == size ){
-        state->head = 0;
+    state->atomic_position.access.head++;
+    if ( state->atomic_position.access.head == size ){
+        state->atomic_position.access.head = 0;
     }
-
-#if 0
-    if ( state->head == state->tail ){
-        state->tail++;
-        if ( state->tail == size ){
-            state->tail = 0;
-        }
-        fifo_set_overflow(state, 1);
-    }
-#endif
 }
 
 int fifo_is_write_ok(fifo_state_t * state, u16 size, int writeblock){
     int ret = 1;
-    if( ((state->tail == 0) && (state->head == size -1)) ||
-            ((state->head) + 1 == state->tail)
+    if( ((state->atomic_position.access.tail == 0) && (state->atomic_position.access.head == size -1)) ||
+            ((state->atomic_position.access.head) + 1 == state->atomic_position.access.tail)
             ){
         if( writeblock || (state->o_flags & FIFO_FLAG_IS_READ_BUSY) ){
             //cannot write anymore data at this time
@@ -115,20 +81,20 @@ void fifo_set_overflow(fifo_state_t * state, int value){
     }
 }
 
-int fifo_read_buffer(const fifo_config_t * cfgp, fifo_state_t * state, char * buf){
+int fifo_read_buffer(const fifo_config_t * config, fifo_state_t * state, char * buf, int nbyte){
     int i;
-    u16 size = cfgp->size;
-    for(i=0; i < state->read_len; i++){
-        if ( state->head == state->tail ){ //check for data in the fifo buffer
+    u16 size = config->size;
+    char * dest_buffer = config->buffer;
+    fifo_atomic_position_t atomic_position;
+    for(i=0; i < nbyte; i++){
+        atomic_position.atomic_access = state->atomic_position.atomic_access;
+        if ( atomic_position.access.head == atomic_position.access.tail ){ //check for data in the fifo buffer
             //there is no more data in the buffer
             break;
         } else {
-
             state->o_flags |= FIFO_FLAG_IS_READ_BUSY;
-
-            buf[i] = cfgp->buffer[state->tail];
+            buf[i] = dest_buffer[state->atomic_position.access.tail];
             fifo_inc_tail(state, size);
-
             state->o_flags &= ~FIFO_FLAG_IS_READ_BUSY;
 
         }
@@ -137,16 +103,16 @@ int fifo_read_buffer(const fifo_config_t * cfgp, fifo_state_t * state, char * bu
 }
 
 
-int fifo_write_buffer(const fifo_config_t * cfgp, fifo_state_t * state, const char * buf, int non_blocking){
+int fifo_write_buffer(const fifo_config_t * cfgp, fifo_state_t * state, const char * buf, int nbyte, int non_blocking){
     int i;
     int size = cfgp->size;
     int writeblock = 1;
     if( non_blocking == 0 ){
         writeblock = fifo_is_writeblock(state);
     }
-    for(i=0; i < state->write_len; i++){
+    for(i=0; i < nbyte; i++){
         if( fifo_is_write_ok(state, size, writeblock) ){
-            cfgp->buffer[state->head] = buf[i];
+            cfgp->buffer[state->atomic_position.access.head] = buf[i];
             fifo_inc_head(state, size);
         } else {
             break;
@@ -156,8 +122,8 @@ int fifo_write_buffer(const fifo_config_t * cfgp, fifo_state_t * state, const ch
 }
 
 void fifo_flush(fifo_state_t * state){
-    state->head = 0;
-    state->tail = 0;
+    state->atomic_position.access.head = 0;
+    state->atomic_position.access.tail = 0;
     fifo_set_overflow(state, 0);
 }
 
@@ -165,49 +131,48 @@ void fifo_flush(fifo_state_t * state){
 void fifo_getinfo(fifo_info_t * info, const fifo_config_t * config, fifo_state_t * state){
     info->o_flags = FIFO_FLAG_IS_OVERFLOW;
     info->size = config->size - 1;
-    if( state->head >= state->tail ){
-        info->used = state->head - state->tail;
+
+    fifo_atomic_position_t atomic_position;
+    atomic_position.atomic_access = state->atomic_position.atomic_access;
+
+    if( atomic_position.access.head >= atomic_position.access.tail ){
+        info->used = atomic_position.access.head - atomic_position.access.tail;
     } else {
-        info->used = config->size - state->tail + state->head;
+        info->used = config->size - atomic_position.access.tail + atomic_position.access.head;
     }
     info->overflow = fifo_is_overflow(state);
     fifo_set_overflow(state, 0);
 }
 
-void fifo_data_received(const fifo_config_t * cfgp, fifo_state_t * state){
-    int bytes_read;
+void fifo_data_received(const fifo_config_t * config, fifo_state_t * state){
+    if( state->transfer_handler.read != 0 ){
+        int bytes_read;
+        if( (bytes_read = fifo_read_buffer(config,
+                                           state,
+                                           state->transfer_handler.read->buf,
+                                           state->transfer_handler.read->nbyte)) > 0 ){
 
-    if( state->read_async != 0 ){
-        state->read_async->nbyte = state->read_len; //update the number of bytes read??
-        if( (bytes_read = fifo_read_buffer(cfgp, state, state->read_async->buf)) > 0 ){
-            execute_read_callback(state, bytes_read, MCU_EVENT_FLAG_DATA_READY);
+            mcu_execute_read_handler(&state->transfer_handler, 0, bytes_read);
         }
     }
 }
 
 void fifo_cancel_rop(fifo_state_t * state){
-    execute_read_callback(state, -1, MCU_EVENT_FLAG_CANCELED);
-    //if( state->rop != 0 ){
-    //	state->rop->nbyte = -1;
-    //	mcu_execute_event_handler(&(state->rop->handler), MCU_EVENT_FLAG_CANCELED, 0);
-    //	state->rop = 0;
-    //}
+    mcu_execute_read_handler_with_flags(&state->transfer_handler, 0, -1, MCU_EVENT_FLAG_CANCELED);
 }
 
 void fifo_cancel_wop(fifo_state_t * state){
-    execute_write_callback(state, -1, MCU_EVENT_FLAG_CANCELED);
-    //if( state->rop != 0 ){
-    //	state->rop->nbyte = -1;
-    //	mcu_execute_event_handler(&(state->rop->handler), MCU_EVENT_FLAG_CANCELED, 0);
-    //	state->rop = 0;
-    //}
+    mcu_execute_write_handler_with_flags(&state->transfer_handler, 0, -1, MCU_EVENT_FLAG_CANCELED);
 }
 
 int fifo_data_transmitted(const fifo_config_t * cfgp, fifo_state_t * state){
     int bytes_written;
-    if( state->write_async != NULL ){
-        if( (bytes_written = fifo_write_buffer(cfgp, state, state->write_async->buf_const, 0)) > 0 ){
-            execute_write_callback(state, bytes_written, MCU_EVENT_FLAG_WRITE_COMPLETE);
+    if( state->transfer_handler.write != NULL ){
+        if( (bytes_written = fifo_write_buffer(cfgp, state,
+                                               state->transfer_handler.write->buf_const,
+                                               state->transfer_handler.write->nbyte,
+                                               0)) > 0 ){
+            mcu_execute_write_handler(&state->transfer_handler, 0, bytes_written);
         }
     }
 
@@ -278,8 +243,8 @@ int fifo_ioctl_local(const fifo_config_t * config, fifo_state_t * state, int req
         //fifo doesn't store a local handler so it can't set an arbitrary action
         return SYSFS_SET_RETURN(ENOTSUP);
     case I_FIFO_INIT:
-        state->read_async = NULL;
-        state->write_async = NULL;
+        state->transfer_handler.read = NULL;
+        state->transfer_handler.write = NULL;
         /* no break */
     case I_FIFO_FLUSH:
         fifo_flush(state);
@@ -306,23 +271,20 @@ int fifo_ioctl_local(const fifo_config_t * config, fifo_state_t * state, int req
 int fifo_read_local(const fifo_config_t * config, fifo_state_t * state, devfs_async_t * async, int allow_callback){
     int bytes_read;
 
-    if ( state->read_async != NULL ){
-        return SYSFS_SET_RETURN(EBUSY);
-    }
+    DEVFS_DRIVER_IS_BUSY(state->transfer_handler.read, async);
 
-    state->read_len = async->nbyte;
-    bytes_read = fifo_read_buffer(config, state, async->buf); //see if there are bytes in the buffer
+    bytes_read = fifo_read_buffer(config, state, async->buf, async->nbyte); //see if there are bytes in the buffer
     if ( bytes_read == 0 ){
         if( (async->flags & O_NONBLOCK) ){
             bytes_read = SYSFS_SET_RETURN(EAGAIN);
-        } else {
-            state->read_async = async;
-            state->read_len = async->nbyte; //total number of bytes to read
-            async->nbyte = 0; //number of bytes read so far
         }
     } else if( (bytes_read > 0) && allow_callback ){
         //see if anything needs to write the FIFO
         fifo_data_transmitted(config, state);
+    }
+
+    if( bytes_read != 0 ){
+        state->transfer_handler.read = 0;
     }
 
     return bytes_read;
@@ -332,26 +294,20 @@ int fifo_write_local(const fifo_config_t * config, fifo_state_t * state, devfs_a
     int bytes_written;
     int non_blocking;
 
-    if ( state->write_async != NULL ){
-        mcu_debug_root_printf("FIFO is busy\n");
-        return SYSFS_SET_RETURN(EBUSY);
-    }
+    DEVFS_DRIVER_IS_BUSY(state->transfer_handler.write, async);
 
-    state->write_len = async->nbyte;
     non_blocking = ((async->flags & O_NONBLOCK) != 0);
-    bytes_written = fifo_write_buffer(config, state, async->buf_const, non_blocking); //see if there are bytes in the buffer
+    bytes_written = fifo_write_buffer(config, state, async->buf_const, async->nbyte, non_blocking); //see if there are bytes in the buffer
     if ( bytes_written == 0 ){
         if( non_blocking && fifo_is_writeblock(state) ){
             bytes_written = SYSFS_SET_RETURN(EAGAIN);
-        } else {
-            state->write_async = async;
-            state->write_len = async->nbyte;
-            async->nbyte = 0; //number of bytes written so far
         }
+    } else if( (bytes_written > 0) && allow_callback ){
+        fifo_data_received(config, state);
     }
 
-    if( (bytes_written > 0) && allow_callback ){
-        fifo_data_received(config, state);
+    if( bytes_written != 0 ){
+        state->transfer_handler.write = 0;
     }
 
     return bytes_written;

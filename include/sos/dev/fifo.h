@@ -50,7 +50,9 @@ enum {
     FIFO_FLAG_EXIT /*! Shutdown the FIFO */ = (1<<5),
     FIFO_FLAG_FLUSH /*! Flush the FIFO */ = (1<<6),
     FIFO_FLAG_IS_READ_BUSY /*! Set internally when FIFO is reading */ = (1<<7),
-    FIFO_FLAG_IS_WRITE_WHILE_READ_BUSY /*! Set internally when FIFO is written while reading */ = (1<<8)
+    FIFO_FLAG_IS_WRITE_WHILE_READ_BUSY /*! Set internally when FIFO is written while reading */ = (1<<8),
+    FIFO_FLAG_IS_INFO_BUSY /*! Set internally when FIFO is getting info */ = (1<<9),
+    FIFO_FLAG_IS_MODIFY_WHILE_INFO_BUSY /*! Set internally when FIFO is getting info */ = (1<<10)
 };
 
 typedef struct MCU_PACK {

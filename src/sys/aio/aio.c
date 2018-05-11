@@ -143,7 +143,7 @@ void root_suspend(void * args){
 	} else {
 		suspend = false;
 	}
-	cortexm_disable_interrupts(NULL); //no switching until the transfer is started
+    cortexm_disable_interrupts(); //no switching until the transfer is started
 	for(i = 0; i < p->nent; i++ ){
 		if (p->list[i] != NULL ){
 

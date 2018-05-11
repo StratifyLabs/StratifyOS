@@ -46,21 +46,29 @@ void mcu_execute_transfer_handlers(devfs_transfer_handler_t * transfer_handler, 
 }
 
 int mcu_execute_read_handler(devfs_transfer_handler_t * transfer_handler, void * data, int nbyte){
+    return mcu_execute_read_handler_with_flags(transfer_handler, data, nbyte, MCU_EVENT_FLAG_DATA_READY);
+}
+
+int mcu_execute_read_handler_with_flags(devfs_transfer_handler_t * transfer_handler, void * data, int nbyte, u32 o_flags){
     if( transfer_handler->read ){
         devfs_async_t * async = transfer_handler->read;
         transfer_handler->read = 0;
         async->nbyte = nbyte;
-        return mcu_execute_transfer_event_handler(&async->handler, MCU_EVENT_FLAG_DATA_READY, data);
+        return mcu_execute_transfer_event_handler(&async->handler, o_flags, data);
     }
     return 0;
 }
 
 int mcu_execute_write_handler(devfs_transfer_handler_t * transfer_handler, void * data, int nbyte){
+    return mcu_execute_write_handler_with_flags(transfer_handler, data, nbyte, MCU_EVENT_FLAG_WRITE_COMPLETE);
+}
+
+int mcu_execute_write_handler_with_flags(devfs_transfer_handler_t * transfer_handler, void * data, int nbyte, u32 o_flags){
     if( transfer_handler->write ){
         devfs_async_t * async = transfer_handler->write;
         transfer_handler->write = 0;
         async->nbyte = nbyte;
-        return mcu_execute_transfer_event_handler(&async->handler, MCU_EVENT_FLAG_WRITE_COMPLETE, data);
+        return mcu_execute_transfer_event_handler(&async->handler, o_flags, data);
     }
     return 0;
 }

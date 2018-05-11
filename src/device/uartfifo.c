@@ -43,7 +43,7 @@ static int data_received(void * context, const mcu_event_t * data){
 	state = handle->state;
 
 	while( mcu_uart_get(handle, &c) == 0 ){
-		cfgp->fifo.buffer[ state->fifo.head ] = c;
+        cfgp->fifo.buffer[ state->fifo.atomic_position.access.head ] = c;
 		fifo_inc_head(&(state->fifo), cfgp->fifo.size);
 	}
 
@@ -54,7 +54,7 @@ static int data_received(void * context, const mcu_event_t * data){
 int uartfifo_open(const devfs_handle_t * handle){
 	uartfifo_state_t * state = handle->state;
 	fifo_flush(&(state->fifo));
-	state->fifo.read_async = NULL;
+    state->fifo.transfer_handler.read = 0;
 	//setup the device to write to the fifo when data arrives
 	if( mcu_uart_open(handle) < 0 ){
 		return -1;

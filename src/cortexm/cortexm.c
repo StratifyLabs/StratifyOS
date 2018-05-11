@@ -158,9 +158,9 @@ void cortexm_set_thread_stack_ptr(void * ptr){
 int cortexm_set_irq_priority(int irq, int prio){
 
 	//calculate the relative priority (lower value is higher priority)
-	prio = mcu_config.irq_middle_prio - prio;
+    prio = mcu_config.irq_middle_prio*2 - 1 - prio;
 
-	//zero priority is reserved for exceptions
+    //zero priority is reserved for exceptions -- lower value is higher priority
 	if( prio < 4 ){
 		prio = 4;
 	}
@@ -171,7 +171,7 @@ int cortexm_set_irq_priority(int irq, int prio){
 	}
 
 	//now set the priority in the NVIC
-	mcu_core_set_nvic_priority((IRQn_Type)irq, prio);
+    mcu_core_set_nvic_priority(irq, prio);
 
 	return 0;
 }

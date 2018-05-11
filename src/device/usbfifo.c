@@ -61,14 +61,12 @@ static int data_received(void * context, const mcu_event_t * data){
 
 		//write the new bytes to the buffer
 		for(i=0; i < bytes_read; i++){
-			config->fifo.buffer[ state->fifo.head ] = buffer[i];
+            config->fifo.buffer[ state->fifo.atomic_position.access.head ] = buffer[i];
 			fifo_inc_head(&(state->fifo), size);
 		}
 
-
 		//see if any functions are blocked waiting for data to arrive
 		fifo_data_received(&(config->fifo), &(state->fifo));
-
 	}
 
 	return 1; //leave the callback in place
@@ -90,7 +88,6 @@ int usbfifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 	mcu_action_t * action = ctl;
 	const usbfifo_config_t * cfgp = handle->config;
 	usbfifo_state_t * state = handle->state;
-	mcu_event_t event;
 	switch(request){
 	case I_FIFO_GETINFO:
 		fifo_getinfo(info, &(cfgp->fifo), &(state->fifo));
@@ -105,19 +102,11 @@ int usbfifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 		return 0;
 	case I_FIFO_FLUSH:
 		fifo_flush(&(state->fifo));
-		if ( state->fifo.read_async != NULL ){
-			state->fifo.read_async->nbyte = -1;
-			event.o_events = MCU_EVENT_FLAG_CANCELED;
-			event.data = 0;
-			if ( state->fifo.read_async->handler.callback(state->fifo.read_async->handler.context, &event) == 0 ){
-				state->fifo.read_async = NULL;
-			}
-		}
-		state->fifo.read_async = NULL;
-		break;
+        mcu_execute_read_handler_with_flags(&state->fifo.transfer_handler, 0, -1, MCU_EVENT_FLAG_CANCELED);
+        break;
 	case I_USB_SETATTR:
 		fifo_flush(&(state->fifo));
-		state->fifo.read_async = NULL;
+        state->fifo.transfer_handler.read = 0;
 		//setup the device to write to the fifo when data arrives
 
 		if(  mcu_usb_setattr(handle, ctl) < 0 ){
@@ -143,18 +132,17 @@ int usbfifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 }
 
 
-int usbfifo_read(const devfs_handle_t * cfg, devfs_async_t * rop){
-	const usbfifo_config_t * cfgp = cfg->config;
-	usbfifo_state_t * state = cfg->state;
-    return fifo_read_local(&(cfgp->fifo), &(state->fifo), rop, 1);
+int usbfifo_read(const devfs_handle_t * handle, devfs_async_t * async){
+    const usbfifo_config_t * config = handle->config;
+    usbfifo_state_t * state = handle->state;
+    return fifo_read_local(&(config->fifo), &(state->fifo), async, 1);
 }
 
-int usbfifo_write(const devfs_handle_t * handle, devfs_async_t * wop){
+int usbfifo_write(const devfs_handle_t * handle, devfs_async_t * async){
     const usbfifo_config_t * config = handle->config;
-    wop->loc = 0x80 | config->endpoint;
-
+    async->loc = 0x80 | config->endpoint;
 	//Writing to the USB FIFO is not buffered, it just writes the USB HW directly
-    return mcu_usb_write(handle, wop);
+    return mcu_usb_write(handle, async);
 }
 
 int usbfifo_close(const devfs_handle_t * handle){

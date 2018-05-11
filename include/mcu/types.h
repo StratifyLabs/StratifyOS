@@ -43,7 +43,6 @@ extern "C" {
 
 #define MCU_ALIAS(f) __attribute__((weak, alias (#f)))
 #define MCU_WEAK __attribute__((weak))
-
 #define MCU_UNUSED __attribute__((unused))
 
 

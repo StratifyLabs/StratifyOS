@@ -32,28 +32,29 @@ int i2s_event_write_complete(void * context, const mcu_event_t * event){
     const devfs_handle_t * handle = context;
     const i2s_ffifo_config_t * config = handle->config;
     i2s_ffifo_state_t * state = handle->state;
-    int ret;
+    int nbyte;
 
-    //now if there is data available, copy it to the outgoing frame buffer
-    if( (ret = ffifo_read_buffer(&(config->tx.ffifo),
-                                 &(state->tx.ffifo),
-                                 config->tx.frame_buffer,
-                                 config->frame_buffer_size)) <= 0 ){
-        //if there is no data, just write zeros to the output
-        memset(config->tx.frame_buffer, 0, config->frame_buffer_size);
-        state->tx.count++;
+    //increment the tail for the frame that was written
+    ffifo_inc_tail(&state->tx.ffifo, config->tx.count);
+
+    nbyte = config->tx.frame_size;
+    state->tx.i2s_async.nbyte = nbyte;
+    state->tx.count++;
+
+    if( state->tx.ffifo.atomic_position.access.tail == 0 ){
+        state->tx.i2s_async.buf = config->rx.buffer;
+    } else {
+        state->tx.i2s_async.buf += nbyte;
     }
 
-    //these transfer members values may get modified by the driver
-    state->tx.i2s_async.buf = config->tx.frame_buffer;
-    state->tx.i2s_async.nbyte = config->frame_buffer_size;
-    if( mcu_i2s_write(handle, &(state->tx.i2s_async)) < 0 ){
-        state->tx.error = errno;
+    if( state->tx.ffifo.atomic_position.access.head == state->tx.ffifo.atomic_position.access.tail ){
+        //no data to read -- send a zero frame
+        ffifo_inc_head(&state->tx.ffifo, config->tx.count);
+        memset(state->tx.i2s_async.buf, 0, nbyte);
     }
 
-    if( ret > 0 ){
-        ffifo_data_transmitted(&(config->tx.ffifo), &(state->tx.ffifo));
-    }
+    state->tx.error = mcu_i2s_write(handle, &(state->tx.i2s_async));
+
 
     //because mcu_i2s_write() reassigns the callback value -- returning 0 will null the callback
     return 1;
@@ -63,24 +64,25 @@ int i2s_event_data_ready(void * context, const mcu_event_t * event){
     const devfs_handle_t * handle = context;
     const i2s_ffifo_config_t * config = handle->config;
     i2s_ffifo_state_t * state = handle->state;
+    int nbyte;
 
-    //write data to the receive buffer
-    ffifo_write_buffer(&(config->rx.ffifo),
-                       &(state->rx.ffifo),
-                       config->rx.frame_buffer,
-                       config->frame_buffer_size);
+    //increment the head for the frame received
+    ffifo_is_write_ok(&state->rx.ffifo, config->rx.count, 0);
+    ffifo_inc_head(&state->rx.ffifo, config->rx.count);
 
+    nbyte = config->rx.frame_size;
+    state->rx.i2s_async.nbyte = nbyte;
     state->rx.count++;
 
-    state->rx.i2s_async.buf = config->rx.frame_buffer;
-    state->rx.i2s_async.nbyte = config->frame_buffer_size;
-
-    if( mcu_i2s_read(handle, &(state->rx.i2s_async)) < 0 ){
-        state->rx.error = errno;
+    if( state->rx.ffifo.atomic_position.access.head == 0 ){
+        state->rx.i2s_async.buf = config->rx.buffer;
+    } else {
+        state->rx.i2s_async.buf += nbyte;
     }
 
-    ffifo_data_received(&(config->rx.ffifo), &(state->rx.ffifo));
+    state->rx.error = mcu_i2s_read(handle, &(state->rx.i2s_async));
 
+    //probably should not support blocking operations because ffifo is real-time data
     return 1;
 }
 
@@ -90,17 +92,16 @@ int i2s_ffifo_open(const devfs_handle_t * handle){
 
     if( mcu_i2s_open(handle) <  0 ){ return -1; }
 
-    if( ffifo_open_local(&config->tx.ffifo, &state->tx.ffifo) < 0 ){
+    if( ffifo_open_local(&config->tx, &state->tx.ffifo) < 0 ){
         return -1;
     }
 
-    return ffifo_open_local(&config->rx.ffifo, &state->rx.ffifo);
+    return ffifo_open_local(&config->rx, &state->rx.ffifo);
 }
 
 int i2s_ffifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
     const i2s_ffifo_config_t * config = handle->config;
     i2s_ffifo_state_t * state = handle->state;
-    i2s_ffifo_attr_t * attr = ctl;
     i2s_ffifo_info_t * info = ctl;
     mcu_action_t * action = ctl;
 
@@ -112,22 +113,28 @@ int i2s_ffifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
         /* no break */
     case I_FFIFO_INIT:
         //the driver reads the I2S TX FIFO to write to the I2S
-        if( config->tx.frame_buffer ){
+        if( config->tx.buffer ){
             state->tx.i2s_async.loc = 0;
             state->tx.i2s_async.tid = task_get_current();
             state->tx.i2s_async.flags = O_RDWR;
-            state->tx.i2s_async.buf = config->tx.frame_buffer;
-            state->tx.i2s_async.nbyte = config->frame_buffer_size;
+            state->tx.i2s_async.buf = config->tx.buffer;
+            state->tx.i2s_async.nbyte = config->tx.frame_size;
             state->tx.i2s_async.handler.context = (void*)handle;
             state->tx.i2s_async.handler.callback = i2s_event_write_complete;
-            memset(config->tx.frame_buffer, 0, config->frame_buffer_size);
+
+            //write block is true but the function doesn't block -- returns EGAIN if it is written while full
+            ffifo_set_writeblock(&(state->tx.ffifo), 1);
 
             state->tx.count = 0;
             state->tx.error = 0;
 
-            state->tx.ffifo.read_async = 0;
-            state->tx.ffifo.write_async = 0;
+            state->tx.ffifo.transfer_handler.read = 0;
+            state->tx.ffifo.transfer_handler.write = 0;
             ffifo_flush(&(state->tx.ffifo));
+
+            //ffifo is empty so the head must be incremented on start
+            ffifo_inc_head(&state->tx.ffifo, config->tx.count);
+            memset(state->tx.i2s_async.buf, 0, state->tx.i2s_async.nbyte);
 
             //start writing data to the I2S -- zeros are written if there is no data in the fifo
             if( mcu_i2s_write(handle, &(state->tx.i2s_async)) < 0 ){
@@ -136,24 +143,22 @@ int i2s_ffifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
         }
 
 
-        if( config->rx.frame_buffer ){
+        if( config->rx.buffer ){
 
             //the driver writes the I2S RX FIFO that is read from the I2S
             state->rx.i2s_async.loc = 0;
             state->rx.i2s_async.tid = task_get_current();
             state->rx.i2s_async.flags = O_RDWR;
-            state->rx.i2s_async.buf = config->rx.frame_buffer;
-            state->rx.i2s_async.nbyte = config->frame_buffer_size;
+            state->rx.i2s_async.buf = config->rx.buffer;
+            state->rx.i2s_async.nbyte = config->rx.frame_size;
             state->rx.i2s_async.handler.context = (void*)handle;
             state->rx.i2s_async.handler.callback = i2s_event_data_ready;
-            memset(config->rx.frame_buffer, 0, config->frame_buffer_size);
 
             state->rx.error = 0;
             state->rx.count = 0;
 
-
-            state->rx.ffifo.read_async = 0;
-            state->rx.ffifo.write_async = 0;
+            state->rx.ffifo.transfer_handler.read = 0;
+            state->rx.ffifo.transfer_handler.read = 0;
             ffifo_flush(&(state->rx.ffifo));
 
 
@@ -174,22 +179,11 @@ int i2s_ffifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
         return 0;
 
     case I_FFIFO_SETATTR:
-        if( attr->tx.o_flags & FFIFO_FLAG_SET_WRITEBLOCK ){
-            ffifo_set_writeblock(&(state->tx.ffifo), 1);
-        } else {
-            ffifo_set_writeblock(&(state->tx.ffifo), 0);
-        }
-
-        if( attr->rx.o_flags & FFIFO_FLAG_SET_WRITEBLOCK ){
-            ffifo_set_writeblock(&(state->rx.ffifo), 1);
-        } else {
-            ffifo_set_writeblock(&(state->rx.ffifo), 0);
-        }
-        return 0;
+        return SYSFS_SET_RETURN(ENOTSUP);
 
     case I_FFIFO_GETINFO:
-        ffifo_getinfo(&(info->tx.ffifo), &(config->tx.ffifo), &(state->tx.ffifo));
-        ffifo_getinfo(&(info->rx.ffifo), &(config->rx.ffifo), &(state->rx.ffifo));
+        ffifo_getinfo(&(info->tx.ffifo), &(config->tx), &(state->tx.ffifo));
+        ffifo_getinfo(&(info->rx.ffifo), &(config->rx), &(state->rx.ffifo));
         info->tx.count = state->tx.count;
         info->rx.count = state->rx.count;
         info->tx.error = state->tx.error;
@@ -216,15 +210,19 @@ int i2s_ffifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
     return mcu_i2s_ioctl(handle, request, ctl);
 }
 
-int i2s_ffifo_read(const devfs_handle_t * handle, devfs_async_t * rop){
+int i2s_ffifo_read(const devfs_handle_t * handle, devfs_async_t * async){
     const i2s_ffifo_config_t * config = handle->config;
     i2s_ffifo_state_t * state = handle->state;
     int ret;
 
-    //disable interrupts to prevent elevated prio I2S from interrupting the read
-    cortexm_disable_interrupts();
-    ret = ffifo_read_local(&(config->rx.ffifo), &(state->rx.ffifo), rop, 0);
-    cortexm_enable_interrupts();
+    if( async->nbyte % config->rx.frame_size != 0 ){
+        return SYSFS_SET_RETURN(EINVAL);
+    }
+
+    ret = ffifo_read_buffer(&(config->rx), &(state->rx.ffifo), async->buf, async->nbyte);
+    if( ret == 0 ){
+        ret = SYSFS_SET_RETURN(EAGAIN);
+    }
     return ret;
 }
 
@@ -233,18 +231,24 @@ int i2s_ffifo_write(const devfs_handle_t * handle, devfs_async_t * async){
     const i2s_ffifo_config_t * config = handle->config;
     i2s_ffifo_state_t * state = handle->state;
 
+    if( async->nbyte % config->rx.frame_size != 0 ){
+        return SYSFS_SET_RETURN(EINVAL);
+    }
+
     //I2S interrupt can't fire while writing the local buffer
-    cortexm_disable_interrupts(0);
-    ret = ffifo_write_local(&(config->tx.ffifo), &(state->tx.ffifo), async, 0);
-    cortexm_enable_interrupts(0);
+    ret = ffifo_write_buffer(&(config->tx), &(state->tx.ffifo), async->buf, async->nbyte);
+    if( ret == 0 ){
+        //no room
+        ret = SYSFS_SET_RETURN(EAGAIN);
+    }
     return ret;
 }
 
 int i2s_ffifo_close(const devfs_handle_t * handle){
     const i2s_ffifo_config_t * config = handle->config;
     i2s_ffifo_state_t * state = handle->state;
-    ffifo_close_local(&(config->tx.ffifo), &(state->tx.ffifo));
-    ffifo_close_local(&(config->rx.ffifo), &(state->rx.ffifo));
+    ffifo_close_local(&(config->tx), &(state->tx.ffifo));
+    ffifo_close_local(&(config->rx), &(state->rx.ffifo));
     return mcu_i2s_close(handle);
 }
 

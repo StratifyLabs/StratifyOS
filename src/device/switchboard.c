@@ -535,14 +535,14 @@ int handle_data_ready(void * context, const mcu_event_t * event){
 
     if( state->input.async.nbyte < 0 ){
         //error -- no more action
-        mcu_debug_root_printf("f\n", -1*state->input.async.nbyte);
         state->nbyte = state->input.async.nbyte;
+        mcu_debug_root_printf("f: %d - %d\n", SYSFS_GET_RETURN_ERRNO(state->nbyte), SYSFS_GET_RETURN(state->nbyte));
     } else {
         complete_read(state, state->input.async.nbyte);
-
-        //this will try to start another read before writing in case there is a synchronous write delay
-        read_then_write_until_async(state);
     }
+
+    //this will try to start another read before writing in case there is a synchronous write delay
+    read_then_write_until_async(state);
 
     return 0;
 }

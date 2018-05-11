@@ -114,8 +114,6 @@ int cfifo_read(const devfs_handle_t * handle, devfs_async_t * async){
     int ret;
 	const cfifo_config_t * config = handle->config;
 	cfifo_state_t * state = handle->state;
-
-
 	if( loc < config->count ){
         ret = fifo_read_local(config->fifo_config_array + loc, state->fifo_state_array + loc, async, 1);
 	} else {

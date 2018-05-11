@@ -51,11 +51,11 @@ typedef struct {
 	fifo_config_t fifo;
 } usbfifo_config_t;
 
-int usbfifo_open(const devfs_handle_t * cfg);
-int usbfifo_ioctl(const devfs_handle_t * cfg, int request, void * ctl);
-int usbfifo_read(const devfs_handle_t * cfg, devfs_async_t * rop);
-int usbfifo_write(const devfs_handle_t * cfg, devfs_async_t * wop);
-int usbfifo_close(const devfs_handle_t * cfg);
+int usbfifo_open(const devfs_handle_t * handle);
+int usbfifo_ioctl(const devfs_handle_t * handle, int request, void * ctl);
+int usbfifo_read(const devfs_handle_t * handle, devfs_async_t * async);
+int usbfifo_write(const devfs_handle_t * handle, devfs_async_t * async);
+int usbfifo_close(const devfs_handle_t * handle);
 
 #define USBFIFO_DECLARE_CONFIG_STATE(usb_fifo_name,\
     usb_fifo_buffer_size, \

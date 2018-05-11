@@ -25,13 +25,19 @@
 #include "sos/fs/devfs.h"
 
 typedef struct MCU_PACK {
-	u16 head;
-	u16 tail;
-    u16 read_len;
-    u16 write_len;
-    devfs_async_t * read_async;
-    devfs_async_t * write_async;
-	u32 o_flags;
+    u16 head;
+    u16 tail;
+} fifo_position_t;
+
+typedef union {
+    fifo_position_t access;
+    u32 atomic_access; //read head and tail in one operation
+} fifo_atomic_position_t;
+
+typedef struct MCU_PACK {
+    volatile fifo_atomic_position_t atomic_position; //4 bytes
+    devfs_transfer_handler_t transfer_handler; //8 bytes
+    u32 o_flags; //4 bytes
 } fifo_state_t;
 
 /*! \brief FIFO Configuration
@@ -76,8 +82,8 @@ void fifo_set_notify_write(fifo_state_t * state, int value);
 int fifo_is_overflow(fifo_state_t * state);
 void fifo_set_overflow(fifo_state_t * state, int value);
 
-int fifo_read_buffer(const fifo_config_t * cfgp, fifo_state_t * state, char * buf);
-int fifo_write_buffer(const fifo_config_t * cfgp, fifo_state_t * state, const char * buf, int non_blocking);
+int fifo_read_buffer(const fifo_config_t * cfgp, fifo_state_t * state, char * buf, int nbyte);
+int fifo_write_buffer(const fifo_config_t * cfgp, fifo_state_t * state, const char * buf, int nbyte, int non_blocking);
 
 int fifo_data_transmitted(const fifo_config_t * cfgp, fifo_state_t * state);
 void fifo_data_received(const fifo_config_t * cfgp, fifo_state_t * state);

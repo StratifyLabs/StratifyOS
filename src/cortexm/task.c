@@ -100,12 +100,12 @@ int task_init(int interval,
 
     //Set the interrupt priorities
     for(i=0; i <= mcu_config.irq_total; i++){
-        mcu_core_set_nvic_priority(i, mcu_config.irq_middle_prio); //mark as middle priority
+        mcu_core_set_nvic_priority(i, mcu_config.irq_middle_prio*2-1); //mark as middle priority
     }
 
-    mcu_core_set_nvic_priority(SysTick_IRQn, mcu_config.irq_middle_prio); //must be same priority as microsecond timer
-    mcu_core_set_nvic_priority(PendSV_IRQn, mcu_config.irq_middle_prio);
-    mcu_core_set_nvic_priority(SVCall_IRQn, mcu_config.irq_middle_prio-1); //elevate this so it isn't interrupted by peripheral hardware
+    mcu_core_set_nvic_priority(SysTick_IRQn, mcu_config.irq_middle_prio*2-1); //must be same priority as microsecond timer
+    mcu_core_set_nvic_priority(PendSV_IRQn, mcu_config.irq_middle_prio*2-1);
+    mcu_core_set_nvic_priority(SVCall_IRQn, mcu_config.irq_middle_prio*2-1); //elevate this so it isn't interrupted by peripheral hardware
 #if !defined MCU_NO_HARD_FAULT
     mcu_core_set_nvic_priority(HardFault_IRQn, 2);
 #endif
@@ -348,25 +348,6 @@ void switch_contexts(){
     MPU->RASR = 0;
 #endif
 
-#if 0 //Issue for re-entrant scheduler
-    //Issue #130
-    //grab a mask of tasks to analyze
-    u32 exec_tasks = 0; //what if there are more than 32 tasks possible
-    cortexm_disable_interrupts(NULL);
-    for(i=1; i < task_get_total(); i++){
-        if( task_exec_asserted(i) ){
-            exec_tasks |= (1<<i);
-        }
-    }
-    //now that the mask of executing tasks is captured - re-enable interrupts
-    cortexm_enable_interrupts();
-
-    //(exec_tasks & (1<<i)) replaces task_exec_asserted(i) in the code below
-#endif
-
-
-    cortexm_disable_interrupts(NULL);
-
     do {
         m_task_current++;
         if ( m_task_current == task_get_total() ){
@@ -417,8 +398,6 @@ void switch_contexts(){
     MPU->RBAR = (u32)(sos_task_table[m_task_current].mem.stackguard.addr);
     MPU->RASR = (u32)(sos_task_table[m_task_current].mem.stackguard.size);
 #endif
-
-    cortexm_enable_interrupts();
 
     _impure_ptr = sos_task_table[m_task_current].reent;
     _global_impure_ptr = sos_task_table[m_task_current].global_reent;

@@ -32,7 +32,7 @@ static void root_device_data_transfer(void * args);
 void root_device_data_transfer(void * args){
 	root_aio_transfer_t * p = (root_aio_transfer_t*)args;
 
-    cortexm_disable_interrupts(); //no switching until the transfer is started
+    cortexm_disable_interrupts(); //no switching until the transfer is started -- does Issue #130 change this
 	//set the device callback for the read/write op
 	if ( p->read == 1 ){
 		//Read operation
