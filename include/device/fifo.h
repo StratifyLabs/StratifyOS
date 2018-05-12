@@ -37,7 +37,7 @@ typedef union {
 typedef struct MCU_PACK {
     volatile fifo_atomic_position_t atomic_position; //4 bytes
     devfs_transfer_handler_t transfer_handler; //8 bytes
-    u32 o_flags; //4 bytes
+    volatile u32 o_flags; //4 bytes
 } fifo_state_t;
 
 /*! \brief FIFO Configuration
@@ -81,6 +81,7 @@ void fifo_set_notify_write(fifo_state_t * state, int value);
 
 int fifo_is_overflow(fifo_state_t * state);
 void fifo_set_overflow(fifo_state_t * state, int value);
+
 
 int fifo_read_buffer(const fifo_config_t * cfgp, fifo_state_t * state, char * buf, int nbyte);
 int fifo_write_buffer(const fifo_config_t * cfgp, fifo_state_t * state, const char * buf, int nbyte, int non_blocking);

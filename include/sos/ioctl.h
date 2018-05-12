@@ -20,7 +20,7 @@
 #ifndef SOS_IOCTL_H_
 #define SOS_IOCTL_H_
 
-#define _IOCTLPARM_MASK 0x3FFF
+#define _IOCTLPARM_MASK 0x1FFF
 #define _IOCTLTYPE_MASK 0xFFFF
 #define _IOCTLIDENT_MASK 0xFF
 #define _IOCTLNUM_MASK 0xFF

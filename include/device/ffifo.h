@@ -33,7 +33,7 @@
 typedef struct MCU_PACK {
     volatile fifo_atomic_position_t atomic_position;
     devfs_transfer_handler_t transfer_handler;
-	u32 o_flags;
+    volatile u32 o_flags;
 } ffifo_state_t;
 
 /*! \details This is the configuration for a framed FIFO (ffifo)

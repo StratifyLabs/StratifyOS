@@ -36,19 +36,27 @@ void fifo_inc_head(fifo_state_t * state, int size){
     if ( state->atomic_position.access.head == size ){
         state->atomic_position.access.head = 0;
     }
+
+
+    if( state->atomic_position.access.head == state->atomic_position.access.tail ){
+        //set tail to size when full
+        state->atomic_position.access.tail = size;
+    }
+
 }
 
 int fifo_is_write_ok(fifo_state_t * state, u16 size, int writeblock){
     int ret = 1;
-    if( ((state->atomic_position.access.tail == 0) && (state->atomic_position.access.head == size -1)) ||
-            ((state->atomic_position.access.head) + 1 == state->atomic_position.access.tail)
-            ){
+
+    if( state->atomic_position.access.tail == size ){  //the tail is set to size when the buffer is full
         if( writeblock || (state->o_flags & FIFO_FLAG_IS_READ_BUSY) ){
             //cannot write anymore data at this time
             ret = 0;
         } else {
             //OK to write but it will cause an overflow
-            fifo_inc_tail(state, size);
+            if( state->o_flags & FIFO_FLAG_IS_READ_BUSY ){
+                state->o_flags |= FIFO_FLAG_IS_WRITE_WHILE_READ_BUSY;
+            }
             fifo_set_overflow(state, 1);
         }
     }
@@ -84,20 +92,44 @@ void fifo_set_overflow(fifo_state_t * state, int value){
 int fifo_read_buffer(const fifo_config_t * config, fifo_state_t * state, char * buf, int nbyte){
     int i;
     u16 size = config->size;
+    int read_was_clobbered = 0;
     char * dest_buffer = config->buffer;
     fifo_atomic_position_t atomic_position;
     for(i=0; i < nbyte; i++){
-        atomic_position.atomic_access = state->atomic_position.atomic_access;
-        if ( atomic_position.access.head == atomic_position.access.tail ){ //check for data in the fifo buffer
-            //there is no more data in the buffer
-            break;
-        } else {
-            state->o_flags |= FIFO_FLAG_IS_READ_BUSY;
-            buf[i] = dest_buffer[state->atomic_position.access.tail];
-            fifo_inc_tail(state, size);
-            state->o_flags &= ~FIFO_FLAG_IS_READ_BUSY;
 
+        state->o_flags |= FIFO_FLAG_IS_READ_BUSY;
+        atomic_position.atomic_access = state->atomic_position.atomic_access;
+
+        if( atomic_position.access.head != atomic_position.access.tail ){
+            if( atomic_position.access.tail == size ){
+                //buffer is full -- restore tail position
+                atomic_position.access.tail = atomic_position.access.head;
+            }
+            buf[i] = dest_buffer[atomic_position.access.tail];
+            atomic_position.access.tail++;
+            if( atomic_position.access.tail == size ){
+                atomic_position.access.tail = 0;
+            }
+            //an interrupt here before the tail is assigned will cause a problem
+            state->atomic_position.access.tail = atomic_position.access.tail;
+            //an interrupt here is OK because the write can write to the open spot
+            if( state->o_flags & FIFO_FLAG_IS_WRITE_WHILE_READ_BUSY ){
+                read_was_clobbered = 1;
+                //if the read was clobbered the buffer is full
+                state->atomic_position.access.tail = size;
+            }
+
+            state->o_flags &= ~(FIFO_FLAG_IS_WRITE_WHILE_READ_BUSY|FIFO_FLAG_IS_READ_BUSY);
+
+            if( read_was_clobbered ){
+                return i;
+            }
+
+        } else {
+            state->o_flags &= ~(FIFO_FLAG_IS_WRITE_WHILE_READ_BUSY|FIFO_FLAG_IS_READ_BUSY);
+            break;
         }
+
     }
     return i; //number of bytes read
 }
@@ -129,13 +161,17 @@ void fifo_flush(fifo_state_t * state){
 
 
 void fifo_getinfo(fifo_info_t * info, const fifo_config_t * config, fifo_state_t * state){
-    info->o_flags = FIFO_FLAG_IS_OVERFLOW;
-    info->size = config->size - 1;
+    //flags are the flags that the driver supports
+    info->o_flags = FIFO_FLAG_SET_WRITEBLOCK | FIFO_FLAG_IS_OVERFLOW | FIFO_FLAG_INIT | FIFO_FLAG_EXIT;
+    info->size = config->size;
 
     fifo_atomic_position_t atomic_position;
+    //grab head and tail atomically in case the operation is interrupted
     atomic_position.atomic_access = state->atomic_position.atomic_access;
 
-    if( atomic_position.access.head >= atomic_position.access.tail ){
+    if( atomic_position.access.tail == config->size ){ //check to see if buffer is full
+        info->used = config->size;
+    } else if( atomic_position.access.head >= atomic_position.access.tail ){
         info->used = atomic_position.access.head - atomic_position.access.tail;
     } else {
         info->used = config->size - atomic_position.access.tail + atomic_position.access.head;
@@ -151,7 +187,6 @@ void fifo_data_received(const fifo_config_t * config, fifo_state_t * state){
                                            state,
                                            state->transfer_handler.read->buf,
                                            state->transfer_handler.read->nbyte)) > 0 ){
-
             mcu_execute_read_handler(&state->transfer_handler, 0, bytes_read);
         }
     }
@@ -275,7 +310,7 @@ int fifo_read_local(const fifo_config_t * config, fifo_state_t * state, devfs_as
 
     bytes_read = fifo_read_buffer(config, state, async->buf, async->nbyte); //see if there are bytes in the buffer
     if ( bytes_read == 0 ){
-        if( (async->flags & O_NONBLOCK) ){
+        if( (async->flags & O_NONBLOCK) || (state->atomic_position.access.tail == config->size) ){
             bytes_read = SYSFS_SET_RETURN(EAGAIN);
         }
     } else if( (bytes_read > 0) && allow_callback ){

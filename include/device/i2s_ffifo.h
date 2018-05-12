@@ -34,21 +34,6 @@
 
 
 
-typedef struct MCU_PACK {
-    ffifo_attr_t tx;
-    ffifo_attr_t rx;
-} i2s_ffifo_attr_t;
-
-typedef struct MCU_PACK {
-    ffifo_info_t ffifo;
-    u32 count;
-    s32 error;
-} i2s_ffifo_channel_info_t;
-
-typedef struct MCU_PACK {
-    i2s_ffifo_channel_info_t rx;
-    i2s_ffifo_channel_info_t tx;
-} i2s_ffifo_info_t;
 
 
 typedef struct {
@@ -82,6 +67,30 @@ int i2s_spi_ffifo_read(const devfs_handle_t * handle, devfs_async_t * async);
 int i2s_spi_ffifo_write(const devfs_handle_t * handle, devfs_async_t * async);
 int i2s_spi_ffifo_close(const devfs_handle_t * handle);
 
+#define I2S_FFIFO_DECLARE_CONFIG_STATE_RX_ONLY(name, \
+    frame_size_value, \
+    count_value, \
+    attr_flags, \
+    attr_freq, \
+    attr_mck_mult, \
+    attr_ws_port, attr_ws_pin, \
+    attr_sck_port, attr_sck_pin, \
+    attr_sdin_port, attr_sdin_pin, \
+    attr_mck_port, attr_mck_pin) \
+    char name##_rx_buffer[count_value*frame_size_value]; \
+    i2s_ffifo_state_t name##_state MCU_SYS_MEM; \
+    i2s_ffifo_config_t name##_config = { \
+    .i2s = { .attr = { I2S_DEFINE_ATTR(attr_flags, \
+    attr_freq, \
+    attr_mck_mult, \
+    attr_ws_port, attr_ws_pin, \
+    attr_sck_port, attr_sck_pin, \
+    0xff, 0xff, \
+    attr_sdin_port, attr_sdin_pin, \
+    attr_mck_port, attr_mck_pin) } }, \
+    .tx = { .count = 0, .frame_size = 0, .buffer = 0 }, \
+    .rx = { .count = count_value, .frame_size = frame_size_value, .buffer = name##_rx_buffer } \
+    }
 
 
 

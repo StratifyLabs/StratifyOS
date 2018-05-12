@@ -130,6 +130,10 @@ typedef enum {
     SWITCHBOARD_FLAG_IS_INPUT_NON_BLOCKING /*! The connection input terminal should operate in non-blocking mode (return immediately if no data is available) */ = (1<<9),
     SWITCHBOARD_FLAG_IS_OUTPUT_NON_BLOCKING /*! The connection output terminal should operate in non-blocking mode (return immediately if no data is available) */ = (1<<10),
     SWITCHBOARD_FLAG_IS_DESTROYED /*! The connection has been destroyed (this flag is self clearing) */ = (1<<11),
+    SWITCHBOARD_FLAG_IS_FILL_LAST_8 /*! If no data is available on a non-blocking input, a packet is filled with the last byte of the previous packet */ = (1<<12),
+    SWITCHBOARD_FLAG_IS_FILL_LAST_16 /*! If no data is available on a non-blocking input, a packet is filled with the last 16-bit word of the previous packet */ = (1<<13),
+    SWITCHBOARD_FLAG_IS_FILL_LAST_32 /*! If no data is available on a non-blocking input, a packet is filled with the last 32-bit word of the previous packet */ = (1<<14),
+    SWITCHBOARD_FLAG_IS_FILL_LAST_64 /*! If no data is available on a non-blocking input, a packet is filled with the last 64-bit word of the previous packet */ = (1<<15),
 } switchboard_flag_t;
 
 

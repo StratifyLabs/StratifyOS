@@ -150,12 +150,15 @@ int switchboard_close(const devfs_handle_t * handle){
 
 int update_priority(const devfs_device_t * device, const switchboard_terminal_t * terminal, u32 o_events){
     mcu_action_t action;
-    memset(&action, 0, sizeof(action));
-    action.channel = terminal->loc;
-    action.prio = terminal->priority;
-    action.o_events = o_events;
-    //this will adjust the priority without affecting the callback (set to null)
-    return device->driver.ioctl(&device->handle, I_MCU_SETACTION, &action);
+    if( terminal->priority > 0 ){
+        memset(&action, 0, sizeof(action));
+        action.channel = terminal->loc;
+        action.prio = terminal->priority;
+        action.o_events = o_events;
+        //this will adjust the priority without affecting the callback (set to null)
+        return device->driver.ioctl(&device->handle, I_MCU_SETACTION, &action);
+    }
+    return 0;
 }
 
 int create_connection(const switchboard_config_t * config, switchboard_state_t * state, const switchboard_attr_t * attr){
@@ -332,7 +335,6 @@ int is_ready_to_read_device(switchboard_state_t * state){
 
     if( (state->input.async.nbyte <= 0) || (state->nbyte < 0) ){
         //all reads complete or an error occurred
-        mcu_debug_root_printf("can't read error %d %d\n", state->input.async.nbyte, state->nbyte);
         return 0;
     }
 
@@ -382,7 +384,6 @@ int is_ready_to_write_device(switchboard_state_t * state){
 
     if( (state->output.async.nbyte < 0) || (state->nbyte < 0) ){
         //all writes are complete or an error occurred
-        mcu_debug_root_printf("can't write error %d %d\n", state->output.async.nbyte, state->nbyte);
         return 0;
     }
 
@@ -458,9 +459,6 @@ int read_from_device(switchboard_state_t * state){
     int errno_value;
 
     if( is_ready_to_read_device(state) ){ //is there a buffer available
-        if( state->input.async.nbyte != state->packet_size ){
-            mcu_debug_root_printf("not packet size:%d\n", state->input.async.nbyte);
-        }
         ret = state->input.device->driver.read(&state->input.device->handle, &state->input.async);
         if( ret == 0 ){
             //waiting for write
@@ -470,16 +468,53 @@ int read_from_device(switchboard_state_t * state){
             complete_read(state, ret);
         } else {
             errno_value = SYSFS_GET_RETURN_ERRNO(ret);
+            int i;
             if( errno_value == EAGAIN ){
                 //read device is set up in non-blocking mode
-
                 if( state->o_flags & SWITCHBOARD_FLAG_IS_FILL_ZERO ){
                     memset(state->input.async.buf, 0, state->input.async.nbyte);
-                    ret = state->input.async.nbyte;
-                    complete_read(state, ret);
+                } else if( state->o_flags & SWITCHBOARD_FLAG_IS_FILL_LAST_8 ){
+                    int count = state->input.async.nbyte-1;
+                    u8 * ptr = state->input.async.buf;
+                    u8 value = ptr[count];
+                    for(i=0; i < count; i++){
+                        ptr[i] = value;
+                    }
+                } else if( state->o_flags & SWITCHBOARD_FLAG_IS_FILL_LAST_16 ){
+                    int count = state->input.async.nbyte/sizeof(u16)-1;
+                    u16 * ptr = state->input.async.buf;
+                    u16 value = ptr[count];
+                    for(i=0; i < count; i++){
+                        ptr[i] = value;
+                    }
+                } else if( state->o_flags & SWITCHBOARD_FLAG_IS_FILL_LAST_32 ){
+                    int count = state->input.async.nbyte/sizeof(u32)-1;
+                    u32 * ptr = state->input.async.buf;
+                    u32 value = ptr[count];
+                    for(i=0; i < count; i++){
+                        ptr[i] = value;
+                    }
+                } else if( state->o_flags & SWITCHBOARD_FLAG_IS_FILL_LAST_64 ){
+                    int count = state->input.async.nbyte/sizeof(u64)-1;
+                    u64 * ptr = state->input.async.buf;
+                    u64 value = ptr[count];
+                    for(i=0; i < count; i++){
+                        ptr[i] = value;
+                    }
                 } else {
                     ret = 0;
                 }
+
+
+                if( state->o_flags | (SWITCHBOARD_FLAG_IS_FILL_ZERO |
+                                      SWITCHBOARD_FLAG_IS_FILL_LAST_8 |
+                                      SWITCHBOARD_FLAG_IS_FILL_LAST_16 |
+                                      SWITCHBOARD_FLAG_IS_FILL_LAST_32 |
+                                      SWITCHBOARD_FLAG_IS_FILL_LAST_64)){
+                    ret = state->input.async.nbyte;
+                    complete_read(state, ret);
+                }
+
             } else {
                 state->nbyte = ret;
             }
@@ -492,12 +527,10 @@ int check_for_stopped_or_destroyed(switchboard_state_t * state){
     if( state->nbyte < 0 ){
         u32 o_flags = 0;
         u32 o_events = MCU_EVENT_FLAG_STOP;
-        mcu_debug_root_printf("Close connection %d:%d\n", SYSFS_GET_RETURN_ERRNO(state->nbyte), SYSFS_GET_RETURN(state->nbyte));
         if( (state->o_flags & SWITCHBOARD_FLAG_IS_DESTROYED) == 0 ){
             //this was destroyed by the user
             o_flags = state->o_flags | SWITCHBOARD_FLAG_IS_STOPPED_ON_ERROR;
             o_events = MCU_EVENT_FLAG_ERROR | MCU_EVENT_FLAG_CANCELED;
-            mcu_debug_root_printf("Stopped on error\n");
         }
         close_connection(state, o_flags);
         mcu_execute_event_handler(&state->event_handler, o_events, 0);
@@ -522,6 +555,14 @@ int read_then_write_until_async(switchboard_state_t * state){
         transactions++;
     } while( ret > 0 && (transactions < state->transaction_limit) );
 
+    if( transactions == state->transaction_limit ){
+        state->nbyte = SYSFS_SET_RETURN(EDEADLK);
+    } else {
+        if( (state->o_flags & (SWITCHBOARD_FLAG_IS_WRITING_ASYNC|SWITCHBOARD_FLAG_IS_READING_ASYNC)) == 0 ){
+            state->nbyte = SYSFS_SET_RETURN(ENODATA);
+        }
+    }
+
     check_for_stopped_or_destroyed(state);
 
     return ret;
@@ -536,7 +577,6 @@ int handle_data_ready(void * context, const mcu_event_t * event){
     if( state->input.async.nbyte < 0 ){
         //error -- no more action
         state->nbyte = state->input.async.nbyte;
-        mcu_debug_root_printf("f: %d - %d\n", SYSFS_GET_RETURN_ERRNO(state->nbyte), SYSFS_GET_RETURN(state->nbyte));
     } else {
         complete_read(state, state->input.async.nbyte);
     }
@@ -554,7 +594,6 @@ int handle_write_complete(void * context, const mcu_event_t * event){
     state->o_flags &= ~SWITCHBOARD_FLAG_IS_WRITING_ASYNC;
     if( state->output.async.nbyte < 0 ){
         //write error occurred -- abort connection
-        mcu_debug_root_printf("write failed 0x%lX\n", -1*state->output.async.nbyte);
         state->nbyte = state->output.async.nbyte;
     } else {
         complete_write(state); //this frees the buffer that was just written
