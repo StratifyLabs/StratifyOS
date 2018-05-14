@@ -250,10 +250,12 @@ int create_connection(const switchboard_config_t * config, switchboard_state_t *
         state[id].output.async.flags |= O_NONBLOCK;
     }
 
+
     if( open_terminal(&state->input) < 0 ){
         memset(state + id, 0, sizeof(switchboard_state_t));
         return SYSFS_SET_RETURN(EIO);
     }
+
 
     if( open_terminal(&state->output) < 0 ){
         close_terminal(&state->input);
@@ -281,8 +283,10 @@ int create_connection(const switchboard_config_t * config, switchboard_state_t *
 }
 
 void abort_connection(switchboard_state_t * state){
-    close_terminal(&state->input);
-    close_terminal(&state->output);
+    if( (state->o_flags & SWITCHBOARD_FLAG_IS_STOPPED_ON_ERROR) == 0 ){
+        close_terminal(&state->input);
+        close_terminal(&state->output);
+    }
     memset(state, 0, sizeof(switchboard_state_t));
 }
 

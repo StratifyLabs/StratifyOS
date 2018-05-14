@@ -115,12 +115,13 @@ int i2s_event_data_ready(void * context, const mcu_event_t * event){
 int i2s_ffifo_open(const devfs_handle_t * handle){
     const i2s_ffifo_config_t * config = handle->config;
     i2s_ffifo_state_t * state = handle->state;
+    int ret;
 
-    if( mcu_i2s_open(handle) <  0 ){ return -1; }
+    ret = mcu_i2s_open(handle);
+    if( ret <  0 ){ return ret; }
 
-    if( ffifo_open_local(&config->tx, &state->tx.ffifo) < 0 ){
-        return -1;
-    }
+    ret = ffifo_open_local(&config->tx, &state->tx.ffifo);
+    if( ret < 0 ){ return ret;}
 
     return ffifo_open_local(&config->rx, &state->rx.ffifo);
 }
@@ -204,6 +205,12 @@ int i2s_ffifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
     case I_FFIFO_FLUSH:
         ffifo_flush(&(state->tx.ffifo));
         ffifo_flush(&(state->rx.ffifo));
+
+        state->rx.i2s_async.buf = config->rx.buffer;
+        state->rx.i2s_async.nbyte = config->rx.frame_size;
+
+        state->tx.i2s_async.buf = config->tx.buffer;
+        state->tx.i2s_async.nbyte = config->tx.frame_size;
         return 0;
 
     case I_FFIFO_SETATTR:
