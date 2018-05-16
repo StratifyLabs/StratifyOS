@@ -42,6 +42,11 @@ void cortexm_set_thread_stack_ptr(void * ptr) MCU_ROOT_CODE;
 int cortexm_validate_callback(mcu_callback_t callback) MCU_ROOT_CODE;
 int cortexm_set_irq_priority(int irq, int prio) MCU_ROOT_CODE;
 
+void cortexm_set_systick_reload(u32 value);
+void cortexm_start_systick();
+u32 cortexm_get_systick_value();
+u32 cortexm_get_systick_reload();
+
 
 #define CORTEXM_ZERO_SUM32_COUNT(x) (sizeof(x)/sizeof(u32))
 #define CORTEXM_ZERO_SUM8_COUNT(x) (sizeof(x))

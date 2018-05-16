@@ -137,7 +137,7 @@ int link_resetbootloader(link_transport_mdriver_t * driver){
 }
 
 int link_eraseflash(link_transport_mdriver_t * driver){
-	if( link_ioctl_delay(driver, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_ERASE, NULL, 0, 500) < 0 ){
+    if( link_ioctl_delay(driver, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_ERASE, NULL, 0, 750) < 0 ){
 		return -1;
 	}
 

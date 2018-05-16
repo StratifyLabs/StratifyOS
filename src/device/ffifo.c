@@ -139,7 +139,6 @@ int ffifo_read_buffer(const ffifo_config_t * cfgp, ffifo_state_t * state, char *
             state->o_flags &= ~(FIFO_FLAG_IS_WRITE_WHILE_READ_BUSY|FIFO_FLAG_IS_READ_BUSY);
 
             if( read_was_clobbered ){
-                mcu_debug_root_printf("clob\n");
                 return i;
             }
 

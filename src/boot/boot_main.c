@@ -25,7 +25,7 @@ void exec_bootloader(void * args){
 	//write SW location with key and then reset
 	u32 * bootloader_start = (u32*)boot_board_config.sw_req_loc;
 	*bootloader_start = boot_board_config.sw_req_value;
-	mcu_core_reset(0, 0);
+    cortexm_reset(0);
 }
 
 void boot_event(int event, void * args){
@@ -47,30 +47,22 @@ void init_hw();
 static void * stack_ptr;
 static void (*app_reset)();
 
-
 void run_bootloader();
-
-void delay_ms(int ms){
-	int i;
-	for(i=0; i < ms; i++){
-		cortexm_delay_us(1000);
-	}
-}
 
 void led_flash(){
     sos_led_root_enable(0);
-	delay_ms(500);
+    cortexm_delay_ms(500);
     sos_led_root_disable(0);
-    delay_ms(500);
+    cortexm_delay_ms(500);
 }
 
 void led_flash_run_bootloader(){
 	int i;
 	for(i=0; i < 3; i++){
         sos_led_root_enable(0);
-        delay_ms(50);
+        cortexm_delay_ms(50);
         sos_led_root_disable(0);
-        delay_ms(50);
+        cortexm_delay_ms(50);
 	}
 }
 
@@ -130,6 +122,11 @@ int check_run_app(){
 		return 0;
 	}
 
+    if ( *bootloader_start == boot_board_config.sw_req_value ){
+        *bootloader_start = 0;
+        return 0;
+    }
+
 	hw_req_handle.port = boot_board_config.hw_req.port;
 	hw_req_handle.config = 0;
 	hw_req_handle.state = 0;
@@ -142,8 +139,6 @@ int check_run_app(){
 		pio_attr.o_flags = PIO_FLAG_SET_INPUT | PIO_FLAG_IS_PULLDOWN;
 		mcu_pio_setattr(&hw_req_handle, &pio_attr);
 	}
-
-	cortexm_delay_us(500);
 
 	if( boot_board_config.hw_req.port != 0xff ){
         mcu_pio_get(&hw_req_handle, &pio_value);
@@ -160,11 +155,6 @@ int check_run_app(){
 				return 0;
 			}
 		}
-	}
-
-	if ( *bootloader_start == boot_board_config.sw_req_value ){
-		*bootloader_start = 0;
-		return 0;
 	}
 
 	return 1;
@@ -194,7 +184,7 @@ void init_hw(){
     dstr("STACK:"); dhex((u32)stack_ptr); dstr("\n");
     dstr("APP:"); dhex((u32)app_reset); dstr("\n");
 #endif
-    delay_ms(50);
+    cortexm_delay_ms(50);
     cortexm_enable_interrupts(); //Enable the interrupts
 	boot_event(BOOT_EVENT_INIT, 0);
 }

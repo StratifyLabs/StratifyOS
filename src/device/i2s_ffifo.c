@@ -38,7 +38,6 @@ int i2s_event_write_complete(void * context, const mcu_event_t * event){
 
     if(state->tx.i2s_async.nbyte < 0){
         state->tx.error = state->tx.i2s_async.nbyte;
-        mcu_debug_root_printf("Err:%d %d\n", SYSFS_GET_RETURN_ERRNO(state->tx.error), SYSFS_GET_RETURN(state->tx.error));
         return 0;
     }
 
@@ -79,7 +78,6 @@ int i2s_event_data_ready(void * context, const mcu_event_t * event){
 
     if(state->rx.i2s_async.nbyte < 0){
         state->rx.error = state->rx.i2s_async.nbyte;
-        mcu_debug_root_printf("Err:%d %d %d %d\n", state->rx.i2s_async.nbyte, SYSFS_GET_RETURN_ERRNO(state->rx.error), SYSFS_GET_RETURN(state->rx.error), state->rx.count);
         return 0;
     }
 
@@ -106,7 +104,6 @@ int i2s_event_data_ready(void * context, const mcu_event_t * event){
 
     state->rx.error = mcu_i2s_read(handle, &(state->rx.i2s_async));
     if( state->rx.error < 0){
-        mcu_debug_root_printf("read Err:%d %d %d %d\n", state->rx.error, SYSFS_GET_RETURN_ERRNO(state->rx.error), SYSFS_GET_RETURN(state->rx.error), state->rx.count);
         return 0;
     }
     return 1;

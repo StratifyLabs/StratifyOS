@@ -156,8 +156,8 @@ int mcu_set_pin_assignment(
                 pre_configure_pin(pin,arg);
 			}
 
-			if ( mcu_core_set_pinsel_func(pin, periph, periph_port) ){
-				return -1;
+            if ( mcu_core_set_pinsel_func(pin, periph, periph_port) < 0 ){
+                return SYSFS_SET_RETURN(EINVAL);
 			}
 
             if( post_configure_pin ){

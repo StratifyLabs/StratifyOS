@@ -31,12 +31,8 @@ int m_task_rr_reload MCU_SYS_MEM;
 volatile int m_task_current MCU_SYS_MEM;
 static void root_task_read_rr_timer(u32 * val);
 static int set_systick_interval(int interval) MCU_ROOT_CODE;
-static void start_systick();
 static void switch_contexts();
 
-#if 0 // this isn't used
-static void stop_systick();
-#endif
 
 
 static void system_reset(); //This is used if the OS process returns
@@ -149,21 +145,13 @@ int set_systick_interval(int interval){
         reload = SYSTICK_MIN_CYCLES;
     }
     core_tick_freq = mcu_board_config.core_cpu_freq / reload;
-    SysTick->LOAD = reload;
+    cortexm_set_systick_reload(reload);
     m_task_rr_reload = reload;
-    start_systick();
+    cortexm_start_systick();
     SCB->CCR = 0;
     return core_tick_freq;
 }
 
-void start_systick(){
-    SysTick->CTRL = SYSTICK_CTRL_ENABLE| //enable the timer
-            SYSTICK_CTRL_CLKSROUCE; //Internal Clock CPU
-}
-
-#if 0 //this isn't used
-void stop_systick(){ SysTick->CTRL = 0; }
-#endif
 
 int task_create_thread(void *(*p)(void*),
                        void (*cleanup)(void*),

@@ -17,19 +17,21 @@
 #include <fcntl.h>
 #include "mcu/mcu.h"
 #include "mcu/debug.h"
+#include "mcu/boot_debug.h"
 
 static int mcu_sync_io_complete(void * context, const mcu_event_t * data);
 
 int mcu_sync_io_complete(void * context, const mcu_event_t * data){
 	int * done = context;
-	*done = 1;
-
+    *done = 1234567;
 	//return 0 to delete the callback
 	return 0;
 }
 
+extern int mcu_usb_write(const devfs_handle_t * cfg, devfs_async_t * op);
+
 int mcu_sync_io(const devfs_handle_t * handle,
-		int (*func)(const devfs_handle_t * cfg, devfs_async_t * op),
+        int (*func)(const devfs_handle_t *, devfs_async_t *),
 		int loc,
 		const void * buf,
 		int nbyte,
@@ -42,7 +44,7 @@ int mcu_sync_io(const devfs_handle_t * handle,
 		return 0;
 	}
 
-	done = 0;
+    done = 0;
 	op.buf_const = buf;
 	op.loc = loc;
 	op.flags = flags | O_RDWR;
@@ -50,13 +52,13 @@ int mcu_sync_io(const devfs_handle_t * handle,
 	op.handler.context = (void*)&done;
 	op.handler.callback = mcu_sync_io_complete;
 	op.tid = 0;
-
     ret = func(handle, &op);
+
 
 	if( ret == 0 ){
 
-		while( done == 0 ){
-			//mcu_core_user_sleep(CORE_SLEEP);
+        while( done != 1234567 ){
+            ;
 		}
 		return op.nbyte;
 

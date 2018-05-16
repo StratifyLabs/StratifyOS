@@ -21,25 +21,37 @@
 #include "mcu/mcu.h"
 #include "mcu/core.h"
 
-void cortexm_delay_loop(u32 ticks) __attribute__((optimize("s")));
-void cortexm_delay_loop(u32 ticks){
-    u32 i;
-    for(i=0; i < ticks; i++){
-        asm volatile("nop");
+void cortexm_delay_us(u32 us){
+    //ticks is the number of ticks in one microsecond
+    u32 ticks = mcu_board_config.core_cpu_freq  / 1000000UL;
+    u32 countdown = ticks * us;
+    u32 start = cortexm_get_systick_value();
+    u32 value;
+    u32 end;
+
+    if( countdown > cortexm_get_systick_reload()/2){
+        countdown = cortexm_get_systick_reload()/2;
+    }
+
+    if( countdown > start ){
+        end = cortexm_get_systick_reload() - countdown + start;
+        do {
+            value = cortexm_get_systick_value();
+        } while( (value < countdown) || (value > end) );
+    } else {
+        end = start - countdown;
+        do {
+            value = cortexm_get_systick_value();
+        } while( value > end && value < start );
     }
 }
 
-void cortexm_delay_us(u32 us){
-	u32 ticks;
-    //ticks is the number of loops in delay loops to execute 1 us
-    ticks = mcu_board_config.core_cpu_freq  / (1000000 * mcu_config.delay_factor);
-    ticks *= (us);
-
-	//this loop makes 6 cycles
-	cortexm_delay_loop(ticks);
+void cortexm_delay_ms(u32 ms){
+    int i;
+    for(i=0; i < ms; i++){
+        cortexm_delay_us(1000);
+    }
 }
-
-void cortexm_delay_ms(u32 ms){ cortexm_delay_us(ms*1000); }
 
 void cortexm_assign_zero_sum32(void * data, int count){
 	u32 sum = 0;
@@ -180,5 +192,22 @@ void cortexm_set_vector_table_addr(void * addr){
 #if defined SCB
 	SCB->VTOR = (uint32_t)addr;
 #endif
+}
+
+u32 cortexm_get_systick_value(){
+    return SysTick->VAL;
+}
+
+u32 cortexm_get_systick_reload(){
+    return SysTick->LOAD;
+}
+
+void cortexm_set_systick_reload(u32 value){
+    SysTick->LOAD = value;
+}
+
+void cortexm_start_systick(){
+    SysTick->CTRL = 1<<0 | //enable the timer
+            1<<2; //Internal Clock CPU
 }
 
