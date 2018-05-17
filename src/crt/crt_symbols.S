@@ -13,20 +13,19 @@
 
 #define LINK_ADDR (0xDEFF8001 + (__LINE__ - 16) * 4)
 
-.global _signature; _signature = 0x00000310 + __CORTEX_M;
+.global _signature; _signature = 0x00000370 + __CORTEX_M;
 .global __cxa_pure_virtual; __cxa_pure_virtual = LINK_ADDR;
-.global mcu_core_privcall; mcu_core_privcall = LINK_ADDR;
-.global task_priv_set_stackguard; task_priv_set_stackguard = LINK_ADDR;
-.global realloc; realloc = LINK_ADDR;
 .global _global_impure_ptr; _global_impure_ptr = LINK_ADDR;
 .global _impure_ptr; _impure_ptr = LINK_ADDR;
 .global __sf_fake_stdin; __sf_fake_stdin = LINK_ADDR;
 .global __sf_fake_stdout; __sf_fake_stdout = LINK_ADDR;
 .global __sf_fake_stderr; __sf_fake_stderr = LINK_ADDR;
+.global __aeabi_uldivmod; __aeabi_uldivmod = LINK_ADDR;
+.global __aeabi_ldivmod; __aeabi_ldivmod = LINK_ADDR;
 .global __aeabi_uidiv; __aeabi_uidiv = LINK_ADDR;
-.global __aeabi_uidivmod; __aeabi_uidivmod = LINK_ADDR;		.global __aeabi_uldivmod; __aeabi_uldivmod = __aeabi_uidivmod;
-.global __aeabi_idiv; __aeabi_idiv = LINK_ADDR;				.global __aeabi_ldiv; __aeabi_ldiv = __aeabi_idiv;
-.global __aeabi_idivmod; __aeabi_idivmod = LINK_ADDR;			.global __aeabi_ldivmod; __aeabi_ldivmod = __aeabi_idivmod;
+.global __aeabi_uidivmod; __aeabi_uidivmod = LINK_ADDR;
+.global __aeabi_idiv; __aeabi_idiv = LINK_ADDR;
+.global __aeabi_idivmod; __aeabi_idivmod = LINK_ADDR;
 .global __umodsi3; __umodsi3 = LINK_ADDR;
 .global __modsi3; __modsi3 = LINK_ADDR;
 .global __div0; __div0 = LINK_ADDR;
@@ -236,6 +235,7 @@
 .global chmod; chmod = LINK_ADDR;
 .global mallinfo; mallinfo = LINK_ADDR;
 .global malloc; malloc = LINK_ADDR;
+.global realloc; realloc = LINK_ADDR;
 .global free; free = LINK_ADDR;
 .global calloc; calloc = LINK_ADDR;
 .global _malloc_r; _malloc_r = LINK_ADDR;

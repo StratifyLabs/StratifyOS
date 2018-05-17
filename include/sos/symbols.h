@@ -22,6 +22,9 @@
 
 #include "mcu/types.h"
 
+extern u32 __aeabi_uldivmod();
+extern u32 __aeabi_ldivmod();
+
 extern u32 __aeabi_uidiv();
 extern u32 __aeabi_uidivmod();
 extern u32 __aeabi_idiv();
