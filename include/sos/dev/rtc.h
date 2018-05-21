@@ -70,8 +70,7 @@ typedef enum {
 	RTC_FLAG_IS_COUNT_WEEK /*! One time alarm */ = (1<<20),
 	RTC_FLAG_IS_COUNT_MONTH /*! One time alarm */ = (1<<21),
 	RTC_FLAG_IS_COUNT_YEAR /*! One time alarm */ = (1<<22),
-	RTC_FLAG_DISABLE_COUNT_EVENT /*! Enable a count event */ = (1<<23),
-
+    RTC_FLAG_DISABLE_COUNT_EVENT /*! Enable a count event */ = (1<<23)
 } rtc_flag_t;
 
 
