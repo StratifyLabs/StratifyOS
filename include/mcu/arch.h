@@ -79,14 +79,18 @@ typedef enum IRQn
 #define ARCH "v7m"
 
 #define __FPU_PRESENT 0
+#if !defined ARM_MATH_CM3
 #define ARM_MATH_CM3 1
+#endif
 #undef __FPU_USED
 #include "arch/cmsis/core_cm3.h"
 
 #elif defined __v7em
 #define ARCH "v7em"
 #define __FPU_PRESENT 0
+#if !defined ARM_MATH_CM4
 #define ARM_MATH_CM4 1
+#endif
 #undef __FPU_USED
 #include "arch/cmsis/core_cm4.h"
 
@@ -94,7 +98,9 @@ typedef enum IRQn
 #define ARCH "v7em_f4ss"
 
 #define __FPU_PRESENT 1
+#if !defined ARM_MATH_CM4
 #define ARM_MATH_CM4 1
+#endif
 #undef __FPU_USED
 #include "arch/cmsis/core_cm4.h"
 
@@ -102,7 +108,9 @@ typedef enum IRQn
 #define ARCH "v7em_f4sh"
 
 #define __FPU_PRESENT 1
+#if !defined ARM_MATH_CM4
 #define ARM_MATH_CM4 1
+#endif
 #undef __FPU_USED
 #include "arch/cmsis/core_cm4.h"
 
@@ -111,7 +119,9 @@ typedef enum IRQn
 
 #define __CHECK_DEVICE_DEFINES
 #define __FPU_PRESENT 1
+#if !defined ARM_MATH_CM7
 #define ARM_MATH_CM7 1
+#endif
 #undef __FPU_USED
 #include "arch/cmsis/core_cm7.h"
 
@@ -120,7 +130,9 @@ typedef enum IRQn
 
 #define __CHECK_DEVICE_DEFINES
 #define __FPU_PRESENT 1
+#if !defined ARM_MATH_CM7
 #define ARM_MATH_CM7 1
+#endif
 #undef __FPU_USED
 #include "arch/cmsis/core_cm7.h"
 
@@ -129,7 +141,9 @@ typedef enum IRQn
 
 #define __CHECK_DEVICE_DEFINES
 #define __FPU_PRESENT 1
+#if !defined ARM_MATH_CM7
 #define ARM_MATH_CM7 1
+#endif
 #undef __FPU_USED
 #include "arch/cmsis/core_cm7.h"
 

@@ -13,14 +13,14 @@ set(SOS_BUILD_ASM_FLAGS "-mthumb")
 #These are values for SOS_LIB_ARCH, SOS_BSP_ARCH and SOS_APP_ARCH
 
 
-set(SOS_BUILD_FLOAT_OPTIONS_V7M -march=armv7-m)
-set(SOS_BUILD_FLOAT_OPTIONS_V7EM -march=armv7e-m)
-set(SOS_BUILD_FLOAT_OPTIONS_V7EM_F4SS -march=armv7e-m -mfloat-abi=soft -mfpu=fpv4-sp-d16 -U__SOFTFP__ -D__FPU_USED)
-set(SOS_BUILD_FLOAT_OPTIONS_V7EM_F4SH -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -U__SOFTFP__ -D__FPU_USED)
-set(SOS_BUILD_FLOAT_OPTIONS_V7EM_F5SS -march=armv7e-m -mfloat-abi=soft -mfpu=fpv4-sp-d16 -U__SOFTFP__ -D__FPU_USED)
-set(SOS_BUILD_FLOAT_OPTIONS_V7EM_F5SH -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -U__SOFTFP__ -D__FPU_USED)
-set(SOS_BUILD_FLOAT_OPTIONS_V7EM_F5DS -march=armv7e-m -mfloat-abi=soft -mfpu=fpv5-d16 -U__SOFTFP__ -D__FPU_USED)
-set(SOS_BUILD_FLOAT_OPTIONS_V7EM_F5DH -march=armv7e-m -mfloat-abi=hard -mfpu=fpv5-d16 -U__SOFTFP__ -D__FPU_USED)
+set(SOS_BUILD_FLOAT_OPTIONS_V7M -march=armv7-m -DARM_MATH_CM3=1)
+set(SOS_BUILD_FLOAT_OPTIONS_V7EM -march=armv7e-m -DARM_MATH_CM4=1)
+set(SOS_BUILD_FLOAT_OPTIONS_V7EM_F4SS -march=armv7e-m -mfloat-abi=soft -mfpu=fpv4-sp-d16 -U__SOFTFP__ -D__FPU_PRESENT=1 -DARM_MATH_CM4=1)
+set(SOS_BUILD_FLOAT_OPTIONS_V7EM_F4SH -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -U__SOFTFP__ -D__FPU_PRESENT=1 -DARM_MATH_CM4=1)
+set(SOS_BUILD_FLOAT_OPTIONS_V7EM_F5SS -march=armv7e-m -mfloat-abi=soft -mfpu=fpv4-sp-d16 -U__SOFTFP__ -D__FPU_PRESENT=1 -DARM_MATH_CM4=1)
+set(SOS_BUILD_FLOAT_OPTIONS_V7EM_F5SH -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -U__SOFTFP__ -D__FPU_PRESENT=1 -DARM_MATH_CM4=1)
+set(SOS_BUILD_FLOAT_OPTIONS_V7EM_F5DS -march=armv7e-m -mfloat-abi=soft -mfpu=fpv5-d16 -U__SOFTFP__ -D__FPU_PRESENT=1 -DARM_MATH_CM7=1)
+set(SOS_BUILD_FLOAT_OPTIONS_V7EM_F5DH -march=armv7e-m -mfloat-abi=hard -mfpu=fpv5-d16 -U__SOFTFP__ -D__FPU_PRESENT=1 -DARM_MATH_CM7=1)
 
 set(SOS_BUILD_FLOAT_DIR_V7M ".")
 set(SOS_BUILD_FLOAT_DIR_V7EM ".")
