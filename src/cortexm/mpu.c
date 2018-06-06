@@ -135,7 +135,6 @@ int mpu_calc_region(int region,
 	addr_tmp = (u32)addr;
 
 	if ( addr_tmp & ((up_size)-1) ){
-        mcu_debug_root_printf("Addr:0x%lX Upsize-1: 0x%lX\n", addr_tmp, up_size-1);
 		return -2; //this should be an alignment error
 	}
 

@@ -52,22 +52,18 @@ u32 scheduler_timing_useconds_to_clocks(int useconds){
 	return (u32)(SCHEDULER_CLOCK_USEC_MULT * useconds);
 }
 
-u32 scheduler_timing_nanoseconds_to_clocks(int nanoseconds){
-	return (u32)nanoseconds * 1024 / SCHEDULER_CLOCK_NSEC_DIV;
-}
-
 void scheduler_timing_root_timedblock(void * block_object, struct mcu_timeval * abs_time){
 	int id;
 	mcu_channel_t chan_req;
 	u32 now;
 	devfs_handle_t tmr_handle;
-	bool time_sleep;
+    int is_time_to_sleep;
 	tmr_handle.port = sos_board_config.clk_usecond_tmr;
 
 	//Initialization
 	id = task_get_current();
 	sos_sched_table[id].block_object = block_object;
-	time_sleep = false;
+    is_time_to_sleep = 0;
 
 	if (abs_time->tv_sec >= sched_usecond_counter){
 
@@ -77,30 +73,33 @@ void scheduler_timing_root_timedblock(void * block_object, struct mcu_timeval * 
 		if(abs_time->tv_sec == sched_usecond_counter){
 
 			mcu_tmr_disable(&tmr_handle, 0);
+            //See if abs_time is in the past
+            mcu_tmr_get(&tmr_handle, &now);
 
 			//Read the current OC value to see if it needs to be updated
 			chan_req.loc = SCHED_USECOND_TMR_SLEEP_OC;
+
 			mcu_tmr_getchannel(&tmr_handle, &chan_req);
-			if ( abs_time->tv_usec < chan_req.value ){
-				chan_req.value = abs_time->tv_usec;
+            if ( abs_time->tv_usec < chan_req.value ){ //this means the interrupt needs to happen sooner than currently set
+                chan_req.value = abs_time->tv_usec;
+            }
+
+            //Is it necessary to look ahead since the timer is stopped? -- Issue #62
+            if( abs_time->tv_usec > now ){ //needs to be enough in the future to allow the OC to be set before the timer passes it
+                if( chan_req.value == abs_time->tv_usec ){
+                    mcu_tmr_setchannel(&tmr_handle, &chan_req);
+                }
+                is_time_to_sleep = 1;
 			}
 
-			//See if abs_time is in the past
-            mcu_tmr_get(&tmr_handle, &now);
-			if( abs_time->tv_usec > (now+40) ){ //needs to be enough in the future to allow the OC to be set before the timer passes it
-				mcu_tmr_setchannel(&tmr_handle, &chan_req);
-				time_sleep = true;
-			}
-
-			mcu_tmr_enable(&tmr_handle, 0);
-
+            mcu_tmr_enable(&tmr_handle, 0);
 
 		} else {
-			time_sleep = true;
+            is_time_to_sleep = 1;
 		}
 	}
 
-	if ( (block_object == NULL) && (time_sleep == false) ){
+    if ( (block_object == 0) && (is_time_to_sleep == 0) ){
 		//Do not sleep
 		return;
 	}
@@ -131,7 +130,7 @@ void scheduler_timing_root_get_realtime(struct mcu_timeval * tv){
 
 int root_handle_usecond_overflow_event(void * context, const mcu_event_t * data){
 	sched_usecond_counter++;
-	root_handle_usecond_match_event(NULL, 0);
+    root_handle_usecond_match_event(0, 0);
 	return 1; //do not clear callback
 }
 
@@ -141,7 +140,7 @@ int root_handle_usecond_match_event(void * context, const mcu_event_t * data){
 	u32 tmp;
 	int new_priority;
 	mcu_channel_t chan_req;
-	u32 current_match;
+    u32 now;
 	devfs_handle_t tmr_handle;
 	tmr_handle.port = sos_board_config.clk_usecond_tmr;
 	tmr_handle.config = 0;
@@ -149,12 +148,12 @@ int root_handle_usecond_match_event(void * context, const mcu_event_t * data){
 
 	//Initialize variables
 	chan_req.loc = SCHED_USECOND_TMR_SLEEP_OC;
-	chan_req.value = STFY_USECOND_PERIOD + 1;
+    chan_req.value = SOS_USECOND_PERIOD + 1;
 	new_priority = SCHED_LOWEST_PRIORITY - 1;
-	next = STFY_USECOND_PERIOD;
+    next = SOS_USECOND_PERIOD;
 
 	mcu_tmr_disable(&tmr_handle, 0);
-    mcu_tmr_get(&tmr_handle, &current_match);
+    mcu_tmr_get(&tmr_handle, &now);
 
 	for(i=1; i < task_get_total(); i++){
         if ( task_enabled(i) && !task_active_asserted(i) ){ //enabled and inactive tasks only
@@ -162,10 +161,9 @@ int root_handle_usecond_match_event(void * context, const mcu_event_t * data){
 
 			//compare the current clock to the wake time
 			if ( (sos_sched_table[i].wake.tv_sec < sched_usecond_counter) ||
-					( (sos_sched_table[i].wake.tv_sec == sched_usecond_counter) && (tmp <= current_match) )
+                    ( (sos_sched_table[i].wake.tv_sec == sched_usecond_counter) && (tmp <= now) )
 			){
 				//wake this task
-                sos_sched_table[i].wake.tv_sec = SCHEDULER_TIMEVAL_SEC_INVALID; //this line is duplicated in scheduler_root_assert_active()
 				scheduler_root_assert_active(i, SCHEDULER_UNBLOCK_SLEEP);
                 if( !task_stopped_asserted(i) && (scheduler_priority(i) > new_priority) ){
 					new_priority = scheduler_priority(i);
@@ -177,13 +175,12 @@ int root_handle_usecond_match_event(void * context, const mcu_event_t * data){
 			}
 		}
 	}
-	if ( next < STFY_USECOND_PERIOD ){
+    if ( next < SOS_USECOND_PERIOD ){
 		chan_req.value = next;
 	}
 	mcu_tmr_setchannel(&tmr_handle, &chan_req);
 
     scheduler_root_update_on_wake(-1, new_priority);
-
 	mcu_tmr_enable(&tmr_handle, 0);
 
 	return 1;
@@ -236,7 +233,7 @@ int open_usecond_tmr(){
 			return err;
 		}
 
-		action.prio = 0;
+        action.prio = 0;
 		action.channel = SCHED_USECOND_TMR_RESET_OC;
 		action.o_events = MCU_EVENT_FLAG_MATCH;
 		action.handler.callback = root_handle_usecond_overflow_event;

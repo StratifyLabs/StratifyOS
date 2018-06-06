@@ -436,6 +436,7 @@ void mcu_core_systick_handler(){
     task_return_context();
 }
 
+//Weak is needed for overriding when building bootloader
 void mcu_core_pendsv_handler() MCU_NAKED MCU_WEAK;
 void mcu_core_pendsv_handler(){
     task_save_context();

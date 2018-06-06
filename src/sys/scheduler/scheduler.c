@@ -105,7 +105,6 @@ void scheduler(){
 		} else {
 			//Otherwise switch to the active task
             sched_yield();
-            //cortexm_svcall(task_root_switch_context, NULL);
 		}
 	}
 }
@@ -200,9 +199,7 @@ void scheduler_root_update_on_stopped(){
     next_priority = SCHED_LOWEST_PRIORITY;
 	for(i=1; i < task_get_total(); i++){
         //Find the highest priority of all active tasks
-		if ( task_enabled(i) &&
-                task_active_asserted(i) &&
-                !task_stopped_asserted(i) &&
+        if ( task_enabled(i) && task_active_asserted(i) && !task_stopped_asserted(i) &&
                 (task_get_priority(i) > next_priority) ){
             next_priority = task_get_priority(i);
 		}
@@ -245,11 +242,15 @@ int scheduler_get_highest_priority_blocked(void * block_object){
 	int priority;
 	int i;
 	int new_thread;
+    int current_task = task_get_current();
 
 	//check to see if another task is waiting for the mutex
 	priority = SCHED_LOWEST_PRIORITY - 1;
 	new_thread = -1;
-	for(i=1; i < task_get_total(); i++){
+
+    //Issue #139 - blocked mutexes should be awarded in a round robin fashion started with the current task
+    if( current_task == 0 ){ current_task++; }
+    for(i = current_task; i != current_task; i++){
 		if ( task_enabled(i) ){
             if ( (sos_sched_table[i].block_object == block_object) && ( !task_active_asserted(i) ) ){
 				//it's waiting for the block -- give the block to the highest priority and waiting longest
@@ -260,6 +261,10 @@ int scheduler_get_highest_priority_blocked(void * block_object){
 				}
 			}
 		}
+        //Issue #139
+        if( (i == task_get_total()) - 1 ){
+            i = 0;
+        }
 	}
 	return new_thread;
 }

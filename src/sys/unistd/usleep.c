@@ -50,6 +50,8 @@ int usleep(useconds_t useconds){
 		tmp = scheduler_timing_useconds_to_clocks(1);
 		if( (task_get_current() == 0) || (clocks < 8000) ){
 
+            //Issue #61 -- read the microsecond timer so that the delay is more accurate
+
 			for(i = 0; i < clocks; i+=14){
 				asm volatile("nop");
 				asm volatile("nop");
@@ -82,9 +84,9 @@ void root_usleep(void * args){
 	scheduler_timing_root_get_realtime(&abs_time);
 	abs_time.tv_usec = abs_time.tv_usec + *p;
 
-	if ( abs_time.tv_usec > STFY_USECOND_PERIOD ){
+    if ( abs_time.tv_usec > SOS_USECOND_PERIOD ){
 		abs_time.tv_sec++;
-		abs_time.tv_usec -= STFY_USECOND_PERIOD;
+        abs_time.tv_usec -= SOS_USECOND_PERIOD;
 	}
 
 	scheduler_timing_root_timedblock(NULL, &abs_time);

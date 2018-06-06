@@ -33,7 +33,6 @@ int scheduler_timing_init();
 
 u32 scheduler_timing_seconds_to_clocks(int seconds);
 u32 scheduler_timing_useconds_to_clocks(int useconds);
-u32 scheduler_timing_nanoseconds_to_clocks(int nanoseconds);
 void scheduler_timing_root_timedblock(void * block_object, struct mcu_timeval * interval);
 
 void scheduler_timing_convert_timespec(struct mcu_timeval * tv, const struct timespec * ts);
