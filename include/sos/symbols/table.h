@@ -1,4 +1,4 @@
-/* Copyright 2011-2016 Tyler Gilbert; 
+/* Copyright 2011-2018 Tyler Gilbert; 
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -200,6 +200,7 @@ u32 const symbols_table[] = {
     (u32)link,
     (u32)lseek,
     (u32)open,
+    (u32)fsync,
     (u32)read,
     (u32)stat,
     (u32)system,

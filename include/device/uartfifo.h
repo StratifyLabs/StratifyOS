@@ -46,11 +46,11 @@ typedef struct {
 extern "C" {
 #endif
 
-int uartfifo_open(const devfs_handle_t * cfg);
-int uartfifo_ioctl(const devfs_handle_t * cfg, int request, void * ctl);
-int uartfifo_read(const devfs_handle_t * cfg, devfs_async_t * rop);
-int uartfifo_write(const devfs_handle_t * cfg, devfs_async_t * wop);
-int uartfifo_close(const devfs_handle_t * cfg);
+int uartfifo_open(const devfs_handle_t * handle);
+int uartfifo_ioctl(const devfs_handle_t * handle, int request, void * ctl);
+int uartfifo_read(const devfs_handle_t * handle, devfs_async_t * rop);
+int uartfifo_write(const devfs_handle_t * handle, devfs_async_t * wop);
+int uartfifo_close(const devfs_handle_t * handle);
 
 #define UARTFIFO_DECLARE_CONFIG_STATE(uart_fifo_name,\
     uart_fifo_buffer_size, \

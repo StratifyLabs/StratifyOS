@@ -1,4 +1,4 @@
-/* Copyright 2011-2016 Tyler Gilbert; 
+/* Copyright 2011-2018 Tyler Gilbert; 
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -28,7 +28,7 @@ int mcu_sync_io_complete(void * context, const mcu_event_t * data){
 	return 0;
 }
 
-extern int mcu_usb_write(const devfs_handle_t * cfg, devfs_async_t * op);
+extern int mcu_usb_write(const devfs_handle_t * handle, devfs_async_t * op);
 
 int mcu_sync_io(const devfs_handle_t * handle,
         int (*func)(const devfs_handle_t *, devfs_async_t *),

@@ -1,4 +1,4 @@
-/* Copyright 2011-2016 Tyler Gilbert;
+/* Copyright 2011-2018 Tyler Gilbert;
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -21,10 +21,8 @@
 #include "mcu/mcu.h"
 #include "mcu/core.h"
 
-void cortexm_delay_us(u32 us){
-    //ticks is the number of ticks in one microsecond
-    u32 ticks = mcu_board_config.core_cpu_freq  / 1000000UL;
-    u32 countdown = ticks * us;
+void cortexm_delay_systick(u32 ticks){
+    u32 countdown = ticks;
     u32 start = cortexm_get_systick_value();
     u32 value;
     u32 end;
@@ -44,6 +42,12 @@ void cortexm_delay_us(u32 us){
             value = cortexm_get_systick_value();
         } while( value > end && value < start );
     }
+}
+
+void cortexm_delay_us(u32 us){
+    //ticks is the number of ticks in one microsecond
+    u32 ticks = mcu_board_config.core_cpu_freq  / 1000000UL;
+    cortexm_delay_systick(ticks*us);
 }
 
 void cortexm_delay_ms(u32 ms){

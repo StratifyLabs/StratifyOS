@@ -1,4 +1,4 @@
-/* Copyright 2011-2016 Tyler Gilbert; All Rights Reserved */
+/* Copyright 2011-2018 Tyler Gilbert; All Rights Reserved */
 
 
 
@@ -180,6 +180,7 @@
 .global link; link = LINK_ADDR;
 .global lseek; lseek = LINK_ADDR;
 .global open; open = LINK_ADDR;
+.global fsync; fsync = LINK_ADDR;
 .global read; read = LINK_ADDR;
 .global stat; stat = LINK_ADDR;
 .global system; system = LINK_ADDR;

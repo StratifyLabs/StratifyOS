@@ -1,4 +1,4 @@
-/* Copyright 2011-2016 Tyler Gilbert; 
+/* Copyright 2011-2018 Tyler Gilbert; 
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -50,10 +50,11 @@ typedef struct {
 	const void * fs;
 	void * handle;
 	long loc;
+    unsigned int checksum;
 } DIR;
 
 int closedir(DIR * dirp);
-DIR *opendir(const char * dirname);
+DIR * opendir(const char * dirname);
 struct dirent *readdir(DIR * dirp);
 int readdir_r(DIR * dirp, struct dirent * entry, struct dirent ** result);
 void rewinddir(DIR * dirp);

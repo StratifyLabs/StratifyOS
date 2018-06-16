@@ -1,4 +1,4 @@
-/* Copyright 2011-2016 Tyler Gilbert;
+/* Copyright 2011-2018 Tyler Gilbert;
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -34,11 +34,11 @@ typedef struct MCU_PACK {
 	u32 pin;
 } led_pio_config_t;
 
-int led_pio_open(const devfs_handle_t * cfg);
-int led_pio_ioctl(const devfs_handle_t * cfg, int request, void * ctl);
-int led_pio_read(const devfs_handle_t * cfg, devfs_async_t * rop);
-int led_pio_write(const devfs_handle_t * cfg, devfs_async_t * wop);
-int led_pio_close(const devfs_handle_t * cfg);
+int led_pio_open(const devfs_handle_t * handle);
+int led_pio_ioctl(const devfs_handle_t * handle, int request, void * ctl);
+int led_pio_read(const devfs_handle_t * handle, devfs_async_t * rop);
+int led_pio_write(const devfs_handle_t * handle, devfs_async_t * wop);
+int led_pio_close(const devfs_handle_t * handle);
 
 
 #endif /* MCU_LED_H_ */

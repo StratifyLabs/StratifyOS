@@ -1,4 +1,4 @@
-/* Copyright 2011-2016 Tyler Gilbert;
+/* Copyright 2011-2018 Tyler Gilbert;
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -32,14 +32,14 @@ extern "C" {
  * in non-privileged mode.
  */
 typedef struct {
-	int tid;
-	int si_signo;
-	int si_sigcode;
+    int tid;
+    int si_signo;
+    int si_sigcode;
     union {
         int sig_value;
         void * sig_ptr;
     };
-	int keep;
+    int keep;
 } devfs_signal_callback_t;
 
 
@@ -85,13 +85,13 @@ const devfs_device_t * devfs_lookup_device(const devfs_device_t * list, const ch
 int devfs_lookup_name(const devfs_device_t * list, const devfs_device_t * device, char name[NAME_MAX]);
 
 #define DEVFS_MODE(mode_value, uid_value, type) .mode = mode_value | type, \
-		.uid = uid_value
+    .uid = uid_value
 
 #define DEVFS_DRIVER(driver_name) .driver.open = driver_name##_open, \
-		.driver.close = driver_name##_close, \
-		.driver.ioctl = driver_name##_ioctl, \
-		.driver.read = driver_name##_read, \
-		.driver.write = driver_name##_write
+    .driver.close = driver_name##_close, \
+    .driver.ioctl = driver_name##_ioctl, \
+    .driver.read = driver_name##_read, \
+    .driver.write = driver_name##_write
 
 #define DEVFS_DRIVER_DECLARTION_OPEN(driver_name) int driver_name##_open(const devfs_handle_t *) MCU_ROOT_CODE
 #define DEVFS_DRIVER_DECLARTION_CLOSE(driver_name) int driver_name##_close(const devfs_handle_t *) MCU_ROOT_CODE
@@ -108,14 +108,14 @@ int devfs_lookup_name(const devfs_device_t * list, const devfs_device_t * device
 #define DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, request) int driver_name##_##request (const devfs_handle_t *, void *) MCU_ROOT_CODE
 
 static inline int devfs_mcu_ioctl(const devfs_handle_t * handle,
-        int request,
-        void * ctl,
-        int (* const ioctl_func_table[])(const devfs_handle_t*, void*),
-        const int ioctl_func_table_size) MCU_ALWAYS_INLINE MCU_ROOT_CODE;
+                                  int request,
+                                  void * ctl,
+                                  int (* const ioctl_func_table[])(const devfs_handle_t*, void*),
+                                  const int ioctl_func_table_size) MCU_ALWAYS_INLINE MCU_ROOT_CODE;
 int devfs_mcu_ioctl(const devfs_handle_t * handle,
-        int request,
-        void * ctl,
-        int (* const ioctl_func_table[])(const devfs_handle_t*, void*), const int ioctl_func_table_size){
+                    int request,
+                    void * ctl,
+                    int (* const ioctl_func_table[])(const devfs_handle_t*, void*), const int ioctl_func_table_size){
     u32 periph_request;
 
     periph_request = _IOCTL_NUM(request);
@@ -136,44 +136,44 @@ int devfs_mcu_ioctl(const devfs_handle_t * handle,
 #define DEVFS_MCU_DRIVER_IOCTL_FUNCTION(driver_name, version, ioctl_total, ...) \
     int mcu_##driver_name##_getversion(const devfs_handle_t * handle, void * ctl){ return version; } \
     int (* const mcu_##driver_name##_ioctl_func_table[ioctl_total])(const devfs_handle_t*, void*) = { \
-            mcu_##driver_name##_getversion, \
-            mcu_##driver_name##_getinfo, \
-            mcu_##driver_name##_setattr, \
-            mcu_##driver_name##_setaction, \
-            __VA_ARGS__ }; \
+    mcu_##driver_name##_getversion, \
+    mcu_##driver_name##_getinfo, \
+    mcu_##driver_name##_setattr, \
+    mcu_##driver_name##_setaction, \
+    __VA_ARGS__ }; \
     int mcu_##driver_name##_ioctl(const devfs_handle_t * handle, int request, void * ctl){ return devfs_mcu_ioctl(handle, request, ctl, mcu_##driver_name##_ioctl_func_table, ioctl_total); }
 
 
 #define DEVFS_MCU_DRIVER_IOCTL_FUNCTION_MIN(driver_name, version) \
     int mcu_##driver_name##_get_version(const devfs_handle_t * handle, void * ctl){ return version; } \
     int (* const mcu_##driver_name##_ioctl_func_table[I_MCU_TOTAL])(const devfs_handle_t*, void*) = { \
-            mcu_##driver_name##_get_version, \
-            mcu_##driver_name##_getinfo, \
-            mcu_##driver_name##_setattr, \
-            mcu_##driver_name##_setaction }; \
+    mcu_##driver_name##_get_version, \
+    mcu_##driver_name##_getinfo, \
+    mcu_##driver_name##_setattr, \
+    mcu_##driver_name##_setaction }; \
     int mcu_##driver_name##_ioctl(const devfs_handle_t * handle, int request, void * ctl){ return devfs_mcu_ioctl(handle, request, ctl, mcu_##driver_name##_ioctl_func_table, I_MCU_TOTAL); }
 
 
 #define DEVFS_DEVICE(device_name, periph_name, handle_port, handle_config, handle_state, mode_value, uid_value, device_type) { \
-		.name = device_name, \
-		DEVFS_MODE(mode_value, uid_value, device_type), \
-		DEVFS_DRIVER(periph_name), \
-		.handle.port = handle_port, \
-		.handle.state = handle_state, \
-		.handle.config = handle_config \
+    .name = device_name, \
+    DEVFS_MODE(mode_value, uid_value, device_type), \
+    DEVFS_DRIVER(periph_name), \
+    .handle.port = handle_port, \
+    .handle.state = handle_state, \
+    .handle.config = handle_config \
 }
 
 #define DEVFS_TERMINATOR { \
-		.driver.open = NULL \
+    .driver.open = NULL \
 }
 
 
 static inline bool devfs_is_terminator(const devfs_device_t * dev);
 bool devfs_is_terminator(const devfs_device_t * dev){
-	if ( dev->driver.open == NULL ){
-		return true;
-	}
-	return false;
+    if ( dev->driver.open == NULL ){
+        return true;
+    }
+    return false;
 }
 
 
@@ -192,36 +192,37 @@ int devfs_readdir_r(const void * cfg, void * handle, int loc, struct dirent * en
 int devfs_closedir(const void * cfg, void ** handle);
 
 #define DEVFS_MOUNT(mount_loc_name, cfgp, access_mode) { \
-		.mount_path = mount_loc_name, \
-		.access = access_mode, \
-		.mount = devfs_init, \
-		.unmount = SYSFS_NOTSUP, \
-		.ismounted = sysfs_always_mounted, \
-		.startup = SYSFS_NOTSUP, \
-		.mkfs = SYSFS_NOTSUP, \
-		.open = devfs_open, \
-		.aio = devfs_aio, \
-		.ioctl = devfs_ioctl, \
-		.read = devfs_read, \
-		.write = devfs_write, \
-		.close = devfs_close, \
-		.rename = SYSFS_NOTSUP, \
-		.unlink = SYSFS_NOTSUP, \
-		.mkdir = SYSFS_NOTSUP, \
-		.rmdir = SYSFS_NOTSUP, \
-		.remove = SYSFS_NOTSUP, \
-		.opendir = devfs_opendir, \
-		.closedir = devfs_closedir, \
-		.readdir_r = devfs_readdir_r, \
-		.link = SYSFS_NOTSUP, \
-		.symlink = SYSFS_NOTSUP, \
-		.stat = devfs_stat, \
-		.lstat = SYSFS_NOTSUP, \
-		.fstat = devfs_fstat, \
-		.chmod = SYSFS_NOTSUP, \
-		.chown = SYSFS_NOTSUP, \
-		.unlock = SYSFS_NOTSUP_VOID, \
-		.config = cfgp, \
+    .mount_path = mount_loc_name, \
+    .access = access_mode, \
+    .mount = devfs_init, \
+    .unmount = SYSFS_NOTSUP, \
+    .ismounted = sysfs_always_mounted, \
+    .startup = SYSFS_NOTSUP, \
+    .mkfs = SYSFS_NOTSUP, \
+    .open = devfs_open, \
+    .aio = devfs_aio, \
+    .ioctl = devfs_ioctl, \
+    .fsync = SYSFS_NOTSUP, \
+    .read = devfs_read, \
+    .write = devfs_write, \
+    .close = devfs_close, \
+    .rename = SYSFS_NOTSUP, \
+    .unlink = SYSFS_NOTSUP, \
+    .mkdir = SYSFS_NOTSUP, \
+    .rmdir = SYSFS_NOTSUP, \
+    .remove = SYSFS_NOTSUP, \
+    .opendir = devfs_opendir, \
+    .closedir = devfs_closedir, \
+    .readdir_r = devfs_readdir_r, \
+    .link = SYSFS_NOTSUP, \
+    .symlink = SYSFS_NOTSUP, \
+    .stat = devfs_stat, \
+    .lstat = SYSFS_NOTSUP, \
+    .fstat = devfs_fstat, \
+    .chmod = SYSFS_NOTSUP, \
+    .chown = SYSFS_NOTSUP, \
+    .unlock = SYSFS_NOTSUP_VOID, \
+    .config = cfgp, \
 }
 
 #if defined __cplusplus

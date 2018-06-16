@@ -1,4 +1,4 @@
-/* Copyright 2011-2016 Tyler Gilbert; 
+/* Copyright 2011-2018 Tyler Gilbert; 
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -46,12 +46,12 @@ typedef struct MCU_PACK {
 	enet_attr_t attr; //default attributes
 } enet_config_t;
 
-int mcu_enet_open(const devfs_handle_t * cfg) MCU_ROOT_CODE;
-int mcu_enet_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_ROOT_CODE;
-int mcu_enet_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_ROOT_CODE;
-int mcu_enet_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_ROOT_CODE;
+int mcu_enet_open(const devfs_handle_t * handle) MCU_ROOT_CODE;
+int mcu_enet_read(const devfs_handle_t * handle, devfs_async_t * rop) MCU_ROOT_CODE;
+int mcu_enet_write(const devfs_handle_t * handle, devfs_async_t * wop) MCU_ROOT_CODE;
+int mcu_enet_ioctl(const devfs_handle_t * handle, int request, void * ctl) MCU_ROOT_CODE;
 
-int mcu_enet_close(const devfs_handle_t * cfg) MCU_ROOT_CODE;
+int mcu_enet_close(const devfs_handle_t * handle) MCU_ROOT_CODE;
 int mcu_enet_getinfo(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
 int mcu_enet_setattr(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
 int mcu_enet_setaction(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;

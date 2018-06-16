@@ -1,4 +1,4 @@
-/* Copyright 2011-2016 Tyler Gilbert; 
+/* Copyright 2011-2018 Tyler Gilbert; 
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -46,7 +46,7 @@ static const int tty_speeds[B921600 + 1] = {
 };
 
 
-int tty_uart_open(const devfs_handle_t * cfg){
+int tty_uart_open(const devfs_handle_t * handle){
 	//make sure the port is open and configured the way we want
 	return 0;
 }
@@ -115,14 +115,14 @@ int tty_uart_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 	return 0;
 }
 
-int tty_uart_write(const devfs_handle_t * cfg, devfs_async_t * wop){
-	return mcu_uart_write(cfg, wop);
+int tty_uart_write(const devfs_handle_t * handle, devfs_async_t * wop){
+    return mcu_uart_write(handle, wop);
 }
 
-int tty_uart_read(const devfs_handle_t * cfg, devfs_async_t * rop){
-	return mcu_uart_read(cfg, rop);
+int tty_uart_read(const devfs_handle_t * handle, devfs_async_t * rop){
+    return mcu_uart_read(handle, rop);
 }
 
-int tty_uart_close(const devfs_handle_t * cfg){
+int tty_uart_close(const devfs_handle_t * handle){
 	return 0;
 }

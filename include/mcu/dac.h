@@ -1,4 +1,4 @@
-/* Copyright 2011-2016 Tyler Gilbert; 
+/* Copyright 2011-2018 Tyler Gilbert; 
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -41,11 +41,11 @@ typedef struct MCU_PACK {
 	dac_attr_t attr; //default attributes
 } dac_config_t;
 
-int mcu_dac_open(const devfs_handle_t * cfg) MCU_ROOT_CODE;
-int mcu_dac_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_ROOT_CODE;
-int mcu_dac_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_ROOT_CODE;
-int mcu_dac_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_ROOT_CODE;
-int mcu_dac_close(const devfs_handle_t * cfg) MCU_ROOT_CODE;
+int mcu_dac_open(const devfs_handle_t * handle) MCU_ROOT_CODE;
+int mcu_dac_read(const devfs_handle_t * handle, devfs_async_t * rop) MCU_ROOT_CODE;
+int mcu_dac_write(const devfs_handle_t * handle, devfs_async_t * wop) MCU_ROOT_CODE;
+int mcu_dac_ioctl(const devfs_handle_t * handle, int request, void * ctl) MCU_ROOT_CODE;
+int mcu_dac_close(const devfs_handle_t * handle) MCU_ROOT_CODE;
 
 int mcu_dac_getinfo(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
 int mcu_dac_setattr(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
@@ -54,11 +54,11 @@ int mcu_dac_get(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
 int mcu_dac_set(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
 
 //DMA version of the driver
-int mcu_dac_dma_open(const devfs_handle_t * cfg) MCU_ROOT_CODE;
-int mcu_dac_dma_read(const devfs_handle_t * cfg, devfs_async_t * rop) MCU_ROOT_CODE;
-int mcu_dac_dma_write(const devfs_handle_t * cfg, devfs_async_t * wop) MCU_ROOT_CODE;
-int mcu_dac_dma_ioctl(const devfs_handle_t * cfg, int request, void * ctl) MCU_ROOT_CODE;
-int mcu_dac_dma_close(const devfs_handle_t * cfg) MCU_ROOT_CODE;
+int mcu_dac_dma_open(const devfs_handle_t * handle) MCU_ROOT_CODE;
+int mcu_dac_dma_read(const devfs_handle_t * handle, devfs_async_t * rop) MCU_ROOT_CODE;
+int mcu_dac_dma_write(const devfs_handle_t * handle, devfs_async_t * wop) MCU_ROOT_CODE;
+int mcu_dac_dma_ioctl(const devfs_handle_t * handle, int request, void * ctl) MCU_ROOT_CODE;
+int mcu_dac_dma_close(const devfs_handle_t * handle) MCU_ROOT_CODE;
 
 int mcu_dac_dma_getinfo(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
 int mcu_dac_dma_setattr(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;

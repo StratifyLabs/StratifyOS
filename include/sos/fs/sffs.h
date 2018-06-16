@@ -1,4 +1,4 @@
-/* Copyright 2011-2016 Tyler Gilbert; 
+/* Copyright 2011-2018 Tyler Gilbert; 
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -28,19 +28,19 @@
 #include "sos/fs/sysfs.h"
 
 typedef struct {
-	int list_block;
-	int serialno_killed;
-	int serialno;
-	drive_info_t dattr;
-	pthread_mutex_t mutex;
+    int list_block;
+    int serialno_killed;
+    int serialno;
+    drive_info_t dattr;
+    pthread_mutex_t mutex;
 } sffs_state_t;
 
 typedef struct {
-	const sysfs_t * devfs;
-	const void * dev_cfg;
-	open_file_t * open_file;
-	const char name[NAME_MAX];
-	sffs_state_t * state;
+    const sysfs_t * devfs;
+    const void * dev_cfg;
+    open_file_t * open_file;
+    const char name[NAME_MAX];
+    sffs_state_t * state;
 } sffs_config_t;
 
 
@@ -67,37 +67,38 @@ int sffs_unmount(const void * cfg);
 int sffs_ismounted(const void * cfg);
 
 #define SFFS_MOUNT(mount_loc_name, cfgp, access_mode) { \
-		.mount_path = mount_loc_name, \
-		.access = access_mode, \
-		.mount = sffs_init, \
-		.unmount = sffs_unmount, \
-		.ismounted = sffs_ismounted, \
-		.startup = SYSFS_NOTSUP, \
-		.mkfs = sffs_mkfs, \
-		.open = sffs_open, \
-		.aio = SYSFS_NOTSUP, \
-		.read = sffs_read, \
-		.write = sffs_write, \
-		.close = sffs_close, \
-		.ioctl = SYSFS_NOTSUP, \
-		.rename = SYSFS_NOTSUP, \
-		.unlink = sffs_unlink, \
-		.mkdir = SYSFS_NOTSUP, \
-		.rmdir = SYSFS_NOTSUP, \
-		.remove = sffs_remove, \
-		.opendir = sffs_opendir, \
-		.closedir = sffs_closedir, \
-		.readdir_r = sffs_readdir_r, \
-		.link = SYSFS_NOTSUP, \
-		.symlink = SYSFS_NOTSUP, \
-		.stat = sffs_stat, \
-		.lstat = SYSFS_NOTSUP, \
-		.fstat = sffs_fstat, \
-		.chmod = SYSFS_NOTSUP, \
-		.chown = SYSFS_NOTSUP, \
-		.unlock = sffs_unlock, \
-		.config = cfgp, \
-}
+    .mount_path = mount_loc_name, \
+    .access = access_mode, \
+    .mount = sffs_init, \
+    .unmount = sffs_unmount, \
+    .ismounted = sffs_ismounted, \
+    .startup = SYSFS_NOTSUP, \
+    .mkfs = sffs_mkfs, \
+    .open = sffs_open, \
+    .aio = SYSFS_NOTSUP, \
+    .read = sffs_read, \
+    .write = sffs_write, \
+    .close = sffs_close, \
+    .fsync = SYSFS_NOTSUP, \
+    .ioctl = SYSFS_NOTSUP, \
+    .rename = SYSFS_NOTSUP, \
+    .unlink = sffs_unlink, \
+    .mkdir = SYSFS_NOTSUP, \
+    .rmdir = SYSFS_NOTSUP, \
+    .remove = sffs_remove, \
+    .opendir = sffs_opendir, \
+    .closedir = sffs_closedir, \
+    .readdir_r = sffs_readdir_r, \
+    .link = SYSFS_NOTSUP, \
+    .symlink = SYSFS_NOTSUP, \
+    .stat = sffs_stat, \
+    .lstat = SYSFS_NOTSUP, \
+    .fstat = sffs_fstat, \
+    .chmod = SYSFS_NOTSUP, \
+    .chown = SYSFS_NOTSUP, \
+    .unlock = sffs_unlock, \
+    .config = cfgp, \
+    }
 
 
 #endif /* SFFS_LITE_H_ */

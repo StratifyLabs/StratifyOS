@@ -1,4 +1,4 @@
-/* Copyright 2011-2016 Tyler Gilbert;
+/* Copyright 2011-2018 Tyler Gilbert;
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -35,11 +35,11 @@ typedef struct MCU_PACK {
 	u32 o_flags;
 } led_pwm_config_t;
 
-int led_pwm_open(const devfs_handle_t * cfg);
-int led_pwm_ioctl(const devfs_handle_t * cfg, int request, void * ctl);
-int led_pwm_read(const devfs_handle_t * cfg, devfs_async_t * rop);
-int led_pwm_write(const devfs_handle_t * cfg, devfs_async_t * wop);
-int led_pwm_close(const devfs_handle_t * cfg);
+int led_pwm_open(const devfs_handle_t * handle);
+int led_pwm_ioctl(const devfs_handle_t * handle, int request, void * ctl);
+int led_pwm_read(const devfs_handle_t * handle, devfs_async_t * rop);
+int led_pwm_write(const devfs_handle_t * handle, devfs_async_t * wop);
+int led_pwm_close(const devfs_handle_t * handle);
 
 
 #endif /* DEVICE_LED_PWM_H_ */

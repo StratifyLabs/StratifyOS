@@ -1,4 +1,4 @@
-/* Copyright 2011-2016 Tyler Gilbert; 
+/* Copyright 2011-2018 Tyler Gilbert; 
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -72,14 +72,14 @@ static int check_ebadf(DIR * dirp){
 		return -1;
 	}
 
-	if ( dirp->loc > 65535 ){
-		errno = EBADF;
+    if( cortexm_verify_zero_sum32(dirp, sizeof(DIR)/sizeof(u32)) == 0 ){
+        errno = EBADF;
 		return -1;
 	}
 	return 0;
 }
 
-/*! \details This function closes the directory stream specified by \a dirp.
+/*! \details Closes the directory stream specified by \a dirp.
  *
  * \return Zero or -1 with errno (see \ref ERRNO) set to:
  * - EINVAL: \a dirp does not refere to an open directory stream
@@ -89,9 +89,7 @@ int closedir(DIR * dirp /*! A pointer to the open directory */){
 	int ret;
 	const sysfs_t * fs;
 
-	if (check_ebadf(dirp) < 0 ){
-		return -1;
-	}
+    if (check_ebadf(dirp) < 0 ){ return -1; }
 	fs = dirp->fs;
 	ret = fs->closedir(fs->config, &(dirp->handle));
     SYSFS_PROCESS_RETURN(ret);
@@ -100,7 +98,7 @@ int closedir(DIR * dirp /*! A pointer to the open directory */){
 	return ret;
 }
 
-/*! \details This function opens a directory.
+/*! \details Opens a directory.
  *
  * \return a pointer to the directory or NULL with errno (see \ref ERRNO) set to:
  * - ENOMEM: not enough memory
@@ -142,11 +140,13 @@ DIR * opendir(const char * dirname){
 	dirp->fs = fs;
 	dirp->loc = 0;
 
+    cortexm_assign_zero_sum32(dirp, sizeof(DIR)/sizeof(u32));
+
 	//Return the pointer to the table
 	return dirp;
 }
 
-/*! \details This function reads the next directory entry in the open directory.
+/*! \details Reads the next directory entry in the open directory.
  * \note This function is not thread-safe nor re-entrant;  use \ref readdir_r()
  * as a thread-safe, re-entrant alternative.
  *
@@ -162,7 +162,7 @@ struct dirent *readdir(DIR * dirp /*! a pointer to the directory structure */){
 	return tmp;
 }
 
-/*! \details This function reads the next directory entry in the open directory (reentrant version).
+/*! \details Reads the next directory entry in the open directory (reentrant version).
  *
  * \return a pointer to a dirent or NULL with errno (see \ref ERRNO) set to:
  * - EBADF: \a dirp is invalid
@@ -193,6 +193,7 @@ int readdir_r(DIR * dirp /*! a pointer to the directory structure */,
 	}
 
 	dirp->loc++;
+    cortexm_assign_zero_sum32(dirp, sizeof(DIR)/sizeof(u32));
 
 	if ( result ){
 		*result = entry;
@@ -200,28 +201,32 @@ int readdir_r(DIR * dirp /*! a pointer to the directory structure */,
 	return 0;
 }
 
-/*! \details This function rewinds \a dirp.
+/*! \details Rewinds \a dirp.
  *
  */
 void rewinddir(DIR * dirp /*! a pointer to the directory structure */){
+    if( check_ebadf(dirp) < 0 ){ return; }
 	dirp->loc = 0;
+    cortexm_assign_zero_sum32(dirp, sizeof(DIR)/sizeof(u32));
 }
 
-/*! \details This function seeks to the specified location in
+/*! \details Seeks to the specified location in
  * the directory.
  *
  */
 void seekdir(DIR * dirp /*! a pointer to the directory structure */,
 		long loc /*! the target location */){
+    if( check_ebadf(dirp) < 0 ){ return; }
 	dirp->loc = loc;
+    cortexm_assign_zero_sum32(dirp, sizeof(DIR)/sizeof(u32));
 }
 
-/*! \details This function gets the current location in the
- * directory.
+/*! \details Gets the current location in the directory.
  *
  * \return The current directory location
  */
 long telldir(DIR * dirp /*! a pointer to the directory structure */){
+    if( check_ebadf(dirp) < 0 ){ return SYSFS_RETURN_EOF; }
 	return dirp->loc;
 }
 

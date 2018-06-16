@@ -1,4 +1,4 @@
-/* Copyright 2011-2016 Tyler Gilbert; 
+/* Copyright 2011-2018 Tyler Gilbert; 
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -27,8 +27,8 @@
 #include "mcu/debug.h"
 #include "sst25vf_local.h"
 
-static void complete_spi_write(const devfs_handle_t * cfg, uint32_t ignore);
-static void continue_spi_write(const devfs_handle_t * cfg, uint32_t ignore);
+static void complete_spi_write(const devfs_handle_t * handle, uint32_t ignore);
+static void continue_spi_write(const devfs_handle_t * handle, uint32_t ignore);
 
 int sst25vf_tmr_open(const devfs_handle_t * handle){
 	int err;
@@ -80,9 +80,9 @@ int sst25vf_tmr_open(const devfs_handle_t * handle){
 	return 0;
 }
 
-static void complete_spi_read(const devfs_handle_t * cfg, mcu_event_t ignore){
-	sst25vf_state_t * state = (sst25vf_state_t*)cfg->state;
-	sst25vf_share_deassert_cs(cfg);
+static void complete_spi_read(const devfs_handle_t * handle, mcu_event_t ignore){
+    sst25vf_state_t * state = (sst25vf_state_t*)handle->state;
+    sst25vf_share_deassert_cs(handle);
 	//if( state->handler.callback != NULL ){
 	//state->handler.callback(state->handler.context, (mcu_event_t)NULL);
 	mcu_execute_event_handler(&(state->handler), 0, 0);
@@ -113,9 +113,9 @@ int sst25vf_tmr_read(const devfs_handle_t * handle, devfs_async_t * rop){
 }
 
 
-void continue_spi_write(const devfs_handle_t * cfg, uint32_t ignore){
-	sst25vf_state_t * state = (sst25vf_state_t *)cfg->state;
-	const sst25vf_config_t * sst_cfg = (sst25vf_config_t*)cfg->config;
+void continue_spi_write(const devfs_handle_t * handle, uint32_t ignore){
+    sst25vf_state_t * state = (sst25vf_state_t *)handle->state;
+    const sst25vf_config_t * sst_cfg = (sst25vf_config_t*)handle->config;
 	mcu_action_t action;
 	uint8_t * addrp;
 	devfs_handle_t tmr_handle;
@@ -134,7 +134,7 @@ void continue_spi_write(const devfs_handle_t * cfg, uint32_t ignore){
 
 
 	if( state->nbyte > 0 ){
-		sst25vf_share_assert_cs(cfg);
+        sst25vf_share_assert_cs(handle);
 		addrp = (uint8_t*)&(state->op.loc);
 		state->cmd[0] = SST25VF_INS_PROGRAM;
 		state->cmd[1] = addrp[2];
@@ -143,15 +143,15 @@ void continue_spi_write(const devfs_handle_t * cfg, uint32_t ignore){
 		state->cmd[4] = state->buf[0];
 
 		state->op.nbyte = 5;
-		mcu_spi_write(cfg, &(state->op));
+        mcu_spi_write(handle, &(state->op));
 		state->op.loc++;
 		state->buf += 1;
 		state->nbyte -= 1;
 	} else {
 
-		sst25vf_share_write_disable(cfg);
+        sst25vf_share_write_disable(handle);
 
-		sst25vf_share_read_status(cfg);
+        sst25vf_share_read_status(handle);
 
 		//Set the buffer to NULL to indicate the device is not busy
 		state->buf = NULL;
@@ -164,18 +164,18 @@ void continue_spi_write(const devfs_handle_t * cfg, uint32_t ignore){
 	}
 }
 
-void complete_spi_write(const devfs_handle_t * cfg, uint32_t ignore){
+void complete_spi_write(const devfs_handle_t * handle, uint32_t ignore){
 	uint32_t tval;
 	mcu_action_t action;
 	mcu_channel_t channel;
-	sst25vf_config_t * sst_cfg = (sst25vf_config_t*)cfg->config;
+    sst25vf_config_t * sst_cfg = (sst25vf_config_t*)handle->config;
 	devfs_handle_t tmr_handle;
 	tmr_handle.port = sst_cfg->wp.port;
 
-	sst25vf_share_deassert_cs(cfg);
+    sst25vf_share_deassert_cs(handle);
 
 	//configure the TMR to interrupt in 10 microseconds
-	action.handler.context = (void*)cfg;
+    action.handler.context = (void*)handle;
 	action.handler.callback = (mcu_callback_t)continue_spi_write;
 	action.channel = sst_cfg->spi.attr.pin_assignment.miso.pin;
 	action.o_events = MCU_EVENT_FLAG_MATCH;
@@ -197,10 +197,10 @@ void complete_spi_write(const devfs_handle_t * cfg, uint32_t ignore){
 	mcu_tmr_enable(&tmr_handle, 0);
 }
 
-int sst25vf_tmr_write(const devfs_handle_t * cfg, devfs_async_t * wop){
+int sst25vf_tmr_write(const devfs_handle_t * handle, devfs_async_t * wop){
 	int err;
 	uint8_t *addrp;
-	sst25vf_state_t * state = (sst25vf_state_t*)cfg->state;
+    sst25vf_state_t * state = (sst25vf_state_t*)handle->state;
 
 	if ( state->buf != NULL ){
         return SYSFS_SET_RETURN(EBUSY);
@@ -212,7 +212,7 @@ int sst25vf_tmr_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	state->buf = wop->buf;
 	state->nbyte = wop->nbyte;
 
-	sst25vf_share_write_enable(cfg);
+    sst25vf_share_write_enable(handle);
 
 	//Byte program
 	addrp = (uint8_t*)&(wop->loc);
@@ -222,28 +222,28 @@ int sst25vf_tmr_write(const devfs_handle_t * cfg, devfs_async_t * wop){
 	state->cmd[3] = addrp[0];
 	state->cmd[4] = state->buf[0];
 
-	sst25vf_share_assert_cs(cfg);
+    sst25vf_share_assert_cs(handle);
 	state->op.flags = wop->flags;
 	state->op.handler.callback = (mcu_callback_t)complete_spi_write;
-	state->op.handler.context = (void*)cfg;
+    state->op.handler.context = (void*)handle;
 	state->op.buf_const = state->cmd;
 	state->op.nbyte = 5;
 	state->op.loc = wop->loc;
 
-	err = mcu_spi_write(cfg, &state->op);
+    err = mcu_spi_write(handle, &state->op);
 	state->op.loc++;
 	state->buf = state->buf + 1;
 	state->nbyte = state->nbyte - 1;
 	return err;
 }
 
-int sst25vf_tmr_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
-	return sst25vf_share_ioctl(cfg, request, ctl);
+int sst25vf_tmr_ioctl(const devfs_handle_t * handle, int request, void * ctl){
+    return sst25vf_share_ioctl(handle, request, ctl);
 }
 
-int sst25vf_tmr_close(const devfs_handle_t * cfg){
-	sst25vf_share_power_down(cfg);
-	return mcu_spi_close(cfg);
+int sst25vf_tmr_close(const devfs_handle_t * handle){
+    sst25vf_share_power_down(handle);
+    return mcu_spi_close(handle);
 }
 
 

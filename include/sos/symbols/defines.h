@@ -1,4 +1,4 @@
-/* Copyright 2011-2016 Tyler Gilbert;
+/* Copyright 2011-2018 Tyler Gilbert;
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -351,6 +351,9 @@
 #define mq_send 0
 #endif
 
+#if !defined SYMBOLS_IGNORE_POSIX_TRACE
+#define SYMBOLS_IGNORE_POSIX_TRACE 1
+#endif
 
 #if SYMBOLS_IGNORE_POSIX_TRACE != 0
 #define posix_trace_attr_destroy 0

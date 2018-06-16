@@ -1,4 +1,4 @@
-/* Copyright 2011-2016 Tyler Gilbert;
+/* Copyright 2011-2018 Tyler Gilbert;
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -77,7 +77,11 @@ typedef struct {
 } devfs_device_t;
 
 
+#define DEVFS_IOC_IDENT_CHAR 'D'
 
+typedef char devfs_get_name_t[NAME_MAX];
+
+#define I_DEVFS_GETNAME _IOCTLW(DEVFS_IOC_IDENT_CHAR, I_MCU_TOTAL, devfs_get_name_t)
 
 
 

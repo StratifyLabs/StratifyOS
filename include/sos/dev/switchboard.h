@@ -107,8 +107,8 @@
 #ifndef DEV_SOS_SWITCHBOARD_H
 #define DEV_SOS_SWITCHBOARD_H
 
-#include "sos/fs/devfs.h"
 #include "sos/link.h"
+#include "mcu/types.h"
 
 #ifdef __cplusplus
 extern "C" {

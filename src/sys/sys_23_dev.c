@@ -1,4 +1,4 @@
-/* Copyright 2011-2016 Tyler Gilbert; 
+/* Copyright 2011-2018 Tyler Gilbert; 
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -35,11 +35,11 @@
 #include "symbols.h"
 
 
-int sys_23_open(const devfs_handle_t * cfg){
-	return sys_open(cfg);
+int sys_23_open(const devfs_handle_t * handle){
+    return sys_open(handle);
 }
 
-int sys_23_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
+int sys_23_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 	sys_23_info_t * sys = ctl;
 
 	switch(request){
@@ -61,22 +61,22 @@ int sys_23_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 		mcu_core_getserialno(&(sys->serial));
 		return 0;
 	default:
-		return sys_ioctl(cfg, request, ctl);
+        return sys_ioctl(handle, request, ctl);
 	}
 	errno = EINVAL;
 	return -1;
 }
 
-int sys_23_read(const devfs_handle_t * cfg, devfs_async_t * rop){
-	return sys_read(cfg, rop);
+int sys_23_read(const devfs_handle_t * handle, devfs_async_t * rop){
+    return sys_read(handle, rop);
 }
 
-int sys_23_write(const devfs_handle_t * cfg, devfs_async_t * wop){
-	return sys_write(cfg, wop);
+int sys_23_write(const devfs_handle_t * handle, devfs_async_t * wop){
+    return sys_write(handle, wop);
 }
 
-int sys_23_close(const devfs_handle_t * cfg){
-	return sys_close(cfg);;
+int sys_23_close(const devfs_handle_t * handle){
+    return sys_close(handle);
 }
 
 

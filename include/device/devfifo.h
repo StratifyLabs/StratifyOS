@@ -1,4 +1,4 @@
-/* Copyright 2011-2016 Tyler Gilbert; 
+/* Copyright 2011-2018 Tyler Gilbert; 
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -35,11 +35,11 @@ typedef struct {
 	int len;
 } devfifo_state_t;
 
-int devfifo_open(const devfs_handle_t * cfg);
-int devfifo_ioctl(const devfs_handle_t * cfg, int request, void * ctl);
-int devfifo_read(const devfs_handle_t * cfg, devfs_async_t * rop);
-int devfifo_write(const devfs_handle_t * cfg, devfs_async_t * wop);
-int devfifo_close(const devfs_handle_t * cfg);
+int devfifo_open(const devfs_handle_t * handle);
+int devfifo_ioctl(const devfs_handle_t * handle, int request, void * ctl);
+int devfifo_read(const devfs_handle_t * handle, devfs_async_t * rop);
+int devfifo_write(const devfs_handle_t * handle, devfs_async_t * wop);
+int devfifo_close(const devfs_handle_t * handle);
 
 
 #endif /* DEV_DEVFIFO_H_ */

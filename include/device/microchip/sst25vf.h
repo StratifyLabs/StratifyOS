@@ -1,4 +1,4 @@
-/* Copyright 2011-2016 Tyler Gilbert; 
+/* Copyright 2011-2018 Tyler Gilbert; 
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -46,29 +46,29 @@ typedef struct {
 	int prot;
 } sst25vf_state_t;
 
-int sst25vf_open(const devfs_handle_t * cfg);
-int sst25vf_ioctl(const devfs_handle_t * cfg, int request, void * ctl);
-int sst25vf_read(const devfs_handle_t * cfg, devfs_async_t * rop);
-int sst25vf_write(const devfs_handle_t * cfg, devfs_async_t * wop);
-int sst25vf_close(const devfs_handle_t * cfg);
+int sst25vf_open(const devfs_handle_t * handle);
+int sst25vf_ioctl(const devfs_handle_t * handle, int request, void * ctl);
+int sst25vf_read(const devfs_handle_t * handle, devfs_async_t * rop);
+int sst25vf_write(const devfs_handle_t * handle, devfs_async_t * wop);
+int sst25vf_close(const devfs_handle_t * handle);
 
-int sst25vf_tmr_open(const devfs_handle_t * cfg);
-int sst25vf_tmr_ioctl(const devfs_handle_t * cfg, int request, void * ctl);
-int sst25vf_tmr_read(const devfs_handle_t * cfg, devfs_async_t * rop);
-int sst25vf_tmr_write(const devfs_handle_t * cfg, devfs_async_t * wop);
-int sst25vf_tmr_close(const devfs_handle_t * cfg);
+int sst25vf_tmr_open(const devfs_handle_t * handle);
+int sst25vf_tmr_ioctl(const devfs_handle_t * handle, int request, void * ctl);
+int sst25vf_tmr_read(const devfs_handle_t * handle, devfs_async_t * rop);
+int sst25vf_tmr_write(const devfs_handle_t * handle, devfs_async_t * wop);
+int sst25vf_tmr_close(const devfs_handle_t * handle);
 
-int sst25vf_ssp_open(const devfs_handle_t * cfg);
-int sst25vf_ssp_ioctl(const devfs_handle_t * cfg, int request, void * ctl);
-int sst25vf_ssp_read(const devfs_handle_t * cfg, devfs_async_t * rop);
-int sst25vf_ssp_write(const devfs_handle_t * cfg, devfs_async_t * wop);
-int sst25vf_ssp_close(const devfs_handle_t * cfg);
+int sst25vf_ssp_open(const devfs_handle_t * handle);
+int sst25vf_ssp_ioctl(const devfs_handle_t * handle, int request, void * ctl);
+int sst25vf_ssp_read(const devfs_handle_t * handle, devfs_async_t * rop);
+int sst25vf_ssp_write(const devfs_handle_t * handle, devfs_async_t * wop);
+int sst25vf_ssp_close(const devfs_handle_t * handle);
 
-int sst25vf_ssp_tmr_open(const devfs_handle_t * cfg);
-int sst25vf_ssp_tmr_ioctl(const devfs_handle_t * cfg, int request, void * ctl);
-int sst25vf_ssp_tmr_read(const devfs_handle_t * cfg, devfs_async_t * rop);
-int sst25vf_ssp_tmr_write(const devfs_handle_t * cfg, devfs_async_t * wop);
-int sst25vf_ssp_tmr_close(const devfs_handle_t * cfg);
+int sst25vf_ssp_tmr_open(const devfs_handle_t * handle);
+int sst25vf_ssp_tmr_ioctl(const devfs_handle_t * handle, int request, void * ctl);
+int sst25vf_ssp_tmr_read(const devfs_handle_t * handle, devfs_async_t * rop);
+int sst25vf_ssp_tmr_write(const devfs_handle_t * handle, devfs_async_t * wop);
+int sst25vf_ssp_tmr_close(const devfs_handle_t * handle);
 
 
 

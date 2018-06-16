@@ -62,7 +62,7 @@ int socket(int domain, int type, int protocol);
 int writev(int s, const struct iovec *iov, int iovcnt);
 int select(int maxfdp1, fd_set *readset, fd_set *writeset, fd_set *exceptset, struct timeval *timeout);
 
-//these are support on both sockets and non-sockets
+//these are supported on both sockets and non-sockets
 //int read(int s, void *mem, size_t len);
 //int ioctl(int s, long cmd, void *argp);
 //int fcntl(int s, int cmd, int val);
@@ -96,6 +96,7 @@ typedef struct MCU_PACK {
 			struct timeval *timeout);
 	int (*ioctl)(int s, long cmd, void *argp);
 	int (*fcntl)(int s, int cmd, int val);
+    int (*fsync)(int s);
 } sos_socket_api_t;
 
 extern const sos_socket_api_t lwip_socket_api;

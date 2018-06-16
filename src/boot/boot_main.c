@@ -180,13 +180,12 @@ void init_hw(){
 	dsetwritefunc(debug_write_func);
 
     dstr("Booting\n");
-
     dstr("STACK:"); dhex((u32)stack_ptr); dstr("\n");
     dstr("APP:"); dhex((u32)app_reset); dstr("\n");
 #endif
     cortexm_delay_ms(50);
     cortexm_enable_interrupts(); //Enable the interrupts
-	boot_event(BOOT_EVENT_INIT, 0);
+    boot_event(BOOT_EVENT_INIT, 0);
 }
 
 //prevent linkage to real handlers

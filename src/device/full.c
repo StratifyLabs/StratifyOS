@@ -1,4 +1,4 @@
-/* Copyright 2011-2016 Tyler Gilbert; 
+/* Copyright 2011-2018 Tyler Gilbert; 
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -23,24 +23,24 @@
 #include "device/full.h"
 
 
-int full_open(const devfs_handle_t * cfg){
+int full_open(const devfs_handle_t * handle){
 	return 0;
 }
 
-int full_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
+int full_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 	return 0;
 }
 
-int full_read(const devfs_handle_t * cfg, devfs_async_t * rop){
+int full_read(const devfs_handle_t * handle, devfs_async_t * rop){
 	memset(rop->buf, 0, rop->nbyte);
 	return rop->nbyte;
 }
 
-int full_write(const devfs_handle_t * cfg, devfs_async_t * wop){
+int full_write(const devfs_handle_t * handle, devfs_async_t * wop){
     return SYSFS_SET_RETURN(ENOSPC);
 }
 
-int full_close(const devfs_handle_t * cfg){
+int full_close(const devfs_handle_t * handle){
 	return 0;
 }
 

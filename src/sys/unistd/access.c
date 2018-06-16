@@ -1,4 +1,4 @@
-/* Copyright 2011-2016 Tyler Gilbert; 
+/* Copyright 2011-2018 Tyler Gilbert; 
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -57,7 +57,7 @@ int access(const char * path, int amode){
 	fs = sysfs_find(path, true);
 	if ( fs == NULL ){
 		errno = ENOENT;
-		return-1;
+        return -1;
 	}
 
     if ( (ret = fs->stat(fs->config, sysfs_stripmountpath(fs, path), &st)) < 0 ){

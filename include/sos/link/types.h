@@ -1,4 +1,4 @@
-/* Copyright 2011-2016 Tyler Gilbert;
+/* Copyright 2011-2018 Tyler Gilbert;
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -98,6 +98,11 @@ struct link_tm {
 #define LINK_SI_TIMER   3    /* Sent by expiration of a timer_settime() timer */
 #define LINK_SI_ASYNCIO 4    /* Indicates completion of asycnhronous IO */
 #define LINK_SI_MESGQ   5    /* Indicates arrival of a message at an empty queue */
+
+#define	LINK_F_OK	0
+#define	LINK_R_OK	4
+#define	LINK_W_OK	2
+#define	LINK_X_OK	1
 
 #define LINK_DEV_MAX_STRING 16
 

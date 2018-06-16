@@ -1,4 +1,4 @@
-/* Copyright 2011-2016 Tyler Gilbert;
+/* Copyright 2011-2018 Tyler Gilbert;
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -37,37 +37,38 @@ int appfs_unlink(const void* cfg, const char * path);
 
 
 #define APPFS_MOUNT(mount_loc_name, cfgp, access_mode) { \
-		.mount_path = mount_loc_name, \
-		.access = access_mode, \
-		.mount = appfs_init, \
-		.unmount = SYSFS_NOTSUP, \
-		.ismounted = sysfs_always_mounted, \
-		.startup = appfs_startup, \
-		.mkfs = appfs_mkfs, \
-		.open = appfs_open, \
-		.aio = SYSFS_NOTSUP, \
-		.read = appfs_read, \
-		.write = appfs_write, \
-		.close = appfs_close, \
-		.ioctl = appfs_ioctl, \
-		.rename = SYSFS_NOTSUP, \
-		.unlink = appfs_unlink, \
-		.mkdir = SYSFS_NOTSUP, \
-		.rmdir = SYSFS_NOTSUP, \
-		.remove = SYSFS_NOTSUP, \
-		.opendir = appfs_opendir, \
-		.closedir = appfs_closedir, \
-		.readdir_r = appfs_readdir_r, \
-		.link = SYSFS_NOTSUP, \
-		.symlink = SYSFS_NOTSUP, \
-		.stat = appfs_stat, \
-		.lstat = SYSFS_NOTSUP, \
-		.fstat = appfs_fstat, \
-		.chmod = SYSFS_NOTSUP, \
-		.chown = SYSFS_NOTSUP, \
-		.unlock = SYSFS_NOTSUP_VOID, \
-		.config = cfgp, \
-}
+    .mount_path = mount_loc_name, \
+    .access = access_mode, \
+    .mount = appfs_init, \
+    .unmount = SYSFS_NOTSUP, \
+    .ismounted = sysfs_always_mounted, \
+    .startup = appfs_startup, \
+    .mkfs = appfs_mkfs, \
+    .open = appfs_open, \
+    .aio = SYSFS_NOTSUP, \
+    .read = appfs_read, \
+    .write = appfs_write, \
+    .close = appfs_close, \
+    .ioctl = appfs_ioctl, \
+    .rename = SYSFS_NOTSUP, \
+    .fsync = SYSFS_NOTSUP, \
+    .unlink = appfs_unlink, \
+    .mkdir = SYSFS_NOTSUP, \
+    .rmdir = SYSFS_NOTSUP, \
+    .remove = SYSFS_NOTSUP, \
+    .opendir = appfs_opendir, \
+    .closedir = appfs_closedir, \
+    .readdir_r = appfs_readdir_r, \
+    .link = SYSFS_NOTSUP, \
+    .symlink = SYSFS_NOTSUP, \
+    .stat = appfs_stat, \
+    .lstat = SYSFS_NOTSUP, \
+    .fstat = appfs_fstat, \
+    .chmod = SYSFS_NOTSUP, \
+    .chown = SYSFS_NOTSUP, \
+    .unlock = SYSFS_NOTSUP_VOID, \
+    .config = cfgp, \
+    }
 
 
 #endif /* SOS_FS_APPFS_H_ */

@@ -1,4 +1,4 @@
-/* Copyright 2011-2016 Tyler Gilbert; 
+/* Copyright 2011-2018 Tyler Gilbert; 
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -273,7 +273,7 @@ int sst25vf_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 	return sst25vf_share_ioctl(handle, request, ctl);
 }
 
-int sst25vf_close(const devfs_handle_t * cfg){
+int sst25vf_close(const devfs_handle_t * handle){
 	return 0;
 }
 

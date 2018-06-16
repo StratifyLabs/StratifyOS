@@ -1,6 +1,6 @@
 /*
 
-Copyright 2011-2016 Tyler Gilbert
+Copyright 2011-2018 Tyler Gilbert
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

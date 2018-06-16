@@ -1,4 +1,4 @@
-/* Copyright 2011-2016 Tyler Gilbert; 
+/* Copyright 2011-2018 Tyler Gilbert; 
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -22,17 +22,17 @@
 
 #include "sos/fs/devfs.h"
 
-int tty_usbbulk_open(const devfs_handle_t * cfg);
-int tty_usbbulk_ioctl(const devfs_handle_t * cfg, int request, void * ctl);
-int tty_usbbulk_write(const devfs_handle_t * cfg, devfs_async_t * wop);
-int tty_usbbulk_read(const devfs_handle_t * cfg, devfs_async_t * rop);
-int tty_usbbulk_close(const devfs_handle_t * cfg);
+int tty_usbbulk_open(const devfs_handle_t * handle);
+int tty_usbbulk_ioctl(const devfs_handle_t * handle, int request, void * ctl);
+int tty_usbbulk_write(const devfs_handle_t * handle, devfs_async_t * wop);
+int tty_usbbulk_read(const devfs_handle_t * handle, devfs_async_t * rop);
+int tty_usbbulk_close(const devfs_handle_t * handle);
 
-int tty_uart_open(const devfs_handle_t * cfg);
-int tty_uart_ioctl(const devfs_handle_t * cfg, int request, void * ctl);
-int tty_uart_write(const devfs_handle_t * cfg, devfs_async_t * wop);
-int tty_uart_read(const devfs_handle_t * cfg, devfs_async_t * rop);
-int tty_uart_close(const devfs_handle_t * cfg);
+int tty_uart_open(const devfs_handle_t * handle);
+int tty_uart_ioctl(const devfs_handle_t * handle, int request, void * ctl);
+int tty_uart_write(const devfs_handle_t * handle, devfs_async_t * wop);
+int tty_uart_read(const devfs_handle_t * handle, devfs_async_t * rop);
+int tty_uart_close(const devfs_handle_t * handle);
 
 
 #endif /* DEV_TTY_H_ */

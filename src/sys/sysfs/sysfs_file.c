@@ -77,7 +77,13 @@ int sysfs_file_ioctl(sysfs_file_t * file, int request, void * ctl){
     int ret = fs->ioctl(fs->config, file->handle, request, ctl);
     SYSFS_PROCESS_RETURN(ret);
     return ret;
+}
 
+int sysfs_file_fsync(sysfs_file_t * file){
+    const sysfs_t * fs = file->fs;
+    int ret = fs->fsync(fs->config, file->handle);
+    SYSFS_PROCESS_RETURN(ret);
+    return ret;
 }
 
 void update_loc(sysfs_file_t * file, int adjust){

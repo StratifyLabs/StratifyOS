@@ -40,7 +40,11 @@
 #define RANDOM_IOC_CHAR 'r'
 
 enum {
-    RANDOM_FLAG_SET_SEED = (1<<0)
+    RANDOM_FLAG_SET_SEED /*! Set the seed using I_RANDOM_SETATTR */ = (1<<0),
+    RANDOM_FLAG_IS_PSEUDO /*! Set in info flags is generator is pseudorandom */ = (1<<1),
+    RANDOM_FLAG_IS_TRUE /*! Set in info flags is generator is a true random number generator */ = (1<<2),
+    RANDOM_FLAG_ENABLE /*! Enables the random number generator */ = (1<<3),
+    RANDOM_FLAG_DISABLE /*! Disables the random number generator */ = (1<<4)
 };
 
 /*! \brief Random info
@@ -61,7 +65,7 @@ typedef struct MCU_PACK {
 #define I_RANDOM_GETVERSION _IOCTL(RANDOM_IOC_CHAR, I_MCU_GETVERSION)
 
 
-/*! \details This request reads the radio attributes.
+/*! \details This request reads the random generator information.
  *
  * Example:
  * \code
@@ -72,7 +76,7 @@ typedef struct MCU_PACK {
  */
 #define I_RANDOM_GETINFO _IOCTLR(RANDOM_IOC_CHAR, I_MCU_GETINFO, random_info_t)
 
-/*! \details This request sets the radio attributes.
+/*! \details Requests the hardware to write the random generator attributes.
  *
  * Example:
  * \code

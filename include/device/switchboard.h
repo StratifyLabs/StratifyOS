@@ -20,6 +20,7 @@
 #ifndef DEVICE_SWITCHBOARD_H_
 #define DEVICE_SWITCHBOARD_H_
 
+#include "sos/fs/types.h"
 #include "sos/dev/switchboard.h"
 
 typedef struct {

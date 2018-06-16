@@ -1,4 +1,4 @@
-/* Copyright 2011-2016 Tyler Gilbert; 
+/* Copyright 2011-2018 Tyler Gilbert; 
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -45,25 +45,25 @@
 #define FLAG_SDSC (1<<1)
 
 
-static int is_sdsc(const devfs_handle_t * cfg);
+static int is_sdsc(const devfs_handle_t * handle);
 
-static int erase_blocks(const devfs_handle_t * cfg, uint32_t block_num, uint32_t end_block);
-static int is_busy(const devfs_handle_t * cfg);
-static int get_status(const devfs_handle_t * cfg, uint8_t * buf);
-static int exec_csd(const devfs_handle_t * cfg, uint8_t * buf);
+static int erase_blocks(const devfs_handle_t * handle, uint32_t block_num, uint32_t end_block);
+static int is_busy(const devfs_handle_t * handle);
+static int get_status(const devfs_handle_t * handle, uint8_t * buf);
+static int exec_csd(const devfs_handle_t * handle, uint8_t * buf);
 
-static sd_spi_r1_t exec_cmd_r1(const devfs_handle_t * cfg, uint8_t cmd, uint32_t arg, uint8_t * r);
-//static sd_spi_r2_t _sd_spi_cmd_r2(const devfs_handle_t * cfg, uint8_t cmd, uint32_t arg, uint8_t * r);
-static sd_spi_r3_t exec_cmd_r3(const devfs_handle_t * cfg, uint8_t cmd, uint32_t arg);
+static sd_spi_r1_t exec_cmd_r1(const devfs_handle_t * handle, uint8_t cmd, uint32_t arg, uint8_t * r);
+//static sd_spi_r2_t _sd_spi_cmd_r2(const devfs_handle_t * handle, uint8_t cmd, uint32_t arg, uint8_t * r);
+static sd_spi_r3_t exec_cmd_r3(const devfs_handle_t * handle, uint8_t cmd, uint32_t arg);
 
 
-static int send_cmd(const devfs_handle_t * cfg, uint8_t cmd, uint32_t arg, uint8_t * response);
+static int send_cmd(const devfs_handle_t * handle, uint8_t cmd, uint32_t arg, uint8_t * response);
 static int parse_response(uint8_t * response, int num, sd_spi_r_t * r, uint32_t * arg);
 static int parse_data(uint8_t * dest, int nbyte, int count, uint8_t token, uint8_t * response);
-static int read_data(const devfs_handle_t * cfg, void * data, int nbyte, uint8_t token, uint8_t * first_response);
-//static int _sd_spi_write_data(const devfs_handle_t * cfg, const void * data, int nbyte);
+static int read_data(const devfs_handle_t * handle, void * data, int nbyte, uint8_t token, uint8_t * first_response);
+//static int _sd_spi_write_data(const devfs_handle_t * handle, const void * data, int nbyte);
 
-static int spi_transfer(const devfs_handle_t * cfg, const uint8_t * data_out, uint8_t * data_in, int nbyte);
+static int spi_transfer(const devfs_handle_t * handle, const uint8_t * data_out, uint8_t * data_in, int nbyte);
 
 static int try_read(const devfs_handle_t * handle, int first);
 static int continue_spi_read(void * handle, const mcu_event_t * ignore);
@@ -544,12 +544,12 @@ int sd_spi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
     return 0;
 }
 
-int sd_spi_close(const devfs_handle_t * cfg){
+int sd_spi_close(const devfs_handle_t * handle){
     return 0;
 }
 
-int is_sdsc(const devfs_handle_t * cfg){
-    sd_spi_state_t * state = (sd_spi_state_t*)cfg->state;
+int is_sdsc(const devfs_handle_t * handle){
+    sd_spi_state_t * state = (sd_spi_state_t*)handle->state;
 
     if( state->flags & FLAG_SDSC ){
         return 1;
@@ -559,24 +559,24 @@ int is_sdsc(const devfs_handle_t * cfg){
 
 }
 
-int erase_blocks(const devfs_handle_t * cfg, uint32_t block_num, uint32_t end_block){
+int erase_blocks(const devfs_handle_t * handle, uint32_t block_num, uint32_t end_block){
     sd_spi_r_t r;
 
-    if( is_sdsc(cfg) ){
+    if( is_sdsc(handle) ){
         block_num*=BLOCK_SIZE;
         end_block*=BLOCK_SIZE;
     }
 
     //cmd32, 33, then 38
-    r.r1 = exec_cmd_r1(cfg, SDSPI_CMD32_ERASE_WR_BLK_START, block_num, 0);
+    r.r1 = exec_cmd_r1(handle, SDSPI_CMD32_ERASE_WR_BLK_START, block_num, 0);
     if( r.r1.u8 != 0 ){
         return -1;
     }
-    r.r1 = exec_cmd_r1(cfg, SDSPI_CMD33_ERASE_WR_BLK_END, end_block, 0);
+    r.r1 = exec_cmd_r1(handle, SDSPI_CMD33_ERASE_WR_BLK_END, end_block, 0);
     if( r.r1.u8 != 0 ){
         return -1;
     }
-    r.r1 = exec_cmd_r1(cfg, SDSPI_CMD38_ERASE, 0, 0);
+    r.r1 = exec_cmd_r1(handle, SDSPI_CMD38_ERASE, 0, 0);
     if( r.r1.u8 != 0 ){
         return -1;
     }
@@ -584,32 +584,32 @@ int erase_blocks(const devfs_handle_t * cfg, uint32_t block_num, uint32_t end_bl
     return 0;
 }
 
-int is_busy(const devfs_handle_t * cfg){
+int is_busy(const devfs_handle_t * handle){
     uint8_t c;
-    assert_cs(cfg);
+    assert_cs(handle);
     cortexm_delay_us(LONG_DELAY);
-    c = mcu_spi_swap(cfg, (void*)0xFF);
-    deassert_cs(cfg);
+    c = mcu_spi_swap(handle, (void*)0xFF);
+    deassert_cs(handle);
     return (c == 0x00);
 }
 
-int get_status(const devfs_handle_t * cfg, uint8_t * buf){
+int get_status(const devfs_handle_t * handle, uint8_t * buf){
     sd_spi_r_t resp;
     int ret;
     uint8_t tmp[CMD_FRAME_SIZE];
 
-    resp.r1 = exec_cmd_r1(cfg, SDSPI_CMD55_APP_CMD, 0, tmp);
+    resp.r1 = exec_cmd_r1(handle, SDSPI_CMD55_APP_CMD, 0, tmp);
     if( resp.r1.u8 != 0x00 ){
         return SYSFS_SET_RETURN(EIO);
     }
 
-    resp.r1 = exec_cmd_r1(cfg, SDSPI_CMD13_SD_STATUS, 0, tmp);
+    resp.r1 = exec_cmd_r1(handle, SDSPI_CMD13_SD_STATUS, 0, tmp);
     if( resp.r1.u8 != 0x00 ){
         return SYSFS_SET_RETURN(EIO);
     }
 
     //now read the data
-    ret = read_data(cfg, buf, sizeof(_sd_spi_status_t), SDSPI_START_BLOCK_TOKEN, tmp);
+    ret = read_data(handle, buf, sizeof(_sd_spi_status_t), SDSPI_START_BLOCK_TOKEN, tmp);
     if( ret < 0 ){
         return SYSFS_SET_RETURN(EIO);
     }
@@ -617,18 +617,18 @@ int get_status(const devfs_handle_t * cfg, uint8_t * buf){
     return ret;
 }
 
-int exec_csd(const devfs_handle_t * cfg, uint8_t * buf){
+int exec_csd(const devfs_handle_t * handle, uint8_t * buf){
     sd_spi_r_t resp;
     int ret;
     uint8_t tmp[CMD_FRAME_SIZE];
 
-    resp.r1 = exec_cmd_r1(cfg, SDSPI_CMD9_SEND_CSD, 0, tmp);
+    resp.r1 = exec_cmd_r1(handle, SDSPI_CMD9_SEND_CSD, 0, tmp);
     if( resp.r1.u8 != 0x00 ){
         return SYSFS_SET_RETURN(EIO);
     }
 
     //now read the data
-    ret = read_data(cfg, buf, sizeof(sd_spi_csd_t), SDSPI_START_BLOCK_TOKEN, tmp);
+    ret = read_data(handle, buf, sizeof(sd_spi_csd_t), SDSPI_START_BLOCK_TOKEN, tmp);
     if( ret < 0 ){
         return SYSFS_SET_RETURN(EIO);
     }
@@ -636,7 +636,7 @@ int exec_csd(const devfs_handle_t * cfg, uint8_t * buf){
     return ret;
 }
 
-int send_cmd(const devfs_handle_t * cfg, uint8_t cmd, uint32_t arg, uint8_t * response){
+int send_cmd(const devfs_handle_t * handle, uint8_t cmd, uint32_t arg, uint8_t * response){
     uint8_t buffer[CMD_FRAME_SIZE];
     int i;
     int ret;
@@ -656,11 +656,11 @@ int send_cmd(const devfs_handle_t * cfg, uint8_t cmd, uint32_t arg, uint8_t * re
     retries = 0;
     do {
         //read the response
-        assert_cs(cfg);
+        assert_cs(handle);
         cortexm_delay_us(LONG_DELAY);
-        spi_transfer(cfg, buffer, response, CMD_FRAME_SIZE);
+        spi_transfer(handle, buffer, response, CMD_FRAME_SIZE);
         cortexm_delay_us(LONG_DELAY);
-        deassert_cs(cfg);
+        deassert_cs(handle);
 
         ret = 0;
         if( response != 0 ){
@@ -698,7 +698,7 @@ int parse_data(uint8_t * dest, int nbyte, int count, uint8_t token, uint8_t * re
     return count;
 }
 
-int read_data(const devfs_handle_t * cfg, void * data, int nbyte, uint8_t token, uint8_t * first_response){
+int read_data(const devfs_handle_t * handle, void * data, int nbyte, uint8_t token, uint8_t * first_response){
     //look through the first response for the data token
     int timeout;
     uint8_t response[CMD_FRAME_SIZE];
@@ -708,16 +708,16 @@ int read_data(const devfs_handle_t * cfg, void * data, int nbyte, uint8_t token,
 
     timeout = 0;
     while( count < nbyte ){
-        assert_cs(cfg);
+        assert_cs(handle);
         cortexm_delay_us(LONG_DELAY);
         if( count >= 0 ){
-            spi_transfer(cfg, 0, (uint8_t*)data + count, nbyte - count);
+            spi_transfer(handle, 0, (uint8_t*)data + count, nbyte - count);
             count = nbyte;
         } else {
-            spi_transfer(cfg, 0, response, CMD_FRAME_SIZE);
+            spi_transfer(handle, 0, response, CMD_FRAME_SIZE);
             count = parse_data((uint8_t*)data, nbyte, count, token, response);
         }
-        deassert_cs(cfg);
+        deassert_cs(handle);
 
 
         timeout++;
@@ -726,29 +726,29 @@ int read_data(const devfs_handle_t * cfg, void * data, int nbyte, uint8_t token,
         }
     }
 
-    assert_cs(cfg);
+    assert_cs(handle);
     cortexm_delay_us(LONG_DELAY);
-    spi_transfer(cfg, 0, response, CMD_FRAME_SIZE); //gobble up any checksum
-    deassert_cs(cfg);
+    spi_transfer(handle, 0, response, CMD_FRAME_SIZE); //gobble up any checksum
+    deassert_cs(handle);
 
     //verify the checksum on data read
 
     return count;
 }
 
-int spi_transfer(const devfs_handle_t * cfg, const uint8_t * data_out, uint8_t * data_in, int nbyte){
+int spi_transfer(const devfs_handle_t * handle, const uint8_t * data_out, uint8_t * data_in, int nbyte){
     int i;
     for(i=0; i < nbyte; i++){
         if( data_out == 0 ){
             if( data_in != 0 ){
-                data_in[i] = mcu_spi_swap(cfg, (void*)0xFF);
+                data_in[i] = mcu_spi_swap(handle, (void*)0xFF);
             } else {
-                mcu_spi_swap(cfg, (void*)0xFF);
+                mcu_spi_swap(handle, (void*)0xFF);
             }
         } else if( data_in == 0) {
-            mcu_spi_swap(cfg, (void*)(ssize_t)data_out[i]);
+            mcu_spi_swap(handle, (void*)(ssize_t)data_out[i]);
         } else {
-            data_in[i] = mcu_spi_swap(cfg, (void*)(ssize_t)data_out[i]);
+            data_in[i] = mcu_spi_swap(handle, (void*)(ssize_t)data_out[i]);
         }
     }
     return nbyte;
@@ -785,7 +785,7 @@ int parse_response(uint8_t * response, int num, sd_spi_r_t * r, uint32_t * arg){
     return false;
 }
 
-sd_spi_r1_t exec_cmd_r1(const devfs_handle_t * cfg, uint8_t cmd, uint32_t arg, uint8_t * r){
+sd_spi_r1_t exec_cmd_r1(const devfs_handle_t * handle, uint8_t cmd, uint32_t arg, uint8_t * r){
     uint8_t tmp[CMD_FRAME_SIZE];
     uint8_t * response;
     if( r == 0 ){
@@ -794,7 +794,7 @@ sd_spi_r1_t exec_cmd_r1(const devfs_handle_t * cfg, uint8_t cmd, uint32_t arg, u
         response = r;
     }
     sd_spi_r_t ret;
-    send_cmd(cfg, cmd, arg, response);
+    send_cmd(handle, cmd, arg, response);
     memset(&r, 0xFF, sizeof(sd_spi_r_t));
     if( parse_response(response, 1, &ret, 0) == false ){
         memset(&ret, 0xFF, sizeof(sd_spi_r_t));
@@ -803,7 +803,7 @@ sd_spi_r1_t exec_cmd_r1(const devfs_handle_t * cfg, uint8_t cmd, uint32_t arg, u
 }
 
 /*
-sd_spi_r2_t _sd_spi_cmd_r2(const devfs_handle_t * cfg, uint8_t cmd, uint32_t arg, uint8_t * r){
+sd_spi_r2_t _sd_spi_cmd_r2(const devfs_handle_t * handle, uint8_t cmd, uint32_t arg, uint8_t * r){
     uint8_t tmp[CMD_FRAME_SIZE];
     uint8_t * response;
     if( r == 0 ){
@@ -812,7 +812,7 @@ sd_spi_r2_t _sd_spi_cmd_r2(const devfs_handle_t * cfg, uint8_t cmd, uint32_t arg
         response = r;
     }
     sd_spi_r_t ret;
-    _sd_spi_send_cmd(cfg, cmd, arg, response);
+    _sd_spi_send_cmd(handle, cmd, arg, response);
     memset(&ret, 0xFF, sizeof(sd_spi_r_t));
     if( _sd_spi_parse_response(response, 2, &ret, 0) == false ){
         memset(&ret, 0xFF, sizeof(sd_spi_r_t));
@@ -821,10 +821,10 @@ sd_spi_r2_t _sd_spi_cmd_r2(const devfs_handle_t * cfg, uint8_t cmd, uint32_t arg
 }
  */
 
-sd_spi_r3_t exec_cmd_r3(const devfs_handle_t * cfg, uint8_t cmd, uint32_t arg){
+sd_spi_r3_t exec_cmd_r3(const devfs_handle_t * handle, uint8_t cmd, uint32_t arg){
     uint8_t response[CMD_FRAME_SIZE];
     sd_spi_r_t r;
-    send_cmd(cfg, cmd, arg, response);
+    send_cmd(handle, cmd, arg, response);
     memset(&r, 0xFF, sizeof(sd_spi_r_t));
     if( parse_response(response, 3, &r, 0) == false ){
         memset(&r, 0xFF, sizeof(sd_spi_r_t));

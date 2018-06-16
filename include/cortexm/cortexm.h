@@ -1,4 +1,4 @@
-/* Copyright 2011-2016 Tyler Gilbert;
+/* Copyright 2011-2018 Tyler Gilbert;
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -64,6 +64,7 @@ void cortexm_set_thread_mode() MCU_ROOT_CODE;
 
 void cortexm_delay_us(u32 us);
 void cortexm_delay_ms(u32 ms);
+void cortexm_delay_systick(u32 ticks);
 
 void cortexm_set_vector_table_addr(void * addr);
 

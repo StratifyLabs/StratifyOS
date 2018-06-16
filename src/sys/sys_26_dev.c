@@ -1,4 +1,4 @@
-/* Copyright 2011-2016 Tyler Gilbert; 
+/* Copyright 2011-2018 Tyler Gilbert; 
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -43,11 +43,11 @@ uint8_t sys_euid MCU_SYS_MEM;
 
 extern u32 _text;
 
-int sys_26_open(const devfs_handle_t * cfg){
+int sys_26_open(const devfs_handle_t * handle){
 	return 0;
 }
 
-int sys_26_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
+int sys_26_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 	sys_id_t * id = ctl;
 	sys_26_info_t * info = ctl;
 	sys_killattr_t * killattr = ctl;
@@ -107,17 +107,17 @@ int sys_26_ioctl(const devfs_handle_t * cfg, int request, void * ctl){
 	return -1;
 }
 
-int sys_26_read(const devfs_handle_t * cfg, devfs_async_t * rop){
+int sys_26_read(const devfs_handle_t * handle, devfs_async_t * rop){
 	errno = ENOTSUP;
 	return -1;
 }
 
-int sys_26_write(const devfs_handle_t * cfg, devfs_async_t * wop){
+int sys_26_write(const devfs_handle_t * handle, devfs_async_t * wop){
 	errno = ENOTSUP;
 	return -1;
 }
 
-int sys_26_close(const devfs_handle_t * cfg){
+int sys_26_close(const devfs_handle_t * handle){
 	return 0;
 }
 

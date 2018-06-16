@@ -1,4 +1,4 @@
-/* Copyright 2011-2016 Tyler Gilbert; 
+/* Copyright 2011-2018 Tyler Gilbert; 
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -213,6 +213,12 @@ int devfs_aio(const void * config, void * handle, struct aiocb * aio){
 
 int devfs_ioctl(const void * cfg, void * handle, int request, void * ctl){
     sysfs_ioctl_t args;
+
+    if( request == I_DEVFS_GETNAME ){
+        const devfs_device_t * list = (const devfs_device_t*)cfg;
+        return devfs_lookup_name(list, handle, ctl);
+    }
+
     args.cfg = cfg;
     args.handle = handle;
     args.request = request;

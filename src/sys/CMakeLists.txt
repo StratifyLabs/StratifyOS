@@ -124,11 +124,13 @@ if( ${SOS_BUILD_CONFIG} STREQUAL arm )
       ${SOURCES_PREFIX}/unistd/_symlink.c
       ${SOURCES_PREFIX}/unistd/_unlink.c
       ${SOURCES_PREFIX}/unistd/_write.c
-      ${SOURCES_PREFIX}/unistd/access.c
-      ${SOURCES_PREFIX}/unistd/chmod.c
+			${SOURCES_PREFIX}/unistd/access.c
+			${SOURCES_PREFIX}/unistd/crypt.c
+			${SOURCES_PREFIX}/unistd/chmod.c
       ${SOURCES_PREFIX}/unistd/chown.c
-      ${SOURCES_PREFIX}/unistd/ioctl.c
-      ${SOURCES_PREFIX}/unistd/lstat.c
+			${SOURCES_PREFIX}/unistd/fsync.c
+			${SOURCES_PREFIX}/unistd/ioctl.c
+			${SOURCES_PREFIX}/unistd/lstat.c
       ${SOURCES_PREFIX}/unistd/mkdir.c
       ${SOURCES_PREFIX}/unistd/rmdir.c
       ${SOURCES_PREFIX}/unistd/sleep.c
