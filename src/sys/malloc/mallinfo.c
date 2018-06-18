@@ -19,7 +19,7 @@
 
 
 
-#include <sys/malloc/malloc_local.h>
+#include "sys/malloc/malloc_local.h"
 
 struct mallinfo mallinfo(){
 	return _mallinfo_r(_REENT);
@@ -63,6 +63,7 @@ struct mallinfo _mallinfo_r(struct _reent * reent_ptr){
 		chunk += chunk->header.num_chunks;
 	}
 
+    //this calculation may be wrong -- needs to account for the number o header entries Issue #143
 	mi.arena = (total_chunks) * MALLOC_CHUNK_SIZE + (sizeof(malloc_chunk_t) - MALLOC_DATA_SIZE);
 	mi.ordblks = total_free_chunks;
 	mi.fordblks = total_free_chunks * MALLOC_CHUNK_SIZE;

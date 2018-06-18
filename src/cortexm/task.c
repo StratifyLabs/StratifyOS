@@ -445,7 +445,7 @@ void mcu_core_pendsv_handler(){
     cortexm_disable_interrupts();
     int i;
     for(i=1; i < task_get_total(); i++){
-        //Tasks must meet the follow 4 criteria to be current executing
+        //Tasks must meet the follow 4 criteria to be currently executing
         if ( task_enabled(i) && //Task is currently valid and enabled
              task_active_asserted(i) && //not blocked on anything
              !task_stopped_asserted(i) && //not stopped by a signal

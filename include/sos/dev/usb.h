@@ -57,11 +57,11 @@ typedef enum {
 	USB_FLAG_SET_DEVICE /*! device mode */ = (1<<1),
 	USB_FLAG_SET_HOST /*! host mode */ = (1<<2),
 	USB_FLAG_SET_OTG /*! on-the-go mode */ = (1<<3),
-	USB_FLAG_RESET = (1<<4),
-	USB_FLAG_ATTACH = (1<<5),
-	USB_FLAG_DETACH = (1<<6),
-	USB_FLAG_CONFIGURE = (1<<7),
-	USB_FLAG_UNCONFIGURE = (1<<8),
+    USB_FLAG_RESET /*! Rest the USB */ = (1<<4),
+    USB_FLAG_ATTACH /*! Attach USB device */ = (1<<5),
+    USB_FLAG_DETACH /*! Detach USB device */ = (1<<6),
+    USB_FLAG_CONFIGURE /*! Configure USB device */ = (1<<7),
+    USB_FLAG_UNCONFIGURE /*! Unconfigure USB device */ = (1<<8),
 	USB_FLAG_SET_ADDRESS = (1<<9),
 	USB_FLAG_RESET_ENDPOINT = (1<<10),
 	USB_FLAG_ENABLE_ENDPOINT = (1<<11),
@@ -72,7 +72,8 @@ typedef enum {
 	USB_FLAG_IS_SOF_ENABLED = (1<<16),
 	USB_FLAG_IS_LOW_POWER_MODE_ENABLED = (1<<17),
 	USB_FLAG_IS_VBUS_SENSING_ENABLED = (1<<18),
-    USB_FLAG_IS_HIGH_SPEED = (1<<19)
+    USB_FLAG_IS_HIGH_SPEED = (1<<19),
+    USB_FLAG_IS_BATTERY_CHARGING_ENABLED = (1<<20)
 } usb_flag_t;
 
 
