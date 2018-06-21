@@ -28,19 +28,15 @@
 #include "sos/fs/sysfs.h"
 
 typedef struct {
+    sysfs_drive_state_t drive;
     int list_block;
     int serialno_killed;
     int serialno;
     drive_info_t dattr;
-    pthread_mutex_t mutex;
 } sffs_state_t;
 
 typedef struct {
-    const sysfs_t * devfs;
-    const void * dev_cfg;
-    open_file_t * open_file;
-    const char name[NAME_MAX];
-    sffs_state_t * state;
+    sysfs_drive_config_t drive;
 } sffs_config_t;
 
 

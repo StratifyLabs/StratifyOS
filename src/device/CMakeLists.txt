@@ -18,9 +18,10 @@ if( ${SOS_BUILD_CONFIG} STREQUAL arm )
       ${SOURCES_PREFIX}/led_pwm.c
       ${SOURCES_PREFIX}/null.c
       ${SOURCES_PREFIX}/random.c
-      ${SOURCES_PREFIX}/sd_spi_local.h
-      ${SOURCES_PREFIX}/sd_spi.c
-			${SOURCES_PREFIX}/sd_ssp.c
+			${SOURCES_PREFIX}/drive_sdspi_local.h
+			${SOURCES_PREFIX}/drive_sdio.c
+			${SOURCES_PREFIX}/drive_sdspi.c
+			${SOURCES_PREFIX}/drive_sdssp.c
 			${SOURCES_PREFIX}/switchboard.c
 			${SOURCES_PREFIX}/tty_uart.c
       ${SOURCES_PREFIX}/tty_usbbulk.c

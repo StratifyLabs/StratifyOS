@@ -20,21 +20,48 @@
 #include "task_local.h"
 #include "cortexm/mpu.h"
 
+//returns 1 if target and size fit in task_memory
+static int is_part_of_memory(void * target, int size, volatile task_memory_t * task_memory);
+
 static int init_os_memory_protection(task_memories_t * os_mem);
 int task_mpu_calc_protection(task_memories_t * mem);
 
 int task_validate_memory(void * target, int size){
-    //does target fit in the current memory protection
-    u32 task_address = (u32)mpu_addr((u32)sos_task_table[task_get_current()].mem.data.addr);
-    u32 task_size = mpu_size(sos_task_table[task_get_current()].mem.data.size);
-    u32 target_address = (u32)target;
-    u32 target_size = (u32)size;
-    if( (target_address >= task_address) &&
-            (target_address+target_size <= task_address + task_size) ){
+
+    //most likely
+    if( is_part_of_memory(target, size, &sos_task_table[task_get_current()].mem.data) ){
         return 0;
     }
+
+    //next most likely
+    if( is_part_of_memory(target, size, &sos_task_table[task_get_current()].mem.code) ){
+        return 0;
+    }
+
+    //part of shared kernel memory?
+    if( is_part_of_memory(target, size, &sos_task_table[0].mem.data) ){
+        return 0;
+    }
+
+    //part of kernel code (const data may be read)
+    if( is_part_of_memory(target, size, &sos_task_table[0].mem.code) ){
+        return 0;
+    }
+
+
     //target and size overflow the memory
     return -1;
+}
+
+int is_part_of_memory(void * target, int size, volatile task_memory_t * task_memory){
+    u32 task_address = (u32)mpu_addr((u32)task_memory->addr);
+    u32 task_size = mpu_size(task_memory->size);
+    u32 target_address = (u32)target;
+    u32 target_size = (u32)size;
+    if( (target_address >= task_address) && (target_address+target_size <= task_address + task_size) ){
+        return 1;
+    }
+    return 0;
 }
 
 int task_init_mpu(void * system_memory, int system_memory_size){

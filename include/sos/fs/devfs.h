@@ -110,22 +110,26 @@ int devfs_lookup_name(const devfs_device_t * list, const devfs_device_t * device
 static inline int devfs_mcu_ioctl(const devfs_handle_t * handle,
                                   int request,
                                   void * ctl,
+                                  char ident,
                                   int (* const ioctl_func_table[])(const devfs_handle_t*, void*),
                                   const int ioctl_func_table_size) MCU_ALWAYS_INLINE MCU_ROOT_CODE;
 int devfs_mcu_ioctl(const devfs_handle_t * handle,
                     int request,
                     void * ctl,
-                    int (* const ioctl_func_table[])(const devfs_handle_t*, void*), const int ioctl_func_table_size){
+                    char ident,
+                    int (* const ioctl_func_table[])(const devfs_handle_t*, void*),
+                    const int ioctl_func_table_size){
     u32 periph_request;
 
     periph_request = _IOCTL_NUM(request);
 
     //check the MCU IDENT request
-
-    if ( periph_request < ioctl_func_table_size ) {
-        return ioctl_func_table[periph_request](handle, ctl);
+    if( ident == _IOCTL_IDENT(request) ){
+        if ( periph_request < ioctl_func_table_size ) {
+            return ioctl_func_table[periph_request](handle, ctl);
+        }
     }
-    return -1;
+    return SYSFS_SET_RETURN(EINVAL);
 }
 
 #define DEVFS_DRIVER_IS_BUSY(transfer, async) \
@@ -133,7 +137,7 @@ int devfs_mcu_ioctl(const devfs_handle_t * handle,
     if( async->nbyte == 0 ){ return 0; } \
     transfer = async
 
-#define DEVFS_MCU_DRIVER_IOCTL_FUNCTION(driver_name, version, ioctl_total, ...) \
+#define DEVFS_MCU_DRIVER_IOCTL_FUNCTION(driver_name, version, ident_char, ioctl_total, ...) \
     int mcu_##driver_name##_getversion(const devfs_handle_t * handle, void * ctl){ return version; } \
     int (* const mcu_##driver_name##_ioctl_func_table[ioctl_total])(const devfs_handle_t*, void*) = { \
     mcu_##driver_name##_getversion, \
@@ -141,17 +145,17 @@ int devfs_mcu_ioctl(const devfs_handle_t * handle,
     mcu_##driver_name##_setattr, \
     mcu_##driver_name##_setaction, \
     __VA_ARGS__ }; \
-    int mcu_##driver_name##_ioctl(const devfs_handle_t * handle, int request, void * ctl){ return devfs_mcu_ioctl(handle, request, ctl, mcu_##driver_name##_ioctl_func_table, ioctl_total); }
+    int mcu_##driver_name##_ioctl(const devfs_handle_t * handle, int request, void * ctl){ return devfs_mcu_ioctl(handle, request, ctl, ident_char, mcu_##driver_name##_ioctl_func_table, ioctl_total); }
 
 
-#define DEVFS_MCU_DRIVER_IOCTL_FUNCTION_MIN(driver_name, version) \
+#define DEVFS_MCU_DRIVER_IOCTL_FUNCTION_MIN(driver_name, version, ident_char) \
     int mcu_##driver_name##_get_version(const devfs_handle_t * handle, void * ctl){ return version; } \
     int (* const mcu_##driver_name##_ioctl_func_table[I_MCU_TOTAL])(const devfs_handle_t*, void*) = { \
     mcu_##driver_name##_get_version, \
     mcu_##driver_name##_getinfo, \
     mcu_##driver_name##_setattr, \
     mcu_##driver_name##_setaction }; \
-    int mcu_##driver_name##_ioctl(const devfs_handle_t * handle, int request, void * ctl){ return devfs_mcu_ioctl(handle, request, ctl, mcu_##driver_name##_ioctl_func_table, I_MCU_TOTAL); }
+    int mcu_##driver_name##_ioctl(const devfs_handle_t * handle, int request, void * ctl){ return devfs_mcu_ioctl(handle, request, ctl, ident_char, mcu_##driver_name##_ioctl_func_table, I_MCU_TOTAL); }
 
 
 #define DEVFS_DEVICE(device_name, periph_name, handle_port, handle_config, handle_state, mode_value, uid_value, device_type) { \

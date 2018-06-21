@@ -20,10 +20,10 @@
 
 #include "sos/sos.h"
 
-#include <device/sd_spi_local.h>
 #include <errno.h>
 #include <unistd.h>
 #include "cortexm/cortexm.h"
+#include "drive_sdspi_local.h"
 #include "mcu/pio.h"
 #include "mcu/spi.h"
 #include "mcu/core.h"
@@ -52,16 +52,16 @@ static int is_busy(const devfs_handle_t * handle);
 static int get_status(const devfs_handle_t * handle, uint8_t * buf);
 static int exec_csd(const devfs_handle_t * handle, uint8_t * buf);
 
-static sd_spi_r1_t exec_cmd_r1(const devfs_handle_t * handle, uint8_t cmd, uint32_t arg, uint8_t * r);
-//static sd_spi_r2_t _sd_spi_cmd_r2(const devfs_handle_t * handle, uint8_t cmd, uint32_t arg, uint8_t * r);
-static sd_spi_r3_t exec_cmd_r3(const devfs_handle_t * handle, uint8_t cmd, uint32_t arg);
+static drive_sdspi_r1_t exec_cmd_r1(const devfs_handle_t * handle, uint8_t cmd, uint32_t arg, uint8_t * r);
+//static drive_sdspi_r2_t _drive_sdspi_cmd_r2(const devfs_handle_t * handle, uint8_t cmd, uint32_t arg, uint8_t * r);
+static drive_sdspi_r3_t exec_cmd_r3(const devfs_handle_t * handle, uint8_t cmd, uint32_t arg);
 
 
 static int send_cmd(const devfs_handle_t * handle, uint8_t cmd, uint32_t arg, uint8_t * response);
-static int parse_response(uint8_t * response, int num, sd_spi_r_t * r, uint32_t * arg);
+static int parse_response(uint8_t * response, int num, drive_sdspi_r_t * r, uint32_t * arg);
 static int parse_data(uint8_t * dest, int nbyte, int count, uint8_t token, uint8_t * response);
 static int read_data(const devfs_handle_t * handle, void * data, int nbyte, uint8_t token, uint8_t * first_response);
-//static int _sd_spi_write_data(const devfs_handle_t * handle, const void * data, int nbyte);
+//static int _drive_sdspi_write_data(const devfs_handle_t * handle, const void * data, int nbyte);
 
 static int spi_transfer(const devfs_handle_t * handle, const uint8_t * data_out, uint8_t * data_in, int nbyte);
 
@@ -70,7 +70,7 @@ static int continue_spi_read(void * handle, const mcu_event_t * ignore);
 static int continue_spi_write(void * handle, const mcu_event_t * ignore);
 
 static void deassert_cs(const devfs_handle_t * handle){
-    const sd_spi_config_t * config = handle->config;
+    const drive_sdspi_config_t * config = handle->config;
     devfs_handle_t pio_handle;
     pio_handle.port = config->cs.port;
     pio_handle.config = 0;
@@ -79,7 +79,7 @@ static void deassert_cs(const devfs_handle_t * handle){
 }
 
 static void assert_cs(const devfs_handle_t * handle){
-    const sd_spi_config_t * config = handle->config;
+    const drive_sdspi_config_t * config = handle->config;
     devfs_handle_t pio_handle;
     pio_handle.port = config->cs.port;
     pio_handle.config = 0;
@@ -90,10 +90,10 @@ static void assert_cs(const devfs_handle_t * handle){
 static void state_callback(const devfs_handle_t * handle, int err, int nbyte);
 
 
-int sd_spi_open(const devfs_handle_t * handle){
+int drive_sdspi_open(const devfs_handle_t * handle){
     int err;
     pio_attr_t attr;
-    const sd_spi_config_t * config = handle->config;
+    const drive_sdspi_config_t * config = handle->config;
     devfs_handle_t pio_handle;
     pio_handle.port = config->cs.port;
     pio_handle.config = 0;
@@ -118,7 +118,7 @@ int sd_spi_open(const devfs_handle_t * handle){
 
 
 void state_callback(const devfs_handle_t * handle, int err, int nbyte){
-    sd_spi_state_t * state = handle->state;
+    drive_sdspi_state_t * state = handle->state;
     if( state->handler.callback ){
         *(state->nbyte) = nbyte;
         if( nbyte < 0 ){
@@ -133,7 +133,7 @@ void state_callback(const devfs_handle_t * handle, int err, int nbyte){
 int continue_spi_read(void * handle, const mcu_event_t * ignore){
     //data has been read -- complete the operation
     int err = 0;
-    sd_spi_state_t * state = ((const devfs_handle_t*)handle)->state;
+    drive_sdspi_state_t * state = ((const devfs_handle_t*)handle)->state;
     u16 checksum;
     u16 checksum_calc;
 
@@ -169,7 +169,7 @@ int continue_spi_read(void * handle, const mcu_event_t * ignore){
 
 int try_read(const devfs_handle_t * handle, int first){
     int ret;
-    sd_spi_state_t * state = handle->state;
+    drive_sdspi_state_t * state = handle->state;
     state->count = parse_data((uint8_t*)state->buf, *(state->nbyte), -1, SDSPI_START_BLOCK_TOKEN, state->cmd);
     if( state->count >= 0 ){
         state->op.nbyte = *(state->nbyte) - state->count;
@@ -195,10 +195,10 @@ int try_read(const devfs_handle_t * handle, int first){
     return 1;
 }
 
-int sd_spi_read(const devfs_handle_t * handle, devfs_async_t * rop){
+int drive_sdspi_read(const devfs_handle_t * handle, devfs_async_t * rop){
     //first write the header command
-    sd_spi_state_t * state = handle->state;
-    sd_spi_r1_t r1;
+    drive_sdspi_state_t * state = handle->state;
+    drive_sdspi_r1_t r1;
     u32 loc;
 
     if( rop->nbyte != BLOCK_SIZE ){
@@ -256,7 +256,7 @@ int sd_spi_read(const devfs_handle_t * handle, devfs_async_t * rop){
 }
 
 int continue_spi_write(void * handle, const mcu_event_t * ignore){
-    sd_spi_state_t * state = ((const devfs_handle_t *)handle)->state;
+    drive_sdspi_state_t * state = ((const devfs_handle_t *)handle)->state;
 
     uint16_t checksum;
 
@@ -285,9 +285,9 @@ int continue_spi_write(void * handle, const mcu_event_t * ignore){
 }
 
 
-int sd_spi_write(const devfs_handle_t * handle, devfs_async_t * wop){
-    sd_spi_state_t * state = handle->state;
-    sd_spi_r1_t r1;
+int drive_sdspi_write(const devfs_handle_t * handle, devfs_async_t * wop){
+    drive_sdspi_state_t * state = handle->state;
+    drive_sdspi_r1_t r1;
     u32 loc;
 
 
@@ -338,12 +338,12 @@ int sd_spi_write(const devfs_handle_t * handle, devfs_async_t * wop){
     return mcu_spi_write(handle, &(state->op));
 }
 
-int sd_spi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
-    sd_spi_state_t * state = (sd_spi_state_t*)handle->state;
-    const sd_spi_config_t * config = handle->config;
+int drive_sdspi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
+    drive_sdspi_state_t * state = (drive_sdspi_state_t*)handle->state;
+    const drive_sdspi_config_t * config = handle->config;
     drive_info_t * info = ctl;
     drive_attr_t * attr = ctl;
-    sd_spi_r_t resp;
+    drive_sdspi_r_t resp;
     u32 o_flags;
     spi_attr_t spi_attr;
     int timeout;
@@ -478,9 +478,6 @@ int sd_spi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 
         break;
 
-    case I_SDSPI_STATUS:
-        break;
-
     case I_DRIVE_ISBUSY:
         return is_busy(handle);
 
@@ -544,12 +541,12 @@ int sd_spi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
     return 0;
 }
 
-int sd_spi_close(const devfs_handle_t * handle){
+int drive_sdspi_close(const devfs_handle_t * handle){
     return 0;
 }
 
 int is_sdsc(const devfs_handle_t * handle){
-    sd_spi_state_t * state = (sd_spi_state_t*)handle->state;
+    drive_sdspi_state_t * state = (drive_sdspi_state_t*)handle->state;
 
     if( state->flags & FLAG_SDSC ){
         return 1;
@@ -560,7 +557,7 @@ int is_sdsc(const devfs_handle_t * handle){
 }
 
 int erase_blocks(const devfs_handle_t * handle, uint32_t block_num, uint32_t end_block){
-    sd_spi_r_t r;
+    drive_sdspi_r_t r;
 
     if( is_sdsc(handle) ){
         block_num*=BLOCK_SIZE;
@@ -594,7 +591,7 @@ int is_busy(const devfs_handle_t * handle){
 }
 
 int get_status(const devfs_handle_t * handle, uint8_t * buf){
-    sd_spi_r_t resp;
+    drive_sdspi_r_t resp;
     int ret;
     uint8_t tmp[CMD_FRAME_SIZE];
 
@@ -609,7 +606,7 @@ int get_status(const devfs_handle_t * handle, uint8_t * buf){
     }
 
     //now read the data
-    ret = read_data(handle, buf, sizeof(_sd_spi_status_t), SDSPI_START_BLOCK_TOKEN, tmp);
+    ret = read_data(handle, buf, sizeof(_drive_sdspi_status_t), SDSPI_START_BLOCK_TOKEN, tmp);
     if( ret < 0 ){
         return SYSFS_SET_RETURN(EIO);
     }
@@ -618,7 +615,7 @@ int get_status(const devfs_handle_t * handle, uint8_t * buf){
 }
 
 int exec_csd(const devfs_handle_t * handle, uint8_t * buf){
-    sd_spi_r_t resp;
+    drive_sdspi_r_t resp;
     int ret;
     uint8_t tmp[CMD_FRAME_SIZE];
 
@@ -628,7 +625,7 @@ int exec_csd(const devfs_handle_t * handle, uint8_t * buf){
     }
 
     //now read the data
-    ret = read_data(handle, buf, sizeof(sd_spi_csd_t), SDSPI_START_BLOCK_TOKEN, tmp);
+    ret = read_data(handle, buf, sizeof(drive_sdspi_csd_t), SDSPI_START_BLOCK_TOKEN, tmp);
     if( ret < 0 ){
         return SYSFS_SET_RETURN(EIO);
     }
@@ -641,7 +638,7 @@ int send_cmd(const devfs_handle_t * handle, uint8_t cmd, uint32_t arg, uint8_t *
     int i;
     int ret;
     int retries;
-    sd_spi_r_t resp;
+    drive_sdspi_r_t resp;
     //memset(&resp, 0, sizeof(resp));
     memset(buffer, 0xFF, CMD_FRAME_SIZE);
     buffer[0] = 0x40 | cmd;
@@ -754,7 +751,7 @@ int spi_transfer(const devfs_handle_t * handle, const uint8_t * data_out, uint8_
     return nbyte;
 }
 
-int parse_response(uint8_t * response, int num, sd_spi_r_t * r, uint32_t * arg){
+int parse_response(uint8_t * response, int num, drive_sdspi_r_t * r, uint32_t * arg){
     int i;
     uint8_t * arg_u8 = (uint8_t *)arg;
     for(i=0; i < CMD_FRAME_SIZE; i++){
@@ -769,7 +766,7 @@ int parse_response(uint8_t * response, int num, sd_spi_r_t * r, uint32_t * arg){
                 r->u8[1] = response[i+1];
                 return true;
             case 3:
-                memcpy(r, response+i, sizeof(sd_spi_r3_t));
+                memcpy(r, response+i, sizeof(drive_sdspi_r3_t));
                 if( arg != 0 ){
                     //convert to little endian
                     arg_u8[0] = r->r3.arg[3];
@@ -785,7 +782,7 @@ int parse_response(uint8_t * response, int num, sd_spi_r_t * r, uint32_t * arg){
     return false;
 }
 
-sd_spi_r1_t exec_cmd_r1(const devfs_handle_t * handle, uint8_t cmd, uint32_t arg, uint8_t * r){
+drive_sdspi_r1_t exec_cmd_r1(const devfs_handle_t * handle, uint8_t cmd, uint32_t arg, uint8_t * r){
     uint8_t tmp[CMD_FRAME_SIZE];
     uint8_t * response;
     if( r == 0 ){
@@ -793,17 +790,17 @@ sd_spi_r1_t exec_cmd_r1(const devfs_handle_t * handle, uint8_t cmd, uint32_t arg
     } else {
         response = r;
     }
-    sd_spi_r_t ret;
+    drive_sdspi_r_t ret;
     send_cmd(handle, cmd, arg, response);
-    memset(&r, 0xFF, sizeof(sd_spi_r_t));
+    memset(&r, 0xFF, sizeof(drive_sdspi_r_t));
     if( parse_response(response, 1, &ret, 0) == false ){
-        memset(&ret, 0xFF, sizeof(sd_spi_r_t));
+        memset(&ret, 0xFF, sizeof(drive_sdspi_r_t));
     }
     return ret.r1;
 }
 
 /*
-sd_spi_r2_t _sd_spi_cmd_r2(const devfs_handle_t * handle, uint8_t cmd, uint32_t arg, uint8_t * r){
+drive_sdspi_r2_t _drive_sdspi_cmd_r2(const devfs_handle_t * handle, uint8_t cmd, uint32_t arg, uint8_t * r){
     uint8_t tmp[CMD_FRAME_SIZE];
     uint8_t * response;
     if( r == 0 ){
@@ -811,23 +808,23 @@ sd_spi_r2_t _sd_spi_cmd_r2(const devfs_handle_t * handle, uint8_t cmd, uint32_t 
     } else {
         response = r;
     }
-    sd_spi_r_t ret;
-    _sd_spi_send_cmd(handle, cmd, arg, response);
-    memset(&ret, 0xFF, sizeof(sd_spi_r_t));
-    if( _sd_spi_parse_response(response, 2, &ret, 0) == false ){
-        memset(&ret, 0xFF, sizeof(sd_spi_r_t));
+    drive_sdspi_r_t ret;
+    _drive_sdspi_send_cmd(handle, cmd, arg, response);
+    memset(&ret, 0xFF, sizeof(drive_sdspi_r_t));
+    if( _drive_sdspi_parse_response(response, 2, &ret, 0) == false ){
+        memset(&ret, 0xFF, sizeof(drive_sdspi_r_t));
     }
     return ret.r2;
 }
  */
 
-sd_spi_r3_t exec_cmd_r3(const devfs_handle_t * handle, uint8_t cmd, uint32_t arg){
+drive_sdspi_r3_t exec_cmd_r3(const devfs_handle_t * handle, uint8_t cmd, uint32_t arg){
     uint8_t response[CMD_FRAME_SIZE];
-    sd_spi_r_t r;
+    drive_sdspi_r_t r;
     send_cmd(handle, cmd, arg, response);
-    memset(&r, 0xFF, sizeof(sd_spi_r_t));
+    memset(&r, 0xFF, sizeof(drive_sdspi_r_t));
     if( parse_response(response, 3, &r, 0) == false ){
-        memset(&r, 0xFF, sizeof(sd_spi_r_t));
+        memset(&r, 0xFF, sizeof(drive_sdspi_r_t));
     }
     return r.r3;
 }

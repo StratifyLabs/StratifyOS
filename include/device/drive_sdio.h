@@ -17,16 +17,34 @@
  *
  */
 
-#ifndef SOS_DEV_SD_H_
-#define SOS_DEV_SD_H_
+#ifndef DEVICE_SDIO_H_
+#define DEVICE_SDIO_H_
 
-#include "mcu/types.h"
+#include "sos/fs/devfs.h"
+#include "sos/dev/drive.h"
+#include "mcu/sdio.h"
 
-#define SD_VERSION (0x030000)
+typedef struct {
+	const char * buf;
+	int * nbyte;
+	int count;
+	int timeout;
+	uint8_t cmd[16];
+	devfs_async_t op;
+	mcu_event_handler_t handler;
+	u32 flags;
+} drive_sdio_state_t;
 
-#define I_SD_GETVERSION _IOCTL(SD_IOC_IDENT_CHAR, I_MCU_GETVERSION)
+typedef struct {
+    sdio_config_t sdio;
+} drive_sdio_config_t;
 
-#define I_SDSPI_STATUS _IOCTLW('S', 2, sd_spi_status_t)
+
+int drive_sdio_open(const devfs_handle_t * handle);
+int drive_sdio_ioctl(const devfs_handle_t * handle, int request, void * ctl);
+int drive_sdio_read(const devfs_handle_t * handle, devfs_async_t * rop);
+int drive_sdio_write(const devfs_handle_t * handle, devfs_async_t * wop);
+int drive_sdio_close(const devfs_handle_t * handle);
 
 
-#endif /* SOS_DEV_SD_H_ */
+#endif /* DEVICE_SD_SPI_H_ */

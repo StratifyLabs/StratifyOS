@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 /*! \addtogroup ADC Analog to Digital Converter (ADC)
@@ -59,33 +59,37 @@ extern "C" {
 
 
 typedef enum {
-	ADC_FLAG_SET_CONVERTER = (1<<0),
-	ADC_FLAG_IS_LEFT_JUSTIFIED = (1<<1),
-	ADC_FLAG_IS_RIGHT_JUSTIFIED = (1<<2),
+    ADC_FLAG_SET_CONVERTER /*! Configure the ADC */ = (1<<0),
+    ADC_FLAG_IS_LEFT_JUSTIFIED /*! Left Align data */ = (1<<1),
+    ADC_FLAG_IS_RIGHT_JUSTIFIED /*! Right align data */ = (1<<2),
     ADC_FLAG_SET_MASTER /*! Used with MCUs that have more than one ADC that can operate in master/slave mode */ = (1<<3),
     ADC_FLAG_SET_SLAVE /*! Used with MCUs that have more than one ADC that can operate in master/slave mode */ = (1<<4),
-    ADC_FLAG_SET_TRIGGER /*! Used to trigger the ADC read on some event (like a timer) */ = (1<<5),
-    ADC_FLAG_SET_CHANNELS /*! Configure the channels withouth changing ADC settings */ = (1<<6),
-    ADC_FLAG_IS_SCAN_MODE /*! ADC will read every enabled channel when reading rather than the channel based on the location value */ = (1<<7)
+    ADC_FLAG_IS_TRIGGER_TMR /*! Used to trigger the ADC read on a timer event */ = (1<<5),
+    ADC_FLAG_IS_TRIGGER_EINT /*! Used to trigger the ADC read on a external interrupt */ = (1<<6),
+    ADC_FLAG_SET_CHANNELS /*! Configure the channels withouth changing ADC settings */ = (1<<7),
+    ADC_FLAG_IS_SCAN_MODE /*! ADC will read every enabled channel when reading rather than the channel based on the location value */ = (1<<8),
+    ADC_FLAG_IS_TRIGGER_EINT_EDGE_RISING = (1<<9),
+    ADC_FLAG_IS_TRIGGER_EINT_EDGE_FALLING = (1<<10),
+    ADC_FLAG_IS_TRIGGER_EINT_EDGE_BOTH = (1<<11),
 } adc_flag_t;
 
 typedef struct MCU_PACK {
-	u32 o_flags /*! A bitmask for the supported features */;
-	u32 o_events /*! Events supported by this driver */;
-	u32 freq /*! The maximum frequency */;
-	u32 maximum /*! The maximum value returned by the ADC */;
-	u32 reference_mv /*! The reference voltage in millivolts */;
-	u8 resolution /*! The number of bits supported by the ADC */;
+    u32 o_flags /*! A bitmask for the supported features */;
+    u32 o_events /*! Events supported by this driver */;
+    u32 freq /*! The maximum frequency */;
+    u32 maximum /*! The maximum value returned by the ADC */;
+    u32 reference_mv /*! The reference voltage in millivolts */;
+    u8 resolution /*! The number of bits supported by the ADC */;
     u8 bytes_per_sample /*! The number of bytes in each sample */;
     u8 resd_align[2];
-	u32 resd[8];
+    u32 resd[8];
 } adc_info_t;
 
 
 /*! \brief ADC Pin assignment
  */
 typedef struct MCU_PACK {
-	mcu_pin_t channel[4] /*! Pins to use with the ADC. If more than 4 are needed, make multiple calls to I_ADC_SETATTR */;
+    mcu_pin_t channel[4] /*! Pins to use with the ADC. If more than 4 are needed, make multiple calls to I_ADC_SETATTR */;
 } adc_pin_assignment_t;
 
 typedef struct MCU_PACK {
@@ -93,7 +97,8 @@ typedef struct MCU_PACK {
     adc_pin_assignment_t pin_assignment /*! The pins to assigned to the ADC */;
     u32 freq /*! Target frequency when setting ADC */;
     mcu_pin_t trigger /*! Pin or Timer trigger */;
-    u8 resd8[2];
+    u8 width /*! Bit resolution (if variable resolution is supported) */;
+    u8 resd8[1];
     u32 o_scan_channel_mask /*! The channels to scan when using flags ADC_FLAG_SET_CONVERTER | ADC_FLAG_IS_SCAN_MODE */;
     u32 resd[6];
 } adc_attr_t;

@@ -71,7 +71,7 @@ typedef enum {
 	MCU_EVENT_FLAG_CANCELED /*! An operation was canceled */ = (1<<2),
 	MCU_EVENT_FLAG_RISING /*! Specifies a rising edge */ = (1<<3),
 	MCU_EVENT_FLAG_FALLING /*! Specifies a falling edge */ = (1<<4),
-	MCU_EVENT_FLAG_UNUSED /*! Specifies both edges */ = (1<<5),
+    MCU_EVENT_FLAG_SET_PRIORITY /*! If set, I_X_SETACTION requests will adjust the interrupt priority */ = (1<<5),
 	MCU_EVENT_FLAG_ERROR /*! An error occured during */ = (1<<6),
 	MCU_EVENT_FLAG_ADDRESSED /*! The device has been addressed (I2C for example) */ = (1<<7),
 	MCU_EVENT_FLAG_OVERFLOW /*! An overflow condition has occurred */ = (1<<8),

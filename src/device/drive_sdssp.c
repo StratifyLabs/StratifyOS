@@ -31,13 +31,13 @@
 #define mcu_spi_ioctl mcu_ssp_ioctl
 
 
-#define sd_spi_open sd_ssp_open
-#define sd_spi_ioctl sd_ssp_ioctl
-#define sd_spi_read sd_ssp_read
-#define sd_spi_write sd_ssp_write
-#define sd_spi_close sd_ssp_close
+#define drive_sdspi_open drive_sdssp_open
+#define drive_sdspi_ioctl drive_sdssp_ioctl
+#define drive_sdspi_read drive_sdssp_read
+#define drive_sdspi_write drive_sdssp_write
+#define drive_sdspi_close drive_sdssp_close
 
 
-#include "sd_spi.c"
+#include "drive_sdspi.c"
 
 

@@ -17,13 +17,12 @@
  *
  */
 
-#ifndef SD_SPI_LOCAL_H_
-#define SD_SPI_LOCAL_H_
+#ifndef DRIVE_SDSPI_LOCAL_H_
+#define DRIVE_SDSPI_LOCAL_H_
 
-#include "sos/dev/drive.h"
-#include "device/sd_spi.h"
+#include "device/drive_sdspi.h"
 
-#define SDSPI_IOC_IDENT_CHAR 'S'
+#define SDSPI_IOC_IDENT_CHAR 't'
 
 
 #define SDSPI_START_BLOCK_TOKEN 0xFE
@@ -66,11 +65,11 @@ typedef union {
 		unsigned start:1;
 	};
 	uint8_t u8;
-} sd_spi_r1_t;
+} drive_sdspi_r1_t;
 
 typedef union {
 	struct MCU_PACK {
-		sd_spi_r1_t r1;
+		drive_sdspi_r1_t r1;
 		unsigned card_locked:1;
 		unsigned wp_erase_skip_lock_unlock_failed:1;
 		unsigned unspecified_error:1;
@@ -82,32 +81,32 @@ typedef union {
 	};
 	uint16_t u16;
 	uint8_t u8[2];
-} sd_spi_r2_t;
+} drive_sdspi_r2_t;
 
 typedef union {
 	struct MCU_PACK {
-		sd_spi_r1_t r1;
+		drive_sdspi_r1_t r1;
 		uint8_t arg[4];
 	};
 	uint8_t u8[5];
-} sd_spi_r3_t;
+} drive_sdspi_r3_t;
 
 //seven is the same as three
-typedef sd_spi_r3_t sd_spi_r7_t;
+typedef drive_sdspi_r3_t drive_sdspi_r7_t;
 
 typedef union {
-	sd_spi_r1_t r1;
-	sd_spi_r2_t r2;
-	sd_spi_r3_t r3;
+	drive_sdspi_r1_t r1;
+	drive_sdspi_r2_t r2;
+	drive_sdspi_r3_t r3;
 	uint8_t u8[5];
-} sd_spi_r_t;
+} drive_sdspi_r_t;
 
 typedef union {
 	uint64_t u64[2];
 	uint32_t u32[4];
 	uint16_t u16[8];
 	uint8_t u8[16];
-} sd_spi_csd_t;
+} drive_sdspi_csd_t;
 
 
 typedef union {
@@ -115,15 +114,15 @@ typedef union {
 	uint32_t u32[16];
 	uint16_t u16[32];
 	uint8_t u8[64];
-} _sd_spi_status_t;
+} _drive_sdspi_status_t;
 
 
 typedef struct MCU_PACK {
 	uint32_t size;
-} sd_spi_attr_t;
+} drive_sdspi_attr_t;
 
 
 #define I_SDSPI_TOTAL 2
 
 
-#endif /* SD_SPI_LOCAL_H_ */
+#endif /* DRIVE_SDSPI_LOCAL_H_ */

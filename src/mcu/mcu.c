@@ -29,6 +29,7 @@ void mcu_board_execute_event_handler(int event, void * args){
 	}
 }
 
+//execute the read/write transfer handlers if they are available
 void mcu_execute_transfer_handlers(devfs_transfer_handler_t * transfer_handler, void * data, int nbyte, u32 o_flags){
     if( transfer_handler->read ){
         devfs_async_t * async = transfer_handler->read;
@@ -45,10 +46,12 @@ void mcu_execute_transfer_handlers(devfs_transfer_handler_t * transfer_handler, 
     }
 }
 
+//execute when a read completes successfully
 int mcu_execute_read_handler(devfs_transfer_handler_t * transfer_handler, void * data, int nbyte){
     return mcu_execute_read_handler_with_flags(transfer_handler, data, nbyte, MCU_EVENT_FLAG_DATA_READY);
 }
 
+//executes when a read completes unsuccessfully
 int mcu_execute_read_handler_with_flags(devfs_transfer_handler_t * transfer_handler, void * data, int nbyte, u32 o_flags){
     if( transfer_handler->read ){
         devfs_async_t * async = transfer_handler->read;
@@ -59,10 +62,12 @@ int mcu_execute_read_handler_with_flags(devfs_transfer_handler_t * transfer_hand
     return 0;
 }
 
+//execute when a write completes successfully
 int mcu_execute_write_handler(devfs_transfer_handler_t * transfer_handler, void * data, int nbyte){
     return mcu_execute_write_handler_with_flags(transfer_handler, data, nbyte, MCU_EVENT_FLAG_WRITE_COMPLETE);
 }
 
+//executes when a write completes unsuccessfully
 int mcu_execute_write_handler_with_flags(devfs_transfer_handler_t * transfer_handler, void * data, int nbyte, u32 o_flags){
     if( transfer_handler->write ){
         devfs_async_t * async = transfer_handler->write;
@@ -73,6 +78,7 @@ int mcu_execute_write_handler_with_flags(devfs_transfer_handler_t * transfer_han
     return 0;
 }
 
+//used to execute any handler
 int mcu_execute_transfer_event_handler(mcu_event_handler_t * handler, u32 o_events, void * data){
     int ret = 0;
     mcu_event_t event;
@@ -84,7 +90,7 @@ int mcu_execute_transfer_event_handler(mcu_event_handler_t * handler, u32 o_even
     return ret;
 }
 
-
+//deprecated -- stop using this -- this is the old way -- use mcu_execute_transfer_event_handler()
 int mcu_execute_event_handler(mcu_event_handler_t * handler, u32 o_events, void * data){
 	int ret = 0;
 	mcu_event_t event;

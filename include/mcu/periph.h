@@ -35,6 +35,7 @@
 #include "qei.h"
 #include "rtc.h"
 #include "spi.h"
+#include "sdio.h"
 #include "tmr.h"
 #include "uart.h"
 #include "usb.h"

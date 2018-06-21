@@ -47,26 +47,25 @@ extern int pthread_mutex_force_unlock(pthread_mutex_t *mutex);
 
 #define DEBUG_LEVEL 1
 
-void sffs_unlock(const void * cfg){ //force unlock when a process exits
-	const sffs_config_t * config = cfg;
+void sffs_unlock(const void * config){ //force unlock when a process exits
 #ifndef __SIM__
-	pthread_mutex_force_unlock(&config->state->mutex);
+    pthread_mutex_force_unlock(SFFS_DRIVE_MUTEX(config));
 #endif
 }
 
 static void lock_sffs(const sffs_config_t * config){
 #ifndef __SIM__
-	if ( pthread_mutex_lock(&config->state->mutex) < 0 ){
+    if ( pthread_mutex_lock(SFFS_DRIVE_MUTEX(config)) < 0 ){
 		sffs_error("Failed to lock sffs %d\n", errno);
 	}
-	sffs_dev_setdelay_mutex(&config->state->mutex);
+    sffs_dev_setdelay_mutex(SFFS_DRIVE_MUTEX(config));
 #endif
 }
 
 static void unlock_sffs(const sffs_config_t * config){
 	sffs_dev_setdelay_mutex(NULL);
 #ifndef __SIM__
-	if ( pthread_mutex_unlock(&config->state->mutex) < 0 ){
+    if ( pthread_mutex_unlock(SFFS_DRIVE_MUTEX(config)) < 0 ){
 		sffs_error("Failed to unlock sffs %d\n", errno);
 	}
 #endif
@@ -80,8 +79,7 @@ int sffs_unmount(const void * cfg){
 
 int sffs_ismounted(const void * cfg){
 	//check to see if device file descriptor is open
-	const sffs_config_t * cfgp = cfg;
-	if( cfgp->open_file->handle == 0 ){
+    if( SFFS_CONFIG(cfg)->drive.state->file.handle == 0 ){
 		return 0;
 	}
 	return 1;
@@ -89,7 +87,6 @@ int sffs_ismounted(const void * cfg){
 
 int sffs_init(const void * cfg){
 	cl_snlist_item_t bad_serialno;
-	const sffs_config_t * cfgp = cfg;
 	int err;
 	int tmp;
 	int bad_files;
@@ -105,7 +102,7 @@ int sffs_init(const void * cfg){
 	pthread_mutexattr_setprioceiling(&mutexattr, 19);
 	pthread_mutexattr_settype(&mutexattr, PTHREAD_MUTEX_RECURSIVE);
 
-	if ( pthread_mutex_init(&cfgp->state->mutex, &mutexattr) ){
+    if ( pthread_mutex_init(SFFS_DRIVE_MUTEX(cfg), &mutexattr) ){
 		return -1;
 	}
 #endif
@@ -144,7 +141,7 @@ int sffs_init(const void * cfg){
 			mcu_debug_user_printf("SFFS: Format complete\n");
 		}
 
-		cfgp->open_file->fs = NULL;
+        SFFS_CONFIG(cfg)->drive.state->file.fs = 0;
 		return -1;
 	}
 
@@ -173,16 +170,16 @@ int sffs_mkfs(const void * cfg){
 	const sffs_config_t * cfgp = cfg;
 	lock_sffs(cfgp);
 	ret = 0;
-	cfgp->open_file->fs = cfgp->devfs;
+    SFFS_CONFIG(cfg)->drive.state->file.fs = SFFS_CONFIG(cfg)->drive.devfs;
 	sffs_debug(DEBUG_LEVEL, "Erase device\n");
 	if ( (ret = sffs_dev_erase(cfg)) < 0 ){
-		cfgp->open_file->fs = NULL;
+        SFFS_CONFIG(cfg)->drive.state->file.fs = NULL;
 		sffs_error("failed to erase\n");
 	} else {
 		sffs_debug(DEBUG_LEVEL, "Init serial number\n");
 		if ( (ret = sffs_serialno_mkfs(cfg)) < 0 ){
 			//failed to format so no other access is allowed
-			cfgp->open_file->fs = NULL;
+            SFFS_CONFIG(cfg)->drive.state->file.fs = NULL;
 		}
 	}
 	unlock_sffs(cfgp);
