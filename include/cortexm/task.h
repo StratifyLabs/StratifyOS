@@ -63,6 +63,7 @@ int task_root_set_stackguard(int tid /*! The task ID */,
 		int stacksize /*! The stack size in bytes (must be a power of 2 greater than 16) */) MCU_ROOT_CODE;
 
 
+u8 task_get_exec_count();
 u64 task_gettime(int tid);
 u64 task_root_gettime(int tid) MCU_ROOT_CODE;
 

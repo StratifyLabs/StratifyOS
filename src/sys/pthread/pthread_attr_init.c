@@ -34,22 +34,14 @@
 
 /*! \details This function initializes \a attr to the
  * default values.
- * \return 0 on success or -1 and errno set to:
- *  - ENOMEM:  Could not allocate memory for the thread attribute
+ * \return 0 on success
  */
 int pthread_attr_init(pthread_attr_t * attr /*! a pointer to the attributes structure */){
-	int mem_size;
 	attr->stacksize = PTHREAD_DEFAULT_STACK_SIZE;
-	mem_size = attr->stacksize + sizeof(struct _reent) + SCHED_DEFAULT_STACKGUARD_SIZE;
-	attr->stackaddr = malloc(mem_size);
-	if ( attr->stackaddr == NULL ){
-		errno = ENOMEM;
-		return -1;
-	}
+    attr->stackaddr = 0;
 
 	//for good measure zero out stack
-	memset(attr->stackaddr, 0, mem_size);
-	PTHREAD_ATTR_SET_IS_INITIALIZED((attr), 1);
+    PTHREAD_ATTR_SET_IS_INITIALIZED((attr), 1);
 	PTHREAD_ATTR_SET_CONTENTION_SCOPE((attr), PTHREAD_SCOPE_SYSTEM);
 	PTHREAD_ATTR_SET_GUARDSIZE((attr), SCHED_DEFAULT_STACKGUARD_SIZE);
 	PTHREAD_ATTR_SET_INHERIT_SCHED((attr), PTHREAD_EXPLICIT_SCHED);
@@ -60,8 +52,15 @@ int pthread_attr_init(pthread_attr_t * attr /*! a pointer to the attributes stru
 	return 0;
 }
 
-/*! \details This function destroys \a attr.
- * \return 0
+/*! \details Destroys the pthead attributes.
+ *
+ * @param attr A pointer to the attributes to destroy
+ *
+ * This function frees the stack associated with the thread. The attributes
+ * should not be destroyed until the thread is done executing.
+ *
+ * \return 0 on success or -1 and errno set to:
+ *  - EINVAL:  \a attr is NULL or uninitialized
  */
 int pthread_attr_destroy(pthread_attr_t * attr /*! a pointer to the attributes structure */){
 	if ( attr == NULL ){
@@ -73,10 +72,6 @@ int pthread_attr_destroy(pthread_attr_t * attr /*! a pointer to the attributes s
 		return -1;
 	}
 
-	if ( attr->stackaddr ){
-		free(attr->stackaddr);
-		attr->stackaddr = NULL;
-	}
 	PTHREAD_ATTR_SET_IS_INITIALIZED((attr), 0);
 	return 0;
 }

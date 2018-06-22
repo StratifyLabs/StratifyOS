@@ -45,10 +45,9 @@
 
 
 static int start_first_thread();
-
-static void root_check_sleep_mode(void * args) MCU_ROOT_EXEC_CODE;
-static int check_faults();
 static void root_fault_logged(void * args) MCU_ROOT_EXEC_CODE;
+
+static int check_faults();
 
 int scheduler_check_tid(int id){
     if( id < task_get_total() ){
@@ -77,7 +76,6 @@ int scheduler_check_tid(int id){
  * after sleep() or usleep() timer is expired), the lower priority task is pre-empted.
  */
 void scheduler(){
-    u8 do_sleep;
 
     //This interval needs to be long enough to allow for flash writes
     if( (sos_board_config.o_sys_flags & SYS_FLAG_IS_WDT_DISABLED) == 0 ){
@@ -97,10 +95,9 @@ void scheduler(){
     while(1){
         cortexm_svcall(mcu_wdt_root_reset, NULL);
         check_faults(); //check to see if a fault needs to be logged
-        cortexm_svcall(root_check_sleep_mode, &do_sleep);
 
         //Sleep when nothing else is going on
-        if ( do_sleep ){
+        if ( task_get_exec_count() == 0 ){
             mcu_core_user_sleep(CORE_SLEEP);
         } else {
             //Otherwise switch to the active task
@@ -114,9 +111,8 @@ void root_fault_logged(void * args){
 }
 
 int check_faults(){
-    char buffer[256];
-
     if ( m_scheduler_fault.fault.num != 0 ){
+        char buffer[256];
         //Trace the fault -- and output on debug
         scheduler_fault_build_trace_string(buffer);
         sos_trace_event_addr_tid(
@@ -177,18 +173,6 @@ int check_faults(){
     return 0;
 }
 
-void root_check_sleep_mode(void * args){
-    int * p = (int*)args;
-    int i;
-    *p = 1;
-    for(i=1; i < task_get_total(); i++){
-        if ( task_exec_asserted(i) ){
-            *p = 0;
-            return;
-        }
-    }
-}
-
 //Called when the task stops or drops in priority (e.g., releases a mutex)
 void scheduler_root_update_on_stopped(){
     int i;
@@ -199,8 +183,8 @@ void scheduler_root_update_on_stopped(){
     next_priority = SCHED_LOWEST_PRIORITY;
     for(i=1; i < task_get_total(); i++){
         //Find the highest priority of all active tasks
-        if ( task_enabled(i) && task_active_asserted(i) && !task_stopped_asserted(i) &&
-             (task_get_priority(i) > next_priority) ){
+        if( task_enabled_active_not_stopped(i) &&
+                (task_get_priority(i) > next_priority) ){
             next_priority = task_get_priority(i);
         }
     }
@@ -227,7 +211,6 @@ void scheduler_root_update_on_wake(int id, int new_priority){
     if( (id > 0) && task_stopped_asserted(id) ){
         return; //this task is stopped on a signal and shouldn't be considered
     }
-
 
     //elevate the priority (changes only if new_priority is higher than current
     task_root_elevate_current_priority(new_priority);

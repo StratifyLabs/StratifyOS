@@ -38,5 +38,7 @@ void scheduler_timing_root_timedblock(void * block_object, struct mcu_timeval * 
 void scheduler_timing_convert_timespec(struct mcu_timeval * tv, const struct timespec * ts);
 void scheduler_timing_root_get_realtime(struct mcu_timeval * tv) MCU_ROOT_EXEC_CODE;
 
+u32 scheduler_timing_get_realtime();
+
 
 #endif /* SCHEDULER_SCHEDULER_TIMING_H_ */

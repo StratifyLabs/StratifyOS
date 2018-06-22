@@ -113,10 +113,16 @@ void scheduler_timing_convert_timespec(struct mcu_timeval * tv, const struct tim
 		tv->tv_sec = SCHEDULER_TIMEVAL_SEC_INVALID;
 		tv->tv_usec = 0;
 	} else {
-		d = div(ts->tv_sec, STFY_SCHEDULER_TIMEVAL_SECONDS);
+        d = div(ts->tv_sec, SOS_SCHEDULER_TIMEVAL_SECONDS);
 		tv->tv_sec = d.quot;
 		tv->tv_usec = d.rem * 1000000 + (ts->tv_nsec + 500) / 1000;
 	}
+}
+
+u32 scheduler_timing_get_realtime(){
+    struct mcu_timeval tv;
+    cortexm_svcall((cortexm_svcall_t)scheduler_timing_root_get_realtime, &tv);
+    return tv.tv_usec;
 }
 
 void scheduler_timing_root_get_realtime(struct mcu_timeval * tv){
@@ -156,7 +162,8 @@ int root_handle_usecond_match_event(void * context, const mcu_event_t * data){
     mcu_tmr_get(&tmr_handle, &now);
 
 	for(i=1; i < task_get_total(); i++){
-        if ( task_enabled(i) && !task_active_asserted(i) ){ //enabled and inactive tasks only
+
+        if( task_enabled_not_active(i) ){
 			tmp = sos_sched_table[i].wake.tv_usec;
 
 			//compare the current clock to the wake time
@@ -206,9 +213,9 @@ int open_usecond_tmr(){
 
 
 	memset(&attr, 0, sizeof(tmr_attr_t));
-	attr.freq = 1000000;
+    attr.freq = 1000000UL;
 	attr.o_flags = TMR_FLAG_SET_TIMER | TMR_FLAG_IS_SOURCE_CPU | TMR_FLAG_IS_AUTO_RELOAD;
-	attr.period = STFY_USECOND_PERIOD; //only works if TMR_FLAG_IS_AUTO_RELOAD is supported
+    attr.period = SOS_USECOND_PERIOD; //only works if TMR_FLAG_IS_AUTO_RELOAD is supported
 	memset(&attr.pin_assignment, 0xff, sizeof(tmr_pin_assignment_t));
 
 	err = mcu_tmr_setattr(&tmr, &attr);
@@ -226,7 +233,7 @@ int open_usecond_tmr(){
 		//Set the reset output compare value to reset the clock every STFY_USECOND_PERIOD
 
 		attr.channel.loc = SCHED_USECOND_TMR_RESET_OC;
-		attr.channel.value = STFY_USECOND_PERIOD;
+        attr.channel.value = SOS_USECOND_PERIOD;
 		attr.o_flags = TMR_FLAG_SET_CHANNEL | TMR_FLAG_IS_CHANNEL_RESET_ON_MATCH;
 		err = mcu_tmr_setattr(&tmr, &attr);
 		if ( err ){
@@ -260,7 +267,7 @@ int open_usecond_tmr(){
 
 	//This sets up the output compare unit used with the usleep() function
 	chan_req.loc = SCHED_USECOND_TMR_SLEEP_OC;
-	chan_req.value = STFY_USECOND_PERIOD + 1;
+    chan_req.value = SOS_USECOND_PERIOD + 1;
 	err = mcu_tmr_setchannel(&tmr, &chan_req);
 	if ( err ){ return -1; }
 

@@ -299,30 +299,17 @@ int pthread_attr_getstacksize(const pthread_attr_t *attr /*! a pointer to the at
  */
 int pthread_attr_setstacksize(pthread_attr_t *attr /*! a pointer to the attributes structure */,
 		size_t stacksize /*! the new stack size value */){
-	int guardsize;
 	if ( check_initialized(attr) < 0 ){
 		return -1;
 	}
 
-	if( attr->stacksize == stacksize ){
-		return 0;
-	}
+    if( stacksize >= PTHREAD_STACK_MIN ){
+        attr->stacksize = stacksize;
+        return 0;
+    }
 
-	if ( stacksize >= PTHREAD_STACK_MIN ){
-		free( attr->stackaddr );
-		guardsize = PTHREAD_ATTR_GET_GUARDSIZE(attr);
-		attr->stackaddr = malloc(stacksize + sizeof(struct _reent) + guardsize);
-		if ( attr->stackaddr == NULL ){
-			errno = ENOMEM;
-			return -1;
-		}
-		attr->stacksize = stacksize;
-		return 0;
-	} else {
-		errno = EINVAL;
-		return -1;
-	}
-
+    errno = EINVAL;
+    return -1;
 }
 
 /*! \details This functions gets the stack address from \a attr and
@@ -332,12 +319,8 @@ int pthread_attr_setstacksize(pthread_attr_t *attr /*! a pointer to the attribut
  */
 int pthread_attr_getstackaddr(const pthread_attr_t *attr /*! a pointer to the attributes structure */,
 		void **stackaddr /*! the destination for the stack address */){
-	if ( check_initialized(attr) < 0 ){
-		return -1;
-	}
-
-	*stackaddr = attr->stackaddr;
-	return 0;
+    errno = ENOTSUP;
+    return -1;
 }
 
 /*! \details This function is not supported.

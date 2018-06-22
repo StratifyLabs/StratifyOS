@@ -85,24 +85,21 @@ int drive_sdio_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 
         if( result < 0 ){ return result; }
 
-        return (result != SDIO_CARD_STATE_READY) && (result != SDIO_CARD_STATE_TRANSFER);
+        return (result != SDIO_CARD_STATE_TRANSFER);
 
     case I_DRIVE_GETINFO:
-        if( (result = mcu_sdio_getinfo(handle, &sdio_info)) < 0 ){
-            return result;
-        }
+        result = mcu_sdio_getinfo(handle, &sdio_info);
+        if( result < 0 ){ return result; }
 
         info->o_flags = DRIVE_FLAG_ERASE_BLOCKS | DRIVE_FLAG_INIT;
-        info->o_events = 0;
-        info->address_size = 0;
-        info->bitrate = 0;
-        info->erase_block_size = 0;
+        info->o_events = sdio_info.o_events;
+        info->address_size = sdio_info.block_size;
+        info->bitrate = sdio_info.freq;
+        info->erase_block_size = sdio_info.block_size;
         info->erase_block_time = 0;
         info->erase_device_time = 0;
-        info->num_write_blocks = 0;
-        info->write_block_size = 0;
-
-
+        info->num_write_blocks = sdio_info.block_count;
+        info->write_block_size = sdio_info.block_size;
         break;
 
     default:

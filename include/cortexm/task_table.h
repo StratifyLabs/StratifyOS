@@ -41,6 +41,14 @@ extern "C" {
 
 extern volatile task_t sos_task_table[];
 
+static inline int task_enabled_active_not_stopped(int id){
+    return (sos_task_table[id].flags & (TASK_FLAGS_USED | TASK_FLAGS_ACTIVE | TASK_FLAGS_STOPPED)) == (TASK_FLAGS_ACTIVE | TASK_FLAGS_USED );
+}
+
+static inline int task_enabled_not_active(int id){
+    return (sos_task_table[id].flags & (TASK_FLAGS_USED | TASK_FLAGS_ACTIVE)) == (TASK_FLAGS_USED );
+}
+
 static inline void task_assert_flag(int id, u8 flag){ sos_task_table[id].flags |= flag; }
 static inline void task_deassert_flag(int id, u8 flag){ sos_task_table[id].flags &= ~flag; }
 static inline int task_flag_asserted(int id, u8 flag){

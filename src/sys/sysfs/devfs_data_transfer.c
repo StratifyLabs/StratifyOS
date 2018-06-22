@@ -58,7 +58,6 @@ int root_data_transfer_callback(void * context, const mcu_event_t * event){
     int new_priority;
     root_device_data_transfer_t * args = (root_device_data_transfer_t*)context;
 
-
     new_priority = -1;
     if ( (uint32_t)args->async.tid < task_get_total() ){
 
@@ -73,7 +72,7 @@ int root_data_transfer_callback(void * context, const mcu_event_t * event){
         }
     }
 
-    //check to see if any tasks are waiting for this device
+    //check to see if any tasks are waiting for this device -- is this even possible? Issue #148
     for(i = 1; i < task_get_total(); i++){
         if ( task_enabled(i) && scheduler_inuse_asserted(i) ){
             if ( sos_sched_table[i].block_object == (args->device + args->is_read) ){
@@ -88,6 +87,7 @@ int root_data_transfer_callback(void * context, const mcu_event_t * event){
     if( args->is_read == ARGS_READ_READ ){
         args->is_read = ARGS_READ_DONE;
     }
+
     scheduler_root_update_on_wake(-1, new_priority);
 
     return 0;
