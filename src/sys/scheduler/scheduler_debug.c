@@ -31,33 +31,33 @@ void scheduler_debug_print_tasks(){
 	int i;
 	for(i=1; i < task_get_total(); i++){
 		if ( task_enabled(i) ){
-			mcu_debug_user_printf("Task %d Details (0x%X):\n", i, sos_task_table[i].flags);
-			mcu_debug_user_printf("\tMem Addr: 0x%X\n", (unsigned int)sos_sched_table[i].attr.stackaddr);
-			mcu_debug_user_printf("\tCurrent Stack Ptr:  0x%X\n", (unsigned int)sos_task_table[i].sp);
-			mcu_debug_user_printf("\tStack Size: %d\n", sos_sched_table[i].attr.stacksize);
-			mcu_debug_user_printf("\tSched Priority %d\n", sos_sched_table[i].attr.schedparam.sched_priority);
+            mcu_debug_log_info(MCU_DEBUG_SCHEDULER, "Task %d Details (0x%X):", i, sos_task_table[i].flags);
+            mcu_debug_log_info(MCU_DEBUG_SCHEDULER, "\tMem Addr: 0x%X", (unsigned int)sos_sched_table[i].attr.stackaddr);
+            mcu_debug_log_info(MCU_DEBUG_SCHEDULER, "\tCurrent Stack Ptr:  0x%X", (unsigned int)sos_task_table[i].sp);
+            mcu_debug_log_info(MCU_DEBUG_SCHEDULER, "\tStack Size: %d", sos_sched_table[i].attr.stacksize);
+            mcu_debug_log_info(MCU_DEBUG_SCHEDULER, "\tSched Priority %d", sos_sched_table[i].attr.schedparam.sched_priority);
 		} else {
-			mcu_debug_user_printf("Task %d is not enabled\n", i);
+            mcu_debug_log_error(MCU_DEBUG_SCHEDULER, "Task %d is not enabled", i);
 		}
 	}
 }
 
 void scheduler_debug_print_active(){
 	int i;
-	mcu_debug_user_printf("Active Tasks:\n");
+    mcu_debug_log_info(MCU_DEBUG_SCHEDULER, "Active Tasks:");
 	for(i=1; i < task_get_total(); i++){
 		if ( task_active_asserted(i) ){
-			mcu_debug_user_printf("\t%d\n", i);
+            mcu_debug_log_info(MCU_DEBUG_SCHEDULER, "\t%d", i);
 		}
 	}
 }
 
 void scheduler_debug_print_executing(){
 	int i;
-	mcu_debug_user_printf("Executing Tasks:\n");
+    mcu_debug_log_info(MCU_DEBUG_SCHEDULER, "Executing Tasks:");
 	for(i=0; i < task_get_total(); i++){
 		if ( task_exec_asserted(i) ){
-			mcu_debug_user_printf("\t%d\n", i);
+            mcu_debug_log_info(MCU_DEBUG_SCHEDULER, "\t%d", i);
 		}
 	}
 }
@@ -66,11 +66,11 @@ void scheduler_debug_print_executing(){
 void scheduler_debug_print_timers(){
 	int i;
 	uint32_t timer[2];
-	mcu_debug_user_printf("Task Timers:\n");
+    mcu_debug_log_info(MCU_DEBUG_SCHEDULER, "Task Timers:");
 	for(i=0; i < task_get_total(); i++){
 		if ( task_enabled(i) ){
 			task_get_timer(timer, i);
-			mcu_debug_user_printf("\t%d 0x%08X 0x%08X\n", i, (unsigned int)timer[1], (unsigned int)timer[0]);
+            mcu_debug_log_info(MCU_DEBUG_SCHEDULER, "\t%d 0x%08X 0x%08X", i, (unsigned int)timer[1], (unsigned int)timer[0]);
 		}
 	}
 }

@@ -56,7 +56,7 @@ void sffs_unlock(const void * config){ //force unlock when a process exits
 static void lock_sffs(const sffs_config_t * config){
 #ifndef __SIM__
     if ( pthread_mutex_lock(SFFS_DRIVE_MUTEX(config)) < 0 ){
-		sffs_error("Failed to lock sffs %d\n", errno);
+        mcu_debug_log_error(MCU_DEBUG_FILESYSTEM, "Failed to lock sffs %d", errno);
 	}
     sffs_dev_setdelay_mutex(SFFS_DRIVE_MUTEX(config));
 #endif
@@ -66,7 +66,7 @@ static void unlock_sffs(const sffs_config_t * config){
 	sffs_dev_setdelay_mutex(NULL);
 #ifndef __SIM__
     if ( pthread_mutex_unlock(SFFS_DRIVE_MUTEX(config)) < 0 ){
-		sffs_error("Failed to unlock sffs %d\n", errno);
+        mcu_debug_log_error(MCU_DEBUG_FILESYSTEM, "Failed to unlock sffs %d", errno);
 	}
 #endif
 }
@@ -108,7 +108,7 @@ int sffs_init(const void * cfg){
 #endif
 
 	if ( sffs_dev_open(cfg) < 0 ){
-		mcu_debug_user_printf("SFFS: Failed to open dev\n");
+        mcu_debug_log_error(MCU_DEBUG_FILESYSTEM, "Failed to open dev");
 		return -1;
 	}
 
@@ -118,7 +118,7 @@ int sffs_init(const void * cfg){
 	while( (err = sffs_serialno_init(cfg, &bad_serialno)) == 1 ){
 
 		if( (tmp = sffs_file_clean(cfg, bad_serialno.serialno, bad_serialno.block, bad_serialno.status)) < 0 ){
-			mcu_debug_user_printf("failed to clean file\n");
+            mcu_debug_log_error(MCU_DEBUG_FILESYSTEM, "failed to clean file");
 			return -1;
 		}
 
@@ -136,9 +136,9 @@ int sffs_init(const void * cfg){
 	if ( err == -1 ){
 		//failed to find initial serial numbers so no other access is allowed
 		if( sffs_mkfs(cfg) < 0 ){
-			mcu_debug_user_printf("SFFS: Failed to format\n");
+            mcu_debug_log_error(MCU_DEBUG_FILESYSTEM, "Failed to format");
 		} else {
-			mcu_debug_user_printf("SFFS: Format complete\n");
+            mcu_debug_log_error(MCU_DEBUG_FILESYSTEM, "Format complete");
 		}
 
         SFFS_CONFIG(cfg)->drive.state->file.fs = 0;
@@ -146,19 +146,19 @@ int sffs_init(const void * cfg){
 	}
 
 	if ( sffs_scratch_init(cfg) < 0 ){
-		mcu_debug_user_printf("failed to restore scratch area\n");
+        mcu_debug_log_error(MCU_DEBUG_FILESYSTEM, "failed to restore scratch area");
 		return -1;
 	}
 
 	if ( clean_open_blocks == true ){
 		//scan all blocks and discard "OPEN" blocks
 		if ( sffs_block_discardopen(cfg) < 0 ){
-			mcu_debug_user_printf("failed to discard open blocks\n");
+            mcu_debug_log_error(MCU_DEBUG_FILESYSTEM, "failed to discard open blocks");
 			return -1;
 		}
 	}
 
-	sffs_debug(DEBUG_LEVEL, "Found %d bad files\n", bad_files);
+    sffs_debug(DEBUG_LEVEL, "Found %d bad files", bad_files);
 
 	//start a new thread to handle reads/writes if asynchronous IO will be supported
 	return 0;
@@ -171,12 +171,12 @@ int sffs_mkfs(const void * cfg){
 	lock_sffs(cfgp);
 	ret = 0;
     SFFS_CONFIG(cfg)->drive.state->file.fs = SFFS_CONFIG(cfg)->drive.devfs;
-	sffs_debug(DEBUG_LEVEL, "Erase device\n");
+    sffs_debug(DEBUG_LEVEL, "Erase device");
 	if ( (ret = sffs_dev_erase(cfg)) < 0 ){
         SFFS_CONFIG(cfg)->drive.state->file.fs = NULL;
-		sffs_error("failed to erase\n");
+        mcu_debug_log_error(MCU_DEBUG_FILESYSTEM, "failed to erase");
 	} else {
-		sffs_debug(DEBUG_LEVEL, "Init serial number\n");
+        sffs_debug(DEBUG_LEVEL, "Init serial number");
 		if ( (ret = sffs_serialno_mkfs(cfg)) < 0 ){
 			//failed to format so no other access is allowed
             SFFS_CONFIG(cfg)->drive.state->file.fs = NULL;
@@ -194,7 +194,7 @@ int sffs_fstat(const void * cfg, void * handle, struct stat * stat){
 
 	lock_sffs(cfg);
 	if ( (ret = sffs_block_load(cfg, h->hdr_block, &tmp)) < 0 ){
-		sffs_error("failed to load header block\n");
+        mcu_debug_log_error(MCU_DEBUG_FILESYSTEM, "failed to load header block");
         ret = SYSFS_SET_RETURN(EIO);
 	} else {
 		stat->st_ino = h->segment_data.hdr.serialno;
@@ -219,26 +219,26 @@ int sffs_stat(const void * cfg, const char * path, struct stat * stat){
 	CL_TP(CL_PROB_RARE);
 
 	lock_sffs(cfg);
-	sffs_debug(DEBUG_LEVEL, "path:%s\n", path);
+    sffs_debug(DEBUG_LEVEL, "path:%s", path);
 	ret = sffs_dir_exists(cfg, path, &entry, R_OK);
 	if ( ret < 0 ){
-		sffs_error("failed to check existence\n");
+        mcu_debug_log_error(MCU_DEBUG_FILESYSTEM, "failed to check existence");
 	} else if ( ret != SFFS_DIR_PATH_EXISTS ){
 		//path does not exist
-		sffs_error("path does not exist\n");
+        mcu_debug_log_error(MCU_DEBUG_FILESYSTEM, "path does not exist");
         ret = SYSFS_SET_RETURN(ENOENT);
 	} else {
 		//open the file
-		sffs_debug(DEBUG_LEVEL, "open file\n");
+        sffs_debug(DEBUG_LEVEL, "open file");
 		if ( sffs_file_open(cfg, &handle, entry.serialno, R_OK, false) < 0 ){
-			sffs_error("failed to open file\n");
+            mcu_debug_log_error(MCU_DEBUG_FILESYSTEM, "failed to open file");
 			ret = -1;
 		} else {
 			//call fstat
-			sffs_debug(DEBUG_LEVEL, "run stat\n");
+            sffs_debug(DEBUG_LEVEL, "run stat");
 			if( sffs_fstat(cfg, &handle, stat) < 0 ){
 				//cl_fstat() will set the error number
-				sffs_error("failed to run fstat\n");
+                mcu_debug_log_error(MCU_DEBUG_FILESYSTEM, "failed to run fstat");
 				ret = -1;
 			}
 			ret = 0;
@@ -268,7 +268,7 @@ int sffs_unlink(const void * cfg, const char * path){
 
 	ret = 0;
 
-	sffs_debug(DEBUG_LEVEL, "unlink serialno %d\n", entry.serialno);
+    sffs_debug(DEBUG_LEVEL, "unlink serialno %d", entry.serialno);
 
 	if ( sffs_serialno_get(cfg, entry.serialno, SFFS_SNLIST_ITEM_STATUS_OPEN, NULL) != BLOCK_INVALID ){
 		//the file is open -- cannot delete
@@ -312,7 +312,7 @@ int sffs_open(const void * cfg, void ** handle, const char * path, int flags, in
 		goto sffs_open_unlock;
 	}
 
-	sffs_debug(DEBUG_LEVEL, "Open serialno %d (%d)\n", entry.serialno, err);
+    sffs_debug(DEBUG_LEVEL, "Open serialno %d (%d)", entry.serialno, err);
 
 	//See if there is a slot for an open file
 	h = malloc(sizeof(cl_handle_t));
@@ -331,7 +331,7 @@ int sffs_open(const void * cfg, void ** handle, const char * path, int flags, in
 		} else if ( flags & O_TRUNC ){
 
 			//truncate file (use the same serialno)
-			sffs_debug(DEBUG_LEVEL, "create new file (old file truncated on close)\n");
+            sffs_debug(DEBUG_LEVEL, "create new file (old file truncated on close)");
 			if ( sffs_file_open(cfg, h, entry.serialno, amode, true) < 0 ){
                 ret = SYSFS_SET_RETURN(ENOSPC);
 			}
@@ -348,19 +348,19 @@ int sffs_open(const void * cfg, void ** handle, const char * path, int flags, in
 	} else if ( err == SFFS_DIR_PARENT_EXISTS ){ //does the path exist?
 		if ( flags & (O_CREAT) ){
 			//create a new file
-			//printf("Create brand new file\n");
+            //printf("Create brand new file");
 			entry.serialno = sffs_serialno_new(cfg);
 			if ( sffs_file_new(cfg, h, name, mode, &entry, BLOCK_TYPE_FILE_HDR, amode) < 0 ){
                 ret = SYSFS_SET_RETURN(ENOSPC);
 			}
 
 		} else {
-			sffs_debug(DEBUG_LEVEL, "file %s does not exist\n", path);
+            sffs_debug(DEBUG_LEVEL, "file %s does not exist", path);
             ret = SYSFS_SET_RETURN(ENOENT);
 		}
 	} else {
 		//Path does not exist
-		sffs_debug(DEBUG_LEVEL, "file %s does not exist here\n", path);
+        sffs_debug(DEBUG_LEVEL, "file %s does not exist here", path);
         ret = SYSFS_SET_RETURN(ENOENT);
 	}
 
@@ -392,10 +392,10 @@ int sffs_read(const void * cfg, void * handle, int flags, int loc, void * buf, i
 
 	CL_TP(CL_PROB_IMPROBABLE);
 
-	sffs_debug(DEBUG_LEVEL + 5, "read %d bytes\n", nbyte);
+    sffs_debug(DEBUG_LEVEL + 5, "read %d bytes", nbyte);
 
 	if ( (h->amode & R_OK) == 0 ){
-		sffs_error("no read access\n");
+        mcu_debug_log_error(MCU_DEBUG_FILESYSTEM, "no read access");
         return SYSFS_SET_RETURN(EACCES);
 	}
 
@@ -435,10 +435,10 @@ int sffs_write(const void * cfg, void * handle, int flags, int loc, const void *
 
 	CL_TP(CL_PROB_IMPROBABLE);
 
-	sffs_debug(DEBUG_LEVEL + 5, "write %d bytes\n", nbyte);
+    sffs_debug(DEBUG_LEVEL + 5, "write %d bytes", nbyte);
 
 	if ( (h->amode & W_OK) == 0 ){
-		sffs_error("no write access\n");
+        mcu_debug_log_error(MCU_DEBUG_FILESYSTEM, "no write access");
         return SYSFS_SET_RETURN(EACCES);
 	}
 
@@ -496,7 +496,7 @@ int sffs_readdir_r(const void * cfg, void * handle, int loc, struct dirent * ent
 
 	lock_sffs(cfg);
 
-	sffs_debug(DEBUG_LEVEL, "initialize list\n");
+    sffs_debug(DEBUG_LEVEL, "initialize list");
 	if ( cl_snlist_init(cfg, &sn_list, sffs_serialno_getlistblock(cfg) ) < 0 ){
         ret = SYSFS_SET_RETURN(EIO);
 		goto sffs_readdir_unlock;
@@ -509,7 +509,7 @@ int sffs_readdir_r(const void * cfg, void * handle, int loc, struct dirent * ent
 		if( (item.status == SFFS_SNLIST_ITEM_STATUS_CLOSED) && (item.serialno != CL_SERIALNO_LIST) ){
 			if ( count == loc ){
 				if ( sffs_block_load(cfg, item.block, &hdr_sffs_block_data) ){
-					sffs_error("failed to load block %d for serialno:%d\n", item.block, item.serialno);
+                    mcu_debug_log_error(MCU_DEBUG_FILESYSTEM, "failed to load block %d for serialno:%d", item.block, item.serialno);
                     ret = SYSFS_SET_RETURN(EIO);
 					goto sffs_readdir_unlock;
 				}

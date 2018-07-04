@@ -17,12 +17,12 @@
  *
  */
 
-#ifndef DEVICE_SDIO_H_
-#define DEVICE_SDIO_H_
+#ifndef DEVICE_NETIF_ENET_H_
+#define DEVICE_NETIF_ENET_H_
 
 #include "sos/fs/devfs.h"
 #include "sos/dev/drive.h"
-#include "mcu/sdio.h"
+#include "mcu/eth.h"
 
 typedef struct {
 	const char * buf;
@@ -33,24 +33,24 @@ typedef struct {
 	devfs_async_t op;
 	mcu_event_handler_t handler;
 	u32 flags;
-} drive_sdio_state_t;
+} netif_eth_state_t;
 
 typedef struct {
-    sdio_config_t sdio;
-} drive_sdio_config_t;
+    eth_config_t sdio;
+} netif_eth_config_t;
 
 
-int drive_sdio_open(const devfs_handle_t * handle);
-int drive_sdio_ioctl(const devfs_handle_t * handle, int request, void * ctl);
-int drive_sdio_read(const devfs_handle_t * handle, devfs_async_t * rop);
-int drive_sdio_write(const devfs_handle_t * handle, devfs_async_t * wop);
-int drive_sdio_close(const devfs_handle_t * handle);
+int netif_eth_open(const devfs_handle_t * handle);
+int netif_eth_ioctl(const devfs_handle_t * handle, int request, void * ctl);
+int netif_eth_read(const devfs_handle_t * handle, devfs_async_t * rop);
+int netif_eth_write(const devfs_handle_t * handle, devfs_async_t * wop);
+int netif_eth_close(const devfs_handle_t * handle);
 
-int drive_sdio_dma_open(const devfs_handle_t * handle);
-int drive_sdio_dma_ioctl(const devfs_handle_t * handle, int request, void * ctl);
-int drive_sdio_dma_read(const devfs_handle_t * handle, devfs_async_t * rop);
-int drive_sdio_dma_write(const devfs_handle_t * handle, devfs_async_t * wop);
-int drive_sdio_dma_close(const devfs_handle_t * handle);
+int netif_eth_dma_open(const devfs_handle_t * handle);
+int netif_eth_dma_ioctl(const devfs_handle_t * handle, int request, void * ctl);
+int netif_eth_dma_read(const devfs_handle_t * handle, devfs_async_t * rop);
+int netif_eth_dma_write(const devfs_handle_t * handle, devfs_async_t * wop);
+int netif_eth_dma_close(const devfs_handle_t * handle);
 
 
-#endif /* DEVICE_SD_SPI_H_ */
+#endif /* DEVICE_NETIF_ENET_H_ */

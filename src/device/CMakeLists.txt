@@ -20,6 +20,7 @@ if( ${SOS_BUILD_CONFIG} STREQUAL arm )
       ${SOURCES_PREFIX}/random.c
 			${SOURCES_PREFIX}/drive_sdspi_local.h
 			${SOURCES_PREFIX}/drive_sdio.c
+			${SOURCES_PREFIX}/drive_sdio_dma.c
 			${SOURCES_PREFIX}/drive_sdspi.c
 			${SOURCES_PREFIX}/drive_sdssp.c
 			${SOURCES_PREFIX}/switchboard.c

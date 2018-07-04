@@ -50,19 +50,21 @@ int install(const char * path,
     int len;
 
 	if( stat(path, &st) < 0 ){
-		mcu_debug_user_printf("Can't find path %s\n", path);
+        mcu_debug_log_error(MCU_DEBUG_SYS, "Can't find path %s", path);
 		return -1;
 	}
 
 	//first install the file using appfs/.install
 	image_fd = open(path, O_RDONLY);
 	if( image_fd < 0 ){
+        mcu_debug_log_error(MCU_DEBUG_SYS, "Failed to open %s (%d)", path, errno);
 		return -1;
 	}
 
 	install_fd = open("/app/.install", O_WRONLY);
 	if( install_fd < 0 ){
 		close(image_fd);
+        mcu_debug_log_error(MCU_DEBUG_SYS, "Failed to open /app/.install %d", errno);
 		return -1;
 	}
 

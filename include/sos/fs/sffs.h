@@ -1,4 +1,4 @@
-/* Copyright 2011-2018 Tyler Gilbert; 
+/* Copyright 2011-2018 Tyler Gilbert;
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -28,7 +28,7 @@
 #include "sos/fs/sysfs.h"
 
 typedef struct {
-    sysfs_drive_state_t drive;
+    sysfs_shared_state_t drive;
     int list_block;
     int serialno_killed;
     int serialno;
@@ -36,7 +36,7 @@ typedef struct {
 } sffs_state_t;
 
 typedef struct {
-    sysfs_drive_config_t drive;
+    sysfs_shared_config_t drive;
 } sffs_config_t;
 
 

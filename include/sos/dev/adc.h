@@ -59,6 +59,7 @@ extern "C" {
 
 
 typedef enum {
+    ADC_LOC_IS_GROUP /*! Set loc value when reading ADC to read the group) */ = (1<<30),
     ADC_FLAG_SET_CONVERTER /*! Configure the ADC */ = (1<<0),
     ADC_FLAG_IS_LEFT_JUSTIFIED /*! Left Align data */ = (1<<1),
     ADC_FLAG_IS_RIGHT_JUSTIFIED /*! Right align data */ = (1<<2),
@@ -70,7 +71,7 @@ typedef enum {
     ADC_FLAG_IS_SCAN_MODE /*! ADC will read every enabled channel when reading rather than the channel based on the location value */ = (1<<8),
     ADC_FLAG_IS_TRIGGER_EINT_EDGE_RISING = (1<<9),
     ADC_FLAG_IS_TRIGGER_EINT_EDGE_FALLING = (1<<10),
-    ADC_FLAG_IS_TRIGGER_EINT_EDGE_BOTH = (1<<11),
+    ADC_FLAG_IS_GROUP = (1<<11),
 } adc_flag_t;
 
 typedef struct MCU_PACK {
@@ -98,9 +99,11 @@ typedef struct MCU_PACK {
     u32 freq /*! Target frequency when setting ADC */;
     mcu_pin_t trigger /*! Pin or Timer trigger */;
     u8 width /*! Bit resolution (if variable resolution is supported) */;
-    u8 resd8[1];
-    u32 o_scan_channel_mask /*! The channels to scan when using flags ADC_FLAG_SET_CONVERTER | ADC_FLAG_IS_SCAN_MODE */;
-    u32 resd[6];
+    u8 channel_count /*! Number of channels to convert when ADC_FLAG_IS_SCAN_MODE is set */;
+    u32 channel /*! Channel number when using ADC_FLAG_SET_CHANNELS with ADC_FLAG_IS_GROUP */;
+    u32 rank /*! Rank when using ADC_FLAG_SET_CHANNELS with ADC_FLAG_IS_GROUP */;
+    u32 sampling_time /*! Sampling time (in ADC clock cycles) when using ADC_FLAG_SET_CHANNELS with ADC_FLAG_IS_GROUP */;
+    u32 resd[4];
 } adc_attr_t;
 
 #define I_ADC_GETVERSION _IOCTL(ADC_IOC_IDENT_CHAR, I_MCU_GETVERSION)

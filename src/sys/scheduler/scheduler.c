@@ -86,11 +86,13 @@ void scheduler(){
         mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_FATAL, (void*)"sprep");
     }
 
-    mcu_debug_user_printf("Start first thread\n");
-    if ( start_first_thread() ){
-        scheduler_debug("Start first thread failed\n");
+    mcu_debug_log_info(MCU_DEBUG_SCHEDULER, "Start first thread");
+    if ( start_first_thread() < 0 ){
+        mcu_debug_log_info(MCU_DEBUG_SCHEDULER, "Start first thread failed");
         mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_FATAL, (void*)"strt1t");
     }
+
+    mcu_debug_log_info(MCU_DEBUG_SCHEDULER, "Run scheduler");
 
     while(1){
         cortexm_svcall(mcu_wdt_root_reset, NULL);
@@ -122,7 +124,7 @@ int check_faults(){
                     m_scheduler_fault.tid);
 
         usleep(2000);
-        mcu_debug_user_printf("%s\n", buffer);
+        mcu_debug_log_error(MCU_DEBUG_SYS, "%s\n", buffer);
 
         char hex_buffer[9];
         strcpy(buffer, "ADDR 0x");
@@ -133,7 +135,7 @@ int check_faults(){
                     buffer, strlen(buffer),
                     (u32)m_scheduler_fault.fault.pc + 1,
                     m_scheduler_fault.tid);
-        mcu_debug_user_printf("ADDR 0x%lX %ld\n", (u32)m_scheduler_fault.fault.pc + 1, m_scheduler_fault.tid);
+        mcu_debug_log_error(MCU_DEBUG_SYS, "ADDR 0x%lX %ld\n", (u32)m_scheduler_fault.fault.pc + 1, m_scheduler_fault.tid);
         usleep(2000);
 
 
@@ -143,7 +145,7 @@ int check_faults(){
                     buffer, strlen(buffer),
                     (u32)m_scheduler_fault.fault.caller,
                     m_scheduler_fault.tid);
-        mcu_debug_user_printf("Caller 0x%lX %ld\n", (u32)m_scheduler_fault.fault.caller, m_scheduler_fault.tid);
+        mcu_debug_log_error(MCU_DEBUG_SYS, "Caller 0x%lX %ld\n", (u32)m_scheduler_fault.fault.caller, m_scheduler_fault.tid);
         usleep(2000);
 
 
@@ -153,7 +155,7 @@ int check_faults(){
                     buffer, strlen(buffer),
                     (u32)m_scheduler_fault.fault.handler_pc + 1,
                     m_scheduler_fault.tid);
-        mcu_debug_user_printf("ISR PC 0x%lX %ld\n", (u32)m_scheduler_fault.fault.handler_pc+1, m_scheduler_fault.tid);
+        mcu_debug_log_error(MCU_DEBUG_SYS, "ISR PC 0x%lX %ld\n", (u32)m_scheduler_fault.fault.handler_pc+1, m_scheduler_fault.tid);
         usleep(2000);
 
 
@@ -163,7 +165,7 @@ int check_faults(){
                     buffer, strlen(buffer),
                     (u32)m_scheduler_fault.fault.handler_caller,
                     m_scheduler_fault.tid);
-        mcu_debug_user_printf("ISR Caller 0x%lX %ld\n", (u32)m_scheduler_fault.fault.handler_caller, m_scheduler_fault.tid);
+        mcu_debug_log_error(MCU_DEBUG_SYS, "ISR Caller 0x%lX %ld\n", (u32)m_scheduler_fault.fault.handler_caller, m_scheduler_fault.tid);
         usleep(2000);
 
         cortexm_svcall(root_fault_logged, NULL);
@@ -283,6 +285,7 @@ int start_first_thread(){
     attr.stacksize = sos_board_config.start_stack_size;
     attr.stackaddr = malloc(attr.stacksize);
     if ( attr.stackaddr == NULL ){
+        mcu_debug_log_error(MCU_DEBUG_SCHEDULER, "No memory\n");
         errno = ENOMEM;
         return -1;
     }
@@ -301,6 +304,7 @@ int start_first_thread(){
                                   &attr);
 
     if ( !err ){
+        mcu_debug_log_error(MCU_DEBUG_SCHEDULER, "Failed to create thread\n");
         return -1;
     }
 

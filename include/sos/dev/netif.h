@@ -34,45 +34,56 @@
 #ifndef SOS_DEV_NETIF_H_
 #define SOS_DEV_NETIF_H_
 
-
-#include <stdint.h>
-
-#include "ioctl.h"
 #include "mcu/types.h"
 
 #define NETIF_VERSION (0x000000)
 #define NETIF_IOC_CHAR 'N'
+
+enum {
+    NETIF_FLAG_INIT /*! When setting attributes, initializes the interface */ = (1<<0),
+    NETIF_FLAG_DEINIT /*! When setting attributes, de-initialies the interface */ = (1<<1)
+};
 
 /*! \brief Network Interface attributes
  */
 typedef struct MCU_PACK {
 	u32 o_flags;
 	u16 mtu;
+    u8 hardware_address[16];
 } netif_attr_t;
 
+#define I_NETIF_GETVERSION _IOCTL(NETIF_IOC_CHAR, I_MCU_GETVERSION)
 
-/*! \details This request initializes the network
- * interface.
+/*! \brief See below for details.
+ * \details This requests reads the ADC attributes.
  *
  * Example:
  * \code
- * ioctl(fildes, I_NETIF_INIT);
+ * #include <sos/dev/netif.h>
+ * netif_attr_t attr;
+ * int netif_fd;
+ * ...
+ * ioctl(netif_fd, I_NETIF_GETINFO, &attr);
  * \endcode
  * \hideinitializer
  */
-#define I_NETIF_INIT _IOCTL(NETIF_IOC_CHAR, 0)
+#define I_NETIF_GETINFO _IOCTLR(NETIF_IOC_CHAR, I_MCU_GETINFO, netif_attr_t)
 
-/*! \details This request returns the number of bytes that are ready
- * to be read from the network interface.
+/*! \brief See below for details.
+ * \details This requests writes the ETH attributes.
  *
  * Example:
  * \code
- * int len;
- * len = ioctl(fildes, I_NETIF_LEN);
+ * #include <sos/dev/netif.h>
+ * netif_attr_t attr;
+ * int netif_fd;
+ * ...
+ * ioctl(netif_fd, I_NETIF_SETATTR, &attr);
  * \endcode
  * \hideinitializer
  */
-#define I_NETIF_LEN _IOCTL(NETIF_IOC_CHAR, 1)
+#define I_NETIF_SETATTR _IOCTLW(NETIF_IOC_CHAR, I_MCU_SETATTR, netif_attr_t)
+#define I_NETIF_SETACTION _IOCTLW(NETIF_IOC_CHAR, I_MCU_SETACTION, mcu_action_t)
 
 #define I_NETIF_TOTAL 2
 

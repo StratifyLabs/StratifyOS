@@ -85,7 +85,7 @@ void signal_handler(int tid, int si_signo, int si_sigcode, union sigval sig_valu
 	struct sigaction * sa;
 	siginfo_t siginfo;
 
-	siginfo.si_signo = si_sigcode;
+    siginfo.si_signo = si_signo;
 	siginfo.si_tid = tid;
 	siginfo.si_code = si_sigcode;
 	siginfo.si_value = sig_value;

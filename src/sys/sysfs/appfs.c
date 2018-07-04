@@ -170,9 +170,9 @@ int appfs_startup(const void * cfg){
 						&mem,
 						(void*)root_file_info.fileinfo.exec.ram_start) >= 0 ){
 					started++;
-					mcu_debug_user_printf("Started %s\n", root_file_info.fileinfo.hdr.name);
+                    mcu_debug_log_info(MCU_DEBUG_APPFS, "Started %s", root_file_info.fileinfo.hdr.name);
 				} else {
-					mcu_debug_user_printf("Failed to start %s\n", root_file_info.fileinfo.hdr.name);
+                    mcu_debug_log_info(MCU_DEBUG_APPFS, "Failed to start %s", root_file_info.fileinfo.hdr.name);
 				}
 
 			}

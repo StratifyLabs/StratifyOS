@@ -24,7 +24,7 @@
 #include "eint.h"
 #include "emc.h"
 #include "eeprom.h"
-#include "enet.h"
+#include "eth.h"
 #include "flash.h"
 #include "mci.h"
 #include "mem.h"

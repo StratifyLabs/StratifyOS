@@ -61,6 +61,7 @@ void cortexm_svcall(cortexm_svcall_t call, void * args) __attribute__((optimize(
 
 void cortexm_set_unprivileged_mode() MCU_ROOT_CODE;
 void cortexm_set_thread_mode() MCU_ROOT_CODE;
+int cortexm_is_root_mode();
 
 void cortexm_delay_us(u32 us);
 void cortexm_delay_ms(u32 ms);

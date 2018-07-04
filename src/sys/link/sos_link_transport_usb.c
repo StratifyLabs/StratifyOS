@@ -85,6 +85,7 @@ link_transport_phy_t sos_link_transport_usb_open(const char * name,
 	if( usb_up_pin.port != 0xff ){
 		pio_fd = open_pio(usb_up_pin, usb_up_active_high);
 		if( pio_fd < 0 ){
+            mcu_debug_log_error(MCU_DEBUG_USB | MCU_DEBUG_LINK, "Failed to open PIO (%d)\n", errno);
 			return LINK_PHY_ERROR;
 		}
 	} else {
@@ -96,23 +97,23 @@ link_transport_phy_t sos_link_transport_usb_open(const char * name,
 	context->handle = &(constants->handle);
 
 	//open USB
-	mcu_debug_user_printf("Open link-phy-usb\n");
+    mcu_debug_log_info(MCU_DEBUG_USB | MCU_DEBUG_LINK, "Open link-phy-usb\n");
 	errno = 0;
 	fd = open("/dev/link-phy-usb", O_RDWR);
 	if( fd < 0 ){
-		mcu_debug_user_printf("Failed to open link-phy-usb (%d)\n", errno);
+        mcu_debug_log_error(MCU_DEBUG_USB | MCU_DEBUG_LINK, "Failed to open link-phy-usb (%d)\n", errno);
 		return LINK_PHY_ERROR;
 	}
 
 	//set USB attributes
-	mcu_debug_user_printf("Set USB attr fd:%d\n", fd);
+    mcu_debug_log_info(MCU_DEBUG_USB | MCU_DEBUG_LINK, "Set USB attr fd:%d\n", fd);
 
 	if( ioctl(fd, I_USB_SETATTR, usb_attr) < 0 ){
-		mcu_debug_user_printf("Failed to set USB attr\n");
+        mcu_debug_log_error(MCU_DEBUG_USB | MCU_DEBUG_LINK, "Failed to set USB attr\n");
 		return LINK_PHY_ERROR;
 	}
 
-	mcu_debug_user_printf("USB Dev Init\n");
+    mcu_debug_log_info(MCU_DEBUG_USB | MCU_DEBUG_LINK, "USB Dev Init\n");
 	//initialize USB device
 	cortexm_svcall(usbd_control_root_init, context);
 

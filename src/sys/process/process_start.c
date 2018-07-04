@@ -60,7 +60,7 @@ int process_start(const char *path_arg,
 	path = strtok_r(tmp_path, sysfs_whitespace, &p);
 
 	if( path == 0 ){
-		mcu_debug_user_printf("can't get path from %s\n", path_arg);
+        mcu_debug_log_error(MCU_DEBUG_SYS, "can't get path from %s", path_arg);
 		errno = EINVAL;
 		return -1;
 	}
@@ -68,12 +68,12 @@ int process_start(const char *path_arg,
 	len = strlen(path_arg);
 
 	if ( access(path, X_OK) < 0 ){
-		mcu_debug_user_printf("no exec access\n");
+        mcu_debug_log_error(MCU_DEBUG_SYS, "no exec access");
 		return -1;
 	}
 
 	//Open the program
-	mcu_debug_user_printf("process_start:%s\n", path);
+    mcu_debug_log_info(MCU_DEBUG_SYS, "process_start:%s", path);
 #if MCU_DEBUG
 	usleep(10*1000);
 #endif
@@ -116,12 +116,12 @@ int process_start(const char *path_arg,
     //this gets freed in crt_sys.c by the process that is launched
 	process_path = _malloc_r(sos_task_table[0].global_reent, len+1);
 	if( process_path == 0 ){
-		mcu_debug_user_printf("couldn't alloc path argument in shared mem\n");
+        mcu_debug_log_error(MCU_DEBUG_SYS, "couldn't alloc path argument in shared mem");
 		return -1;
 	}
 	strcpy(process_path, path_arg);
 
-    mcu_debug_user_printf("process start: execute %s\n", process_path);
+    mcu_debug_log_info(MCU_DEBUG_SYS, "process start: execute %s", process_path);
 
 	err = scheduler_create_process((void*)startup.exec.startup,
 			process_path,
@@ -132,7 +132,7 @@ int process_start(const char *path_arg,
 		_free_r(sos_task_table[0].global_reent, process_path);
 	}
 
-	mcu_debug_user_printf("process_start:returned %d\n", err);
+    mcu_debug_log_info(MCU_DEBUG_SYS, "process_start:returned %d", err);
 
 	return err;
 }

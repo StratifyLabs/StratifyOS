@@ -39,26 +39,18 @@ typedef struct MCU_PACK {
 	u32 reference_mv;
 } adc_config_t;
 
-int mcu_adc_open(const devfs_handle_t * handle) MCU_ROOT_CODE;
-int mcu_adc_read(const devfs_handle_t * handle, devfs_async_t * rop) MCU_ROOT_CODE;
-int mcu_adc_write(const devfs_handle_t * handle, devfs_async_t * wop) MCU_ROOT_CODE;
-int mcu_adc_ioctl(const devfs_handle_t * handle, int request, void * ctl) MCU_ROOT_CODE;
-int mcu_adc_close(const devfs_handle_t * handle) MCU_ROOT_CODE;
+#define MCU_ADC_IOCTL_REQUEST_DECLARATION(driver_name) \
+    DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, getinfo); \
+    DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, setattr); \
+    DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, setaction) \
 
 
-int mcu_adc_getinfo(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
-int mcu_adc_setattr(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
-int mcu_adc_setaction(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
+#define MCU_ADC_DRIVER_DECLARATION(variant) \
+    DEVFS_DRIVER_DECLARTION(variant); \
+    MCU_ADC_IOCTL_REQUEST_DECLARATION(variant)
 
-int mcu_adc_dma_open(const devfs_handle_t * handle) MCU_ROOT_CODE;
-int mcu_adc_dma_read(const devfs_handle_t * handle, devfs_async_t * rop) MCU_ROOT_CODE;
-int mcu_adc_dma_write(const devfs_handle_t * handle, devfs_async_t * wop) MCU_ROOT_CODE;
-int mcu_adc_dma_ioctl(const devfs_handle_t * handle, int request, void * ctl) MCU_ROOT_CODE;
-int mcu_adc_dma_close(const devfs_handle_t * handle) MCU_ROOT_CODE;
-
-
-int mcu_adc_dma_setattr(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
-int mcu_adc_dma_setaction(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
+MCU_ADC_DRIVER_DECLARATION(mcu_adc);
+MCU_ADC_DRIVER_DECLARATION(mcu_adc_dma);
 
 
 #ifdef __cplusplus

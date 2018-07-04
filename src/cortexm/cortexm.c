@@ -105,6 +105,12 @@ void cortexm_set_unprivileged_mode(){
     __set_CONTROL(control);
 }
 
+int cortexm_is_root_mode(){
+    register uint32_t control;
+    control = __get_CONTROL();
+    return (control & 0x02) == 0;
+}
+
 void cortexm_set_thread_mode(){
     register uint32_t control;
     control = __get_CONTROL();

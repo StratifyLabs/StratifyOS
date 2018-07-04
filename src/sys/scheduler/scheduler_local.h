@@ -69,10 +69,4 @@ int scheduler_create_process(void (*p)(char *),
 int scheduler_switch_context(void * args);
 int scheduler_get_highest_priority_blocked(void * block_object);
 
-
-#define SCHED_DEBUG 0
-#define scheduler_debug(...) do { if ( SCHED_DEBUG == 1 ){ mcu_debug_user_printf("%s:", __func__); mcu_debug_user_printf(__VA_ARGS__); } } while(0)
-#define scheduler_root_debug(...) do { if ( SCHED_DEBUG == 1 ){ mcu_debug_printf("%s:", __func__); mcu_debug_root_printf(__VA_ARGS__); } } while(0)
-
-
 #endif /* SCHED_FLAGS_H_ */

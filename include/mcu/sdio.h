@@ -41,20 +41,22 @@ typedef struct MCU_PACK {
     sdio_attr_t attr; //default attributes
 } sdio_config_t;
 
+#define MCU_SDIO_IOCTL_REQUEST_DECLARATION(driver_name) \
+    DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, getinfo); \
+    DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, setattr); \
+    DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, setaction); \
+    DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, getcid); \
+    DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, getcsd); \
+    DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, getstatus)
 
-int mcu_sdio_open(const devfs_handle_t * handle) MCU_ROOT_CODE;
-int mcu_sdio_read(const devfs_handle_t * handle, devfs_async_t * rop) MCU_ROOT_CODE;
-int mcu_sdio_write(const devfs_handle_t * handle, devfs_async_t * wop) MCU_ROOT_CODE;
-int mcu_sdio_ioctl(const devfs_handle_t * handle, int request, void * ctl) MCU_ROOT_CODE;
-int mcu_sdio_close(const devfs_handle_t * handle) MCU_ROOT_CODE;
 
-int mcu_sdio_getinfo(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
-int mcu_sdio_setattr(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
-int mcu_sdio_setaction(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
-int mcu_sdio_getcid(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
-int mcu_sdio_getcsd(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
-int mcu_sdio_getstatus(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
 
+#define MCU_SDIO_DRIVER_DECLARATION(variant) \
+    DEVFS_DRIVER_DECLARTION(variant); \
+    MCU_SDIO_IOCTL_REQUEST_DECLARATION(variant)
+
+MCU_SDIO_DRIVER_DECLARATION(mcu_sdio);
+MCU_SDIO_DRIVER_DECLARATION(mcu_sdio_dma);
 
 
 #ifdef __cplusplus

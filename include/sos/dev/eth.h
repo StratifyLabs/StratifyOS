@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 /*! \addtogroup ETH_DEV Ethernet Device Access
@@ -59,46 +59,81 @@
 #ifndef SOS_DEV_ETH_H_
 #define SOS_DEV_ETH_H_
 
-#include <stdint.h>
-
-#include "ioctl.h"
 #include "mcu/types.h"
 
-#define ETH_VERSION (0x000000)
+#define ETH_VERSION (0x030000)
 #define ETH_IOC_IDENT_CHAR 'e'
 
 enum {
-	ETH_MODE_FULLDUPLEX = (1<<0),
-	ETH_MODE_HALFDUPLEX = (1<<1),
+    ETH_FLAG_SET_INTERFACE = (1<<0),
+    ETH_FLAG_IS_FULLDUPLEX = (1<<1),
+    ETH_FLAG_IS_HALFDUPLEX = (1<<2),
+    ETH_FLAG_IS_AUTONEGOTIATION_ENABLED = (1<<3),
+    ETH_FLAG_IS_SPEED_100M = (1<<4),
+    ETH_FLAG_IS_SPEED_1G = (1<<5),
+    ETH_FLAG_IS_MII = (1<<6),
+    ETH_FLAG_IS_RMII = (1<<7),
+    ETH_FLAG_GET_STATE = (1<<8),
+    ETH_FLAG_SET_REGISTER = (1<<9),
+    ETH_FLAG_GET_REGISTER = (1<<10)
 };
 
-typedef enum {
-	ETH_FLAG_FULLDUPLEX = (1<<0),
-	ETH_FLAG_HALFDUPLEX = (1<<1),
-} eth_flags_t;
+typedef struct MCU_PACK {
+    mcu_pin_t clk;
+    mcu_pin_t txd0;
+    mcu_pin_t txd1;
+    mcu_pin_t tx_en;
+    mcu_pin_t rxd0;
+    mcu_pin_t rxd1;
+    mcu_pin_t crs_dv;
+    mcu_pin_t rx_er;
+} eth_rmii_pin_assignment_t;
+
+typedef struct MCU_PACK {
+    mcu_pin_t tx_clk;
+    mcu_pin_t txd0;
+    mcu_pin_t txd1;
+    mcu_pin_t txd2;
+    mcu_pin_t txd3;
+    mcu_pin_t tx_en;
+    mcu_pin_t tx_er;
+    mcu_pin_t rx_clk;
+    mcu_pin_t rxd0;
+    mcu_pin_t rxd1;
+    mcu_pin_t rxd2;
+    mcu_pin_t rxd3;
+    mcu_pin_t rx_dv;
+    mcu_pin_t rx_er;
+    mcu_pin_t crs;
+    mcu_pin_t col;
+} eth_mii_pin_assignment_t;
+
+typedef struct MCU_PACK {
+    union {
+        eth_rmii_pin_assignment_t rmii;
+        eth_mii_pin_assignment_t mii;
+    };
+    mcu_pin_t mdio;
+    mcu_pin_t mdc;
+} eth_pin_assignment_t;
+
+typedef struct MCU_PACK {
+    u32 o_flags;
+    u32 o_events;
+    u8 mac_addr[8] /*! Hardware mac address */;
+    u32 resd[8];
+} eth_info_t;
 
 /*! \brief ETH IO Attributes
  * \details This structure defines the attributes structure
  * for configuring the ethernet port.
  */
 typedef struct MCU_PACK {
-	uint8_t mac_addr[8] /*! \brief the MAC address */;
-	uint32_t mode /*! \brief Full duplex mode setting */;
+    u32 o_flags /*! Flag settings */;
+    eth_pin_assignment_t pin_assignment /*! Pin assignement (use with ETH_FLAG_SET_INTERFACE) */;
+    u8 mac_addr[8] /*! the MAC address (use with ETH_FLAG_SET_INTERFACE) */;
+    u16 phy_address /*! Address of PHY chip (use with ETH_FLAG_SET_INTERFACE) */;
 } eth_attr_t;
-
-typedef struct MCU_PACK {
-	u32 pin_assignment;
-	u32 o_flags;
-	u8 mac_addr[8];
-} eth_3_attr_t;
-
-/*! \details This is the enc28j60 tx status attribute.
- *
- */
-typedef struct MCU_PACK {
-	uint16_t count;
-	uint8_t status[5];
-} eth_txstatus_t;
 
 
 #define I_ETH_GETVERSION _IOCTL(ETH_IOC_IDENT_CHAR, I_MCU_GETVERSION)
@@ -108,7 +143,7 @@ typedef struct MCU_PACK {
  *
  * Example:
  * \code
- * #include <dev/eth.h>
+ * #include <sos/dev/eth.h>
  * eth_attr_t attr;
  * int eth_fd;
  * ...
@@ -116,14 +151,14 @@ typedef struct MCU_PACK {
  * \endcode
  * \hideinitializer
  */
-#define I_ETH_GETINFO _IOCTLR(ETH_IOC_IDENT_CHAR, I_MCU_GETINFO, eth_attr_t)
+#define I_ETH_GETINFO _IOCTLR(ETH_IOC_IDENT_CHAR, I_MCU_GETINFO, eth_info_t)
 
 /*! \brief See below for details.
  * \details This requests writes the ETH attributes.
  *
  * Example:
  * \code
- * #include <dev/eth.h>
+ * #include <sos/dev/eth.h>
  * eth_attr_t attr;
  * int eth_fd;
  * ...
@@ -134,44 +169,10 @@ typedef struct MCU_PACK {
 #define I_ETH_SETATTR _IOCTLW(ETH_IOC_IDENT_CHAR, I_MCU_SETATTR, eth_attr_t)
 #define I_ETH_SETACTION _IOCTLW(ETH_IOC_IDENT_CHAR, I_MCU_SETACTION, mcu_action_t)
 
-/*! \brief This request starts a new packet (to be transmitted).
- * Subsequent calls to write() will store data in
- * the new packet.  The I_ETH_SENDTXPKT request will
- * send the packet.  The ctl argument is NULL.
- */
-#define I_ETH_INITTXPKT _IOCTL(ETH_IOC_IDENT_CHAR, I_MCU_TOTAL + 0)
-#define I_ETH_INIT_TX_PKT I_ETH_INITTXPKT
+#define I_ETH_SETREGISTER _IOCTLW(ETH_IOC_IDENT_CHAR, I_MCU_TOTAL, mcu_channel_t)
+#define I_ETH_GETREGISTER _IOCTLR(ETH_IOC_IDENT_CHAR, I_MCU_TOTAL+1, mcu_channel_t)
 
-/*! \brief This request transmits the current packet in the transmit buffer.
- * It returns 0 if the packet was successfully transmitted.
- */
-#define I_ETH_SENDTXPKT _IOCTL(ETH_IOC_IDENT_CHAR, I_MCU_TOTAL + 1)
-#define I_ETH_SEND_TX_PKT I_ETH_SENDTXPKT
-
-/*! \brief This request checks to see if there is a packet currently
- * being transmitted.  It returns true if a packet is currently being
- * transmitted and false otherwise (less than zero for an error).
- */
-#define I_ETH_TXPKTBUSY _IOCTL(ETH_IOC_IDENT_CHAR, I_MCU_TOTAL + 2)
-#define I_ETH_TX_PKT_BUSY I_ETH_TXPKTBUSY
-
-/*! \brief This request checks to see if a new packet is ready to
- * be read from the device.  It returns the number of bytes available
- * in the packet or less than zero for an error.  The ctl argument
- * points to a memory destination for the pointer to the next packet.
- */
-#define I_ETH_RXPKTRDY _IOCTL(ETH_IOC_IDENT_CHAR, I_MCU_TOTAL + 3)
-#define I_ETH_RX_PKT_RDY I_ETH_RXPKTRDY
-
-/*! \brief This request finalizes the reception of a packet.  The ctl
- * value is a pointer to the next packet address in the read buffer.  This
- * value is obtained when a packet is ready using the I_ETH_RXPKTRDY request.
- */
-#define I_ETH_RXPKTCOMPLETE _IOCTL(ETH_IOC_IDENT_CHAR, I_MCU_TOTAL + 4)
-#define I_ETH_RX_PKT_COMPLETE I_ETH_RXPKTCOMPLETE
-
-#define I_ETH_TOTAL 5
-
+#define I_ETH_TOTAL (2)
 
 #endif // SOS_DEV_ETH_H_
 

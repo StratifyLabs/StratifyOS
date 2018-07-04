@@ -149,9 +149,9 @@ int devfs_mcu_ioctl(const devfs_handle_t * handle,
 
 
 #define DEVFS_MCU_DRIVER_IOCTL_FUNCTION_MIN(driver_name, version, ident_char) \
-    int mcu_##driver_name##_get_version(const devfs_handle_t * handle, void * ctl){ return version; } \
+    int mcu_##driver_name##_getversion(const devfs_handle_t * handle, void * ctl){ return version; } \
     int (* const mcu_##driver_name##_ioctl_func_table[I_MCU_TOTAL])(const devfs_handle_t*, void*) = { \
-    mcu_##driver_name##_get_version, \
+    mcu_##driver_name##_getversion, \
     mcu_##driver_name##_getinfo, \
     mcu_##driver_name##_setattr, \
     mcu_##driver_name##_setaction }; \

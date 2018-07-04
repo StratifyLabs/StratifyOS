@@ -79,7 +79,7 @@ int scheduler_prepare(){
 		mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_FATAL, (void*)"dbgi");
 	}
 
-	mcu_debug_user_printf("MCU Debug start\n");
+    mcu_debug_log_info(MCU_DEBUG_SCHEDULER, "MCU Debug start");
 
 #if SCHED_USECOND_TMR_SLEEP_OC > -1
 	if ( scheduler_timing_init() ){
@@ -87,14 +87,14 @@ int scheduler_prepare(){
 	}
 #endif
 
-	mcu_debug_user_printf("Load MCU Faults\n");
+    mcu_debug_log_info(MCU_DEBUG_SCHEDULER, "Load MCU Faults");
 
 	//Load any possible faults from the last reset
 	mcu_fault_load((fault_t*)&m_scheduler_fault.fault);
 
-	mcu_debug_user_printf("Init MPU\n");
+    mcu_debug_log_info(MCU_DEBUG_SCHEDULER, "Init MPU");
 	if ( task_init_mpu(&_data, sos_board_config.sys_memory_size) < 0 ){
-		scheduler_debug("Failed to initialize memory protection\n");
+        mcu_debug_log_info(MCU_DEBUG_SCHEDULER, "Failed to initialize memory protection");
 		mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_FATAL, (void*)"tski");
 	}
 

@@ -56,19 +56,19 @@ void sffs_dev_setserialno(const void * cfg, int serialno){
 
 int sffs_dev_open(const void * cfg){
     int result;
-    result = sysfs_drive_open(SFFS_DRIVE(cfg));
+    result = sysfs_shared_open(SFFS_DRIVE(cfg));
     if( result < 0 ){ return result; }
-    return sysfs_drive_ioctl(SFFS_DRIVE(cfg), I_DRIVE_GETINFO, &(SFFS_STATE(cfg)->dattr));
+    return sysfs_shared_ioctl(SFFS_DRIVE(cfg), I_DRIVE_GETINFO, &(SFFS_STATE(cfg)->dattr));
 }
 
 int sffs_dev_write(const void * cfg, int loc, const void * buf, int nbyte){
 	int ret;
 	//int i;
 	char buffer[nbyte];
-    ret = sysfs_drive_write(SFFS_DRIVE(cfg), loc,  buf, nbyte);
+    ret = sysfs_shared_write(SFFS_DRIVE(cfg), loc,  buf, nbyte);
     if( ret < 0 ){ return ret; }
 	memset(buffer, 0, nbyte);
-    sysfs_drive_read(SFFS_DRIVE(cfg), loc, buffer, nbyte);
+    sysfs_shared_read(SFFS_DRIVE(cfg), loc, buffer, nbyte);
 	if ( memcmp(buffer, buf, nbyte) != 0 ){
         return SYSFS_SET_RETURN(EIO);
 	}
@@ -77,7 +77,7 @@ int sffs_dev_write(const void * cfg, int loc, const void * buf, int nbyte){
 }
 
 int sffs_dev_read(const void * cfg, int loc, void * buf, int nbyte){
-    return sysfs_drive_read(SFFS_DRIVE(cfg), loc, buf, nbyte);
+    return sysfs_shared_read(SFFS_DRIVE(cfg), loc, buf, nbyte);
 }
 
 
@@ -85,7 +85,7 @@ int sffs_dev_erase(const void * cfg){
 	drive_attr_t attr;
 	int usec;
 	attr.o_flags = DRIVE_FLAG_ERASE_DEVICE;
-    if( sysfs_drive_ioctl(SFFS_DRIVE(cfg), I_DRIVE_SETATTR, &attr) < 0 ){
+    if( sysfs_shared_ioctl(SFFS_DRIVE(cfg), I_DRIVE_SETATTR, &attr) < 0 ){
 		return -1;
 	}
 
@@ -104,7 +104,7 @@ int sffs_dev_erasesection(const void * cfg, int loc){
 	attr.start = loc;
 	attr.end = loc;
 
-    if( (result = sysfs_drive_ioctl(SFFS_DRIVE(cfg), I_DRIVE_SETATTR, &attr)) < 0 ){
+    if( (result = sysfs_shared_ioctl(SFFS_DRIVE(cfg), I_DRIVE_SETATTR, &attr)) < 0 ){
         return result;
 	}
 
@@ -116,6 +116,6 @@ int sffs_dev_erasesection(const void * cfg, int loc){
 }
 
 int sffs_dev_close(const void * cfg){
-    return sysfs_drive_close(SFFS_DRIVE(cfg));
+    return sysfs_shared_close(SFFS_DRIVE(cfg));
 }
 

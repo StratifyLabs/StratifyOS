@@ -182,21 +182,21 @@ int sysfs_file_close(sysfs_file_t * file);
 typedef struct {
     sysfs_file_t file;
     pthread_mutex_t mutex;
-} sysfs_drive_state_t;
+} sysfs_shared_state_t;
 
 typedef struct {
     const sysfs_t * devfs;
-    char name[NAME_MAX];
-    sysfs_drive_state_t * state;
-} sysfs_drive_config_t;
+    const char * name;
+    sysfs_shared_state_t * state;
+} sysfs_shared_config_t;
 
-int sysfs_drive_open(const sysfs_drive_config_t * config);
-int sysfs_drive_ioctl(const sysfs_drive_config_t * config, int request, void * ctl);
-int sysfs_drive_fsync(const sysfs_drive_config_t * config);
-int sysfs_drive_read(const sysfs_drive_config_t * config, int loc, void * buf, int nbyte);
-int sysfs_drive_write(const sysfs_drive_config_t * config, int loc, const void * buf, int nbyte);
-int sysfs_drive_aio(const sysfs_drive_config_t * config, void * aio);
-int sysfs_drive_close(const sysfs_drive_config_t * config);
+int sysfs_shared_open(const sysfs_shared_config_t * config);
+int sysfs_shared_ioctl(const sysfs_shared_config_t * config, int request, void * ctl);
+int sysfs_shared_fsync(const sysfs_shared_config_t * config);
+int sysfs_shared_read(const sysfs_shared_config_t * config, int loc, void * buf, int nbyte);
+int sysfs_shared_write(const sysfs_shared_config_t * config, int loc, const void * buf, int nbyte);
+int sysfs_shared_aio(const sysfs_shared_config_t * config, void * aio);
+int sysfs_shared_close(const sysfs_shared_config_t * config);
 
 typedef struct {
     const void * config;

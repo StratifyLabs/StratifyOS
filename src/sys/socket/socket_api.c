@@ -112,32 +112,3 @@ int writev(int s, const struct iovec *iov, int iovcnt){
 int select(int maxfdp1, fd_set *readset, fd_set *writeset, fd_set *exceptset, struct timeval *timeout){
 	return sos_board_config.socket_api->select(maxfdp1, readset, writeset, exceptset, timeout);
 }
-
-#if HAVE_LWIP_SOCKETS_H
-
-const sos_socket_api_t lwip_socket_api = {
-		.accept = lwip_accept,
-		.bind = lwip_bind,
-		.shutdown = lwip_shutdown,
-		.getpeername = lwip_getpeername,
-		.getsockname = lwip_getsockname,
-		.getsockopt = lwip_getsockopt,
-		.setsockopt = lwip_setsockopt,
-		.close = lwip_close,
-		.connect = lwip_connect,
-		.read = lwip_read,
-		.listen = lwip_listen,
-		.recv = lwip_recv,
-		.recvfrom = lwip_recvfrom,
-		.send = lwip_send,
-		.sendmsg = lwip_sendmsg,
-		.sendto = lwip_sendto,
-		.socket = lwip_socket,
-		.write = lwip_write,
-		.writev = lwip_writev,
-		.select = lwip_select,
-		.ioctl = lwip_ioctl,
-		.fcntl = lwip_fcntl
-};
-
-#endif
