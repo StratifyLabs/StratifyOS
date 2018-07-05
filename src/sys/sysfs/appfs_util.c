@@ -478,7 +478,7 @@ int appfs_util_root_writeinstall(const devfs_device_t * dev, appfs_handle_t * h,
 	if ( attr->loc == 0 ){
 		//This is the header data -- make sure it is complete
 		if ( attr->nbyte < sizeof(appfs_file_t) ){
-            mcu_debug_root_printf("APPFS: Page size is less than min\n");
+            mcu_debug_log_error(MCU_DEBUG_APPFS, "Page size is less than min");
             return SYSFS_SET_RETURN(ENOTSUP);
 		}
 
@@ -506,7 +506,7 @@ int appfs_util_root_writeinstall(const devfs_device_t * dev, appfs_handle_t * h,
 
 		//is signature correct
 		if ( src.file->exec.signature != symbols_table[0] ){
-            mcu_debug_root_printf("APPFS: Not executable\n");
+            mcu_debug_log_error(MCU_DEBUG_APPFS, "Not executable");
             return SYSFS_SET_RETURN(ENOEXEC);
 		}
 
@@ -525,7 +525,7 @@ int appfs_util_root_writeinstall(const devfs_device_t * dev, appfs_handle_t * h,
 		//find space for the code
 		code_start_addr = find_protectable_free(dev, type, code_size, &code_page);
 		if ( code_start_addr == -1 ){
-            mcu_debug_root_printf("APPFS: No exec region available\n");
+            mcu_debug_log_error(MCU_DEBUG_APPFS, "No exec region available");
             return SYSFS_SET_RETURN(ENOSPC);
 		}
 
@@ -554,7 +554,7 @@ int appfs_util_root_writeinstall(const devfs_device_t * dev, appfs_handle_t * h,
 						APPFS_MEMPAGETYPE_FREE);
 
 			}
-            mcu_debug_root_printf("APPFS: No RAM region available %d\n", ram_size);
+            mcu_debug_log_error(MCU_DEBUG_APPFS, "No RAM region available %d", ram_size);
             return SYSFS_SET_RETURN(ENOSPC);
 		}
 
@@ -588,7 +588,7 @@ int appfs_util_root_writeinstall(const devfs_device_t * dev, appfs_handle_t * h,
 					h->type.install.kernel_symbols_total,
 					&loc_err);
 			if( loc_err != 0 ){
-                mcu_debug_root_printf("APPFS: Code relocation error %d\n", loc_err);
+                mcu_debug_log_error(MCU_DEBUG_APPFS, "Code relocation error %d", loc_err);
                 return SYSFS_SET_RETURN_WITH_VALUE(EIO, loc_err);
 			}
 		}
@@ -607,7 +607,7 @@ int appfs_util_root_writeinstall(const devfs_device_t * dev, appfs_handle_t * h,
 					h->type.install.kernel_symbols_total,
 					&loc_err);
 			if( loc_err != 0 ){
-                mcu_debug_root_printf("APPFS: Code relocation error %d\n", loc_err);
+                mcu_debug_log_error(MCU_DEBUG_APPFS, "Code relocation error %d", loc_err);
                 return SYSFS_SET_RETURN_WITH_VALUE(EIO, loc_err);
 			}
 		}

@@ -33,9 +33,44 @@
 
 #if MCU_DEBUG
 
+static const char * flag_names[32] = {
+    "SYS", //0
+    "SYS",
+    "SYS", //2
+    "CM",
+    "DEV", //4
+    "AIO",
+    "CRT",
+    "DIR",
+    "MALLOC",
+    "MQ",
+    "PROCESS", //10
+    "PTHREAD",
+    "SCHED",
+    "SCHEDULER",
+    "SEM",
+    "SIGNAL", //15
+    "FS",
+    "SOCKET",
+    "TIME",
+    "APPFS",
+    "LINK", //20
+    "UNISTD",
+    "USB",
+    "DEVFS",
+    "SGFX",
+    "SON", //25
+    "USER0",
+    "USER1",
+    "USER2",
+    "USER3", //29
+    "USER4",
+    "USER5"
+};
+
 typedef struct {
-    char buffer[256];
-    int len;
+char buffer[256];
+int len;
 } mcu_debug_buffer_t;
 
 static void mcu_debug_vlog(u32 o_flags, const char * intro, const char * format, va_list args);
@@ -118,7 +153,8 @@ int mcu_debug_vprintf(const char * format, va_list args){
 void mcu_debug_vlog(u32 o_flags, const char * intro, const char * format, va_list args){
     if( (mcu_board_config.o_mcu_debug & 0x03) >= (o_flags & 3) ){ // check the level
         if( (mcu_board_config.o_mcu_debug & o_flags) & ~0x03 ){ //check the subsystem
-            mcu_debug_printf("%s:", intro);
+            u32 first_flag = __builtin_ctz(o_flags & ~0x03);
+            mcu_debug_printf("%s:%s:", intro, flag_names[first_flag]);
             mcu_debug_vprintf(format, args);
             mcu_debug_printf("\n");
         }

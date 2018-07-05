@@ -174,7 +174,7 @@ int init_os_memory_protection(task_memories_t * os_mem){
 			false
 	);
 	if ( err < 0 ){
-        mcu_debug_root_printf("Failed to init OS read-only 0x%lX to 0x%lX (%d)\n", (u32)&_sys, (u32)&_esys, err);
+        mcu_debug_log_error(MCU_DEBUG_SYS, "Failed to init OS read-only 0x%lX to 0x%lX (%d)", (u32)&_sys, (u32)&_esys, err);
 		return err;
 	}
 
@@ -189,7 +189,7 @@ int init_os_memory_protection(task_memories_t * os_mem){
 			true
 	);
 	if ( err < 0 ){
-        mcu_debug_root_printf("Failed to init OS flash 0x%lX -> 0x%ld bytes (%d)\n", (u32)os_mem->code.addr, (u32)os_mem->code.size, err);
+        mcu_debug_log_error(MCU_DEBUG_SYS, "Failed to init OS flash 0x%lX -> 0x%ld bytes (%d)", (u32)os_mem->code.addr, (u32)os_mem->code.size, err);
 		return err;
 	}
 
@@ -203,7 +203,7 @@ int init_os_memory_protection(task_memories_t * os_mem){
 			false
 	);
 	if ( err < 0 ){
-        mcu_debug_root_printf("Failed to init shared mem 0x%lX -> 0x%lX bytes (%d)\n", (u32)os_mem->data.addr, (u32)os_mem->data.size, err);
+        mcu_debug_log_error(MCU_DEBUG_SYS, "Failed to init shared mem 0x%lX -> 0x%lX bytes (%d)", (u32)os_mem->data.addr, (u32)os_mem->data.size, err);
 		return err;
 	}
 

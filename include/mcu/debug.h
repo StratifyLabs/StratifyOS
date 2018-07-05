@@ -74,7 +74,7 @@ enum {
     MCU_DEBUG_USER2 = (1<<28),
     MCU_DEBUG_USER3 = (1<<29),
     MCU_DEBUG_USER4 = (1<<30),
-    MCU_DEBUG_USER5 = (1<<30)
+    MCU_DEBUG_USER5 = (1<<31)
 };
 
 #if !defined ___debug
