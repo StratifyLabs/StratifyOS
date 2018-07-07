@@ -87,6 +87,7 @@ typedef struct MCU_PACK {
     mcu_pin_t rxd1;
     mcu_pin_t crs_dv;
     mcu_pin_t rx_er;
+    mcu_pin_t unused[8]; //needs to match size of eth_mii_pin_assignment_t
 } eth_rmii_pin_assignment_t;
 
 typedef struct MCU_PACK {
@@ -120,8 +121,9 @@ typedef struct MCU_PACK {
 typedef struct MCU_PACK {
     u32 o_flags;
     u32 o_events;
-    u8 mac_addr[8] /*! Hardware mac address */;
-    u32 resd[8];
+    u8 mac_address[10] /*! Hardware mac address */;
+    u16 resd0;
+    u32 resd1[8];
 } eth_info_t;
 
 /*! \brief ETH IO Attributes
@@ -131,7 +133,7 @@ typedef struct MCU_PACK {
 typedef struct MCU_PACK {
     u32 o_flags /*! Flag settings */;
     eth_pin_assignment_t pin_assignment /*! Pin assignement (use with ETH_FLAG_SET_INTERFACE) */;
-    u8 mac_addr[8] /*! the MAC address (use with ETH_FLAG_SET_INTERFACE) */;
+    u8 mac_address[10] /*! the MAC address (use with ETH_FLAG_SET_INTERFACE) */;
     u16 phy_address /*! Address of PHY chip (use with ETH_FLAG_SET_INTERFACE) */;
 } eth_attr_t;
 
@@ -170,7 +172,7 @@ typedef struct MCU_PACK {
 #define I_ETH_SETACTION _IOCTLW(ETH_IOC_IDENT_CHAR, I_MCU_SETACTION, mcu_action_t)
 
 #define I_ETH_SETREGISTER _IOCTLW(ETH_IOC_IDENT_CHAR, I_MCU_TOTAL, mcu_channel_t)
-#define I_ETH_GETREGISTER _IOCTLR(ETH_IOC_IDENT_CHAR, I_MCU_TOTAL+1, mcu_channel_t)
+#define I_ETH_GETREGISTER _IOCTLRW(ETH_IOC_IDENT_CHAR, I_MCU_TOTAL+1, mcu_channel_t)
 
 #define I_ETH_TOTAL (2)
 

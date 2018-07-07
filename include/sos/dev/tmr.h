@@ -137,7 +137,7 @@ typedef struct MCU_PACK {
  * \endcode
  * \hideinitializer
  */
-#define I_TMR_GETCHANNEL _IOCTLR(TMR_IOC_IDENT_CHAR, I_MCU_TOTAL + 1, mcu_channel_t)
+#define I_TMR_GETCHANNEL _IOCTLRW(TMR_IOC_IDENT_CHAR, I_MCU_TOTAL + 1, mcu_channel_t)
 
 /*! \brief See details below.
  * \details This request writes the value of the timer.

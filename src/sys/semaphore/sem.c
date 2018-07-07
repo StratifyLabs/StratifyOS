@@ -106,8 +106,15 @@ static sem_t * sem_find_free(){
 	return &new_entry->sem;
 }
 
-/*! \details This function initializes \a sem as an unnamed semaphore with
+/*! \details Initializes \a sem as an unnamed semaphore with
  * \a pshared and \a value.
+ *
+ * @param sem A pointer to the semaphore to initialize
+ * @param pshared Non-zero to share the semaphore between processes
+ * @param value The initial value of the semaphore
+ *
+ * The semaphore value will be decremented on sem_wait() and incremented
+ * on sem_post().
  *
  * \return Zero on success or -1 with errno (see \ref ERRNO) set to:
  * - EINVAL:  sem is NULL
@@ -285,13 +292,14 @@ void root_sem_post(void * args){
     scheduler_root_update_on_wake(id, task_get_priority(id));
 }
 
-/*! \details This function unlocks (increments) the value of
- * the semaphore.
- *
+/*! \details Unlocks (increments) the value of the semaphore.
  *
  * \return Zero on success or SEM_FAILED with errno (see \ref ERRNO) set to:
  * - EINVAL:  sem is NULL
  * - EACCES:  process cannot access semaphore
+ *
+ * If other threads or processes have called sem_wait() or sem_timedwait(),
+ * the semaphore will be available and one of the threads will lock the semaphore.
  *
  */
 int sem_post(sem_t *sem){
@@ -328,13 +336,18 @@ void root_sem_timedwait(void * args){
 }
 
 
-/*! \details This function waits to lock (decrement) the semaphore until the
+/*! \details Locks (decrements) the semaphore. If the semaphore cannot
+ * be locked (it is already zero), this function will block until the
  * value of \a CLOCK_REALTIME exceeds the value of \a abs_timeout.
  *
- * \return Zero on success or SEM_FAILED with errno (see \ref ERRNO) set to:
+ * @param sem A pointer to the semaphore
+ * @param abs_timeout Absolute timeout value
+ * @return Zero on success or SEM_FAILED with errno (see \ref ERRNO) set to:
  * - EINVAL:  sem is NULL
  * - EACCES:  process cannot access semaphore
  * - ETIMEDOUT:  timeout expired without locking the semaphore
+ *
+ *
  *
  */
 int sem_timedwait(sem_t * sem, const struct timespec * abs_timeout){

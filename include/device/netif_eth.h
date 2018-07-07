@@ -21,7 +21,7 @@
 #define DEVICE_NETIF_ENET_H_
 
 #include "sos/fs/devfs.h"
-#include "sos/dev/drive.h"
+#include "sos/dev/netif.h"
 #include "mcu/eth.h"
 
 typedef struct {

@@ -40,7 +40,7 @@ void cortexm_delay_systick(u32 ticks){
         end = start - countdown;
         do {
             value = cortexm_get_systick_value();
-        } while( value > end && value < start );
+        } while( (value > end) && (value < start) );
     }
 }
 

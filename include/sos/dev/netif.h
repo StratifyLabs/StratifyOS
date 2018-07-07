@@ -36,7 +36,7 @@
 
 #include "mcu/types.h"
 
-#define NETIF_VERSION (0x000000)
+#define NETIF_VERSION (0x030000)
 #define NETIF_IOC_CHAR 'N'
 
 enum {
@@ -44,13 +44,19 @@ enum {
     NETIF_FLAG_DEINIT /*! When setting attributes, de-initialies the interface */ = (1<<1)
 };
 
+typedef struct MCU_PACK {
+    u32 o_flags;
+    u32 o_events;
+} netif_info_t;
+
 /*! \brief Network Interface attributes
  */
 typedef struct MCU_PACK {
 	u32 o_flags;
 	u16 mtu;
-    u8 hardware_address[16];
+    u8 mac_address[10];
 } netif_attr_t;
+
 
 #define I_NETIF_GETVERSION _IOCTL(NETIF_IOC_CHAR, I_MCU_GETVERSION)
 
@@ -67,7 +73,7 @@ typedef struct MCU_PACK {
  * \endcode
  * \hideinitializer
  */
-#define I_NETIF_GETINFO _IOCTLR(NETIF_IOC_CHAR, I_MCU_GETINFO, netif_attr_t)
+#define I_NETIF_GETINFO _IOCTLR(NETIF_IOC_CHAR, I_MCU_GETINFO, netif_info_t)
 
 /*! \brief See below for details.
  * \details This requests writes the ETH attributes.
@@ -85,7 +91,7 @@ typedef struct MCU_PACK {
 #define I_NETIF_SETATTR _IOCTLW(NETIF_IOC_CHAR, I_MCU_SETATTR, netif_attr_t)
 #define I_NETIF_SETACTION _IOCTLW(NETIF_IOC_CHAR, I_MCU_SETACTION, mcu_action_t)
 
-#define I_NETIF_TOTAL 2
+#define I_NETIF_TOTAL 0
 
 #endif /* SOS_DEV_NETIF_H_ */
 

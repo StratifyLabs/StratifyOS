@@ -68,7 +68,7 @@ int process_start(const char *path_arg,
 	len = strlen(path_arg);
 
 	if ( access(path, X_OK) < 0 ){
-        mcu_debug_log_error(MCU_DEBUG_SYS, "no exec access");
+        mcu_debug_log_warning(MCU_DEBUG_SYS, "no exec access:%s", path);
 		return -1;
 	}
 
