@@ -75,7 +75,8 @@ enum {
     ETH_FLAG_IS_RMII = (1<<7),
     ETH_FLAG_GET_STATE = (1<<8),
     ETH_FLAG_SET_REGISTER = (1<<9),
-    ETH_FLAG_GET_REGISTER = (1<<10)
+    ETH_FLAG_GET_REGISTER = (1<<10),
+    ETH_FLAG_STOP = (1<<11)
 };
 
 typedef struct MCU_PACK {

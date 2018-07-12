@@ -83,7 +83,10 @@ int pthread_create(pthread_t * thread /*! If not null, the thread id is written 
     pthread_attr_t attrs;
     void * stack_addr;
 
+    mcu_debug_log_info(MCU_DEBUG_PTHREAD, "Create thread 0x%lX", (u32)attr);
+
     if ( attr == NULL ){
+        mcu_debug_log_info(MCU_DEBUG_PTHREAD, "Init new attrs");
         if ( pthread_attr_init(&attrs) < 0 ){
             //Errno is set by pthread_attr_init()
             return -1;
@@ -95,12 +98,13 @@ int pthread_create(pthread_t * thread /*! If not null, the thread id is written 
     u32 mem_size = attrs.stacksize + sizeof(struct _reent) + SCHED_DEFAULT_STACKGUARD_SIZE;
     stack_addr = malloc(mem_size);
     if ( stack_addr == NULL ){
+        mcu_debug_log_error(MCU_DEBUG_PTHREAD, "Failed to alloc stack memory:%d", mem_size);
         errno = ENOMEM;
         return -1;
     }
 
     attrs.stackaddr = stack_addr;
-    memset(stack_addr, 0, attr->stacksize);
+    memset(stack_addr, 0, mem_size); //nullify memory space
 
     id = scheduler_create_thread(start_routine,
                                  arg,
@@ -114,8 +118,9 @@ int pthread_create(pthread_t * thread /*! If not null, the thread id is written 
         }
         return 0;
     } else {
+        free(stack_addr);
         if ( attr == NULL ){
-            free(stack_addr);
+            mcu_debug_log_info(MCU_DEBUG_PTHREAD, "Destroy attrs");
             pthread_attr_destroy(&attrs);
         }
         errno = EAGAIN;

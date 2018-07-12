@@ -99,12 +99,11 @@ void scheduler_timing_root_timedblock(void * block_object, struct mcu_timeval * 
 		}
 	}
 
-    if ( (block_object == 0) && (is_time_to_sleep == 0) ){
-		//Do not sleep
-		return;
+    //only sleep if the time hasn't already passed
+    if( is_time_to_sleep ){
+        scheduler_root_update_on_sleep();
 	}
 
-	scheduler_root_update_on_sleep();
 }
 
 void scheduler_timing_convert_timespec(struct mcu_timeval * tv, const struct timespec * ts){

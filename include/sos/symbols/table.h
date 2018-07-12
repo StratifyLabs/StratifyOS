@@ -579,6 +579,10 @@ u32 const symbols_table[] = {
     (u32)son_api,
     (u32)kernel_request,
     (u32)sos_trace_event,
+    (u32)gethostbyname,
+    (u32)gethostbyname_r,
+    (u32)freeaddrinfo,
+    (u32)getaddrinfo,
     1
 };
 

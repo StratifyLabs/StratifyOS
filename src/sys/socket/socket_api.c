@@ -112,3 +112,20 @@ int writev(int s, const struct iovec *iov, int iovcnt){
 int select(int maxfdp1, fd_set *readset, fd_set *writeset, fd_set *exceptset, struct timeval *timeout){
 	return sos_board_config.socket_api->select(maxfdp1, readset, writeset, exceptset, timeout);
 }
+
+struct hostent * gethostbyname(const char *name){
+    return sos_board_config.socket_api->gethostbyname(name);
+}
+
+int gethostbyname_r(const char *name, struct hostent *ret, char *buf, size_t buflen, struct hostent **result, int *h_errnop){
+    return sos_board_config.socket_api->gethostbyname_r(name, ret, buf, buflen, result, h_errnop);
+}
+
+void freeaddrinfo(struct addrinfo *ai){
+    return sos_board_config.socket_api->freeaddrinfo(ai);
+}
+
+int getaddrinfo(const char *nodename, const char *servname, const struct addrinfo *hints, struct addrinfo **res){
+    return sos_board_config.socket_api->getaddrinfo(nodename, servname, hints, res);
+}
+

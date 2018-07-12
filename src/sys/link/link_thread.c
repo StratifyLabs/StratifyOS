@@ -113,7 +113,7 @@ void * link_update(void * arg){
 
     mcu_debug_log_info(MCU_DEBUG_LINK, "Open link driver");
 	if( (driver->handle = driver->open(NULL, 0)) == LINK_PHY_ERROR){
-		mcu_debug_user_printf("failed to init phy\n");
+        mcu_debug_log_error(MCU_DEBUG_LINK, "failed to init phy");
 		return 0;
 	}
 

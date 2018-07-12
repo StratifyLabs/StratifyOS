@@ -244,6 +244,24 @@
 #define lio_listio 0
 #endif
 
+#if SYMBOLS_IGNORE_CTYPE != 0
+#define isalnum 0
+#define isalpha 0
+#define isblank 0
+#define iscntrl 0
+#define isctype 0
+#define isdigit 0
+#define isgraph 0
+#define islower 0
+#define isprint 0
+#define ispunct 0
+#define isspace 0
+#define isupper 0
+#define isxdigit 0
+#define toctrans 0
+#define tolower 0
+#define toupper 0
+#endif
 
 #if SYMBOLS_IGNORE_WCTYPE != 0
 #define iswalnum 0

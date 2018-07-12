@@ -69,9 +69,10 @@ int select(int maxfdp1, fd_set *readset, fd_set *writeset, fd_set *exceptset, st
 //int write(int s, const void *dataptr, size_t size);
 //int close(int s);
 
+struct addrinfo;
 
 typedef struct {
-    int (*startup)(const void * config, void * state);
+    int (*startup)(const void *);
 	int (*accept)(int s, struct sockaddr *addr, socklen_t *addrlen);
 	int (*bind)(int s, const struct sockaddr *name, socklen_t namelen);
 	int (*shutdown)(int s, int how);
@@ -98,6 +99,10 @@ typedef struct {
 	int (*ioctl)(int s, long cmd, void *argp);
 	int (*fcntl)(int s, int cmd, int val);
     int (*fsync)(int s);
+    struct hostent * (*gethostbyname)(const char *name);
+    int (*gethostbyname_r)(const char *name, struct hostent *ret, char *buf, size_t buflen, struct hostent **result, int *h_errnop);
+    void (*freeaddrinfo)(struct addrinfo *ai);
+    int (*getaddrinfo)(const char *nodename, const char *servname, const struct addrinfo *hints, struct addrinfo **res);
     const void * config;
     void * state;
 } sos_socket_api_t;

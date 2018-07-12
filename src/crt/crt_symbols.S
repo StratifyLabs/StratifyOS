@@ -559,3 +559,7 @@
 .global son_api; son_api = LINK_ADDR;
 .global kernel_request; kernel_request = LINK_ADDR;
 .global sos_trace_event; sos_trace_event = LINK_ADDR;
+.global gethostbyname; gethostbyname = LINK_ADDR;
+.global gethostbyname_r; gethostbyname_r = LINK_ADDR;
+.global freeaddrinfo; freeaddrinfo = LINK_ADDR;
+.global getaddrinfo; getaddrinfo = LINK_ADDR;

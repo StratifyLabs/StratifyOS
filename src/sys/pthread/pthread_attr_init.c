@@ -63,9 +63,7 @@ int pthread_attr_init(pthread_attr_t * attr /*! a pointer to the attributes stru
  *  - EINVAL:  \a attr is NULL or uninitialized
  */
 int pthread_attr_destroy(pthread_attr_t * attr /*! a pointer to the attributes structure */){
-	if ( attr == NULL ){
-		return EINVAL;
-	}
+    if ( attr == NULL ){ return EINVAL; }
 
 	if ( PTHREAD_ATTR_GET_IS_INITIALIZED(attr) != 1 ){
 		errno = EINVAL;

@@ -154,6 +154,7 @@ extern u32 __gnu_h2f_ieee();
 #include <sys/signal.h>
 #include <time.h>
 #include <sys/times.h>
+#include <netdb.h>
 
 #include "trace.h"
 #include "semaphore.h"

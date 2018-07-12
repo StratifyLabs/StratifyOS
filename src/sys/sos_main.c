@@ -65,7 +65,8 @@ void init_hw(){
 }
 
 int kernel_request(int request, void * data){
-	return 0;
+    errno = ENOSYS;
+    return -1;
 }
 
 

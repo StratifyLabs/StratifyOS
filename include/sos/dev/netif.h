@@ -41,7 +41,10 @@
 
 enum {
     NETIF_FLAG_INIT /*! When setting attributes, initializes the interface */ = (1<<0),
-    NETIF_FLAG_DEINIT /*! When setting attributes, de-initialies the interface */ = (1<<1)
+    NETIF_FLAG_DEINIT /*! When setting attributes, de-initialies the interface */ = (1<<1),
+    NETIF_FLAG_IS_LINK_UP /*! When settings attributes, ioctl() return 1 if link is up */ = (1<<2),
+    NETIF_FLAG_SET_LINK_UP /*! When setting attributes, sets the link as up */ = (1<<3),
+    NETIF_FLAG_SET_LINK_DOWN /*! When setting attributes, sets the link as down */ = (1<<4)
 };
 
 typedef struct MCU_PACK {
