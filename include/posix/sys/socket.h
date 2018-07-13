@@ -39,6 +39,11 @@ struct msghdr;
 struct iovec;
 #endif //HAVE_LWIP_SOCKETS_H
 
+#if defined __cplusplus
+extern "C" {
+#endif
+
+
 //these functions are for sockets only
 int accept(int s, struct sockaddr *addr, socklen_t *addrlen);
 int bind(int s, const struct sockaddr *name, socklen_t namelen);
@@ -68,6 +73,10 @@ int select(int maxfdp1, fd_set *readset, fd_set *writeset, fd_set *exceptset, st
 //int fcntl(int s, int cmd, int val);
 //int write(int s, const void *dataptr, size_t size);
 //int close(int s);
+
+#if defined __cplusplus
+}
+#endif
 
 struct addrinfo;
 
