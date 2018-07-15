@@ -28,6 +28,8 @@
 #if HAVE_LWIP_SOCKETS_H
 #include <lwip/netdb.h>
 #else
+#include "sys/socket.h"
+
 //from LWIP
 struct hostent {
     char  *h_name;      /* Official name of the host. */

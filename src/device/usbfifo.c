@@ -27,15 +27,13 @@
 static int set_read_action(const devfs_handle_t * handle, mcu_callback_t callback){
 	mcu_action_t action;
 	const usbfifo_config_t * cfgp = handle->config;
+
 	action.handler.callback = callback;
 	action.handler.context = (void*)handle;
 	action.o_events = MCU_EVENT_FLAG_DATA_READY;
 	action.channel = cfgp->endpoint;
 	action.prio = 0;
-	if( mcu_usb_setaction(handle, &action) < 0 ){
-		return -1;
-	}
-	return 0;
+    return mcu_usb_setaction(handle, &action);
 }
 
 static int data_received(void * context, const mcu_event_t * data){
@@ -88,6 +86,7 @@ int usbfifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 	mcu_action_t * action = ctl;
 	const usbfifo_config_t * cfgp = handle->config;
 	usbfifo_state_t * state = handle->state;
+    int result;
 	switch(request){
 	case I_FIFO_GETINFO:
 		fifo_getinfo(info, &(cfgp->fifo), &(state->fifo));
@@ -109,21 +108,19 @@ int usbfifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
         state->fifo.transfer_handler.read = 0;
 		//setup the device to write to the fifo when data arrives
 
-		if(  mcu_usb_setattr(handle, ctl) < 0 ){
-			return -1;
-		}
+        result = mcu_usb_setattr(handle, ctl);
+        if( result < 0 ){ return result; }
 		/* no break */
 	case I_FIFO_INIT:
 		fifo_flush(&(state->fifo));
-		if ( set_read_action(handle, data_received) < 0 ){
-			return -1;
-		}
+        result = set_read_action(handle, data_received);
+        if ( result < 0 ){ return SYSFS_SET_RETURN(EIO); }
+
 		break;
 	case I_FIFO_EXIT:
 		//clear the callback for the device
-		if( set_read_action(handle, NULL) < 0 ){
-			return -1;
-		}
+        result = set_read_action(handle, NULL);
+        if( result < 0 ){ return SYSFS_SET_RETURN(EIO); }
 		return mcu_usb_close(handle);
 	default:
 		return mcu_usb_ioctl(handle, request, ctl);

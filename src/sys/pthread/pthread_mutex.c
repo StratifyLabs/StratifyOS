@@ -315,15 +315,30 @@ void root_mutex_unlock(root_mutex_unlock_t * args){
 	//check to see if another task is waiting for the mutex
 	new_thread = scheduler_get_highest_priority_blocked(args->mutex);
 
+    if( task_get_current() == 500 ) mcu_debug_printf("l%d %d %d %d %d\n",
+                                                   __LINE__,
+                                                   new_thread,
+                                                   task_get_priority(new_thread),
+                                                   task_get_current_priority(),
+                                                   task_get_priority( task_get_current() ));
+
     if ( new_thread > 0 ){
-		args->mutex->pthread = new_thread;
+        args->mutex->pthread = new_thread;
 		args->mutex->pid = task_get_pid(new_thread);
 		args->mutex->lock = 1;
-        task_set_priority(new_thread, args->mutex->prio_ceiling);
+        if( args->mutex->prio_ceiling > task_get_priority(new_thread) ){
+            task_set_priority(new_thread, args->mutex->prio_ceiling);
+        }
 		scheduler_root_assert_active(new_thread, SCHEDULER_UNBLOCK_MUTEX);
         scheduler_root_update_on_wake(new_thread, task_get_priority(new_thread));
+        if( task_get_current() == 500 ) mcu_debug_printf("l%d %d %d %d %d\n",
+                                                       __LINE__,
+                                                       new_thread,
+                                                       task_get_priority(new_thread),
+                                                       task_get_current_priority(),
+                                                       task_get_priority( task_get_current() ));
     } else {
-		args->mutex->lock = 0;
+        args->mutex->lock = 0;
 		args->mutex->pthread = -1; //The mutex is up for grabs
         if( task_get_priority(args->id) < task_get_current_priority() ){
             scheduler_root_update_on_stopped();

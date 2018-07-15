@@ -221,7 +221,7 @@ void _free_r(struct _reent * reent_ptr, void * addr){
     //mcu_debug_log_info(MCU_DEBUG_MALLOC, "f:%d 0x%X", getpid(), addr);
 	malloc_set_chunk_free(chunk, chunk->header.num_chunks);
     cleanup_memory(reent_ptr, 0);
-	__malloc_unlock(reent_ptr);
+    __malloc_unlock(reent_ptr);
 }
 
 

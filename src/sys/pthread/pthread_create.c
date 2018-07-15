@@ -83,8 +83,6 @@ int pthread_create(pthread_t * thread /*! If not null, the thread id is written 
     pthread_attr_t attrs;
     void * stack_addr;
 
-    mcu_debug_log_info(MCU_DEBUG_PTHREAD, "Create thread 0x%lX", (u32)attr);
-
     if ( attr == NULL ){
         mcu_debug_log_info(MCU_DEBUG_PTHREAD, "Init new attrs");
         if ( pthread_attr_init(&attrs) < 0 ){

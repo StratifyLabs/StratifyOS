@@ -124,7 +124,7 @@ int check_faults(){
                     m_scheduler_fault.tid);
 
         usleep(2000);
-        mcu_debug_log_error(MCU_DEBUG_SYS, "%s\n", buffer);
+        mcu_debug_log_error(MCU_DEBUG_SYS, "%s", buffer);
 
         char hex_buffer[9];
         strcpy(buffer, "ADDR 0x");
@@ -135,7 +135,7 @@ int check_faults(){
                     buffer, strlen(buffer),
                     (u32)m_scheduler_fault.fault.pc + 1,
                     m_scheduler_fault.tid);
-        mcu_debug_log_error(MCU_DEBUG_SYS, "ADDR 0x%lX %ld\n", (u32)m_scheduler_fault.fault.pc + 1, m_scheduler_fault.tid);
+        mcu_debug_log_error(MCU_DEBUG_SYS, "ADDR 0x%lX %ld", (u32)m_scheduler_fault.fault.pc + 1, m_scheduler_fault.tid);
         usleep(2000);
 
 
@@ -145,7 +145,7 @@ int check_faults(){
                     buffer, strlen(buffer),
                     (u32)m_scheduler_fault.fault.caller,
                     m_scheduler_fault.tid);
-        mcu_debug_log_error(MCU_DEBUG_SYS, "Caller 0x%lX %ld\n", (u32)m_scheduler_fault.fault.caller, m_scheduler_fault.tid);
+        mcu_debug_log_error(MCU_DEBUG_SYS, "Caller 0x%lX %ld", (u32)m_scheduler_fault.fault.caller, m_scheduler_fault.tid);
         usleep(2000);
 
 
@@ -155,7 +155,7 @@ int check_faults(){
                     buffer, strlen(buffer),
                     (u32)m_scheduler_fault.fault.handler_pc + 1,
                     m_scheduler_fault.tid);
-        mcu_debug_log_error(MCU_DEBUG_SYS, "ISR PC 0x%lX %ld\n", (u32)m_scheduler_fault.fault.handler_pc+1, m_scheduler_fault.tid);
+        mcu_debug_log_error(MCU_DEBUG_SYS, "ISR PC 0x%lX %ld", (u32)m_scheduler_fault.fault.handler_pc+1, m_scheduler_fault.tid);
         usleep(2000);
 
 
@@ -165,7 +165,7 @@ int check_faults(){
                     buffer, strlen(buffer),
                     (u32)m_scheduler_fault.fault.handler_caller,
                     m_scheduler_fault.tid);
-        mcu_debug_log_error(MCU_DEBUG_SYS, "ISR Caller 0x%lX %ld\n", (u32)m_scheduler_fault.fault.handler_caller, m_scheduler_fault.tid);
+        mcu_debug_log_error(MCU_DEBUG_SYS, "ISR Caller 0x%lX %ld", (u32)m_scheduler_fault.fault.handler_caller, m_scheduler_fault.tid);
         usleep(2000);
 
         cortexm_svcall(root_fault_logged, NULL);

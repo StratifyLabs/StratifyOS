@@ -81,6 +81,7 @@ link_transport_phy_t sos_link_transport_usb_open(const char * name,
 		int usb_up_active_high){
 	link_transport_phy_t fd;
 	int pio_fd;
+    int result;
 
 	if( usb_up_pin.port != 0xff ){
 		pio_fd = open_pio(usb_up_pin, usb_up_active_high);
@@ -108,8 +109,9 @@ link_transport_phy_t sos_link_transport_usb_open(const char * name,
 	//set USB attributes
     mcu_debug_log_info(MCU_DEBUG_USB | MCU_DEBUG_LINK, "Set USB attr fd:%d", fd);
 
-	if( ioctl(fd, I_USB_SETATTR, usb_attr) < 0 ){
-        mcu_debug_log_error(MCU_DEBUG_USB | MCU_DEBUG_LINK, "Failed to set USB attr");
+    result = ioctl(fd, I_USB_SETATTR, usb_attr);
+    if( result < 0 ){
+        mcu_debug_log_error(MCU_DEBUG_USB | MCU_DEBUG_LINK, "Failed to set USB attr (%d, %d)", result, errno);
 		return LINK_PHY_ERROR;
 	}
 
