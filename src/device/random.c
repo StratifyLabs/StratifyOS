@@ -78,10 +78,12 @@ int random_read(const devfs_handle_t * handle, devfs_async_t * async){
 }
 
 int random_write(const devfs_handle_t * handle, devfs_async_t * async){
+    MCU_UNUSED_ARGUMENT(handle); MCU_UNUSED_ARGUMENT(async);
     return SYSFS_SET_RETURN(ENOTSUP);
 }
 
 int random_close(const devfs_handle_t * handle){
+    MCU_UNUSED_ARGUMENT(handle);
     return 0;
 }
 

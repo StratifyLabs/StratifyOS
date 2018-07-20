@@ -50,21 +50,20 @@ int read(int fildes, void *buf, size_t nbyte);
 int _read(int fildes, void *buf, size_t nbyte){
 	sysfs_file_t * file;
 
+    if( fildes & FILDES_SOCKET_FLAG ){
+        if( sos_board_config.socket_api != 0 ){
+            return sos_board_config.socket_api->read(fildes & ~FILDES_SOCKET_FLAG, buf, nbyte);
+        }
+        errno = EBADF;
+        return -1;
+    }
+
 	fildes = u_fildes_is_bad(fildes);
 	if ( fildes < 0 ){
 		//check to see if fildes is a socket
 		errno = EBADF;
 		return -1;
 	}
-
-	if( fildes & FILDES_SOCKET_FLAG ){
-		if( sos_board_config.socket_api != 0 ){
-			return sos_board_config.socket_api->read(fildes, buf, nbyte);
-		}
-		errno = EBADF;
-		return -1;
-	}
-
 
 	if ( (get_flags(fildes) & O_ACCMODE) == O_WRONLY ){
 		errno = EACCES;

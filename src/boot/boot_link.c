@@ -209,16 +209,17 @@ void boot_link_cmd_ioctl(link_transport_driver_t * driver, link_data_t * args){
 		}
 		break;
 	case I_BOOTLOADER_WRITEPAGE:
-		dstr("wp\n");
 		err = link_transport_slaveread(driver, &wattr, size, NULL, NULL);
 		if( err < 0 ){
 			dstr("failed to read data\n");
 			break;
 		}
 
-		args->reply.err = mcu_flash_writepage(FLASH_PORT, (flash_writepage_t*)&wattr);
+        dstr("w:"); dhex(wattr.addr); dstr(":"); dint(wattr.nbyte); dstr("\n");
+
+        args->reply.err = mcu_flash_writepage(FLASH_PORT, (flash_writepage_t*)&wattr);
 		if( args->reply.err < 0 ){
-			dstr("Failed to write flash\n");
+            dstr("Failed to write flash:"); dhex(args->reply.err); dstr("\n");
 		}
 
 		event_args.increment = wattr.nbyte;
@@ -250,6 +251,7 @@ void boot_link_cmd_write(link_transport_driver_t * driver, link_data_t * args){
 
 void erase_flash(link_transport_driver_t * driver){
 	int page = 0;
+    int result;
 	boot_event_flash_t args;
 	args.abort = 0;
 	args.bytes = -1;
@@ -257,7 +259,7 @@ void erase_flash(link_transport_driver_t * driver){
 	args.increment = -1;
 
 
-	while(mcu_flash_erasepage(FLASH_PORT, (void*)page++) != 0 ){
+    while( mcu_flash_erasepage(FLASH_PORT, (void*)page++) != 0 ){
 		//these are the bootloader pages and won't be erased
         sos_led_root_enable(0);
 		driver->wait(1);
@@ -266,15 +268,18 @@ void erase_flash(link_transport_driver_t * driver){
 		boot_event(BOOT_EVENT_FLASH_ERASE, &args);
 	}
 
+    dstr("erase:"); dint(page); dstr("\n");
 
 	//erase the flash pages -- ends when an erase on an invalid page is attempted
-	while( mcu_flash_erasepage(FLASH_PORT, (void*)page++) == 0 ){
+    while( (result = mcu_flash_erasepage(FLASH_PORT, (void*)page++)) == 0 ){
         sos_led_root_enable(0);
         driver->wait(1);
         sos_led_root_disable(0);
         args.bytes = page;
 		boot_event(BOOT_EVENT_FLASH_ERASE, &args);
 	}
+
+    dstr("result:"); dint(SYSFS_GET_RETURN_ERRNO(result)); dstr("\n");
 
     sos_led_root_enable(0);
 }

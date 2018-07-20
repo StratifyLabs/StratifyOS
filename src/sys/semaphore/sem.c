@@ -462,7 +462,7 @@ int sem_unlink(const char *name){
 void root_sem_wait(void * args){
 	root_sem_args_t * p = args;
 
-	sos_sched_table[ task_get_current() ].block_object = args;
+    sos_sched_table[ task_get_current() ].block_object = p->sem;
 
 	if ( p->sem->value <= 0){
 		//task must be blocked until the semaphore is available

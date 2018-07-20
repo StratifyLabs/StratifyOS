@@ -43,7 +43,7 @@ void system_reset(){
 
 
 u8 task_get_exec_count(){ return m_task_exec_count; }
-int task_get_total(){ return sos_board_config.task_total; }
+u8 task_get_total(){ return sos_board_config.task_total; }
 s8 task_get_current_priority(){ return m_task_current_priority; }
 void task_root_set_current_priority(s8 value){ m_task_current_priority = value; }
 
@@ -388,6 +388,14 @@ void switch_contexts(){
 #if MPU_PRESENT || __MPU_PRESENT
     MPU->RBAR = (u32)(sos_task_table[m_task_current].mem.stackguard.addr);
     MPU->RASR = (u32)(sos_task_table[m_task_current].mem.stackguard.size);
+
+    //disable MPU for ROOT tasks
+    if( task_root_asserted(m_task_current) ){
+        mpu_disable();
+    } else {
+        mpu_enable();
+    }
+
 #endif
 
     _impure_ptr = sos_task_table[m_task_current].reent;
@@ -452,112 +460,112 @@ void mcu_core_pendsv_handler(){
 
         if( task_enabled_active_not_stopped(i) && //enabled, active, and not stopped
                 ( task_get_priority(i) == task_get_current_priority() ) ){ //task is equal to the currently executing priority
-                //Enable process execution for highest active priority tasks
-                task_assert_exec(i);
-                m_task_exec_count++;
-            } else {
-                //Disable process execution for lower priority tasks
-                task_deassert_exec(i);
-            }
+            //Enable process execution for highest active priority tasks
+            task_assert_exec(i);
+            m_task_exec_count++;
+        } else {
+            //Disable process execution for lower priority tasks
+            task_deassert_exec(i);
         }
-
-        //enable interrupts -- Re-entrant scheduler issue
-        cortexm_enable_interrupts();
-
-        //switch contexts if current task is not executing or it wants to yield
-        if(  (task_get_current()) == 0 || //always switch away from task zero if requested
-             (task_exec_asserted(task_get_current()) == 0) || //checks if current task is NOT running
-             task_yield_asserted(task_get_current()) ){ //checks if current task requested a context switch
-            task_deassert_yield(task_get_current());
-            switch_contexts();
-        }
-
-        task_load_context();
-        task_return_context();
     }
 
+    //enable interrupts -- Re-entrant scheduler issue
+    cortexm_enable_interrupts();
 
-    static void root_task_restore(void * args) MCU_NAKED;
-    void root_task_restore(void * args){
-        asm volatile ("push {lr}\n\t");
-        u32 pstack;
-
-        //discard the current HW stack by adjusting the PSP up by sizeof(hw_stack_frame_t) --sw_stack_frame_t is same size
-        pstack = __get_PSP();
-
-        __set_PSP(pstack + sizeof(hw_stack_frame_t));
-
-        //Load the software context that is on the stack from the pre-interrupted task
-        task_load_context();
-        //This function will now return to the original execution stack
-        asm volatile ("pop {pc}\n\t");
+    //switch contexts if current task is not executing or it wants to yield
+    if(  (task_get_current()) == 0 || //always switch away from task zero if requested
+         (task_exec_asserted(task_get_current()) == 0) || //checks if current task is NOT running
+         task_yield_asserted(task_get_current()) ){ //checks if current task requested a context switch
+        task_deassert_yield(task_get_current());
+        switch_contexts();
     }
 
-    void task_restore(){
-        //handlers inserted with task_interrupt() must call this function when the task completes in order to restore the stack
-        cortexm_svcall(root_task_restore, NULL);
+    task_load_context();
+    task_return_context();
+}
+
+
+static void root_task_restore(void * args) MCU_NAKED;
+void root_task_restore(void * args){
+    asm volatile ("push {lr}\n\t");
+    u32 pstack;
+
+    //discard the current HW stack by adjusting the PSP up by sizeof(hw_stack_frame_t) --sw_stack_frame_t is same size
+    pstack = __get_PSP();
+
+    __set_PSP(pstack + sizeof(hw_stack_frame_t));
+
+    //Load the software context that is on the stack from the pre-interrupted task
+    task_load_context();
+    //This function will now return to the original execution stack
+    asm volatile ("pop {pc}\n\t");
+}
+
+void task_restore(){
+    //handlers inserted with task_interrupt() must call this function when the task completes in order to restore the stack
+    cortexm_svcall(root_task_restore, NULL);
+}
+
+int task_root_interrupt_call(void * args){
+    u32 pstack;
+    task_interrupt_t * intr = (task_interrupt_t*)args;
+    hw_stack_frame_t * hw_frame;
+
+    if ( task_enabled(intr->tid) ){
+        if ( intr->tid == task_get_current() ){
+            pstack = __get_PSP();
+            __set_PSP(pstack - sizeof(hw_stack_frame_t));
+            hw_frame = (hw_stack_frame_t *)__get_PSP(); //frame now points to the new HW stack
+
+            //current tid is interrupting tid so software stack is not changed
+
+        } else {
+            //Since this is another task, the current PSP is not touched
+            hw_frame = (hw_stack_frame_t *)(sos_task_table[intr->tid].sp - sizeof(hw_stack_frame_t));
+            sos_task_table[intr->tid].sp = sos_task_table[intr->tid].sp - (sizeof(hw_stack_frame_t) + sizeof(sw_stack_frame_t));
+        }
+
+        hw_frame->r0 = intr->arg[0];
+        hw_frame->r1 = intr->arg[1];
+        hw_frame->r2 = intr->arg[2];
+        hw_frame->r3 = intr->arg[3];
+        hw_frame->r12 = 0;
+        hw_frame->pc = (u32)intr->handler;
+        hw_frame->lr = (u32)task_restore;
+        hw_frame->psr = 0x21000000; //default PSR value
     }
 
-    int task_root_interrupt_call(void * args){
-        u32 pstack;
-        task_interrupt_t * intr = (task_interrupt_t*)args;
-        hw_stack_frame_t * hw_frame;
+    if ( intr->sync_callback != NULL ){
+        intr->sync_callback(intr->sync_callback_arg);
+    }
 
-        if ( task_enabled(intr->tid) ){
-            if ( intr->tid == task_get_current() ){
-                pstack = __get_PSP();
-                __set_PSP(pstack - sizeof(hw_stack_frame_t));
-                hw_frame = (hw_stack_frame_t *)__get_PSP(); //frame now points to the new HW stack
+    if ( intr->tid != task_get_current() ){
+        //this task is not the currently executing task
+        return 1;
+    }
+    return 0;
+}
 
-                //current tid is interrupting tid so software stack is not changed
+u32 task_interrupt_stacksize(){
+    return sizeof(hw_stack_frame_t) + sizeof(sw_stack_frame_t);
+}
 
-            } else {
-                //Since this is another task, the current PSP is not touched
-                hw_frame = (hw_stack_frame_t *)(sos_task_table[intr->tid].sp - sizeof(hw_stack_frame_t));
-                sos_task_table[intr->tid].sp = sos_task_table[intr->tid].sp - (sizeof(hw_stack_frame_t) + sizeof(sw_stack_frame_t));
-            }
 
-            hw_frame->r0 = intr->arg[0];
-            hw_frame->r1 = intr->arg[1];
-            hw_frame->r2 = intr->arg[2];
-            hw_frame->r3 = intr->arg[3];
-            hw_frame->r12 = 0;
-            hw_frame->pc = (u32)intr->handler;
-            hw_frame->lr = (u32)task_restore;
-            hw_frame->psr = 0x21000000; //default PSR value
-        }
+void task_root_interrupt(void * args){
+    task_save_context(); //save the current software context
+    //This function inserts the handler on the specified task's stack
 
-        if ( intr->sync_callback != NULL ){
-            intr->sync_callback(intr->sync_callback_arg);
-        }
+    if( task_root_interrupt_call(args) ){
+        task_load_context(); //the context needs to be loaded for the current task -- otherwise it is loaded by the switcher
+    }
+}
 
-        if ( intr->tid != task_get_current() ){
-            //this task is not the currently executing task
-            return 1;
-        }
+int task_interrupt(task_interrupt_t * intr){
+    if ( intr->tid < task_get_total() ){
+        cortexm_svcall(task_root_interrupt, intr);
         return 0;
     }
-
-    u32 task_interrupt_stacksize(){
-        return sizeof(hw_stack_frame_t) + sizeof(sw_stack_frame_t);
-    }
-
-
-    void task_root_interrupt(void * args){
-        task_save_context(); //save the current software context
-        //This function inserts the handler on the specified task's stack
-
-        if( task_root_interrupt_call(args) ){
-            task_load_context(); //the context needs to be loaded for the current task -- otherwise it is loaded by the switcher
-        }
-    }
-
-    int task_interrupt(task_interrupt_t * intr){
-        if ( intr->tid < task_get_total() ){
-            cortexm_svcall(task_root_interrupt, intr);
-            return 0;
-        }
-        return -1;
-    }
+    return -1;
+}
 
 

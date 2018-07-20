@@ -43,17 +43,17 @@ int _close(int fildes) {
 	//Close the file if it's open
 	int ret;
 
+    if( fildes & FILDES_SOCKET_FLAG ){
+        if( sos_board_config.socket_api != 0 ){
+            return sos_board_config.socket_api->close(fildes & ~FILDES_SOCKET_FLAG);
+        }
+        errno = EBADF;
+        return -1;
+    }
+
 	fildes = u_fildes_is_bad(fildes);
 	if ( fildes < 0 ){
 		//check to see if fildes is a socket
-		errno = EBADF;
-		return -1;
-	}
-
-	if( fildes & FILDES_SOCKET_FLAG ){
-		if( sos_board_config.socket_api != 0 ){
-			return sos_board_config.socket_api->close(fildes);
-		}
 		errno = EBADF;
 		return -1;
 	}

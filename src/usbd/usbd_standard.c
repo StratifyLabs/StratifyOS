@@ -28,6 +28,7 @@
 #define USBD_EP_MASK (USBD_ENDPOINT_ADDRESS_IN|(mcu_config.usb_logical_endpoint_count-1))
 
 static int usb_dev_decode_ep(usbd_control_t * context, int ep){
+    MCU_UNUSED_ARGUMENT(context);
 	if ( ep & USBD_ENDPOINT_ADDRESS_IN ){
 		return ((ep << mcu_config.usb_logical_endpoint_count) << (ep & (mcu_config.usb_logical_endpoint_count-1)));
 	} else {
@@ -64,9 +65,9 @@ static void usbd_control_get_serialno(void * dest){
 
 char htoc(int nibble){
 	if ( nibble >= 0 && nibble < 10 ){
-		return nibble + '0';
+        return (char)nibble + '0';
 	} else {
-		return nibble + 'A' - 10;
+        return (char)nibble + 'A' - 10;
 	}
 }
 
@@ -167,7 +168,7 @@ u32 usdd_standard_request_get_status(usbd_control_t * context) {
 
 	case USBD_REQUEST_TYPE_RECIPIENT_ENDPOINT:
 		i = context->setup_packet.wIndex.b[0] & USBD_EP_MASK;
-		j = usb_dev_decode_ep(context, i);
+        j = usb_dev_decode_ep(context, i);
 		if (((context->current_configuration != 0) || ((i & (mcu_config.usb_logical_endpoint_count-1)) == 0)) && (context->ep_mask & j)) {
 			*bufp = (context->ep_halt & j) ? 1 : 0;
 			context->data.dptr = context->buf;

@@ -63,8 +63,8 @@ int mcu_core_setclkdivide(const devfs_handle_t * handle, void * arg) MCU_ROOT_CO
 int mcu_core_getmcuboardconfig(const devfs_handle_t * handle, void * arg) MCU_ROOT_CODE;
 
 //below are undocumented calls that can be made by BSPs but aren't accessible to applications
-static inline int mcu_core_getclock() MCU_ALWAYS_INLINE;
-int mcu_core_getclock(){ return mcu_board_config.core_cpu_freq; }
+static inline u32 mcu_core_getclock() MCU_ALWAYS_INLINE;
+u32 mcu_core_getclock(){ return mcu_board_config.core_cpu_freq; }
 
 void mcu_core_get_bootloader_api(void * args) MCU_ROOT_CODE;
 void mcu_core_set_nvic_priority(int irq, int prio) MCU_ROOT_CODE;

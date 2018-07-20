@@ -80,7 +80,6 @@ void mcu_fault_event_handler(fault_t * fault){
 
 	} else {
 
-        //Issue #163
 #if defined MCU_DEBUG
         char buffer[128];
         scheduler_fault_build_string(buffer);
@@ -91,7 +90,7 @@ void mcu_fault_event_handler(fault_t * fault){
 			if ( task_get_pid(i) == pid ){
                 //stop running the task
                 task_root_delete(i);
-#if 0 //this was the old way but could cause an infinite fault loop
+#if 0 //this was the old way but could cause an infinite fault loop Issue #163
 				if( task_thread_asserted(i) == 0 ){
 					//reset the stack of the processes main task
 					task_root_resetstack(i);

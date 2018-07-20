@@ -155,7 +155,7 @@ typedef struct MCU_PACK {
  * process.  It is used with the I_SYS_GETPROCESS request.
  */
 typedef struct MCU_PACK {
-	char name[24] /*! \brief Written by caller to specify name */;
+    char name[LINK_NAME_MAX] /*! \brief Written by caller to specify name */;
 	s32 pid /*! \brief Process ID (written by driver; -1 is process is not running) */;
 	s32 pthread_id /*! \brief Thread ID of primary thread in process (written by driver; -1 if process is not running) */;
 } sys_process_t;

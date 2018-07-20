@@ -197,9 +197,9 @@ int sffs_fstat(const void * cfg, void * handle, struct stat * stat){
         mcu_debug_log_error(MCU_DEBUG_FILESYSTEM, "failed to load header block");
         ret = SYSFS_SET_RETURN(EIO);
 	} else {
-		stat->st_ino = h->segment_data.hdr.serialno;
+        stat->st_ino = (ino_t)h->segment_data.hdr.serialno;
 		stat->st_size = h->size;
-		stat->st_blocks = (h->size + BLOCK_DATA_SIZE - 1) / BLOCK_DATA_SIZE;
+        stat->st_blocks = ((h->size + BLOCK_DATA_SIZE - 1) / BLOCK_DATA_SIZE);
 		stat->st_blksize = BLOCK_DATA_SIZE;
 		stat->st_mode = 0666 | S_IFREG;
 		//stat->st_atime = 0;
@@ -378,6 +378,7 @@ int sffs_open(const void * cfg, void ** handle, const char * path, int flags, in
 }
 
 int sffs_read(const void * cfg, void * handle, int flags, int loc, void * buf, int nbyte){
+    MCU_UNUSED_ARGUMENT(flags);
 	cl_handle_t * h = (cl_handle_t*)handle;
 	devfs_async_t op;
 	int ret;
@@ -473,7 +474,7 @@ int sffs_close(const void * cfg, void ** handle){
 }
 
 int sffs_opendir(const void * cfg, void ** handle, const char * path){
-
+    MCU_UNUSED_ARGUMENT(cfg);
 	if( path[0] != 0 ){
         return SYSFS_SET_RETURN(ENOTDIR);
 	}
@@ -515,7 +516,7 @@ int sffs_readdir_r(const void * cfg, void * handle, int loc, struct dirent * ent
 				}
 
 				strcpy(entry->d_name, hdr->open.name);
-				entry->d_ino = item.serialno;
+                entry->d_ino = (ino_t)item.serialno;
 				ret = 0;
 				goto sffs_readdir_unlock;
 			}
@@ -530,6 +531,7 @@ int sffs_readdir_r(const void * cfg, void * handle, int loc, struct dirent * ent
 
 
 int sffs_closedir(const void * cfg, void ** handle){
+    MCU_UNUSED_ARGUMENT(cfg);
 	if ( *handle != OPENDIR_HANDLE ){
         return SYSFS_SET_RETURN(EBADF);
 	}

@@ -25,10 +25,10 @@
 
 #include "sos/fs/sffs.h"
 
-#define SFFS_CONFIG(cfg) ((sffs_config_t*)cfg)
-#define SFFS_STATE(cfg) ((sffs_state_t*)(((sffs_config_t*)cfg)->drive.state))
-#define SFFS_DRIVE(cfg) &(((sffs_config_t*)cfg)->drive)
-#define SFFS_DRIVE_MUTEX(cfg) &(((sffs_config_t*)cfg)->drive.state->mutex)
+#define SFFS_CONFIG(cfg) ((const sffs_config_t*)cfg)
+#define SFFS_STATE(cfg) ((sffs_state_t*)(((const sffs_config_t*)cfg)->drive.state))
+#define SFFS_DRIVE(cfg) &(((const sffs_config_t*)cfg)->drive)
+#define SFFS_DRIVE_MUTEX(cfg) &(((const sffs_config_t*)cfg)->drive.state->mutex)
 
 int sffs_dev_open(const void * cfg);
 int sffs_dev_write(const void * cfg, int loc, const void * buf, int nbyte);

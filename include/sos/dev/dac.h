@@ -88,6 +88,12 @@ enum {
 	DAC_FLAG_SET_CONVERTER = (1<<0),
 	DAC_FLAG_IS_LEFT_JUSTIFIED = (1<<1),
 	DAC_FLAG_IS_RIGHT_JUSTIFIED = (1<<2),
+    DAC_FLAG_SET_CHANNELS = (1<<3),
+    DAC_FLAG_IS_OUTPUT_BUFFERED = (1<<4),
+    DAC_FLAG_IS_ON_CHIP = (1<<5),
+    DAC_FLAG_IS_SAMPLE_AND_HOLD = (1<<6),
+
+
 };
 
 
@@ -95,7 +101,12 @@ typedef struct MCU_PACK {
 	u32 o_flags;
 	u32 o_events;
 	u32 freq;
-	u32 resd[8];
+    u32 maximum;
+    u32 reference_mv;
+    u8 resolution;
+    u8 bytes_per_sample;
+    u16 resd0;
+    u32 resd[6];
 } dac_info_t;
 
 typedef struct MCU_PACK {
@@ -106,6 +117,8 @@ typedef struct MCU_PACK {
 	u32 o_flags;
 	dac_pin_assignment_t pin_assignment;
 	u32 freq;
+    u8 width;
+
 	u32 resd[8];
 } dac_attr_t;
 

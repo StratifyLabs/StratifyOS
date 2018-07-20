@@ -122,7 +122,7 @@ int gethostbyname_r(const char *name, struct hostent *ret, char *buf, size_t buf
 }
 
 void freeaddrinfo(struct addrinfo *ai){
-    return sos_board_config.socket_api->freeaddrinfo(ai);
+    sos_board_config.socket_api->freeaddrinfo(ai);
 }
 
 int getaddrinfo(const char *nodename, const char *servname, const struct addrinfo *hints, struct addrinfo **res){

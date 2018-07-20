@@ -45,9 +45,9 @@ void appfs_ram_root_saveusage(void * args){
 }
 
 void appfs_ram_setrange(u32 * buf, u32 page, u32 size, int usage){
-	int i;
-	int pages;
-	size = mpu_getnextpowerof2(size);
+    u32 i;
+    u32 pages;
+    size = (u32)mpu_getnextpowerof2((int)size);
 	pages = (size + MCU_RAM_PAGE_SIZE - 1) / MCU_RAM_PAGE_SIZE;
 	for(i=page; i < (page+pages); i++){
 		set_ram_usage(buf, i, usage);
@@ -61,9 +61,9 @@ int appfs_ram_getusage(u32 page){
 		block = page >> 4;
 		shift = (page & 0xF) * 2;
 		return ( (mcu_ram_usage_table[block] >> (shift)) & APPFS_MEMPAGETYPE_MASK );
-	} else {
-		return -1;
-	}
+    }
+
+    return -1;
 }
 
 void appfs_ram_getusage_all(void * buf){
@@ -80,8 +80,8 @@ static void set_ram_usage(u32 * buf, u32 page, int usage){
 	if( page < APPFS_RAM_PAGES ){
 		block = page >> 4;
 		shift = (page & 0xF) * 2;
-		buf[block] &= ~(APPFS_MEMPAGETYPE_MASK << (shift)); //clear the bits
-		buf[block] |= ((usage & APPFS_MEMPAGETYPE_MASK) << (shift));  //set the bits
+        buf[block] &= (u32)~(APPFS_MEMPAGETYPE_MASK << (shift)); //clear the bits
+        buf[block] |= (u32)((usage & APPFS_MEMPAGETYPE_MASK) << (shift));  //set the bits
 	}
 }
 

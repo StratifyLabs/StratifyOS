@@ -106,7 +106,7 @@ int task_get_pid(int id){
     return sos_task_table[id].pid;
 }
 
-int task_get_total();
+u8 task_get_total();
 
 static inline void task_get_timer(u32 * dest, int id){
     dest[1] = sos_task_table[id].timer.t_atomic[1];

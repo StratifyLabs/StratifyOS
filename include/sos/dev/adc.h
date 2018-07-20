@@ -100,7 +100,7 @@ typedef struct MCU_PACK {
     mcu_pin_t trigger /*! Pin or Timer trigger */;
     u8 width /*! Bit resolution (if variable resolution is supported) */;
     u8 channel_count /*! Number of channels to convert when ADC_FLAG_IS_SCAN_MODE is set */;
-    u32 channel /*! Channel number when using ADC_FLAG_SET_CHANNELS with ADC_FLAG_IS_GROUP */;
+    u16 channel /*! Channel number when using ADC_FLAG_SET_CHANNELS with ADC_FLAG_IS_GROUP */;
     u32 rank /*! Rank when using ADC_FLAG_SET_CHANNELS with ADC_FLAG_IS_GROUP */;
     u32 sampling_time /*! Sampling time (in ADC clock cycles) when using ADC_FLAG_SET_CHANNELS with ADC_FLAG_IS_GROUP */;
     u32 resd[4];

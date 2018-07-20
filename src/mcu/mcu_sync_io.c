@@ -22,6 +22,7 @@
 static int mcu_sync_io_complete(void * context, const mcu_event_t * data);
 
 int mcu_sync_io_complete(void * context, const mcu_event_t * data){
+    MCU_UNUSED_ARGUMENT(data);
 	int * done = context;
     *done = 1234567;
 	//return 0 to delete the callback

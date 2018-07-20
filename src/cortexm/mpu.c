@@ -40,7 +40,7 @@ int mpu_enable(){
 }
 
 int mpu_disable(){
-	MPU->CTRL = 0; //enable the MPU -- give priv software access to background map
+    MPU->CTRL = 0; //disable the MPU
 	return 0;
 }
 

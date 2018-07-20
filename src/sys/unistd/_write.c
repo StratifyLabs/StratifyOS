@@ -51,17 +51,17 @@ int write(int fildes, const void *buf, size_t nbyte);
 int _write(int fildes, const void *buf, size_t nbyte) {
 	sysfs_file_t * file;
 
+    if( fildes & FILDES_SOCKET_FLAG ){
+        if( sos_board_config.socket_api != 0 ){
+            return sos_board_config.socket_api->write(fildes & ~FILDES_SOCKET_FLAG, buf, nbyte);
+        }
+        errno = EBADF;
+        return -1;
+    }
+
 	fildes = u_fildes_is_bad(fildes);
 	if ( fildes < 0 ){
 		//check to see if fildes is a socket
-		errno = EBADF;
-		return -1;
-	}
-
-	if( fildes & FILDES_SOCKET_FLAG ){
-		if( sos_board_config.socket_api != 0 ){
-			return sos_board_config.socket_api->write(fildes, buf, nbyte);
-		}
 		errno = EBADF;
 		return -1;
 	}

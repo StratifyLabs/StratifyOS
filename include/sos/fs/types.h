@@ -52,7 +52,7 @@ typedef int (*devfs_read_t)(const devfs_handle_t*, devfs_async_t *);
 typedef int (*devfs_write_t)(const devfs_handle_t*, devfs_async_t *);
 typedef int (*devfs_close_t)(const devfs_handle_t*);
 
-typedef struct MCU_PACK {
+typedef struct {
 	devfs_open_t open;
 	devfs_ioctl_t ioctl;
 	devfs_read_t read;
@@ -61,7 +61,7 @@ typedef struct MCU_PACK {
 } devfs_driver_t;
 
 
-typedef struct MCU_PACK {
+typedef struct {
     devfs_async_t * read; //used with read operations
     devfs_async_t * write; //used with write operations
 } devfs_transfer_handler_t;

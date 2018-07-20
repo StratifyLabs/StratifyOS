@@ -56,21 +56,20 @@ int ioctl(int fildes, int request, ...) {
 	ctl = va_arg(ap, void*);
 	va_end(ap);
 
+    if( fildes & FILDES_SOCKET_FLAG ){
+        if( sos_board_config.socket_api != 0 ){
+            return sos_board_config.socket_api->ioctl(fildes & ~FILDES_SOCKET_FLAG, request, ctl);
+        }
+        errno = EBADF;
+        return -1;
+    }
+
 	fildes = u_fildes_is_bad(fildes);
 	if ( fildes < 0 ){
 		//check to see if fildes is a socket
 		errno = EBADF;
 		return -1;
 	}
-
-	if( fildes & FILDES_SOCKET_FLAG ){
-		if( sos_board_config.socket_api != 0 ){
-			return sos_board_config.socket_api->ioctl(fildes, request, ctl);
-		}
-		errno = EBADF;
-		return -1;
-	}
-
 
 	return sysfs_file_ioctl(get_open_file(fildes), request, ctl);
 }

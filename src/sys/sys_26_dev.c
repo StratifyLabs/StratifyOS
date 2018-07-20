@@ -103,18 +103,17 @@ int sys_26_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 	default:
 		break;
 	}
-	errno = EINVAL;
-	return -1;
+    return SYSFS_SET_RETURN(EINVAL);
 }
 
-int sys_26_read(const devfs_handle_t * handle, devfs_async_t * rop){
-	errno = ENOTSUP;
-	return -1;
+int sys_26_read(const devfs_handle_t * handle, devfs_async_t * async){
+    MCU_UNUSED_ARGUMENT(handle); MCU_UNUSED_ARGUMENT(async);
+    return SYSFS_SET_RETURN(ENOTSUP);
 }
 
-int sys_26_write(const devfs_handle_t * handle, devfs_async_t * wop){
-	errno = ENOTSUP;
-	return -1;
+int sys_26_write(const devfs_handle_t * handle, devfs_async_t * async){
+    MCU_UNUSED_ARGUMENT(handle); MCU_UNUSED_ARGUMENT(async);
+    return SYSFS_SET_RETURN(ENOTSUP);
 }
 
 int sys_26_close(const devfs_handle_t * handle){
