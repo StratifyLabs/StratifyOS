@@ -39,6 +39,7 @@ typedef struct MCU_PACK {
 
 typedef struct MCU_PACK {
 	dac_attr_t attr; //default attributes
+    u32 reference_mv;
 } dac_config_t;
 
 int mcu_dac_open(const devfs_handle_t * handle) MCU_ROOT_CODE;

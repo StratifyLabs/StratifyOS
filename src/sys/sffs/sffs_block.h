@@ -23,10 +23,21 @@
 
 #include "sffs_local.h"
 
-/*! \details This function finds a free data block.  The data block will
- * be marked as "allocated" when this function returns.  The function will try to allocate
- * the data in an erasable block that is held by other blocks with the same file serial number.
+/*
+ * Blocks refer to areas of flash. An eraseable block represents a block of
+ * flash memory that can be erased. Otherwise, a block is defined by BLOCK_SIZE
+ * in sffs_local and represents the smallest writeable portion to disk.
+ *
+ * This module manages blocks.
+ *
+ * Blocks can store list data or file data.
+ *
+ * This is currently built for wear-leveling. There needs to be an option
+ * to turn off wear leveling in order to use SFFS with an SD card.
+ *
  */
+
+
 block_t sffs_block_alloc(const void * cfg, serial_t serialno, block_t hint, uint8_t type);
 int sffs_block_save(const void * cfg, block_t sffs_block_num, sffs_block_data_t * data);
 int sffs_block_saveraw(const void * cfg, block_t sffs_block_num, sffs_block_data_t * data);

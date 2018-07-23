@@ -26,6 +26,23 @@
 
 #include "../sffs/sffs_block.h"
 
+/*
+ *
+ * This module implements arbitary lists (list of
+ * serial number and lists of files for sffs).
+ *
+ * The lists utilize blocks and are linked together.
+ *
+ * Items in a list can be discarded. So from time
+ * to time lists may need to be consolidated. The consolidation
+ * will make the size of the list much smaller. Every time
+ * a file is modified, the file's list gets modified as it
+ * keeps track of the state of the file.
+ *
+ *
+ *
+ *
+ */
 
 typedef struct MCU_PACK {
 	sffs_block_data_t block_data;

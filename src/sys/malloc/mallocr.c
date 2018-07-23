@@ -168,6 +168,7 @@ void _free_r(struct _reent * reent_ptr, void * addr){
 		return;
 	}
 
+
     if ( addr == (void*)1 ){
         //special case to tell system to give memory back to the stack
         __malloc_lock(reent_ptr);
@@ -188,7 +189,7 @@ void _free_r(struct _reent * reent_ptr, void * addr){
 		return;
 	}
 
-	if( addr > b + reent_ptr->procmem_base->size ){
+    if( (u32)addr > (u32)b + reent_ptr->procmem_base->size ){
         mcu_debug_log_warning(MCU_DEBUG_MALLOC, "Free addr above heap");
 		return;
 	}

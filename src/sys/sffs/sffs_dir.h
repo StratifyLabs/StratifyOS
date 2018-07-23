@@ -28,6 +28,21 @@ typedef struct {
 	serial_t serialno;
 } sffs_dir_lookup_t;
 
+/*
+ *
+ * Currently, there is only one directly. The root directly.
+ *
+ * The root directly has a list of serial numbers that are stored.
+ * When a file is looked up, each item in the directory serial
+ * number is traversed. Each entry contains the status
+ * of the entry, a serial number, and a block. The block contains
+ * the file header and the first segment of file data.
+ *
+ *
+ *
+ *
+ */
+
 #define SFFS_DIR_PARENT_EXISTS 1
 #define SFFS_DIR_PATH_EXISTS 2
 

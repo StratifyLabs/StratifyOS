@@ -24,6 +24,23 @@
 #include "../sffs/sffs_local.h"
 
 
+/*
+ * The scratch pad is used for consolidating data blocks. Once
+ * the filesystem is full, the scratch pad is reserved as an area
+ * that can be used to copy data blocks which can be restored once
+ * an eraseable block has been erased.
+ *
+ * For example, if the eraseable block size is 4096 and the block size
+ * is 256, there can be up to 16 blocks in an eraseable block. Any
+ * entries in the eraseable block that are dirty can be erased. Blocks
+ * that are not directly are copied to the scratch pad which the block is erased.
+ * The non-dirty data is then restored.
+ *
+ *
+ *
+ */
+
+
 enum {
 	SFFS_SCRATCH_STATUS_UNUSED = 0xFF,
 	SFFS_SCRATCH_STATUS_ALLOCATED = 0xFE,
@@ -33,9 +50,9 @@ enum {
 };
 
 typedef struct MCU_PACK {
-	uint8_t status;
+    u8 status;
 	block_t original_block; //0xFF for unused, X for in use, and 0x00 for dirty
-	uint8_t checksum;
+    u8 checksum;
 } sffs_scratch_entry_t;
 
 

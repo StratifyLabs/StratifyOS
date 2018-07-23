@@ -26,6 +26,21 @@
 #include "sffs_list.h"
 #include "sffs_local.h"
 
+/*
+ * Every file is assigned a serial number. The serial number
+ * is then used to mark the owner of each block in the block
+ * header.
+ *
+ * At any given time, a serial number has a state. If
+ * there is a power failure, the initialization routine
+ * can traverse the list of serial numbers to see if any clean-up
+ * operations are required.
+ *
+ *
+ *
+ *
+ */
+
 enum {
 	SFFS_SNLIST_ITEM_STATUS_FREE = 0xFF,
 	SFFS_SNLIST_ITEM_STATUS_OPEN = 0xFE,

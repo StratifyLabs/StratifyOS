@@ -55,6 +55,7 @@ int sffs_dir_lookup(const void * cfg, const char * path, sffs_dir_lookup_t * des
 			continue;
 		}
 
+        //the file must be closed (as in, it is in a finalized state to properly exist)
 		if ( item.status == SFFS_SNLIST_ITEM_STATUS_CLOSED ){
 
 			if ( sffs_block_load(cfg, item.block, &hdr_sffs_block_data) ){

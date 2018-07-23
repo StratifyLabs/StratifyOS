@@ -25,14 +25,14 @@
 typedef open_file_t sysfs_file_t;
 
 
-typedef struct MCU_PACK {
+typedef struct {
 	u32 port /*! The port associated with the device (for mcu peripherals) */;
 	const void * config /*! Pointer to device configuration (flash) */;
 	void * state /*! \brief Pointer to device state (RAM) */;
 } devfs_handle_t;
 
 
-typedef struct MCU_PACK {
+typedef struct {
 	int tid /*! The calling task ID */;
 	int flags /*! The flags for the open file descriptor */;
 	int loc /*! The location to read or write */;

@@ -25,6 +25,19 @@
 
 #include "sos/fs/sffs.h"
 
+/*
+ * The dev is the device that is used to store the data.
+ *
+ * The device must be implemented as a sos/dev/drive.h device.
+ *
+ * This module has the functions needed to read/write/ioctl
+ * the device.
+ *
+ *
+ *
+ *
+ */
+
 #define SFFS_CONFIG(cfg) ((const sffs_config_t*)cfg)
 #define SFFS_STATE(cfg) ((sffs_state_t*)(((const sffs_config_t*)cfg)->drive.state))
 #define SFFS_DRIVE(cfg) &(((const sffs_config_t*)cfg)->drive)

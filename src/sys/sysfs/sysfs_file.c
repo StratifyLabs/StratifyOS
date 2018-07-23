@@ -20,6 +20,7 @@
 #include <fcntl.h>
 #include "sos/fs/sysfs.h"
 
+extern int devfs_open(const void * cfg, void ** handle, const char * path, int flags, int mode);
 static void update_loc(sysfs_file_t * file, int adjust);
 
 int sysfs_file_open(sysfs_file_t * file, const char * name, int mode){
@@ -28,12 +29,13 @@ int sysfs_file_open(sysfs_file_t * file, const char * name, int mode){
     const sysfs_t * fs = file->fs;
     ret = fs->open(fs->config, &(file->handle), name, file->flags, mode);
     if( ret >= 0 ){
-        if( (ret = fs->fstat(fs->config, file->handle, &st)) == 0 ){
-            if( (st.st_mode & S_IFMT) == S_IFCHR ){
-                file->flags |= O_CHAR;
+        if( fs->open == devfs_open ){
+            if( (ret = fs->fstat(fs->config, file->handle, &st)) == 0 ){
+                if( (st.st_mode & S_IFMT) == S_IFCHR ){
+                    file->flags |= O_CHAR;
+                }
             }
         }
-
     }
     SYSFS_PROCESS_RETURN(ret);
     return ret;

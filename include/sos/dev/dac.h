@@ -118,6 +118,7 @@ typedef struct MCU_PACK {
 	dac_pin_assignment_t pin_assignment;
 	u32 freq;
     u8 width;
+    u8 channel;
 
 	u32 resd[8];
 } dac_attr_t;

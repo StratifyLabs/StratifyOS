@@ -28,6 +28,19 @@
 #define SFFS_FILELIST_BLOCK_ISFREE 0xFFFF
 #define SFFS_FILELIST_BLOCK_ISDIRTY 0x0000
 
+/*
+ * The file list is a list of blocks that are in a file.
+ *
+ * The entry includes the block number (physical data location) where the file
+ * data is stored and the segment number (data location within the file).
+ *
+ * Segments are of file and blocks are of the physical drive.
+ *
+ * Whenever a file is modified, the file's list gets modified.
+ *
+ *
+ *
+ */
 
 enum {
 	SFFS_FILELIST_STATUS_FREE = 0xFF,

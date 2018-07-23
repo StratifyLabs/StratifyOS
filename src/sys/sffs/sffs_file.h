@@ -29,6 +29,25 @@
 #include "../sffs/sffs_dir.h"
 #include "../sffs/sffs_local.h"
 
+
+/*
+ *
+ *
+ * The purpose of this module is to manage files.
+ *
+ * When files are modified, they will update the serial
+ * number list to mark the status. When files are written,
+ * they will update their file list to add new blocks
+ * of data as needed.
+ *
+ * To read a file, the file will lookup the physical block
+ * number according to the segment in the filelist. Once
+ * it has the physical block address, it will read the data.
+ *
+ *
+ *
+ */
+
 typedef struct {
 	int segment;
 	int offset;
