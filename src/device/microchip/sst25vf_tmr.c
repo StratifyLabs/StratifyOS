@@ -27,7 +27,7 @@
 #include "mcu/debug.h"
 #include "sst25vf_local.h"
 
-static void complete_spi_write(const devfs_handle_t * handle, uint32_t ignore);
+static void drive_cfi_handle_write_complete(const devfs_handle_t * handle, uint32_t ignore);
 static void continue_spi_write(const devfs_handle_t * handle, uint32_t ignore);
 
 int sst25vf_tmr_open(const devfs_handle_t * handle){
@@ -164,7 +164,7 @@ void continue_spi_write(const devfs_handle_t * handle, uint32_t ignore){
 	}
 }
 
-void complete_spi_write(const devfs_handle_t * handle, uint32_t ignore){
+void drive_cfi_handle_write_complete(const devfs_handle_t * handle, uint32_t ignore){
 	uint32_t tval;
 	mcu_action_t action;
 	mcu_channel_t channel;
@@ -224,7 +224,7 @@ int sst25vf_tmr_write(const devfs_handle_t * handle, devfs_async_t * wop){
 
     sst25vf_share_assert_cs(handle);
 	state->op.flags = wop->flags;
-	state->op.handler.callback = (mcu_callback_t)complete_spi_write;
+	state->op.handler.callback = (mcu_callback_t)drive_cfi_handle_write_complete;
     state->op.handler.context = (void*)handle;
 	state->op.buf_const = state->cmd;
 	state->op.nbyte = 5;

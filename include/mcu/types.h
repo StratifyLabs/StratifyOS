@@ -94,7 +94,8 @@ typedef enum {
 	MCU_EVENT_FLAG_MATCH /*! Match event */ = (1<<21),
 	MCU_EVENT_FLAG_ALARM /*! Alarm event (match alias) */ = MCU_EVENT_FLAG_MATCH,
 	MCU_EVENT_FLAG_COUNT /*! Count event */ = (1<<22),
-    MCU_EVENT_FLAG_HALF_TRANSFER /*! The transfer is halfway complete (used with MCU_EVENT_FLAG_WRITE_COMPLETE and MCU_EVENT_FLAG_DATA_READY with circular DMA) */ = (1<<23)
+    MCU_EVENT_FLAG_HALF_TRANSFER /*! The transfer is halfway complete (used with MCU_EVENT_FLAG_WRITE_COMPLETE and MCU_EVENT_FLAG_DATA_READY with circular DMA) */ = (1<<23),
+    MCU_EVENT_FLAG_STREAMING /*! The transfer is streaming data and will continue until stopped */ = (1<<24)
 } mcu_event_flag_t;
 
 typedef enum {

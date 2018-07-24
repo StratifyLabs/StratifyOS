@@ -11,6 +11,7 @@ if( ${SOS_BUILD_CONFIG} STREQUAL arm )
       ${SOURCES_PREFIX}/devfifo.c
       ${SOURCES_PREFIX}/ffifo.c
       ${SOURCES_PREFIX}/fifo.c
+			${SOURCES_PREFIX}/dev_ffifo.c
 			${SOURCES_PREFIX}/i2s_ffifo.c
 			${SOURCES_PREFIX}/i2s_spi_ffifo.c
 			${SOURCES_PREFIX}/full.c
@@ -18,6 +19,8 @@ if( ${SOS_BUILD_CONFIG} STREQUAL arm )
       ${SOURCES_PREFIX}/led_pwm.c
       ${SOURCES_PREFIX}/null.c
       ${SOURCES_PREFIX}/random.c
+			${SOURCES_PREFIX}/drive_cfi_local.h
+			${SOURCES_PREFIX}/drive_cfi.c
 			${SOURCES_PREFIX}/drive_sdspi_local.h
 			${SOURCES_PREFIX}/drive_sdio.c
 			${SOURCES_PREFIX}/drive_sdio_dma.c
