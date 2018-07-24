@@ -32,8 +32,8 @@
 
 /*! \file  */
 
-#ifndef SOS_DEV_FFIFO_H_
-#define SOS_DEV_FFIFO_H_
+#ifndef SOS_STREAM_FFIFO_H_
+#define SOS_STREAM_FFIFO_H_
 
 #include "fifo.h"
 #include "mcu/types.h"
@@ -78,7 +78,7 @@ typedef struct MCU_PACK {
 
 
 
-#endif /* SOS_DEV_FFIFO_H_ */
+#endif /* SOS_STREAM_FFIFO_H_ */
 
 
 /*! @} */

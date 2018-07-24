@@ -99,14 +99,20 @@ void root_check_op_complete(void * args){
 
     if( p->is_read != ARGS_READ_DONE ){
         if ( p->ret == 0 ){
-            if ( (p->async.nbyte >= 0) //wait for the operation to complete or for data to arrive
-                 ){
+            if ( p->async.nbyte >= 0 ){ //wait for the operation to complete or for data to arrive
+
+                cortexm_disable_interrupts(); //checking the block object and sleeping have to happen atomically (driver could interrupt)
+
                 //Block waiting for the operation to complete or new data to be ready
-                sos_sched_table[ task_get_current() ].block_object = (void*)p->device + p->is_read;
-                //switch tasks until a signal becomes available
-                scheduler_root_update_on_sleep();
+                //if the interrupt has already fired the block_object will be zero already
+                if( sos_sched_table[ task_get_current() ].block_object != 0 ){;
+                    //switch tasks until a signal becomes available
+                    scheduler_root_update_on_sleep();
+                }
+                cortexm_enable_interrupts();
             }
         } else {
+            sos_sched_table[ task_get_current() ].block_object = 0;
             p->is_read = ARGS_READ_DONE;
         }
     }
@@ -121,6 +127,9 @@ void root_device_data_transfer(void * args){
     if( task_validate_memory(p->async.buf, p->async.nbyte) < 0 ){
         p->ret = SYSFS_SET_RETURN(EPERM);
     } else {
+        //assume the operation is going to block
+        sos_sched_table[ task_get_current() ].block_object = (void*)p->device + p->is_read;
+
         if ( p->is_read != 0 ){
             //Read operation
             p->ret = dev->driver.read(&(dev->handle), &(p->async));
