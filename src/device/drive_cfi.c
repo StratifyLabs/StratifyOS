@@ -27,9 +27,8 @@
 
 #include "drive_cfi_local.h"
 
-#if 0
-
 //utility functions
+static int drive_cfi_load_sfdp(const devfs_handle_t * handle);
 static void drive_cfi_write_command(const devfs_handle_t * handle, u8 opcode);
 static void drive_cfi_write_command_with_address(const devfs_handle_t * handle, u8 opcode, u32 addr);
 static void drive_cfi_assert_cs(const devfs_handle_t * handle);
@@ -44,13 +43,14 @@ static void drive_cfi_reset(const devfs_handle_t * handle);
 static void drive_cfi_write_enable(const devfs_handle_t * handle);
 static void drive_cfi_write_disable(const devfs_handle_t * handle);
 static void drive_cfi_erase_sector(const devfs_handle_t * handle, u32 addr);
+static u8 drive_cfi_read_status(const devfs_handle_t * handle);
 
 static void drive_cfi_chip_erase(const devfs_handle_t * handle);
 static void drive_cfi_global_block_unlock(const devfs_handle_t * handle);
 
 void drive_cfi_assert_cs(const devfs_handle_t * handle){
     devfs_handle_t pio_handle;
-    const sst25vf_config_t * config = handle->config;
+    const drive_cfi_config_t * config = handle->config;
     pio_handle.port = config->cs.port;
     pio_handle.config = 0;
     mcu_pio_clrmask(&pio_handle, (void*)(ssize_t)(1<<config->cs.pin));
@@ -58,7 +58,7 @@ void drive_cfi_assert_cs(const devfs_handle_t * handle){
 
 void drive_cfi_deassert_cs(const devfs_handle_t * handle){
     devfs_handle_t pio_handle;
-    const sst25vf_config_t * config = handle->config;
+    const drive_cfi_config_t * config = handle->config;
     pio_handle.port = config->cs.port;
     pio_handle.config = 0;
     mcu_pio_setmask(&pio_handle, (void*)(ssize_t)(1<<config->cs.pin));
@@ -113,16 +113,18 @@ void drive_cfi_erase_sector(const devfs_handle_t * handle, u32 addr){
 }
 
 void drive_cfi_block_erase_32kb(const devfs_handle_t * handle, u32 addr /*! Any address in the 32KB block */){
+    drive_cfi_state_t * state = (drive_cfi_state_t*)handle->state;
     drive_cfi_write_enable(handle);
     drive_cfi_assert_cs(handle);
-    drive_cfi_write_command_with_address(handle, SST25VF_INS_BLOCK_ERASE_32KB, addr);
+    drive_cfi_write_command_with_address(handle, state->sfdp.opcode_erase_size1, addr);
     drive_cfi_deassert_cs(handle);
 }
 
 void drive_cfi_block_erase_64kb(const devfs_handle_t * handle, u32 addr /*! Any address in the 64KB block */){
+    drive_cfi_state_t * state = (drive_cfi_state_t*)handle->state;
     drive_cfi_write_enable(handle);
     drive_cfi_assert_cs(handle);
-    drive_cfi_write_command_with_address(handle, SST25VF_INS_BLOCK_ERASE_64KB, addr);
+    drive_cfi_write_command_with_address(handle, state->sfdp.opcode_erase_size2, addr);
     drive_cfi_deassert_cs(handle);
 }
 
@@ -132,25 +134,8 @@ void drive_cfi_chip_erase(const devfs_handle_t * handle){
     drive_cfi_read_status(handle);
 }
 
-void drive_cfi_write_byte(const devfs_handle_t * handle, uint32_t addr, char byte){
-    drive_cfi_write_enable(handle);
-    drive_cfi_assert_cs(handle);
-    drive_cfi_write_command_with_address(handle, SST25VF_INS_PROGRAM, addr);
-    mcu_spi_swap(handle, (void*)(ssize_t)byte);
-    drive_cfi_deassert_cs(handle);
-}
-
-char drive_cfi_read_byte(const devfs_handle_t * handle, uint32_t addr){
-    char byte;
-    drive_cfi_assert_cs(handle);
-    drive_cfi_write_command_with_address(handle, CFI_COMMAND_READ, addr);
-    byte = mcu_spi_swap(handle, (void*)(ssize_t)0xFF);
-    drive_cfi_deassert_cs(handle);
-    return byte;
-}
-
-uint8_t drive_cfi_read_status(const devfs_handle_t * handle){
-    uint8_t status;
+u8 drive_cfi_read_status(const devfs_handle_t * handle){
+    u8 status;
     drive_cfi_assert_cs(handle);
     mcu_spi_swap(handle, (void*)CFI_COMMAND_READ_STATUS);
     status = mcu_spi_swap(handle, (void*)(ssize_t)0xFF);
@@ -167,48 +152,30 @@ void drive_cfi_write_status(const devfs_handle_t * handle, uint8_t status){
 }
 
 void drive_cfi_power_down(const devfs_handle_t * handle){
-    drive_cfi_write_command(handle, SST25VF_INS_POWER_DOWN);
+    drive_cfi_write_command(handle, CFI_COMMAND_RELEASE_POWER_DOWN);
 }
 
 void drive_cfi_power_up(const devfs_handle_t * handle){
-    drive_cfi_write_command(handle, SST25VF_INS_POWER_UP);
+    drive_cfi_write_command(handle, CFI_COMMAND_RELEASE_POWER_DOWN);
 }
 
-void drive_cfi_global_protect(const devfs_handle_t * handle){
-    //maninpulate the status registers
-    uint8_t status;
-    status = (1<<SST25VF_STATUS_SWPL_BIT) |
-            (1<<SST25VF_STATUS_SWP_BIT0) |
-            (1<<SST25VF_STATUS_SWP_BIT1) |
-            (1<<SST25VF_STATUS_SWP_BIT2) |
-            (1<<SST25VF_STATUS_SWP_BIT3);
-    drive_cfi_write_command(handle, SST25VF_INS_WR_STATUS_ENABLE);
-    drive_cfi_write_status(handle, status); //global protect and set SWPL
+void drive_cfi_global_block_lock(const devfs_handle_t * handle){
+    drive_cfi_write_command(handle, CFI_COMMAND_GLOBAL_BLOCK_LOCK);
 }
 
 void drive_cfi_global_block_unlock(const devfs_handle_t * handle){
     //manipulate the status registers
     drive_cfi_write_command(handle, CFI_COMMAND_GLOBAL_BLOCK_UNLOCK);
-    return 0;
-}
-
-void drive_cfi_read_id(const devfs_handle_t * handle, char * dest){
-    int i;
-    drive_cfi_assert_cs(handle);
-    mcu_spi_swap(handle, (void*)(ssize_t)SST25VF_INS_RD_ID);
-    for(i=0; i < 4; i++){
-        dest[i] = mcu_spi_swap(handle, (void*)(ssize_t)0xFF);
-    }
-    drive_cfi_deassert_cs(handle);
 }
 
 int drive_cfi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
-    sst25vf_config_t * sst_cfg = (sst25vf_config_t*)handle->config;
-    sst25vf_state_t * state = (sst25vf_state_t*)handle->state;
+    //drive_cfi_config_t * config = (drive_cfi_config_t*)handle->config;
+    //drive_cfi_state_t * state = (drive_cfi_state_t*)handle->state;
     drive_info_t * info;
     drive_attr_t * attr;
     u32 o_flags;
     int i;
+    int result;
 
     switch(request){
     case I_DRIVE_GETVERSION:
@@ -218,10 +185,17 @@ int drive_cfi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
         attr = ctl;
         o_flags = attr->o_flags;
 
+
+        if( o_flags & DRIVE_FLAG_INIT ){
+            //initialize the drive
+            result = drive_cfi_load_sfdp(handle);
+            if( result < 0 ){ return result; }
+
+            //any other initialization?
+
+        }
+
         if( o_flags & (DRIVE_FLAG_ERASE_DEVICE|DRIVE_FLAG_ERASE_BLOCKS) ){
-            if( state->prot == 1 ){
-                return SYSFS_SET_RETURN(EROFS);
-            }
 
             if( o_flags & DRIVE_FLAG_ERASE_DEVICE ){
                 drive_cfi_chip_erase(handle);
@@ -235,7 +209,7 @@ int drive_cfi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
         }
 
         if( o_flags & DRIVE_FLAG_PROTECT ){
-            drive_cfi_global_protect(handle);
+            drive_cfi_global_block_lock(handle);
         }
 
         if( o_flags & DRIVE_FLAG_UNPROTECT ){
@@ -251,6 +225,14 @@ int drive_cfi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
         }
 
         break;
+
+
+    case I_DRIVE_ISBUSY:
+
+        //read the status reg to see if the drive is busy
+
+        break;
+
     case I_DRIVE_GETINFO:
         info = ctl;
         info->address_size = 1;
@@ -269,14 +251,14 @@ int drive_cfi_handle_write_complete(void * context, const mcu_event_t * event){
     const devfs_handle_t * handle = context;
     drive_cfi_state_t * state = (drive_cfi_state_t*)handle->state;
     drive_cfi_deassert_cs(handle);
-    mcu_execute_event_handler(&state->op.handler, MCU_EVENT_FLAG_WRITE_COMPLETE, event);
+    mcu_execute_event_handler(&state->handler, MCU_EVENT_FLAG_WRITE_COMPLETE, (void*)event);
     return 0;
 }
 
 int drive_cfi_write(const devfs_handle_t * handle, devfs_async_t * async){
     drive_cfi_state_t * state = (drive_cfi_state_t*)handle->state;
 
-    if( state->op.handler.callback != 0 ){
+    if( state->handler.callback != 0 ){
         return SYSFS_SET_RETURN(EBUSY);
     }
 
@@ -288,11 +270,10 @@ int drive_cfi_write(const devfs_handle_t * handle, devfs_async_t * async){
 
     //hijack async handler to execute write complete so that CS can be deasserted
     async->handler.callback = drive_cfi_handle_write_complete;
-    async->handler.context = handle;
+    async->handler.context = (void*)handle;
 
     drive_cfi_write_enable(handle);
 
-    //set Auto increment
     drive_cfi_assert_cs(handle);
     drive_cfi_write_command_with_address(handle, CFI_COMMAND_PAGE_PROGRAM, async->loc);
 
@@ -319,9 +300,11 @@ int drive_cfi_read(const devfs_handle_t * handle, devfs_async_t * async){
         return SYSFS_SET_RETURN(EBUSY);
     }
 
+#if 0
     if ( rop->loc >= dcfg->size ){
         return SYSFS_SET_RETURN(EINVAL);
     }
+#endif
 
     //the state handler will be used after the write is complete
     state->handler = async->handler;
@@ -334,12 +317,19 @@ int drive_cfi_read(const devfs_handle_t * handle, devfs_async_t * async){
     //}
 
     drive_cfi_assert_cs(handle);
-    drive_cfi_write_command_with_address(handle, CFI_COMMAND_FAST_READ, rop->loc);
+    drive_cfi_write_command_with_address(handle, CFI_COMMAND_FAST_READ, async->loc);
     mcu_spi_swap(handle, NULL); //dummy byte output for fast reads
     return mcu_spi_read(handle, async); //get the data
 }
 
-#endif
+int drive_cfi_load_sfdp(const devfs_handle_t * handle){
+    //drive_cfi_state_t * state = handle->state;
+
+    //use the bus to populate state->sfdp
+    return 0;
+}
+
+
 
 
 

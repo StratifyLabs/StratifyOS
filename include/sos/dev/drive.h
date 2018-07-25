@@ -23,8 +23,20 @@
  *
  * \ingroup IFACE_DEV
  *
- * \details This is the interface for accessing drives.  The drive can be any external storage device such
- * as an SD card, serial flash chip, etc.  Disks are always read/write block devices.
+ * \details This is the interface for accessing drives.
+ *
+ * The drive is usually one of two types:
+ *
+ * - Serial Flash (mostly use command flash interface)
+ * - SD/MMC Flash memory
+ *
+ * ## Terminology
+ *
+ * - Page: the size of a writeable chunk of memory
+ * - Sector: the size of an eraseable chunk of memory (commonly 4KB on serial NAND devices)
+ *
+ * Multiple pages typically make up a sector. Pages are aligned to sector boundaries.
+ *
  *
  *
  */
@@ -42,11 +54,13 @@
 enum {
     DRIVE_FLAG_PROTECT /*! Enables driver write protection. */ = (1<<0),
     DRIVE_FLAG_UNPROTECT /*! Disables driver write protection. */ = (1<<1),
-    DRIVE_FLAG_ERASE_BLOCKS /*! Erases blocks on disk (use start and end to specify which blocks). */ = (1<<2),
+    DRIVE_FLAG_ERASE_BLOCKS = (1<<2),
+    DRIVE_FLAG_ERASE_SECTORS /*! Erases sectors on the disk. */ = (1<<2),
     DRIVE_FLAG_ERASE_DEVICE /*! Erases the drive. */ = (1<<3),
     DRIVE_FLAG_POWERDOWN /*! Puts the drive in power down mode. */ = (1<<4),
     DRIVE_FLAG_POWERUP /*! Powers up the driver (after power down). */ = (1<<5),
-    DRIVE_FLAG_INIT /*! Initializes the drive. */ = (1<<6)
+    DRIVE_FLAG_INIT /*! Initializes the drive. */ = (1<<6),
+    DRIVE_FLAG_RESET /*! Issue a reset to the drive. */ = (1<<7)
 } drive_flags_t;
 
 /*! \brief Drive Info
@@ -83,7 +97,7 @@ typedef struct MCU_PACK {
 #define I_DRIVE_GETVERSION _IOCTL(DRIVE_IOC_IDENT_CHAR, I_MCU_GETVERSION)
 /*! \details Gets the drive info (drive_info_t). */
 #define I_DRIVE_GETINFO _IOCTLR(DRIVE_IOC_IDENT_CHAR, I_MCU_GETINFO, drive_info_t)
-/*! \details Sets the drive attributes (\sa drive_attr_t). */
+/*! \details Sets the drive attributes (\sa 43drive_attr_t). */
 #define I_DRIVE_SETATTR _IOCTLW(DRIVE_IOC_IDENT_CHAR, I_MCU_SETATTR, drive_attr_t)
 #define I_DRIVE_SETACTION _IOCTLW(DRIVE_IOC_IDENT_CHAR, I_MCU_SETATTR, mcu_action_t)
 

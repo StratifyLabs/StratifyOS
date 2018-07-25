@@ -154,7 +154,7 @@ int update_priority(const devfs_device_t * device, const switchboard_terminal_t 
         memset(&action, 0, sizeof(action));
         action.channel = terminal->loc;
         action.prio = terminal->priority;
-        action.o_events = o_events;
+        action.o_events = o_events | MCU_EVENT_FLAG_SET_PRIORITY;
         //this will adjust the priority without affecting the callback (set to null)
         return device->driver.ioctl(&device->handle, I_MCU_SETACTION, &action);
     }
@@ -250,7 +250,6 @@ int create_connection(const switchboard_config_t * config, switchboard_state_t *
         state[id].output.async.flags |= O_NONBLOCK;
     }
 
-
     if( open_terminal(&state->input) < 0 ){
         memset(state + id, 0, sizeof(switchboard_state_t));
         return SYSFS_SET_RETURN(EIO);
@@ -274,8 +273,10 @@ int create_connection(const switchboard_config_t * config, switchboard_state_t *
     }
 
     //start reading into the primary buffer -- mark it as used
-    if( read_then_write_until_async(state + id) < 0 ){
+    int result;
+    if( (result = read_then_write_until_async(state + id)) < 0 ){
         abort_connection(state + id);
+        mcu_debug_log_info(MCU_DEBUG_DEVICE, "RW failed %d (0x%lX), %d", SYSFS_GET_RETURN(result), (u32)-1*SYSFS_GET_RETURN(result), SYSFS_GET_RETURN_ERRNO(result));
         return SYSFS_SET_RETURN(EIO);
     }
 

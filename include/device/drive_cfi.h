@@ -25,24 +25,50 @@
 #include "mcu/spi.h"
 #include "mcu/qspi.h"
 
+//Serial Flash Discoverable Parameters -- the minimum need for the driver to work
 typedef struct {
-	const char * buf;
-	int * nbyte;
-	int count;
-	int timeout;
-	uint8_t cmd[16];
+    u32 o_flags;
+    u8 opcode_4kb_erase;
+    u8 opcode_write_enable_status;
+    u32 size;
+    u8 opcode_fast_read_114;
+    u8 opcode_fast_read_114_mode_bits;
+    u8 opcode_fast_read_114_wait_states;
+    u8 opcode_fast_read_144;
+    u8 opcode_fast_read_144_mode_bits;
+    u8 opcode_fast_read_144_wait_states;
+    u8 opcode_fast_read_122;
+    u8 opcode_fast_read_122_mode_bits;
+    u8 opcode_fast_read_122_wait_states;
+    u8 opcode_fast_read_112;
+    u8 opcode_fast_read_112_mode_bits;
+    u8 opcode_fast_read_112_wait_states;
+    u8 opcode_fast_read_222;
+    u8 opcode_fast_read_222_mode_bits;
+    u8 opcode_fast_read_222_wait_states;
+    u8 opcode_fast_read_444;
+    u8 opcode_fast_read_444_mode_bits;
+    u8 opcode_fast_read_444_wait_states;
+    u8 opcode_erase_size2;
+    u8 erase_size2;
+    u8 opcode_erase_size1;
+    u8 erase_size1;
+    u8 opcode_erase_size4;
+    u8 erase_size4;
+    u8 opcode_erase_size3;
+    u8 erase_size3;
+} drive_cfi_sfdp_t;
+
+
+typedef struct {
     mcu_event_handler_t handler;
-	u32 flags;
+    drive_cfi_sfdp_t sfdp;
 } drive_cfi_state_t;
 
 typedef struct {
-    spi_config_t spi;
-} drive_cfi_spi_config_t;
-
-typedef struct {
-    qspi_config_t qspi;
-} drive_cfi_qspi_config_t;
-
+    mcu_pin_t cs;
+    const void * mcu_config;
+} drive_cfi_config_t;
 
 
 DEVFS_DRIVER_DECLARTION(cfi_spi);

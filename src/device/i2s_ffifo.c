@@ -78,7 +78,7 @@ int i2s_event_data_ready(void * context, const mcu_event_t * event){
 
     if(state->rx.i2s_async.nbyte < 0){
         state->rx.error = state->rx.i2s_async.nbyte;
-        mcu_debug_log_error(MCU_DEBUG_DEVICE, "%s:%d", __FUNCTION__, __LINE__);
+        mcu_debug_log_error(MCU_DEBUG_DEVICE, "%s:%d (%d,%d)", __FUNCTION__, __LINE__, SYSFS_GET_RETURN(state->rx.i2s_async.nbyte));
         return 0;
     }
 
