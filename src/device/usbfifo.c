@@ -94,14 +94,14 @@ int usbfifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 	case I_USB_SETACTION:
 	case I_MCU_SETACTION:
 		if( action->handler.callback == 0 ){
-			fifo_cancel_rop(&(state->fifo));
+			fifo_cancel_async_read(&(state->fifo));
 		} else {
 			return mcu_usb_setaction(handle, ctl);
 		}
 		return 0;
 	case I_FIFO_FLUSH:
 		fifo_flush(&(state->fifo));
-        mcu_execute_read_handler_with_flags(&state->fifo.transfer_handler, 0, -1, MCU_EVENT_FLAG_CANCELED);
+        devfs_execute_read_handler(&state->fifo.transfer_handler, 0, -1, MCU_EVENT_FLAG_CANCELED);
         break;
 	case I_USB_SETATTR:
 		fifo_flush(&(state->fifo));

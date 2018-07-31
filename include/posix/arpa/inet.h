@@ -26,7 +26,7 @@
  *
  */
 
-#if HAVE_LWIP_SOCKETS_H
+#if !defined SOS_BOOTSTRAP_SOCKETS
 #include <lwip/sockets.h>
 #else
 #include <mcu/types.h>

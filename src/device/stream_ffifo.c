@@ -67,45 +67,30 @@ int event_data_ready(void * context, const mcu_event_t * event){
     const stream_ffifo_config_t * config = handle->config;
     stream_ffifo_state_t * state = handle->state;
     ffifo_state_t * ffifo_state = &state->rx.ffifo;
+    u32 o_events = event->o_events;
 
-    if(state->rx.async.nbyte < 0){
+
+    //check for errors or abort
+    if( (state->rx.async.nbyte < 0) || (o_events & MCU_EVENT_FLAG_CANCELED) ){
         state->rx.error = state->rx.async.nbyte;
         mcu_debug_log_error(MCU_DEBUG_DEVICE, "%s:%d", __FUNCTION__, __LINE__);
+        //tell ffifo there won't be any data coming?
         return 0;
     }
 
-    //increment the head for the frame received
+    //check for overflow
     if( ffifo_state->atomic_position.access.tail == config->rx.count ){
         if( ffifo_state->o_flags & FIFO_FLAG_IS_READ_BUSY ){
             ffifo_state->o_flags |= FIFO_FLAG_IS_WRITE_WHILE_READ_BUSY;
         }
         ffifo_state->o_flags |= FIFO_FLAG_IS_OVERFLOW;
     }
+
+    //increment the head for the frame received
     ffifo_inc_head(&state->rx.ffifo, config->rx.count);
     state->rx.count++;
-
     ffifo_data_received(&config->rx, &state->rx.ffifo);
 
-
-#if 0
-    if( ffifo_state->atomic_position.access.head == 0 ){
-        state->rx.async.buf = config->rx.buffer;
-    } else {
-        state->rx.async.buf += config->rx.frame_size;
-    }
-
-    if( state->rx.async.nbyte != config->rx.frame_size ){
-        mcu_debug_log_warning(MCU_DEBUG_DEVICE, "%s:%d != %d\n", __FUNCTION__, state->rx.async.nbyte, config->rx.frame_size);
-    }
-
-    if( o_events & MCU_EVENT_FLAG_STREAMING == 0 ){
-        state->rx.error = config->device->driver.read(&config->device->handle, &state->rx.async);
-    }
-    if( state->rx.error < 0){
-        mcu_debug_log_error(MCU_DEBUG_DEVICE, "%s:%d", __FUNCTION__, __LINE__);
-        return 0;
-    }
-#endif
     return 1;
 }
 
@@ -131,6 +116,7 @@ int stream_ffifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
     stream_ffifo_info_t * info = ctl;
     const stream_ffifo_attr_t * attr = ctl;
     mcu_action_t * action = ctl;
+    int result;
 
     switch(request){
 
@@ -228,13 +214,13 @@ int stream_ffifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
         //this needs to handle cancelling wop/rop of tx and rx fifos
         if( (action->o_events & MCU_EVENT_FLAG_DATA_READY) && (action->handler.callback == 0) ){
             //cancel the ffifo rx
-            ffifo_cancel_rop(&(state->rx.ffifo));
+            ffifo_cancel_async_read(&(state->rx.ffifo));
         }
 
         //this needs to handle cancelling wop/rop of tx and rx fifos
         if( (action->o_events & MCU_EVENT_FLAG_WRITE_COMPLETE) && (action->handler.callback == 0) ){
             //cancel the ffifo rx
-            ffifo_cancel_wop(&(state->tx.ffifo));
+            ffifo_cancel_async_write(&(state->tx.ffifo));
         }
         /* no break */
     }

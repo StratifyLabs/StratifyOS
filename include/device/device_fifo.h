@@ -18,71 +18,71 @@
  */
 
 
-#ifndef DEVICE_STREAM_FFIFO_H_
-#define DEVICE_STREAM_FFIFO_H_
+#ifndef DEVICE_DEVICE_FIFO_H_
+#define DEVICE_DEVICE_FIFO_H_
 
 #include "sos/fs/devfs.h"
-#include "sos/dev/stream_ffifo.h"
-#include "ffifo.h"
+#include "sos/dev/device_fifo.h"
+#include "fifo.h"
 
 
 typedef struct {
-    ffifo_state_t ffifo;
+    fifo_state_t fifo;
     devfs_async_t async;
     u32 count;
     s32 error;
-} stream_ffifo_channel_state_t;
+} device_fifo_channel_state_t;
 
 typedef struct {
-    stream_ffifo_channel_state_t rx;
-    stream_ffifo_channel_state_t tx;
-} stream_ffifo_state_t;
+    device_fifo_channel_state_t rx;
+    device_fifo_channel_state_t tx;
+} device_fifo_state_t;
 
 typedef struct {
-    ffifo_config_t tx;
-    ffifo_config_t rx;
+    fifo_config_t tx;
+    fifo_config_t rx;
     const devfs_device_t * device;
-} stream_ffifo_config_t;
+} device_fifo_config_t;
 
 
-int stream_ffifo_open(const devfs_handle_t * handle);
-int stream_ffifo_ioctl(const devfs_handle_t * handle, int request, void * ctl);
-int stream_ffifo_read(const devfs_handle_t * handle, devfs_async_t * async);
-int stream_ffifo_write(const devfs_handle_t * handle, devfs_async_t * async);
-int stream_ffifo_close(const devfs_handle_t * handle);
+int device_fifo_open(const devfs_handle_t * handle);
+int device_fifo_ioctl(const devfs_handle_t * handle, int request, void * ctl);
+int device_fifo_read(const devfs_handle_t * handle, devfs_async_t * async);
+int device_fifo_write(const devfs_handle_t * handle, devfs_async_t * async);
+int device_fifo_close(const devfs_handle_t * handle);
 
-#define STREAM_FFIFO_DECLARE_CONFIG_STATE_RX_ONLY(name, \
+#define DEVICE_FIFO_DECLARE_CONFIG_STATE_RX_ONLY(name, \
     frame_size_value, \
     count_value, \
     device_value) \
     char name##_rx_buffer[count_value*frame_size_value]; \
-    stream_ffifo_state_t name##_state MCU_SYS_MEM; \
-    stream_ffifo_config_t name##_config = { \
+    device_fifo_state_t name##_state MCU_SYS_MEM; \
+    device_fifo_config_t name##_config = { \
     .device = device_value, \
     .tx = { .count = 0, .frame_size = 0, .buffer = 0 }, \
     .rx = { .count = count_value, .frame_size = frame_size_value, .buffer = name##_rx_buffer } \
     }
 
-#define STREAM_FFIFO_DECLARE_CONFIG_STATE_TX_ONLY(name, \
+#define DEVICE_FIFO_DECLARE_CONFIG_STATE_TX_ONLY(name, \
     frame_size_value, \
     count_value, \
     device_value) \
     char name##_tx_buffer[count_value*frame_size_value]; \
-    stream_ffifo_state_t name##_state MCU_SYS_MEM; \
-    stream_ffifo_config_t name##_config = { \
+    device_fifo_state_t name##_state MCU_SYS_MEM; \
+    device_fifo_config_t name##_config = { \
     .device = device_value, \
     .rx = { .count = 0, .frame_size = 0, .buffer = 0 }, \
     .tx = { .count = count_value, .frame_size = frame_size_value, .buffer = name##_tx_buffer } \
     }
 
-#define STREAM_FFIFO_DECLARE_CONFIG_STATE(name, \
+#define DEVICE_FIFO_DECLARE_CONFIG_STATE(name, \
     frame_size_value, \
     count_value, \
     device_value) \
     char name##_rx_buffer[count_value*frame_size_value]; \
     char name##_tx_buffer[count_value*frame_size_value]; \
-    stream_ffifo_state_t name##_state MCU_SYS_MEM; \
-    stream_ffifo_config_t name##_config = { \
+    device_fifo_state_t name##_state MCU_SYS_MEM; \
+    device_fifo_config_t name##_config = { \
     .device = device_value, \
     .rx = { .count = count_value, .frame_size = frame_size_value, .buffer = name##_rx_buffer } \
     .tx = { .count = count_value, .frame_size = frame_size_value, .buffer = name##_tx_buffer } \
@@ -90,5 +90,5 @@ int stream_ffifo_close(const devfs_handle_t * handle);
 
 
 
-#endif /* DEVICE_STREAM_FFIFO_H_ */
+#endif /* DEVICE_DEVICE_FIFO_H_ */
 

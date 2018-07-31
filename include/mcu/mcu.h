@@ -99,26 +99,8 @@ extern const mcu_config_t mcu_config;
 
 void mcu_board_execute_event_handler(int event, void * args);
 
-//execute an event callback -- callback is null'd if result is 0
+//execute an event callback -- callback is null'd if result is 0 -- deprecated
 int mcu_execute_event_handler(mcu_event_handler_t * handler, u32 o_events, void * data);
-
-//Used to execute a transfer handler -- not callbacks deleted
-int mcu_execute_transfer_handler(mcu_event_handler_t * handler, u32 o_events, void * data);
-
-//executes a read handler - transfer is null'd -- used for normal read completion
-int mcu_execute_read_handler(devfs_transfer_handler_t * transfer_handler, void * data, int nbyte);
-
-//executes a read handler with special flags - transfer is null'd -- used for error, abort or cancel
-int mcu_execute_read_handler_with_flags(devfs_transfer_handler_t * transfer_handler, void * data, int nbyte, u32 o_flags);
-
-//executes a write handler - transfer is null'd -- used for normal write completion
-int mcu_execute_write_handler(devfs_transfer_handler_t * transfer_handler, void * data, int nbyte);
-
-//executes a write handler with special flags - transfer is null'd -- used for error, abort or cancel
-int mcu_execute_write_handler_with_flags(devfs_transfer_handler_t * transfer_handler, void * data, int nbyte, u32 o_flags);
-
-//executes a read and/or write -- transfer is null'd -- used for error, abort or cancel
-void mcu_execute_transfer_handlers(devfs_transfer_handler_t * transfer_handler, void * data, int nbyte, u32 o_flags);
 
 static inline const mcu_pin_t * mcu_pin_at(const void * start, int i){
 	const mcu_pin_t * p = (const mcu_pin_t *)start;

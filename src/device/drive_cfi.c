@@ -27,6 +27,8 @@
 
 #include "drive_cfi_local.h"
 
+#if 0
+
 //utility functions
 static int drive_cfi_load_sfdp(const devfs_handle_t * handle);
 static void drive_cfi_write_command(const devfs_handle_t * handle, u8 opcode);
@@ -330,7 +332,7 @@ int drive_cfi_load_sfdp(const devfs_handle_t * handle){
 }
 
 
-
+#endif
 
 
 

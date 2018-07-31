@@ -8,8 +8,9 @@ if( ${SOS_BUILD_CONFIG} STREQUAL arm )
       ${SOURCES_PREFIX}/microchip/sst25vf.c
       ${SOURCES_PREFIX}/microchip/sst25vf_local.h
       ${SOURCES_PREFIX}/cfifo.c
-      ${SOURCES_PREFIX}/devfifo.c
-      ${SOURCES_PREFIX}/ffifo.c
+			${SOURCES_PREFIX}/devfifo.c
+			${SOURCES_PREFIX}/device_fifo.c
+			${SOURCES_PREFIX}/ffifo.c
       ${SOURCES_PREFIX}/fifo.c
 			${SOURCES_PREFIX}/stream_ffifo.c
 			${SOURCES_PREFIX}/i2s_ffifo.c

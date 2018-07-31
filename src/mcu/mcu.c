@@ -21,76 +21,13 @@
 #include "mcu/mcu.h"
 #include "mcu/core.h"
 
-int mcu_execute_transfer_handler(mcu_event_handler_t * handler, u32 o_events, void * data);
-
 void mcu_board_execute_event_handler(int event, void * args){
 	if( mcu_board_config.event_handler != 0 ){
 		mcu_board_config.event_handler(event, args);
 	}
 }
 
-//execute the read/write transfer handlers if they are available
-void mcu_execute_transfer_handlers(devfs_transfer_handler_t * transfer_handler, void * data, int nbyte, u32 o_flags){
-    if( transfer_handler->read ){
-        devfs_async_t * async = transfer_handler->read;
-        transfer_handler->read = 0;
-        async->nbyte = nbyte;
-        mcu_execute_transfer_handler(&async->handler, o_flags | MCU_EVENT_FLAG_DATA_READY, data);
-    }
-
-    if( transfer_handler->write ){
-        devfs_async_t * async = transfer_handler->write;
-        transfer_handler->write = 0;
-        async->nbyte = nbyte;
-        mcu_execute_transfer_handler(&async->handler, o_flags | MCU_EVENT_FLAG_WRITE_COMPLETE, data);
-    }
-}
-
-//execute when a read completes successfully
-int mcu_execute_read_handler(devfs_transfer_handler_t * transfer_handler, void * data, int nbyte){
-    return mcu_execute_read_handler_with_flags(transfer_handler, data, nbyte, MCU_EVENT_FLAG_DATA_READY);
-}
-
-//executes when a read completes unsuccessfully
-int mcu_execute_read_handler_with_flags(devfs_transfer_handler_t * transfer_handler, void * data, int nbyte, u32 o_flags){
-    if( transfer_handler->read ){
-        devfs_async_t * async = transfer_handler->read;
-        transfer_handler->read = 0;
-        if( nbyte ){ async->nbyte = nbyte; }
-        return mcu_execute_transfer_handler(&async->handler, o_flags, data);
-    }
-    return 0;
-}
-
-//execute when a write completes successfully
-int mcu_execute_write_handler(devfs_transfer_handler_t * transfer_handler, void * data, int nbyte){
-    return mcu_execute_write_handler_with_flags(transfer_handler, data, nbyte, MCU_EVENT_FLAG_WRITE_COMPLETE);
-}
-
-//executes when a write completes unsuccessfully
-int mcu_execute_write_handler_with_flags(devfs_transfer_handler_t * transfer_handler, void * data, int nbyte, u32 o_flags){
-    if( transfer_handler->write ){
-        devfs_async_t * async = transfer_handler->write;
-        transfer_handler->write = 0;
-        if( nbyte ){ async->nbyte = nbyte; }
-        return mcu_execute_transfer_handler(&async->handler, o_flags, data);
-    }
-    return 0;
-}
-
-//used to execute any handler
-int mcu_execute_transfer_handler(mcu_event_handler_t * handler, u32 o_events, void * data){
-    int ret = 0;
-    mcu_event_t event;
-    if( handler->callback ){
-        event.o_events = o_events;
-        event.data = data;
-        ret = handler->callback(handler->context, &event);
-    }
-    return ret;
-}
-
-//deprecated -- stop using this -- this is the old way -- use mcu_execute_transfer_event_handler()
+//deprecated -- stop using this -- this is the old way -- use devfs_execute_event_handler()
 int mcu_execute_event_handler(mcu_event_handler_t * handler, u32 o_events, void * data){
 	int ret = 0;
 	mcu_event_t event;

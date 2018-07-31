@@ -180,7 +180,14 @@ bool devfs_is_terminator(const devfs_device_t * dev){
     return false;
 }
 
+int devfs_execute_event_handler(mcu_event_handler_t * handler, u32 o_events, void * data);
+//executes the read handler (if it exists) and nulls the read async object so it can be assigned again
+int devfs_execute_read_handler(devfs_transfer_handler_t * transfer_handler, void * data, int nbyte, u32 o_flags);
+//executes the write handler (if it exists) and nulls the write async object so it can be assigned again
+int devfs_execute_write_handler(devfs_transfer_handler_t * transfer_handler, void * data, int nbyte, u32 o_flags);
 
+//executes read and write handlers (if they exist) with MCU_EVENT_FLAG_CANCELED set
+void devfs_execute_cancel_handler(devfs_transfer_handler_t * transfer_handler, void * data, int nbyte, u32 o_flags);
 
 int devfs_init(const void * cfg);
 int devfs_open(const void * cfg, void ** handle, const char * path, int flags, int mode);
@@ -194,6 +201,8 @@ int devfs_stat(const void * cfg, const char * path, struct stat * st);
 int devfs_opendir(const void * cfg, void ** handle, const char * path);
 int devfs_readdir_r(const void * cfg, void * handle, int loc, struct dirent * entry);
 int devfs_closedir(const void * cfg, void ** handle);
+
+
 
 #define DEVFS_MOUNT(mount_loc_name, cfgp, access_mode) { \
     .mount_path = mount_loc_name, \

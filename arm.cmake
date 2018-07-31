@@ -3,8 +3,8 @@
 #check for LWIP
 include(CheckIncludeFiles)
 check_include_files("lwip/sockets.h" HAVE_LWIP_SOCKETS_H)
-if(HAVE_LWIP_SOCKETS_H)
-  set(SOS_LIB_DEFINITIONS HAVE_LWIP_SOCKETS_H=1)
+if(NOT HAVE_LWIP_SOCKETS_H)
+	set(SOS_LIB_DEFINITIONS SOS_BOOTSTRAP_SOCKETS=1)
 endif()
 
 #Add sys sources

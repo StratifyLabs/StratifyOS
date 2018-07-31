@@ -187,17 +187,21 @@ void fifo_data_received(const fifo_config_t * config, fifo_state_t * state){
                                            state,
                                            state->transfer_handler.read->buf,
                                            state->transfer_handler.read->nbyte)) > 0 ){
-            mcu_execute_read_handler(&state->transfer_handler, 0, bytes_read);
+            devfs_execute_read_handler(
+                        &state->transfer_handler,
+                        0,
+                        bytes_read,
+                        MCU_EVENT_FLAG_DATA_READY);
         }
     }
 }
 
-void fifo_cancel_rop(fifo_state_t * state){
-    mcu_execute_read_handler_with_flags(&state->transfer_handler, 0, -1, MCU_EVENT_FLAG_CANCELED);
+void fifo_cancel_async_read(fifo_state_t * state){
+    devfs_execute_read_handler(&state->transfer_handler, 0, -1, MCU_EVENT_FLAG_CANCELED);
 }
 
-void fifo_cancel_wop(fifo_state_t * state){
-    mcu_execute_write_handler_with_flags(&state->transfer_handler, 0, -1, MCU_EVENT_FLAG_CANCELED);
+void fifo_cancel_async_write(fifo_state_t * state){
+    devfs_execute_write_handler(&state->transfer_handler, 0, -1, MCU_EVENT_FLAG_CANCELED);
 }
 
 int fifo_data_transmitted(const fifo_config_t * cfgp, fifo_state_t * state){
@@ -207,11 +211,15 @@ int fifo_data_transmitted(const fifo_config_t * cfgp, fifo_state_t * state){
                                                state->transfer_handler.write->buf_const,
                                                state->transfer_handler.write->nbyte,
                                                0)) > 0 ){
-            mcu_execute_write_handler(&state->transfer_handler, 0, bytes_written);
+            devfs_execute_write_handler(
+                        &state->transfer_handler,
+                        0,
+                        bytes_written,
+                        MCU_EVENT_FLAG_WRITE_COMPLETE);
         }
     }
 
-    return 1; //leave the callback in place
+    return 1; //leave the callback in place ??
 }
 
 int fifo_open(const devfs_handle_t * handle){
@@ -265,11 +273,11 @@ int fifo_ioctl_local(const fifo_config_t * config, fifo_state_t * state, int req
         if( action->handler.callback == 0 ){
 
             if(action->o_events & MCU_EVENT_FLAG_WRITE_COMPLETE ){
-                fifo_cancel_wop(state);
+                fifo_cancel_async_write(state);
             }
 
             if(action->o_events & MCU_EVENT_FLAG_DATA_READY ){
-                fifo_cancel_wop(state);
+                fifo_cancel_async_write(state);
             }
 
             return 0;

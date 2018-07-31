@@ -206,18 +206,26 @@ void ffifo_data_received(const ffifo_config_t * handle, ffifo_state_t * state){
     int bytes_read;
     if( state->transfer_handler.read != NULL ){
         if( (bytes_read = ffifo_read_buffer(handle, state, state->transfer_handler.read->buf, state->transfer_handler.read->nbyte)) > 0 ){
-            mcu_execute_read_handler_with_flags(&state->transfer_handler, 0, bytes_read, MCU_EVENT_FLAG_DATA_READY);
+            devfs_execute_read_handler(&state->transfer_handler, 0, bytes_read, MCU_EVENT_FLAG_DATA_READY);
         }
     }
 }
 
-void ffifo_cancel_rop(ffifo_state_t * state){
-    mcu_execute_read_handler_with_flags(&state->transfer_handler, 0, SYSFS_SET_RETURN(EIO), MCU_EVENT_FLAG_CANCELED);
+void ffifo_cancel_async_read(ffifo_state_t * state){
+    devfs_execute_read_handler(
+                &state->transfer_handler,
+                0,
+                SYSFS_SET_RETURN(EIO),
+                MCU_EVENT_FLAG_CANCELED);
 }
 
 
-void ffifo_cancel_wop(ffifo_state_t * state){
-    mcu_execute_write_handler_with_flags(&state->transfer_handler, 0, SYSFS_SET_RETURN(EIO), MCU_EVENT_FLAG_CANCELED);
+void ffifo_cancel_async_write(ffifo_state_t * state){
+    devfs_execute_write_handler(
+                &state->transfer_handler,
+                0,
+                SYSFS_SET_RETURN(EIO),
+                MCU_EVENT_FLAG_CANCELED);
 }
 
 
@@ -226,7 +234,11 @@ void ffifo_data_transmitted(const ffifo_config_t * config, ffifo_state_t * state
     int bytes_written;
     if( state->transfer_handler.write != NULL ){
         if( (bytes_written = ffifo_write_buffer(config, state, state->transfer_handler.write->buf_const, state->transfer_handler.write->nbyte)) > 0 ){
-            mcu_execute_write_handler(&state->transfer_handler, 0, bytes_written);
+            devfs_execute_write_handler(
+                        &state->transfer_handler,
+                        0,
+                        bytes_written,
+                        MCU_EVENT_FLAG_WRITE_COMPLETE);
         }
     }
 }
@@ -281,12 +293,12 @@ int ffifo_ioctl_local(const ffifo_config_t * config, ffifo_state_t * state, int 
         if( action->handler.callback == 0 ){
             if( action->o_events & MCU_EVENT_FLAG_WRITE_COMPLETE ){
                 //cancel any ongoing operations
-                ffifo_cancel_wop(state);
+                ffifo_cancel_async_write(state);
             }
 
             if( action->o_events & MCU_EVENT_FLAG_DATA_READY){
                 //cancel any ongoing operations
-                ffifo_cancel_rop(state);
+                ffifo_cancel_async_read(state);
             }
             return 0;
         }

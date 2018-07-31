@@ -89,8 +89,8 @@ int fifo_write_buffer(const fifo_config_t * cfgp, fifo_state_t * state, const ch
 int fifo_data_transmitted(const fifo_config_t * cfgp, fifo_state_t * state);
 void fifo_data_received(const fifo_config_t * cfgp, fifo_state_t * state);
 
-void fifo_cancel_rop(fifo_state_t * state);
-void fifo_cancel_wop(fifo_state_t * state);
+void fifo_cancel_async_read(fifo_state_t * state);
+void fifo_cancel_async_write(fifo_state_t * state);
 
 
 #define FIFO_DEFINE_CONFIG(fifo_size, fifo_buffer) .size = fifo_size, .buffer = fifo_buffer

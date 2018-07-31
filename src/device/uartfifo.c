@@ -77,7 +77,7 @@ int uartfifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 	case I_UART_SETACTION:
 		if( action->handler.callback == 0 ){
 			//This needs to cancel an ongoing operation
-			fifo_cancel_rop(&(state->fifo));
+			fifo_cancel_async_read(&(state->fifo));
 			return 0;
 		}
         return SYSFS_SET_RETURN(ENOTSUP);

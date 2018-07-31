@@ -234,13 +234,13 @@ int i2s_ffifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
         //this needs to handle cancelling wop/rop of tx and rx fifos
         if( (action->o_events & MCU_EVENT_FLAG_DATA_READY) && (action->handler.callback == 0) ){
             //cancel the ffifo rx
-            ffifo_cancel_rop(&(state->rx.ffifo));
+            ffifo_cancel_async_read(&(state->rx.ffifo));
         }
 
         //this needs to handle cancelling wop/rop of tx and rx fifos
         if( (action->o_events & MCU_EVENT_FLAG_WRITE_COMPLETE) && (action->handler.callback == 0) ){
             //cancel the ffifo rx
-            ffifo_cancel_wop(&(state->tx.ffifo));
+            ffifo_cancel_async_write(&(state->tx.ffifo));
         }
         /* no break */
     }

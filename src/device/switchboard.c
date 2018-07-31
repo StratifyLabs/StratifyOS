@@ -466,12 +466,13 @@ int read_from_device(switchboard_state_t * state){
     if( is_ready_to_read_device(state) ){ //is there a buffer available
         ret = state->input.device->driver.read(&state->input.device->handle, &state->input.async);
         if( ret == 0 ){
-            //waiting for write
+            //the operation will happen asynchronously -- wait until it is done
             state->o_flags |= SWITCHBOARD_FLAG_IS_READING_ASYNC;
         } else if( ret > 0 ){
             //syncrhonous read completed
             complete_read(state, ret);
         } else {
+            //there was an error reading the device
             errno_value = SYSFS_GET_RETURN_ERRNO(ret);
             int i;
             if( errno_value == EAGAIN ){
