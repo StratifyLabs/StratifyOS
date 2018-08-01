@@ -332,18 +332,18 @@ typedef struct {
 int mq_getattr(mqd_t mqdes, struct mq_attr *mqstat){
 	mq_t * mq = mq_get_ptr(mqdes);
 	if ( mq == NULL ){
+        errno = EBADF;
+        mcu_debug_log_error(MCU_DEBUG_MQUEUE, "Cannot get attr of null");
 		return -1;
 	}
 
 	//read the mq in priv mode
-	mqstat->mq_maxmsg = mq->max_msgs;
+    mcu_debug_log_error(MCU_DEBUG_MQUEUE, "Cannot get attr of null");
+    mqstat->mq_maxmsg = mq->max_msgs;
 	mqstat->mq_msgsize = mq->max_size;
 	mqstat->mq_curmsgs = mq_cur_msgs(mq);
 
 	mqstat->mq_flags = 0;
-
-
-
 
 	if ( mq->status & MQ_STATUS_NONBLOCK_MASK ){
 		mqstat->mq_flags |= O_NONBLOCK;
@@ -363,8 +363,39 @@ int mq_getattr(mqd_t mqdes, struct mq_attr *mqstat){
  *
  */
 int mq_setattr(mqd_t mqdes, const struct mq_attr * mqstat, struct mq_attr * omqstat){
-	errno = ENOTSUP;
-	return -1;
+    if( omqstat ){
+        if( mq_getattr(mqdes, omqstat) < 0 ){
+            return -1;
+        }
+    }
+
+    mq_t * mq = mq_get_ptr(mqdes);
+    if( mq == 0 ){
+        errno = EBADF;
+        return -1;
+    }
+
+    //update the flags -- other properties are ignored
+    if( mqstat->mq_flags & O_NONBLOCK ){
+        mq->status |= MQ_STATUS_NONBLOCK_MASK;
+    } else {
+        mq->status &= ~MQ_STATUS_NONBLOCK_MASK;
+    }
+
+    if ( (mqstat->mq_flags & O_WRONLY) || (mqstat->mq_flags & O_RDWR) ){
+        mq->status |= MQ_STATUS_RDWR_MASK;
+    } else {
+        mq->status &= ~MQ_STATUS_RDWR_MASK;
+    }
+
+    if( mqstat->mq_flags & MQ_FLAGS_LOOP ){
+        mq->status |= MQ_STATUS_LOOP_MASK;
+    } else {
+        mq->status &= ~MQ_STATUS_LOOP_MASK;
+    }
+
+
+    return 0;
 }
 
 

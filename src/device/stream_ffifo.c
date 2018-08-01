@@ -43,21 +43,23 @@ int event_write_complete(void * context, const mcu_event_t * event){
 
     nbyte = state->tx.async.nbyte/2;
 
-    if( ffifo_state->atomic_position.access.head == ffifo_state->atomic_position.access.tail ){
-        //no data to read -- send a zero frame
-        memset(state->tx.async.buf, 0, nbyte);
-    } else {
-        state->tx.count++;
+    for(u32 frames = 0; frames < config->tx.count/2; frames++){
+        if( ffifo_state->atomic_position.access.head == ffifo_state->atomic_position.access.tail ){
+            //no data to read -- send a zero frame -- this isn't quite right
+            memset(state->tx.async.buf, 0, nbyte);
+        } else {
+            state->tx.count++;
 
-        //increment the tail for the frame that was written
-        if( ffifo_state->atomic_position.access.tail == config->tx.count ){
-            ffifo_state->atomic_position.access.tail = ffifo_state->atomic_position.access.head;
+            //increment the tail for the frame that was written
+            if( ffifo_state->atomic_position.access.tail == config->tx.count ){
+                ffifo_state->atomic_position.access.tail = ffifo_state->atomic_position.access.head;
+            }
+            ffifo_inc_tail(ffifo_state, config->tx.count);
         }
-        ffifo_inc_tail(ffifo_state, config->tx.count);
-    }
 
-    //execute the FFIFO action if something is trying to write the ffifo
-    ffifo_data_transmitted(&config->tx, &state->tx.ffifo);
+        //execute the FFIFO action if something is trying to write the ffifo
+        ffifo_data_transmitted(&config->tx, &state->tx.ffifo);
+    }
 
     return 1;
 }
@@ -87,9 +89,11 @@ int event_data_ready(void * context, const mcu_event_t * event){
     }
 
     //increment the head for the frame received
-    ffifo_inc_head(&state->rx.ffifo, config->rx.count);
-    state->rx.count++;
-    ffifo_data_received(&config->rx, &state->rx.ffifo);
+    for(u32 frames = 0; frames < config->rx.count/2; frames++){
+        ffifo_inc_head(&state->rx.ffifo, config->rx.count);
+        state->rx.count++;
+        ffifo_data_received(&config->rx, &state->rx.ffifo);
+    }
 
     return 1;
 }
@@ -102,7 +106,7 @@ int stream_ffifo_open(const devfs_handle_t * handle){
     ret = config->device->driver.open(&config->device->handle);
     if( ret <  0 ){ return ret; }
 
-    //is device a streaming device?
+    //is device a streaming device? --does it support MCU_EVENT_FLAG_HIGH and MCU_EVENT_FLAG_LOW
 
     ret = ffifo_open_local(&config->tx, &state->tx.ffifo);
     if( ret < 0 ){ return ret;}
@@ -116,7 +120,6 @@ int stream_ffifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
     stream_ffifo_info_t * info = ctl;
     const stream_ffifo_attr_t * attr = ctl;
     mcu_action_t * action = ctl;
-    int result;
 
     switch(request){
 
@@ -236,7 +239,8 @@ int stream_ffifo_read(const devfs_handle_t * handle, devfs_async_t * async){
         return SYSFS_SET_RETURN(EINVAL);
     }
 
-    return ffifo_read_local(&(config->rx), &(state->rx.ffifo), async, 1);
+    //this will never need to execute a callback because the FIFO is written by hardware
+    return ffifo_read_local(&(config->rx), &(state->rx.ffifo), async, 0);
 }
 
 int stream_ffifo_write(const devfs_handle_t * handle, devfs_async_t * async){
@@ -247,7 +251,8 @@ int stream_ffifo_write(const devfs_handle_t * handle, devfs_async_t * async){
         return SYSFS_SET_RETURN(EINVAL);
     }
 
-    return ffifo_write_local(&(config->tx), &(state->tx.ffifo), async, 1);
+    //this will never need to execute a callback because the FIFO is read by hardware
+    return ffifo_write_local(&(config->tx), &(state->tx.ffifo), async, 0);
 }
 
 int stream_ffifo_close(const devfs_handle_t * handle){

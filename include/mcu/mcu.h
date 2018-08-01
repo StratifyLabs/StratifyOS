@@ -93,6 +93,7 @@ typedef struct MCU_PACK {
     u16 irq_middle_prio /* Middle priority value */;
     u16 usb_logical_endpoint_count /* Number of logical endpoints */;
     u16 delay_factor /* factor to multiply by when calculating delays (depends on memory performance) */;
+    const char * git_hash /* Pointer to git hash string */;
 } mcu_config_t;
 
 extern const mcu_config_t mcu_config;

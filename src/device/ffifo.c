@@ -339,19 +339,20 @@ int ffifo_read_local(const ffifo_config_t * config, ffifo_state_t * state, devfs
 
     //reads need to be a integer multiple of the frame size
     if( (async->nbyte % config->frame_size) != 0 ){
-        return SYSFS_SET_RETURN(EINVAL);
-    }
+        bytes_read = SYSFS_SET_RETURN(EINVAL);
+    } else {
 
-    bytes_read = ffifo_read_buffer(config, state, async->buf, async->nbyte); //see if there are bytes in the buffer
-    if ( bytes_read == 0 ){
-        if( (async->flags & O_NONBLOCK) || (state->atomic_position.access.tail == config->count) ){
-            bytes_read = SYSFS_SET_RETURN(EAGAIN);
-        } else {
-            state->transfer_handler.read = async;
+        bytes_read = ffifo_read_buffer(config, state, async->buf, async->nbyte); //see if there are bytes in the buffer
+        if ( bytes_read == 0 ){
+            if( (async->flags & O_NONBLOCK) || (state->atomic_position.access.tail == config->count) ){
+                bytes_read = SYSFS_SET_RETURN(EAGAIN);
+            } else {
+                state->transfer_handler.read = async;
+            }
+        } else if( (bytes_read > 0) && allow_callback ){
+            //see if anything needs to write the FIFO
+            ffifo_data_transmitted(config, state);
         }
-    } else if( (bytes_read > 0) && allow_callback ){
-        //see if anything needs to write the FIFO
-        ffifo_data_transmitted(config, state);
     }
 
     if( bytes_read != 0 ){
@@ -368,21 +369,20 @@ int ffifo_write_local(const ffifo_config_t * config, ffifo_state_t * state, devf
 
     DEVFS_DRIVER_IS_BUSY(state->transfer_handler.write, async);
 
-
     //writes need to be a integer multiple of the frame size
     if( (async->nbyte % config->frame_size) != 0 ){
-        return SYSFS_SET_RETURN(EINVAL);
-    }
-
-    bytes_written = ffifo_write_buffer(config, state, async->buf_const, async->nbyte); //see if there are bytes in the buffer
-    if ( bytes_written == 0 ){
-        if( async->flags & O_NONBLOCK ){
-            bytes_written = SYSFS_SET_RETURN(EAGAIN);
-        } else {
-            state->transfer_handler.write = async;
+        bytes_written = SYSFS_SET_RETURN(EINVAL);
+    } else {
+        bytes_written = ffifo_write_buffer(config, state, async->buf_const, async->nbyte); //see if there are bytes in the buffer
+        if ( bytes_written == 0 ){
+            if( async->flags & O_NONBLOCK ){
+                bytes_written = SYSFS_SET_RETURN(EAGAIN);
+            } else {
+                state->transfer_handler.write = async;
+            }
+        } else if( (bytes_written > 0) && allow_callback ){
+            ffifo_data_received(config, state);
         }
-    } else if( (bytes_written > 0) && allow_callback ){
-        ffifo_data_received(config, state);
     }
 
     if( bytes_written != 0 ){

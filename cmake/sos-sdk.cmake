@@ -173,4 +173,14 @@ function(sos_sdk_build_qt_lib PATH PROJECT CONFIG)
 	endif()
 endfunction()
 
+function(sos_get_git_hash)
+	execute_process(
+		COMMAND git log -1 --format=%h
+		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+		OUTPUT_VARIABLE GIT_HASH_OUTPUT_VARIABLE
+		OUTPUT_STRIP_TRAILING_WHITESPACE
+	)
+		set(SOS_GIT_HASH ${GIT_HASH_OUTPUT_VARIABLE} PARENT_SCOPE)
+endfunction()
+
 

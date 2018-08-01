@@ -70,7 +70,14 @@ int sys_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 		strncpy(info->stdout_name, sos_board_config.stdout_dev, NAME_MAX-1);
 		strncpy(info->name, sos_board_config.sys_name, NAME_MAX-1);
 		strncpy(info->trace_name, sos_board_config.trace_dev, NAME_MAX-1);
-		mcu_core_getserialno(&(info->serial));
+        if( sos_board_config.git_hash ){
+            strncpy(info->bsp_git_hash, sos_board_config.git_hash, 15);
+        }
+        strncpy(info->sos_git_hash, SOS_GIT_HASH, 15);
+        if( mcu_config.git_hash ){
+            strncpy(info->mcu_git_hash, mcu_config.git_hash, 15);
+        }
+        mcu_core_getserialno(&(info->serial));
         info->hardware_id = *((u32*)(&_text + BOOTLOADER_HARDWARE_ID_OFFSET/sizeof(u32)));
         return 0;
 	case I_SYS_GETTASK:

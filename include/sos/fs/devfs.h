@@ -124,7 +124,7 @@ int devfs_mcu_ioctl(const devfs_handle_t * handle,
     periph_request = _IOCTL_NUM(request);
 
     //check the MCU IDENT request
-    if( ident == _IOCTL_IDENT(request) ){
+    if( (ident == _IOCTL_IDENT(request)) || (request == I_MCU_SETACTION) ){
         if ( periph_request < ioctl_func_table_size ) {
             return ioctl_func_table[periph_request](handle, ctl);
         }

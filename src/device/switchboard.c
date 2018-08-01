@@ -274,9 +274,10 @@ int create_connection(const switchboard_config_t * config, switchboard_state_t *
 
     //start reading into the primary buffer -- mark it as used
     int result;
+    mcu_debug_log_info(MCU_DEBUG_DEVICE, "Starting %s -> %s", state->input.device->name, state->output.device->name);
     if( (result = read_then_write_until_async(state + id)) < 0 ){
         abort_connection(state + id);
-        mcu_debug_log_info(MCU_DEBUG_DEVICE, "RW failed %d (0x%lX), %d", SYSFS_GET_RETURN(result), (u32)-1*SYSFS_GET_RETURN(result), SYSFS_GET_RETURN_ERRNO(result));
+        mcu_debug_log_error(MCU_DEBUG_DEVICE, "RW failed %d (0x%lX), %d", SYSFS_GET_RETURN(result), (u32)-1*SYSFS_GET_RETURN(result), SYSFS_GET_RETURN_ERRNO(result));
         return SYSFS_SET_RETURN(EIO);
     }
 
@@ -533,6 +534,7 @@ int check_for_stopped_or_destroyed(switchboard_state_t * state){
     if( state->nbyte < 0 ){
         u32 o_flags = 0;
         u32 o_events = MCU_EVENT_FLAG_STOP;
+        mcu_debug_log_warning(MCU_DEBUG_DEVICE, "Stopping %s -> %s", state->input.device->name, state->output.device->name);
         if( (state->o_flags & SWITCHBOARD_FLAG_IS_DESTROYED) == 0 ){
             //this was destroyed by the user
             o_flags = state->o_flags | SWITCHBOARD_FLAG_IS_STOPPED_ON_ERROR;
@@ -576,13 +578,18 @@ int read_then_write_until_async(switchboard_state_t * state){
 
 int handle_data_ready(void * context, const mcu_event_t * event){
     switchboard_state_t * state = context;
+    u32 o_events = event->o_events;
 
     //not waiting for ASYNC data to read anymore
     state->o_flags &= ~SWITCHBOARD_FLAG_IS_READING_ASYNC;
 
-    if( state->input.async.nbyte < 0 ){
-        //error -- no more action
-        state->nbyte = state->input.async.nbyte;
+    if( (state->input.async.nbyte < 0) || (o_events & (MCU_EVENT_FLAG_CANCELED|MCU_EVENT_FLAG_ERROR)) ){
+        //write error occurred -- abort connection
+        if( state->input.async.nbyte ){
+            state->nbyte = state->input.async.nbyte;
+        } else {
+            state->nbyte = SYSFS_SET_RETURN(EIO);
+        }
     } else {
         complete_read(state, state->input.async.nbyte);
     }
@@ -595,12 +602,17 @@ int handle_data_ready(void * context, const mcu_event_t * event){
 
 int handle_write_complete(void * context, const mcu_event_t * event){
     switchboard_state_t * state = context;
+    u32 o_events = event->o_events;
 
     //not waiting for ASYNC data to write anymore
     state->o_flags &= ~SWITCHBOARD_FLAG_IS_WRITING_ASYNC;
-    if( state->output.async.nbyte < 0 ){
+    if( (state->output.async.nbyte < 0) || (o_events & (MCU_EVENT_FLAG_CANCELED|MCU_EVENT_FLAG_ERROR)) ){
         //write error occurred -- abort connection
-        state->nbyte = state->output.async.nbyte;
+        if( state->output.async.nbyte ){
+            state->nbyte = state->output.async.nbyte;
+        } else {
+            state->nbyte = SYSFS_SET_RETURN(EIO);
+        }
     } else {
         complete_write(state); //this frees the buffer that was just written
 

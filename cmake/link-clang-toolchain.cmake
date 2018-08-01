@@ -1,9 +1,10 @@
 
 
 if(TOOLCHAIN_DIR)
-  message(STATUS "User provided toolchain directory" ${TOOLCHAIN_DIR})
+	message(STATUS "User provided toolchain directory" ${TOOLCHAIN_DIR})
 else()
 	set(TOOLCHAIN_DIR "/Applications/StratifyLabs-SDK/Tools/gcc")
+	set(TOOLCHAIN_LIB_DIR "${TOOLCHAIN_DIR}/lib" CACHE INTERNAL "GCC TOOLCHAIN LIBRARY DIR")
 endif()
 
 message(STATUS "Use Clang toolchain install dir: " ${TOOLCHAIN_DIR})

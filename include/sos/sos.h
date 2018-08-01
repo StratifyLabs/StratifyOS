@@ -587,6 +587,7 @@ typedef struct MCU_PACK {
 	const sos_socket_api_t * socket_api /*! Socket API (zero if sockets are not supported) */;
 	void (*trace_event)(void * event) /*! This will trace an event (zero if not supported) */;
 	void (*request)(void) /*! Send an interrupt request to the link master (0 if not supported) */;
+    const char * git_hash /*! A pointer to the git hash string */;
 } sos_board_config_t;
 
 #define SOS_DEFAULT_START_STACK_SIZE 2048

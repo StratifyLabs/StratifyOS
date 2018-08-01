@@ -2,6 +2,8 @@
 
 set(SOS_BUILD_ARCH ${SOS_BSP_ARCH})
 include(${SOS_TOOLCHAIN_CMAKE_PATH}/sos-build-flags.cmake)
+include(${SOS_TOOLCHAIN_CMAKE_PATH}/sos-sdk.cmake)
+sos_get_git_hash()
 
 if(SOS_BSP_VERBOSE)
 	set(CMAKE_VERBOSE_MAKEFILE 1)
@@ -60,7 +62,7 @@ add_custom_target(size_${SOS_BSP_CONFIG} DEPENDS asm_${SOS_BSP_NAME}_${SOS_BSP_C
 add_custom_target(${SOS_BSP_CONFIG} ALL DEPENDS size_${SOS_BSP_CONFIG})
 
 
-target_compile_definitions(${BUILD_TARGET} PUBLIC __StratifyOS__ __${BUILD_TYPE} __${BULD_ARCH} __HARDWARE_ID=${SOS_BSP_HARDWARD_ID} __${SOS_BSP_DEVICE_FAMILY} __${SOS_BSP_DEVICE} ${SOS_BSP_DEFINITIONS})
+target_compile_definitions(${BUILD_TARGET} PUBLIC __StratifyOS__ __${BUILD_TYPE} __${BULD_ARCH} __HARDWARE_ID=${SOS_BSP_HARDWARD_ID} __${SOS_BSP_DEVICE_FAMILY} __${SOS_BSP_DEVICE} ${SOS_BSP_DEFINITIONS} SOS_GIT_HASH="${SOS_GIT_HASH}")
 target_link_libraries(${BUILD_TARGET} ${BUILD_EXTRA_LIBRARIES} ${BUILD_LIBRARIES})
 set_target_properties(${BUILD_TARGET} PROPERTIES LINK_FLAGS ${LINKER_FLAGS})
 target_compile_options(${BUILD_TARGET} PUBLIC ${BUILD_FLAGS})

@@ -42,7 +42,7 @@ extern "C" {
 #endif
 
 
-#define SYS_VERSION (0x030000)
+#define SYS_VERSION (0x030100)
 #define SYS_IOC_CHAR 's'
 
 enum {
@@ -71,7 +71,10 @@ typedef struct MCU_PACK {
 	u32 o_flags /*!  System flags */;
 	u32 hardware_id /*! Hardware ID of the board */;
 	char trace_name[LINK_NAME_MAX] /*! Name of device used for tracing */;
-	u32 resd[32];
+    char bsp_git_hash[16] /*! Git Hash for the board support package */;
+    char sos_git_hash[16] /*! Git Hash for the SOS build */;
+    char mcu_git_hash[16] /*! Git Hash for the linked MCU library */;
+    u32 resd[20];
 } sys_info_t;
 
 /*! \details This structure defines the system attributes.
