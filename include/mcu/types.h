@@ -22,7 +22,21 @@
 #include <stdbool.h>
 #if !defined __link
 #include <sys/stat.h>
+#define F32X "%lX"
+#define F3208X "%08lX"
+#define F32D "%ld"
+#define F32U "%lu"
+#define FINTD "%d"
+#define FINTU "%u"
+#else
+#define F32X "%X"
+#define F3208X "%08X"
+#define F32D "%d"
+#define F32U "%u"
+#define FINTD "%d"
+#define FINTU "%u"
 #endif
+
 
 #include "sos/ioctl.h"
 

@@ -55,7 +55,7 @@ typedef struct {
 int aio_cancel(int fildes /*! the file descriptor */,
 		struct aiocb * aiocbp /*! a pointer to the AIO data structure */){
 
-	//this needs a special ioctl request to cancel current operations
+    //this needs a special ioctl request to cancel current operations -- use MCU_SET_ACTION
 
 	errno = ENOTSUP;
 	return -1;
@@ -68,10 +68,10 @@ int aio_cancel(int fildes /*! the file descriptor */,
  *  - Other interface specific error
  */
 int aio_error(const struct aiocb * aiocbp /*! a pointer to the AIO data struture */){
-	if ( aiocbp->op.buf != NULL ){
+    if ( (volatile void *)aiocbp->async.buf != NULL ){
 		return EINPROGRESS;
 	} else {
-		return aiocbp->op.nbyte; //this is where the error value is stored in case of failure
+        return aiocbp->async.nbyte; //this is where the error value is stored in case of failure
 	}
 }
 
@@ -125,7 +125,7 @@ int aio_write(struct aiocb * aiocbp /*! a pointer to the AIO data struture */){
  * (or if the operation is not yet complete).  \ref aio_error() can be used to determine the error.
  */
 ssize_t aio_return(struct aiocb * aiocbp /*! a pointer to the AIO data struture */){
-	if ( aiocbp->op.buf != NULL ){
+    if ( aiocbp->async.buf != NULL ){
 		return -1;
 	} else {
 		return aiocbp->aio_nbytes; //this is the number of bytes that was read or written
@@ -148,13 +148,13 @@ void root_suspend(void * args){
 		if (p->list[i] != NULL ){
 
 			//first check to see if we block on aio suspend (if anything is complete don't block)
-			if ( (p->list[i]->op.buf == NULL) && (p->block_on_all == false) ){ //if op.buf is NULL the operation is complete
+            if ( (p->list[i]->async.buf == NULL) && (p->block_on_all == false) ){ //if op.buf is NULL the operation is complete
 				suspend = false;
 				break;
 			}
 
 			//now check to see if we block on listio suspend (if anything is incomplete block)
-			if ( (p->list[i]->op.buf != NULL) && (p->block_on_all == true) ){
+            if ( (p->list[i]->async.buf != NULL) && (p->block_on_all == true) ){
 				suspend = true;
 			}
 
@@ -270,12 +270,12 @@ int sysfs_aio_data_transfer_callback(void * context, const mcu_event_t * event){
 	bool wakeup;
 	aiocbp = context;
 	sysfs_aio_suspend_t * p;
-	aiocbp->aio_nbytes = aiocbp->op.nbyte;
-	aiocbp->op.buf = NULL;
-	aiocbp->op.nbyte = 0;
+    aiocbp->aio_nbytes = aiocbp->async.nbyte;
+    aiocbp->async.buf = NULL;
+    aiocbp->async.nbyte = 0;
 
 	//Check to see if the thread is suspended on aio -- the block object is a list of aiocb -- check if aiocbp is in list
-	tid = aiocbp->op.tid;
+    tid = aiocbp->async.tid;
 	if( tid >= task_get_total() ){
 		//This is not a valid task id
 		return 0;
@@ -296,7 +296,7 @@ int sysfs_aio_data_transfer_callback(void * context, const mcu_event_t * event){
 			} else {
 				wakeup = true;
 				for(i=0; i < p->nent; i++){
-					if ( p->list[i]->op.buf != NULL ){ //operation is not complete
+                    if ( p->list[i]->async.buf != NULL ){ //operation is not complete
 						//don't wakeup because this operation is not complete
 						wakeup = false;
 					}

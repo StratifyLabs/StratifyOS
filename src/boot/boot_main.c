@@ -19,8 +19,6 @@
 #include "boot_config.h"
 
 
-#define SW_BOOT_APP_OVERRIDE 0x55664422
-
 void exec_bootloader(void * args){
 	//write SW location with key and then reset
 	u32 * bootloader_start = (u32*)boot_board_config.sw_req_loc;
@@ -57,8 +55,9 @@ void led_flash(){
 }
 
 void led_flash_run_bootloader(){
-	int i;
-	for(i=0; i < 3; i++){
+    int i;
+    for(i=0; i < 3; i++){
+
         sos_led_root_enable(0);
         cortexm_delay_ms(50);
         sos_led_root_disable(0);
@@ -82,7 +81,6 @@ int boot_main(){
 	if ( check_run_app() ){
         boot_event(BOOT_EVENT_RUN_APP, 0);
 		app_reset();
-		while(1);
 	} else {
         boot_event(BOOT_EVENT_RUN_BOOTLOADER, 0);
 		run_bootloader();
@@ -101,7 +99,6 @@ void run_bootloader(){
 	dstr("LINK Start\n");
 
 	boot_link_update((void*)boot_board_config.link_transport_driver);
-	while(1);
 }
 
 /*! \details This function checks to see if the application should be run
@@ -110,7 +107,7 @@ void run_bootloader(){
  */
 int check_run_app(){
 	//! \todo Check to see if end of text is less than app program start
-	u32 * bootloader_start = (u32*)boot_board_config.sw_req_loc;
+    volatile u32 * bootloader_start = (u32*)boot_board_config.sw_req_loc;
 	u32 hw_req_value;
     u32 pio_value;
 	pio_attr_t pio_attr;
@@ -118,7 +115,7 @@ int check_run_app(){
 
     if ( (u32)stack_ptr == 0xFFFFFFFF ){
 		//code is not valid
-		*bootloader_start = 0;
+        *bootloader_start = 0;
 		return 0;
 	}
 
@@ -170,6 +167,7 @@ static int debug_write_func(const void * buf, int nbyte){
 
 void init_hw(){
 
+    boot_event(BOOT_EVENT_INIT_CLOCK, 0);
     mcu_core_initclock(1);
 
 #if defined DEBUG_BOOTLOADER

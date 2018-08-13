@@ -32,7 +32,7 @@ static char Htoc(int nibble);
 static char htoc(int nibble);
 static int ditoa(char dest[BUF_SIZE], s32 num, int width);
 static int dutoa(char dest[BUF_SIZE], u32 num, int base, char upper, int width);
-static void dwrite(char * str);
+static void dwrite(const char * str);
 
 void dsetmode(int leading_zeros){
 	width = leading_zeros;
@@ -56,7 +56,7 @@ int duint(unsigned int x){
 	return 0;
 }
 
-int dstr(char * str){
+int dstr(const char * str){
 	dwrite(str);
 	return 0;
 }
@@ -82,7 +82,7 @@ int dbin(int x){
 	return 0;
 }
 
-void dwrite(char * str){
+void dwrite(const char * str){
 	if ( writefunc != NULL ){
 		writefunc(str, strlen(str));
 	}

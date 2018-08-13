@@ -259,6 +259,7 @@ int link_phy_getname(char * dest, const char * last, int len){
 	DIR * dirp;
 	int pre_len;
 	int past_last;
+    char entry_path[256];
 
 
 	dirp = opendir("/dev");
@@ -277,6 +278,8 @@ int link_phy_getname(char * dest, const char * last, int len){
 		if( strncmp(TTY_DEV_PREFIX, entry.d_name, pre_len) == 0 ){
 			//the entry matches the prefix
 
+            snprintf(entry_path, 255, "/dev/%s", entry.d_name);
+
 			if( past_last == true ){
 				if( strlen(entry.d_name) > len ){
 					//name won't fit in destination
@@ -284,10 +287,10 @@ int link_phy_getname(char * dest, const char * last, int len){
 					return LINK_PHY_ERROR;
 				}
 
-				strcpy(dest, entry.d_name);
+                strncpy(dest, entry_path, len);
 				closedir(dirp);
 				return 0;
-			} else if( strcmp(last, entry.d_name) == 0 ){
+            } else if( strcmp(last, entry_path) == 0 ){
 				past_last = true;
 			}
 		}
@@ -314,8 +317,6 @@ link_transport_phy_t link_phy_open(const char * name, int baudrate){
 	fd = open(name, O_RDWR | O_NOCTTY | O_NONBLOCK);
 	if( fd < 0 ){
 		link_error("Failed to open %s %d", name, errno);
-		perror("Failed to open");
-		fflush(stderr);
 		return LINK_PHY_OPEN_ERROR;
 	}
 
@@ -372,8 +373,6 @@ int link_phy_status(link_transport_phy_t handle){
 
     if( access(phy->device_path, F_OK) < 0 ){
         //file does not exist
-
-        printf("NO Access to %s\n", phy->device_path);
         fflush(stdout);
 
         return LINK_PHY_ERROR;

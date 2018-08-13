@@ -33,7 +33,7 @@ int dint(int x);
 int duint(unsigned int x);
 /*! \details This function outputs a string using the write function.
  */
-int dstr(char * str);
+int dstr(const char * str);
 /*! \details This function converts x to a string (hex lowercase)
  * and outputs the string using the write function.
  */

@@ -59,16 +59,19 @@ link_transport_phy_t boot_link_transport_usb_open(const char * name,
 
 	dstr("OPEN USB\n");
 	//open USB
-	cortexm_delay_ms(250);
+    cortexm_delay_ms(100);
 
 	if( mcu_usb_open(context->handle) < 0 ){
 		return -1;
 	}
 
+    cortexm_delay_ms(100);
 
 	if( mcu_usb_setattr(context->handle, (void*)usb_attr) < 0 ){
-		return -1;
+        return -1;
 	}
+
+    cortexm_delay_ms(100);
 
 	dstr("USB INIT\n");
 	//initialize USB device

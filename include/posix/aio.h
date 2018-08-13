@@ -42,7 +42,7 @@ struct aiocb {
 	int aio_reqprio /*! \brief The AIO request priority */;
 	struct sigevent aio_sigevent /*! \brief The AIO sigevent */;
 	int aio_lio_opcode /*! \brief The AIO list opcode */;
-	devfs_async_t op;
+    devfs_async_t async;
 	//list
 	//items in list
 };

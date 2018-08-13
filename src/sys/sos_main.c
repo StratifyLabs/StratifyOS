@@ -59,7 +59,9 @@ int _main(){
  *
  */
 void init_hw(){
-	mcu_core_initclock(1);
+    if( mcu_core_initclock(1) < 0 ){
+        while(1){}
+    }
 	mcu_fault_init();
     cortexm_enable_interrupts(); //Enable the interrupts
 }

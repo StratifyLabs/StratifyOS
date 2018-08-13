@@ -117,7 +117,7 @@ int usbd_standard_request_handle_setup(usbd_control_t * context){
 		break;
 
 	case USBD_REQUEST_STANDARD_SET_CONFIGURATION:
-		if ( usbd_standard_request_set_config(context) ) {
+        if ( usbd_standard_request_set_config(context) ) {
 			usbd_control_statusin_stage(context);
 			return 1;
 		}
@@ -305,7 +305,7 @@ u32 usbd_standard_request_set_config (usbd_control_t * context) {
 					//enable all the endpoints in the configuration
 				case USBD_DESCRIPTOR_TYPE_ENDPOINT:
 					if( alt_setting == 0 ){ //when setting the config, use default alt setting of 0
-						i = ((usbd_endpoint_descriptor_t *)dptr)->bEndpointAddress & USBD_EP_MASK;
+                        i = ((usbd_endpoint_descriptor_t *)dptr)->bEndpointAddress & USBD_EP_MASK;
 						j = usb_dev_decode_ep(context, i);
 						context->ep_mask |= j;
 						usbd_control_configure_endpoint(context->handle, (usbd_endpoint_descriptor_t *)dptr);
@@ -348,6 +348,7 @@ u32 usbd_standard_request_get_interface(usbd_control_t * context) {
 	if( context->setup_packet.bmRequestType.bitmap_t.recipient == USBD_REQUEST_TYPE_RECIPIENT_INTERFACE) {
 		if ((context->current_configuration != 0) && (context->setup_packet.wIndex.b[0] < context->num_interfaces)) {
 			context->data.dptr = context->alt_setting + context->setup_packet.wIndex.b[0];
+            context->data.nbyte = 1;
 		} else {
 			return 0;
 		}
@@ -447,7 +448,7 @@ u32 usbd_standard_request_get_descriptor(usbd_control_t * context) {
 
 
 	if( context->setup_packet.bmRequestType.bitmap_t.recipient == USBD_REQUEST_TYPE_RECIPIENT_DEVICE) {
-		switch (context->setup_packet.wValue.b[1]){
+        switch (context->setup_packet.wValue.b[1]){
 
 		case USBD_DESCRIPTOR_TYPE_DEVICE:
 			//give the device descriptor

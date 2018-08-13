@@ -70,7 +70,6 @@ int usbd_control_handler(void * context_object, const mcu_event_t * usb_event /*
     if ( o_events & MCU_EVENT_FLAG_SETUP ){
         //read the setup packet
         usbd_control_handler_setup_stage(context);
-
     }
 
     if ( o_events & MCU_EVENT_FLAG_SETUP ){
@@ -99,6 +98,7 @@ int usbd_control_handler(void * context_object, const mcu_event_t * usb_event /*
 
     } else if ( o_events & MCU_EVENT_FLAG_WRITE_COMPLETE ){
         if (usbd_control_setup_request_direction(context) == USBD_REQUEST_TYPE_DIRECTION_DEVICE_TO_HOST) {
+
 
             if( execute_class_handler(context, usb_event) ){
                 return 1;
