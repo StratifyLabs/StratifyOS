@@ -6,6 +6,9 @@ set(TOOLCHAIN_HOST i686-w64-mingw32 CACHE INTERNAL "" FORCE)
 set(TOOLCHAIN_DIR "C:/Qt-5.9/Tools/mingw530_32")
 set(TOOLCHAIN_EXEC_SUFFIX .exe)
 
+set(SOS_SDK_LIB_DIR ${SOS_TOOLCHAIN_CMAKE_PATH}/../../lib)
+
+
 set(SDK_DIR C:/StratifyLabs-SDK/Tools/gcc)
 
 include(${CMAKE_CURRENT_LIST_DIR}/sos-gcc-toolchain.cmake)

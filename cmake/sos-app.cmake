@@ -23,9 +23,9 @@ endif()
 
 if(SOS_APP_ARCH STREQUAL "link")
 	set(BUILD_TARGET ${SOS_APP_NAME})
-	set(BUILD_LIBRARIES ${SOS_APP_LIBRARIES} api sos_link)
+	set(BUILD_LIBRARIES api ${SOS_APP_LIBRARIES} sos_link)
 	set(BUILD_FLAGS ${BUILD_OPTIMIZATION})
-	set(LINKER_FLAGS "-L${TOOLCHAIN_LIB_DIR}")
+	set(LINKER_FLAGS "-L${TOOLCHAIN_LIB_DIR} -L${SOS_SDK_LIB_DIR}")
 
 	add_executable(${BUILD_TARGET} ${SOS_APP_SOURCELIST} StratifySettings.json StratifyLocalSettings.json)
 
