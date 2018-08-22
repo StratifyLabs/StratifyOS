@@ -27,6 +27,7 @@
  */
 #if !defined SOS_BOOTSTRAP_SOCKETS
 #include <lwip/netdb.h>
+#endif
 
 
 #endif /* POSIX_NETINET_IN_H_ */

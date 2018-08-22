@@ -100,7 +100,9 @@ void * boot_link_update(void * arg){
 
 		dstr("EXEC CMD: "); dint(data.op.cmd); dstr("\n");
 		if ( data.op.cmd < LINK_BOOTLOADER_CMD_TOTAL ){
-			boot_link_cmd_func_table[data.op.cmd](driver, &data);
+            data.reply.err_number = 0;
+            data.reply.err = 0;
+            boot_link_cmd_func_table[data.op.cmd](driver, &data);
 		} else {
 			data.reply.err = -1;
 			data.reply.err_number = EINVAL;
@@ -194,7 +196,9 @@ void boot_link_cmd_ioctl(link_transport_driver_t * driver, link_data_t * args){
 		if ( err == -1 ){
 			args->op.cmd = 0;
 			args->reply.err = -1;
-		}
+        } else {
+            args->reply.err = 0;
+        }
 
 		break;
 
