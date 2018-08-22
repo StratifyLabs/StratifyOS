@@ -37,7 +37,7 @@ typedef u32 fd_set;
 struct sockaddr;
 struct msghdr;
 struct iovec;
-#endif //HAVE_LWIP_SOCKETS_H
+#endif //SOS_BOOTSTRAP_SOCKETS
 
 #if defined __cplusplus
 extern "C" {

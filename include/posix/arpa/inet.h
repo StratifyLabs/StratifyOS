@@ -51,7 +51,7 @@ typedef u16 in_port_t;
 #define inet_ntoa_r(addr, buf, buflen)  ip4addr_ntoa_r((const ip4_addr_t*)&(addr), buf, buflen)
 
 
-#endif //HAVE_LWIP_SOCKETS_H
+#endif //SOS_BOOTSTRAP_SOCKETS
 
 
 #endif /* POSIX_ARPA_INET_H_ */
