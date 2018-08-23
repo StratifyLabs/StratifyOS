@@ -235,6 +235,8 @@ int stream_ffifo_read(const devfs_handle_t * handle, devfs_async_t * async){
     const stream_ffifo_config_t * config = handle->config;
     stream_ffifo_state_t * state = handle->state;
 
+    if( config->rx.buffer == 0 ){ return SYSFS_SET_RETURN(ENOSYS); }
+
     if( async->nbyte % config->rx.frame_size != 0 ){
         return SYSFS_SET_RETURN(EINVAL);
     }
@@ -246,6 +248,8 @@ int stream_ffifo_read(const devfs_handle_t * handle, devfs_async_t * async){
 int stream_ffifo_write(const devfs_handle_t * handle, devfs_async_t * async){
     const stream_ffifo_config_t * config = handle->config;
     stream_ffifo_state_t * state = handle->state;
+
+    if( config->tx.buffer == 0 ){ return SYSFS_SET_RETURN(ENOSYS); }
 
     if( async->nbyte % config->tx.frame_size != 0 ){
         return SYSFS_SET_RETURN(EINVAL);
