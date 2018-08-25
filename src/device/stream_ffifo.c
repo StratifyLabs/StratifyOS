@@ -42,14 +42,16 @@ int event_write_complete(void * context, const mcu_event_t * event){
     }
 
     nbyte = state->tx.async.nbyte/2;
-
-    for(u32 frames = 0; frames < config->tx.count/2; frames++){
+    u32 frame_count = config->rx.count;
+    if( event->o_events & (MCU_EVENT_FLAG_LOW | MCU_EVENT_FLAG_HIGH) ){
+        frame_count >>= 1;
+    }
+    for(u32 frames = 0; frames < frame_count; frames++){
+        state->tx.count++;
         if( ffifo_state->atomic_position.access.head == ffifo_state->atomic_position.access.tail ){
             //no data to read -- send a zero frame -- this isn't quite right
             memset(state->tx.async.buf, 0, nbyte);
         } else {
-            state->tx.count++;
-
             //increment the tail for the frame that was written
             if( ffifo_state->atomic_position.access.tail == config->tx.count ){
                 ffifo_state->atomic_position.access.tail = ffifo_state->atomic_position.access.head;
@@ -89,7 +91,11 @@ int event_data_ready(void * context, const mcu_event_t * event){
     }
 
     //increment the head for the frame received
-    for(u32 frames = 0; frames < config->rx.count/2; frames++){
+    u32 frame_count = config->rx.count;
+    if( o_events & (MCU_EVENT_FLAG_LOW | MCU_EVENT_FLAG_HIGH) ){
+        frame_count >>= 1;
+    }
+    for(u32 frames = 0; frames < frame_count; frames++){
         ffifo_inc_head(&state->rx.ffifo, config->rx.count);
         state->rx.count++;
         ffifo_data_received(&config->rx, &state->rx.ffifo);
@@ -102,6 +108,9 @@ int stream_ffifo_open(const devfs_handle_t * handle){
     const stream_ffifo_config_t * config = handle->config;
     stream_ffifo_state_t * state = handle->state;
     int ret;
+
+    if( config == 0 ){ return SYSFS_SET_RETURN(ENOSYS); }
+    if( state == 0 ){ return SYSFS_SET_RETURN(ENOSYS); }
 
     ret = config->device->driver.open(&config->device->handle);
     if( ret <  0 ){ return ret; }
@@ -131,6 +140,7 @@ int stream_ffifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
             mcu_debug_log_info(MCU_DEBUG_DEVICE, "Start Stream");
 
             if( config->tx.buffer ){
+                //The application writes data to the FIFO that is then read by the hardware and written to a device
                 state->tx.async.loc = 0;
                 state->tx.async.tid = task_get_current();
                 state->tx.async.flags = O_RDWR;
@@ -151,9 +161,9 @@ int stream_ffifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 
                 //ffifo is empty so the head must be incremented on start
                 ffifo_inc_head(&state->tx.ffifo, config->tx.count);
-                memset(state->tx.async.buf, 0, state->tx.async.nbyte);
 
                 //start writing data to the I2S -- zeros are written if there is no data in the fifo
+                memset(state->tx.async.buf, 0, state->tx.async.nbyte);
                 if( config->device->driver.write(&config->device->handle, &(state->tx.async)) < 0 ){
                     return SYSFS_SET_RETURN(EIO);
                 }
@@ -161,8 +171,7 @@ int stream_ffifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 
 
             if( config->rx.buffer ){
-
-                //the driver writes the I2S RX FIFO that is read from the I2S
+                //the application reads the RX buffer the is written by the device and data that is read from hardware
                 state->rx.async.loc = 0;
                 state->rx.async.tid = task_get_current();
                 state->rx.async.flags = O_RDWR;
@@ -178,6 +187,8 @@ int stream_ffifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
                 state->rx.ffifo.transfer_handler.write = 0;
                 ffifo_flush(&(state->rx.ffifo));
 
+
+                mcu_debug_printf("Start reading %p %d\n", state->rx.async.buf, state->rx.async.nbyte);
                 //on the first call the FIFO is full of zeros and returns immediately
                 if( config->device->driver.read(&config->device->handle, &(state->rx.async)) < 0 ){
                     return SYSFS_SET_RETURN(EIO);

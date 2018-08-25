@@ -83,6 +83,8 @@ typedef struct MCU_PACK {
 MCU_I2S_DRIVER_DECLARATION(mcu_i2s);
 MCU_I2S_DRIVER_DECLARATION(mcu_i2s_spi);
 MCU_I2S_DRIVER_DECLARATION(mcu_i2s_spi_dma);
+MCU_I2S_DRIVER_DECLARATION(mcu_sai);
+MCU_I2S_DRIVER_DECLARATION(mcu_sai_dma);
 
 #define I2S_DEFINE_ATTR(attr_flags, \
     attr_freq, \

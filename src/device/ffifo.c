@@ -107,7 +107,7 @@ int ffifo_read_buffer(const ffifo_config_t * cfgp, ffifo_state_t * state, char *
     int i;
     u16 count = cfgp->count;
     u16 frame_size = cfgp->frame_size;
-    const void * frame;
+    char * frame;
     fifo_atomic_position_t atomic_position;
     int read_was_clobbered = 0;
     for(i=0; i < len; i += frame_size){
@@ -122,6 +122,15 @@ int ffifo_read_buffer(const ffifo_config_t * cfgp, ffifo_state_t * state, char *
             }
 
             frame = ffifo_get_frame(cfgp, atomic_position.access.tail);
+            static int zerop_count = 0;
+            u32 sum = 0;
+            for(u32 j = 0; j < frame_size; j++){
+                sum += frame[j];
+            }
+            if( sum == 0 ){
+                zerop_count++;
+                mcu_debug_printf("zero:%d\n", zerop_count);
+            }
             memcpy(buf, frame, frame_size);
             atomic_position.access.tail++;
             if( atomic_position.access.tail == count ){
@@ -205,6 +214,7 @@ int ffifo_getinfo(ffifo_info_t * info, const ffifo_config_t * config, ffifo_stat
 void ffifo_data_received(const ffifo_config_t * handle, ffifo_state_t * state){
     int bytes_read;
     if( state->transfer_handler.read != NULL ){
+        mcu_debug_printf("exec\n");
         if( (bytes_read = ffifo_read_buffer(handle, state, state->transfer_handler.read->buf, state->transfer_handler.read->nbyte)) > 0 ){
             devfs_execute_read_handler(&state->transfer_handler, 0, bytes_read, MCU_EVENT_FLAG_DATA_READY);
         }
