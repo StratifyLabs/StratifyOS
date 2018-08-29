@@ -246,10 +246,6 @@ int stream_ffifo_read(const devfs_handle_t * handle, devfs_async_t * async){
 
     if( config->rx.buffer == 0 ){ return SYSFS_SET_RETURN(ENOSYS); }
 
-    if( async->nbyte % config->rx.frame_size != 0 ){
-        return SYSFS_SET_RETURN(EINVAL);
-    }
-
     //this will never need to execute a callback because the FIFO is written by hardware
     return ffifo_read_local(&(config->rx), &(state->rx.ffifo), async, 0);
 }
@@ -259,10 +255,6 @@ int stream_ffifo_write(const devfs_handle_t * handle, devfs_async_t * async){
     stream_ffifo_state_t * state = handle->state;
 
     if( config->tx.buffer == 0 ){ return SYSFS_SET_RETURN(ENOSYS); }
-
-    if( async->nbyte % config->tx.frame_size != 0 ){
-        return SYSFS_SET_RETURN(EINVAL);
-    }
 
     //this will never need to execute a callback because the FIFO is read by hardware
     return ffifo_write_local(&(config->tx), &(state->tx.ffifo), async, 0);

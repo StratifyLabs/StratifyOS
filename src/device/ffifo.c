@@ -117,7 +117,7 @@ int ffifo_read_buffer(const ffifo_config_t * cfgp, ffifo_state_t * state, char *
 
         if ( atomic_position.access.head != atomic_position.access.tail ){
 
-            if( atomic_position.access.tail == frame_size ){
+            if( atomic_position.access.tail == count ){
                 atomic_position.access.tail = atomic_position.access.head;
             }
 
