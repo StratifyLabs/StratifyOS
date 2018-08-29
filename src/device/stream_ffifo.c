@@ -38,11 +38,12 @@ int event_write_complete(void * context, const mcu_event_t * event){
 
     if(state->tx.async.nbyte < 0){
         state->tx.error = state->tx.async.nbyte;
+        mcu_debug_log_error(MCU_DEBUG_DEVICE, "error: %s():%d", __FUNCTION__, __LINE__);
         return 0;
     }
 
     nbyte = state->tx.async.nbyte/2;
-    u32 frame_count = config->rx.count;
+    u32 frame_count = config->tx.count;
     if( event->o_events & (MCU_EVENT_FLAG_LOW | MCU_EVENT_FLAG_HIGH) ){
         frame_count >>= 1;
     }
@@ -72,7 +73,6 @@ int event_data_ready(void * context, const mcu_event_t * event){
     stream_ffifo_state_t * state = handle->state;
     ffifo_state_t * ffifo_state = &state->rx.ffifo;
     u32 o_events = event->o_events;
-
 
     //check for errors or abort
     if( (state->rx.async.nbyte < 0) || (o_events & MCU_EVENT_FLAG_CANCELED) ){
@@ -187,8 +187,6 @@ int stream_ffifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
                 state->rx.ffifo.transfer_handler.write = 0;
                 ffifo_flush(&(state->rx.ffifo));
 
-
-                mcu_debug_printf("Start reading %p %d\n", state->rx.async.buf, state->rx.async.nbyte);
                 //on the first call the FIFO is full of zeros and returns immediately
                 if( config->device->driver.read(&config->device->handle, &(state->rx.async)) < 0 ){
                     return SYSFS_SET_RETURN(EIO);

@@ -478,7 +478,6 @@ int read_from_device(switchboard_state_t * state){
             int i;
             if( errno_value == EAGAIN ){
                 //read device is set up in non-blocking mode
-                mcu_debug_printf("no data\n");
                 if( state->o_flags & SWITCHBOARD_FLAG_IS_FILL_ZERO ){
                     memset(state->input.async.buf, 0, state->input.async.nbyte);
                 } else if( state->o_flags & SWITCHBOARD_FLAG_IS_FILL_LAST_8 ){
