@@ -22,7 +22,7 @@
 
 #include <errno.h>
 #include <unistd.h>
-#include "device/drive_sdio.h"
+#include "device/drive_mmc.h"
 #include "cortexm/cortexm.h"
 #include "mcu/debug.h"
 
@@ -30,25 +30,25 @@
 #include "cortexm/task.h"
 
 
-int drive_sdio_open(const devfs_handle_t * handle){
-    return mcu_sdio_open(handle);
+int drive_mmc_open(const devfs_handle_t * handle){
+    return mcu_mmc_open(handle);
 }
 
-int drive_sdio_read(const devfs_handle_t * handle, devfs_async_t * async){
-    return mcu_sdio_read(handle, async);
+int drive_mmc_read(const devfs_handle_t * handle, devfs_async_t * async){
+    return mcu_mmc_read(handle, async);
 }
 
 
-int drive_sdio_write(const devfs_handle_t * handle, devfs_async_t * async){
-    return mcu_sdio_write(handle, async);
+int drive_mmc_write(const devfs_handle_t * handle, devfs_async_t * async){
+    return mcu_mmc_write(handle, async);
 }
 
-int drive_sdio_ioctl(const devfs_handle_t * handle, int request, void * ctl){
+int drive_mmc_ioctl(const devfs_handle_t * handle, int request, void * ctl){
     drive_info_t * info = ctl;
     drive_attr_t * attr = ctl;
     u32 o_flags;
-    sdio_info_t sdio_info;
-    sdio_info_t sdio_attr;
+    mmc_info_t mmc_info;
+    mmc_info_t mmc_attr;
     int result;
 
     switch(request){
@@ -58,53 +58,53 @@ int drive_sdio_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 
             if( o_flags & DRIVE_FLAG_ERASE_BLOCKS ){
 
-                sdio_attr_t sdio_attr;
-                sdio_attr.o_flags = SDIO_FLAG_ERASE_BLOCKS;
-                sdio_attr.start = attr->start;
-                sdio_attr.end = attr->end;
-                return mcu_sdio_setattr(handle, &sdio_attr);
+                mmc_attr_t mmc_attr;
+                mmc_attr.o_flags = MMC_FLAG_ERASE_BLOCKS;
+                mmc_attr.start = attr->start;
+                mmc_attr.end = attr->end;
+                return mcu_mmc_setattr(handle, &mmc_attr);
             }
         }
 
         if( o_flags & DRIVE_FLAG_INIT ){
 
             //this will init the SD card with the default settings
-            return mcu_sdio_setattr(handle, 0);
+            return mcu_mmc_setattr(handle, 0);
         }
 
         break;
 
     case I_DRIVE_ISBUSY:
-        sdio_attr.o_flags = SDIO_FLAG_GET_CARD_STATE;
-        result = mcu_sdio_setattr(handle, &sdio_attr);
+        mmc_attr.o_flags = MMC_FLAG_GET_CARD_STATE;
+        result = mcu_mmc_setattr(handle, &mmc_attr);
 
         if( result < 0 ){ return result; }
 
-        return (result != SDIO_CARD_STATE_TRANSFER);
+        return (result != MMC_CARD_STATE_TRANSFER);
 
     case I_DRIVE_GETINFO:
-        result = mcu_sdio_getinfo(handle, &sdio_info);
+        result = mcu_mmc_getinfo(handle, &mmc_info);
         if( result < 0 ){ return result; }
 
         info->o_flags = DRIVE_FLAG_ERASE_BLOCKS | DRIVE_FLAG_INIT;
-        info->o_events = sdio_info.o_events;
-        info->address_size = sdio_info.block_size;
-        info->bitrate = sdio_info.freq;
-        info->erase_block_size = sdio_info.block_size;
+        info->o_events = mmc_info.o_events;
+        info->address_size = mmc_info.block_size;
+        info->bitrate = mmc_info.freq;
+        info->erase_block_size = mmc_info.block_size;
         info->erase_block_time = 0;
         info->erase_device_time = 0;
-        info->num_write_blocks = sdio_info.block_count;
-        info->write_block_size = sdio_info.block_size;
+        info->num_write_blocks = mmc_info.block_count;
+        info->write_block_size = mmc_info.block_size;
         break;
 
     default:
-        return mcu_sdio_ioctl(handle, request, ctl);
+        return mcu_mmc_ioctl(handle, request, ctl);
     }
     return 0;
 }
 
-int drive_sdio_close(const devfs_handle_t * handle){
-    return mcu_sdio_close(handle);
+int drive_mmc_close(const devfs_handle_t * handle){
+    return mcu_mmc_close(handle);
 }
 
 
