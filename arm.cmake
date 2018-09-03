@@ -60,6 +60,9 @@ include(${SOS_TOOLCHAIN_CMAKE_PATH}/sos-lib-std.cmake)
 install(DIRECTORY include/cortexm include/device include/mcu include/sos include/usbd DESTINATION include)
 install(DIRECTORY include/posix/ DESTINATION include)
 install(DIRECTORY ldscript/ DESTINATION lib/ldscripts)
+
+option(SOS_SKIP_CMAKE "Dont install the cmake files" ON)
+
 if(NOT SOS_SKIP_CMAKE)
 	install(DIRECTORY cmake/ DESTINATION cmake)
 endif()

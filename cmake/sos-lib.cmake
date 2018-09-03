@@ -1,5 +1,7 @@
 
 
+option(SOS_LIB_VERBOSE "Create Verbose Makefiles" OFF)
+
 set(SOS_BUILD_ARCH ${SOS_LIB_ARCH})
 include(${SOS_TOOLCHAIN_CMAKE_PATH}/sos-build-flags.cmake)
 include(${SOS_TOOLCHAIN_CMAKE_PATH}/sos-sdk.cmake)
