@@ -6,9 +6,9 @@
 #include "mcu/debug.h"
 
 #if MCU_DEBUG
-#define VERSION "3.7.0bd"
+#define VERSION "3.7.0d"
 #else
-#define VERSION "3.7.0b"
+#define VERSION "3.7.0"
 #endif
 
 #define BCD_VERSION 0x370
