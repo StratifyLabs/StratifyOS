@@ -39,6 +39,6 @@
 #define drive_mmc_close drive_mmc_dma_close
 
 
-#include "drive_sdio.c"
+#include "drive_mmc.c"
 
 
