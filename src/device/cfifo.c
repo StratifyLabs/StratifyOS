@@ -152,7 +152,7 @@ u32 get_ready_channels(const cfifo_config_t * config, cfifo_state_t * state){
 		fifo_config = config->fifo_config_array + i;
 		fifo_state = state->fifo_state_array + i;
 		fifo_getinfo(&info, fifo_config, fifo_state);
-		if( info.used > 0 ){
+        if( info.size_ready > 0 ){
 			o_ready |= (1<<i);
 		}
 	}

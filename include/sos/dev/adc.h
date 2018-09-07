@@ -72,6 +72,7 @@ typedef enum {
     ADC_FLAG_IS_TRIGGER_EINT_EDGE_RISING = (1<<9),
     ADC_FLAG_IS_TRIGGER_EINT_EDGE_FALLING = (1<<10),
     ADC_FLAG_IS_GROUP = (1<<11),
+    ADC_FLAG_IS_CONTINOUS_CONVERSION = (1<<12)
 } adc_flag_t;
 
 typedef struct MCU_PACK {

@@ -40,7 +40,7 @@ typedef struct MCU_PACK {
  *
  */
 typedef struct MCU_PACK {
-	u16 count /*! The number of frames in the buffer */;
+    u16 frame_count /*! The number of frames in the buffer */;
 	u16 frame_size /*! The size of each frame */;
 	char * buffer /*! A pointer to the buffer */;
 } ffifo_config_t;
@@ -93,7 +93,7 @@ void ffifo_cancel_async_read(ffifo_state_t * state);
 void ffifo_cancel_async_write(ffifo_state_t * state);
 
 
-#define FFIFO_DEFINE_CONFIG(ffifo_frame_count, ffifo_frame_size, ffifo_buffer) .count = ffifo_frame_count, .frame_size = ffifo_frame_size, .buffer = ffifo_buffer
+#define FFIFO_DEFINE_CONFIG(ffifo_frame_count, ffifo_frame_size, ffifo_buffer) .frame_count = ffifo_frame_count, .frame_size = ffifo_frame_size, .buffer = ffifo_buffer
 
 #define FFIFO_DECLARE_CONFIG_STATE(ffifo_name,\
     ffifo_frame_count, \

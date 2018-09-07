@@ -56,7 +56,7 @@ enum {
 typedef struct MCU_PACK {
 	u32 o_flags /*! Bitmask to indicate supported features */;
 	u32 size /*! The total number of bytes in the FIFO */;
-	u32 used /*! The number of bytes ready to be read from the FIFO */;
+    u32 size_ready /*! The number of bytes ready to be read from the FIFO */;
 	u32 overflow /*! If non-zero, indicates data received in the buffer was discarded */;
 	u32 resd[8];
 } fifo_info_t;

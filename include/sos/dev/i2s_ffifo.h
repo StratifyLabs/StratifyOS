@@ -46,7 +46,7 @@ typedef struct MCU_PACK {
 
 typedef struct MCU_PACK {
     ffifo_info_t ffifo;
-    u32 count;
+    u32 access_count;
     s32 error;
 } i2s_ffifo_channel_info_t;
 

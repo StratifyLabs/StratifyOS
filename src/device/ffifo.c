@@ -103,10 +103,10 @@ void * ffifo_get_tail(const ffifo_config_t * config, ffifo_state_t * state){
 }
 
 
-int ffifo_read_buffer(const ffifo_config_t * cfgp, ffifo_state_t * state, char * buf, int len){
+int ffifo_read_buffer(const ffifo_config_t * config, ffifo_state_t * state, char * buf, int len){
     int i;
-    u16 count = cfgp->count;
-    u16 frame_size = cfgp->frame_size;
+    u16 count = config->frame_count;
+    u16 frame_size = config->frame_size;
     char * frame;
     fifo_atomic_position_t atomic_position;
     int read_was_clobbered = 0;
@@ -121,7 +121,7 @@ int ffifo_read_buffer(const ffifo_config_t * cfgp, ffifo_state_t * state, char *
                 atomic_position.access.tail = atomic_position.access.head;
             }
 
-            frame = ffifo_get_frame(cfgp, atomic_position.access.tail);
+            frame = ffifo_get_frame(config, atomic_position.access.tail);
             memcpy(buf, frame, frame_size);
             atomic_position.access.tail++;
             if( atomic_position.access.tail == count ){
@@ -153,20 +153,20 @@ int ffifo_read_buffer(const ffifo_config_t * cfgp, ffifo_state_t * state, char *
 }
 
 
-int ffifo_write_buffer(const ffifo_config_t * cfgp, ffifo_state_t * state, const char * buf, int len){
+int ffifo_write_buffer(const ffifo_config_t * config, ffifo_state_t * state, const char * buf, int len){
     int i;
-    u16 count = cfgp->count;
-    u16 frame_size = cfgp->frame_size;
+    u16 frame_count = config->frame_count;
+    u16 frame_size = config->frame_size;
     void * frame;
     int writeblock = ffifo_is_writeblock(state);
     for(i=0; i < len; i+=frame_size){
 
-        if( ffifo_is_write_ok(state, count, writeblock) ){
-            frame = ffifo_get_frame(cfgp, state->atomic_position.access.head);
+        if( ffifo_is_write_ok(state, frame_count, writeblock) ){
+            frame = ffifo_get_frame(config, state->atomic_position.access.head);
             memcpy(frame, buf, frame_size);
 
             //don't inc head until the data is copied
-            ffifo_inc_head(state, count);
+            ffifo_inc_head(state, frame_count);
             buf += frame_size;
         } else {
             break;
@@ -183,17 +183,17 @@ void ffifo_flush(ffifo_state_t * state){
 
 int ffifo_getinfo(ffifo_info_t * info, const ffifo_config_t * config, ffifo_state_t * state){
     info->o_flags = FIFO_FLAG_SET_WRITEBLOCK | FIFO_FLAG_IS_OVERFLOW;
-    info->count = config->count;
+    info->frame_count = config->frame_count;
     info->frame_size = config->frame_size;
     fifo_atomic_position_t atomic_position;
     atomic_position.atomic_access = state->atomic_position.atomic_access;
 
-    if( atomic_position.access.tail == config->count ){
-        info->used = config->count;
+    if( atomic_position.access.tail == config->frame_count ){
+        info->frame_count_ready = info->frame_count;
     } else if( atomic_position.access.head >= atomic_position.access.tail ){
-        info->used = atomic_position.access.head - atomic_position.access.tail;
+        info->frame_count_ready = atomic_position.access.head - atomic_position.access.tail;
     } else {
-        info->used = info->count - atomic_position.access.tail + atomic_position.access.head;
+        info->frame_count_ready = info->frame_count - atomic_position.access.tail + atomic_position.access.head;
     }
 
     info->o_flags = state->o_flags;
@@ -343,7 +343,7 @@ int ffifo_read_local(const ffifo_config_t * config, ffifo_state_t * state, devfs
 
         bytes_read = ffifo_read_buffer(config, state, async->buf, async->nbyte); //see if there are bytes in the buffer
         if ( bytes_read == 0 ){
-            if( (async->flags & O_NONBLOCK) || (state->atomic_position.access.tail == config->count) ){
+            if( (async->flags & O_NONBLOCK) || (state->atomic_position.access.tail == config->frame_count) ){
                 bytes_read = SYSFS_SET_RETURN(EAGAIN);
             } else {
                 state->transfer_handler.read = async;

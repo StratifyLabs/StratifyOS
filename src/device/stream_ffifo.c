@@ -43,21 +43,21 @@ int event_write_complete(void * context, const mcu_event_t * event){
     }
 
     nbyte = state->tx.async.nbyte/2;
-    u32 frame_count = config->tx.count;
+    u32 frame_count = config->tx.frame_count;
     if( event->o_events & (MCU_EVENT_FLAG_LOW | MCU_EVENT_FLAG_HIGH) ){
         frame_count >>= 1;
     }
     for(u32 frames = 0; frames < frame_count; frames++){
-        state->tx.count++;
+        state->tx.access_count++;
         if( ffifo_state->atomic_position.access.head == ffifo_state->atomic_position.access.tail ){
             //no data to read -- send a zero frame -- this isn't quite right
             memset(state->tx.async.buf, 0, nbyte);
         } else {
             //increment the tail for the frame that was written
-            if( ffifo_state->atomic_position.access.tail == config->tx.count ){
+            if( ffifo_state->atomic_position.access.tail == config->tx.frame_count ){
                 ffifo_state->atomic_position.access.tail = ffifo_state->atomic_position.access.head;
             }
-            ffifo_inc_tail(ffifo_state, config->tx.count);
+            ffifo_inc_tail(ffifo_state, config->tx.frame_count);
         }
 
         //execute the FFIFO action if something is trying to write the ffifo
@@ -83,7 +83,7 @@ int event_data_ready(void * context, const mcu_event_t * event){
     }
 
     //check for overflow
-    if( ffifo_state->atomic_position.access.tail == config->rx.count ){
+    if( ffifo_state->atomic_position.access.tail == config->rx.frame_count ){
         if( ffifo_state->o_flags & FIFO_FLAG_IS_READ_BUSY ){
             ffifo_state->o_flags |= FIFO_FLAG_IS_WRITE_WHILE_READ_BUSY;
         }
@@ -91,13 +91,13 @@ int event_data_ready(void * context, const mcu_event_t * event){
     }
 
     //increment the head for the frame received
-    u32 frame_count = config->rx.count;
+    u32 frame_count = config->rx.frame_count;
     if( o_events & (MCU_EVENT_FLAG_LOW | MCU_EVENT_FLAG_HIGH) ){
         frame_count >>= 1;
     }
     for(u32 frames = 0; frames < frame_count; frames++){
-        ffifo_inc_head(&state->rx.ffifo, config->rx.count);
-        state->rx.count++;
+        ffifo_inc_head(&state->rx.ffifo, config->rx.frame_count);
+        state->rx.access_count++;
         ffifo_data_received(&config->rx, &state->rx.ffifo);
     }
 
@@ -141,18 +141,18 @@ int stream_ffifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 
             if( config->tx.buffer ){
                 //The application writes data to the FIFO that is then read by the hardware and written to a device
-                state->tx.async.loc = 0;
+                state->tx.async.loc = config->tx_loc;
                 state->tx.async.tid = task_get_current();
                 state->tx.async.flags = O_RDWR;
                 state->tx.async.buf = config->tx.buffer;
-                state->tx.async.nbyte = config->tx.frame_size * config->tx.count;
+                state->tx.async.nbyte = config->tx.frame_size * config->tx.frame_count;
                 state->tx.async.handler.context = (void*)handle;
                 state->tx.async.handler.callback = event_write_complete;
 
                 //write block is true but the function doesn't block -- returns EGAIN if it is written while full
                 ffifo_set_writeblock(&(state->tx.ffifo), 1);
 
-                state->tx.count = 0;
+                state->tx.access_count = 0;
                 state->tx.error = 0;
 
                 state->tx.ffifo.transfer_handler.read = 0;
@@ -160,7 +160,7 @@ int stream_ffifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
                 ffifo_flush(&(state->tx.ffifo));
 
                 //ffifo is empty so the head must be incremented on start
-                ffifo_inc_head(&state->tx.ffifo, config->tx.count);
+                ffifo_inc_head(&state->tx.ffifo, config->tx.frame_count);
 
                 //start writing data to the I2S -- zeros are written if there is no data in the fifo
                 memset(state->tx.async.buf, 0, state->tx.async.nbyte);
@@ -172,16 +172,16 @@ int stream_ffifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 
             if( config->rx.buffer ){
                 //the application reads the RX buffer the is written by the device and data that is read from hardware
-                state->rx.async.loc = 0;
+                state->rx.async.loc = config->rx_loc;
                 state->rx.async.tid = task_get_current();
                 state->rx.async.flags = O_RDWR;
                 state->rx.async.buf = config->rx.buffer;
-                state->rx.async.nbyte = config->rx.frame_size * config->rx.count;
+                state->rx.async.nbyte = config->rx.frame_size * config->rx.frame_count;
                 state->rx.async.handler.context = (void*)handle;
                 state->rx.async.handler.callback = event_data_ready;
 
                 state->rx.error = 0;
-                state->rx.count = 0;
+                state->rx.access_count = 0;
 
                 state->rx.ffifo.transfer_handler.read = 0;
                 state->rx.ffifo.transfer_handler.write = 0;
@@ -214,8 +214,8 @@ int stream_ffifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
     case I_STREAM_FFIFO_GETINFO:
         ffifo_getinfo(&(info->tx.ffifo), &(config->tx), &(state->tx.ffifo));
         ffifo_getinfo(&(info->rx.ffifo), &(config->rx), &(state->rx.ffifo));
-        info->tx.count = state->tx.count;
-        info->rx.count = state->rx.count;
+        info->tx.access_count = state->tx.access_count;
+        info->rx.access_count = state->rx.access_count;
         info->tx.error = state->tx.error;
         info->rx.error = state->rx.error;
         return 0;

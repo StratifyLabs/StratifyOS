@@ -50,9 +50,9 @@ enum {
 
 typedef struct MCU_PACK {
 	u32 o_flags /*! Fifo flags */;
-	u16 count /*! Total number of frames in the fifo */;
+    u16 frame_count /*! Total number of frames in the fifo */;
 	u16 frame_size /*! Frame size of the fifo */;
-	u16 used /*! Number of frames being used */;
+    u16 frame_count_ready /*! Number of frames being used */;
 	u16 resd_align;
 	u32 resd[8];
 } ffifo_info_t;

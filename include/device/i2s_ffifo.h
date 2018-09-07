@@ -39,7 +39,7 @@
 typedef struct {
     ffifo_state_t ffifo;
     devfs_async_t i2s_async;
-    u32 count;
+    u32 access_count;
     s32 error;
 } i2s_ffifo_channel_state_t;
 
@@ -88,8 +88,8 @@ int i2s_spi_ffifo_close(const devfs_handle_t * handle);
     0xff, 0xff, \
     attr_sdin_port, attr_sdin_pin, \
     attr_mck_port, attr_mck_pin) } }, \
-    .tx = { .count = 0, .frame_size = 0, .buffer = 0 }, \
-    .rx = { .count = count_value, .frame_size = frame_size_value, .buffer = name##_rx_buffer } \
+	.tx = { .frame_count = 0, .frame_size = 0, .buffer = 0 }, \
+	.rx = { .frame_count = count_value, .frame_size = frame_size_value, .buffer = name##_rx_buffer } \
     }
 
 

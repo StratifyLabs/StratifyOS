@@ -170,11 +170,11 @@ void fifo_getinfo(fifo_info_t * info, const fifo_config_t * config, fifo_state_t
     atomic_position.atomic_access = state->atomic_position.atomic_access;
 
     if( atomic_position.access.tail == config->size ){ //check to see if buffer is full
-        info->used = config->size;
+        info->size_ready = config->size;
     } else if( atomic_position.access.head >= atomic_position.access.tail ){
-        info->used = atomic_position.access.head - atomic_position.access.tail;
+        info->size_ready = atomic_position.access.head - atomic_position.access.tail;
     } else {
-        info->used = config->size - atomic_position.access.tail + atomic_position.access.head;
+        info->size_ready = config->size - atomic_position.access.tail + atomic_position.access.head;
     }
     info->overflow = fifo_is_overflow(state);
     fifo_set_overflow(state, 0);
