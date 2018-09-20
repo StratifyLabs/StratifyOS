@@ -132,7 +132,7 @@ function(sos_sdk_build_lib PROJECT_PATH IS_INSTALL CONFIG)
 	endif()
 
 
-	execute_process(COMMAND ${SOS_SDK_CMAKE_EXEC} ${SOS_SDK_GENERATOR} .. WORKING_DIRECTORY ${BUILD_PATH} RESULT_VARIABLE RESULT)
+	execute_process(COMMAND ${SOS_SDK_CMAKE_EXEC} -DSOS_SKIP_CMAKE=OFF ${SOS_SDK_GENERATOR} .. WORKING_DIRECTORY ${BUILD_PATH} RESULT_VARIABLE RESULT)
 	if(RESULT)
 		message(FATAL_ERROR " Failed to generate using " ${SOS_SDK_CMAKE_EXEC} " .. " ${SOS_SDK_GENERATOR} "	in " ${BUILD_PATH})
 	endif()
@@ -148,7 +148,11 @@ function(sos_sdk_build_lib PROJECT_PATH IS_INSTALL CONFIG)
 	endif()
 	execute_process(COMMAND ${SOS_SDK_CMAKE_EXEC} --build . --target ${TARGET} -- -j 10 WORKING_DIRECTORY ${BUILD_PATH} RESULT_VARIABLE RESULT)
 	if(RESULT)
-		message(FATAL_ERROR " Failed to build all using " ${SOS_SDK_CMAKE_EXEC} "--build . --target all -- -j 10 on " ${PROJECT_PATH})
+		#try again -- sometimes windows fails for no reason
+		execute_process(COMMAND ${SOS_SDK_CMAKE_EXEC} --build . --target ${TARGET} -- -j 10 WORKING_DIRECTORY ${BUILD_PATH} RESULT_VARIABLE RESULT)
+		if(RESULT)
+			message(FATAL_ERROR " Failed to build all using " ${SOS_SDK_CMAKE_EXEC} "--build . --target all -- -j 10 on " ${PROJECT_PATH})
+		endif()
 	endif()
 endfunction()
 
