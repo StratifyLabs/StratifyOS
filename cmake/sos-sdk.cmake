@@ -138,7 +138,7 @@ function(sos_sdk_build_lib PROJECT_PATH IS_INSTALL CONFIG)
 	endif()
 	if(CONFIG STREQUAL "link")
 		#Sometimes there is a problem building if cmake is only run once
-		execute_process(COMMAND ${SOS_SDK_CMAKE_EXEC} ${SOS_SDK_GENERATOR} .. WORKING_DIRECTORY ${BUILD_PATH} RESULT_VARIABLE RESULT)
+		execute_process(COMMAND ${SOS_SDK_CMAKE_EXEC} -DSOS_SKIP_CMAKE=OFF ${SOS_SDK_GENERATOR} .. WORKING_DIRECTORY ${BUILD_PATH} RESULT_VARIABLE RESULT)
 	endif()
 	if(SOS_SDK_CLEAN_ALL)
 		execute_process(COMMAND ${SOS_SDK_CMAKE_EXEC} --build . --target clean WORKING_DIRECTORY ${BUILD_PATH} RESULT_VARIABLE RESULT)
