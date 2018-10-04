@@ -118,31 +118,32 @@ extern "C" {
 #define SWITCHBOARD_IOC_IDENT_CHAR 'W'
 
 typedef enum {
-    SWITCHBOARD_FLAG_CONNECT /*! Configure a switchboard connection (used in o_flags of switchboard_attr_t) */ = (1<<0),
-    SWITCHBOARD_FLAG_DISCONNECT /*! Clears the specified connection (used in o_flags of switchboard_attr_t) */ = (1<<1),
-    SWITCHBOARD_FLAG_IS_PERSISTENT /*! Set to configure a persistent connection (used in o_flags of switchboard_attr_t) */ = (1<<2),
-    SWITCHBOARD_FLAG_IS_CONNECTED /*! Used in o_flags of switchboard_connection_t for status */ = (1<<3),
-    SWITCHBOARD_FLAG_IS_READING_ASYNC /*! Used in o_flags of switchboard_connection_t for status */ = (1<<4),
-    SWITCHBOARD_FLAG_IS_WRITING_ASYNC /*! Used in o_flags of switchboard_connection_t for status */ = (1<<5),
-    SWITCHBOARD_FLAG_IS_STOPPED_ON_ERROR /*! The connection has stopped because of an error (nbyte has the error code) */ = (1<<6),
-    SWITCHBOARD_FLAG_SET_TRANSACTION_LIMIT /*! Use with SWITCHBOARD_FLAG_CONNECT to specify a transaction limit other than the default */ = (1<<7),
-    SWITCHBOARD_FLAG_IS_FILL_ZERO /*! If no data is available on a non-blocking input, a packet full of zeros is sent to the output */ = (1<<8),
-    SWITCHBOARD_FLAG_IS_INPUT_NON_BLOCKING /*! The connection input terminal should operate in non-blocking mode (return immediately if no data is available) */ = (1<<9),
-    SWITCHBOARD_FLAG_IS_OUTPUT_NON_BLOCKING /*! The connection output terminal should operate in non-blocking mode (return immediately if no data is available) */ = (1<<10),
-    SWITCHBOARD_FLAG_IS_DESTROYED /*! The connection has been destroyed (this flag is self clearing) */ = (1<<11),
-    SWITCHBOARD_FLAG_IS_FILL_LAST_8 /*! If no data is available on a non-blocking input, a packet is filled with the last byte of the previous packet */ = (1<<12),
-    SWITCHBOARD_FLAG_IS_FILL_LAST_16 /*! If no data is available on a non-blocking input, a packet is filled with the last 16-bit word of the previous packet */ = (1<<13),
-    SWITCHBOARD_FLAG_IS_FILL_LAST_32 /*! If no data is available on a non-blocking input, a packet is filled with the last 32-bit word of the previous packet */ = (1<<14),
-    SWITCHBOARD_FLAG_IS_FILL_LAST_64 /*! If no data is available on a non-blocking input, a packet is filled with the last 64-bit word of the previous packet */ = (1<<15),
+	SWITCHBOARD_FLAG_CONNECT /*! Configure a switchboard connection (used in o_flags of switchboard_attr_t) */ = (1<<0),
+	SWITCHBOARD_FLAG_DISCONNECT /*! Clears the specified connection (used in o_flags of switchboard_attr_t) */ = (1<<1),
+	SWITCHBOARD_FLAG_IS_PERSISTENT /*! Set to configure a persistent connection (used in o_flags of switchboard_attr_t) */ = (1<<2),
+	SWITCHBOARD_FLAG_IS_CONNECTED /*! Used in o_flags of switchboard_connection_t for status */ = (1<<3),
+	SWITCHBOARD_FLAG_IS_READING_ASYNC /*! Used in o_flags of switchboard_connection_t for status */ = (1<<4),
+	SWITCHBOARD_FLAG_IS_WRITING_ASYNC /*! Used in o_flags of switchboard_connection_t for status */ = (1<<5),
+	SWITCHBOARD_FLAG_IS_STOPPED_ON_ERROR /*! The connection has stopped because of an error (nbyte has the error code) */ = (1<<6),
+	SWITCHBOARD_FLAG_SET_TRANSACTION_LIMIT /*! Use with SWITCHBOARD_FLAG_CONNECT to specify a transaction limit other than the default */ = (1<<7),
+	SWITCHBOARD_FLAG_IS_FILL_ZERO /*! If no data is available on a non-blocking input, a packet full of zeros is sent to the output */ = (1<<8),
+	SWITCHBOARD_FLAG_IS_INPUT_NON_BLOCKING /*! The connection input terminal should operate in non-blocking mode (return immediately if no data is available) */ = (1<<9),
+	SWITCHBOARD_FLAG_IS_OUTPUT_NON_BLOCKING /*! The connection output terminal should operate in non-blocking mode (return immediately if no data is available) */ = (1<<10),
+	SWITCHBOARD_FLAG_IS_DESTROYED /*! The connection has been destroyed (this flag is self clearing) */ = (1<<11),
+	SWITCHBOARD_FLAG_IS_FILL_LAST_8 /*! If no data is available on a non-blocking input, a packet is filled with the last byte of the previous packet */ = (1<<12),
+	SWITCHBOARD_FLAG_IS_FILL_LAST_16 /*! If no data is available on a non-blocking input, a packet is filled with the last 16-bit word of the previous packet */ = (1<<13),
+	SWITCHBOARD_FLAG_IS_FILL_LAST_32 /*! If no data is available on a non-blocking input, a packet is filled with the last 32-bit word of the previous packet */ = (1<<14),
+	SWITCHBOARD_FLAG_IS_FILL_LAST_64 /*! If no data is available on a non-blocking input, a packet is filled with the last 64-bit word of the previous packet */ = (1<<15),
+	SWITCHBOARD_FLAG_CLEAN /*! Cleanup connectections that have stopped on an error */ = (1<<16)
 } switchboard_flag_t;
 
 
 typedef struct MCU_PACK {
-    u32 o_flags /*! Bitmask of supported flags */;
-    u16 connection_count /*! The total number of connections available */;
-    u16 connection_buffer_size /*! The internal buffer size (max number of bytes for persistent connections) */;
-    u32 transaction_limit /*! The maximum number of synchronous transactions that are allowed before the connection is aborted */;
-    u32 resd[8];
+	u32 o_flags /*! Bitmask of supported flags */;
+	u16 connection_count /*! The total number of connections available */;
+	u16 connection_buffer_size /*! The internal buffer size (max number of bytes for persistent connections) */;
+	u32 transaction_limit /*! The maximum number of synchronous transactions that are allowed before the connection is aborted */;
+	u32 resd[8];
 } switchboard_info_t;
 
 /*! \brief Switchboard Terminal
@@ -151,12 +152,12 @@ typedef struct MCU_PACK {
  *
  */
 typedef struct MCU_PACK {
-    char name[LINK_NAME_MAX] /*! The name of the terminal */;
-    u32 loc /*! The location of the terminal (block location or channel depending on the device) */;
-    u32 bytes_transferred /*! Number of bytes transferred on the terminal */;
-    s8 priority /*! Hardware interrupt priority elevation */;
-    u8 device_type /*! Block or character device */;
-    s16 resd; //alignment
+	char name[LINK_NAME_MAX] /*! The name of the terminal */;
+	u32 loc /*! The location of the terminal (block location or channel depending on the device) */;
+	u32 bytes_transferred /*! Number of bytes transferred on the terminal */;
+	s8 priority /*! Hardware interrupt priority elevation */;
+	u8 device_type /*! Block or character device */;
+	s16 resd; //alignment
 } switchboard_terminal_t;
 
 
@@ -170,12 +171,12 @@ typedef struct MCU_PACK {
  *
  */
 typedef struct MCU_PACK {
-    u32 o_flags /*! Bitmask flags for connection state */;
-    u16 id /*! Connection id of total */;
-    u16 transaction_limit /*! The maximum number of synchronous transactions that can occur before aborting */;
-    switchboard_terminal_t input /*! Input device (device that is read) */;
-    switchboard_terminal_t output /*! Output device (device that is written) */;
-    s32 nbyte /*! Number of bytes to transfer (packet size for persisent connections); will be negative when reading to indicate an error */;
+	u32 o_flags /*! Bitmask flags for connection state */;
+	u16 id /*! Connection id of total */;
+	u16 transaction_limit /*! The maximum number of synchronous transactions that can occur before aborting */;
+	switchboard_terminal_t input /*! Input device (device that is read) */;
+	switchboard_terminal_t output /*! Output device (device that is written) */;
+	s32 nbyte /*! Number of bytes to transfer (packet size for persisent connections); will be negative when reading to indicate an error */;
 } switchboard_connection_t;
 
 /*!

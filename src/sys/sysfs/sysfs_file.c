@@ -100,16 +100,12 @@ int sysfs_shared_open(const sysfs_shared_config_t * config){
     config->state->file.flags = O_RDWR;
     config->state->file.loc = 0;
     config->state->file.handle = NULL;
-    int result = sysfs_file_open(&(config->state->file), config->name, O_RDWR);
-    SYSFS_PROCESS_RETURN(result);
-    return result;
+	 return sysfs_file_open(&(config->state->file), config->name, O_RDWR);
 }
 
 int sysfs_shared_ioctl(const sysfs_shared_config_t * config, int request, void * ctl){
     if( config->state->file.fs == 0 ){ return SYSFS_SET_RETURN(ENODEV); }
-    int result = sysfs_file_ioctl(&(config->state->file), request, ctl);
-    SYSFS_PROCESS_RETURN(result);
-    return result;
+	 return sysfs_file_ioctl(&(config->state->file), request, ctl);
 }
 
 int sysfs_shared_fsync(const sysfs_shared_config_t * config){
@@ -119,30 +115,23 @@ int sysfs_shared_fsync(const sysfs_shared_config_t * config){
 int sysfs_shared_read(const sysfs_shared_config_t * config, int loc, void * buf, int nbyte){
     if( config->state->file.fs == 0 ){ return SYSFS_SET_RETURN(ENODEV); }
     config->state->file.loc = loc;
-    int result = sysfs_file_read(&(config->state->file), buf, nbyte);
-    SYSFS_PROCESS_RETURN(result);
-    return result;
+	 return sysfs_file_read(&(config->state->file), buf, nbyte);
 }
 
 int sysfs_shared_write(const sysfs_shared_config_t * config, int loc, const void * buf, int nbyte){
     if( config->state->file.fs == 0 ){ return SYSFS_SET_RETURN(ENODEV); }
     config->state->file.loc = loc;
-    int result = sysfs_file_write(&(config->state->file), buf, nbyte);
-    SYSFS_PROCESS_RETURN(result);
-    return result;
+	 return sysfs_file_write(&(config->state->file), buf, nbyte);
 }
+
 int sysfs_shared_aio(const sysfs_shared_config_t * config, void * aio){
     if( config->state->file.fs == 0 ){ return SYSFS_SET_RETURN(ENODEV); }
-    int result = sysfs_file_aio(&(config->state->file), aio);
-    SYSFS_PROCESS_RETURN(result);
-    return result;
+	 return sysfs_file_aio(&(config->state->file), aio);
 }
 
 int sysfs_shared_close(const sysfs_shared_config_t * config){
     if( config->state->file.fs == 0 ){ return SYSFS_SET_RETURN(ENODEV); }
-    int result = sysfs_file_close(&(config->state->file));
-    SYSFS_PROCESS_RETURN(result);
-    return result;
+	 return sysfs_file_close(&(config->state->file));
 }
 
 

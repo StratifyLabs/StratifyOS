@@ -79,7 +79,6 @@ int drive_mmc_ioctl(const devfs_handle_t * handle, int request, void * ctl){
         result = mcu_mmc_setattr(handle, &mmc_attr);
 
         if( result < 0 ){ return result; }
-
         return (result != MMC_CARD_STATE_TRANSFER);
 
     case I_DRIVE_GETINFO:

@@ -168,6 +168,7 @@ int devfs_data_transfer(const void * config, const devfs_device_t * device, int 
     args.async.handler.callback = root_data_transfer_callback;
     args.async.handler.context = (void*)&args;
     args.async.tid = task_get_current();
+	 int retry = 0;
 
     //privilege call for the operation
     do {
@@ -209,8 +210,16 @@ int devfs_data_transfer(const void * config, const devfs_device_t * device, int 
             }
         } else if ( args.ret < 0 ){
             //there was an error starting the operation (such as EAGAIN)
-            if( args.ret == -101010 ){
-                args.ret = SYSFS_SET_RETURN(EIO); //this is a rare/strange error where cortexm_svcall fails to run properly
+
+			  //this is a rare/strange error where cortexm_svcall fails to run properly
+				if( args.ret == -101010 ){
+					if( retry < 5 ){
+						retry++;
+						args.ret = 0;
+						mcu_debug_log_warning(MCU_DEBUG_DEVFS, "-101010 error");
+					} else {
+						args.ret = SYSFS_SET_RETURN(EFAULT);
+					}
             }
         }
     } while ( args.ret == 0 );

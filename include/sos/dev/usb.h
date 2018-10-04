@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 /*! \addtogroup USB Universal Serial Bus (USB)
@@ -57,11 +57,11 @@ typedef enum {
 	USB_FLAG_SET_DEVICE /*! device mode */ = (1<<1),
 	USB_FLAG_SET_HOST /*! host mode */ = (1<<2),
 	USB_FLAG_SET_OTG /*! on-the-go mode */ = (1<<3),
-    USB_FLAG_RESET /*! Rest the USB */ = (1<<4),
-    USB_FLAG_ATTACH /*! Attach USB device */ = (1<<5),
-    USB_FLAG_DETACH /*! Detach USB device */ = (1<<6),
-    USB_FLAG_CONFIGURE /*! Configure USB device */ = (1<<7),
-    USB_FLAG_UNCONFIGURE /*! Unconfigure USB device */ = (1<<8),
+	USB_FLAG_RESET /*! Rest the USB */ = (1<<4),
+	USB_FLAG_ATTACH /*! Attach USB device */ = (1<<5),
+	USB_FLAG_DETACH /*! Detach USB device */ = (1<<6),
+	USB_FLAG_CONFIGURE /*! Configure USB device */ = (1<<7),
+	USB_FLAG_UNCONFIGURE /*! Unconfigure USB device */ = (1<<8),
 	USB_FLAG_SET_ADDRESS = (1<<9),
 	USB_FLAG_RESET_ENDPOINT = (1<<10),
 	USB_FLAG_ENABLE_ENDPOINT = (1<<11),
@@ -72,8 +72,9 @@ typedef enum {
 	USB_FLAG_IS_SOF_ENABLED = (1<<16),
 	USB_FLAG_IS_LOW_POWER_MODE_ENABLED = (1<<17),
 	USB_FLAG_IS_VBUS_SENSING_ENABLED = (1<<18),
-    USB_FLAG_IS_HIGH_SPEED = (1<<19),
-    USB_FLAG_IS_BATTERY_CHARGING_ENABLED = (1<<20)
+	USB_FLAG_IS_HIGH_SPEED = (1<<19),
+	USB_FLAG_IS_BATTERY_CHARGING_ENABLED = (1<<20),
+	USB_FLAG_FLUSH_ENDPOINT = (1<<21)
 } usb_flag_t;
 
 
@@ -104,10 +105,10 @@ typedef struct MCU_PACK {
 	u32 freq /*! The crystal oscillator frequency */;
 	u32 address /*! USB endpoint address or device address (USB_FLAG_SET_ADDRESS) */;
 	u16 max_packet_size /*! USB endpoing max packet size */;
-    u16 type /*! USB endpoint type as bmAttributes */;
-    u16 rx_fifo_word_size /*! RX FIFO word size for all endpoints (STM32) */;
-    u8 tx_fifo_word_size[USB_TX_FIFO_WORD_SIZE_COUNT] /*! TX FIFO word size (used on STM32) */;
-    u32 resd[6];
+	u16 type /*! USB endpoint type as bmAttributes */;
+	u16 rx_fifo_word_size /*! RX FIFO word size for all endpoints (STM32) */;
+	u8 tx_fifo_word_size[USB_TX_FIFO_WORD_SIZE_COUNT] /*! TX FIFO word size (used on STM32) */;
+	u32 resd[6];
 } usb_attr_t;
 
 #define I_USB_GETVERSION _IOCTL(USB_IOC_IDENT_CHAR, I_MCU_GETVERSION)

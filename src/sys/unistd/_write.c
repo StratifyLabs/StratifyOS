@@ -41,7 +41,7 @@
  *
  * \return The number of bytes actually read of -1 with errno (see \ref ERRNO) set to:
  * - EBADF:  \a fildes is bad
- * - EACCESS:  \a fildes is on in O_RDONLY mode
+ * - EACCES:  \a fildes is on in O_RDONLY mode
  * - EIO:  IO error
  * - EAGAIN:  O_NONBLOCK is set for \a fildes and the device is busy
  *

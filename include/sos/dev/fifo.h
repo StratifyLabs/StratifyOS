@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 /*! \addtogroup SYS_FIFO FIFO Buffer
@@ -42,21 +42,23 @@
 
 enum {
 	FIFO_FLAG_NONE = 0,
-    FIFO_FLAG_SET_WRITEBLOCK /*! Write block flag */ = (1<<0),
-    FIFO_FLAG_IS_OVERFLOW /*! Overflow flag */ = (1<<1),
-    FIFO_FLAG_NOTIFY_WRITE /*! Notify on write */ = (1<<2),
-    FIFO_FLAG_NOTIFY_READ /*! Notify on read */ = (1<<3),
-    FIFO_FLAG_INIT /*! Initialize the FIFO */ = (1<<4),
-    FIFO_FLAG_EXIT /*! Shutdown the FIFO */ = (1<<5),
-    FIFO_FLAG_FLUSH /*! Flush the FIFO */ = (1<<6),
-    FIFO_FLAG_IS_READ_BUSY /*! Set internally when FIFO is reading */ = (1<<7),
-    FIFO_FLAG_IS_WRITE_WHILE_READ_BUSY /*! Set internally when FIFO is written while reading */ = (1<<8)
+	FIFO_FLAG_SET_WRITEBLOCK /*! Write block flag */ = (1<<0),
+	FIFO_FLAG_IS_OVERFLOW /*! Overflow flag */ = (1<<1),
+	FIFO_FLAG_NOTIFY_WRITE /*! Notify on write */ = (1<<2),
+	FIFO_FLAG_NOTIFY_READ /*! Notify on read */ = (1<<3),
+	FIFO_FLAG_INIT /*! Initialize the FIFO */ = (1<<4),
+	FIFO_FLAG_EXIT /*! Shutdown the FIFO */ = (1<<5),
+	FIFO_FLAG_FLUSH /*! Flush the FIFO */ = (1<<6),
+	FIFO_FLAG_IS_READ_BUSY /*! Set internally when FIFO is reading */ = (1<<7),
+	FIFO_FLAG_IS_WRITE_WHILE_READ_BUSY /*! Set internally when FIFO is written while reading */ = (1<<8),
+	FIFO_FLAG_IS_WRITE_BUSY /*! Set internally when FIFO is being written */ = (1<<9),
+	FIFO_FLAG_IS_WRITE_WHILE_WRITE_BUSY /*! Set internally when FIFO is written while being written */ = (1<<10)
 };
 
 typedef struct MCU_PACK {
 	u32 o_flags /*! Bitmask to indicate supported features */;
 	u32 size /*! The total number of bytes in the FIFO */;
-    u32 size_ready /*! The number of bytes ready to be read from the FIFO */;
+	u32 size_ready /*! The number of bytes ready to be read from the FIFO */;
 	u32 overflow /*! If non-zero, indicates data received in the buffer was discarded */;
 	u32 resd[8];
 } fifo_info_t;
