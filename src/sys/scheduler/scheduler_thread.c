@@ -126,24 +126,29 @@ void cleanup_thread(void * status){
     stderr = 0;
 
     //This will close any other open files
+	 mcu_debug_log_info(MCU_DEBUG_SCHEDULER, "Cleanup thread %p", _REENT->__cleanup);
     if ( _REENT->__cleanup ){
         _REENT->__cleanup(_REENT);
     }
+
 
     detach_state = PTHREAD_ATTR_GET_DETACH_STATE( (&(sos_sched_table[task_get_current()].attr)) );
     args.joined = 0;
     if ( detach_state == PTHREAD_CREATE_JOINABLE ){
         args.status = (int)status;
+		  mcu_debug_log_info(MCU_DEBUG_SCHEDULER, "Wait joined");
         do {
             cortexm_svcall(root_wait_joined, &args);
         } while(args.joined == 0);
     }
 
 
+	 mcu_debug_log_info(MCU_DEBUG_SCHEDULER, "Free all");
     //Free all memory associated with this thread
-    malloc_free_task_r(_REENT, task_get_current() );
+	 //malloc_free_task_r(_REENT, task_get_current() );
     _free_r( _REENT, sos_sched_table[task_get_current()].attr.stackaddr ); //free the stack address
-    cortexm_svcall(root_cleanup, &args.joined);
+	 mcu_debug_log_info(MCU_DEBUG_SCHEDULER, "Thread %d completed", task_get_current());
+    cortexm_svcall(root_cleanup, &args.joined);	 
 }
 
 void root_wait_joined(void * args){

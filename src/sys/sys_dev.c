@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 /*! \addtogroup STFY
@@ -55,72 +55,72 @@ int sys_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 	int i;
 
 	switch(request){
-	case  I_SYS_GETINFO:
-		memset(info, 0, sizeof(sys_info_t));
-		strncpy(info->kernel_version, VERSION, 7);
-		strncpy(info->sys_version, sos_board_config.sys_version, 7);
-		strncpy(info->arch, ARCH, 15);
-		info->security = 0;
-		info->signature = symbols_table[0];
-		info->cpu_freq = mcu_core_getclock();
-		info->sys_mem_size = sos_board_config.sys_memory_size;
-		info->o_flags = sos_board_config.o_sys_flags;
-		strncpy(info->id, sos_board_config.sys_id, PATH_MAX-1);
-		strncpy(info->stdin_name, sos_board_config.stdin_dev, NAME_MAX-1);
-		strncpy(info->stdout_name, sos_board_config.stdout_dev, NAME_MAX-1);
-		strncpy(info->name, sos_board_config.sys_name, NAME_MAX-1);
-		strncpy(info->trace_name, sos_board_config.trace_dev, NAME_MAX-1);
-        if( sos_board_config.git_hash ){
-            strncpy(info->bsp_git_hash, sos_board_config.git_hash, 15);
-        }
-        strncpy(info->sos_git_hash, SOS_GIT_HASH, 15);
-        if( mcu_config.git_hash ){
-            strncpy(info->mcu_git_hash, mcu_config.git_hash, 15);
-        }
-        mcu_core_getserialno(&(info->serial));
-        info->hardware_id = *((u32*)(&_text + BOOTLOADER_HARDWARE_ID_OFFSET/sizeof(u32)));
-        return 0;
-	case I_SYS_GETTASK:
-		return read_task(ctl);
-
-	case I_SYS_GETID:
-		memcpy(id->id, sos_board_config.sys_id, PATH_MAX-1);
-		return 0;
-	case I_SYS_KILL:
-		for(i = 1; i < task_get_total(); i++){
-			if( (task_get_pid(i) == killattr->id) &&
-					!task_thread_asserted(i)
-			){
-				signal_root_send(task_get_current(),
-						i,
-						killattr->si_signo,
-						killattr->si_sigcode,
-						killattr->si_sigvalue, 1);
-				break;
+		case  I_SYS_GETINFO:
+			memset(info, 0, sizeof(sys_info_t));
+			strncpy(info->kernel_version, VERSION, 7);
+			strncpy(info->sys_version, sos_board_config.sys_version, 7);
+			strncpy(info->arch, ARCH, 15);
+			info->security = 0;
+			info->signature = symbols_table[0];
+			info->cpu_freq = mcu_core_getclock();
+			info->sys_mem_size = sos_board_config.sys_memory_size;
+			info->o_flags = sos_board_config.o_sys_flags;
+			strncpy(info->id, sos_board_config.sys_id, PATH_MAX-1);
+			strncpy(info->stdin_name, sos_board_config.stdin_dev, NAME_MAX-1);
+			strncpy(info->stdout_name, sos_board_config.stdout_dev, NAME_MAX-1);
+			strncpy(info->name, sos_board_config.sys_name, NAME_MAX-1);
+			strncpy(info->trace_name, sos_board_config.trace_dev, NAME_MAX-1);
+			if( sos_board_config.git_hash ){
+				strncpy(info->bsp_git_hash, sos_board_config.git_hash, 15);
 			}
-		}
-		return 0;
-	case I_SYS_PTHREADKILL:
-		return signal_root_send(task_get_current(),
-				killattr->id,
-				killattr->si_signo,
-				killattr->si_sigcode,
-				killattr->si_sigvalue, 1);
-	case I_SYS_GETBOARDCONFIG:
-		memcpy(ctl, &sos_board_config, sizeof(sos_board_config));
-		return 0;
-	default:
-		break;
+			strncpy(info->sos_git_hash, SOS_GIT_HASH, 15);
+			if( mcu_config.git_hash ){
+				strncpy(info->mcu_git_hash, mcu_config.git_hash, 15);
+			}
+			mcu_core_getserialno(&(info->serial));
+			info->hardware_id = *((u32*)(&_text + BOOTLOADER_HARDWARE_ID_OFFSET/sizeof(u32)));
+			return 0;
+		case I_SYS_GETTASK:
+			return read_task(ctl);
+
+		case I_SYS_GETID:
+			memcpy(id->id, sos_board_config.sys_id, PATH_MAX-1);
+			return 0;
+		case I_SYS_KILL:
+			for(i = 1; i < task_get_total(); i++){
+				if( (task_get_pid(i) == killattr->id) &&
+					 !task_thread_asserted(i)
+					 ){
+					signal_root_send(task_get_current(),
+										  i,
+										  killattr->si_signo,
+										  killattr->si_sigcode,
+										  killattr->si_sigvalue, 1);
+					break;
+				}
+			}
+			return 0;
+		case I_SYS_PTHREADKILL:
+			return signal_root_send(task_get_current(),
+											killattr->id,
+											killattr->si_signo,
+											killattr->si_sigcode,
+											killattr->si_sigvalue, 1);
+		case I_SYS_GETBOARDCONFIG:
+			memcpy(ctl, &sos_board_config, sizeof(sos_board_config));
+			return 0;
+		default:
+			break;
 	}
-    return SYSFS_SET_RETURN(EINVAL);
+	return SYSFS_SET_RETURN(EINVAL);
 }
 
 int sys_read(const devfs_handle_t * handle, devfs_async_t * rop){
-    return SYSFS_SET_RETURN(ENOTSUP);
+	return SYSFS_SET_RETURN(ENOTSUP);
 }
 
 int sys_write(const devfs_handle_t * handle, devfs_async_t * wop){
-    return SYSFS_SET_RETURN(ENOTSUP);
+	return SYSFS_SET_RETURN(ENOTSUP);
 }
 
 int sys_close(const devfs_handle_t * handle){
@@ -137,7 +137,7 @@ int read_task(sys_taskattr_t * task){
 			task->mem_loc = (uint32_t)sos_sched_table[task->tid].attr.stackaddr;
 			task->mem_size = sos_sched_table[task->tid].attr.stacksize;
 			task->stack_ptr = (uint32_t)sos_task_table[task->tid].sp;
-            task->prio = task_get_priority(task->tid);
+			task->prio = task_get_priority(task->tid);
 			task->prio_ceiling = sos_sched_table[task->tid].attr.schedparam.sched_priority;
 			task->is_active = (task_active_asserted(task->tid) != 0) | ((task_stopped_asserted(task->tid != 0)<<1));
 			task->is_thread = task_thread_asserted( task->tid );
@@ -159,8 +159,8 @@ int read_task(sys_taskattr_t * task){
 			ret = 0;
 		}
 	} else {
-        //Stratify Link freezes up if this doesn't return -1 -- needs to be fixed
-        ret = SYSFS_SET_RETURN_WITH_VALUE(ESRCH, 1);
+		//Stratify Link freezes up if this doesn't return -1 -- needs to be fixed
+		ret = SYSFS_SET_RETURN_WITH_VALUE(ESRCH, 1);
 	}
 
 	return ret;

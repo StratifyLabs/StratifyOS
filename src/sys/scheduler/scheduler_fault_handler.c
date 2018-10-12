@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 /*! \addtogroup SCHED
@@ -57,7 +57,7 @@ void mcu_fault_event_handler(fault_t * fault){
 
 #if MCU_DEBUG
 		char buffer[128];
-		scheduler_fault_build_string(buffer);
+		scheduler_fault_build_string(buffer, "\n");
 		mcu_debug_root_write_uart(buffer, strnlen(buffer,128));
 #endif
 
@@ -81,15 +81,17 @@ void mcu_fault_event_handler(fault_t * fault){
 	} else {
 
 #if defined MCU_DEBUG
-        char buffer[128];
-        scheduler_fault_build_string(buffer);
-        mcu_debug_log_error(MCU_DEBUG_SYS, "Task Fault:%d:%s", task_get_current(), buffer);
+		char buffer[128];
+		scheduler_fault_build_string(buffer, 0);
+		mcu_debug_log_error(MCU_DEBUG_SYS, "Task Fault:%d:%s", task_get_current(), buffer);
+		scheduler_fault_build_memory_string(buffer, 0);
+		mcu_debug_log_error(MCU_DEBUG_SYS, "Task Memory:%d:%s", task_get_current(), buffer);
 #endif
 		//send a signal to kill the task
 		for(i=1; i < task_get_total(); i++){
 			if ( task_get_pid(i) == pid ){
-                //stop running the task
-                task_root_delete(i);
+				//stop running the task
+				task_root_delete(i);
 #if 0 //this was the old way but could cause an infinite fault loop Issue #163
 				if( task_thread_asserted(i) == 0 ){
 					//reset the stack of the processes main task
@@ -97,7 +99,7 @@ void mcu_fault_event_handler(fault_t * fault){
 					//send the kill signal
 					if( signal_root_send(0, i, SIGKILL, 0, 0, 0) < 0 ){
 						//kill manually -- for example, if the target task doesn't have enough memory to accept SIGKILL
-                        task_root_delete(i);
+						task_root_delete(i);
 						scheduler_root_update_on_sleep();
 					}
 					break;
@@ -106,7 +108,7 @@ void mcu_fault_event_handler(fault_t * fault){
 
 			}
 		}
-        scheduler_root_update_on_sleep();
+		scheduler_root_update_on_sleep();
 
 
 	}

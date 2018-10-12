@@ -213,7 +213,6 @@ int create_connection(const switchboard_config_t * config, switchboard_state_t *
 	state[id].nbyte = attr->nbyte; //total number of bytes to transfer OR packet size for persistent connections (must be less than buffer size)
 
 	state[id].o_flags = SWITCHBOARD_FLAG_IS_CONNECTED;
-
 	state[id].o_flags |= (attr->o_flags & (SWITCHBOARD_FLAG_IS_FILL_ZERO | SWITCHBOARD_FLAG_IS_INPUT_NON_BLOCKING | SWITCHBOARD_FLAG_IS_OUTPUT_NON_BLOCKING));
 
 	if( attr->o_flags & SWITCHBOARD_FLAG_IS_PERSISTENT ){
@@ -281,7 +280,7 @@ int create_connection(const switchboard_config_t * config, switchboard_state_t *
 
 	//start reading into the primary buffer -- mark it as used
 	int result;
-	//mcu_debug_log_info(MCU_DEBUG_DEVICE, "%d (%p) Starting %s -> %s", id, state + id, state[id].input.device->name, state[id].output.device->name);
+	mcu_debug_log_info(MCU_DEBUG_DEVICE, "%d (%p) Starting %s -> %s", id, state + id, state[id].input.device->name, state[id].output.device->name);
 	if( (result = read_then_write_until_async(state + id)) < 0 ){
 		abort_connection(state + id);
 		mcu_debug_log_error(MCU_DEBUG_DEVICE, "RW failed %d (0x%lX), %d", SYSFS_GET_RETURN(result), (u32)-1*SYSFS_GET_RETURN(result), SYSFS_GET_RETURN_ERRNO(result));
@@ -292,7 +291,7 @@ int create_connection(const switchboard_config_t * config, switchboard_state_t *
 }
 
 void abort_connection(switchboard_state_t * state){
-	if( (state->o_flags & SWITCHBOARD_FLAG_IS_STOPPED_ON_ERROR) == 0 ){
+	if( (state->o_flags & SWITCHBOARD_FLAG_IS_ERROR) == 0 ){
 		close_terminal(&state->input);
 		close_terminal(&state->output);
 	}
@@ -302,7 +301,7 @@ void abort_connection(switchboard_state_t * state){
 int clean_connections(const switchboard_config_t * config, switchboard_state_t * state){
 	u16 i;
 	for(i=0; i < config->connection_count; i++){
-		if( state[i].o_flags & SWITCHBOARD_FLAG_IS_STOPPED_ON_ERROR ){
+		if( state[i].o_flags & SWITCHBOARD_FLAG_IS_ERROR ){
 			destroy_connection(config, state, i);
 		}
 	}
@@ -313,20 +312,14 @@ int destroy_connection(const switchboard_config_t * config, switchboard_state_t 
 
 	if( id < config->connection_count ){
 
-	if( (state[id].o_flags & SWITCHBOARD_FLAG_IS_CONNECTED) == 0 ){
-		//already destroyed
-		mcu_debug_log_info(MCU_DEBUG_DEVICE, "Not connected 0x%lX", state[id].o_flags);
+		if( state[id].o_flags & (SWITCHBOARD_FLAG_IS_ERROR|SWITCHBOARD_FLAG_IS_CANCELED) ){
+			memset(state + id, 0, sizeof(switchboard_state_t));
+		} else {
+			//connection is still on going -- it will clear once it stops -- what happens if the connection never cleans up
+			state[id].o_flags |= SWITCHBOARD_FLAG_IS_DESTROYED;
+			state[id].nbyte = SYSFS_SET_RETURN(ENOEXEC); //force ongoing transactions to stop
+		}
 		return 0;
-	}
-
-	if( state[id].o_flags & SWITCHBOARD_FLAG_IS_STOPPED_ON_ERROR ){
-		memset(state + id, 0, sizeof(switchboard_state_t));
-	} else {
-		//connection is still on going -- it will clear once it stops -- what happens if the connection never cleans up
-		state[id].o_flags |= SWITCHBOARD_FLAG_IS_DESTROYED;
-		state[id].nbyte = SYSFS_SET_RETURN(ENOEXEC); //force ongoing transactions to stop
-	}
-	return 0;
 	}
 
 	mcu_debug_log_info(MCU_DEBUG_DEVICE, "Invalid id:%d", id);
@@ -336,10 +329,30 @@ int destroy_connection(const switchboard_config_t * config, switchboard_state_t 
 void close_connection(switchboard_state_t * state){
 	close_terminal(&state->input);
 	close_terminal(&state->output);
+
+	//connection is not connected anymore
+	state->o_flags &= ~SWITCHBOARD_FLAG_IS_CONNECTED;
+
 	//if connection has already been destroyed, reset the state -- otherwise state is reset when destroyed
 	if( state->o_flags & SWITCHBOARD_FLAG_IS_DESTROYED ){
 		memset(state, 0, sizeof(switchboard_state_t));
 	}
+}
+
+int check_for_stopped_or_destroyed(switchboard_state_t * state){
+	if( state->nbyte < 0 ){
+		u32 o_events = MCU_EVENT_FLAG_STOP | MCU_EVENT_FLAG_CANCELED;
+		mcu_debug_log_warning(MCU_DEBUG_DEVICE, "Stopping %s -> %s (%d) 0x%lX", state->input.device->name, state->output.device->name, state->nbyte, state->o_flags);
+
+		if( state->o_flags & SWITCHBOARD_FLAG_IS_ERROR ){
+			o_events |= MCU_EVENT_FLAG_ERROR;
+		}
+
+		close_connection(state);
+		mcu_execute_event_handler(&state->event_handler, o_events, 0);
+		return 1;
+	}
+	return 0;
 }
 
 int open_terminal(const switchboard_state_terminal_t * state_terminal){
@@ -419,7 +432,6 @@ int is_ready_to_write_device(switchboard_state_t * state){
 		//all writes are complete or an error occurred
 		return 0;
 	}
-
 
 	if( state->output.async.buf == state->buffer[0] ){
 		state->output.async.nbyte = state->bytes_in_buffer[0];
@@ -557,24 +569,6 @@ int read_from_device(switchboard_state_t * state){
 	return ret;
 }
 
-int check_for_stopped_or_destroyed(switchboard_state_t * state){
-	if( state->nbyte < 0 ){
-		u32 o_events = MCU_EVENT_FLAG_STOP;
-		//mcu_debug_log_warning(MCU_DEBUG_DEVICE, "Stopping %s -> %s", state->input.device->name, state->output.device->name);
-
-		if( (state->o_flags & SWITCHBOARD_FLAG_IS_DESTROYED) == 0 ){
-			//this was not already destroyed by the user -- set error flags
-			state->o_flags |= SWITCHBOARD_FLAG_IS_STOPPED_ON_ERROR;
-			o_events = MCU_EVENT_FLAG_ERROR | MCU_EVENT_FLAG_CANCELED;
-		}
-
-		close_connection(state);
-		mcu_execute_event_handler(&state->event_handler, o_events, 0);
-		return 1;
-	}
-	return 0;
-}
-
 int read_then_write_until_async(switchboard_state_t * state){
 	int ret;
 	int transactions = 0;
@@ -613,6 +607,15 @@ int handle_data_ready(void * context, const mcu_event_t * event){
 
 	if( (state->input.async.nbyte < 0) || (o_events & (MCU_EVENT_FLAG_CANCELED|MCU_EVENT_FLAG_ERROR)) ){
 		//write error occurred -- abort connection
+
+		if( o_events & MCU_EVENT_FLAG_ERROR ){
+			state->o_flags |= SWITCHBOARD_FLAG_IS_ERROR;
+		}
+
+		if( o_events & MCU_EVENT_FLAG_CANCELED ){
+			state->o_flags |= SWITCHBOARD_FLAG_IS_CANCELED;
+		}
+
 		if( state->input.async.nbyte < 0 ){
 			state->nbyte = state->input.async.nbyte;
 		} else {
@@ -636,6 +639,15 @@ int handle_write_complete(void * context, const mcu_event_t * event){
 	state->o_flags &= ~SWITCHBOARD_FLAG_IS_WRITING_ASYNC;
 	if( (state->output.async.nbyte < 0) || (o_events & (MCU_EVENT_FLAG_CANCELED|MCU_EVENT_FLAG_ERROR)) ){
 		//write error occurred -- abort connection
+
+		if( o_events & MCU_EVENT_FLAG_ERROR ){
+			state->o_flags |= SWITCHBOARD_FLAG_IS_ERROR;
+		}
+
+		if( o_events & MCU_EVENT_FLAG_CANCELED ){
+			state->o_flags |= SWITCHBOARD_FLAG_IS_CANCELED;
+		}
+
 		if( state->output.async.nbyte < 0 ){
 			state->nbyte = state->output.async.nbyte;
 		} else {

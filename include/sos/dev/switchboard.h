@@ -124,7 +124,7 @@ typedef enum {
 	SWITCHBOARD_FLAG_IS_CONNECTED /*! Used in o_flags of switchboard_connection_t for status */ = (1<<3),
 	SWITCHBOARD_FLAG_IS_READING_ASYNC /*! Used in o_flags of switchboard_connection_t for status */ = (1<<4),
 	SWITCHBOARD_FLAG_IS_WRITING_ASYNC /*! Used in o_flags of switchboard_connection_t for status */ = (1<<5),
-	SWITCHBOARD_FLAG_IS_STOPPED_ON_ERROR /*! The connection has stopped because of an error (nbyte has the error code) */ = (1<<6),
+	SWITCHBOARD_FLAG_IS_ERROR /*! The connection has stopped because of an error (nbyte has the error code) */ = (1<<6),
 	SWITCHBOARD_FLAG_SET_TRANSACTION_LIMIT /*! Use with SWITCHBOARD_FLAG_CONNECT to specify a transaction limit other than the default */ = (1<<7),
 	SWITCHBOARD_FLAG_IS_FILL_ZERO /*! If no data is available on a non-blocking input, a packet full of zeros is sent to the output */ = (1<<8),
 	SWITCHBOARD_FLAG_IS_INPUT_NON_BLOCKING /*! The connection input terminal should operate in non-blocking mode (return immediately if no data is available) */ = (1<<9),
@@ -134,7 +134,8 @@ typedef enum {
 	SWITCHBOARD_FLAG_IS_FILL_LAST_16 /*! If no data is available on a non-blocking input, a packet is filled with the last 16-bit word of the previous packet */ = (1<<13),
 	SWITCHBOARD_FLAG_IS_FILL_LAST_32 /*! If no data is available on a non-blocking input, a packet is filled with the last 32-bit word of the previous packet */ = (1<<14),
 	SWITCHBOARD_FLAG_IS_FILL_LAST_64 /*! If no data is available on a non-blocking input, a packet is filled with the last 64-bit word of the previous packet */ = (1<<15),
-	SWITCHBOARD_FLAG_CLEAN /*! Cleanup connectections that have stopped on an error */ = (1<<16)
+	SWITCHBOARD_FLAG_CLEAN /*! Cleanup connectections that have stopped on an error */ = (1<<16),
+	SWITCHBOARD_FLAG_IS_CANCELED /*! Set if a connection operation was cancelled */ = (1<<17)
 } switchboard_flag_t;
 
 
