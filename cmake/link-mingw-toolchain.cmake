@@ -2,8 +2,16 @@
 # the name of the target operating system
 
 message(STATUS "Set GCC toolchaing to i686-w64-mingw32")
-set(TOOLCHAIN_HOST i686-w64-mingw32 CACHE INTERNAL "" FORCE)
-set(TOOLCHAIN_DIR "C:/Qt-5.9/Tools/mingw530_32")
+if(TOOLCHAIN_HOST)
+    message(STATUS "Toolchain host " ${TOOLCHAIN_HOST})
+else()
+    set(TOOLCHAIN_HOST i686-w64-mingw32 CACHE INTERNAL "" FORCE)
+endif()
+if(TOOLCHAIN_DIR)
+    message(STATUS "Toolchain directory " ${TOOLCHAIN_DIR})
+else()
+    set(TOOLCHAIN_DIR "C:/Qt-5.9/Tools/mingw530_32")
+endif()
 set(TOOLCHAIN_EXEC_SUFFIX .exe)
 
 set(SOS_SDK_LIB_DIR ${SOS_TOOLCHAIN_CMAKE_PATH}/../../lib)
