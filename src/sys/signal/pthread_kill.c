@@ -62,7 +62,7 @@ void signal_root_check_stack(void * args){
 		cortexm_get_thread_stack_ptr(&sp);
 	}
 
-	if( (sp - task_interrupt_stacksize() - (8*SCHED_DEFAULT_STACKGUARD_SIZE)) < //stackguard * 8 gives the handler a little bit of memory
+	if( (sp - task_interrupt_stacksize() - (2*SCHED_DEFAULT_STACKGUARD_SIZE)) < //stackguard * 2 gives the handler a little bit of memory
 			(u32)(sos_task_table[tid].mem.stackguard.addr) ){
 		ret = -1;
 	}

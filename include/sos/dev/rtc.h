@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 /*! \addtogroup RTC Real Time Clock (RTC)
@@ -70,7 +70,7 @@ typedef enum {
 	RTC_FLAG_IS_COUNT_WEEK /*! One time alarm */ = (1<<20),
 	RTC_FLAG_IS_COUNT_MONTH /*! One time alarm */ = (1<<21),
 	RTC_FLAG_IS_COUNT_YEAR /*! One time alarm */ = (1<<22),
-    RTC_FLAG_DISABLE_COUNT_EVENT /*! Enable a count event */ = (1<<23)
+	RTC_FLAG_DISABLE_COUNT_EVENT /*! Enable a count event */ = (1<<23)
 } rtc_flag_t;
 
 

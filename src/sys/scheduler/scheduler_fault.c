@@ -47,6 +47,7 @@ void scheduler_fault_build_trace_string(char * dest){
 	strcat(dest, hex_buffer);
 	strcat(dest, ":0x");
 	htoa(hex_buffer, (u32)m_scheduler_fault.fault.addr);
+	strcat(dest, hex_buffer);
 }
 
 void scheduler_fault_build_string(char * dest, const char * term){

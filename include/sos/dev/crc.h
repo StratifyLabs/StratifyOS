@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 /*! \addtogroup CRC Cyclic Redundancy Check (CRC)
@@ -47,19 +47,19 @@ extern "C" {
 #define CRC_IOC_IDENT_CHAR 'C'
 
 typedef enum {
-    CRC_FLAG_NONE = 0,
-    CRC_FLAG_ENABLE /*! Enable the CRC */ = (1<<0),
-    CRC_FLAG_DISABLE /*! Disable the CRC */ = (1<<1),
-    CRC_FLAG_IS_32BIT /*! Set in info flags for 32 bit CRC support */ = (1<<2),
-    CRC_FLAG_IS_16BIT /*! Set in info flags for 16 bit CRC support */ = (1<<3),
-    CRC_FLAG_IS_8BIT /*! Set in info flags for 8 bit CRC support */ = (1<<4),
+	CRC_FLAG_NONE = 0,
+	CRC_FLAG_ENABLE /*! Enable the CRC */ = (1<<0),
+	CRC_FLAG_DISABLE /*! Disable the CRC */ = (1<<1),
+	CRC_FLAG_IS_32BIT /*! Set in info flags for 32 bit CRC support */ = (1<<2),
+	CRC_FLAG_IS_16BIT /*! Set in info flags for 16 bit CRC support */ = (1<<3),
+	CRC_FLAG_IS_8BIT /*! Set in info flags for 8 bit CRC support */ = (1<<4),
 } crc_flag_t;
 
 
 typedef struct {
 	u32 o_flags;
 	u32 o_events;
-    u32 polynomial;
+	u32 polynomial;
 	u32 resd[8];
 } crc_info_t;
 

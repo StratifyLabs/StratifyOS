@@ -40,16 +40,16 @@
 #define NETIF_IOC_CHAR 'N'
 
 enum {
-    NETIF_FLAG_INIT /*! When setting attributes, initializes the interface */ = (1<<0),
-    NETIF_FLAG_DEINIT /*! When setting attributes, de-initialies the interface */ = (1<<1),
-    NETIF_FLAG_IS_LINK_UP /*! When settings attributes, ioctl() return 1 if link is up */ = (1<<2),
-    NETIF_FLAG_SET_LINK_UP /*! When setting attributes, sets the link as up */ = (1<<3),
-    NETIF_FLAG_SET_LINK_DOWN /*! When setting attributes, sets the link as down */ = (1<<4)
+	NETIF_FLAG_INIT /*! When setting attributes, initializes the interface */ = (1<<0),
+	NETIF_FLAG_DEINIT /*! When setting attributes, de-initialies the interface */ = (1<<1),
+	NETIF_FLAG_IS_LINK_UP /*! When settings attributes, ioctl() return 1 if link is up */ = (1<<2),
+	NETIF_FLAG_SET_LINK_UP /*! When setting attributes, sets the link as up */ = (1<<3),
+	NETIF_FLAG_SET_LINK_DOWN /*! When setting attributes, sets the link as down */ = (1<<4)
 };
 
 typedef struct MCU_PACK {
-    u32 o_flags;
-    u32 o_events;
+	u32 o_flags;
+	u32 o_events;
 } netif_info_t;
 
 /*! \brief Network Interface attributes
@@ -57,7 +57,7 @@ typedef struct MCU_PACK {
 typedef struct MCU_PACK {
 	u32 o_flags;
 	u16 mtu;
-    u8 mac_address[10];
+	u8 mac_address[10];
 } netif_attr_t;
 
 

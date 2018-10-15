@@ -13,7 +13,7 @@
 
 #define LINK_ADDR (0xDEFF8001 + (__LINE__ - 16) * 4)
 
-.global _signature; _signature = 0x00000370 + __CORTEX_M;
+.global _signature; _signature = 0x00000380 + __CORTEX_M;
 .global __cxa_pure_virtual; __cxa_pure_virtual = LINK_ADDR;
 .global _global_impure_ptr; _global_impure_ptr = LINK_ADDR;
 .global _impure_ptr; _impure_ptr = LINK_ADDR;

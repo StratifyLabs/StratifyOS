@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 /*! \addtogroup DRIVE Drive
@@ -52,15 +52,15 @@
 #define DRIVE_IOC_IDENT_CHAR 'd'
 
 enum {
-    DRIVE_FLAG_PROTECT /*! Enables driver write protection. */ = (1<<0),
-    DRIVE_FLAG_UNPROTECT /*! Disables driver write protection. */ = (1<<1),
-    DRIVE_FLAG_ERASE_BLOCKS = (1<<2),
-    DRIVE_FLAG_ERASE_SECTORS /*! Erases sectors on the disk. */ = (1<<2),
-    DRIVE_FLAG_ERASE_DEVICE /*! Erases the drive. */ = (1<<3),
-    DRIVE_FLAG_POWERDOWN /*! Puts the drive in power down mode. */ = (1<<4),
-    DRIVE_FLAG_POWERUP /*! Powers up the driver (after power down). */ = (1<<5),
-    DRIVE_FLAG_INIT /*! Initializes the drive. */ = (1<<6),
-    DRIVE_FLAG_RESET /*! Issue a reset to the drive. */ = (1<<7)
+	DRIVE_FLAG_PROTECT /*! Enables driver write protection. */ = (1<<0),
+	DRIVE_FLAG_UNPROTECT /*! Disables driver write protection. */ = (1<<1),
+	DRIVE_FLAG_ERASE_BLOCKS = (1<<2),
+	DRIVE_FLAG_ERASE_SECTORS /*! Erases sectors on the disk. */ = (1<<2),
+	DRIVE_FLAG_ERASE_DEVICE /*! Erases the drive. */ = (1<<3),
+	DRIVE_FLAG_POWERDOWN /*! Puts the drive in power down mode. */ = (1<<4),
+	DRIVE_FLAG_POWERUP /*! Powers up the driver (after power down). */ = (1<<5),
+	DRIVE_FLAG_INIT /*! Initializes the drive. */ = (1<<6),
+	DRIVE_FLAG_RESET /*! Issue a reset to the drive. */ = (1<<7)
 } drive_flags_t;
 
 /*! \brief Drive Info
@@ -87,9 +87,9 @@ typedef struct MCU_PACK {
  *
  */
 typedef struct MCU_PACK {
-    u32 o_flags /*! Drive flags such as \ref DRIVE_FLAG_INIT */;
-    u32 start /*! Start block (used with \ref DRIVE_FLAG_ERASE_BLOCKS) */;
-    u32 end /*! End block (used with \ref DRIVE_FLAG_ERASE_BLOCKS) */;
+	u32 o_flags /*! Drive flags such as \ref DRIVE_FLAG_INIT */;
+	u32 start /*! Start block (used with \ref DRIVE_FLAG_ERASE_BLOCKS) */;
+	u32 end /*! End block (used with \ref DRIVE_FLAG_ERASE_BLOCKS) */;
 	u32 resd[8];
 } drive_attr_t;
 

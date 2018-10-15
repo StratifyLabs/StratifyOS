@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 /*! \addtogroup SPI Serial Peripheral Interface (SPI)
@@ -122,8 +122,8 @@ typedef enum {
 	SPI_FLAG_IS_MODE3 /*! SPI Mode 3 */ = (1<<6),
 	SPI_FLAG_SET_MASTER /*! SPI Master */ = (1<<7),
 	SPI_FLAG_SET_SLAVE /*! SPI Slave */ = (1<<8),
-    SPI_FLAG_IS_FULL_DUPLEX /*! Full duplex mode (data must be read async when written syncronously) */ = (1<<9),
-    SPI_FLAG_IS_HALF_DUPLEX /*! Half duplex mode (default mode - will be used if SPI_FLAG_IS_FULL_DUPLEX not set) */ = (1<<10),
+	SPI_FLAG_IS_FULL_DUPLEX /*! Full duplex mode (data must be read async when written syncronously) */ = (1<<9),
+	SPI_FLAG_IS_HALF_DUPLEX /*! Half duplex mode (default mode - will be used if SPI_FLAG_IS_FULL_DUPLEX not set) */ = (1<<10),
 } spi_flag_t;
 
 typedef struct MCU_PACK {
@@ -136,10 +136,10 @@ typedef struct MCU_PACK {
  *
  */
 typedef struct MCU_PACK {
-    mcu_pin_t miso /*! MISO pin */;
-    mcu_pin_t mosi /*! MOSI pin */;
-    mcu_pin_t sck /*! Serial clock pin */;
-    mcu_pin_t cs /*! Chip select pin */;
+	mcu_pin_t miso /*! MISO pin */;
+	mcu_pin_t mosi /*! MOSI pin */;
+	mcu_pin_t sck /*! Serial clock pin */;
+	mcu_pin_t cs /*! Chip select pin */;
 } spi_pin_assignment_t;
 
 
@@ -147,10 +147,10 @@ typedef struct MCU_PACK {
  *
  */
 typedef struct MCU_PACK {
-    u32 o_flags /*! Flag bitmask */;
-    spi_pin_assignment_t pin_assignment /*! Pin Assignment */;
-    u32 freq /*! Target operating frequency */;
-    u8 width /*! Width for transactions */;
+	u32 o_flags /*! Flag bitmask */;
+	spi_pin_assignment_t pin_assignment /*! Pin Assignment */;
+	u32 freq /*! Target operating frequency */;
+	u8 width /*! Width for transactions */;
 	u32 resd[8];
 } spi_attr_t;
 

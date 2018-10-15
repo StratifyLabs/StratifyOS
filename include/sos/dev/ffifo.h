@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 /*! \addtogroup SYS_FIFO FIFO Buffer
@@ -43,16 +43,16 @@
 
 enum {
 	FFIFO_FLAG_SET_WRITEBLOCK = FIFO_FLAG_SET_WRITEBLOCK /*! Write block flag */,
-    FFIFO_FLAG_IS_OVERFLOW = FIFO_FLAG_IS_OVERFLOW /*! Overflow flag (if set with FFIFO_FLAG_SET_WRITEBLOCK, write block is disabled) */,
+	FFIFO_FLAG_IS_OVERFLOW = FIFO_FLAG_IS_OVERFLOW /*! Overflow flag (if set with FFIFO_FLAG_SET_WRITEBLOCK, write block is disabled) */,
 	FFIFO_FLAG_NOTIFY_WRITE = FIFO_FLAG_NOTIFY_WRITE /*! Notify on write */,
 	FFIFO_FLAG_NOTIFY_READ = FIFO_FLAG_NOTIFY_READ /*! Notify on read */,
 };
 
 typedef struct MCU_PACK {
 	u32 o_flags /*! Fifo flags */;
-    u16 frame_count /*! Total number of frames in the fifo */;
+	u16 frame_count /*! Total number of frames in the fifo */;
 	u16 frame_size /*! Frame size of the fifo */;
-    u16 frame_count_ready /*! Number of frames being used */;
+	u16 frame_count_ready /*! Number of frames being used */;
 	u16 resd_align;
 	u32 resd[8];
 } ffifo_info_t;

@@ -27,6 +27,7 @@
 //#include "config.h"
 #include <errno.h>
 #include <signal.h>
+#include "cortexm/mpu.h"
 #include "mcu/mcu.h"
 #include "mcu/core.h"
 #include "sos/sos.h"
@@ -36,6 +37,8 @@
 #include "../signal/sig_local.h"
 
 #include "mcu/debug.h"
+
+extern void mcu_core_pendsv_handler();
 
 extern void sos_root_trace_event(void * info);
 
@@ -51,7 +54,7 @@ void mcu_fault_event_handler(fault_t * fault){
 		memcpy((void*)&m_scheduler_fault.fault, fault, sizeof(fault_t));
 	}
 
-	if ( pid == 0 ){
+	if ( (pid == 0) || (task_enabled_active_not_stopped( task_get_current() ) == 0) ){
 		mcu_fault_save(fault); //save the fault in NV memory then log it to the filesystem on startup
 		//The OS has experienced a fault
 
@@ -84,8 +87,12 @@ void mcu_fault_event_handler(fault_t * fault){
 		char buffer[128];
 		scheduler_fault_build_string(buffer, 0);
 		mcu_debug_log_error(MCU_DEBUG_SYS, "Task Fault:%d:%s", task_get_current(), buffer);
-		scheduler_fault_build_memory_string(buffer, 0);
-		mcu_debug_log_error(MCU_DEBUG_SYS, "Task Memory:%d:%s", task_get_current(), buffer);
+		//check for a stack overflow error
+		u32 psp;
+		cortexm_get_thread_stack_ptr(&psp);
+		if( psp <= (u32)mpu_addr((u32)sos_task_table[task_get_current()].mem.stackguard.addr) + mpu_size(sos_task_table[task_get_current()].mem.stackguard.size) ){
+			mcu_debug_log_error(MCU_DEBUG_SYS, "Stack Overflow");
+		}
 #endif
 		//send a signal to kill the task
 		for(i=1; i < task_get_total(); i++){
@@ -110,7 +117,24 @@ void mcu_fault_event_handler(fault_t * fault){
 		}
 		scheduler_root_update_on_sleep();
 
-
+		/* scheduler_root_update_on_sleep() sets the PEND SV interrupt.
+		 *
+		 *
+		 * However, the pendsv handler won't be executed until this interrupt returns.
+		 * When this interrupt returns it will restore the hw frame to the PSP. If the fault
+		 * was caused be a bad PSP value, another fault will immediately be triggered. The hw
+		 * frame is restored in un-privileged mode.
+		 *
+		 * By calling mcu_core_pendsv_handler() manually, the context will be changed to a
+		 * non-faulty thread. This means the faulting PSP will never be touched again.
+		 *
+		 * The mcu_core_pendsv_handler() will save the context of the faulty PSP, but the PSP
+		 * was reset above so, it won't overflow to memory owned by another process
+		 *
+		 *
+		 */
+		task_root_resetstack(task_get_current()); //this will make sure the hardware has stack space to shutdown on a stack overflow error
+		mcu_core_pendsv_handler();
 	}
 }
 

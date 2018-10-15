@@ -116,18 +116,17 @@ int task_setstackguard(int tid, void * stackaddr, int stacksize){
 
 int task_root_set_stackguard(int tid, void * stackaddr, int stacksize){
 	int err;
-	uint32_t newaddr;
-	uint32_t rbar;
-	uint32_t rasr;
+	u32 newaddr;
+	u32 rbar;
+	u32 rasr;
 
-	if ( (uint32_t)tid < task_get_total() ){
+	if ( (u32)tid < task_get_total() ){
 
-		newaddr = (uint32_t)stackaddr;
+		newaddr = (u32)stackaddr;
 		newaddr = (newaddr & ~(stacksize - 1)) + stacksize;
 
-
 		err = mpu_calc_region(
-				2,
+				TASK_APPLICATION_STACK_GUARD_REGION,
 				(void*)newaddr,
 				stacksize,
 				MPU_ACCESS_PRW,
@@ -166,7 +165,7 @@ int init_os_memory_protection(task_memories_t * os_mem){
 
 	//Make OS System memory read-only -- region 0 -- highest priority
 	err = mpu_enable_region(
-			0,
+			TASK_SYSTEM_STACK_MPU_REGION,
 			&_sys,
 			(char*)&_esys - (char*)&_sys,
 			MPU_ACCESS_PRW_UR,
@@ -181,7 +180,7 @@ int init_os_memory_protection(task_memories_t * os_mem){
 
 	//Make the OS flash executable and readable -- region 3
 	err = mpu_enable_region(
-			3,
+			TASK_SYSTEM_CODE_MPU_REGION,
 			os_mem->code.addr,
 			os_mem->code.size,
 			MPU_ACCESS_PR_UR,
@@ -195,7 +194,7 @@ int init_os_memory_protection(task_memories_t * os_mem){
 
 	//Make the OS shared memory R/W -- region 5
 	err = mpu_enable_region(
-			5,
+			TASK_SYSTEM_DATA_MPU_REGION,
 			os_mem->data.addr,
 			os_mem->data.size,
 			MPU_ACCESS_PRW_URW,
@@ -226,7 +225,7 @@ int task_mpu_calc_protection(task_memories_t * mem){
 
 	//Region 6
 	err = mpu_calc_region(
-			6,
+			TASK_APPLICATION_CODE_MPU_REGION,
 			mem->code.addr,
 			mem->code.size,
 			MPU_ACCESS_PR_UR,
@@ -245,7 +244,7 @@ int task_mpu_calc_protection(task_memories_t * mem){
 
 	//Region 7
 	err = mpu_calc_region(
-			7,
+			TASK_APPLICATION_DATA_MPU_REGION,
 			mem->data.addr,
 			mem->data.size,
 			MPU_ACCESS_PRW_URW,

@@ -38,26 +38,26 @@
 
 
 enum {
-    DEVICE_FIFO_FLAG_START /*! Start streaming */= (1<<0),
-    DEVICE_FIFO_FLAG_STOP /*! Stop streaming */ = (1<<1),
-    DEVICE_FIFO_FLAG_FLUSH /*! Flush all stream data */ = (1<<2)
+	DEVICE_FIFO_FLAG_START /*! Start streaming */= (1<<0),
+	DEVICE_FIFO_FLAG_STOP /*! Stop streaming */ = (1<<1),
+	DEVICE_FIFO_FLAG_FLUSH /*! Flush all stream data */ = (1<<2)
 };
 
 typedef struct MCU_PACK {
-    u32 o_flags /*! Use with DEVICE_FIFO_FLAG_START or DEVICE_FIFO_FLAG_STOP */;
-    fifo_attr_t tx;
-    fifo_attr_t rx;
+	u32 o_flags /*! Use with DEVICE_FIFO_FLAG_START or DEVICE_FIFO_FLAG_STOP */;
+	fifo_attr_t tx;
+	fifo_attr_t rx;
 } device_fifo_attr_t;
 
 typedef struct MCU_PACK {
-    fifo_info_t fifo;
-    u32 count;
-    s32 error;
+	fifo_info_t fifo;
+	u32 count;
+	s32 error;
 } device_fifo_channel_info_t;
 
 typedef struct MCU_PACK {
-    device_fifo_channel_info_t rx;
-    device_fifo_channel_info_t tx;
+	device_fifo_channel_info_t rx;
+	device_fifo_channel_info_t tx;
 } device_fifo_info_t;
 
 

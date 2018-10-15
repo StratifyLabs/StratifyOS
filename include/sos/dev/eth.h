@@ -65,66 +65,66 @@
 #define ETH_IOC_IDENT_CHAR 'e'
 
 enum {
-    ETH_FLAG_SET_INTERFACE = (1<<0),
-    ETH_FLAG_IS_FULLDUPLEX = (1<<1),
-    ETH_FLAG_IS_HALFDUPLEX = (1<<2),
-    ETH_FLAG_IS_AUTONEGOTIATION_ENABLED = (1<<3),
-    ETH_FLAG_IS_SPEED_100M = (1<<4),
-    ETH_FLAG_IS_SPEED_1G = (1<<5),
-    ETH_FLAG_IS_MII = (1<<6),
-    ETH_FLAG_IS_RMII = (1<<7),
-    ETH_FLAG_GET_STATE = (1<<8),
-    ETH_FLAG_SET_REGISTER = (1<<9),
-    ETH_FLAG_GET_REGISTER = (1<<10),
-    ETH_FLAG_STOP = (1<<11)
+	ETH_FLAG_SET_INTERFACE = (1<<0),
+	ETH_FLAG_IS_FULLDUPLEX = (1<<1),
+	ETH_FLAG_IS_HALFDUPLEX = (1<<2),
+	ETH_FLAG_IS_AUTONEGOTIATION_ENABLED = (1<<3),
+	ETH_FLAG_IS_SPEED_100M = (1<<4),
+	ETH_FLAG_IS_SPEED_1G = (1<<5),
+	ETH_FLAG_IS_MII = (1<<6),
+	ETH_FLAG_IS_RMII = (1<<7),
+	ETH_FLAG_GET_STATE = (1<<8),
+	ETH_FLAG_SET_REGISTER = (1<<9),
+	ETH_FLAG_GET_REGISTER = (1<<10),
+	ETH_FLAG_STOP = (1<<11)
 };
 
 typedef struct MCU_PACK {
-    mcu_pin_t clk;
-    mcu_pin_t txd0;
-    mcu_pin_t txd1;
-    mcu_pin_t tx_en;
-    mcu_pin_t rxd0;
-    mcu_pin_t rxd1;
-    mcu_pin_t crs_dv;
-    mcu_pin_t rx_er;
-    mcu_pin_t unused[8]; //needs to match size of eth_mii_pin_assignment_t
+	mcu_pin_t clk;
+	mcu_pin_t txd0;
+	mcu_pin_t txd1;
+	mcu_pin_t tx_en;
+	mcu_pin_t rxd0;
+	mcu_pin_t rxd1;
+	mcu_pin_t crs_dv;
+	mcu_pin_t rx_er;
+	mcu_pin_t unused[8]; //needs to match size of eth_mii_pin_assignment_t
 } eth_rmii_pin_assignment_t;
 
 typedef struct MCU_PACK {
-    mcu_pin_t tx_clk;
-    mcu_pin_t txd0;
-    mcu_pin_t txd1;
-    mcu_pin_t txd2;
-    mcu_pin_t txd3;
-    mcu_pin_t tx_en;
-    mcu_pin_t tx_er;
-    mcu_pin_t rx_clk;
-    mcu_pin_t rxd0;
-    mcu_pin_t rxd1;
-    mcu_pin_t rxd2;
-    mcu_pin_t rxd3;
-    mcu_pin_t rx_dv;
-    mcu_pin_t rx_er;
-    mcu_pin_t crs;
-    mcu_pin_t col;
+	mcu_pin_t tx_clk;
+	mcu_pin_t txd0;
+	mcu_pin_t txd1;
+	mcu_pin_t txd2;
+	mcu_pin_t txd3;
+	mcu_pin_t tx_en;
+	mcu_pin_t tx_er;
+	mcu_pin_t rx_clk;
+	mcu_pin_t rxd0;
+	mcu_pin_t rxd1;
+	mcu_pin_t rxd2;
+	mcu_pin_t rxd3;
+	mcu_pin_t rx_dv;
+	mcu_pin_t rx_er;
+	mcu_pin_t crs;
+	mcu_pin_t col;
 } eth_mii_pin_assignment_t;
 
 typedef struct MCU_PACK {
-    union {
-        eth_rmii_pin_assignment_t rmii;
-        eth_mii_pin_assignment_t mii;
-    };
-    mcu_pin_t mdio;
-    mcu_pin_t mdc;
+	union {
+		eth_rmii_pin_assignment_t rmii;
+		eth_mii_pin_assignment_t mii;
+	};
+	mcu_pin_t mdio;
+	mcu_pin_t mdc;
 } eth_pin_assignment_t;
 
 typedef struct MCU_PACK {
-    u32 o_flags;
-    u32 o_events;
-    u8 mac_address[10] /*! Hardware mac address */;
-    u16 resd0;
-    u32 resd1[8];
+	u32 o_flags;
+	u32 o_events;
+	u8 mac_address[10] /*! Hardware mac address */;
+	u16 resd0;
+	u32 resd1[8];
 } eth_info_t;
 
 /*! \brief ETH IO Attributes
@@ -132,10 +132,10 @@ typedef struct MCU_PACK {
  * for configuring the ethernet port.
  */
 typedef struct MCU_PACK {
-    u32 o_flags /*! Flag settings */;
-    eth_pin_assignment_t pin_assignment /*! Pin assignement (use with ETH_FLAG_SET_INTERFACE) */;
-    u8 mac_address[10] /*! the MAC address (use with ETH_FLAG_SET_INTERFACE) */;
-    u16 phy_address /*! Address of PHY chip (use with ETH_FLAG_SET_INTERFACE) */;
+	u32 o_flags /*! Flag settings */;
+	eth_pin_assignment_t pin_assignment /*! Pin assignement (use with ETH_FLAG_SET_INTERFACE) */;
+	u8 mac_address[10] /*! the MAC address (use with ETH_FLAG_SET_INTERFACE) */;
+	u16 phy_address /*! Address of PHY chip (use with ETH_FLAG_SET_INTERFACE) */;
 } eth_attr_t;
 
 

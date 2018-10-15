@@ -33,7 +33,7 @@
 u32 const symbols_table[] SYMBOLS_TABLE_WEAK;
 u32 const symbols_table[] = {
     //The first position is the signature
-    (u32)0x00000370 + __CORTEX_M,
+	 (u32)0x00000380 + __CORTEX_M,
     (u32)__cxa_pure_virtual,
     (u32)&_global_impure_ptr,
     (u32)&_impure_ptr,

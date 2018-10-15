@@ -51,26 +51,26 @@
 
 
 enum {
-    STREAM_FFIFO_FLAG_START /*! Start streaming */= (1<<0),
-    STREAM_FFIFO_FLAG_STOP /*! Stop streaming */ = (1<<1),
-    STREAM_FFIFO_FLAG_FLUSH /*! Flush all stream data */ = (1<<2)
+	STREAM_FFIFO_FLAG_START /*! Start streaming */= (1<<0),
+	STREAM_FFIFO_FLAG_STOP /*! Stop streaming */ = (1<<1),
+	STREAM_FFIFO_FLAG_FLUSH /*! Flush all stream data */ = (1<<2)
 };
 
 typedef struct MCU_PACK {
-    u32 o_flags /*! Use with STREAM_FFIFO_FLAG_START or STREAM_FFIFO_FLAG_STOP */;
-    ffifo_attr_t tx;
-    ffifo_attr_t rx;
+	u32 o_flags /*! Use with STREAM_FFIFO_FLAG_START or STREAM_FFIFO_FLAG_STOP */;
+	ffifo_attr_t tx;
+	ffifo_attr_t rx;
 } stream_ffifo_attr_t;
 
 typedef struct MCU_PACK {
-    ffifo_info_t ffifo;
-    u32 access_count;
-    s32 error;
+	ffifo_info_t ffifo;
+	u32 access_count;
+	s32 error;
 } stream_ffifo_channel_info_t;
 
 typedef struct MCU_PACK {
-    stream_ffifo_channel_info_t rx;
-    stream_ffifo_channel_info_t tx;
+	stream_ffifo_channel_info_t rx;
+	stream_ffifo_channel_info_t tx;
 } stream_ffifo_info_t;
 
 

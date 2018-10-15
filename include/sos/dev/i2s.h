@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 /*! \addtogroup I2S Inter-Integrated Sound (I2S) Master
@@ -53,12 +53,12 @@ enum {
 	I2S_FLAG_SET_SLAVE /*! Set the I2S as a slave */ = (1<<7),
 	I2S_FLAG_IS_TRANSMITTER /*! Set the I2S transmitter (master or slave) */ = (1<<8),
 	I2S_FLAG_IS_RECEIVER /*! Set the I2S receiver (master or slave) */ = (1<<9),
-    I2S_FLAG_IS_FORMAT_MSB /*! Set this bit for MSB format */ = (1<<10),
-    I2S_FLAG_IS_FORMAT_LSB /*! Set this bit for LSB format */ = (1<<11),
-    I2S_FLAG_IS_MCK_ENABLED /*! Set this bit to enable the mclk output */ = (1<<12),
-    I2S_FLAG_IS_FORMAT_PCM_SHORT /*! Set this bit for PCM Short format*/ = (1<<13),
-    I2S_FLAG_IS_FORMAT_PCM_LONG /*! Set this bit for PCM Long format*/ = (1<<14),
-    I2S_FLAG_IS_WIDTH_16_EXTENDED /*! I2S has 16-bits of data in 32-bit blocks */ = (1<<15)
+	I2S_FLAG_IS_FORMAT_MSB /*! Set this bit for MSB format */ = (1<<10),
+	I2S_FLAG_IS_FORMAT_LSB /*! Set this bit for LSB format */ = (1<<11),
+	I2S_FLAG_IS_MCK_ENABLED /*! Set this bit to enable the mclk output */ = (1<<12),
+	I2S_FLAG_IS_FORMAT_PCM_SHORT /*! Set this bit for PCM Short format*/ = (1<<13),
+	I2S_FLAG_IS_FORMAT_PCM_LONG /*! Set this bit for PCM Long format*/ = (1<<14),
+	I2S_FLAG_IS_WIDTH_16_EXTENDED /*! I2S has 16-bits of data in 32-bit blocks */ = (1<<15)
 
 };
 

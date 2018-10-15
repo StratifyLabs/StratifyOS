@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 /*! \addtogroup SYS_DEV System Devices
@@ -58,7 +58,7 @@ enum {
 typedef struct MCU_PACK {
 	char kernel_version[8] /*!  The OS (kernel) Version */;
 	char sys_version[8] /*!  The System (board) Version */;
-    char arch[16] /*!  The target architecture (v7m, v7em, v7em_f4ss, v7em_f4sh, v7em_f5ss, v7em_f5sh, v7em_f5ds, v7em_f5dh) */;
+	char arch[16] /*!  The target architecture (v7m, v7em, v7em_f4ss, v7em_f4sh, v7em_f5ss, v7em_f5sh, v7em_f5ds, v7em_f5dh) */;
 	u32 signature /*!  Ths OS library signature used to ensure proper build system is used for applications */;
 	u32 security /*!  Security flags (see \ref sys_security_flags_t)*/;
 	u32 cpu_freq /*!  The CPU clock frequency */;
@@ -71,10 +71,10 @@ typedef struct MCU_PACK {
 	u32 o_flags /*!  System flags */;
 	u32 hardware_id /*! Hardware ID of the board */;
 	char trace_name[LINK_NAME_MAX] /*! Name of device used for tracing */;
-    char bsp_git_hash[16] /*! Git Hash for the board support package */;
-    char sos_git_hash[16] /*! Git Hash for the SOS build */;
-    char mcu_git_hash[16] /*! Git Hash for the linked MCU library */;
-    u32 resd[20];
+	char bsp_git_hash[16] /*! Git Hash for the board support package */;
+	char sos_git_hash[16] /*! Git Hash for the SOS build */;
+	char mcu_git_hash[16] /*! Git Hash for the linked MCU library */;
+	u32 resd[20];
 } sys_info_t;
 
 /*! \details This structure defines the system attributes.
@@ -158,7 +158,7 @@ typedef struct MCU_PACK {
  * process.  It is used with the I_SYS_GETPROCESS request.
  */
 typedef struct MCU_PACK {
-    char name[LINK_NAME_MAX] /*! \brief Written by caller to specify name */;
+	char name[LINK_NAME_MAX] /*! \brief Written by caller to specify name */;
 	s32 pid /*! \brief Process ID (written by driver; -1 is process is not running) */;
 	s32 pthread_id /*! \brief Thread ID of primary thread in process (written by driver; -1 if process is not running) */;
 } sys_process_t;

@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 /*! \addtogroup TMR Timer (TMR)
@@ -75,16 +75,16 @@ enum {
 	TMR_FLAG_IS_CHANNEL_CLEAR_OUTPUT_ON_MATCH /*! Clear the output to 0 on a match */ = (1<<16),
 	TMR_FLAG_IS_CHANNEL_TOGGLE_OUTPUT_ON_MATCH /*! Toggle the output on a match */ = (1<<17),
 	TMR_FLAG_IS_CHANNEL_PWM_MODE /*! Put the timer in PWM mode */ = (1<<18),
-    TMR_FLAG_SET_TRIGGER /*! Set the trigger for the timer */ = (1<<19),
-    TMR_FLAG_IS_SLAVE /*! The trigger indicates slave behavior */ = (1<<20),
-    TMR_FLAG_IS_MASTER /*! The trigger indicates master mode */ = (1<<21),
-    TMR_FLAG_IS_TRIGGER_RELOAD /*! Trigger when timer reloads */ = (1<<22),
-    TMR_FLAG_IS_TRIGGER_RESET /*! Trigger when timer is re-initialized */ = (1<<23),
-    TMR_FLAG_IS_TRIGGER_ENABLE /*! Trigger when timer is enabled*/ = (1<<24),
-    TMR_FLAG_IS_TRIGGER_OC0 /*! Trigger on output compare 0 */ = (1<<25),
-    TMR_FLAG_IS_TRIGGER_OC1 /*! Trigger on output compare 1 */ = (1<<26),
-    TMR_FLAG_IS_TRIGGER_OC2 /*! Trigger on output compare 2 */ = (1<<27),
-    TMR_FLAG_IS_TRIGGER_OC3 /*! Trigger on output compare 3 */ = (1<<28),
+	TMR_FLAG_SET_TRIGGER /*! Set the trigger for the timer */ = (1<<19),
+	TMR_FLAG_IS_SLAVE /*! The trigger indicates slave behavior */ = (1<<20),
+	TMR_FLAG_IS_MASTER /*! The trigger indicates master mode */ = (1<<21),
+	TMR_FLAG_IS_TRIGGER_RELOAD /*! Trigger when timer reloads */ = (1<<22),
+	TMR_FLAG_IS_TRIGGER_RESET /*! Trigger when timer is re-initialized */ = (1<<23),
+	TMR_FLAG_IS_TRIGGER_ENABLE /*! Trigger when timer is enabled*/ = (1<<24),
+	TMR_FLAG_IS_TRIGGER_OC0 /*! Trigger on output compare 0 */ = (1<<25),
+	TMR_FLAG_IS_TRIGGER_OC1 /*! Trigger on output compare 1 */ = (1<<26),
+	TMR_FLAG_IS_TRIGGER_OC2 /*! Trigger on output compare 2 */ = (1<<27),
+	TMR_FLAG_IS_TRIGGER_OC3 /*! Trigger on output compare 3 */ = (1<<28),
 };
 
 typedef struct MCU_PACK {
@@ -100,8 +100,8 @@ typedef struct MCU_PACK {
 
 typedef struct MCU_PACK {
 	u32 o_flags;
-    tmr_pin_assignment_t pin_assignment;
-    u32 freq /*! The timer frequency */;
+	tmr_pin_assignment_t pin_assignment;
+	u32 freq /*! The timer frequency */;
 	u32 period /*! If this value is non-zero, the timer will reset when it matches this value (if supported) */;
 	mcu_channel_t channel;
 	u32 resd[8];

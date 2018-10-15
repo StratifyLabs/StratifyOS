@@ -44,10 +44,10 @@ enum {
  *
  */
 typedef struct MCU_PACK {
-    u8 brightness;
-    u8 red;
-    u8 green;
-    u8 blue;
+	u8 brightness;
+	u8 red;
+	u8 green;
+	u8 blue;
 } led_status_t;
 
 /*! \brief I2S IO Attributes

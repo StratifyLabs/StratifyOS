@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 
@@ -91,42 +91,42 @@ void cleanup_memory(struct _reent * reent_ptr, int release_extra_memory){
 	malloc_chunk_t * next;
 	int next_free;
 	int current_free;
-    malloc_chunk_t * last_chunk_if_free = 0;
+	malloc_chunk_t * last_chunk_if_free = 0;
 	current = (malloc_chunk_t*)&(reent_ptr->procmem_base->base);
 	next = current + (current->header.num_chunks);
-    //if num_chunks is zero -- that is the last chunk
+	//if num_chunks is zero -- that is the last chunk
 	while( next->header.num_chunks != 0 ){
 		current_free = malloc_chunk_is_free(current);
-        mcu_debug_log_info(MCU_DEBUG_MALLOC, "CC:0x%X %d %d", (int)current, current->header.num_chunks, current_free);
+		mcu_debug_log_info(MCU_DEBUG_MALLOC, "CC:0x%X %d %d", (int)current, current->header.num_chunks, current_free);
 		next_free = malloc_chunk_is_free(next);
-        mcu_debug_log_info(MCU_DEBUG_MALLOC, "NC:0x%X %d %d", (int)next, next->header.num_chunks, next_free);
+		mcu_debug_log_info(MCU_DEBUG_MALLOC, "NC:0x%X %d %d", (int)next, next->header.num_chunks, next_free);
 
-        if( next_free ){
-            last_chunk_if_free = next;
-        } else {
-            last_chunk_if_free = 0;
-        }
+		if( next_free ){
+			last_chunk_if_free = next;
+		} else {
+			last_chunk_if_free = 0;
+		}
 
 		if ( next_free == -1 ){
 			return;
 		}
 
-        if ( (current_free == 1) && (next_free == 1) ){ //both blocks are free
-            //combine the free chunks as one larger free chunk
+		if ( (current_free == 1) && (next_free == 1) ){ //both blocks are free
+			//combine the free chunks as one larger free chunk
 			malloc_set_chunk_free(current, current->header.num_chunks + next->header.num_chunks);
-        } else {
+		} else {
 			current = next;
 		}
 		next = next + next->header.num_chunks;
 	}
 
-    //next->header.num_chunks is 0 -- next and current are the same
-    if( release_extra_memory && (last_chunk_if_free != 0) ){
-        //do negative _sbrk to give memory back to stack
-        ptrdiff_t size = -1*(last_chunk_if_free->header.num_chunks * MALLOC_CHUNK_SIZE);
-        _sbrk_r(reent_ptr, size);
-        set_last_chunk(last_chunk_if_free);
-    }
+	//next->header.num_chunks is 0 -- next and current are the same
+	if( release_extra_memory && (last_chunk_if_free != 0) ){
+		//do negative _sbrk to give memory back to stack
+		ptrdiff_t size = -1*(last_chunk_if_free->header.num_chunks * MALLOC_CHUNK_SIZE);
+		_sbrk_r(reent_ptr, size);
+		set_last_chunk(last_chunk_if_free);
+	}
 
 }
 
@@ -169,13 +169,13 @@ void _free_r(struct _reent * reent_ptr, void * addr){
 	}
 
 
-    if ( addr == (void*)1 ){
-        //special case to tell system to give memory back to the stack
-        __malloc_lock(reent_ptr);
-        cleanup_memory(reent_ptr, 1);
-        __malloc_unlock(reent_ptr);
-        return;
-    }
+	if ( addr == (void*)1 ){
+		//special case to tell system to give memory back to the stack
+		__malloc_lock(reent_ptr);
+		cleanup_memory(reent_ptr, 1);
+		__malloc_unlock(reent_ptr);
+		return;
+	}
 
 	chunk = malloc_chunk_from_addr(addr);
 
@@ -185,27 +185,27 @@ void _free_r(struct _reent * reent_ptr, void * addr){
 	b = &(reent_ptr->procmem_base->base);
 	//sanity check for chunk that is not in proc mem (low side)
 	if( addr < b ){
-        mcu_debug_log_warning(MCU_DEBUG_MALLOC, "Free addr below heap");
+		mcu_debug_log_warning(MCU_DEBUG_MALLOC, "Free addr below heap");
 		return;
 	}
 
-    if( (u32)addr > (u32)b + reent_ptr->procmem_base->size ){
-        mcu_debug_log_warning(MCU_DEBUG_MALLOC, "Free addr above heap");
+	if( (u32)addr > (u32)b + reent_ptr->procmem_base->size ){
+		mcu_debug_log_warning(MCU_DEBUG_MALLOC, "Free addr above heap");
 		return;
 	}
 
 	__malloc_lock(reent_ptr);
 	//check for corrupt memory
 	if( is_memory_corrupt(reent_ptr) < 0 ){
-        mcu_debug_log_error(MCU_DEBUG_MALLOC, "Free Memory Corrupt 0x%lX", (u32)reent_ptr);
-        malloc_process_fault(reent_ptr); //this will exit the process
-        __malloc_unlock(reent_ptr);
+		mcu_debug_log_error(MCU_DEBUG_MALLOC, "Free Memory Corrupt 0x%lX", (u32)reent_ptr);
+		malloc_process_fault(reent_ptr); //this will exit the process
+		__malloc_unlock(reent_ptr);
 		return;
 	}
 
 	tmp = (unsigned int)chunk - (unsigned int)(&(base->base));
 	if ( tmp % MALLOC_CHUNK_SIZE ){
-        mcu_debug_log_warning(MCU_DEBUG_MALLOC, "Free addr not aligned");
+		mcu_debug_log_warning(MCU_DEBUG_MALLOC, "Free addr not aligned");
 		__malloc_unlock(reent_ptr);
 		return;
 	}
@@ -214,26 +214,26 @@ void _free_r(struct _reent * reent_ptr, void * addr){
 
 	if ( is_free != 0 ){  //Is the chunk in use (able to be freed)
 		//This is not a valid memory allocation location
-        mcu_debug_log_warning(MCU_DEBUG_MALLOC, "f:%d 0x%X is already free", getpid(), addr);
+		mcu_debug_log_warning(MCU_DEBUG_MALLOC, "f:%d 0x%X is already free", getpid(), addr);
 		__malloc_unlock(reent_ptr);
 		return;
 	}
 
-    //mcu_debug_log_info(MCU_DEBUG_MALLOC, "f:%d 0x%X", getpid(), addr);
+	//mcu_debug_log_info(MCU_DEBUG_MALLOC, "f:%d 0x%X", getpid(), addr);
 	malloc_set_chunk_free(chunk, chunk->header.num_chunks);
-    cleanup_memory(reent_ptr, 0);
-    __malloc_unlock(reent_ptr);
+	cleanup_memory(reent_ptr, 0);
+	__malloc_unlock(reent_ptr);
 }
 
 
 int get_more_memory(struct _reent * reent_ptr, u32 size){
 	malloc_chunk_t * chunk;
-    int jump_size = ((size + MALLOC_SBRK_JUMP_SIZE - 1) / MALLOC_SBRK_JUMP_SIZE) * MALLOC_SBRK_JUMP_SIZE;
-    chunk = (malloc_chunk_t *)_sbrk_r(reent_ptr, jump_size);
+	int jump_size = ((size + MALLOC_SBRK_JUMP_SIZE - 1) / MALLOC_SBRK_JUMP_SIZE) * MALLOC_SBRK_JUMP_SIZE;
+	chunk = (malloc_chunk_t *)_sbrk_r(reent_ptr, jump_size);
 	if ( chunk == NULL ){
 		return -1;
 	} else {
-        malloc_set_chunk_free(chunk, jump_size / MALLOC_CHUNK_SIZE);
+		malloc_set_chunk_free(chunk, jump_size / MALLOC_CHUNK_SIZE);
 		set_last_chunk(chunk + chunk->header.num_chunks); //mark the last block
 	}
 	return 0;
@@ -255,7 +255,7 @@ void * _malloc_r(struct _reent * reent_ptr, size_t size){
 
 
 	if ( reent_ptr->procmem_base->size == 0 ){
-        if ( get_more_memory(reent_ptr, size) < 0 ){
+		if ( get_more_memory(reent_ptr, size) < 0 ){
 			__malloc_unlock(reent_ptr);
 			errno = ENOMEM;
 			return NULL;
@@ -272,7 +272,7 @@ void * _malloc_r(struct _reent * reent_ptr, size_t size){
 
 			//See if the memory is corrupt
 			if ( is_memory_corrupt(reent_ptr) ){
-                mcu_debug_log_error(MCU_DEBUG_MALLOC, "Memory Corrupt 0x%lX", (u32)reent_ptr);
+				mcu_debug_log_error(MCU_DEBUG_MALLOC, "Memory Corrupt 0x%lX", (u32)reent_ptr);
 				malloc_process_fault(reent_ptr); //this will exit the process
 				__malloc_unlock(reent_ptr);
 				errno = ENOMEM;
@@ -280,15 +280,15 @@ void * _malloc_r(struct _reent * reent_ptr, size_t size){
 			}
 
 			//Try to get more memory
-            if ( get_more_memory(reent_ptr, size) < 0 ){
-                cleanup_memory(reent_ptr, 0); //give memory back to stack
+			if ( get_more_memory(reent_ptr, size) < 0 ){
+				cleanup_memory(reent_ptr, 0); //give memory back to stack
 				__malloc_unlock(reent_ptr);
 				errno = ENOMEM;
 				return NULL;
 			}
 
 			//Cleanup the memory
-            cleanup_memory(reent_ptr, 0);
+			cleanup_memory(reent_ptr, 0);
 
 		} else {
 
@@ -308,7 +308,7 @@ void * _malloc_r(struct _reent * reent_ptr, size_t size){
 
 	__malloc_unlock(reent_ptr);
 
-    mcu_debug_log_info(MCU_DEBUG_MALLOC, "a:%d 0x%X %d 0x%X 0x%X", getpid(), alloc, size, reent_ptr, _GLOBAL_REENT);
+	mcu_debug_log_info(MCU_DEBUG_MALLOC, "a:%d 0x%X %d 0x%X 0x%X", getpid(), alloc, size, reent_ptr, _GLOBAL_REENT);
 
 	return alloc;
 }
@@ -342,7 +342,7 @@ void set_last_chunk(malloc_chunk_t * chunk){
 int malloc_chunk_is_free(malloc_chunk_t * chunk){
 	if( cortexm_verify_zero_sum32(chunk, CORTEXM_ZERO_SUM32_COUNT(malloc_chunk_header_t)) == 0){
 		//This chunk is corrupt
-        mcu_debug_log_error(MCU_DEBUG_MALLOC, "Corrupt Chunk 0x%lX", (u32)chunk);
+		mcu_debug_log_error(MCU_DEBUG_MALLOC, "Corrupt Chunk 0x%lX", (u32)chunk);
 		malloc_process_fault(((void*)chunk) + 1);
 		return -1;
 	}
@@ -356,8 +356,8 @@ int malloc_chunk_is_free(malloc_chunk_t * chunk){
 }
 
 void malloc_process_fault(void * loc){
-    SOS_TRACE_CRITICAL("Heap Fault");
-    mcu_debug_log_error(MCU_DEBUG_MALLOC, "\n%Heap: 0x%lX", (u32)loc);
+	SOS_TRACE_CRITICAL("Heap Fault");
+	mcu_debug_log_error(MCU_DEBUG_MALLOC, "\n%Heap: 0x%lX", (u32)loc);
 	if( task_get_pid(task_get_current()) > 0 ){
 		//free the heap and reset the stack
 		_exit(1);

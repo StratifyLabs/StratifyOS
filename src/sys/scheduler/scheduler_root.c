@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 /*! \addtogroup SCHED
@@ -41,7 +41,7 @@ void scheduler_root_set_trace_id(int tid, trace_id_t id){
 }
 
 void scheduler_root_assert_active(int id, int unblock_type){
-    task_assert_active(id);
+	task_assert_active(id);
 	scheduler_root_set_unblock_type(id, unblock_type);
 	scheduler_root_deassert_aiosuspend(id);
 	//Remove all blocks (mutex, timing, etc)
@@ -51,7 +51,7 @@ void scheduler_root_assert_active(int id, int unblock_type){
 }
 
 void scheduler_root_deassert_active(int id){
-    task_deassert_active(id);
+	task_deassert_active(id);
 	task_deassert_exec(id);  //stop executing the task
 }
 

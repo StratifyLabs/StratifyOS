@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 /*! \addtogroup UART Universal Asynchronous Receiver/Transmitter (UART)
@@ -103,7 +103,7 @@ typedef enum {
 	UART_FLAG_IS_PARITY_NONE /*! Indicates no parity (default behavior) */ = (1<<5),
 	UART_FLAG_IS_PARITY_ODD /*! Indicates odd parity */ = (1<<6),
 	UART_FLAG_IS_PARITY_EVEN /*! Indicates even parity */ = (1<<7),
-    UART_FLAG_SET_LINE_CODING_DEFAULT /*! Sets line coding to no parity and one stop bit */ = (UART_FLAG_SET_LINE_CODING | UART_FLAG_IS_STOP1 | UART_FLAG_IS_PARITY_NONE),
+	UART_FLAG_SET_LINE_CODING_DEFAULT /*! Sets line coding to no parity and one stop bit */ = (UART_FLAG_SET_LINE_CODING | UART_FLAG_IS_STOP1 | UART_FLAG_IS_PARITY_NONE),
 } uart_flag_t;
 
 

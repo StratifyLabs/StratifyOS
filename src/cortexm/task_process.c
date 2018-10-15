@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 #include <cortexm/task_local.h>
@@ -23,10 +23,10 @@
 #include "mcu/core.h"
 
 int task_create_process(void (*p)(char*),
-		void (*cleanup)(void*),
-		const char * path_arg,
-		task_memories_t * mem,
-		void * reent_ptr){
+								void (*cleanup)(void*),
+								const char * path_arg,
+								task_memories_t * mem,
+								void * reent_ptr){
 
 	int tid;
 	int err;
@@ -55,9 +55,9 @@ int task_create_process(void (*p)(char*),
 	task.reent = (struct _reent*)reent_ptr;
 	task.global_reent = task.reent;
 
-    task.flags = TASK_FLAGS_USED;
-    task.parent = task_get_current();
-    task.priority = 0;
+	task.flags = TASK_FLAGS_USED;
+	task.parent = task_get_current();
+	task.priority = 0;
 
 	memcpy(&task_memories, mem, sizeof(task_memories_t));
 

@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 /*! \addtogroup QSPI Quad Serial Peripheral Interface (QSPI)
@@ -48,7 +48,7 @@ extern "C" {
 #define QSPI_IOC_IDENT_CHAR 'Q'
 
 typedef enum {
-    QSPI_FLAG_SET_MASTER /*! Configure the QSPI as master */ = (1<<0),
+	QSPI_FLAG_SET_MASTER /*! Configure the QSPI as master */ = (1<<0),
 } qspi_flag_t;
 
 typedef struct MCU_PACK {
@@ -61,9 +61,9 @@ typedef struct MCU_PACK {
  *
  */
 typedef struct MCU_PACK {
-    mcu_pin_t data[4] /*! Up to four data lines */;
-    mcu_pin_t sck /*! Serial clock pin */;
-    mcu_pin_t cs /*! Chip select pin */;
+	mcu_pin_t data[4] /*! Up to four data lines */;
+	mcu_pin_t sck /*! Serial clock pin */;
+	mcu_pin_t cs /*! Chip select pin */;
 } qspi_pin_assignment_t;
 
 
@@ -71,11 +71,11 @@ typedef struct MCU_PACK {
  *
  */
 typedef struct MCU_PACK {
-    u32 o_flags /*! Flag bitmask */;
-    qspi_pin_assignment_t pin_assignment /*! Pin Assignment */;
-    u32 freq /*! Target operating frequency */;
-    u8 width /*! Width for transactions */;
-    u32 size /*! Size of the flash memory */;
+	u32 o_flags /*! Flag bitmask */;
+	qspi_pin_assignment_t pin_assignment /*! Pin Assignment */;
+	u32 freq /*! Target operating frequency */;
+	u8 width /*! Width for transactions */;
+	u32 size /*! Size of the flash memory */;
 	u32 resd[8];
 } qspi_attr_t;
 

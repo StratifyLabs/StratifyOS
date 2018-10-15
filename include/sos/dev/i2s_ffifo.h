@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 /*! \addtogroup SYS_USBFIFO USB FIFO
@@ -40,19 +40,19 @@
 
 
 typedef struct MCU_PACK {
-    ffifo_attr_t tx;
-    ffifo_attr_t rx;
+	ffifo_attr_t tx;
+	ffifo_attr_t rx;
 } i2s_ffifo_attr_t;
 
 typedef struct MCU_PACK {
-    ffifo_info_t ffifo;
-    u32 access_count;
-    s32 error;
+	ffifo_info_t ffifo;
+	u32 access_count;
+	s32 error;
 } i2s_ffifo_channel_info_t;
 
 typedef struct MCU_PACK {
-    i2s_ffifo_channel_info_t rx;
-    i2s_ffifo_channel_info_t tx;
+	i2s_ffifo_channel_info_t rx;
+	i2s_ffifo_channel_info_t tx;
 } i2s_ffifo_info_t;
 
 

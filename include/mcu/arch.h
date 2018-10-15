@@ -34,7 +34,7 @@
 #define MALLOC_CHUNK_SIZE 64
 #define MALLOC_SBRK_JUMP_SIZE 128
 #define SCHED_FIRST_THREAD_STACK_SIZE 2048
-#define SCHED_DEFAULT_STACKGUARD_SIZE 32
+#define SCHED_DEFAULT_STACKGUARD_SIZE 128
 
 #if (defined __lpc17xx) || (defined __lpc177x_8x) || (defined __lpc407x_8x) || (defined __lpc43xx)
 #undef __FPU_USED

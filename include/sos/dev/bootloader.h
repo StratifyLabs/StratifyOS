@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 /*! \addtogroup BOOTLOADER_DEV Bootloader Access
@@ -71,9 +71,9 @@ typedef struct MCU_PACK {
 typedef bootloader_info_t bootloader_attr_t;
 
 typedef struct MCU_PACK {
-    uint32_t version;
-    uint32_t serialno[4];
-    uint32_t startaddr;
+	uint32_t version;
+	uint32_t serialno[4];
+	uint32_t startaddr;
 } bootloader_attr_legacy_t;
 
 

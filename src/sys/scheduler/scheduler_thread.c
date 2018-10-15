@@ -38,6 +38,7 @@ typedef struct {
 } root_wait_joined_t;
 static void root_wait_joined(void * args) MCU_ROOT_EXEC_CODE;
 static void root_cleanup(void * args) MCU_ROOT_EXEC_CODE;
+void root_elevate_priority(void * args) MCU_ROOT_EXEC_CODE;
 
 typedef struct {
     int id;
@@ -112,7 +113,9 @@ void root_activate_thread(root_activate_thread_t * args){
     scheduler_root_assert_active(id, 0);
     scheduler_root_assert_inuse(id);
 
-    task_root_set_stackguard(id, args->stackguard, SCHED_DEFAULT_STACKGUARD_SIZE);
+	 if( task_root_set_stackguard(id, args->stackguard, SCHED_DEFAULT_STACKGUARD_SIZE) < 0 ){
+		 mcu_debug_log_warning(MCU_DEBUG_SCHEDULER, "Failed to activate stack guard");
+	 }
     scheduler_root_update_on_wake(id, task_get_priority(id));
 }
 
@@ -126,11 +129,9 @@ void cleanup_thread(void * status){
     stderr = 0;
 
     //This will close any other open files
-	 mcu_debug_log_info(MCU_DEBUG_SCHEDULER, "Cleanup thread %p", _REENT->__cleanup);
     if ( _REENT->__cleanup ){
         _REENT->__cleanup(_REENT);
     }
-
 
     detach_state = PTHREAD_ATTR_GET_DETACH_STATE( (&(sos_sched_table[task_get_current()].attr)) );
     args.joined = 0;
@@ -142,13 +143,31 @@ void cleanup_thread(void * status){
         } while(args.joined == 0);
     }
 
-
-	 mcu_debug_log_info(MCU_DEBUG_SCHEDULER, "Free all");
+	 mcu_debug_log_info(MCU_DEBUG_SCHEDULER, "%d:Shutdown", task_get_current());
     //Free all memory associated with this thread
-	 //malloc_free_task_r(_REENT, task_get_current() );
-    _free_r( _REENT, sos_sched_table[task_get_current()].attr.stackaddr ); //free the stack address
-	 mcu_debug_log_info(MCU_DEBUG_SCHEDULER, "Thread %d completed", task_get_current());
-    cortexm_svcall(root_cleanup, &args.joined);	 
+	 malloc_free_task_r(_REENT, task_get_current() );
+
+	 /*
+	  * Once the stack has been freed (which can't be done in root mode), the root cleanup
+	  * must complete before a context switch is allowed. To prevent a context switch,
+	  * the thread will be switch to SCHED_FIFO with the max priority
+	  *
+	  */
+
+	 cortexm_svcall(root_elevate_priority, 0);
+	 //The stack is allocated by a different thread so it isn't freed with malloc_free_task_r()
+	 _free_r( _REENT, sos_sched_table[task_get_current()].attr.stackaddr ); //free the stack address
+	 cortexm_svcall(root_cleanup, &args.joined);
+}
+
+void root_elevate_priority(void * args){
+	u32 id = task_get_current();
+	//Issue #161 -- need to set the effective priority -- not just the prio ceiling
+	PTHREAD_ATTR_SET_SCHED_POLICY( (&(sos_sched_table[id].attr)), SCHED_FIFO);
+	sos_sched_table[id].attr.schedparam.sched_priority = SCHED_HIGHEST_PRIORITY;
+	task_set_priority(id, SCHED_HIGHEST_PRIORITY);
+	task_assert_fifo(id);
+	scheduler_root_update_on_stopped(); //this will cause the context switcher to update the active priority
 }
 
 void root_wait_joined(void * args){
@@ -186,7 +205,6 @@ void root_cleanup(void * args){
             scheduler_root_assert_active(joined, SCHEDULER_UNBLOCK_PTHREAD_JOINED_THREAD_COMPLETE);
         }
     }
-
 
     sos_sched_table[task_get_current()].flags = 0;
     task_root_delete(task_get_current());

@@ -56,11 +56,11 @@ int connect(int s, const struct sockaddr *name, socklen_t namelen);
 int listen(int s, int backlog);
 int recv(int s, void *mem, size_t len, int flags);
 int recvfrom(int s, void *mem, size_t len, int flags,
-		struct sockaddr *from, socklen_t *fromlen);
+				 struct sockaddr *from, socklen_t *fromlen);
 int send(int s, const void *dataptr, size_t size, int flags);
 int sendmsg(int s, const struct msghdr *message, int flags);
 int sendto(int s, const void *dataptr, size_t size, int flags,
-		const struct sockaddr *to, socklen_t tolen);
+			  const struct sockaddr *to, socklen_t tolen);
 int socket(int domain, int type, int protocol);
 
 //these functions are currently only for sockets but should be supported on non-sockets as well
@@ -81,7 +81,7 @@ int select(int maxfdp1, fd_set *readset, fd_set *writeset, fd_set *exceptset, st
 struct addrinfo;
 
 typedef struct {
-    int (*startup)(const void *);
+	int (*startup)(const void *);
 	int (*accept)(int s, struct sockaddr *addr, socklen_t *addrlen);
 	int (*bind)(int s, const struct sockaddr *name, socklen_t namelen);
 	int (*shutdown)(int s, int how);
@@ -95,26 +95,48 @@ typedef struct {
 	int (*recv)(int s, void *mem, size_t len, int flags);
 	int (*read)(int s, void *mem, size_t len);
 	int (*recvfrom)(int s, void *mem, size_t len, int flags,
-			struct sockaddr *from, socklen_t *fromlen);
+						 struct sockaddr *from, socklen_t *fromlen);
 	int (*send)(int s, const void *dataptr, size_t size, int flags);
 	int (*sendmsg)(int s, const struct msghdr *message, int flags);
 	int (*sendto)(int s, const void *dataptr, size_t size, int flags,
-			const struct sockaddr *to, socklen_t tolen);
+					  const struct sockaddr *to, socklen_t tolen);
 	int (*socket)(int domain, int type, int protocol);
 	int (*write)(int s, const void *dataptr, size_t size);
 	int (*writev)(int s, const struct iovec *iov, int iovcnt);
 	int (*select)(int maxfdp1, fd_set *readset, fd_set *writeset, fd_set *exceptset,
-			struct timeval *timeout);
+					  struct timeval *timeout);
 	int (*ioctl)(int s, long cmd, void *argp);
 	int (*fcntl)(int s, int cmd, int val);
-    int (*fsync)(int s);
-    struct hostent * (*gethostbyname)(const char *name);
-    int (*gethostbyname_r)(const char *name, struct hostent *ret, char *buf, size_t buflen, struct hostent **result, int *h_errnop);
-    void (*freeaddrinfo)(struct addrinfo *ai);
-    int (*getaddrinfo)(const char *nodename, const char *servname, const struct addrinfo *hints, struct addrinfo **res);
-    const void * config;
-    void * state;
+	int (*fsync)(int s);
+	struct hostent * (*gethostbyname)(const char *name);
+	int (*gethostbyname_r)(const char *name, struct hostent *ret, char *buf, size_t buflen, struct hostent **result, int *h_errnop);
+	void (*freeaddrinfo)(struct addrinfo *ai);
+	int (*getaddrinfo)(const char *nodename, const char *servname, const struct addrinfo *hints, struct addrinfo **res);
+	const void * config;
+	void * state;
 } sos_socket_api_t;
+
+typedef struct {
+	int (*startup)(const void *);
+	int (*accept)(void * context, struct sockaddr *addr, socklen_t *addrlen);
+	int (*bind)(void * context, const struct sockaddr *name, socklen_t namelen);
+	int (*shutdown)(int s, int how);
+	int (*close)(void ** context);
+	int (*connect)(void * context, const struct sockaddr *name, socklen_t namelen, const char * server_name);
+	int (*listen)(void * context, int backlog);
+	int (*recv)(void * context, void *mem, size_t len, int flags);
+	int (*read)(void * context, void *mem, size_t len);
+	int (*recvfrom)(void * context, void *mem, size_t len, int flags,
+						 struct sockaddr *from, socklen_t *fromlen);
+	int (*send)(void * context, const void *dataptr, size_t size, int flags);
+	int (*sendmsg)(void * context, const struct msghdr *message, int flags);
+	int (*sendto)(void * context, const void *dataptr, size_t size, int flags,
+					  const struct sockaddr *to, socklen_t tolen);
+	int (*socket)(void ** context, int domain, int type, int protocol);
+	int (*write)(void * context, const void *dataptr, size_t size);
+	const void * config;
+	void * state;
+} sos_secure_socket_api_t;
 
 
 #endif /* POSIX_SYS_SOCKET_H_ */

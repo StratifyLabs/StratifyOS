@@ -138,10 +138,13 @@ void memfault_handler(u32 mem_status, hw_stack_frame_t * handler_stack){
 	}
 
 	if ( mem_status & (1<<4) ){
+		//this happens when an an interrupt happens and the hardware is unable to stack the PSP with the hw stack frame
+		//when this happens the stack->pc and stack->lr values will not be valid (they weren't stacked)
 		fault.num = MCU_FAULT_MEMORY_STACKING;
 	}
 
 	if ( mem_status & (1<<3) ){
+		//This fault is chainged to the handler
 		fault.num = MCU_FAULT_MEMORY_UNSTACKING;
 	}
 
@@ -150,7 +153,7 @@ void memfault_handler(u32 mem_status, hw_stack_frame_t * handler_stack){
 	}
 
 	if ( mem_status & (1<<0) ){
-		fault.num = MCU_FAULT_MEMORY_ACCESS_VIOLATION;
+		fault.num = MCU_FAULT_MEMORY_EXEC_VIOLATION;
 	}
 
 	if ( mem_status & (1<<7) ){

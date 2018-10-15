@@ -25,10 +25,10 @@
 #include <sys/reent.h>
 #include <pthread.h>
 
+#include "mcu/arch.h"
 #include "mcu/core.h"
 #include "cortexm/task.h"
 
-#define SCHED_DEFAULT_STACKGUARD_SIZE 32
 extern void (*_ctors)();
 extern int _ctors_size;
 extern void (*_dtors)();
@@ -39,7 +39,7 @@ static void constructors();
 static void destructors();
 
 int crt_common(char * path_arg, int * ret, const char * name){
-	task_setstackguard(pthread_self(), &_ebss, SCHED_DEFAULT_STACKGUARD_SIZE);
+	task_setstackguard(pthread_self(), &_ebss + sizeof(proc_mem_t), SCHED_DEFAULT_STACKGUARD_SIZE);
 	int argc;
 	char ** argv;
 

@@ -144,7 +144,7 @@ static int find_protectable_addr(const devfs_device_t * dev, int size, int type,
 		}
 
 		err = mpu_calc_region(
-				6,
+				TASK_APPLICATION_CODE_MPU_REGION, //doesn't matter what this is
 				(void*)pageinfo.addr,
 				size,
 				MPU_ACCESS_PR_UR,

@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 /*! \addtogroup SCHED
@@ -43,20 +43,20 @@ static void cleanup_process(void * status);
  * \return The thread id or zero if the thread could not be created.
  */
 int scheduler_create_process(void (*p)(char *)  /*! The startup function (crt()) */,
-		const char * path_arg /*! Path string with arguments */,
-		task_memories_t * mem,
-		void * reent /*! The location of the reent structure */){
+									  const char * path_arg /*! Path string with arguments */,
+									  task_memories_t * mem,
+									  void * reent /*! The location of the reent structure */){
 	int tid;
 	init_sched_task_t args;
 
 	//Start a new process
 	tid = task_create_process(
-			p,
-			cleanup_process,
-			path_arg,
-			mem,
-			reent
-	);
+				p,
+				cleanup_process,
+				path_arg,
+				mem,
+				reent
+				);
 
 	if ( tid > 0 ){
 		//update the scheduler table using a privileged call
@@ -91,9 +91,11 @@ void root_init_sched_task(init_sched_task_t * task){
 	sos_sched_table[id].wake.tv_usec = 0;
 	scheduler_root_assert_active(id, 0);
 	scheduler_root_assert_inuse(id);
-    scheduler_root_update_on_wake(id, task_get_priority(id));
-	stackguard = (uint32_t)task->mem->data.addr + task->mem->data.size - 128;
-	task_root_set_stackguard(id, (void*)stackguard, SCHED_DEFAULT_STACKGUARD_SIZE);
+	scheduler_root_update_on_wake(id, task_get_priority(id));
+	stackguard = (uint32_t)task->mem->data.addr + sizeof(struct _reent);
+	if( task_root_set_stackguard(id, (void*)stackguard, SCHED_DEFAULT_STACKGUARD_SIZE) < 0 ){
+		mcu_debug_log_warning(MCU_DEBUG_SCHEDULER, "Failed to set stackguard");
+	}
 
 	//Items inherited from parent process
 
