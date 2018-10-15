@@ -357,7 +357,7 @@ int malloc_chunk_is_free(malloc_chunk_t * chunk){
 
 void malloc_process_fault(void * loc){
 	SOS_TRACE_CRITICAL("Heap Fault");
-	mcu_debug_log_error(MCU_DEBUG_MALLOC, "\n%Heap: 0x%lX", (u32)loc);
+	mcu_debug_log_error(MCU_DEBUG_SYS, "\n%Heap: 0x%lX", (u32)loc);
 	if( task_get_pid(task_get_current()) > 0 ){
 		//free the heap and reset the stack
 		_exit(1);

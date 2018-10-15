@@ -146,6 +146,8 @@ enum {
 	MCU_BOARD_CONFIG_EVENT_WAKEUP_FROM_HIBERNATE /*! MCU wokeup from hibernation */,
 	MCU_BOARD_CONFIG_EVENT_ROOT_TASK_INIT /*! MCU is about to enter context switching mode */,
 
+	MCU_BOARD_CONFIG_EVENT_SERVICE_CALL_PERMISSION_DENIED /*! MCU tried to execute a service call that was not permitted */,
+
 	MCU_BOARD_CONFIG_EVENT_ROOT_WDT_TIMEOUT /*! MCU had a WDT timeout */,
 	MCU_BOARD_CONFIG_EVENT_TOTAL
 };
