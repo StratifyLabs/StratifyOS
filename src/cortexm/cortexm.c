@@ -27,20 +27,27 @@ void cortexm_delay_systick(u32 ticks){
 	u32 value;
 	u32 end;
 
-	if( countdown > cortexm_get_systick_reload()/2){
-		countdown = cortexm_get_systick_reload()/2;
-	}
+	if( SysTick->CTRL & 0x01 ){
+		if( countdown > cortexm_get_systick_reload()/2){
+			countdown = cortexm_get_systick_reload()/2;
+		}
 
-	if( countdown > start ){
-		end = cortexm_get_systick_reload() - countdown + start;
-		do {
-			value = cortexm_get_systick_value();
-		} while( (value < countdown) || (value > end) );
+		if( countdown > start ){
+			end = cortexm_get_systick_reload() - countdown + start;
+			do {
+				value = cortexm_get_systick_value();
+			} while( (value < countdown) || (value > end) );
+		} else {
+			end = start - countdown;
+			do {
+				value = cortexm_get_systick_value();
+			} while( (value > end) && (value < start) );
+		}
 	} else {
-		end = start - countdown;
-		do {
-			value = cortexm_get_systick_value();
-		} while( (value > end) && (value < start) );
+		volatile u32 i = 0;
+		while(i < ticks){
+			i++;
+		}
 	}
 }
 

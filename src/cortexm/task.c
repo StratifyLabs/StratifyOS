@@ -335,16 +335,6 @@ void switch_contexts(){
 	}
 #endif
 
-	//disable task specific MPU regions
-#if MPU_PRESENT || __MPU_PRESENT
-	MPU->RBAR = 0x1 | TASK_APPLICATION_CODE_MPU_REGION;
-	MPU->RASR = 0;
-	MPU->RBAR = 0x1 | TASK_APPLICATION_DATA_MPU_REGION;
-	MPU->RASR = 0;
-	MPU->RBAR = 0x1 | TASK_APPLICATION_STACK_GUARD_REGION;
-	MPU->RASR = 0;
-#endif
-
 	do {
 		m_task_current++;
 		if ( m_task_current == task_get_total() ){
@@ -376,18 +366,8 @@ void switch_contexts(){
 		} else if ( task_exec_asserted(m_task_current) ){
 			if ( (sos_task_table[m_task_current].rr_time >= SYSTICK_MIN_CYCLES) || //is there time remaining on the RR
 				  task_fifo_asserted(m_task_current) ){ //is this a FIFO task
+				//check to see if task is low on memory -- kill if necessary?
 
-				//check to see if task is low on memory -- kill if necessary
-
-#if MPU_PRESENT || __MPU_PRESENT
-				//Enable the MPU for the process code section
-				MPU->RBAR = (u32)(sos_task_table[m_task_current].mem.code.addr);
-				MPU->RASR = (u32)(sos_task_table[m_task_current].mem.code.size);
-
-				//Enable the MPU for the process data section
-				MPU->RBAR = (u32)(sos_task_table[m_task_current].mem.data.addr);
-				MPU->RASR = (u32)(sos_task_table[m_task_current].mem.data.size);
-#endif
 				break;
 			}
 		}
@@ -395,6 +375,14 @@ void switch_contexts(){
 
 	//Enable the MPU for the task stack guard
 #if MPU_PRESENT || __MPU_PRESENT
+	//Enable the MPU for the process code section
+	MPU->RBAR = (u32)(sos_task_table[m_task_current].mem.code.addr);
+	MPU->RASR = (u32)(sos_task_table[m_task_current].mem.code.size);
+
+	//Enable the MPU for the process data section
+	MPU->RBAR = (u32)(sos_task_table[m_task_current].mem.data.addr);
+	MPU->RASR = (u32)(sos_task_table[m_task_current].mem.data.size);
+
 	MPU->RBAR = (u32)(sos_task_table[m_task_current].mem.stackguard.addr);
 	MPU->RASR = (u32)(sos_task_table[m_task_current].mem.stackguard.size);
 

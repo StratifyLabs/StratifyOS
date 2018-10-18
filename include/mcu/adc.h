@@ -40,14 +40,14 @@ typedef struct MCU_PACK {
 } adc_config_t;
 
 #define MCU_ADC_IOCTL_REQUEST_DECLARATION(driver_name) \
-    DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, getinfo); \
-    DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, setattr); \
-    DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, setaction) \
+	DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, getinfo); \
+	DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, setattr); \
+	DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, setaction) \
 
 
 #define MCU_ADC_DRIVER_DECLARATION(variant) \
-    DEVFS_DRIVER_DECLARTION(variant); \
-    MCU_ADC_IOCTL_REQUEST_DECLARATION(variant)
+	DEVFS_DRIVER_DECLARTION(variant); \
+	MCU_ADC_IOCTL_REQUEST_DECLARATION(variant)
 
 MCU_ADC_DRIVER_DECLARATION(mcu_adc);
 MCU_ADC_DRIVER_DECLARATION(mcu_adc_dma);

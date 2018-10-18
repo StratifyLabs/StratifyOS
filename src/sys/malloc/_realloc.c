@@ -66,11 +66,13 @@ void * _realloc_r(struct _reent * reent_ptr, void * addr, size_t size){
 			return NULL;
 		}
 
-		if ( num_chunks < chunk->header.num_chunks ){ //check to see if new size is smaller
+		if ( num_chunks <= chunk->header.num_chunks ){ //check to see if new size is smaller
 			free_chunks = chunk->header.num_chunks - num_chunks;
 			malloc_set_chunk_used(reent_ptr, chunk, num_chunks, size);
 			next = chunk + num_chunks;
-			malloc_set_chunk_free(next, free_chunks);
+			if( free_chunks != 0 ){
+				malloc_set_chunk_free(next, free_chunks);
+			}
 			__malloc_unlock(reent_ptr);
 			return addr;
 		}

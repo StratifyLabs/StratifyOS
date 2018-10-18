@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 /*! \addtogroup DAC_DEV DAC
@@ -39,7 +39,7 @@ typedef struct MCU_PACK {
 
 typedef struct MCU_PACK {
 	dac_attr_t attr; //default attributes
-    u32 reference_mv;
+	u32 reference_mv;
 } dac_config_t;
 
 int mcu_dac_open(const devfs_handle_t * handle) MCU_ROOT_CODE;

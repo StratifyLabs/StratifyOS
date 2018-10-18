@@ -28,7 +28,7 @@ extern "C" {
 #endif
 
 typedef struct MCU_PACK {
-    u32 value;
+	u32 value;
 } rng_event_data_t;
 
 u16 mcu_calc_crc16(u16 seed, const u8 * buffer, u32 nbyte);

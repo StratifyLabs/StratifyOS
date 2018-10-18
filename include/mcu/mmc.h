@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 /*! \addtogroup SD_DEV MMC
@@ -38,22 +38,22 @@ typedef struct MCU_PACK {
 } mmc_event_data_t;
 
 typedef struct MCU_PACK {
-    mmc_attr_t attr; //default attributes
+	mmc_attr_t attr; //default attributes
 } mmc_config_t;
 
 #define MCU_MMC_IOCTL_REQUEST_DECLARATION(driver_name) \
-    DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, getinfo); \
-    DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, setattr); \
-    DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, setaction); \
-    DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, getcid); \
-    DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, getcsd); \
-    DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, getstatus)
+	DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, getinfo); \
+	DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, setattr); \
+	DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, setaction); \
+	DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, getcid); \
+	DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, getcsd); \
+	DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, getstatus)
 
 
 
 #define MCU_MMC_DRIVER_DECLARATION(variant) \
-    DEVFS_DRIVER_DECLARTION(variant); \
-    MCU_MMC_IOCTL_REQUEST_DECLARATION(variant)
+	DEVFS_DRIVER_DECLARTION(variant); \
+	MCU_MMC_IOCTL_REQUEST_DECLARATION(variant)
 
 MCU_MMC_DRIVER_DECLARATION(mcu_mmc);
 MCU_MMC_DRIVER_DECLARATION(mcu_mmc_dma);

@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 /*! \addtogroup DMA Direct Memory Access (DMA)
@@ -92,23 +92,23 @@ int mcu_dma_halttransfer(int chan /*! The channel to halt */) MCU_ROOT_CODE;
 void mcu_dma_exit() MCU_ROOT_CODE;
 
 int mcu_dma_transferlist(int operation,
-		int chan,
-		dma_lli_t * linked_list,
-		mcu_callback_t callback,
-		void * context,
-		u32 dest_periph,
-		u32 src_periph
-		) MCU_ROOT_CODE;
+								 int chan,
+								 dma_lli_t * linked_list,
+								 mcu_callback_t callback,
+								 void * context,
+								 u32 dest_periph,
+								 u32 src_periph
+								 ) MCU_ROOT_CODE;
 
 int mcu_dma_transfer(int operation,
-		int chan,
-		void * dest,
-		const void * src,
-		int ctrl,
-		mcu_callback_t cb,
-		void * context,
-		u32 dest_periph,
-		u32 src_periph) MCU_ROOT_CODE;
+							int chan,
+							void * dest,
+							const void * src,
+							int ctrl,
+							mcu_callback_t cb,
+							void * context,
+							u32 dest_periph,
+							u32 src_periph) MCU_ROOT_CODE;
 
 
 #ifdef __cplusplus

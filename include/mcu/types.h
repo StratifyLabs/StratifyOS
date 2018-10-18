@@ -86,7 +86,7 @@ typedef enum {
 	MCU_EVENT_FLAG_CANCELED /*! An operation was canceled */ = (1<<2),
 	MCU_EVENT_FLAG_RISING /*! Specifies a rising edge */ = (1<<3),
 	MCU_EVENT_FLAG_FALLING /*! Specifies a falling edge */ = (1<<4),
-    MCU_EVENT_FLAG_SET_PRIORITY /*! If set, I_X_SETACTION requests will adjust the interrupt priority */ = (1<<5),
+	MCU_EVENT_FLAG_SET_PRIORITY /*! If set, I_X_SETACTION requests will adjust the interrupt priority */ = (1<<5),
 	MCU_EVENT_FLAG_ERROR /*! An error occured during */ = (1<<6),
 	MCU_EVENT_FLAG_ADDRESSED /*! The device has been addressed (I2C for example) */ = (1<<7),
 	MCU_EVENT_FLAG_OVERFLOW /*! An overflow condition has occurred */ = (1<<8),
@@ -108,17 +108,17 @@ typedef enum {
 	MCU_EVENT_FLAG_MATCH /*! Match event */ = (1<<21),
 	MCU_EVENT_FLAG_ALARM /*! Alarm event (match alias) */ = MCU_EVENT_FLAG_MATCH,
 	MCU_EVENT_FLAG_COUNT /*! Count event */ = (1<<22),
-    MCU_EVENT_FLAG_HALF_TRANSFER /*! The transfer is halfway complete (used with MCU_EVENT_FLAG_WRITE_COMPLETE and MCU_EVENT_FLAG_DATA_READY with circular DMA) */ = (1<<23),
-    MCU_EVENT_FLAG_STREAMING /*! The transfer is streaming data and will continue until stopped */ = (1<<24)
+	MCU_EVENT_FLAG_HALF_TRANSFER /*! The transfer is halfway complete (used with MCU_EVENT_FLAG_WRITE_COMPLETE and MCU_EVENT_FLAG_DATA_READY with circular DMA) */ = (1<<23),
+	MCU_EVENT_FLAG_STREAMING /*! The transfer is streaming data and will continue until stopped */ = (1<<24)
 } mcu_event_flag_t;
 
 typedef enum {
-    MCU_ERROR_NONE /*! 0: No Error */,
-    MCU_ERROR_INVALID_PIN_ASSINGMENT /*! 1: Invalid Pin Assignment */,
-    MCU_ERROR_INVALID_FREQUENCY /*! 2: Invalid Frequency */,
-    MCU_ERROR_INVALID_CHANNEL_LOCATION /*! 3: Invalid Channel Location */,
-    MCU_ERROR_INVALID_CHANNEL_VALUE /*! 4: Invalid Channel Value */,
-    MCU_ERROR_I2C_ACK_ERROR /*! 6: I2C Ack Error */
+	MCU_ERROR_NONE /*! 0: No Error */,
+	MCU_ERROR_INVALID_PIN_ASSINGMENT /*! 1: Invalid Pin Assignment */,
+	MCU_ERROR_INVALID_FREQUENCY /*! 2: Invalid Frequency */,
+	MCU_ERROR_INVALID_CHANNEL_LOCATION /*! 3: Invalid Channel Location */,
+	MCU_ERROR_INVALID_CHANNEL_VALUE /*! 4: Invalid Channel Value */,
+	MCU_ERROR_I2C_ACK_ERROR /*! 6: I2C Ack Error */
 } mcu_error_t;
 
 typedef enum {

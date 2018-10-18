@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 /*! \addtogroup WDT Watch Dog Timer (WDT)
@@ -84,7 +84,7 @@ typedef enum {
  * \return An HWPL Error code (Zero on success)
  */
 int mcu_wdt_init( int mode /*! The WDT mode to use (see \ref wdt_mode_t) */,
-		int interval /*! The timeout value in ms */) MCU_ROOT_CODE;
+						int interval /*! The timeout value in ms */) MCU_ROOT_CODE;
 
 
 /*! \details This function resets the watchdog timer

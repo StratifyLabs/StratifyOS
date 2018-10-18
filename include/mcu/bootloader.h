@@ -45,9 +45,9 @@ enum {
 	BOOT_EVENT_FATAL /*! Called on a Fatal Error */,
 	BOOT_EVENT_CRITICAL /*! Called on a critical error */,
 	BOOT_EVENT_START /*! Called when the device starts executing code and before checking for a bootloader request */,
-    BOOT_EVENT_INIT_CLOCK /*! Called just before the bootloader updates the clock configuration */,
-    BOOT_EVENT_INIT /*! Called when the bootloader is initializing */,
-    BOOT_EVENT_RESET /*! Called when the link protocol calls for a reset */,
+	BOOT_EVENT_INIT_CLOCK /*! Called just before the bootloader updates the clock configuration */,
+	BOOT_EVENT_INIT /*! Called when the bootloader is initializing */,
+	BOOT_EVENT_RESET /*! Called when the link protocol calls for a reset */,
 	BOOT_EVENT_RESET_BOOTLOADER /*! Called when the link protocol calls for a bootloader reset */,
 	BOOT_EVENT_READ_SERIALNO /*! Called when the link protocol reads the serial number */,
 	BOOT_EVENT_FLASH_READ /*! Called when the link protocol reads the flash */,
@@ -55,9 +55,9 @@ enum {
 	BOOT_EVENT_FLASH_ERASE /*! Called when the link protocol erases the flash */,
 	BOOT_EVENT_ENCRYPT /*! Called when the bootloader needs something encrypted */,
 	BOOT_EVENT_DECRYPT /*! Called when the bootloader needs something decrypted */,
-    BOOT_EVENT_RUN_APP /*! Called just before the bootloader runs the user code */,
-    BOOT_EVENT_RUN_BOOTLOADER /*! Called just before the bootloader runs the bootloader code (no app or bootloader was requested)*/,
-    BOOT_EVENT_TOTAL
+	BOOT_EVENT_RUN_APP /*! Called just before the bootloader runs the user code */,
+	BOOT_EVENT_RUN_BOOTLOADER /*! Called just before the bootloader runs the bootloader code (no app or bootloader was requested)*/,
+	BOOT_EVENT_TOTAL
 };
 
 

@@ -41,9 +41,9 @@
 #include "arch/lpc/lpc_arch.h"
 #define ARCH_DEFINED
 #elif (defined __stm32f446xx) || (defined __stm32f401xc) || (defined __stm32f411xe) \
-    || (defined __stm32f417xx) || (defined __stm32f412zx) || (defined __stm32f429xx) \
-    || (defined __stm32f746xx) || (defined __stm32f722xx) || (defined __stm32f723xx) || (defined __stm32f767xx) \
-	 || (defined __stm32l475xx) || (defined __stm32l432xx) ||(defined __stm32f401xe) \
+	|| (defined __stm32f417xx) || (defined __stm32f412zx) || (defined __stm32f429xx) \
+	|| (defined __stm32f746xx) || (defined __stm32f722xx) || (defined __stm32f723xx) || (defined __stm32f767xx) \
+	|| (defined __stm32l475xx) || (defined __stm32l432xx) ||(defined __stm32f401xe) \
 	|| (defined __stm32h743xx) || (defined __stm32H750xx)
 #undef __FPU_USED
 #include "arch/stm32/stm32_arch.h"
@@ -52,16 +52,16 @@
 
 typedef enum IRQn
 {
-/******  Cortex-M4 Processor Exceptions Numbers ***************************************************/
-  NonMaskableInt_IRQn           = -14,      /*!< 2 Non Maskable Interrupt                         */
-  HardFault_IRQn                = -13,              /*!<   3  Hard Fault, all classes of Fault                                 */
-  MemoryManagement_IRQn         = -12,      /*!< 4 Cortex-M3 Memory Management Interrupt          */
-  BusFault_IRQn                 = -11,      /*!< 5 Cortex-M3 Bus Fault Interrupt                  */
-  UsageFault_IRQn               = -10,      /*!< 6 Cortex-M3 Usage Fault Interrupt                */
-  SVCall_IRQn                   = -5,       /*!< 11 Cortex-M3 SV Call Interrupt                   */
-  DebugMonitor_IRQn             = -4,       /*!< 12 Cortex-M3 Debug Monitor Interrupt             */
-  PendSV_IRQn                   = -2,       /*!< 14 Cortex-M3 Pend SV Interrupt                   */
-  SysTick_IRQn                  = -1,       /*!< 15 Cortex-M3 System Tick Interrupt               */
+	/******  Cortex-M4 Processor Exceptions Numbers ***************************************************/
+	NonMaskableInt_IRQn           = -14,      /*!< 2 Non Maskable Interrupt                         */
+	HardFault_IRQn                = -13,              /*!<   3  Hard Fault, all classes of Fault                                 */
+	MemoryManagement_IRQn         = -12,      /*!< 4 Cortex-M3 Memory Management Interrupt          */
+	BusFault_IRQn                 = -11,      /*!< 5 Cortex-M3 Bus Fault Interrupt                  */
+	UsageFault_IRQn               = -10,      /*!< 6 Cortex-M3 Usage Fault Interrupt                */
+	SVCall_IRQn                   = -5,       /*!< 11 Cortex-M3 SV Call Interrupt                   */
+	DebugMonitor_IRQn             = -4,       /*!< 12 Cortex-M3 Debug Monitor Interrupt             */
+	PendSV_IRQn                   = -2,       /*!< 14 Cortex-M3 Pend SV Interrupt                   */
+	SysTick_IRQn                  = -1,       /*!< 15 Cortex-M3 System Tick Interrupt               */
 } IRQn_Type;
 
 #define __MPU_PRESENT 1

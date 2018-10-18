@@ -37,6 +37,7 @@
 
 static void root_update_guard(void * args) MCU_ROOT_EXEC_CODE;
 
+//returns zero or returns the previous top of the heap
 void * _sbrk_r(struct _reent * reent_ptr, ptrdiff_t incr){
 	char * stack;
 	char * base;
@@ -56,12 +57,11 @@ void * _sbrk_r(struct _reent * reent_ptr, ptrdiff_t incr){
 		return NULL;
 	}
 
-
 	//adjust the location of the stack guard -- always 32 bytes for processes
 	cortexm_svcall(root_update_guard, base + size + incr);
 
 	reent_ptr->procmem_base->size += incr;
-	return (caddr_t) (base + size);
+	return (caddr_t)(base + size);
 }
 
 void root_update_guard(void * args){

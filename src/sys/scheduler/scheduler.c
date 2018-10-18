@@ -236,6 +236,9 @@ int scheduler_get_highest_priority_blocked(void * block_object){
     //Issue #139 - blocked mutexes should be awarded in a round robin fashion started with the current task
     if( current_task == 0 ){ current_task++; }
     i = current_task+1;
+	 if( i == task_get_total() ){
+		 i = 1;
+	 }
     do {
         if ( task_enabled(i) ){
             if ( (sos_sched_table[i].block_object == block_object) && ( !task_active_asserted(i) ) ){

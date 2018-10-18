@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 
@@ -82,18 +82,18 @@ extern u32 _esys;
 #define MCU_SYNC_IO_FLAG_READ (1<<15)
 
 int mcu_sync_io(const devfs_handle_t * handle,
-		int (*func)(const devfs_handle_t * handle, devfs_async_t * op),
-		int loc,
-		const void * buf,
-		int nbyte,
-		int flags);
+					 int (*func)(const devfs_handle_t * handle, devfs_async_t * op),
+					 int loc,
+					 const void * buf,
+					 int nbyte,
+					 int flags);
 
 typedef struct MCU_PACK {
-    u16 irq_total /* Total number of interrupts */;
-    u16 irq_middle_prio /* Middle priority value */;
-    u16 usb_logical_endpoint_count /* Number of logical endpoints */;
-    u16 delay_factor /* factor to multiply by when calculating delays (depends on memory performance) */;
-    const char * git_hash /* Pointer to git hash string */;
+	u16 irq_total /* Total number of interrupts */;
+	u16 irq_middle_prio /* Middle priority value */;
+	u16 usb_logical_endpoint_count /* Number of logical endpoints */;
+	u16 delay_factor /* factor to multiply by when calculating delays (depends on memory performance) */;
+	const char * git_hash /* Pointer to git hash string */;
 } mcu_config_t;
 
 extern const mcu_config_t mcu_config;
@@ -111,23 +111,23 @@ static inline const mcu_pin_t * mcu_pin_at(const void * start, int i){
 const void * mcu_select_attr(const devfs_handle_t * handle, void * ctl);
 
 int mcu_set_pin_assignment(const void * attr_pin_assignment,
-		const void * config_pin_assignment,
-		int count,
-		int periph,
-		int periph_port,
-        void (*pre_configure_pin)(const mcu_pin_t *, void *),
-        void (*post_configure_pin)(const mcu_pin_t *, void*),
-        void * arg) MCU_ROOT_CODE;
+									const void * config_pin_assignment,
+									int count,
+									int periph,
+									int periph_port,
+									void (*pre_configure_pin)(const mcu_pin_t *, void *),
+									void (*post_configure_pin)(const mcu_pin_t *, void*),
+									void * arg) MCU_ROOT_CODE;
 
 const void * mcu_select_pin_assignment(const void * attr_pin_assignment,
-                                    const void * config_pin_assignment,
-                                    int count) MCU_ROOT_CODE;
+													const void * config_pin_assignment,
+													int count) MCU_ROOT_CODE;
 #endif
 
 enum {
 	MCU_BOARD_CONFIG_FLAG_LED_ACTIVE_HIGH /*! When set, the board LED is active high */ = (1<<0),
-    MCU_BOARD_CONFIG_FLAG_SAFE_SVCALL /*! When set, the svcall can only be used by the kernel */ = (1<<1),
-    MCU_BOARD_CONFIG_FLAG_ENABLE_CACHE /*! When set, the svcall can only be used by the kernel */ = (1<<2)
+	MCU_BOARD_CONFIG_FLAG_SAFE_SVCALL /*! When set, the svcall can only be used by the kernel */ = (1<<1),
+	MCU_BOARD_CONFIG_FLAG_ENABLE_CACHE /*! When set, the svcall can only be used by the kernel */ = (1<<2)
 };
 
 enum {
@@ -138,6 +138,7 @@ enum {
 	MCU_BOARD_CONFIG_EVENT_WARNING /*! Event is called when something isn't quite right but things should basically still work. Args is a c string */,
 	MCU_BOARD_CONFIG_EVENT_MESSAGE /*! Event is called when a message is available. Args is a c string */,
 
+	MCU_BOARD_CONFIG_EVENT_ROOT_INITIALIZE_CLOCK /*! Called at the beginning of mcu_core_initclock() so that the BSP can initialize the clock configuration */,
 	MCU_BOARD_CONFIG_EVENT_START_INIT /*! Called with sos_default_thread(). Args is a pointer to u8 which is the reset type */,
 	MCU_BOARD_CONFIG_EVENT_START_FILESYSTEM /*! Called with sos_default_thread() when filesystem starts. Args is a pointer to u32 which says how many processes started */,
 	MCU_BOARD_CONFIG_EVENT_START_LINK /*! Called with sos_default_thread(), when link starts.  Args is null */,
@@ -163,14 +164,14 @@ typedef struct MCU_PACK {
 	u32 core_cpu_freq;
 	u32 core_periph_freq;
 	u32 usb_max_packet_zero;
-    u32 o_flags /*! MCU flags such as MCU_BOARD_CONFIG_FLAG_LED_ACTIVE_HIGH */;
-    void (*event_handler)(int, void*) /*! A callback to an event handler that gets, for example, MCU_BOARD_CONFIG_EVENT_FATAL on a fatal event */;
-    mcu_pin_t led /*! A pin on the board that drives an LED. Use {0xff, 0xff} if not available. */;
-    u8 debug_uart_port /*! The port used for the UART debugger. This is only used for _debug builds */;
-    u8 resd;
-    uart_attr_t debug_uart_attr /*! The UART attributes for the UART debugger. */;
-    const void * arch_config /*! A pointer to MCU architecture specific data, for example, stm32_arch_config_t */;
-    u32 o_mcu_debug /*! Debugging flags (only used when linking to debug libraries */;
+	u32 o_flags /*! MCU flags such as MCU_BOARD_CONFIG_FLAG_LED_ACTIVE_HIGH */;
+	void (*event_handler)(int, void*) /*! A callback to an event handler that gets, for example, MCU_BOARD_CONFIG_EVENT_FATAL on a fatal event */;
+	mcu_pin_t led /*! A pin on the board that drives an LED. Use {0xff, 0xff} if not available. */;
+	u8 debug_uart_port /*! The port used for the UART debugger. This is only used for _debug builds */;
+	u8 resd;
+	uart_attr_t debug_uart_attr /*! The UART attributes for the UART debugger. */;
+	const void * arch_config /*! A pointer to MCU architecture specific data, for example, stm32_arch_config_t */;
+	u32 o_mcu_debug /*! Debugging flags (only used when linking to debug libraries */;
 } mcu_board_config_t;
 
 /*! \brief MCU Board configuration variable

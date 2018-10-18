@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 
@@ -84,13 +84,13 @@ int pthread_mutex_lock(pthread_mutex_t * mutex){
 
 	ret = mutex_trylock(mutex, false, NULL);
 	switch(ret){
-	case 1:
-		errno = EDEADLK;
-		return -1;
-	case -1:
-		return -1;
-	default:
-		break;
+		case 1:
+			errno = EDEADLK;
+			return -1;
+		case -1:
+			return -1;
+		default:
+			break;
 	}
 	return 0;
 }
@@ -116,17 +116,17 @@ int pthread_mutex_trylock(pthread_mutex_t *mutex){
 
 	ret = mutex_trylock(mutex, true, NULL);
 	switch(ret){
-	case 0:
-		//just acquired the lock
-	case 1:
-		//already owns the lock
-		return 0;
-	case -2:
-		errno = EBUSY;
-		return -1;
-	default:
-		//Doesn't own the lock
-		return -1;
+		case 0:
+			//just acquired the lock
+		case 1:
+			//already owns the lock
+			return 0;
+		case -2:
+			errno = EBUSY;
+			return -1;
+		default:
+			//Doesn't own the lock
+			return -1;
 	}
 }
 
@@ -277,7 +277,7 @@ void root_mutex_unblocked(root_mutex_trylock_t *args){
 	root_mutex_block(args);
 
 	//if the time has expired, the thread will still be active -- therefore unblock from SLEEP (not signal)
-    if( task_active_asserted(args->id) ){
+	if( task_active_asserted(args->id) ){
 		scheduler_root_set_unblock_type(args->id, SCHEDULER_UNBLOCK_SLEEP);
 	}
 
@@ -288,12 +288,12 @@ void root_mutex_trylock(root_mutex_trylock_t *args){
 		//The mutex is free -- lock it up
 		args->mutex->pthread = args->id; //This is to hold the mutex in case another task tries to grab it
 		args->mutex->pid = task_get_pid(args->id);
-        if ( args->mutex->prio_ceiling > task_get_priority(args->id) ){
-            task_set_priority( args->id, args->mutex->prio_ceiling ); //Elevate the priority of the task based on prio_ceiling
+		if ( args->mutex->prio_ceiling > task_get_priority(args->id) ){
+			task_set_priority( args->id, args->mutex->prio_ceiling ); //Elevate the priority of the task based on prio_ceiling
 
-            //see the task manager that the priority has changed
-            task_root_set_current_priority(args->mutex->prio_ceiling);
-        }
+			//see the task manager that the priority has changed
+			task_root_set_current_priority(args->mutex->prio_ceiling);
+		}
 		args->mutex->lock = 1; //This is the lock count
 		args->ret = 0;
 	} else {
@@ -309,40 +309,28 @@ void root_mutex_unlock(root_mutex_unlock_t * args){
 	int new_thread;
 
 	//Restore the priority to the task that is unlocking the mutex
-    task_set_priority(args->id, sos_sched_table[args->id].attr.schedparam.sched_priority);
+	task_set_priority(args->id, sos_sched_table[args->id].attr.schedparam.sched_priority);
 	sos_sched_table[args->id].block_object = NULL;
 
 	//check to see if another task is waiting for the mutex
 	new_thread = scheduler_get_highest_priority_blocked(args->mutex);
 
-    if( task_get_current() == 500 ) mcu_debug_printf("l%d %d %d %d %d\n",
-                                                   __LINE__,
-                                                   new_thread,
-                                                   task_get_priority(new_thread),
-                                                   task_get_current_priority(),
-                                                   task_get_priority( task_get_current() ));
-
-    if ( new_thread > 0 ){
-        args->mutex->pthread = new_thread;
+	if ( new_thread > 0 ){
+		args->mutex->pthread = new_thread;
 		args->mutex->pid = task_get_pid(new_thread);
 		args->mutex->lock = 1;
-        if( args->mutex->prio_ceiling > task_get_priority(new_thread) ){
-            task_set_priority(new_thread, args->mutex->prio_ceiling);
-        }
+		if( args->mutex->prio_ceiling > task_get_priority(new_thread) ){
+			task_set_priority(new_thread, args->mutex->prio_ceiling);
+		}
 		scheduler_root_assert_active(new_thread, SCHEDULER_UNBLOCK_MUTEX);
-        scheduler_root_update_on_wake(new_thread, task_get_priority(new_thread));
-        if( task_get_current() == 500 ) mcu_debug_printf("l%d %d %d %d %d\n",
-                                                       __LINE__,
-                                                       new_thread,
-                                                       task_get_priority(new_thread),
-                                                       task_get_current_priority(),
-                                                       task_get_priority( task_get_current() ));
-    } else {
-        args->mutex->lock = 0;
+		scheduler_root_update_on_wake(new_thread, task_get_priority(new_thread));
+
+	} else {
+		args->mutex->lock = 0;
 		args->mutex->pthread = -1; //The mutex is up for grabs
-        if( task_get_priority(args->id) < task_get_current_priority() ){
-            scheduler_root_update_on_stopped();
-        }
+		if( task_get_priority(args->id) < task_get_current_priority() ){
+			scheduler_root_update_on_stopped();
+		}
 	}
 }
 
@@ -382,26 +370,26 @@ int pthread_mutex_timedlock(pthread_mutex_t * mutex, const struct timespec * abs
 
 	ret = mutex_trylock(mutex, false, abs_timeout);
 	switch(ret){
-	case 1:
-		errno = EDEADLK;
-		return -1;
-		break;
-	case -2:
-		//Either the lock was acquired or the timeout occurred
-		if ( mutex->pthread == task_get_current() ){
-			errno = 0;
-			//Lock was acquired
-			return 0;
-		} else {
-			//Timeout occurred
-			errno = ETIMEDOUT;
+		case 1:
+			errno = EDEADLK;
 			return -1;
-		}
+			break;
+		case -2:
+			//Either the lock was acquired or the timeout occurred
+			if ( mutex->pthread == task_get_current() ){
+				errno = 0;
+				//Lock was acquired
+				return 0;
+			} else {
+				//Timeout occurred
+				errno = ETIMEDOUT;
+				return -1;
+			}
 
-	case -1:
-		return -1;
-	default:
-		return 0;
+		case -1:
+			return -1;
+		default:
+			return 0;
 	}
 }
 
