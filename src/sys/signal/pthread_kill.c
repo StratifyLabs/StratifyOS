@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 /*! \addtogroup SIGNAL
@@ -39,10 +39,10 @@
 #include "mcu/debug.h"
 
 static int signal_root_forward(int send_tid,
-		int tid,
-		int si_signo,
-		int si_sigcode,
-		int sig_value) MCU_ROOT_CODE;
+										 int tid,
+										 int si_signo,
+										 int si_sigcode,
+										 int sig_value) MCU_ROOT_CODE;
 static void signal_forward_handler(int send_tid, int signo, int sigcode, int sigvalue);
 
 //this checks to see if sending a signal will cause a stack/heap collision in the target thread
@@ -63,7 +63,7 @@ void signal_root_check_stack(void * args){
 	}
 
 	if( (sp - task_interrupt_stacksize() - (2*SCHED_DEFAULT_STACKGUARD_SIZE)) < //stackguard * 2 gives the handler a little bit of memory
-			(u32)(sos_task_table[tid].mem.stackguard.addr) ){
+		 (u32)(sos_task_table[tid].mem.stackguard.addr) ){
 		ret = -1;
 	}
 
@@ -127,7 +127,7 @@ int signal_root_send(int send_tid, int tid, int si_signo, int si_sigcode, int si
 	if( ( (tid == task_get_current()) ) && (forward != 0) ){
 		//If the receiving tid is currently executing, sending the signal directly will corrupt the stack
 		//So we stack a signal on task 0 and have it send the signal
-        //This only happens when root signals are sent because the stack is in an unknown state
+		//This only happens when root signals are sent because the stack is in an unknown state
 		return signal_root_forward(tid, 0, si_signo, si_sigcode, sig_value);
 	}
 
@@ -139,7 +139,7 @@ int signal_root_send(int send_tid, int tid, int si_signo, int si_sigcode, int si
 				check_stack = tid;
 				signal_root_check_stack(&check_stack);
 				if( check_stack < 0 ){
-                    return SYSFS_SET_RETURN(ENOMEM);
+					return SYSFS_SET_RETURN(ENOMEM);
 				}
 
 
@@ -153,13 +153,13 @@ int signal_root_send(int send_tid, int tid, int si_signo, int si_sigcode, int si
 				intr.arg[3] = sig_value;
 				task_root_interrupt(&intr);
 			} else {
-                return SYSFS_SET_RETURN(EINVAL);
+				return SYSFS_SET_RETURN(EINVAL);
 			}
 		} else {
-            return SYSFS_SET_RETURN(EINVAL);
+			return SYSFS_SET_RETURN(EINVAL);
 		}
 	} else {
-        return SYSFS_SET_RETURN(ESRCH);
+		return SYSFS_SET_RETURN(ESRCH);
 	}
 	return 0;
 }
@@ -238,7 +238,7 @@ void signal_root_activate(int * thread){
 	int id = *thread;
 	scheduler_root_deassert_stopped(id);
 	scheduler_root_assert_active(id, SCHEDULER_UNBLOCK_SIGNAL);
-    scheduler_root_update_on_wake(id, scheduler_priority(id));
+	scheduler_root_update_on_wake(id, scheduler_priority(id));
 }
 
 

@@ -57,7 +57,6 @@ int drive_mmc_ioctl(const devfs_handle_t * handle, int request, void * ctl){
         if( o_flags & (DRIVE_FLAG_ERASE_BLOCKS | DRIVE_FLAG_ERASE_DEVICE) ){
 
             if( o_flags & DRIVE_FLAG_ERASE_BLOCKS ){
-
                 mmc_attr_t mmc_attr;
                 mmc_attr.o_flags = MMC_FLAG_ERASE_BLOCKS;
                 mmc_attr.start = attr->start;
@@ -71,6 +70,12 @@ int drive_mmc_ioctl(const devfs_handle_t * handle, int request, void * ctl){
             //this will init the SD card with the default settings
             return mcu_mmc_setattr(handle, 0);
         }
+
+		  if( o_flags & DRIVE_FLAG_RESET ){
+			  mmc_attr_t mmc_attr;
+			  mmc_attr.o_flags = MMC_FLAG_RESET;
+			  return mcu_mmc_setattr(handle, &mmc_attr);
+		  }
 
         break;
 

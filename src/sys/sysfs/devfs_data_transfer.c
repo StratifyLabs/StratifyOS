@@ -186,7 +186,7 @@ int devfs_data_transfer(const void * config, const devfs_device_t * device, int 
 		while( (scheduler_unblock_type(task_get_current()) == SCHEDULER_UNBLOCK_SIGNAL)
 				 && ((volatile int)args.is_read != ARGS_READ_DONE) ){
 
-			if( (args.ret == 0) && (args.async.nbyte == 0) ){
+			if( args.ret == 0 ){
 				//no data was transferred -- operation was interrupted by a signal
 				clear_device_action(config, device, loc, args.is_read);
 				return SYSFS_SET_RETURN(EINTR);
