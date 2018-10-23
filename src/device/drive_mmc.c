@@ -31,84 +31,84 @@
 
 
 int drive_mmc_open(const devfs_handle_t * handle){
-    return mcu_mmc_open(handle);
+	return mcu_mmc_open(handle);
 }
 
 int drive_mmc_read(const devfs_handle_t * handle, devfs_async_t * async){
-    return mcu_mmc_read(handle, async);
+	return mcu_mmc_read(handle, async);
 }
 
 
 int drive_mmc_write(const devfs_handle_t * handle, devfs_async_t * async){
-    return mcu_mmc_write(handle, async);
+	return mcu_mmc_write(handle, async);
 }
 
 int drive_mmc_ioctl(const devfs_handle_t * handle, int request, void * ctl){
-    drive_info_t * info = ctl;
-    drive_attr_t * attr = ctl;
-    u32 o_flags;
-    mmc_info_t mmc_info;
-    mmc_info_t mmc_attr;
-    int result;
+	drive_info_t * info = ctl;
+	drive_attr_t * attr = ctl;
+	u32 o_flags;
+	mmc_info_t mmc_info;
+	mmc_info_t mmc_attr;
+	int result;
 
-    switch(request){
-    case I_DRIVE_SETATTR:
-        o_flags = attr->o_flags;
-        if( o_flags & (DRIVE_FLAG_ERASE_BLOCKS | DRIVE_FLAG_ERASE_DEVICE) ){
+	switch(request){
+		case I_DRIVE_SETATTR:
+			o_flags = attr->o_flags;
+			if( o_flags & (DRIVE_FLAG_ERASE_BLOCKS | DRIVE_FLAG_ERASE_DEVICE) ){
 
-            if( o_flags & DRIVE_FLAG_ERASE_BLOCKS ){
-                mmc_attr_t mmc_attr;
-                mmc_attr.o_flags = MMC_FLAG_ERASE_BLOCKS;
-                mmc_attr.start = attr->start;
-                mmc_attr.end = attr->end;
-                return mcu_mmc_setattr(handle, &mmc_attr);
-            }
-        }
+				if( o_flags & DRIVE_FLAG_ERASE_BLOCKS ){
+					mmc_attr_t mmc_attr;
+					mmc_attr.o_flags = MMC_FLAG_ERASE_BLOCKS;
+					mmc_attr.start = attr->start;
+					mmc_attr.end = attr->end;
+					return mcu_mmc_setattr(handle, &mmc_attr);
+				}
+			}
 
-        if( o_flags & DRIVE_FLAG_INIT ){
+			if( o_flags & DRIVE_FLAG_INIT ){
 
-            //this will init the SD card with the default settings
-            return mcu_mmc_setattr(handle, 0);
-        }
+				//this will init the SD card with the default settings
+				return mcu_mmc_setattr(handle, 0);
+			}
 
-		  if( o_flags & DRIVE_FLAG_RESET ){
-			  mmc_attr_t mmc_attr;
-			  mmc_attr.o_flags = MMC_FLAG_RESET;
-			  return mcu_mmc_setattr(handle, &mmc_attr);
-		  }
+			if( o_flags & DRIVE_FLAG_RESET ){
+				mmc_attr_t mmc_attr;
+				mmc_attr.o_flags = MMC_FLAG_RESET;
+				return mcu_mmc_setattr(handle, &mmc_attr);
+			}
 
-        break;
+			break;
 
-    case I_DRIVE_ISBUSY:
-        mmc_attr.o_flags = MMC_FLAG_GET_CARD_STATE;
-        result = mcu_mmc_setattr(handle, &mmc_attr);
+		case I_DRIVE_ISBUSY:
+			mmc_attr.o_flags = MMC_FLAG_GET_CARD_STATE;
+			result = mcu_mmc_setattr(handle, &mmc_attr);
 
-        if( result < 0 ){ return result; }
-        return (result != MMC_CARD_STATE_TRANSFER);
+			if( result < 0 ){ return result; }
+			return (result != MMC_CARD_STATE_TRANSFER);
 
-    case I_DRIVE_GETINFO:
-        result = mcu_mmc_getinfo(handle, &mmc_info);
-        if( result < 0 ){ return result; }
+		case I_DRIVE_GETINFO:
+			result = mcu_mmc_getinfo(handle, &mmc_info);
+			if( result < 0 ){ return result; }
 
-        info->o_flags = DRIVE_FLAG_ERASE_BLOCKS | DRIVE_FLAG_INIT;
-        info->o_events = mmc_info.o_events;
-        info->address_size = mmc_info.block_size;
-        info->bitrate = mmc_info.freq;
-        info->erase_block_size = mmc_info.block_size;
-        info->erase_block_time = 0;
-        info->erase_device_time = 0;
-        info->num_write_blocks = mmc_info.block_count;
-        info->write_block_size = mmc_info.block_size;
-        break;
+			info->o_flags = DRIVE_FLAG_ERASE_BLOCKS | DRIVE_FLAG_INIT;
+			info->o_events = mmc_info.o_events;
+			info->address_size = mmc_info.block_size;
+			info->bitrate = mmc_info.freq;
+			info->erase_block_size = mmc_info.block_size;
+			info->erase_block_time = 0;
+			info->erase_device_time = 0;
+			info->num_write_blocks = mmc_info.block_count;
+			info->write_block_size = mmc_info.block_size;
+			break;
 
-    default:
-        return mcu_mmc_ioctl(handle, request, ctl);
-    }
-    return 0;
+		default:
+			return mcu_mmc_ioctl(handle, request, ctl);
+	}
+	return 0;
 }
 
 int drive_mmc_close(const devfs_handle_t * handle){
-    return mcu_mmc_close(handle);
+	return mcu_mmc_close(handle);
 }
 
 
