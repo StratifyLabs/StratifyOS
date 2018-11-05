@@ -58,11 +58,36 @@ extern "C" {
 #define DISPLAY_IOC_CHAR 'D'
 
 enum {
-	DISPLAY_PALETTE_ATTR_PIXEL_FORMAT_1BPP,
-	DISPLAY_PALETTE_ATTR_PIXEL_FORMAT_RGB565,
-	DISPLAY_PALETTE_ATTR_PIXEL_FORMAT_RGB666,
-	DISPLAY_PALETTE_ATTR_PIXEL_FORMAT_RGB888
+	DISPLAY_PALETTE_PIXEL_FORMAT_1BPP,
+	DISPLAY_PALETTE_PIXEL_FORMAT_RGB444,
+	DISPLAY_PALETTE_PIXEL_FORMAT_RGB565,
+	DISPLAY_PALETTE_PIXEL_FORMAT_RGB666,
+	DISPLAY_PALETTE_PIXEL_FORMAT_RGB888
 };
+
+typedef struct MCU_PACK {
+	u8 r4g4;
+	u8 b4r4;
+	u8 g4b4;
+} display_palette_pixel_format_rgb444_t;
+
+typedef struct MCU_PACK {
+	u8 r8;
+	u8 b8;
+	u8 g8;
+} display_palette_pixel_format_rgb888_t;
+
+typedef struct MCU_PACK {
+	u8 r6x2;
+	u8 b6x2;
+	u8 g6x2;
+} display_palette_pixel_format_rgb666_t;
+
+typedef struct MCU_PACK {
+	u8 r5g3;
+	u8 g3b5;
+} display_palette_pixel_format_rgb565_t;
+
 
 /*! \brief Display Palette Attributes
  * \details The display palette converts the bits_per_pixel
@@ -71,9 +96,8 @@ enum {
  * four colors are mapped to the display.
  */
 typedef struct MCU_PACK {
-	u8 pixel_format /*! Pixel format of the display (e.g. DISPLAY_PALETTE_ATTR_PIXEL_FORMAT_RGB565) */;
+	u8 pixel_format /*! Pixel format of the display (e.g. DISPLAY_PALETTE_PIXEL_FORMAT_RGB565) */;
 	u8 count /*! The number of pixel entries in the palette */;
-	u16 pixel_size /*! The number of bytes in a palette entry */;
 	void * colors /*! A pointer to the colors in the palette */;
 } display_palette_t;
 

@@ -13,14 +13,43 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 #include <string.h>
 #include <stdarg.h>
 
+
 #include "link_local.h"
+
+#if defined __win32
+#define open _open
+#define close _close
+#define read _read
+#define write _write
+#define lseek _lseek
+#define stat _stat
+#define fstat _fstat
+#else
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#endif
+
+
+static int link_open_host_file(const char * path, int flags, int mode);
+static int link_read_host_file(int fildes, void * buf, int nbyte);
+static int link_write_host_file(int fildes, void * buf, int nbyte);
+static int link_close_host_file(int fildes);
+//static int link_symlink_host_file(int fd);
+static int link_unlink_host_file(const char * path);
+static int link_lseek_host_file(int fildes, int loc, int whence);
+static int link_stat_host_file(const char * path, struct link_stat * stat);
+static int link_fstat_host_file(int fildes, struct link_stat * stat);
+static int link_rename_host_file(const char * old_path, const char * new_path);
+
+
 
 int link_open(link_transport_mdriver_t * driver, const char * path, int flags, ...){
 	link_op_t op;
@@ -30,12 +59,17 @@ int link_open(link_transport_mdriver_t * driver, const char * path, int flags, .
 	va_list ap;
 
 
+
 	if ( flags & LINK_O_CREAT ){
 		va_start(ap, flags);
 		mode = va_arg(ap, link_mode_t);
 		va_end(ap);
 	} else {
 		mode = 0;
+	}
+
+	if( driver == 0 ){
+		return open(path, flags, mode);
 	}
 
 	link_debug(LINK_DEBUG_MESSAGE, "open %s 0%o 0x%X using 0x%llX", path, mode, flags, (u64)driver->dev.handle);
@@ -73,6 +107,8 @@ int link_open(link_transport_mdriver_t * driver, const char * path, int flags, .
 	if ( reply.err < 0 ){
 		link_errno = reply.err_number;
 		link_debug(LINK_DEBUG_WARNING, "Failed to ioctl file (%d)", link_errno);
+	} else {
+		link_debug(LINK_DEBUG_MESSAGE, "Opened fildes: %d", reply.err);
 	}
 	return reply.err;
 }
@@ -105,14 +141,18 @@ int link_ioctl_delay(link_transport_mdriver_t * driver, int fildes, int request,
 
 	int err;
 
+	if( driver == 0 ){
+		return -1;
+	}
+
 	link_debug(LINK_DEBUG_MESSAGE, "Request is 0x%X", (unsigned int)request);
 
 	rw_size = _IOCTL_SIZE(request);
 
 	link_debug(LINK_DEBUG_MESSAGE, "Sending IOCTL request %c %d r:%X w:%X", _IOCTL_IDENT(request),
-			_IOCTL_SIZE(request),
-			_IOCTL_IOCTLR(request) != 0,
-			_IOCTL_IOCTLW(request) != 0);
+				  _IOCTL_SIZE(request),
+				  _IOCTL_IOCTLR(request) != 0,
+				  _IOCTL_IOCTLW(request) != 0);
 
 	//execute the request
 	op.ioctl.fildes = fildes;
@@ -188,6 +228,10 @@ int link_read(link_transport_mdriver_t * driver, int fildes, void * buf, int nby
 	link_reply_t reply;
 	int err;
 
+	if( driver == 0 ){
+		return read(fildes, buf, nbyte);
+	}
+
 	op.read.cmd = LINK_CMD_READ;
 	op.read.fildes = fildes;
 	op.read.nbyte = nbyte;
@@ -226,8 +270,9 @@ int link_write(link_transport_mdriver_t * driver, int fildes, const void * buf, 
 	link_op_t op;
 	link_reply_t reply;
 	int err;
+
 	if ( driver == NULL ){
-		return LINK_TRANSFER_ERR;
+		return write(fildes, buf, nbyte);
 	}
 
 	op.write.cmd = LINK_CMD_WRITE;
@@ -263,14 +308,16 @@ int link_write(link_transport_mdriver_t * driver, int fildes, const void * buf, 
 }
 
 int link_close(link_transport_mdriver_t * driver, int fildes){
+	if ( driver == NULL ){
+		return close(fildes);
+	}
+
 	link_op_t op;
 	link_reply_t reply;
 	int err;
+
 	op.close.cmd = LINK_CMD_CLOSE;
 	op.close.fildes = fildes;
-	if ( driver == NULL ){
-		return LINK_TRANSFER_ERR;
-	}
 	link_debug(LINK_DEBUG_MESSAGE, "Send Op to close fildes:%d", fildes);
 	err = link_transport_masterwrite(driver, &op, sizeof(link_close_t));
 	if ( err < 0 ){
@@ -339,13 +386,14 @@ int link_symlink(link_transport_mdriver_t * driver, const char * old_path, const
 }
 
 int link_unlink(link_transport_mdriver_t * driver, const char * path){
+	if ( driver == NULL ){
+		return unlink(path);
+	}
+
 	link_op_t op;
 	link_reply_t reply;
 	int len;
 	int err;
-	if ( driver == NULL ){
-		return LINK_TRANSFER_ERR;
-	}
 
 	link_debug(LINK_DEBUG_MESSAGE, "unlink %s", path);
 
@@ -377,13 +425,16 @@ int link_unlink(link_transport_mdriver_t * driver, const char * path){
 
 
 int link_lseek(link_transport_mdriver_t * driver, int fildes, s32 offset, int whence){
+
+	if ( driver == 0 ){
+		//operate on local file
+		return lseek(fildes, offset, whence);
+	}
+
 	link_op_t op;
 	link_reply_t reply;
 	int err;
 
-	if ( driver == NULL ){
-		return LINK_TRANSFER_ERR;
-	}
 	op.lseek.cmd = LINK_CMD_LSEEK;
 	op.lseek.fildes = fildes;
 	op.lseek.offset = offset;
@@ -412,14 +463,14 @@ int link_lseek(link_transport_mdriver_t * driver, int fildes, s32 offset, int wh
 }
 
 int link_stat(link_transport_mdriver_t * driver, const char * path, struct link_stat * buf){
+	if ( driver == NULL ){
+		return stat(path, (struct stat *)buf);
+	}
+
 	link_op_t op;
 	link_reply_t reply;
 	int len;
 	int err;
-
-	if ( driver == NULL ){
-		return LINK_TRANSFER_ERR;
-	}
 
 	link_debug(LINK_DEBUG_MESSAGE, "stat %s", path);
 
@@ -465,13 +516,13 @@ int link_stat(link_transport_mdriver_t * driver, const char * path, struct link_
 }
 
 int link_fstat(link_transport_mdriver_t * driver, int fildes, struct link_stat * buf){
+	if ( driver == NULL ){
+		return fstat(fildes, (struct stat*)buf);
+	}
+
 	link_op_t op;
 	link_reply_t reply;
 	int err;
-
-	if ( driver == NULL ){
-		return LINK_TRANSFER_ERR;
-	}
 
 	op.fstat.cmd = LINK_CMD_FSTAT;
 	op.fstat.fildes = fildes;

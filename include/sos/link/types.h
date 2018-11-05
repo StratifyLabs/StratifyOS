@@ -14,8 +14,8 @@
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>. */
 
-#ifndef DEV_LINK_TYPES_H_
-#define DEV_LINK_TYPES_H_
+#ifndef SOS_LINK_TYPES_H_
+#define SOS_LINK_TYPES_H_
 
 #include "mcu/types.h"
 
@@ -403,4 +403,4 @@ typedef u32 link_mode_t;
 
 
 
-#endif /* DEV_LINK_TYPES_H_ */
+#endif /* SOS_LINK_TYPES_H_ */
