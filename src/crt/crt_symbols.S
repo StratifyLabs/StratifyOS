@@ -555,8 +555,7 @@
 .global sendto; sendto = LINK_ADDR;
 .global socket; socket = LINK_ADDR;
 .global select; select = LINK_ADDR;
-.global sg_api; sg_api = LINK_ADDR;
-.global son_api; son_api = LINK_ADDR;
+.global kernel_request_api; kernel_request_api = LINK_ADDR;
 .global kernel_request; kernel_request = LINK_ADDR;
 .global sos_trace_event; sos_trace_event = LINK_ADDR;
 .global gethostbyname; gethostbyname = LINK_ADDR;

@@ -1,4 +1,4 @@
-/* Copyright 2011-2017 Tyler Gilbert;
+/* Copyright 2011-2019 Tyler Gilbert;
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -80,6 +80,7 @@ int select(int maxfdp1, fd_set *readset, fd_set *writeset, fd_set *exceptset, st
 
 struct addrinfo;
 
+#define SOS_SOCKET_API_T 1
 typedef struct {
 	int (*startup)(const void *);
 	int (*accept)(int s, struct sockaddr *addr, socklen_t *addrlen);
@@ -116,27 +117,7 @@ typedef struct {
 	void * state;
 } sos_socket_api_t;
 
-typedef struct {
-	int (*startup)(const void *);
-	int (*accept)(void * context, struct sockaddr *addr, socklen_t *addrlen);
-	int (*bind)(void * context, const struct sockaddr *name, socklen_t namelen);
-	int (*shutdown)(int s, int how);
-	int (*close)(void ** context);
-	int (*connect)(void * context, const struct sockaddr *name, socklen_t namelen, const char * server_name);
-	int (*listen)(void * context, int backlog);
-	int (*recv)(void * context, void *mem, size_t len, int flags);
-	int (*read)(void * context, void *mem, size_t len);
-	int (*recvfrom)(void * context, void *mem, size_t len, int flags,
-						 struct sockaddr *from, socklen_t *fromlen);
-	int (*send)(void * context, const void *dataptr, size_t size, int flags);
-	int (*sendmsg)(void * context, const struct msghdr *message, int flags);
-	int (*sendto)(void * context, const void *dataptr, size_t size, int flags,
-					  const struct sockaddr *to, socklen_t tolen);
-	int (*socket)(void ** context, int domain, int type, int protocol);
-	int (*write)(void * context, const void *dataptr, size_t size);
-	const void * config;
-	void * state;
-} sos_secure_socket_api_t;
+
 
 
 #endif /* POSIX_SYS_SOCKET_H_ */

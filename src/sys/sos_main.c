@@ -71,5 +71,9 @@ int kernel_request(int request, void * data){
     return -1;
 }
 
+const void * kernel_request_api(u32 request){
+	return 0;
+}
+
 
 /*! @} */

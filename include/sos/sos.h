@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 /*! \mainpage
@@ -418,7 +418,7 @@ extern "C" {
  */
 int hibernate(int seconds);
 
- /*! \details This function turns the controller off. The RTC
+/*! \details This function turns the controller off. The RTC
   * stays on and wakes up the controller after \a seconds has elapsed. When
   * the controller wakes up from power down, it resets.
   *
@@ -491,13 +491,13 @@ int unmount(const char * path);
  * @return Zero on success
  */
 int launch(const char * path,
-		char * exec_path,
-		const char * args,
-		int options,
-		int ram_size,
-		int (*update_progress)(int, int),
-		char *const envp[]
-);
+			  char * exec_path,
+			  const char * args,
+			  int options,
+			  int ram_size,
+			  int (*update_progress)(int, int),
+			  char *const envp[]
+			  );
 
 
 /*! \brief Install an application
@@ -510,10 +510,10 @@ int launch(const char * path,
  * @return Zero on success
  */
 int install(const char * path,
-		char * name,
-		int options,
-		int ram_size,
-		int (*update_progress)(int, int));
+				char * name,
+				int options,
+				int ram_size,
+				int (*update_progress)(int, int));
 
 void htoa(char * dest, int num);
 char htoc(int nibble);
@@ -526,6 +526,25 @@ char htoc(int nibble);
  * @return Returns result of request operation
  */
 int kernel_request(int request, void * data) MCU_WEAK;
+
+/*! \brief To be implemented by the board support package.
+ *
+ * @param request The request API unique identifier
+ * @return Returns a pointer to the API if it is installed, zero otherwise
+ *
+ * This function can be implemented to return libraries that
+ * are stored in the kernel and shared between applications.
+ *
+ * For example, the following libraries are requests are supported in the StratifyAPI
+ *
+ * - MBED TLS for secure sockets
+ * - Jansson Json library
+ * - Stratify Graphics
+ * - Stratify Object notation
+ *
+ *
+ */
+const void * kernel_request_api(u32 request) MCU_WEAK;
 
 typedef struct {
 	//bool logged;
@@ -570,7 +589,7 @@ typedef struct {
  * configuration data.
  */
 typedef struct MCU_PACK {
-    u8 clk_usecond_tmr /*! Hardware timer used for usecond counter */;
+	u8 clk_usecond_tmr /*! Hardware timer used for usecond counter */;
 	u8 task_total /*! Total number of supported tasks */;
 	u16 start_stack_size /*! Stack size of the first thread (when in doubt use SOS_DEFAULT_START_STACK_SIZE) */;
 	const char * stdin_dev /*! Device used for standard input */;
@@ -587,7 +606,7 @@ typedef struct MCU_PACK {
 	const sos_socket_api_t * socket_api /*! Socket API (zero if sockets are not supported) */;
 	void (*trace_event)(void * event) /*! This will trace an event (zero if not supported) */;
 	void (*request)(void) /*! Send an interrupt request to the link master (0 if not supported) */;
-    const char * git_hash /*! A pointer to the git hash string */;
+	const char * git_hash /*! A pointer to the git hash string */;
 } sos_board_config_t;
 
 #define SOS_DEFAULT_START_STACK_SIZE 2048
@@ -599,8 +618,8 @@ extern const sos_board_config_t sos_board_config;
 
 
 #define SOS_DECLARE_TASK_TABLE(task_count) \
-    volatile sched_task_t sos_sched_table[task_count] MCU_SYS_MEM; \
-    volatile task_t sos_task_table[task_count] MCU_SYS_MEM
+	volatile sched_task_t sos_sched_table[task_count] MCU_SYS_MEM; \
+	volatile task_t sos_task_table[task_count] MCU_SYS_MEM
 
 #define SOS_USER_ROOT 0
 #define SOS_USER 1
