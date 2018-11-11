@@ -30,68 +30,124 @@
 
 
 int accept(int s, struct sockaddr *addr, socklen_t *addrlen){
-	return sos_board_config.socket_api->accept(s & ~FILDES_SOCKET_FLAG, addr, addrlen);
+	if( s & FILDES_SOCKET_FLAG ){
+		return sos_board_config.socket_api->accept(s & ~FILDES_SOCKET_FLAG, addr, addrlen);
+	}
+	errno = ENOTSOCK;
+	return -1;
 }
 
 int bind(int s, const struct sockaddr *name, socklen_t namelen){
-	return sos_board_config.socket_api->bind(s & ~FILDES_SOCKET_FLAG, name, namelen);
+	if( s & FILDES_SOCKET_FLAG ){
+		return sos_board_config.socket_api->bind(s & ~FILDES_SOCKET_FLAG, name, namelen);
+	}
+	errno = ENOTSOCK;
+	return -1;
 }
 
 int shutdown(int s, int how){
-	return sos_board_config.socket_api->shutdown(s & ~FILDES_SOCKET_FLAG, how);
+	if( s & FILDES_SOCKET_FLAG ){
+		return sos_board_config.socket_api->shutdown(s & ~FILDES_SOCKET_FLAG, how);
+	}
+	errno = ENOTSOCK;
+	return -1;
 }
 
 int getpeername(int s, struct sockaddr *name, socklen_t *namelen){
-	return sos_board_config.socket_api->getpeername(s & ~FILDES_SOCKET_FLAG, name, namelen);
+	if( s & FILDES_SOCKET_FLAG ){
+		return sos_board_config.socket_api->getpeername(s & ~FILDES_SOCKET_FLAG, name, namelen);
+	}
+	errno = ENOTSOCK;
+	return -1;
 }
 
 
 int getsockname(int s, struct sockaddr *name, socklen_t *namelen){
-	return sos_board_config.socket_api->getsockname(s & ~FILDES_SOCKET_FLAG, name, namelen);
+	if( s & FILDES_SOCKET_FLAG ){
+		return sos_board_config.socket_api->getsockname(s & ~FILDES_SOCKET_FLAG, name, namelen);
+	}
+	errno = ENOTSOCK;
+	return -1;
 }
 
 
 int getsockopt(int s, int level, int optname, void *optval, socklen_t *optlen){
-	return sos_board_config.socket_api->getsockopt(s & ~FILDES_SOCKET_FLAG, level, optname, optval, optlen);
+	if( s & FILDES_SOCKET_FLAG ){
+		return sos_board_config.socket_api->getsockopt(s & ~FILDES_SOCKET_FLAG, level, optname, optval, optlen);
+	}
+	errno = ENOTSOCK;
+	return -1;
 }
 
 
 int setsockopt(int s, int level, int optname, const void *optval, socklen_t optlen){
-	return sos_board_config.socket_api->setsockopt(s & ~FILDES_SOCKET_FLAG, level, optname, optval, optlen);
+	if( s & FILDES_SOCKET_FLAG ){
+		return sos_board_config.socket_api->setsockopt(s & ~FILDES_SOCKET_FLAG, level, optname, optval, optlen);
+	}
+	errno = ENOTSOCK;
+	return -1;
 }
 
 
 int connect(int s, const struct sockaddr *name, socklen_t namelen){
-	return sos_board_config.socket_api->connect(s & ~FILDES_SOCKET_FLAG, name, namelen);
+	if( s & FILDES_SOCKET_FLAG ){
+		return sos_board_config.socket_api->connect(s & ~FILDES_SOCKET_FLAG, name, namelen);
+	}
+	errno = ENOTSOCK;
+	return -1;
 }
 
 
 int listen(int s, int backlog){
-	return sos_board_config.socket_api->listen(s & ~FILDES_SOCKET_FLAG, backlog);
+	if( s & FILDES_SOCKET_FLAG ){
+		return sos_board_config.socket_api->listen(s & ~FILDES_SOCKET_FLAG, backlog);
+	}
+	errno = ENOTSOCK;
+	return -1;
 }
 
 
 int recv(int s, void *mem, size_t len, int flags){
-	return sos_board_config.socket_api->recv(s & ~FILDES_SOCKET_FLAG, mem, len, flags);
+	if( s & FILDES_SOCKET_FLAG ){
+		return sos_board_config.socket_api->recv(s & ~FILDES_SOCKET_FLAG, mem, len, flags);
+	}
+	errno = ENOTSOCK;
+	return -1;
 }
 
 
 int recvfrom(int s, void *mem, size_t len, int flags, struct sockaddr *from, socklen_t *fromlen){
-	return sos_board_config.socket_api->recvfrom(s & ~FILDES_SOCKET_FLAG, mem, len, flags, from, fromlen);
+	if( s & FILDES_SOCKET_FLAG ){
+		return sos_board_config.socket_api->recvfrom(s & ~FILDES_SOCKET_FLAG, mem, len, flags, from, fromlen);
+	}
+	errno = ENOTSOCK;
+	return -1;
 }
 
 
 int send(int s, const void *dataptr, size_t size, int flags){
-	return sos_board_config.socket_api->send(s & ~FILDES_SOCKET_FLAG, dataptr, size, flags);
+	if( s & FILDES_SOCKET_FLAG ){
+		return sos_board_config.socket_api->send(s & ~FILDES_SOCKET_FLAG, dataptr, size, flags);
+	}
+	errno = ENOTSOCK;
+	return -1;
 }
 
 int sendmsg(int s, const struct msghdr *message, int flags){
-	return sos_board_config.socket_api->sendmsg(s & ~FILDES_SOCKET_FLAG, message, flags);
+	if( s & FILDES_SOCKET_FLAG ){
+		return sos_board_config.socket_api->sendmsg(s & ~FILDES_SOCKET_FLAG, message, flags);
+	}
+	errno = ENOTSOCK;
+	return -1;
 }
 
 int sendto(int s, const void *dataptr, size_t size, int flags,
-		const struct sockaddr *to, socklen_t tolen){
-	return sos_board_config.socket_api->sendto(s & ~FILDES_SOCKET_FLAG, dataptr, size, flags, to, tolen);
+			  const struct sockaddr *to, socklen_t tolen){
+	if( s & FILDES_SOCKET_FLAG ){
+		return sos_board_config.socket_api->sendto(s & ~FILDES_SOCKET_FLAG, dataptr, size, flags, to, tolen);
+	}
+	errno = ENOTSOCK;
+	return -1;
 }
 
 int socket(int domain, int type, int protocol){
@@ -105,7 +161,11 @@ int socket(int domain, int type, int protocol){
 
 
 int writev(int s, const struct iovec *iov, int iovcnt){
-	return sos_board_config.socket_api->writev(s & ~FILDES_SOCKET_FLAG, iov, iovcnt);
+	if( s & FILDES_SOCKET_FLAG ){
+		return sos_board_config.socket_api->writev(s & ~FILDES_SOCKET_FLAG, iov, iovcnt);
+	}
+	errno = ENOTSOCK;
+	return -1;
 }
 
 
@@ -114,18 +174,18 @@ int select(int maxfdp1, fd_set *readset, fd_set *writeset, fd_set *exceptset, st
 }
 
 struct hostent * gethostbyname(const char *name){
-    return sos_board_config.socket_api->gethostbyname(name);
+	return sos_board_config.socket_api->gethostbyname(name);
 }
 
 int gethostbyname_r(const char *name, struct hostent *ret, char *buf, size_t buflen, struct hostent **result, int *h_errnop){
-    return sos_board_config.socket_api->gethostbyname_r(name, ret, buf, buflen, result, h_errnop);
+	return sos_board_config.socket_api->gethostbyname_r(name, ret, buf, buflen, result, h_errnop);
 }
 
 void freeaddrinfo(struct addrinfo *ai){
-    sos_board_config.socket_api->freeaddrinfo(ai);
+	sos_board_config.socket_api->freeaddrinfo(ai);
 }
 
 int getaddrinfo(const char *nodename, const char *servname, const struct addrinfo *hints, struct addrinfo **res){
-    return sos_board_config.socket_api->getaddrinfo(nodename, servname, hints, res);
+	return sos_board_config.socket_api->getaddrinfo(nodename, servname, hints, res);
 }
 
