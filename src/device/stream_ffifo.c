@@ -43,12 +43,13 @@ int event_write_complete(void * context, const mcu_event_t * event){
 
 	u32 frame_count = config->tx.frame_count;
 	if( event->o_events & (MCU_EVENT_FLAG_LOW | MCU_EVENT_FLAG_HIGH) ){
-		frame_count >>= 1;
+		frame_count >>= 1; //frame count/2
 	}
 
 	//check for underflow
-	if( ffifo_state->atomic_position.access.tail != config->tx.frame_count ){ //buffer should be full
+	if( ffifo_state->atomic_position.access.tail != config->tx.frame_count ){ //buffer should be full when this event fires -- if not fill it with zeros
 		char frame[config->tx.frame_size];
+		ffifo_state->o_flags |= FIFO_FLAG_IS_OVERFLOW;
 		memset(frame, 0, config->tx.frame_size);
 		while( ffifo_state->atomic_position.access.tail != config->tx.frame_count ){
 			//if buffer is not full -- make it full of zeros -- what happens if application is writing while this write -- interrupt priority?
@@ -63,6 +64,18 @@ int event_write_complete(void * context, const mcu_event_t * event){
 			ffifo_state->atomic_position.access.tail = ffifo_state->atomic_position.access.head;
 		}
 		ffifo_inc_tail(ffifo_state, config->tx.frame_count);
+
+#if 0 //this should never print anything -- can be used for debugging
+		if( event->o_events & MCU_EVENT_FLAG_LOW ){
+			if( ffifo_state->atomic_position.access.head != 0 ){
+				mcu_debug_printf("head not zero 0x%lX\n", ffifo_state->o_flags);
+			}
+		} else {
+			if( ffifo_state->atomic_position.access.head == 0 ){
+				mcu_debug_printf("head is zero\n");
+			}
+		}
+#endif
 
 		//execute the FFIFO action if something is trying to write the ffifo
 		ffifo_data_transmitted(&config->tx, &state->tx.ffifo);
@@ -167,10 +180,12 @@ int stream_ffifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 					ffifo_flush(&(state->tx.ffifo));
 
 					//ffifo is empty so the head must be incremented on start to be in the middle
-					ffifo_inc_head(&state->tx.ffifo, config->tx.frame_count/2);
+					ffifo_inc_head(&state->tx.ffifo, config->tx.frame_count);
+					ffifo_set_writeblock(&state->tx.ffifo, 1);
 
-					//start writing data to the I2S -- zeros are written if there is no data in the fifo
+					//start writing data to the driver -- zeros comprise the first frame
 					memset(state->tx.async.buf, 0, state->tx.async.nbyte);
+
 					if( config->device->driver.write(&config->device->handle, &(state->tx.async)) < 0 ){
 						return SYSFS_SET_RETURN(EIO);
 					}
@@ -241,7 +256,7 @@ int stream_ffifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 				//cancel the ffifo rx
 				ffifo_cancel_async_write(&(state->tx.ffifo));
 			}
-			/* no break */
+			/* no break */ //execute the driver SETACTION as well
 	}
 
 	return config->device->driver.ioctl(&config->device->handle, request, ctl);
