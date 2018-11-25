@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 /*! \addtogroup STFY
@@ -38,18 +38,18 @@ int _main(){
 
 	if ( scheduler_init() < 0 ){ //Initialize the data used for the scheduler
 		mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_FATAL, "main sched init");
-        cortexm_disable_interrupts();
+		cortexm_disable_interrupts();
 		while(1){}
 	}
 
-    if ( scheduler_start(sos_board_config.start) < 0 ){
+	if ( scheduler_start(sos_board_config.start) < 0 ){
 		mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_FATAL, "main sched start");
-        cortexm_disable_interrupts();
+		cortexm_disable_interrupts();
 		while(1){}
 	}
 
 	mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_FATAL, "main sched failed");
-    cortexm_disable_interrupts();
+	cortexm_disable_interrupts();
 	while(1){}
 	return 0;
 }
@@ -59,16 +59,16 @@ int _main(){
  *
  */
 void init_hw(){
-    if( mcu_core_initclock(1) < 0 ){
-        while(1){}
-    }
+	if( mcu_core_initclock(1) < 0 ){
+		while(1){}
+	}
 	mcu_fault_init();
-    cortexm_enable_interrupts(); //Enable the interrupts
+	cortexm_enable_interrupts(); //Enable the interrupts
 }
 
 int kernel_request(int request, void * data){
-    errno = ENOSYS;
-    return -1;
+	errno = ENOSYS;
+	return -1;
 }
 
 const void * kernel_request_api(u32 request){
