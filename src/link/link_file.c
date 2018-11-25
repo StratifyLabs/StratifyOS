@@ -23,33 +23,43 @@
 
 #include "link_local.h"
 
-#if defined __win32
-#define open _open
-#define close _close
-#define read _read
-#define write _write
-#define lseek _lseek
-#define stat _stat
-#define fstat _fstat
-#else
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+
+#if defined __win32
+#define posix_open _open
+#define posix_close _close
+#define posix_read _read
+#define posix_write _write
+#define posix_lseek _lseek
+#define posix_stat _stat
+#define posix_fstat _fstat
+#else
+#define posix_open open
+#define posix_close close
+#define posix_read read
+#define posix_write write
+#define posix_lseek lseek
+#define posix_stat stat
+#define posix_fstat fstat
 #endif
 
 
-static int link_open_host_file(const char * path, int flags, int mode);
-static int link_read_host_file(int fildes, void * buf, int nbyte);
-static int link_write_host_file(int fildes, void * buf, int nbyte);
-static int link_close_host_file(int fildes);
-//static int link_symlink_host_file(int fd);
-static int link_unlink_host_file(const char * path);
-static int link_lseek_host_file(int fildes, int loc, int whence);
-static int link_stat_host_file(const char * path, struct link_stat * stat);
-static int link_fstat_host_file(int fildes, struct link_stat * stat);
-static int link_rename_host_file(const char * old_path, const char * new_path);
-
-
+static void convert_stat(struct link_stat * dest, const struct posix_stat * source){
+	//dest->st_blksize = source->st_blksize;
+	//dest->st_blocks = source->st_blocks;
+	//dest->st_ctime_ = source->st_ctime_;
+	dest->st_dev=source->st_dev;
+	dest->st_ino=source->st_ino;
+	dest->st_mode=source->st_mode;
+	dest->st_uid=source->st_uid;
+	dest->st_gid=source->st_gid;
+	dest->st_rdev=source->st_rdev;
+	dest->st_size=(_off_t) source->st_size;
+	dest->st_mtime_=source->st_mtime;
+	dest->st_ctime_=source->st_ctime;
+}
 
 int link_open(link_transport_mdriver_t * driver, const char * path, int flags, ...){
 	link_op_t op;
@@ -69,10 +79,10 @@ int link_open(link_transport_mdriver_t * driver, const char * path, int flags, .
 	}
 
 	if( driver == 0 ){
-		return open(path, flags, mode);
+		return posix_open(path, flags, mode);
 	}
 
-	link_debug(LINK_DEBUG_MESSAGE, "open %s 0%o 0x%X using 0x%llX", path, mode, flags, (u64)driver->dev.handle);
+	link_debug(LINK_DEBUG_MESSAGE, "open %s 0%o 0x%X using %p", path, mode, flags, driver->dev.handle);
 
 
 	op.open.cmd = LINK_CMD_OPEN;
@@ -80,10 +90,10 @@ int link_open(link_transport_mdriver_t * driver, const char * path, int flags, .
 	op.open.flags = flags;
 	op.open.mode = mode;
 
-	link_debug(LINK_DEBUG_MESSAGE, "Write open op (0x%lX)", (long unsigned int)driver->dev.handle);
+	link_debug(LINK_DEBUG_MESSAGE, "Write open op (%p)", (long unsigned int)driver->dev.handle);
 	err = link_transport_masterwrite(driver, &op, sizeof(link_open_t));
 	if ( err < 0 ){
-		link_error("failed to write open op with handle %llX", (u64)driver->dev.handle);
+		link_error("failed to write open op with handle %p", driver->dev.handle);
 		return link_handle_err(driver, err);
 	}
 
@@ -229,7 +239,7 @@ int link_read(link_transport_mdriver_t * driver, int fildes, void * buf, int nby
 	int err;
 
 	if( driver == 0 ){
-		return read(fildes, buf, nbyte);
+		return posix_read(fildes, buf, nbyte);
 	}
 
 	op.read.cmd = LINK_CMD_READ;
@@ -272,7 +282,7 @@ int link_write(link_transport_mdriver_t * driver, int fildes, const void * buf, 
 	int err;
 
 	if ( driver == NULL ){
-		return write(fildes, buf, nbyte);
+		return posix_write(fildes, buf, nbyte);
 	}
 
 	op.write.cmd = LINK_CMD_WRITE;
@@ -309,7 +319,7 @@ int link_write(link_transport_mdriver_t * driver, int fildes, const void * buf, 
 
 int link_close(link_transport_mdriver_t * driver, int fildes){
 	if ( driver == NULL ){
-		return close(fildes);
+		return posix_close(fildes);
 	}
 
 	link_op_t op;
@@ -428,7 +438,7 @@ int link_lseek(link_transport_mdriver_t * driver, int fildes, s32 offset, int wh
 
 	if ( driver == 0 ){
 		//operate on local file
-		return lseek(fildes, offset, whence);
+		return posix_lseek(fildes, offset, whence);
 	}
 
 	link_op_t op;
@@ -464,7 +474,17 @@ int link_lseek(link_transport_mdriver_t * driver, int fildes, s32 offset, int wh
 
 int link_stat(link_transport_mdriver_t * driver, const char * path, struct link_stat * buf){
 	if ( driver == NULL ){
-		return stat(path, (struct stat *)buf);
+		struct posix_stat output;
+		int result = posix_stat(path, &output);
+		if( result < 0 ){
+			return result;
+		}
+
+		//translate link_stat and stat
+		convert_stat(buf, &output);
+
+		return result;
+
 	}
 
 	link_op_t op;
@@ -517,7 +537,15 @@ int link_stat(link_transport_mdriver_t * driver, const char * path, struct link_
 
 int link_fstat(link_transport_mdriver_t * driver, int fildes, struct link_stat * buf){
 	if ( driver == NULL ){
-		return fstat(fildes, (struct stat*)buf);
+		struct posix_stat output;
+		int result = posix_fstat(fildes, &output);
+
+		if( result < 0 ){ return result; }
+
+		//translate output to buf
+		convert_stat(buf, &output);
+
+		return result;
 	}
 
 	link_op_t op;
