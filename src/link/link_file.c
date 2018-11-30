@@ -35,6 +35,7 @@
 #define posix_lseek _lseek
 #define posix_stat _stat
 #define posix_fstat _fstat
+#define POSIX_OPEN_FLAGS (O_BINARY)
 #else
 #define posix_open open
 #define posix_close close
@@ -43,6 +44,7 @@
 #define posix_lseek lseek
 #define posix_stat stat
 #define posix_fstat fstat
+#define POSIX_OPEN_FLAGS (0)
 #endif
 
 
@@ -68,8 +70,6 @@ int link_open(link_transport_mdriver_t * driver, const char * path, int flags, .
 	int err;
 	va_list ap;
 
-
-
 	if ( flags & LINK_O_CREAT ){
 		va_start(ap, flags);
 		mode = va_arg(ap, link_mode_t);
@@ -79,7 +79,7 @@ int link_open(link_transport_mdriver_t * driver, const char * path, int flags, .
 	}
 
 	if( driver == 0 ){
-		return posix_open(path, flags, mode);
+		return posix_open(path, flags | POSIX_OPEN_FLAGS, mode);
 	}
 
 	link_debug(LINK_DEBUG_MESSAGE, "open %s 0%o 0x%X using %p", path, mode, flags, driver->dev.handle);
