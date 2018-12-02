@@ -114,9 +114,6 @@ int link_phy_status(link_transport_phy_t handle){
         err = 100;
     }
 
-    printf("LAST ERROR: %d\n", err);
-    fflush(stdout);
-
     return -1;
 }
 

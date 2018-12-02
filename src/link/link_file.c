@@ -63,6 +63,21 @@ static void convert_stat(struct link_stat * dest, const struct posix_stat * sour
 	dest->st_ctime_=source->st_ctime;
 }
 
+static int convert_flags(int link_flags){
+	int result = 0;
+	if( link_flags & LINK_O_CREAT ){ result |= O_CREAT; }
+	if( link_flags & LINK_O_APPEND ){ result |= LINK_O_APPEND; }
+	if( link_flags & LINK_O_EXCL ){ result |= O_EXCL; }
+	if( link_flags & LINK_O_RDWR ){ result |= O_RDWR; }
+	if( link_flags & LINK_O_RDONLY ){ result |= O_RDONLY; }
+#if defined O_NONBLOCK
+	if( link_flags & LINK_O_NONBLOCK ){ result |= O_NONBLOCK; }
+#endif
+	if( link_flags & LINK_O_WRONLY ){ result |= O_WRONLY; }
+	if( link_flags & LINK_O_TRUNC ){ result |= O_TRUNC; }
+	return result;
+}
+
 int link_open(link_transport_mdriver_t * driver, const char * path, int flags, ...){
 	link_op_t op;
 	link_reply_t reply;
@@ -79,7 +94,7 @@ int link_open(link_transport_mdriver_t * driver, const char * path, int flags, .
 	}
 
 	if( driver == 0 ){
-		return posix_open(path, flags | POSIX_OPEN_FLAGS, mode);
+		return posix_open(path, convert_flags(flags) | POSIX_OPEN_FLAGS, mode);
 	}
 
 	link_debug(LINK_DEBUG_MESSAGE, "open %s 0%o 0x%X using %p", path, mode, flags, driver->dev.handle);
