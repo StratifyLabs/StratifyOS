@@ -89,8 +89,9 @@ if( ${SOS_BUILD_CONFIG} STREQUAL arm )
       ${SOURCES_PREFIX}/sysfs/appfs_local.h
       ${SOURCES_PREFIX}/sysfs/appfs_ram.c
       ${SOURCES_PREFIX}/sysfs/appfs_util.c
-      ${SOURCES_PREFIX}/sysfs/appfs.c
-      ${SOURCES_PREFIX}/sysfs/devfs_aio.c
+			${SOURCES_PREFIX}/sysfs/appfs.c
+			${SOURCES_PREFIX}/sysfs/assetfs.c
+			${SOURCES_PREFIX}/sysfs/devfs_aio.c
       ${SOURCES_PREFIX}/sysfs/devfs_data_transfer.c
       ${SOURCES_PREFIX}/sysfs/devfs.c
       ${SOURCES_PREFIX}/sysfs/devfs_local.h

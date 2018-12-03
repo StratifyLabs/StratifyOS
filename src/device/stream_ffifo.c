@@ -180,7 +180,11 @@ int stream_ffifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 					ffifo_flush(&(state->tx.ffifo));
 
 					//ffifo is empty so the head must be incremented on start to be in the middle
-					ffifo_inc_head(&state->tx.ffifo, config->tx.frame_count);
+					//There needs to be a for loop here to inc the head to the halfway point in case tx.frame_count != 2
+					u32 i;
+					for(i=0; i < config->tx.frame_count/2; i++){
+						ffifo_inc_head(&state->tx.ffifo, config->tx.frame_count);
+					}
 					ffifo_set_writeblock(&state->tx.ffifo, 1);
 
 					//start writing data to the driver -- zeros comprise the first frame
