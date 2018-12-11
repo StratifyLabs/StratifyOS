@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 /*! \addtogroup LINK
@@ -100,7 +100,7 @@ void (* const link_cmd_func_table[LINK_CMD_TOTAL])(link_transport_driver_t *, li
 		link_cmd_chmod,
 		link_cmd_exec,
 		link_cmd_mkfs
-};
+		};
 
 
 void * link_update(void * arg){
@@ -111,20 +111,20 @@ void * link_update(void * arg){
 	data.op.cmd = 0;
 	err = 0;
 
-    mcu_debug_log_info(MCU_DEBUG_LINK, "Open link driver");
+	mcu_debug_log_info(MCU_DEBUG_LINK, "Open link driver");
 	if( (driver->handle = driver->open(NULL, 0)) == LINK_PHY_ERROR){
-        mcu_debug_log_error(MCU_DEBUG_LINK, "failed to init phy");
+		mcu_debug_log_error(MCU_DEBUG_LINK, "failed to init phy");
 		return 0;
 	}
 
-    mcu_debug_log_info(MCU_DEBUG_LINK, "start link update");
+	mcu_debug_log_info(MCU_DEBUG_LINK, "start link update");
 	while(1){
 
 		//Wait for data to arrive on the link transport device
 		while( 1 ){
 
 			if ( (err = link_transport_slaveread(driver, &packet_data, LINK_MAX_TRANSFER_SIZE, NULL, NULL)) <= 0 ){
-                mcu_debug_log_warning(MCU_DEBUG_LINK, "slave read error %d", err);
+				mcu_debug_log_warning(MCU_DEBUG_LINK, "slave read error %d", err);
 				driver->flush(driver->handle);
 				continue;
 			}
@@ -204,7 +204,7 @@ void link_cmd_open(link_transport_driver_t * driver, link_data_t * args){
 	args->reply.err = link_transport_slaveread(driver, path, args->op.open.path_size, NULL, NULL);
 	args->reply.err = open(path, args->op.open.flags, args->op.open.mode);
 	if ( args->reply.err < 0 ){
-        mcu_debug_log_error(MCU_DEBUG_LINK, "Failed to open %s (%d)\n", path, errno);
+		mcu_debug_log_error(MCU_DEBUG_LINK, "Failed to open %s (%d)\n", path, errno);
 		args->reply.err_number = errno;
 	}
 }
@@ -219,7 +219,7 @@ void link_cmd_link(link_transport_driver_t * driver, link_data_t * args){
 		args->reply.err = link(path, path_new);
 		args->reply.err = 0;
 		if ( args->reply.err < 0 ){
-            mcu_debug_log_error(MCU_DEBUG_LINK, "Failed to link %s (%d)\n", path, errno);
+			mcu_debug_log_error(MCU_DEBUG_LINK, "Failed to link %s (%d)\n", path, errno);
 			args->reply.err_number = errno;
 		}
 	}
@@ -268,7 +268,7 @@ void link_cmd_ioctl(link_transport_driver_t * driver, link_data_t * args){
 	}
 
 	if ( args->reply.err < 0 ){
-        mcu_debug_log_error(MCU_DEBUG_LINK, "Failed to ioctl (%d)\n", errno);
+		mcu_debug_log_error(MCU_DEBUG_LINK, "Failed to ioctl (%d)\n", errno);
 		args->reply.err_number = errno;
 	}
 
@@ -283,7 +283,7 @@ void link_cmd_read(link_transport_driver_t * driver, link_data_t * args){
 		args->reply.err_number = EBADF;
 	}
 	if ( args->reply.err < 0 ){
-        mcu_debug_log_error(MCU_DEBUG_LINK, "Failed to read (%d)\n", errno);
+		mcu_debug_log_error(MCU_DEBUG_LINK, "Failed to read (%d)\n", errno);
 		args->reply.err_number = errno;
 	}
 }
@@ -297,7 +297,7 @@ void link_cmd_write(link_transport_driver_t * driver, link_data_t * args){
 		args->reply.err_number = EBADF;
 	}
 	if ( args->reply.err < 0 ){
-        mcu_debug_log_error(MCU_DEBUG_LINK, "Failed to write (%d)\n", errno);
+		mcu_debug_log_error(MCU_DEBUG_LINK, "Failed to write (%d)\n", errno);
 		args->reply.err_number = errno;
 	}
 }
@@ -310,7 +310,7 @@ void link_cmd_close(link_transport_driver_t * driver, link_data_t * args){
 		args->reply.err_number = EBADF;
 	}
 	if ( args->reply.err < 0 ){
-        mcu_debug_log_error(MCU_DEBUG_LINK, "Failed to close (%d)\n", errno);
+		mcu_debug_log_error(MCU_DEBUG_LINK, "Failed to close (%d)\n", errno);
 		args->reply.err_number = errno;
 	}
 }
@@ -322,7 +322,7 @@ void link_cmd_unlink(link_transport_driver_t * driver, link_data_t * args){
 	}
 	args->reply.err = unlink(path);
 	if ( args->reply.err < 0 ){
-        mcu_debug_log_error(MCU_DEBUG_LINK, "Failed to unlink (%d)\n", errno);
+		mcu_debug_log_error(MCU_DEBUG_LINK, "Failed to unlink (%d)\n", errno);
 		args->reply.err_number = errno;
 	}
 
@@ -345,7 +345,7 @@ void link_cmd_stat(link_transport_driver_t * driver, link_data_t * args){
 
 	args->reply.err = stat(path, &st);
 	if (args->reply.err < 0 ){
-        mcu_debug_log_error(MCU_DEBUG_LINK, "Failed to stat (%d)\n", errno);
+		mcu_debug_log_error(MCU_DEBUG_LINK, "Failed to stat (%d)\n", errno);
 		args->reply.err_number = errno;
 	}
 
@@ -372,8 +372,8 @@ void link_cmd_fstat(link_transport_driver_t * driver, link_data_t * args){
 	struct stat st;
 	struct link_stat lst;
 	args->reply.err = fstat(args->op.fstat.fildes, (struct stat*)&st);
-    if ( args->reply.err < 0 ){
-        args->reply.err_number = errno;
+	if ( args->reply.err < 0 ){
+		args->reply.err_number = errno;
 	}
 
 	translate_link_stat(&lst, &st);
@@ -398,7 +398,7 @@ void link_cmd_mkdir(link_transport_driver_t * driver, link_data_t * args){
 	char path[PATH_MAX];
 	link_transport_slaveread(driver, path, args->op.mkdir.path_size, NULL, NULL);
 	args->reply.err = mkdir(path, args->op.mkdir.mode);
-    if ( args->reply.err < 0 ){
+	if ( args->reply.err < 0 ){
 		args->reply.err_number = errno;
 	}
 
@@ -408,8 +408,8 @@ void link_cmd_rmdir(link_transport_driver_t * driver, link_data_t * args){
 	char path[PATH_MAX];
 	link_transport_slaveread(driver, path, args->op.rmdir.path_size, NULL, NULL);
 	args->reply.err = rmdir(path);
-    if ( args->reply.err < 0 ){
-        args->reply.err_number = errno;
+	if ( args->reply.err < 0 ){
+		args->reply.err_number = errno;
 	}
 
 }
@@ -419,7 +419,7 @@ void link_cmd_opendir(link_transport_driver_t * driver, link_data_t * args){
 	link_transport_slaveread(driver, path, args->op.opendir.path_size, NULL, NULL);
 	args->reply.err = (int)opendir(path);
 	if ( args->reply.err  == 0 ){
-        mcu_debug_log_error(MCU_DEBUG_LINK, "Failed to open dir %s (%d)\n", path, errno);
+		mcu_debug_log_error(MCU_DEBUG_LINK, "Failed to open dir %s (%d)\n", path, errno);
 		args->reply.err_number = errno;
 	}
 }
@@ -434,7 +434,7 @@ void link_cmd_readdir(link_transport_driver_t * driver, link_data_t * args){
 		args->reply.err = -1;
 		args->reply.err_number = errno;
 		if ( errno != 2 ){
-            mcu_debug_log_error(MCU_DEBUG_LINK, "Failed to read dir (%d)\n", errno);
+			mcu_debug_log_error(MCU_DEBUG_LINK, "Failed to read dir (%d)\n", errno);
 		}
 	}
 
@@ -491,8 +491,8 @@ void link_cmd_chown(link_transport_driver_t * driver, link_data_t * args){
 		return;
 	}
 	args->reply.err = chown(path, args->op.chown.uid, args->op.chown.gid);
-    if ( args->reply.err < 0 ){
-        args->reply.err_number = errno;
+	if ( args->reply.err < 0 ){
+		args->reply.err_number = errno;
 	}
 
 }
@@ -506,8 +506,8 @@ void link_cmd_chmod(link_transport_driver_t * driver, link_data_t * args){
 		return;
 	}
 	args->reply.err = chmod(path, args->op.chmod.mode);
-    if ( args->reply.err < 0 ){
-        args->reply.err_number = errno;
+	if ( args->reply.err < 0 ){
+		args->reply.err_number = errno;
 	}
 }
 
@@ -518,7 +518,7 @@ void link_cmd_exec(link_transport_driver_t * driver, link_data_t * args){
 	args->reply.err = link_transport_slaveread(driver, path, args->op.exec.path_size, NULL, NULL);
 	args->reply.err = process_start(path, NULL);
 	if ( args->reply.err < 0 ){
-        mcu_debug_log_error(MCU_DEBUG_LINK, "Failed to exec %s (%d)\n", path, errno);
+		mcu_debug_log_error(MCU_DEBUG_LINK, "Failed to exec %s (%d)\n", path, errno);
 		args->reply.err_number = errno;
 	}
 }
@@ -529,7 +529,7 @@ void link_cmd_mkfs(link_transport_driver_t * driver, link_data_t * args){
 	args->reply.err = link_transport_slaveread(driver, path, args->op.exec.path_size, NULL, NULL);
 	args->reply.err = mkfs(path);
 	if ( args->reply.err < 0 ){
-        mcu_debug_log_error(MCU_DEBUG_LINK, "Failed to exec %s (%d)\n", path, errno);
+		mcu_debug_log_error(MCU_DEBUG_LINK, "Failed to exec %s (%d)\n", path, errno);
 		args->reply.err_number = errno;
 	}
 }

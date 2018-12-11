@@ -72,6 +72,7 @@ extern "C" {
 #define MCU_ALWAYS_INLINE __attribute__((always_inline))
 #define MCU_NEVER_INLINE __attribute__((noinline))
 
+#define MCU_ARRAY_COUNT(x) (sizeof(x)/sizeof(x[0]))
 
 typedef struct MCU_PACK {
 	u32 o_events /*! Event or events that happened */;

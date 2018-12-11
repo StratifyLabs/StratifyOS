@@ -36,6 +36,8 @@
 #define SCHED_FIRST_THREAD_STACK_SIZE 2048
 #define SCHED_DEFAULT_STACKGUARD_SIZE 128
 
+
+
 #if (defined __lpc17xx) || (defined __lpc177x_8x) || (defined __lpc407x_8x) || (defined __lpc43xx)
 #undef __FPU_USED
 #include "arch/lpc/lpc_arch.h"
@@ -48,6 +50,8 @@
 #undef __FPU_USED
 #include "arch/stm32/stm32_arch.h"
 #define ARCH_DEFINED
+#elif (defined __MIMXRT1052CVJ5B)
+#include "arch/imxrt/imxrt_arch.h"
 #else
 
 typedef enum IRQn

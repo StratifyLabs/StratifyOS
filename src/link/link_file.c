@@ -58,7 +58,7 @@ static void convert_stat(struct link_stat * dest, const struct posix_stat * sour
 	dest->st_uid=source->st_uid;
 	dest->st_gid=source->st_gid;
 	dest->st_rdev=source->st_rdev;
-	dest->st_size=(_off_t) source->st_size;
+	dest->st_size=source->st_size;
 	dest->st_mtime_=source->st_mtime;
 	dest->st_ctime_=source->st_ctime;
 }
@@ -105,7 +105,7 @@ int link_open(link_transport_mdriver_t * driver, const char * path, int flags, .
 	op.open.flags = flags;
 	op.open.mode = mode;
 
-	link_debug(LINK_DEBUG_MESSAGE, "Write open op (%p)", (long unsigned int)driver->dev.handle);
+	link_debug(LINK_DEBUG_MESSAGE, "Write open op (%p)", driver->dev.handle);
 	err = link_transport_masterwrite(driver, &op, sizeof(link_open_t));
 	if ( err < 0 ){
 		link_error("failed to write open op with handle %p", driver->dev.handle);

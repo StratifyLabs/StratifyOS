@@ -137,6 +137,11 @@ int devfs_mcu_ioctl(const devfs_handle_t * handle,
     if( async->nbyte == 0 ){ return 0; } \
     transfer = async
 
+#define DEVFS_DRIVER_DECLARE_LOCAL(object, port_count) \
+	const u32 port = handle->port; \
+	if( port >= port_count ){ return SYSFS_SET_RETURN(EBUSY); } \
+	object##_local_t * local = m_##object##_local + handle->port
+
 #define DEVFS_MCU_DRIVER_IOCTL_FUNCTION(driver_name, version, ident_char, ioctl_total, ...) \
     int mcu_##driver_name##_getversion(const devfs_handle_t * handle, void * ctl){ return version; } \
     int (* const mcu_##driver_name##_ioctl_func_table[ioctl_total])(const devfs_handle_t*, void*) = { \
