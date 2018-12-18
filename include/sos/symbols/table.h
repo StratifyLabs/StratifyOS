@@ -587,6 +587,8 @@ u32 const symbols_table[] = {
 	(u32)timer_gettime,
 	(u32)timer_settime,
 	(u32)timer_getoverrun,
+	(u32)alarm,
+	(u32)ualarm,
 	1
 };
 

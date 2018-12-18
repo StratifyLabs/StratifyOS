@@ -187,6 +187,7 @@ extern char __aeabi_unwind_cpp_pr0[0];
 
 extern void __div0();
 
+useconds_t _EXFUN(ualarm, (useconds_t __useconds, useconds_t __interval));
 extern void crt_load_data(void * global_reent, int code_size, int data_size);
 extern char ** const crt_import_argv(int argc, char * const argv[]);
 

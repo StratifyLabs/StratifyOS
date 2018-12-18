@@ -51,10 +51,6 @@ int scheduler_timing_init(){
 	return 0;
 }
 
-void scheduler_timing_root_process_timer_initialize(u16 task_id){
-	memset((void*)sos_sched_table[task_id].timer, 0, sizeof(sos_process_timer_t)*SOS_PROCESS_TIMER_COUNT);
-}
-
 volatile sos_process_timer_t * scheduler_timing_process_timer(timer_t timer_id){
 	u8 task_id = scheduler_timing_process_timer_task_id(timer_id);
 	u8 id_offset = scheduler_timing_process_timer_id_offset(timer_id);
@@ -93,6 +89,18 @@ static void root_allocate_timer(void * args){
 		p->result = 0;
 	} else {
 		p->result = -1;
+	}
+}
+
+void scheduler_timing_root_process_timer_initialize(u16 task_id){
+	memset((void*)sos_sched_table[task_id].timer, 0, sizeof(sos_process_timer_t)*SOS_PROCESS_TIMER_COUNT);
+
+	//the first available timer slot is reserved for alarm/ualarm
+	if( task_get_parent(task_id) == task_id ){
+		root_allocate_timer_t args;
+		args.timer_id = SCHEDULER_TIMING_PROCESS_TIMER(task_id, 0);
+		args.event = 0;
+		root_allocate_timer(&args);
 	}
 }
 
@@ -235,7 +243,13 @@ void root_gettime(void * args){
 	}
 
 	scheduler_timing_root_get_realtime(p->now);
-	*p->value = timer->value;
+	if( timer->value.tv_sec == SCHEDULER_TIMEVAL_SEC_INVALID ){
+		p->value->tv_sec = 0;
+		p->value->tv_usec = 0;
+	} else {
+		//value is absolute time but gettime want's relative time
+		*(p->value) = scheduler_timing_subtract_mcu_timeval((struct mcu_timeval*)&timer->value, p->now);
+	}
 	*p->interval = timer->interval;
 	p->result = 0;
 }
@@ -442,7 +456,7 @@ void scheduler_timing_convert_timespec(struct mcu_timeval * tv, const struct tim
 	} else {
 		d = div(ts->tv_sec, SOS_SCHEDULER_TIMEVAL_SECONDS);
 		tv->tv_sec = d.quot;
-		tv->tv_usec = d.rem * 1000000 + (ts->tv_nsec + 500) / 1000;
+		tv->tv_usec = d.rem * 1000000UL + (ts->tv_nsec + 999UL) / 1000UL;
 	}
 }
 

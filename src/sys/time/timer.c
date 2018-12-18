@@ -11,17 +11,55 @@
 #include "cortexm/task.h"
 #include "../scheduler/scheduler_timing.h"
 
+unsigned int process_alarm(unsigned int seconds, useconds_t useconds, useconds_t interval){
+	timer_t timer_id = task_get_parent( task_get_current() );
 
+	//if timer is already set, get the number of seconds until it expires and reset
+	struct itimerspec timer;
+	struct itimerspec o_timer;
 
+	timer.it_value.tv_sec = seconds;
+	timer.it_value.tv_nsec = useconds*1000UL;
+	timer.it_interval.tv_sec = 0;
+	timer.it_interval.tv_nsec = interval*1000UL;
+
+	timer_settime(timer_id, 0, &timer, &o_timer);
+
+	return o_timer.it_value.tv_sec;
+}
+
+/*!
+ * \brief alarm
+ * \param seconds
+ * \return
+ */
+unsigned int alarm(unsigned int seconds){
+	//timer id is from task zero and timer 0 -- it is pre-initialized
+	return process_alarm(seconds, 0, 0) / 1000000UL;
+}
+
+/*!
+ * \brief ualarm
+ * \param seconds
+ * \return
+ */
+unsigned int ualarm(useconds_t useconds, useconds_t interval){
+	return process_alarm(0, useconds, interval);
+}
+
+/*!
+ * \brief timer_create
+ * \param clock_id
+ * \param evp
+ * \param timerid
+ * \return
+ */
 int timer_create(clockid_t clock_id, struct sigevent *evp, timer_t *timerid){
 	//need to have a linked list way of managing these
-	struct sigevent event;
-
 	if( clock_id != CLOCK_REALTIME ){
 		errno = EINVAL;
 		return -1;
 	}
-
 
 	timer_t t = scheduler_timing_process_create_timer(evp);
 	if( t == (timer_t)(-1) ){
@@ -35,7 +73,11 @@ int timer_create(clockid_t clock_id, struct sigevent *evp, timer_t *timerid){
 
 
 
-
+/*!
+ * \brief timer_delete
+ * \param timerid
+ * \return
+ */
 int timer_delete(timer_t timerid){
 	if( scheduler_timing_process_delete_timer(timerid) < 0 ){
 		errno = EINVAL;
@@ -44,6 +86,14 @@ int timer_delete(timer_t timerid){
 	return 0;
 }
 
+/*!
+ * \brief timer_settime
+ * \param timerid
+ * \param flags
+ * \param value
+ * \param ovalue
+ * \return
+ */
 int timer_settime(timer_t timerid, int flags, const struct itimerspec *value, struct itimerspec *ovalue){
 	struct mcu_timeval mcu_value;
 	struct mcu_timeval interval;
@@ -66,7 +116,12 @@ int timer_settime(timer_t timerid, int flags, const struct itimerspec *value, st
 	return result;
 }
 
-
+/*!
+ * \brief timer_gettime
+ * \param timerid
+ * \param value
+ * \return
+ */
 int timer_gettime(timer_t timerid, struct itimerspec *value){
 	struct mcu_timeval mcu_value;
 	struct mcu_timeval interval;
@@ -79,18 +134,18 @@ int timer_gettime(timer_t timerid, struct itimerspec *value){
 		return result;
 	}
 
-	//if timer value is in the past, difference will be 0 (disarmed)
-	struct mcu_timeval difference;
-	difference = scheduler_timing_subtract_mcu_timeval(&mcu_value, &now);
-
 	//value->it_interval is current interval
-	scheduler_timing_convert_mcu_timeval(&value->it_value, &difference);
+	scheduler_timing_convert_mcu_timeval(&value->it_value, &mcu_value);
 	scheduler_timing_convert_mcu_timeval(&value->it_interval, &interval);
-
 
 	return 0;
 }
 
+/*!
+ * \brief timer_getoverrun
+ * \param timerid
+ * \return
+ */
 int timer_getoverrun(timer_t timerid){
 	MCU_UNUSED_ARGUMENT(timerid);
 	errno = ENOTSUP;

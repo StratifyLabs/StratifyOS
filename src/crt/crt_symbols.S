@@ -567,4 +567,6 @@
 .global timer_gettime; timer_gettime = LINK_ADDR;
 .global timer_settime; timer_settime = LINK_ADDR;
 .global timer_getoverrun; timer_getoverrun = LINK_ADDR;
+.global alarm; alarm = LINK_ADDR;
+.global ualarm; ualarm = LINK_ADDR;
 
