@@ -568,6 +568,15 @@ void sos_trace_root_trace_event(link_trace_event_id_t event_id, const void * dat
 #define STFY_SCHEDULER_TIMEVAL_SECONDS SOS_SCHEDULER_TIMEVAL_SECONDS
 #define SOS_USECOND_PERIOD (1000000UL * SOS_SCHEDULER_TIMEVAL_SECONDS)
 #define STFY_USECOND_PERIOD SOS_USECOND_PERIOD
+#define SOS_PROCESS_TIMER_COUNT 4
+
+typedef struct {
+	u32 o_flags;
+	struct mcu_timeval value;
+	struct mcu_timeval interval;
+	struct sigevent sigevent;
+	u32 checksum;
+} sos_process_timer_t;
 
 typedef struct {
 	pthread_attr_t attr /*! This holds the task's pthread attributes */;
@@ -580,6 +589,7 @@ typedef struct {
 	volatile struct mcu_timeval wake /*! When to wake the task */;
 	volatile u16 flags /*! This indicates whether the process is active or not */;
 	trace_id_t trace_id /*! Trace ID is PID is being traced (0 otherwise) */;
+	sos_process_timer_t timer[SOS_PROCESS_TIMER_COUNT];
 } sched_task_t;
 
 #if !defined __link

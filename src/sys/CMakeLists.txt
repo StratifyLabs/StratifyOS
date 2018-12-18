@@ -18,8 +18,8 @@ if( ${SOS_BUILD_CONFIG} STREQUAL arm )
       ${SOURCES_PREFIX}/malloc/malloc.c
       ${SOURCES_PREFIX}/malloc/malloc_local.h
       ${SOURCES_PREFIX}/malloc/mallocr.c
-      ${SOURCES_PREFIX}/malloc/mlock.c
-      ${SOURCES_PREFIX}/malloc/realloc.c
+			${SOURCES_PREFIX}/malloc/mlock.c
+			${SOURCES_PREFIX}/malloc/realloc.c
       ${SOURCES_PREFIX}/mqueue/mqueue.c
       ${SOURCES_PREFIX}/process/_system.c
       ${SOURCES_PREFIX}/process/install.c
@@ -100,8 +100,9 @@ if( ${SOS_BUILD_CONFIG} STREQUAL arm )
       ${SOURCES_PREFIX}/sysfs/sysfs.c
       ${SOURCES_PREFIX}/termios/termios.c
       ${SOURCES_PREFIX}/time/_gettimeofday.c
-      ${SOURCES_PREFIX}/time/_itimer.c
-      ${SOURCES_PREFIX}/time/_settimeofday.c
+			${SOURCES_PREFIX}/time/_itimer.c
+			${SOURCES_PREFIX}/time/timer.c
+			${SOURCES_PREFIX}/time/_settimeofday.c
       ${SOURCES_PREFIX}/time/_times.c
       ${SOURCES_PREFIX}/time/clocks.c
       ${SOURCES_PREFIX}/time/hibernate.c

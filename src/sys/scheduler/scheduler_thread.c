@@ -108,6 +108,7 @@ void root_activate_thread(root_activate_thread_t * args){
         task_deassert_fifo(id);
     }
 
+	 scheduler_timing_root_process_timer_initialize(id);
     sos_sched_table[id].wake.tv_sec = SCHEDULER_TIMEVAL_SEC_INVALID;
     sos_sched_table[id].wake.tv_usec = 0;
     scheduler_root_assert_active(id, 0);

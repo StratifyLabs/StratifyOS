@@ -582,6 +582,11 @@ u32 const symbols_table[] = {
 	(u32)gethostbyname_r,
 	(u32)freeaddrinfo,
 	(u32)getaddrinfo,
+	(u32)timer_create,
+	(u32)timer_delete,
+	(u32)timer_gettime,
+	(u32)timer_settime,
+	(u32)timer_getoverrun,
 	1
 };
 

@@ -87,6 +87,8 @@ void root_init_sched_task(init_sched_task_t * task){
 	sos_sched_table[id].attr.stacksize = task->mem->data.size; //Size of the memory (not just the stack)
 	sos_sched_table[id].attr.schedparam.sched_priority = 0; //This is the priority to revert to after being escalated
 
+	scheduler_timing_root_process_timer_initialize(id);
+
 	sos_sched_table[id].wake.tv_sec = SCHEDULER_TIMEVAL_SEC_INVALID;
 	sos_sched_table[id].wake.tv_usec = 0;
 	scheduler_root_assert_active(id, 0);

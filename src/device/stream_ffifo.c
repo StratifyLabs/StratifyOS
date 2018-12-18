@@ -149,6 +149,7 @@ int stream_ffifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 	stream_ffifo_info_t * info = ctl;
 	const stream_ffifo_attr_t * attr = ctl;
 	mcu_action_t * action = ctl;
+	int result;
 
 	switch(request){
 
@@ -190,9 +191,8 @@ int stream_ffifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 					//start writing data to the driver -- zeros comprise the first frame
 					memset(state->tx.async.buf, 0, state->tx.async.nbyte);
 
-					if( config->device->driver.write(&config->device->handle, &(state->tx.async)) < 0 ){
-						return SYSFS_SET_RETURN(EIO);
-					}
+					result = config->device->driver.write(&config->device->handle, &(state->tx.async));
+					if( result < 0 ){ return result; }
 				}
 
 

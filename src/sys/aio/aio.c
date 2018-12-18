@@ -230,17 +230,20 @@ int aio_suspend(struct aiocb *const list[] /*! a list of AIO transfer structures
 int lio_listio(int mode /*! The mode:  \a LIO_WAIT or \a LIO_NOWAIT */,
 		struct aiocb * const list[] /*! The list of AIO transfers */,
 		int nent /*! The number of transfers in \a list */,
-		struct sigevent * sig /*! The sigevent structure (use NULL in this version) */){
+		struct sigevent * sig /*! The sigevent structure */){
 	int i;
 
 	switch(mode){
 	case LIO_NOWAIT:
 		if ( sig != NULL ){
-			if ( sig->sigev_notify != SIGEV_NONE ){
-				errno = ENOTSUP;
-				return -1;
+			for(i=0; i < nent; i++){
+				if( list[i] != 0 ){
+					//error check sigevent
+					memcpy(&list[i]->aio_sigevent, sig, sizeof(struct sigevent));
+				}
 			}
 		}
+
 		//no break
 	case LIO_WAIT:
 		break;

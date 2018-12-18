@@ -562,3 +562,9 @@
 .global gethostbyname_r; gethostbyname_r = LINK_ADDR;
 .global freeaddrinfo; freeaddrinfo = LINK_ADDR;
 .global getaddrinfo; getaddrinfo = LINK_ADDR;
+.global timer_create; timer_create = LINK_ADDR;
+.global timer_delete; timer_delete = LINK_ADDR;
+.global timer_gettime; timer_gettime = LINK_ADDR;
+.global timer_settime; timer_settime = LINK_ADDR;
+.global timer_getoverrun; timer_getoverrun = LINK_ADDR;
+

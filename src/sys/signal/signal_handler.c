@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 /*! \addtogroup SIGNAL
@@ -78,19 +78,23 @@ static void (* const default_handlers[SCHEDULER_NUM_SIGNALS])(int,int) = {
 		ignore_action, //SIGRTMIN 29
 		ignore_action, //SIGRT 30
 		ignore_action //SIGRTMAX 31
-};
+		};
 
 
 void signal_handler(int tid, int si_signo, int si_sigcode, union sigval sig_value){
 	struct sigaction * sa;
 	siginfo_t siginfo;
 
-    siginfo.si_signo = si_signo;
+	siginfo.si_signo = si_signo;
 	siginfo.si_tid = tid;
 	siginfo.si_code = si_sigcode;
 	siginfo.si_value = sig_value;
 
 	if ( si_signo < SCHEDULER_NUM_SIGNALS ){
+
+		if( si_sigcode == SI_TIMER ){
+			scheduler_timing_process_unqueue_timer(tid, si_signo, sig_value);
+		}
 
 		if ( GLOBAL_SIGINFOS != NULL ){
 			GLOBAL_SIGINFO(si_signo) = siginfo;
@@ -159,7 +163,7 @@ void abort_action(int signo, int flags){
 	strcpy(str, "abort signal 0x");
 	htoa(hex_buffer, signo);
 	strcat(str, hex_buffer);
-	posix_trace_event(POSIX_TRACE_FATAL, str, strlen(str));	_exit(signo<<8);
+	sos_trace_event(POSIX_TRACE_FATAL, str, strlen(str));	_exit(signo<<8);
 }
 
 void terminate_action(int signo, int flags){
@@ -169,7 +173,7 @@ void terminate_action(int signo, int flags){
 	strcpy(str, "terminate signal 0x");
 	htoa(hex_buffer, signo);
 	strcat(str, hex_buffer);
-	posix_trace_event(POSIX_TRACE_FATAL, str, strlen(str));
+	sos_trace_event(POSIX_TRACE_FATAL, str, strlen(str));
 	_exit(signo<<8);
 }
 
@@ -200,7 +204,7 @@ void root_contpid(void * args){
 	i = task_get_current();
 
 	if( task_thread_asserted(i) ){
-        task_deassert_stopped(i);
+		task_deassert_stopped(i);
 		highest_prio = scheduler_priority(i);
 	} else {
 		for(i=1; i < task_get_total(); i++){
@@ -214,7 +218,7 @@ void root_contpid(void * args){
 		}
 	}
 
-    scheduler_root_update_on_wake(-1, highest_prio);
+	scheduler_root_update_on_wake(-1, highest_prio);
 }
 
 void stop_action(int signo, int flags){

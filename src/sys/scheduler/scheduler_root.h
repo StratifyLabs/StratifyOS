@@ -65,7 +65,7 @@ void scheduler_root_stop_task(int id);
 void scheulder_root_start_task(int id);
 
 static inline volatile int scheduler_unblock_type(int id) MCU_ALWAYS_INLINE;
-volatile int scheduler_unblock_type(int id){ return sos_sched_table[id].flags & SCHEDULER_TASK_FLAG_UNBLOCK_MASK; };
+volatile int scheduler_unblock_type(int id){ return sos_sched_table[id].flags & SCHEDULER_TASK_FLAG_UNBLOCK_MASK; }
 
 
 static inline void scheduler_root_set_unblock_type(int id, scheduler_unblock_type_t unblock_type) MCU_ALWAYS_INLINE;

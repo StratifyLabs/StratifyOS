@@ -183,7 +183,7 @@ typedef struct MCU_PACK {
  * Example:
  *  * \code
  * uint32_t value;
- * value = ioctl(pio_fd, I_PIO_GET);
+ * ioctl(pio_fd, I_PIO_GET, &value);
  * \endcode
  * \hideinitializer
  *
