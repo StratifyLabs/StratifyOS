@@ -235,7 +235,6 @@ void cortexm_set_systick_reload(u32 value){
 }
 
 void cortexm_start_systick(){
-	SysTick->CTRL = 1<<0 | //enable the timer
-							 1<<2; //Internal Clock CPU
+	SysTick->CTRL = (1<<0) | (1<<2); //Internal Clock CPU and enable the timer
 }
 

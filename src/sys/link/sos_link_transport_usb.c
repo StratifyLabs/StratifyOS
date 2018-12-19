@@ -6,7 +6,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+	 http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -35,12 +35,12 @@ limitations under the License.
 #define USB0_DEVFIFO_BUFFER_SIZE 64
 static char usb0_fifo_buffer[USB0_DEVFIFO_BUFFER_SIZE] MCU_SYS_MEM;
 const usbfifo_config_t sos_link_transport_usb_fifo_cfg = {
-		.endpoint = SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT,
-		.endpoint_size = SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT_SIZE,
-		.fifo = {
-				.buffer = usb0_fifo_buffer,
-				.size = USB0_DEVFIFO_BUFFER_SIZE
-		}
+	.endpoint = SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT,
+	.endpoint_size = SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT_SIZE,
+	.fifo = {
+		.buffer = usb0_fifo_buffer,
+		.size = USB0_DEVFIFO_BUFFER_SIZE
+	}
 };
 usbfifo_state_t sos_link_transport_usb_fifo_state MCU_SYS_MEM;
 
@@ -48,12 +48,12 @@ static int open_pio(mcu_pin_t pin, int active_high){
 	char path[PATH_MAX];
 	int fd;
 	pio_attr_t attr;
-    int len;
+	int len;
 
-    strncpy(path, "/dev/pio", PATH_MAX-2);
-    len = strnlen(path, PATH_MAX-2);
-    path[len] = pin.port + '0';
-    path[len+1] = 0;
+	strncpy(path, "/dev/pio", PATH_MAX-2);
+	len = strnlen(path, PATH_MAX-2);
+	path[len] = pin.port + '0';
+	path[len+1] = 0;
 
 	fd = open(path, O_RDWR);
 	if( fd < 0 ){
@@ -74,21 +74,23 @@ static int open_pio(mcu_pin_t pin, int active_high){
 }
 
 link_transport_phy_t sos_link_transport_usb_open(const char * name,
-		usbd_control_t * context,
-		const usbd_control_constants_t * constants,
-		const usb_attr_t * usb_attr,
-		mcu_pin_t usb_up_pin,
-		int usb_up_active_high){
-	link_transport_phy_t fd;
+																 usbd_control_t * context,
+																 const usbd_control_constants_t * constants,
+																 const usb_attr_t * usb_attr,
+																 mcu_pin_t usb_up_pin,
+																 int usb_up_active_high){
+	int fd;
 	int pio_fd;
-    int result;
+	int result;
+	MCU_UNUSED_ARGUMENT(name);
 
 	if( usb_up_pin.port != 0xff ){
 		pio_fd = open_pio(usb_up_pin, usb_up_active_high);
 		if( pio_fd < 0 ){
-            mcu_debug_log_error(MCU_DEBUG_USB | MCU_DEBUG_LINK, "Failed to open PIO (%d)\n", errno);
+			mcu_debug_log_error(MCU_DEBUG_USB | MCU_DEBUG_LINK, "Failed to open PIO (%d)\n", errno);
 			return LINK_PHY_ERROR;
 		}
+
 	} else {
 		pio_fd = -1;
 	}
@@ -97,25 +99,27 @@ link_transport_phy_t sos_link_transport_usb_open(const char * name,
 	context->constants = constants;
 	context->handle = &(constants->handle);
 
+	usleep(100*1000);
+
 	//open USB
-    mcu_debug_log_info(MCU_DEBUG_USB | MCU_DEBUG_LINK, "Open link-phy-usb");
+	mcu_debug_log_info(MCU_DEBUG_USB | MCU_DEBUG_LINK, "Open link-phy-usb");
 	errno = 0;
 	fd = open("/dev/link-phy-usb", O_RDWR);
 	if( fd < 0 ){
-        mcu_debug_log_error(MCU_DEBUG_USB | MCU_DEBUG_LINK, "Failed to open link-phy-usb (%d)", errno);
+		mcu_debug_log_error(MCU_DEBUG_USB | MCU_DEBUG_LINK, "Failed to open link-phy-usb (%d)", errno);
 		return LINK_PHY_ERROR;
 	}
 
 	//set USB attributes
-    mcu_debug_log_info(MCU_DEBUG_USB | MCU_DEBUG_LINK, "Set USB attr fd:%d", fd);
+	mcu_debug_log_info(MCU_DEBUG_USB | MCU_DEBUG_LINK, "Set USB attr fd:%d", fd);
 
-    result = ioctl(fd, I_USB_SETATTR, usb_attr);
-    if( result < 0 ){
-        mcu_debug_log_error(MCU_DEBUG_USB | MCU_DEBUG_LINK, "Failed to set USB attr (%d, %d)", result, errno);
+	result = ioctl(fd, I_USB_SETATTR, usb_attr);
+	if( result < 0 ){
+		mcu_debug_log_error(MCU_DEBUG_USB | MCU_DEBUG_LINK, "Failed to set USB attr (%d, %d)", result, errno);
 		return LINK_PHY_ERROR;
 	}
 
-    mcu_debug_log_info(MCU_DEBUG_USB | MCU_DEBUG_LINK, "USB Dev Init");
+	mcu_debug_log_info(MCU_DEBUG_USB | MCU_DEBUG_LINK, "USB Dev Init");
 	//initialize USB device
 	cortexm_svcall(usbd_control_root_init, context);
 

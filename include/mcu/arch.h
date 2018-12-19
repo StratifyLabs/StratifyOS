@@ -53,8 +53,9 @@
 #undef __FPU_USED
 #include "arch/stm32/stm32_arch.h"
 #define ARCH_DEFINED
-#elif (defined __MIMXRT1052CVJ5B)
+#elif (defined __imxrt1052)
 #include "arch/imxrt/imxrt_arch.h"
+#define ARCH_DEFINED
 #else
 
 typedef enum IRQn

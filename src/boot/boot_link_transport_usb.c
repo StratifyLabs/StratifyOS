@@ -29,11 +29,11 @@ static int m_read_head;
 static  usbd_control_t * m_context;
 
 link_transport_phy_t boot_link_transport_usb_open(const char * name,
-		usbd_control_t * context,
-		const usbd_control_constants_t * constants,
-		const usb_attr_t * usb_attr,
-		mcu_pin_t usb_up_pin,
-		int usb_up_active_high){
+																  usbd_control_t * context,
+																  const usbd_control_constants_t * constants,
+																  const usb_attr_t * usb_attr,
+																  mcu_pin_t usb_up_pin,
+																  int usb_up_active_high){
 
 	pio_attr_t pio_attr;
 	devfs_handle_t pio_handle;
@@ -59,19 +59,17 @@ link_transport_phy_t boot_link_transport_usb_open(const char * name,
 
 	dstr("OPEN USB\n");
 	//open USB
-    cortexm_delay_ms(100);
+	cortexm_delay_ms(100);
 
-	if( mcu_usb_open(context->handle) < 0 ){
+	if( mcu_usb_open(context->handle) < 0 ){ return -1; }
+
+	cortexm_delay_ms(100);
+
+	if( mcu_usb_setattr(context->handle, (void*)usb_attr) < 0 ){
 		return -1;
 	}
 
-    cortexm_delay_ms(100);
-
-	if( mcu_usb_setattr(context->handle, (void*)usb_attr) < 0 ){
-        return -1;
-	}
-
-    cortexm_delay_ms(100);
+	cortexm_delay_ms(100);
 
 	dstr("USB INIT\n");
 	//initialize USB device
@@ -122,7 +120,7 @@ static int write_buffer(const char * src, int nbyte){
 	int i;
 	for(i=0; i < nbyte; i++){
 		if( ((m_read_head+1) == m_read_tail) ||
-				((m_read_tail == 0) && (m_read_head == (BUF_SIZE-1))) ){
+			 ((m_read_tail == 0) && (m_read_head == (BUF_SIZE-1))) ){
 			break; //no more room
 		}
 
