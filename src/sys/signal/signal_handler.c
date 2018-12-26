@@ -160,7 +160,7 @@ void abort_action(int signo, int flags){
 	//Exit the program
 	char hex_buffer[9];
 	char str[32];
-	strcpy(str, "abort signal 0x");
+	strcpy(str, "ABORT:");
 	htoa(hex_buffer, signo);
 	strcat(str, hex_buffer);
 	sos_trace_event(POSIX_TRACE_FATAL, str, strlen(str));	_exit(signo<<8);
@@ -170,7 +170,7 @@ void terminate_action(int signo, int flags){
 	//Exit the program
 	char hex_buffer[9];
 	char str[32];
-	strcpy(str, "terminate signal 0x");
+	strcpy(str, "TERM:");
 	htoa(hex_buffer, signo);
 	strcat(str, hex_buffer);
 	sos_trace_event(POSIX_TRACE_FATAL, str, strlen(str));

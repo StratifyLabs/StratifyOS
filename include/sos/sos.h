@@ -575,7 +575,6 @@ typedef struct {
 	struct mcu_timeval value;
 	struct mcu_timeval interval;
 	struct sigevent sigevent;
-	u32 checksum;
 } sos_process_timer_t;
 
 typedef struct {
