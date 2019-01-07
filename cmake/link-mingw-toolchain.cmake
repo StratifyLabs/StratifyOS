@@ -10,7 +10,7 @@ endif()
 if(TOOLCHAIN_DIR)
     message(STATUS "Toolchain directory " ${TOOLCHAIN_DIR})
 else()
-    set(TOOLCHAIN_DIR "C:/Qt-5.9/Tools/mingw530_32")
+    set(TOOLCHAIN_DIR "C:/Qt-5.12/Tools/mingw530_32")
 endif()
 set(TOOLCHAIN_EXEC_SUFFIX .exe)
 

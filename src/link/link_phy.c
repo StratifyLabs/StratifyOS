@@ -135,16 +135,18 @@ link_transport_phy_t link_phy_open(const char * name, int baudrate){
     memset(handle->name, 0, MAX_DEVICE_PATH);
     strncpy(handle->name, name, MAX_DEVICE_PATH-1);
 
+	 link_debug(LINK_DEBUG_MESSAGE, "Open device %s", name);
     handle->handle = CreateFile(name, GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
     if( handle->handle == INVALID_HANDLE_VALUE ){
         free(handle);
         return LINK_PHY_OPEN_ERROR;
     }
 
+	 link_debug(LINK_DEBUG_MESSAGE, "Set timeouts for %s", name);
     COMMTIMEOUTS timeouts={0};
     timeouts.ReadIntervalTimeout=MAXDWORD;
-    timeouts.ReadTotalTimeoutConstant=1;
-    timeouts.ReadTotalTimeoutMultiplier=MAXDWORD;
+	 timeouts.ReadTotalTimeoutConstant=0;
+	 timeouts.ReadTotalTimeoutMultiplier=0;
     timeouts.WriteTotalTimeoutConstant=0;
     timeouts.WriteTotalTimeoutMultiplier=0;
     if(!SetCommTimeouts(handle->handle, &timeouts)){
@@ -163,6 +165,7 @@ link_transport_phy_t link_phy_open(const char * name, int baudrate){
     }
 
 
+	 link_debug(LINK_DEBUG_MESSAGE, "Set commsettings 460800, 8, 1Stop, N for %s", name);
     params.BaudRate = 460800;
     params.ByteSize = 8;
     params.StopBits = ONESTOPBIT;

@@ -138,9 +138,9 @@ int wait_ack(link_transport_mdriver_t * driver, uint8_t checksum, int timeout){
 			p += ret;
 			count = 0;
 		} else {
-#ifndef __win32
+//#ifndef __win32
 			driver->dev.wait(1);
-#endif
+//#endif
 			count+=1;
 			if( count >= timeout ){
                 link_error("timeout %d of %d (%d) -- %d >= %d",
