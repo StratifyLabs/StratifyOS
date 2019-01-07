@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 /*! \addtogroup TIME
@@ -63,27 +63,27 @@ void root_prepare_hibernate(void * args){
 	mcu_wdt_root_reset(NULL);
 
 	//elevate task prio of caller so that nothing executes until prio is restored
-    task_root_set_current_priority(SCHED_HIGHEST_PRIORITY+1);
+	task_root_set_current_priority(SCHED_HIGHEST_PRIORITY+1);
 	mcu_core_prepare_deepsleep(CORE_DEEPSLEEP);
 }
 
 void root_post_hibernate(void * args){
-    cortexm_disable_interrupts();
+	cortexm_disable_interrupts();
 	mcu_wdt_root_reset(NULL);
 	mcu_core_recover_deepsleep(CORE_DEEPSLEEP);
 
 	//restore task prio
-    task_root_set_current_priority( task_get_priority(task_get_current()) );
+	task_root_set_current_priority( task_get_priority(task_get_current()) );
 
 	if( (sos_board_config.o_sys_flags & SYS_FLAG_IS_WDT_DISABLED) == 0 ){
 		//Set WDT to previous value (it only runs in deep sleep with certain clock sources)
 		mcu_wdt_setinterval(SCHED_RR_DURATION * 10 * sos_board_config.task_total + 5);
 	}
 
-    cortexm_enable_interrupts();
+	cortexm_enable_interrupts();
 
-    //check to see if any higher prio tasks are ready to execute since the prio dropped
-    scheduler_root_update_on_stopped();
+	//check to see if any higher prio tasks are ready to execute since the prio dropped
+	scheduler_root_update_on_stopped();
 }
 
 void root_hibernate(void * args){

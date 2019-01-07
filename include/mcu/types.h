@@ -142,7 +142,7 @@ typedef struct {
  * static char buffer[512] MCU_SYS_MEM;
  * \endcode
  */
-#define MCU_SYS_MEM __attribute__((section(".sysmem")))
+#define MCU_SYS_MEM __attribute__((section(".sysmem"))) MCU_ALIGN(4)
 
 #ifdef __link
 #define MCU_ROOT_CODE

@@ -57,6 +57,9 @@ enum {
 	BOOT_EVENT_DECRYPT /*! Called when the bootloader needs something decrypted */,
 	BOOT_EVENT_RUN_APP /*! Called just before the bootloader runs the user code */,
 	BOOT_EVENT_RUN_BOOTLOADER /*! Called just before the bootloader runs the bootloader code (no app or bootloader was requested)*/,
+	BOOT_EVENT_CHECK_APP_EXISTS,
+	BOOT_EVENT_CHECK_SOFTWARE_BOOT_REQUEST,
+	BOOT_EVENT_CHECK_HARDWARE_BOOT_REQUEST,
 	BOOT_EVENT_TOTAL
 };
 

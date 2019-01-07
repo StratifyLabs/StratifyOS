@@ -51,7 +51,7 @@ void sos_led_root_disable(void * args){
 
 void sos_led_root_error(void * args){
 	while(1){
-        sos_led_root_enable(0);
+		sos_led_root_enable(0);
 		cortexm_delay_ms(50);
 		sos_led_root_disable(0);
 		cortexm_delay_ms(50);

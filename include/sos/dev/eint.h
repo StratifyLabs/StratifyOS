@@ -92,7 +92,7 @@ extern "C" {
 
 enum {
 	EINT_FLAG_NONE = 0,
-	EING_FLAG_SET_INPUT = (1<<0)
+	EINT_FLAG_SET_INPUT = (1<<0)
 };
 
 typedef struct MCU_PACK {

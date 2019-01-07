@@ -96,8 +96,7 @@ void run_bootloader(){
 	led_flash_run_bootloader();
 
 	//initialize link and run link update
-	dstr("LINK Start\n");
-
+	dstr("Link Start\n");
 	boot_link_update((void*)boot_board_config.link_transport_driver);
 }
 
@@ -113,17 +112,21 @@ int check_run_app(){
 	pio_attr_t pio_attr;
 	devfs_handle_t hw_req_handle;
 
+	boot_event(BOOT_EVENT_CHECK_APP_EXISTS, 0);
 	if ( (u32)stack_ptr == 0xFFFFFFFF ){
 		//code is not valid
 		*bootloader_start = 0;
 		return 0;
 	}
 
+
+	boot_event(BOOT_EVENT_CHECK_SOFTWARE_BOOT_REQUEST, 0);
 	if ( *bootloader_start == boot_board_config.sw_req_value ){
 		*bootloader_start = 0;
 		return 0;
 	}
 
+	boot_event(BOOT_EVENT_CHECK_HARDWARE_BOOT_REQUEST, 0);
 	if( boot_board_config.hw_req.port != 0xff ){
 
 		hw_req_handle.port = boot_board_config.hw_req.port;
@@ -131,13 +134,13 @@ int check_run_app(){
 		hw_req_handle.state = 0;
 		pio_attr.o_pinmask = (1<<boot_board_config.hw_req.pin);
 
+		pio_attr.o_flags = PIO_FLAG_SET_INPUT;
 		if( boot_board_config.o_flags & BOOT_BOARD_CONFIG_FLAG_HW_REQ_PULLUP ){
-			pio_attr.o_flags = PIO_FLAG_SET_INPUT | PIO_FLAG_IS_PULLUP;
-			mcu_pio_setattr(&hw_req_handle, &pio_attr);
+			pio_attr.o_flags |= PIO_FLAG_IS_PULLUP;
 		} else if( boot_board_config.o_flags & BOOT_BOARD_CONFIG_FLAG_HW_REQ_PULLDOWN ){
-			pio_attr.o_flags = PIO_FLAG_SET_INPUT | PIO_FLAG_IS_PULLDOWN;
-			mcu_pio_setattr(&hw_req_handle, &pio_attr);
+			pio_attr.o_flags |= PIO_FLAG_IS_PULLDOWN;
 		}
+		mcu_pio_setattr(&hw_req_handle, &pio_attr);
 
 		mcu_pio_get(&hw_req_handle, &pio_value);
 		hw_req_value = ((pio_value & pio_attr.o_pinmask) != 0);
@@ -167,7 +170,6 @@ static int debug_write_func(const void * buf, int nbyte){
 #endif
 
 void init_hw(){
-
 	boot_event(BOOT_EVENT_INIT_CLOCK, 0);
 	mcu_core_initclock(1);
 
@@ -175,10 +177,10 @@ void init_hw(){
 	if( mcu_debug_init() < 0 ){
 		sos_led_root_error(0);
 	}
+
 	dsetmode(0);
 	dsetwritefunc(debug_write_func);
 
-	dstr("Booting\n");
 	dstr("STACK:"); dhex((u32)stack_ptr); dstr("\n");
 	dstr("APP:"); dhex((u32)app_reset); dstr("\n");
 #endif

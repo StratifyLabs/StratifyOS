@@ -6,10 +6,6 @@ MEMORY {
    kernel : ORIGIN = 0xDEFF8000, LENGTH = 32K
 }
 
-__ram_size__ = 32K;
-
-
-
 SECTIONS {
 
   . = 0;
@@ -34,26 +30,6 @@ SECTIONS {
          *(.glue_7t)
          *(.text.*)
          KEEP(*(_binary___*))
-
-				 PROVIDE(__start_sdh_soc_observers = .);
-				 KEEP(*(SORT(.sdh_soc_observers*)))
-				 PROVIDE(__stop_sdh_soc_observers = .);
-				 PROVIDE(__start_sdh_ble_observers = .);
-				 KEEP(*(SORT(.sdh_ble_observers*)))
-				 PROVIDE(__stop_sdh_ble_observers = .);
-				 PROVIDE(__start_sdh_stack_observers = .);
-				 KEEP(*(SORT(.sdh_stack_observers*)))
-				 PROVIDE(__stop_sdh_stack_observers = .);
-				 PROVIDE(__start_sdh_req_observers = .);
-				 KEEP(*(SORT(.sdh_req_observers*)))
-				 PROVIDE(__stop_sdh_req_observers = .);
-				 PROVIDE(__start_sdh_state_observers = .);
-				 KEEP(*(SORT(.sdh_state_observers*)))
-				 PROVIDE(__stop_sdh_state_observers = .);
-				 PROVIDE(__start_nrf_queue = .);
-				 KEEP(*(.nrf_queue))
-				 PROVIDE(__stop_nrf_queue = .);
-         
          FILL(0xFF);
          
 	 } > flash
