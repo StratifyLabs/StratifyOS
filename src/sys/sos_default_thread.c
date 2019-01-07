@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 /*! \addtogroup STFY
@@ -67,13 +67,13 @@ void check_reset_source(void){
 void start_filesystem(void){
 	u32 started;
 	started = startup_fs();
-    mcu_debug_log_info(MCU_DEBUG_SYS, "Started Filesystem Apps %ld", started);
+	mcu_debug_log_info(MCU_DEBUG_SYS, "Started Filesystem Apps %ld", started);
 	mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_START_FILESYSTEM, &started);
 }
 
 void * sos_default_thread(void * arg){
 
-    mcu_debug_log_info(MCU_DEBUG_SYS, "Enter default thread");
+	mcu_debug_log_info(MCU_DEBUG_SYS, "Enter default thread");
 
 	check_reset_source();
 
@@ -84,10 +84,10 @@ void * sos_default_thread(void * arg){
 
 	start_filesystem();
 
-    mcu_debug_log_info(MCU_DEBUG_SYS, "Open RTC");
-    if( open("/dev/rtc", O_RDWR) < 0 ){
-        mcu_debug_log_warning(MCU_DEBUG_SYS, "RTC not opened");
-    }
+	mcu_debug_log_info(MCU_DEBUG_SYS, "Open RTC");
+	if( open("/dev/rtc", O_RDWR) < 0 ){
+		mcu_debug_log_warning(MCU_DEBUG_SYS, "RTC not opened");
+	}
 
 	mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_START_LINK, 0);
 	link_update(arg); 	//Run the link update thread--never returns
@@ -100,9 +100,9 @@ int init_fs(){
 	i = 0;
 	while( sysfs_isterminator(&sysfs_list[i]) == false ){
 		SOS_TRACE_MESSAGE(sysfs_list[i].mount_path);
-        mcu_debug_log_info(MCU_DEBUG_SYS, "init %s", sysfs_list[i].mount_path);
+		mcu_debug_log_info(MCU_DEBUG_SYS, "init %s", sysfs_list[i].mount_path);
 		if ( sysfs_list[i].mount( sysfs_list[i].config ) < 0 ){
-            mcu_debug_log_error(MCU_DEBUG_SYS, "failed to init");
+			mcu_debug_log_error(MCU_DEBUG_SYS, "failed to init");
 			SOS_TRACE_CRITICAL(sysfs_list[i].mount_path);
 		}
 		i++;

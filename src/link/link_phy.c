@@ -352,13 +352,14 @@ link_transport_phy_t link_phy_open(const char * name, int baudrate){
     //make the buffer raw
     cfmakeraw(&options); //raw with no buffering
 
-    cfsetspeed(&options, BAUDRATE);
+	 link_debug(LINK_DEBUG_MESSAGE, "Open at %d bps no parity", BAUDRATE);
+	 cfsetspeed(&options, BAUDRATE);
     //even parity
     //8 bit data
     //one stop bit
-    options.c_cflag |= PARENB; //parity on
+	 options.c_cflag &= ~PARENB; //parity off
     options.c_cflag &= ~PARODD; //parity is not odd (use even parity)
-    options.c_cflag |= CSTOPB; //two stop bits
+	 options.c_cflag &= ~CSTOPB; //two stop bits
     options.c_cflag |= CREAD; //enable receiver
     options.c_cflag &= ~CSIZE;
     options.c_cflag |= CREAD | CLOCAL | CS8;  //8 bit data
@@ -425,6 +426,7 @@ int link_phy_write(link_transport_phy_t handle, const void * buf, int nbyte){
         return LINK_PHY_ERROR;
     }
 
+	 link_debug(LINK_DEBUG_MESSAGE, "Tx'd %d bytes", ret);
     return nbyte;
 }
 
@@ -452,6 +454,7 @@ int link_phy_read(link_transport_phy_t handle, void * buf, int nbyte){
         return LINK_PHY_ERROR;
     }
 
+	 link_debug(LINK_DEBUG_MESSAGE, "Rx'd %d bytes", ret);
     return ret;
 }
 

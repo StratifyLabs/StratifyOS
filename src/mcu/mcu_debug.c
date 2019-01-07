@@ -98,7 +98,7 @@ void mcu_debug_root_write_uart(const char * buffer, int nbyte){
     handle.state = 0;
 
     for(i=0; i < nbyte; i++){
-        mcu_uart_put(&handle, (void*)(u32)(buffer[i]));
+		  mcu_uart_put(&handle, (void*)(u32)(buffer[i]));
     }
 }
 

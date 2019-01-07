@@ -66,7 +66,7 @@ void (* const boot_link_cmd_func_table[LINK_BOOTLOADER_CMD_TOTAL])(link_transpor
 		boot_link_cmd_readserialno,
 		boot_link_cmd_ioctl,
 		boot_link_cmd_read
-};
+		};
 
 void * boot_link_update(void * arg){
 	int err;
@@ -100,9 +100,9 @@ void * boot_link_update(void * arg){
 
 		dstr("EXEC CMD: "); dint(data.op.cmd); dstr("\n");
 		if ( data.op.cmd < LINK_BOOTLOADER_CMD_TOTAL ){
-            data.reply.err_number = 0;
-            data.reply.err = 0;
-            boot_link_cmd_func_table[data.op.cmd](driver, &data);
+			data.reply.err_number = 0;
+			data.reply.err = 0;
+			boot_link_cmd_func_table[data.op.cmd](driver, &data);
 		} else {
 			data.reply.err = -1;
 			data.reply.err_number = EINVAL;
@@ -166,74 +166,74 @@ void boot_link_cmd_ioctl(link_transport_driver_t * driver, link_data_t * args){
 	dstr("IOCTL REQ: "); dhex(args->op.ioctl.request); dstr("\n");
 
 	switch(args->op.ioctl.request){
-	case I_BOOTLOADER_ERASE:
-		dstr("erase\n");
-		//the erase takes awhile -- so send the reply a little early
-		link_transport_slavewrite(driver, &args->reply, sizeof(args->reply), NULL, NULL);
-		//set this to zero so caller doesn't execute the slavewrite again
-		args->op.cmd = 0;
-
-		erase_flash(driver);
-		is_erased = true;
-
-		event_args.abort = 0;
-		event_args.bytes = 0;
-		event_args.total = -1;
-
-		dstr("erd\n");
-		return;
-
-	case I_BOOTLOADER_GETINFO:
-		//write data to io_buf
-		dstr("info\n");
-		attr.version = BCDVERSION;
-		mcu_core_getserialno((mcu_sn_t*)(attr.serialno));
-
-		attr.startaddr = boot_board_config.program_start_addr;
-		attr.hardware_id = boot_board_config.id;
-
-		err = link_transport_slavewrite(driver, &attr, size, NULL, NULL);
-		if ( err == -1 ){
+		case I_BOOTLOADER_ERASE:
+			dstr("erase\n");
+			//the erase takes awhile -- so send the reply a little early
+			link_transport_slavewrite(driver, &args->reply, sizeof(args->reply), NULL, NULL);
+			//set this to zero so caller doesn't execute the slavewrite again
 			args->op.cmd = 0;
-			args->reply.err = -1;
-        } else {
-            args->reply.err = 0;
-        }
 
-		break;
+			erase_flash(driver);
+			is_erased = true;
 
-	case I_BOOTLOADER_RESET:
-		dstr("rst\n");
-		if( args->op.ioctl.arg == 0 ){
-			boot_event(BOOT_EVENT_RESET, 0);
-			boot_link_cmd_reset(driver, args);
-		} else {
-			boot_event(BOOT_EVENT_RESET_BOOTLOADER, 0);
-			boot_link_cmd_reset_bootloader(driver, args);
-		}
-		break;
-	case I_BOOTLOADER_WRITEPAGE:
-		err = link_transport_slaveread(driver, &wattr, size, NULL, NULL);
-		if( err < 0 ){
-			dstr("failed to read data\n");
+			event_args.abort = 0;
+			event_args.bytes = 0;
+			event_args.total = -1;
+
+			dstr("erd\n");
+			return;
+
+		case I_BOOTLOADER_GETINFO:
+			//write data to io_buf
+			dstr("info\n");
+			attr.version = BCDVERSION;
+			mcu_core_getserialno((mcu_sn_t*)(attr.serialno));
+
+			attr.startaddr = boot_board_config.program_start_addr;
+			attr.hardware_id = boot_board_config.id;
+
+			err = link_transport_slavewrite(driver, &attr, size, NULL, NULL);
+			if ( err == -1 ){
+				args->op.cmd = 0;
+				args->reply.err = -1;
+			} else {
+				args->reply.err = 0;
+			}
+
 			break;
-		}
 
-        dstr("w:"); dhex(wattr.addr); dstr(":"); dint(wattr.nbyte); dstr("\n");
+		case I_BOOTLOADER_RESET:
+			dstr("rst\n");
+			if( args->op.ioctl.arg == 0 ){
+				boot_event(BOOT_EVENT_RESET, 0);
+				boot_link_cmd_reset(driver, args);
+			} else {
+				boot_event(BOOT_EVENT_RESET_BOOTLOADER, 0);
+				boot_link_cmd_reset_bootloader(driver, args);
+			}
+			break;
+		case I_BOOTLOADER_WRITEPAGE:
+			err = link_transport_slaveread(driver, &wattr, size, NULL, NULL);
+			if( err < 0 ){
+				dstr("failed to read data\n");
+				break;
+			}
 
-        args->reply.err = mcu_flash_writepage(FLASH_PORT, (flash_writepage_t*)&wattr);
-		if( args->reply.err < 0 ){
-            dstr("Failed to write flash:"); dhex(args->reply.err); dstr("\n");
-		}
+			dstr("w:"); dhex(wattr.addr); dstr(":"); dint(wattr.nbyte); dstr("\n");
 
-		event_args.increment = wattr.nbyte;
-		event_args.bytes += event_args.increment;
-		boot_event(BOOT_EVENT_FLASH_WRITE, &event_args);
-		break;
-	default:
-		args->reply.err_number = EINVAL;
-		args->reply.err = -1;
-		break;
+			args->reply.err = mcu_flash_writepage(FLASH_PORT, (flash_writepage_t*)&wattr);
+			if( args->reply.err < 0 ){
+				dstr("Failed to write flash:"); dhex(args->reply.err); dstr("\n");
+			}
+
+			event_args.increment = wattr.nbyte;
+			event_args.bytes += event_args.increment;
+			boot_event(BOOT_EVENT_FLASH_WRITE, &event_args);
+			break;
+		default:
+			args->reply.err_number = EINVAL;
+			args->reply.err = -1;
+			break;
 	}
 
 	if ( args->reply.err < 0 ){
@@ -255,42 +255,42 @@ void boot_link_cmd_write(link_transport_driver_t * driver, link_data_t * args){
 
 void erase_flash(link_transport_driver_t * driver){
 	int page = 0;
-    int result;
+	int result;
 	boot_event_flash_t args;
 	args.abort = 0;
 	args.bytes = -1;
 	args.total = -1;
 	args.increment = -1;
 
-
-    while( mcu_flash_erasepage(FLASH_PORT, (void*)page++) != 0 ){
+	while( mcu_flash_erasepage(FLASH_PORT, (void*)page++) != 0 ){
 		//these are the bootloader pages and won't be erased
-        sos_led_root_enable(0);
+		sos_led_root_enable(0);
 		driver->wait(1);
-        sos_led_root_disable(0);
-        args.bytes = page;
+		sos_led_root_disable(0);
+		args.bytes = page;
 		boot_event(BOOT_EVENT_FLASH_ERASE, &args);
 	}
+	page--;
 
-    dstr("erase:"); dint(page); dstr("\n");
+	dstr("erase:"); dint(page); dstr("\n");
 
 	//erase the flash pages -- ends when an erase on an invalid page is attempted
-    while( (result = mcu_flash_erasepage(FLASH_PORT, (void*)page++)) == 0 ){
-        sos_led_root_enable(0);
-        driver->wait(1);
-        sos_led_root_disable(0);
-        args.bytes = page;
+	while( (result = mcu_flash_erasepage(FLASH_PORT, (void*)page++)) == 0 ){
+		sos_led_root_enable(0);
+		driver->wait(1);
+		sos_led_root_disable(0);
+		args.bytes = page;
 		boot_event(BOOT_EVENT_FLASH_ERASE, &args);
 	}
 
-    dstr("result:"); dint(SYSFS_GET_RETURN_ERRNO(result)); dstr("\n");
+	dstr("result:"); dint(SYSFS_GET_RETURN_ERRNO(result)); dstr("\n");
 
-    sos_led_root_enable(0);
+	sos_led_root_enable(0);
 }
 
 void boot_link_cmd_reset(link_transport_driver_t * driver, link_data_t * args){
-    sos_led_root_disable(0);
-    u32 * dfu_sw_req;
+	sos_led_root_disable(0);
+	u32 * dfu_sw_req;
 	driver->wait(500);
 	driver->close(&(driver->handle));
 	dfu_sw_req = (u32*)boot_board_config.sw_req_loc;
