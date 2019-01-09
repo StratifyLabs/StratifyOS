@@ -349,7 +349,7 @@ int link_phy_getname(char * dest, const char * last, int len){
 }
 
 
-link_transport_phy_t link_phy_open(const char * name, int baudrate){
+link_transport_phy_t link_phy_open(const char * name, const void * s_options){
 	link_transport_phy_t phy;
 	int fd;
 	struct termios options;
@@ -385,12 +385,38 @@ link_transport_phy_t link_phy_open(const char * name, int baudrate){
 	//one stop bit
 	options.c_cflag &= ~PARENB; //parity off
 	options.c_cflag &= ~PARODD; //parity is not odd (use even parity)
-	options.c_cflag &= ~CSTOPB; //two stop bits
+	options.c_cflag &= ~CSTOPB; //one stop bit
 	options.c_cflag |= CREAD; //enable receiver
 	options.c_cflag &= ~CSIZE;
 	options.c_cflag |= CREAD | CLOCAL | CS8;  //8 bit data
 	options.c_cc[VMIN]=0;
 	options.c_cc[VTIME]=0;
+
+	const link_transport_serial_options_t * serial_options = s_options;
+
+	if( serial_options ){
+		link_debug(LINK_DEBUG_MESSAGE, "Use custom serial port settings %dbps, %d stop bits, %d parity",
+					  serial_options->baudrate, serial_options->stop_bits, serial_options->parity);
+		cfsetspeed(&options, serial_options->baudrate);
+		if( serial_options->stop_bits == 2 ){
+			options.c_cflag |= CSTOPB; //two stop bits
+		} else {
+			options.c_cflag &= ~CSTOPB; //one stop bit
+		}
+
+		if( serial_options->parity ){
+			options.c_cflag |= PARENB; //parity on
+			if( serial_options->parity % 1 == 1){
+				options.c_cflag |= PARODD; //parity is  odd
+			} else {
+				options.c_cflag &= ~PARODD; //parity is not odd (use even parity)
+			}
+		} else {
+			options.c_cflag &= ~PARENB; //parity off
+		}
+	} else {
+		link_debug(LINK_DEBUG_MESSAGE, "Use default serial port settings 460800bps, 1 stop bits, 0 parity");
+	}
 
 	//set the attributes
 	if( tcflush(fd, TCIFLUSH) < 0 ){
