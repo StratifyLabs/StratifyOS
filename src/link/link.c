@@ -29,6 +29,7 @@ const link_transport_mdriver_t link_default_driver = {
 	.lock = link_phy_lock,
 	.unlock = link_phy_unlock,
 	.status = link_phy_status,
+	.options = 0,
 	.dev.handle = LINK_PHY_OPEN_ERROR,
 	.dev.open = link_phy_open,
 	.dev.write = link_phy_write,
@@ -86,7 +87,7 @@ int link_connect(link_transport_mdriver_t * driver, const char * sn){
 
 	while( (err = driver->getname(name, last, LINK_PHY_NAME_MAX)) == 0 ){
 		//success in getting new name
-		driver->dev.handle = driver->dev.open(name, 0);
+		driver->dev.handle = driver->dev.open(name, driver->options);
 		if( driver->dev.handle != LINK_PHY_OPEN_ERROR ){
 			link_debug(LINK_DEBUG_MESSAGE, "Read serial number for %s", name);
 			if( link_readserialno(driver, serialno, LINK_MAX_SN_SIZE) == 0 ){
@@ -185,7 +186,7 @@ int link_ping(link_transport_mdriver_t * driver, const char * name, int is_keep_
 	int err = -1;
 	int tries = 0;
 
-	driver->dev.handle = driver->dev.open(name, 0);
+	driver->dev.handle = driver->dev.open(name, driver->options);
 	if( driver->dev.handle != LINK_PHY_OPEN_ERROR ){
 		link_debug(LINK_DEBUG_MESSAGE, "Look for bootloader or device on %s", name);
 
@@ -299,7 +300,7 @@ char * link_new_device_list(link_transport_mdriver_t * driver, int max){
 
 	while ( (err = driver->getname(name, last, LINK_PHY_NAME_MAX)) == 0 ){
 		//success in getting new name
-		driver->dev.handle = driver->dev.open(name, 0);
+		driver->dev.handle = driver->dev.open(name, driver->options);
 		if( driver->dev.handle != LINK_PHY_OPEN_ERROR ){
 			if( link_readserialno(driver, serialno, LINK_MAX_SN_SIZE) == 0 ){
 				entry = &(sn_list[LINK_MAX_SN_SIZE*cnt]);

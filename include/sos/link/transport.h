@@ -58,10 +58,16 @@ typedef struct {
 #endif
 
 
+typedef struct {
+		int baudrate;
+		int stop_bits;
+		int parity;
+} link_transport_serial_options_t;
+
 
 typedef struct {
 	link_transport_phy_t handle;
-	link_transport_phy_t (*open)(const char *, int);
+	link_transport_phy_t (*open)(const char *, const void * options);
 	int (*write)(link_transport_phy_t, const void*, int);
 	int (*read)(link_transport_phy_t, void*, int);
 	int (*close)(link_transport_phy_t*);
@@ -79,6 +85,7 @@ typedef struct {
 	link_transport_driver_t dev;
 	char dev_name[64];
 	char notify_name[64];
+	const void * options;
 } link_transport_mdriver_t;
 
 #if defined __cplusplus

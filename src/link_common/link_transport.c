@@ -52,13 +52,15 @@ int link_transport_wait_start(link_transport_driver_t * driver, link_pkt_t * pkt
 				return LINK_PROT_ERROR;
 			}
 		} else {
-#if !defined __WINDOWS
+#if defined __win32
+			//windows waits too long with Sleep, so delay is built into comm
+#else
 			driver->wait(1);
 #endif
 			count++;
 			if( count == timeout ){
-                return LINK_TIMEOUT_ERROR;
-            }
+				return LINK_TIMEOUT_ERROR;
+			}
 		}
 	} while( bytes_read != 1);
 	return 0;
@@ -100,10 +102,14 @@ int link_transport_wait_packet(link_transport_driver_t * driver, link_pkt_t * pk
 			p += bytes_read;
 			count = 0;
 		} else {
+#if defined __win32
+			//windows wait is built into comm
+#else
 			driver->wait(1);
+#endif
 			count++;
 			if( count == timeout ){
-                return LINK_TIMEOUT_ERROR;
+				return LINK_TIMEOUT_ERROR;
 			}
 		}
 

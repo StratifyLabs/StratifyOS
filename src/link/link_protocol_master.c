@@ -133,26 +133,28 @@ int wait_ack(link_transport_mdriver_t * driver, uint8_t checksum, int timeout){
 		}
 
 		if( ret > 0 ){
-            link_debug(LINK_DEBUG_MESSAGE, "Got %d bytes: %X", ret, *p);
+			link_debug(LINK_DEBUG_MESSAGE, "Got %d bytes: %X", ret, *p);
 			bytes_read += ret;
 			p += ret;
 			count = 0;
 		} else {
-//#ifndef __win32
+#if defined __win32
+			//windows waits too long with Sleep, so delay is built into comm
+#else
 			driver->dev.wait(1);
-//#endif
+#endif
 			count+=1;
 			if( count >= timeout ){
-                link_error("timeout %d of %d (%d) -- %d >= %d",
-                           ack.checksum, checksum, ack.ack, count, timeout);
-                return LINK_TIMEOUT_ERROR;
-            }
+				link_error("timeout %d of %d (%d) -- %d >= %d",
+							  ack.checksum, checksum, ack.ack, count, timeout);
+				return LINK_TIMEOUT_ERROR;
+			}
 		}
 	} while(bytes_read < sizeof(ack));
 
 
 	if( ack.checksum != checksum ){
-        link_debug(LINK_DEBUG_WARNING, "Checksum failed 0x%X != 0x%X (0x%X)", ack.checksum, checksum, ack.ack);
+		link_debug(LINK_DEBUG_WARNING, "Checksum failed 0x%X != 0x%X (0x%X)", ack.checksum, checksum, ack.ack);
 		return LINK_PROT_ERROR;
 	}
 

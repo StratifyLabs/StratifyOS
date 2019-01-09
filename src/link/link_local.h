@@ -63,7 +63,7 @@ void link_write_debug_message(link_debug_context_t * context);
 
 //default driver
 int link_phy_getname(char * dest, const char * last, int len);
-link_transport_phy_t link_phy_open(const char * name, int baudrate);
+link_transport_phy_t link_phy_open(const char * name, const void * options);
 int link_phy_status(link_transport_phy_t handle);
 int link_phy_write(link_transport_phy_t handle, const void * buf, int nbyte);
 int link_phy_read(link_transport_phy_t handle, void * buf, int nbyte);
