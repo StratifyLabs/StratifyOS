@@ -27,8 +27,11 @@ if(SOS_APP_ARCH STREQUAL "link")
 	set(BUILD_TARGET ${SOS_APP_NAME})
         set(BUILD_LIBRARIES ${SOS_APP_LIBRARIES} api sos_link)
 	set(BUILD_FLAGS ${BUILD_OPTIMIZATION} ${SOS_APP_COMPILE_OPTIONS})
-	set(LINKER_FLAGS "-L${TOOLCHAIN_LIB_DIR} -L${SOS_SDK_LIB_DIR}")
-
+        if( ${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows" )
+            set(LINKER_FLAGS "-L${TOOLCHAIN_LIB_DIR} -L${SOS_SDK_LIB_DIR} -static -static-libstdc++ -static-libgcc")
+        else()
+            set(LINKER_FLAGS "-L${TOOLCHAIN_LIB_DIR} -L${SOS_SDK_LIB_DIR}")
+        endif()
 	add_executable(${BUILD_TARGET} ${SOS_APP_SOURCELIST} StratifySettings.json StratifyLocalSettings.json)
 
 	target_compile_definitions(${BUILD_TARGET} PUBLIC __${SOS_APP_ARCH} ${SOS_APP_DEFINITIONS} SOS_GIT_HASH="${SOS_GIT_HASH}")
