@@ -25,6 +25,7 @@
 #include "sos/sos.h"
 #include "sos/fs/sysfs.h"
 #include "sos/fs/assetfs.h"
+#include "cortexm/cortexm.h"
 
 #define INVALID_DIR_HANDLE ((void*)0)
 #define VALID_DIR_HANDLE ((void*)0x12345678)

@@ -60,6 +60,14 @@ extern "C" {
 #define MCU_UNUSED __attribute__((unused))
 #define MCU_UNUSED_ARGUMENT(arg) ((void)arg)
 #define MCU_NO_RETURN __attribute((noreturn))
+#define MCU_STRINGIFY2(x) #x
+#define MCU_STRINGIFY(x) MCU_STRINGIFY2(x)
+
+#if defined MCU_SOS_GIT_HASH
+#define SOS_GIT_HASH MCU_STRINGIFY(MCU_SOS_GIT_HASH)
+#else
+#define SOS_GIT_HASH "0000000"
+#endif
 
 #if defined __MINGW32__
 #define MCU_PACK __attribute__((packed, gcc_struct))
@@ -237,6 +245,7 @@ struct mcu_timeval {
 };
 
 #define MCU_RAM_PAGE_SIZE 1024
+
 
 
 #ifdef __cplusplus

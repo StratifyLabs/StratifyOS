@@ -34,7 +34,7 @@ if(SOS_APP_ARCH STREQUAL "link")
         endif()
 	add_executable(${BUILD_TARGET} ${SOS_APP_SOURCELIST} StratifySettings.json StratifyLocalSettings.json)
 
-	target_compile_definitions(${BUILD_TARGET} PUBLIC __${SOS_APP_ARCH} ${SOS_APP_DEFINITIONS} SOS_GIT_HASH="${SOS_GIT_HASH}")
+        target_compile_definitions(${BUILD_TARGET} PUBLIC __${SOS_APP_ARCH} ${SOS_APP_DEFINITIONS} MCU_SOS_GIT_HASH=${SOS_GIT_HASH})
 
 else()
 	set(BUILD_TARGET ${SOS_APP_NAME}_${SOS_APP_ARCH}.elf)
@@ -48,7 +48,7 @@ else()
 	add_custom_target(size_${SOS_APP_ARCH} DEPENDS asm_${SOS_APP_NAME}_${SOS_APP_ARCH} COMMAND ${CMAKE_SIZE} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${BUILD_TARGET})
 	add_custom_target(${SOS_APP_ARCH} ALL DEPENDS size_${SOS_APP_ARCH})
 
-	target_compile_definitions(${BUILD_TARGET} PUBLIC __${SOS_APP_ARCH} __StratifyOS__ ${SOS_APP_DEFINITIONS} SOS_GIT_HASH="${SOS_GIT_HASH}")
+        target_compile_definitions(${BUILD_TARGET} PUBLIC __${SOS_APP_ARCH} __StratifyOS__ ${SOS_APP_DEFINITIONS} MCU_SOS_GIT_HASH=${SOS_GIT_HASH})
 endif()
 
 target_link_libraries(${BUILD_TARGET} ${BUILD_LIBRARIES})
