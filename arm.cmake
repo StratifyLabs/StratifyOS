@@ -58,6 +58,14 @@ set(SOS_LIB_TYPE debug)
 set(SOS_LIB_SOURCELIST ${BOOT_SOURCELIST})
 include(${SOS_TOOLCHAIN_CMAKE_PATH}/sos-lib-std.cmake)
 
+add_custom_target(sos_crt)
+add_dependencies(sos_crt
+    sos_crt_v7m
+    sos_crt_v7em
+    sos_crt_v7em_f4sh
+    sos_crt_v7em_f5sh
+    sos_crt_v7em_f5dh)
+
 install(DIRECTORY include/cortexm include/device include/mcu include/sos include/usbd DESTINATION include)
 install(DIRECTORY include/posix/ DESTINATION include)
 install(DIRECTORY ldscript/ DESTINATION lib/ldscripts)
