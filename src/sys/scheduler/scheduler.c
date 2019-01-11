@@ -100,7 +100,11 @@ void scheduler(){
 
         //Sleep when nothing else is going on
         if ( task_get_exec_count() == 0 ){
-            mcu_core_user_sleep(CORE_SLEEP);
+			  //the BSP can set SYS_FLAG_IS_ACTIVE_ON_IDLE and then sleep during this event if a simple sleep won't work
+			  mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_SCHEDULER_IDLE, 0);
+			  if( (sos_board_config.o_sys_flags & SYS_FLAG_IS_ACTIVE_ON_IDLE) == 0 ){
+				  mcu_core_user_sleep(CORE_SLEEP);
+			  }
         } else {
             //Otherwise switch to the active task
             sched_yield();

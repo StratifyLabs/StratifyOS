@@ -52,7 +52,8 @@ enum {
 	SYS_FLAG_IS_REQUEST /*! Deprecated */ = (1<<3),
 	SYS_FLAG_IS_TRACE /*! Deprecated */ = (1<<4),
 	SYS_FLAG_IS_STDIO_CFIFO /*! STDIO is a with channels 0:stdout 1:stdin 2: stderr */ = (1<<5),
-	SYS_FLAG_IS_STDIO_CFIFO_SHARE_OUTERR /*! Used with SYS_FLAG_IS_STDIO_CFIFO to indicate stderr and stdout are the same channel (0) */ = (1<<6)
+	SYS_FLAG_IS_STDIO_CFIFO_SHARE_OUTERR /*! Used with SYS_FLAG_IS_STDIO_CFIFO to indicate stderr and stdout are the same channel (0) */ = (1<<6),
+	SYS_FLAG_IS_ACTIVE_ON_IDLE /*! Don't stop the CPU when the system is idle */ = (1<<7)
 };
 
 typedef struct MCU_PACK {
