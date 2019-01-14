@@ -562,6 +562,14 @@
 .global gethostbyname_r; gethostbyname_r = LINK_ADDR;
 .global freeaddrinfo; freeaddrinfo = LINK_ADDR;
 .global getaddrinfo; getaddrinfo = LINK_ADDR;
+.global inet_addr; inet_addr = LINK_ADDR;
+.global inet_ntoa; inet_ntoa = LINK_ADDR;
+.global inet_ntop; inet_ntop = LINK_ADDR;
+.global inet_pton; inet_pton = LINK_ADDR;
+.global htonl; htonl = LINK_ADDR;
+.global ntohl; ntohl = LINK_ADDR;
+.global htons; htons = LINK_ADDR;
+.global ntohs; ntohs = LINK_ADDR;
 .global timer_create; timer_create = LINK_ADDR;
 .global timer_delete; timer_delete = LINK_ADDR;
 .global timer_gettime; timer_gettime = LINK_ADDR;

@@ -35,23 +35,26 @@ typedef u16 in_port_t;
 #define INET_ADDRSTRLEN 8
 #define INET6_ADDRSTRLEN 8
 
-//defs copied from LWIP
-#define htons(x) ((((x) & 0x00ffUL) << 8) | (((x) & 0xff00UL) >> 8))
-#define ntohs(x) PP_HTONS(x)
-#define htonl(x) ((((x) & 0x000000ffUL) << 24) | \
-                     (((x) & 0x0000ff00UL) <<  8) | \
-                     (((x) & 0x00ff0000UL) >>  8) | \
-                     (((x) & 0xff000000UL) >> 24))
-#define ntohl(x) PP_HTONL(x)
-
-//these shoudl be part of the Socket API if they are to be called from applications
-#define inet_addr(cp)                   ipaddr_addr(cp)
-#define inet_aton(cp, addr)             ip4addr_aton(cp, (ip4_addr_t*)addr)
-#define inet_ntoa(addr)                 ip4addr_ntoa((const ip4_addr_t*)&(addr))
-#define inet_ntoa_r(addr, buf, buflen)  ip4addr_ntoa_r((const ip4_addr_t*)&(addr), buf, buflen)
-
-
 #endif //SOS_BOOTSTRAP_SOCKETS
+
+
+#if defined __cplusplus
+extern "C" {
+#endif
+
+in_addr_t inet_addr(const char * cp);
+char * inet_ntoa(struct in_addr in);
+const char * inet_ntop(int af, const void * src, char * dst, socklen_t size);
+int inet_pton(int af, const char * src, void * dst);
+
+uint32_t htonl(uint32_t hostlong);
+uint16_t htons(uint16_t hostshort);
+uint32_t ntohl(uint32_t netlong);
+uint16_t ntohs(uint16_t netshort);
+
+#if defined __cplusplus
+}
+#endif
 
 
 #endif /* POSIX_ARPA_INET_H_ */

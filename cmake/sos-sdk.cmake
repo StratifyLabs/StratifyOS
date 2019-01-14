@@ -7,14 +7,10 @@ endif()
 if( ${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Darwin" )
 	set(SOS_SDK_EXEC_SUFFIX "")
 	set(SOS_SDK_GENERATOR "")
-	set(SOS_SDK_PATH_TO_QMAKE /Users/tgil/Qt/5.9.6/clang_64/bin)
-	set(SOS_SDK_QMAKE_ARGS -spec macx-clang CONFIG+=x86_64 CONFIG+=qtquickcompiler)
 elseif( ${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows" )
-	set(SOS_SDK_PATH_TO_QMAKE "C:/Qt-5.9/5.9.3/mingw53_32/bin")
 	set(SOS_SDK_PATH_TO_MAKE "C:/StratifyLabs-SDK/Tools/gcc/bin")
 	set(SOS_SDK_GENERATOR -G "MinGW Makefiles")
 	set(SOS_SDK_EXEC_SUFFIX ".exe")
-	set(SOS_SDK_QMAKE_ARGS -spec win32-g++ "CONFIG+=qtquickcompiler")
 endif()
 
 if( SOS_SDK_PATH_TO_CMAKE )
@@ -27,16 +23,6 @@ if( SOS_SDK_PATH_TO_MAKE )
 	set(SOS_SDK_MAKE_EXEC ${SOS_SDK_PATH_TO_MAKE}/make${SOS_SDK_EXEC_SUFFIX})
 else()
 	set(SOS_SDK_MAKE_EXEC make${SOS_SDK_EXEC_SUFFIX})
-endif()
-
-if( PATH_TO_QMAKE )
-	set(SOS_SDK_QMAKE_EXEC ${PATH_TO_QMAKE}/qmake${SOS_SDK_EXEC_SUFFIX})
-else()
-	if( SOS_SDK_PATH_TO_QMAKE )
-		set(SOS_SDK_QMAKE_EXEC ${SOS_SDK_PATH_TO_QMAKE}/qmake${SOS_SDK_EXEC_SUFFIX})
-	else()
-		set(SOS_SDK_QMAKE_EXEC qmake${SOS_SDK_EXEC_SUFFIX})
-	endif()
 endif()
 
 if( SOS_SDK_PATH_TO_GIT )
@@ -156,35 +142,18 @@ function(sos_sdk_build_lib PROJECT_PATH IS_INSTALL CONFIG)
 	endif()
 endfunction()
 
-function(sos_sdk_build_qt_lib PATH PROJECT CONFIG)
-	message(STATUS "QMAKE: " ${SOS_SDK_QMAKE_EXEC})
-	message(STATUS "PROJECT PATH: " ${PATH}/${PROJECT}/${PROJECT}.pro)
-	file(MAKE_DIRECTORY ${PATH}/build_${CONFIG})
-	execute_process(COMMAND ${SOS_SDK_QMAKE_EXEC} ${PATH}/${PROJECT}/${PROJECT}.pro	${SOS_SDK_QMAKE_ARGS} WORKING_DIRECTORY ${PATH}/build_${CONFIG} RESULT_VARIABLE RESULT)
-	if(RESULT)
-		message(FATAL_ERROR " Failed to run QMAKE: ${SOS_SDK_QMAKE_EXEC} ${PATH}/${PROJECT}/${PROJECT}.pro " ${SOS_SDK_QMAKE_ARGS} " in " ${PATH}/build_${CONFIG})
-	endif()
-	if(SOS_SDK_CLEAN_ALL)
-		message(STATUS "Clean: " ${PROJECT})
-		execute_process(COMMAND ${SOS_SDK_MAKE_EXEC} clean WORKING_DIRECTORY ${PATH}/build_${CONFIG} RESULT_VARIABLE RESULT)
-		if(RESULT)
-			message(FATAL_ERROR " Failed to run make clean: " ${SOS_SDK_MAKE_EXEC} clean)
-		endif()
-	endif()
-	execute_process(COMMAND ${SOS_SDK_MAKE_EXEC} -j 10 install WORKING_DIRECTORY ${PATH}/build_${CONFIG} RESULT_VARIABLE RESULT)
-	if(RESULT)
-		message(FATAL_ERROR " Failed to run make install: " ${SOS_SDK_MAKE_EXEC} install)
-	endif()
-endfunction()
-
 function(sos_get_git_hash)
-	execute_process(
-		COMMAND git log -1 --format=%h
-		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-		OUTPUT_VARIABLE GIT_HASH_OUTPUT_VARIABLE
-		OUTPUT_STRIP_TRAILING_WHITESPACE
-	)
+	if(EXISTS ${CMAKE_SOURCE_DIR}/.git)
+		execute_process(
+			COMMAND git log -1 --format=%h
+			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+			OUTPUT_VARIABLE GIT_HASH_OUTPUT_VARIABLE
+			OUTPUT_STRIP_TRAILING_WHITESPACE
+			)
 		set(SOS_GIT_HASH ${GIT_HASH_OUTPUT_VARIABLE} PARENT_SCOPE)
+	else()
+		set(SOS_GIT_HASH "0000000" PARENT_SCOPE)
+	endif()
 endfunction()
 
 

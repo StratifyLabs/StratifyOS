@@ -189,3 +189,35 @@ int getaddrinfo(const char *nodename, const char *servname, const struct addrinf
 	return sos_board_config.socket_api->getaddrinfo(nodename, servname, hints, res);
 }
 
+in_addr_t inet_addr(const char * cp){
+	return sos_board_config.socket_api->inet_addr(cp);
+}
+
+char * inet_ntoa(struct in_addr in){
+	return sos_board_config.socket_api->inet_ntoa(in);
+}
+
+const char * inet_ntop(int af, const void * src, char * dst, socklen_t size){
+	return sos_board_config.socket_api->inet_ntop(af, src, dst, size);
+}
+
+int inet_pton(int af, const char * src, void * dst){
+	return sos_board_config.socket_api->inet_pton(af, src, dst);
+}
+
+uint32_t htonl(uint32_t hostlong){
+	return  __REV(hostlong);
+}
+
+uint16_t htons(uint16_t hostshort){
+	return (uint16_t)__REVSH(hostshort);
+}
+
+uint32_t ntohl(uint32_t netlong){
+	return  __REV(netlong);
+}
+
+uint16_t ntohs(uint16_t netshort){
+	return (uint16_t)__REVSH(netshort);
+}
+

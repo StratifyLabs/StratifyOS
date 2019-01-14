@@ -19,6 +19,7 @@
 #include "mcu/types.h"
 #include "mcu/arch.h"
 #include "sos/sos.h"
+#include "arpa/inet.h"
 
 #include "defines.h"
 
@@ -27,8 +28,6 @@
 #else
 #define SYMBOLS_TABLE_WEAK
 #endif
-
-
 
 u32 const symbols_table[] SYMBOLS_TABLE_WEAK;
 u32 const symbols_table[] = {
@@ -582,6 +581,14 @@ u32 const symbols_table[] = {
 	(u32)gethostbyname_r,
 	(u32)freeaddrinfo,
 	(u32)getaddrinfo,
+	(u32)inet_addr,
+	(u32)inet_ntoa,
+	(u32)inet_ntop,
+	(u32)inet_pton,
+	(u32)htonl,
+	(u32)htons,
+	(u32)ntohl,
+	(u32)ntohs,
 	(u32)timer_create,
 	(u32)timer_delete,
 	(u32)timer_gettime,

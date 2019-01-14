@@ -113,6 +113,10 @@ typedef struct {
 	int (*gethostbyname_r)(const char *name, struct hostent *ret, char *buf, size_t buflen, struct hostent **result, int *h_errnop);
 	void (*freeaddrinfo)(struct addrinfo *ai);
 	int (*getaddrinfo)(const char *nodename, const char *servname, const struct addrinfo *hints, struct addrinfo **res);
+	in_addr_t (*inet_addr)(const char * cp);
+	char * (*inet_ntoa)(struct in_addr in);
+	const char * (*inet_ntop)(int af, const void * src, char * dst, socklen_t size);
+	int (*inet_pton)(int af, const char * src, void * dst);
 	const void * config;
 	void * state;
 } sos_socket_api_t;
