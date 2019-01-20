@@ -58,6 +58,22 @@ extern "C" {
 #undef inet_pton
 #endif
 
+#if defined htonl
+#undef htonl
+#endif
+
+#if defined htons
+#undef htons
+#endif
+
+#if defined ntohs
+#undef ntohs
+#endif
+
+#if defined ntohs
+#undef ntohs
+#endif
+
 in_addr_t inet_addr(const char * cp);
 char * inet_ntoa(struct in_addr in);
 const char * inet_ntop(int af, const void * src, char * dst, socklen_t size);
