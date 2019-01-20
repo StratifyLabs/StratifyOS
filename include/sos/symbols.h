@@ -179,6 +179,7 @@ extern u32 __gnu_h2f_ieee();
 #include "mcu/tmr.h"
 #include "cortexm/task.h"
 #include "cortexm/cortexm.h"
+#include "arpa/inet.h"
 
 extern void __cxa_pure_virtual();
 void __cxa_atexit();
