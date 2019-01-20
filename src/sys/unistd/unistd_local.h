@@ -29,6 +29,7 @@
 
 #define FILDES_STDIO_FLAG 0x0200
 #define FILDES_SOCKET_FLAG 0x0400
+#define FILDES_IS_SOCKET(x) ((x >= 0) && ((x & FILDES_SOCKET_FLAG) != 0))
 
 
 int u_new_open_file(int start);

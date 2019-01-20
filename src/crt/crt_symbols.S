@@ -567,8 +567,8 @@
 .global inet_ntop; inet_ntop = LINK_ADDR;
 .global inet_pton; inet_pton = LINK_ADDR;
 .global htonl; htonl = LINK_ADDR;
-.global ntohl; ntohl = LINK_ADDR;
 .global htons; htons = LINK_ADDR;
+.global ntohl; ntohl = LINK_ADDR;
 .global ntohs; ntohs = LINK_ADDR;
 .global timer_create; timer_create = LINK_ADDR;
 .global timer_delete; timer_delete = LINK_ADDR;

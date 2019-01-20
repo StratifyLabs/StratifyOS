@@ -56,8 +56,8 @@ int _fcntl(int fildes, int cmd, ...){
 	tmp = va_arg(ap, int);
 	va_end(ap);
 
-    if( fildes & FILDES_SOCKET_FLAG ){
-        if( sos_board_config.socket_api != 0 ){
+	if( FILDES_IS_SOCKET(fildes) ){
+		  if( sos_board_config.socket_api != 0 ){
             return sos_board_config.socket_api->fcntl(fildes & ~FILDES_SOCKET_FLAG, cmd, tmp);
         }
         errno = EBADF;

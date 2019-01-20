@@ -107,6 +107,11 @@ function(sos_sdk_build_bsp PROJECT_PATH)
 	endif()
 endfunction()
 
+function(sos_sdk_remove_build_directory PROJECT_PATH CONFIG)
+	set(BUILD_PATH ${PROJECT_PATH}/cmake_${CONFIG})
+	file(REMOVE_RECURSE ${PROJECT_PATH}/cmake_${CONFIG})
+endfunction()
+
 function(sos_sdk_build_lib PROJECT_PATH IS_INSTALL CONFIG)
 	set(BUILD_PATH ${PROJECT_PATH}/cmake_${CONFIG})
 	file(MAKE_DIRECTORY ${PROJECT_PATH}/cmake_${CONFIG})

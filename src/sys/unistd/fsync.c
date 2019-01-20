@@ -56,7 +56,7 @@ int fsync(int fildes) {
 		return -1;
 	}
 
-	if( fildes & FILDES_SOCKET_FLAG ){
+	if( FILDES_IS_SOCKET(fildes) ){
 		if( sos_board_config.socket_api != 0 ){
             return sos_board_config.socket_api->fsync(fildes);
 		}

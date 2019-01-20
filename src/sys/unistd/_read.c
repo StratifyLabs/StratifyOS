@@ -50,8 +50,8 @@ int read(int fildes, void *buf, size_t nbyte);
 int _read(int fildes, void *buf, size_t nbyte){
 	sysfs_file_t * file;
 
-    if( fildes & FILDES_SOCKET_FLAG ){
-        if( sos_board_config.socket_api != 0 ){
+	if( FILDES_IS_SOCKET(fildes) ){
+		  if( sos_board_config.socket_api != 0 ){
             return sos_board_config.socket_api->read(fildes & ~FILDES_SOCKET_FLAG, buf, nbyte);
         }
         errno = EBADF;

@@ -30,7 +30,7 @@
 
 
 int accept(int s, struct sockaddr *addr, socklen_t *addrlen){
-	if( s & FILDES_SOCKET_FLAG ){
+	if( FILDES_IS_SOCKET(s) ){
 		return sos_board_config.socket_api->accept(s & ~FILDES_SOCKET_FLAG, addr, addrlen);
 	}
 	errno = ENOTSOCK;
@@ -38,7 +38,7 @@ int accept(int s, struct sockaddr *addr, socklen_t *addrlen){
 }
 
 int bind(int s, const struct sockaddr *name, socklen_t namelen){
-	if( s & FILDES_SOCKET_FLAG ){
+	if( FILDES_IS_SOCKET(s) ){
 		return sos_board_config.socket_api->bind(s & ~FILDES_SOCKET_FLAG, name, namelen);
 	}
 	errno = ENOTSOCK;
@@ -46,7 +46,7 @@ int bind(int s, const struct sockaddr *name, socklen_t namelen){
 }
 
 int shutdown(int s, int how){
-	if( s & FILDES_SOCKET_FLAG ){
+	if( FILDES_IS_SOCKET(s) ){
 		return sos_board_config.socket_api->shutdown(s & ~FILDES_SOCKET_FLAG, how);
 	}
 	errno = ENOTSOCK;
@@ -54,7 +54,7 @@ int shutdown(int s, int how){
 }
 
 int getpeername(int s, struct sockaddr *name, socklen_t *namelen){
-	if( s & FILDES_SOCKET_FLAG ){
+	if( FILDES_IS_SOCKET(s) ){
 		return sos_board_config.socket_api->getpeername(s & ~FILDES_SOCKET_FLAG, name, namelen);
 	}
 	errno = ENOTSOCK;
@@ -63,7 +63,7 @@ int getpeername(int s, struct sockaddr *name, socklen_t *namelen){
 
 
 int getsockname(int s, struct sockaddr *name, socklen_t *namelen){
-	if( s & FILDES_SOCKET_FLAG ){
+	if( FILDES_IS_SOCKET(s) ){
 		return sos_board_config.socket_api->getsockname(s & ~FILDES_SOCKET_FLAG, name, namelen);
 	}
 	errno = ENOTSOCK;
@@ -72,7 +72,7 @@ int getsockname(int s, struct sockaddr *name, socklen_t *namelen){
 
 
 int getsockopt(int s, int level, int optname, void *optval, socklen_t *optlen){
-	if( s & FILDES_SOCKET_FLAG ){
+	if( FILDES_IS_SOCKET(s) ){
 		return sos_board_config.socket_api->getsockopt(s & ~FILDES_SOCKET_FLAG, level, optname, optval, optlen);
 	}
 	errno = ENOTSOCK;
@@ -81,7 +81,7 @@ int getsockopt(int s, int level, int optname, void *optval, socklen_t *optlen){
 
 
 int setsockopt(int s, int level, int optname, const void *optval, socklen_t optlen){
-	if( s & FILDES_SOCKET_FLAG ){
+	if( FILDES_IS_SOCKET(s) ){
 		return sos_board_config.socket_api->setsockopt(s & ~FILDES_SOCKET_FLAG, level, optname, optval, optlen);
 	}
 	errno = ENOTSOCK;
@@ -90,7 +90,7 @@ int setsockopt(int s, int level, int optname, const void *optval, socklen_t optl
 
 
 int connect(int s, const struct sockaddr *name, socklen_t namelen){
-	if( s & FILDES_SOCKET_FLAG ){
+	if( FILDES_IS_SOCKET(s) ){
 		return sos_board_config.socket_api->connect(s & ~FILDES_SOCKET_FLAG, name, namelen);
 	}
 	errno = ENOTSOCK;
@@ -99,7 +99,7 @@ int connect(int s, const struct sockaddr *name, socklen_t namelen){
 
 
 int listen(int s, int backlog){
-	if( s & FILDES_SOCKET_FLAG ){
+	if( FILDES_IS_SOCKET(s) ){
 		return sos_board_config.socket_api->listen(s & ~FILDES_SOCKET_FLAG, backlog);
 	}
 	errno = ENOTSOCK;
@@ -108,7 +108,7 @@ int listen(int s, int backlog){
 
 
 int recv(int s, void *mem, size_t len, int flags){
-	if( s & FILDES_SOCKET_FLAG ){
+	if( FILDES_IS_SOCKET(s) ){
 		return sos_board_config.socket_api->recv(s & ~FILDES_SOCKET_FLAG, mem, len, flags);
 	}
 	errno = ENOTSOCK;
@@ -117,7 +117,7 @@ int recv(int s, void *mem, size_t len, int flags){
 
 
 int recvfrom(int s, void *mem, size_t len, int flags, struct sockaddr *from, socklen_t *fromlen){
-	if( s & FILDES_SOCKET_FLAG ){
+	if( FILDES_IS_SOCKET(s) ){
 		return sos_board_config.socket_api->recvfrom(s & ~FILDES_SOCKET_FLAG, mem, len, flags, from, fromlen);
 	}
 	errno = ENOTSOCK;
@@ -126,7 +126,7 @@ int recvfrom(int s, void *mem, size_t len, int flags, struct sockaddr *from, soc
 
 
 int send(int s, const void *dataptr, size_t size, int flags){
-	if( s & FILDES_SOCKET_FLAG ){
+	if( FILDES_IS_SOCKET(s) ){
 		return sos_board_config.socket_api->send(s & ~FILDES_SOCKET_FLAG, dataptr, size, flags);
 	}
 	errno = ENOTSOCK;
@@ -134,7 +134,7 @@ int send(int s, const void *dataptr, size_t size, int flags){
 }
 
 int sendmsg(int s, const struct msghdr *message, int flags){
-	if( s & FILDES_SOCKET_FLAG ){
+	if( FILDES_IS_SOCKET(s) ){
 		return sos_board_config.socket_api->sendmsg(s & ~FILDES_SOCKET_FLAG, message, flags);
 	}
 	errno = ENOTSOCK;
@@ -143,7 +143,7 @@ int sendmsg(int s, const struct msghdr *message, int flags){
 
 int sendto(int s, const void *dataptr, size_t size, int flags,
 			  const struct sockaddr *to, socklen_t tolen){
-	if( s & FILDES_SOCKET_FLAG ){
+	if( FILDES_IS_SOCKET(s) ){
 		return sos_board_config.socket_api->sendto(s & ~FILDES_SOCKET_FLAG, dataptr, size, flags, to, tolen);
 	}
 	errno = ENOTSOCK;
@@ -161,7 +161,7 @@ int socket(int domain, int type, int protocol){
 
 
 int writev(int s, const struct iovec *iov, int iovcnt){
-	if( s & FILDES_SOCKET_FLAG ){
+	if( FILDES_IS_SOCKET(s) ){
 		return sos_board_config.socket_api->writev(s & ~FILDES_SOCKET_FLAG, iov, iovcnt);
 	}
 	errno = ENOTSOCK;

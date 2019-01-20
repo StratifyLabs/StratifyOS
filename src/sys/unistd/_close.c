@@ -43,7 +43,7 @@ int _close(int fildes) {
 	//Close the file if it's open
 	int ret;
 
-    if( fildes & FILDES_SOCKET_FLAG ){
+	 if( FILDES_IS_SOCKET(fildes) ){
         if( sos_board_config.socket_api != 0 ){
             return sos_board_config.socket_api->close(fildes & ~FILDES_SOCKET_FLAG);
         }
