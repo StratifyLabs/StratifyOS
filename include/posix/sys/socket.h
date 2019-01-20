@@ -123,6 +123,24 @@ typedef struct {
 	void * state;
 } sos_socket_api_t;
 
+typedef struct {
+
+	//enough for a client
+	int (*socket)(void ** context, int domain, int type, int protocol);
+	int (*connect)(void * context, const struct sockaddr *address, socklen_t address_len, const char * server_name);
+	int (*close)(void ** context);
+	int (*write)(void * context, const void * buf, int nbyte);
+	int (*read)(void * context, void * buf, int nbyte);
+	int (*fileno)(void * context);
+	int (*write_ticket)(void * context, void * buf, int nbyte, u32 lifetime);
+	int (*parse_ticket)(void * context, void * buf, int nbyte);
+
+	//server
+	//bind_and_listen()
+	//accept()
+
+} mbedtls_api_t;
+
 
 
 

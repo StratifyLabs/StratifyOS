@@ -66,8 +66,8 @@ extern "C" {
 #undef htons
 #endif
 
-#if defined ntohs
-#undef ntohs
+#if defined ntohl
+#undef ntohl
 #endif
 
 #if defined ntohs
