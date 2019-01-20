@@ -39,6 +39,8 @@ struct msghdr;
 struct iovec;
 #endif //SOS_BOOTSTRAP_SOCKETS
 
+#include "arpa/inet.h"
+
 #if defined __cplusplus
 extern "C" {
 #endif
