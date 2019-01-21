@@ -34,6 +34,7 @@
 #include "pwm.h"
 #include "qei.h"
 #include "rtc.h"
+#include "qspi.h"
 #include "spi.h"
 #include "sdio.h"
 #include "tmr.h"
