@@ -111,7 +111,7 @@ typedef struct MCU_PACK {
 
 /*! \brief See details below.
  * \details This tells the qspi bus to
- * set a command fro data to bus.
+ * set a command from data to bus.
  * The ctl argument to qspi_ioctl() is the
  * word to put (not a pointer to qspi_attr_t).
  *
@@ -128,19 +128,107 @@ typedef struct MCU_PACK {
     u32 command;    /*<! command type*/
     u32 address;    /*<! address will use at command*/
 } qspi_addr_command_config_t;
+/*! \brief See details below.
+ * \details This tells the qspi bus to
+ * set a command and address from data to bus.
+ * The ctl argument to qspi_ioctl() is the
+ * pointer to qspi_addr_command_config_t
+ *
+ * The following example erase space
+ * \code
+ *
+ *int qspi_erase_block(int fd,u32 block_address){
+ *   int result=0;
+ *   qspi_addr_command_config_t qspi_attr;
+ *   if (qspi_write_enable(fd) ==0){
+ *       u8 status_reg = QSPI_SR_WIP;
+ *       qspi_attr.command = SUBSECTOR_ERASE_4_BYTE_ADDR_CMD;
+ *       qspi_attr.address = block_address;
+ *       ioctl(fd, I_QSPI_ADDR_COMMAND, &qspi_attr);
+ *       status_reg = qspi_read_status_reg(fd);
+ *       while(status_reg & QSPI_SR_WIP){
+ *           status_reg = qspi_read_status_reg(fd);
+ *       }
+ *   }else{
+ *       result = -1;
+ *   }
+ *   return result;
+ *}
+ *
+ * \endcode
+ * \hideinitializer
+ */
+#define I_QSPI_ADDR_COMMAND _IOCTL(QSPI_IOC_IDENT_CHAR, I_MCU_TOTAL + 1)
 typedef struct MCU_PACK {
     u32 command;    /*<! command type*/
     u32 regs_number;    /*<! regs number for read*/
     u8 * data;      /*<! read data */
 } qspi_read_regs_config_t;
+/*! \brief See details below.
+ * \details This tells the qspi bus to
+ * for read regs to data bus.
+ * The ctl argument to qspi_ioctl() is the
+ *  pointer to qspi_read_regs_config_t
+ *
+ * The following example read status regs
+ * \code
+ * u8 qspi_read_status_reg(int fd){
+ *   u8 data = 0;
+ *   qspi_read_regs_config_t read_regs_config;
+ *   read_regs_config.regs_number = 1;
+ *   read_regs_config.command = READ_STATUS_REG_CMD;
+ *   read_regs_config.data = &data;
+ *   ioctl(fd, I_QSPI_READ_REGS, &read_regs_config);
+ *   return data;
+ * }
+ * \endcode
+ * \hideinitializer
+ */
+#define I_QSPI_READ_REGS _IOCTL(QSPI_IOC_IDENT_CHAR, I_MCU_TOTAL + 2)
+
 typedef struct MCU_PACK {
     u32 command;    /*<! command type*/
     u32 regs_number;    /*<! regs number for read*/
     u8 * data;      /*<! read data */
 } qspi_write_regs_config_t;
 
-#define I_QSPI_ADDR_COMMAND _IOCTL(QSPI_IOC_IDENT_CHAR, I_MCU_TOTAL + 1)
-#define I_QSPI_READ_REGS _IOCTL(QSPI_IOC_IDENT_CHAR, I_MCU_TOTAL + 2)
+/*! \brief See details below.
+ * \details This tells the qspi bus to
+ * set a regs from data bus.
+ * The ctl argument to qspi_ioctl() is the
+ * pointer to qspi_write_regs_config_t.
+ *
+ * The following example write two regs 
+ * \code
+ *
+ * u8 status[2];
+ * qspi_attr_t qspi_attr;
+ * status[0] = qspi_read_status_reg(fd);
+ * memset(&qspi_attr,0,sizeof(qspi_attr_t));
+ * qspi_read_regs_config_t read_regs_config;
+ * qspi_write_regs_config_t write_regs_config;
+ * read_regs_config.data = &status[1];
+ * read_regs_config.command = READ_CFG_REG_CMD;
+ * read_regs_config.regs_number = 1;
+ * ioctl(fd, I_QSPI_READ_REGS, &read_regs_config);
+ * qspi_write_enable(fd);
+ * dummy_cycles = (u8)(dummy_cycles << 6) & QSPI_CR_NB_DUMMY;
+ * status[1] &= ~QSPI_CR_NB_DUMMY;
+ * status[1] |=dummy_cycles;
+ * strenght &= QSPI_CR_ODS;
+ * status[1] &= ~QSPI_CR_ODS;
+ * status[1] |=strenght;
+ * write_regs_config.data = &status[0];
+ * write_regs_config.command = WRITE_STATUS_CFG_REG_CMD;
+ * write_regs_config.regs_number = 2;
+ * ioctl(fd, I_QSPI_WRITE_REGS, &write_regs_config);
+ * u16 i =10000;
+ * while(i--){};
+ * ioctl(fd, I_QSPI_READ_REGS, &read_regs_config);
+ * return 0;
+ * \endcode
+ * \hideinitializer
+ */
 #define I_QSPI_WRITE_REGS _IOCTL(QSPI_IOC_IDENT_CHAR, I_MCU_TOTAL + 3)
 #define I_QSPI_TOTAL 4
 
