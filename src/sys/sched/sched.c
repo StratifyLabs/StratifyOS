@@ -240,6 +240,7 @@ void root_set_scheduling_param(void * args){
         //Issue #161 -- need to set the effective priority -- not just the prio ceiling
         task_set_priority(id, sos_sched_table[id].attr.schedparam.sched_priority);
 
+		  //this won't become effective until the next time the task is run because the RR timer is currently active
         if ( p->policy == SCHED_FIFO ){
             task_assert_fifo(id);
         } else {

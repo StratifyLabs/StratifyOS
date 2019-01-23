@@ -426,7 +426,7 @@ void switch_contexts(){
 
 void task_root_switch_context(void * args){
 	sos_task_table[task_get_current()].rr_time = SysTick->VAL; //save the RR time from the SYSTICK
-	SCB->ICSR |= (1<<28);
+	SCB->ICSR |= (1<<28); //set the pend SV interrupt pending -- causes mcu_core_pendsv_handler() to execute when current interrupt exits
 }
 
 void task_check_count_flag(){

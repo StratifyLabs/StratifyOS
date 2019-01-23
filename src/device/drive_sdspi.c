@@ -31,7 +31,7 @@
 #include "mcu/debug.h"
 #include "mcu/wdt.h"
 
-#include "device/sd_spi.h"
+#include "device/drive_sdspi.h"
 #include "mcu/core.h"
 #include "cortexm/task.h"
 

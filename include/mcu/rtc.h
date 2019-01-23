@@ -42,6 +42,10 @@ typedef struct {
 	rtc_time_t time;
 } rtc_event_t;
 
+typedef struct {
+	rtc_attr_t attr;
+} rtc_config_t;
+
 int mcu_rtc_open(const devfs_handle_t * handle) MCU_ROOT_CODE;
 int mcu_rtc_read(const devfs_handle_t * handle, devfs_async_t * rop) MCU_ROOT_CODE;
 int mcu_rtc_write(const devfs_handle_t * handle, devfs_async_t * wop) MCU_ROOT_CODE;
