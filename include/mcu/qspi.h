@@ -46,10 +46,7 @@ typedef struct MCU_PACK {
 	DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, getinfo); \
 	DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, setattr); \
     DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, setaction);\
-    DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, command);\
-    DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, addr_command);\
-    DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, read_regs);\
-    DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, write_regs)
+    DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, command)
 
 #define MCU_QSPI_DRIVER_DECLARATION(variant) \
 	DEVFS_DRIVER_DECLARTION(variant); \
