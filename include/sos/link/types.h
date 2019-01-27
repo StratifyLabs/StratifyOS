@@ -272,7 +272,7 @@ typedef struct MCU_PACK {
 struct link_dirent {
 	u32 d_ino;
 	char d_name[LINK_NAME_MAX];
-};
+} MCU_PACK;
 
 struct link_stat {
 	u32 st_dev;
@@ -286,7 +286,7 @@ struct link_stat {
 	u32 st_ctime_;
 	u32 st_blksize;
 	u32 st_blocks;
-};
+} MCU_PACK;
 
 #define LINK_NOTIFY_ID_DEVICE_WRITE 0x101
 #define LINK_NOTIFY_ID_DEVICE_READ 0x100
@@ -298,7 +298,7 @@ struct link_stat {
 struct link_timespec {
 	u32	tv_sec;
 	u32 tv_nsec;
-};
+} MCU_PACK;
 
 
 typedef struct MCU_PACK {

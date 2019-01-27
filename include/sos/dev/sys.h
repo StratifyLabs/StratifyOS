@@ -42,18 +42,26 @@ extern "C" {
 #endif
 
 
-#define SYS_VERSION (0x030100)
+#define SYS_VERSION (0x030200)
 #define SYS_IOC_CHAR 's'
 
 enum {
-	SYS_FLAG_IS_STDIO_FIFO /*! Indicates STDIO are independent FIFOs */ = (1<<0),
-	SYS_FLAG_IS_STDIO_VCP /*! Deprecated */ = (1<<1),
-	SYS_FLAG_IS_WDT_DISABLED /*! Disables the WDT */ = (1<<2),
-	SYS_FLAG_IS_REQUEST /*! Deprecated */ = (1<<3),
-	SYS_FLAG_IS_TRACE /*! Deprecated */ = (1<<4),
-	SYS_FLAG_IS_STDIO_CFIFO /*! STDIO is a with channels 0:stdout 1:stdin 2: stderr */ = (1<<5),
-	SYS_FLAG_IS_STDIO_CFIFO_SHARE_OUTERR /*! Used with SYS_FLAG_IS_STDIO_CFIFO to indicate stderr and stdout are the same channel (0) */ = (1<<6),
-	SYS_FLAG_IS_ACTIVE_ON_IDLE /*! Don't stop the CPU when the system is idle */ = (1<<7)
+	SYS_FLAG_IS_STDIO_FIFO /*! Indicates STDIO are independent FIFOs (board config flag) */ = (1<<0),
+	SYS_FLAG_IS_STDIO_VCP /*! Deprecated (board config flag) */ = (1<<1),
+	SYS_FLAG_IS_WDT_DISABLED /*! Disables the WDT (board config flag) */ = (1<<2),
+	SYS_FLAG_IS_REQUEST /*! Deprecated (board config flag) */ = (1<<3),
+	SYS_FLAG_IS_TRACE /*! Deprecated (board config flag) */ = (1<<4),
+	SYS_FLAG_IS_STDIO_CFIFO /*! STDIO is a with channels 0:stdout 1:stdin 2: stderr (board config flag) */ = (1<<5),
+	SYS_FLAG_IS_STDIO_CFIFO_SHARE_OUTERR /*! Used with SYS_FLAG_IS_STDIO_CFIFO to indicate stderr and stdout are the same channel (0) (board config flag) */ = (1<<6),
+	SYS_FLAG_IS_ACTIVE_ON_IDLE /*! Don't stop the CPU when the system is idle (board config flag) */ = (1<<7)
+};
+
+enum {
+	SYS_FLAG_SET_MEMORY_REGION = (1<<0),
+	SYS_FLAG_IS_READ_ALLOWED = (1<<1),
+	SYS_FLAG_IS_WRITE_ALLOWED = (1<<2),
+	SYS_FLAG_IS_FLASH = (1<<3),
+	SYS_FLAG_IS_EXTERNAL = (1<<4)
 };
 
 typedef struct MCU_PACK {
@@ -118,8 +126,12 @@ typedef struct MCU_PACK {
 } sys_id_t;
 
 typedef struct MCU_PACK {
-	u32 o_flags;
-	u32 resd[8];
+	u32 o_flags /*! Flags used with I_SYS_SETATTR */;
+	u32 address;
+	u32 size;
+	u16 region;
+	u16 resd16;
+	u32 resd[5];
 } sys_attr_t;
 
 /*! \brief Task Attributes

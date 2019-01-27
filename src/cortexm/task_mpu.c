@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 #include "task_local.h"
@@ -28,40 +28,40 @@ int task_mpu_calc_protection(task_memories_t * mem);
 
 int task_validate_memory(void * target, int size){
 
-    //most likely
-    if( is_part_of_memory(target, size, &sos_task_table[task_get_current()].mem.data) ){
-        return 0;
-    }
+	//most likely
+	if( is_part_of_memory(target, size, &sos_task_table[task_get_current()].mem.data) ){
+		return 0;
+	}
 
-    //next most likely
-    if( is_part_of_memory(target, size, &sos_task_table[task_get_current()].mem.code) ){
-        return 0;
-    }
+	//next most likely
+	if( is_part_of_memory(target, size, &sos_task_table[task_get_current()].mem.code) ){
+		return 0;
+	}
 
-    //part of shared kernel memory?
-    if( is_part_of_memory(target, size, &sos_task_table[0].mem.data) ){
-        return 0;
-    }
+	//part of shared kernel memory?
+	if( is_part_of_memory(target, size, &sos_task_table[0].mem.data) ){
+		return 0;
+	}
 
-    //part of kernel code (const data may be read)
-    if( is_part_of_memory(target, size, &sos_task_table[0].mem.code) ){
-        return 0;
-    }
+	//part of kernel code (const data may be read)
+	if( is_part_of_memory(target, size, &sos_task_table[0].mem.code) ){
+		return 0;
+	}
 
 
-    //target and size overflow the memory
-    return -1;
+	//target and size overflow the memory
+	return -1;
 }
 
 int is_part_of_memory(void * target, int size, volatile task_memory_t * task_memory){
-    u32 task_address = (u32)mpu_addr((u32)task_memory->addr);
-    u32 task_size = mpu_size(task_memory->size);
-    u32 target_address = (u32)target;
-    u32 target_size = (u32)size;
-    if( (target_address >= task_address) && (target_address+target_size <= task_address + task_size) ){
-        return 1;
-    }
-    return 0;
+	u32 task_address = (u32)mpu_addr((u32)task_memory->addr);
+	u32 task_size = mpu_size(task_memory->size);
+	u32 target_address = (u32)target;
+	u32 target_size = (u32)size;
+	if( (target_address >= task_address) && (target_address+target_size <= task_address + task_size) ){
+		return 1;
+	}
+	return 0;
 }
 
 int task_init_mpu(void * system_memory, int system_memory_size){
@@ -126,14 +126,14 @@ int task_root_set_stackguard(int tid, void * stackaddr, int stacksize){
 		newaddr = (newaddr & ~(stacksize - 1)) + stacksize;
 
 		err = mpu_calc_region(
-				TASK_APPLICATION_STACK_GUARD_REGION,
-				(void*)newaddr,
-				stacksize,
-				MPU_ACCESS_PRW,
-				MPU_MEMORY_SRAM,
-				false,
-				&rbar,
-				&rasr);
+					TASK_APPLICATION_STACK_GUARD_REGION,
+					(void*)newaddr,
+					stacksize,
+					MPU_ACCESS_PRW,
+					MPU_MEMORY_SRAM,
+					false,
+					&rbar,
+					&rasr);
 
 		if ( err ){
 			return err;
@@ -165,44 +165,44 @@ int init_os_memory_protection(task_memories_t * os_mem){
 
 	//Make OS System memory read-only -- region 0 -- highest priority
 	err = mpu_enable_region(
-			TASK_SYSTEM_STACK_MPU_REGION,
-			&_sys,
-			(char*)&_esys - (char*)&_sys,
-			MPU_ACCESS_PRW_UR,
-			MPU_MEMORY_SRAM,
-			false
-	);
+				TASK_SYSTEM_STACK_MPU_REGION,
+				&_sys,
+				(char*)&_esys - (char*)&_sys,
+				MPU_ACCESS_PRW_UR,
+				MPU_MEMORY_SRAM,
+				0
+				);
 	if ( err < 0 ){
-        mcu_debug_log_error(MCU_DEBUG_SYS, "Failed to init OS read-only 0x%lX to 0x%lX (%d)", (u32)&_sys, (u32)&_esys, err);
+		mcu_debug_log_error(MCU_DEBUG_SYS, "Failed to init OS read-only 0x%lX to 0x%lX (%d)", (u32)&_sys, (u32)&_esys, err);
 		return err;
 	}
 
 
 	//Make the OS flash executable and readable -- region 3
 	err = mpu_enable_region(
-			TASK_SYSTEM_CODE_MPU_REGION,
-			os_mem->code.addr,
-			os_mem->code.size,
-			MPU_ACCESS_PR_UR,
-			MPU_MEMORY_FLASH,
-			true
-	);
+				TASK_SYSTEM_CODE_MPU_REGION,
+				os_mem->code.addr,
+				os_mem->code.size,
+				MPU_ACCESS_PR_UR,
+				MPU_MEMORY_FLASH,
+				1
+				);
 	if ( err < 0 ){
-        mcu_debug_log_error(MCU_DEBUG_SYS, "Failed to init OS flash 0x%lX -> 0x%ld bytes (%d)", (u32)os_mem->code.addr, (u32)os_mem->code.size, err);
+		mcu_debug_log_error(MCU_DEBUG_SYS, "Failed to init OS flash 0x%lX -> 0x%ld bytes (%d)", (u32)os_mem->code.addr, (u32)os_mem->code.size, err);
 		return err;
 	}
 
 	//Make the OS shared memory R/W -- region 5
 	err = mpu_enable_region(
-			TASK_SYSTEM_DATA_MPU_REGION,
-			os_mem->data.addr,
-			os_mem->data.size,
-			MPU_ACCESS_PRW_URW,
-			MPU_MEMORY_SRAM,
-			false
-	);
+				TASK_SYSTEM_DATA_MPU_REGION,
+				os_mem->data.addr,
+				os_mem->data.size,
+				MPU_ACCESS_PRW_URW,
+				MPU_MEMORY_SRAM,
+				0
+				);
 	if ( err < 0 ){
-        mcu_debug_log_error(MCU_DEBUG_SYS, "Failed to init shared mem 0x%lX -> 0x%lX bytes (%d)", (u32)os_mem->data.addr, (u32)os_mem->data.size, err);
+		mcu_debug_log_error(MCU_DEBUG_SYS, "Failed to init shared mem 0x%lX -> 0x%lX bytes (%d)", (u32)os_mem->data.addr, (u32)os_mem->data.size, err);
 		return err;
 	}
 
@@ -225,15 +225,15 @@ int task_mpu_calc_protection(task_memories_t * mem){
 
 	//Region 6
 	err = mpu_calc_region(
-			TASK_APPLICATION_CODE_MPU_REGION,
-			mem->code.addr,
-			mem->code.size,
-			MPU_ACCESS_PR_UR,
-			mem_type,
-			true,
-			&rbar,
-			&rasr
-	);
+				TASK_APPLICATION_CODE_MPU_REGION,
+				mem->code.addr,
+				mem->code.size,
+				MPU_ACCESS_PR_UR,
+				mem_type,
+				true,
+				&rbar,
+				&rasr
+				);
 
 	if ( err < 0 ){
 		return err;
@@ -244,15 +244,15 @@ int task_mpu_calc_protection(task_memories_t * mem){
 
 	//Region 7
 	err = mpu_calc_region(
-			TASK_APPLICATION_DATA_MPU_REGION,
-			mem->data.addr,
-			mem->data.size,
-			MPU_ACCESS_PRW_URW,
-			MPU_MEMORY_SRAM,
-			false,
-			&rbar,
-			&rasr
-	);
+				TASK_APPLICATION_DATA_MPU_REGION,
+				mem->data.addr,
+				mem->data.size,
+				MPU_ACCESS_PRW_URW,
+				MPU_MEMORY_SRAM,
+				false,
+				&rbar,
+				&rasr
+				);
 
 	if ( err < 0 ){
 		return err;

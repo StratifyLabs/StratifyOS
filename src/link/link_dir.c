@@ -162,24 +162,20 @@ int link_readdir_r(link_transport_mdriver_t * driver, int dirp, struct link_dire
 	link_reply_t reply;
 	int len;
 
-	if ( driver == NULL ){
-		return -1;
-	}
+	if ( driver == NULL ){ return -1; }
+	if ( result != NULL ){ *result = NULL; }
 
 	op.readdir.cmd = LINK_CMD_READDIR;
 	op.readdir.dirp = dirp;
-
-
-	if ( result != NULL ){
-		*result = NULL;
-	}
 
 	link_debug(LINK_DEBUG_MESSAGE, "Write op");
 	if (link_transport_masterwrite(driver, &op, sizeof(link_readdir_t)) < 0){
 		return -1;
 	}
 
-	link_debug(LINK_DEBUG_MESSAGE, "Read reply");
+	reply.err = 0;
+	reply.err_number = 0;
+	link_debug(LINK_DEBUG_MESSAGE, "Read reply %ld", sizeof(reply));
 	if (link_transport_masterread(driver, &reply, sizeof(reply)) < 0){
 		return -1;
 	}
@@ -189,6 +185,7 @@ int link_readdir_r(link_transport_mdriver_t * driver, int dirp, struct link_dire
 		link_debug(LINK_DEBUG_WARNING, "Failed to readdir (%d)", link_errno);
 		return reply.err;
 	}
+
 
 	//Read the bulk in buffer for the result of the read
 	link_debug(LINK_DEBUG_MESSAGE, "Read link dirent");
