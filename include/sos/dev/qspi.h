@@ -49,19 +49,25 @@ extern "C" {
 
 typedef enum {
 	QSPI_FLAG_SET_MASTER /*! Configure the QSPI as master */ = (1<<0),
-	QSPI_FLAG_READ_MEM_MAPPED_MODE /*! Configure the QSPI as mem mapped mode(read only)*/ = (1<<1),
-	QSPI_FLAG_CLK_HIGH_WHILE_CS /*!<Clk goes high while nCS is released, else low*/ = (1<<2),
-	QSPI_FLAG_FLASH_ID_2 /*!<use flash 2, else 1*/= (1<<3),
-	QSPI_FLAG_INSTRUCTION_1_LINE/*!<write command use one line instead 4*/ = (1<<7),
-	QSPI_FLAG_INSTRUCTION_4_LINE/*!<write command use one line instead 4*/ = (1<<7),
-	QSPI_FLAG_ADDRESS_8_BITS    /*!<8-bit address, default 32*/= (1<<8),
-	QSPI_FLAG_ADDRESS_16_BITS   /*!<16-bit address, default 32*/ = (1<<9),
-	QSPI_FLAG_ADDRESS_24_BITS   /*!<24-bit address, default 32*/ = (1<<10),
-	QSPI_FLAG_ADDRESS_32_BITS   /*!<24-bit address, default 32*/ = (1<<10),
-	QSPI_FLAG_ADDRESS_1_LINE /*!<use addressed command*/ = (1<<12),
-	QSPI_FLAG_ADDRESS_4_LINES /*!<use addressed command*/ = (1<<12),
-	QSPI_FLAG_DATA_1_LINE /*!<use addressed command*/ = (1<<13),
-	QSPI_FLAG_DATA_4_LINES /*!<use addressed command*/ = (1<<13),
+    QSPI_FLAG_IS_READ_MEM_MAPPED_MODE /*! Configure the QSPI as mem mapped mode(read only)*/ = (1<<1),
+    QSPI_FLAG_IS_CLK_HIGH_WHILE_CS /*!<Clk goes high while nCS is released, else low*/ = (1<<2),
+    QSPI_FLAG_IS_FLASH_ID_2 /*!<use flash 2, else 1*/= (1<<3),
+    QSPI_FLAG_IS_INSTRUCTION_1_LINE/*!<write command use one line instead 4*/ = (1<<4),
+    QSPI_FLAG_IS_INSTRUCTION_4_LINE/*!<write command use one line instead 4*/ = (1<<5),
+    QSPI_FLAG_IS_ADDRESS_8_BITS    /*!<8-bit address, default 32*/= (1<<6),
+    QSPI_FLAG_IS_ADDRESS_16_BITS   /*!<16-bit address, default 32*/ = (1<<7),
+    QSPI_FLAG_IS_ADDRESS_24_BITS   /*!<24-bit address, default 32*/ = (1<<8),
+    QSPI_FLAG_IS_ADDRESS_32_BITS   /*!<24-bit address, default 32*/ = (1<<9),
+    QSPI_FLAG_IS_ADDRESS_1_LINE /*!<use addressed command*/ = (1<<10),
+    QSPI_FLAG_IS_ADDRESS_4_LINES /*!<use addressed command*/ = (1<<11),
+    QSPI_FLAG_IS_DATA_1_LINE /*!<use addressed command*/ = (1<<12),
+    QSPI_FLAG_IS_DATA_4_LINES /*!<use addressed command*/ = (1<<13),
+    QSPI_FLAG_READ_REGISTER /*!<use with QSPI_FLAG_IS_REGISTER_WIDTH_*/= (1<<14),
+    QSPI_FLAG_WRITE_REGISTER /*!<use with QSPI_FLAG_IS_REGISTER_WIDTH_*/= (1<<15),
+    QSPI_FLAG_IS_REGISTER_WIDTH_8/*!<use with QSPI_FLAG_READ_REGISTER or QSPI_FLAG_WRITE_REGISTER*/=(1<<16),
+    QSPI_FLAG_IS_REGISTER_WIDTH_16/*!<use with QSPI_FLAG_READ_REGISTER or QSPI_FLAG_WRITE_REGISTER*/=(1<<17),
+    QSPI_FLAG_IS_REGISTER_WIDTH_24/*!<use with QSPI_FLAG_READ_REGISTER or QSPI_FLAG_WRITE_REGISTER*/=(1<<18),
+    QSPI_FLAG_IS_REGISTER_WIDTH_32/*!<use with QSPI_FLAG_READ_REGISTER or QSPI_FLAG_WRITE_REGISTER*/=(1<<19)
 } qspi_flag_t;
 
 typedef struct MCU_PACK {
@@ -93,6 +99,8 @@ typedef struct MCU_PACK {
 	u32 mem_mapped_read_instruction; /*! use for read operations in mem mapped mode*/
 	u32 write_instruction;/*! use for write operations */
 	u32 dummy_cycle;/*! number dummy cycles for read operations*/
+    u32 command;/*! use for send command*/
+    u8 * data;/*! data used with command*/
 	u32 resd[8];/*! */
 } qspi_attr_t;
 
@@ -124,115 +132,7 @@ typedef struct MCU_PACK {
  */
 #define I_QSPI_COMMAND _IOCTL(QSPI_IOC_IDENT_CHAR, I_MCU_TOTAL + 0)
 
-typedef struct MCU_PACK {
-	u32 command;    /*<! command type*/
-	u32 address;    /*<! address will use at command*/
-} qspi_addr_command_config_t;
-
-/*! \brief See details below.
- * \details This tells the qspi bus to
- * set a command and address from data to bus.
- * The ctl argument to qspi_ioctl() is the
- * pointer to qspi_addr_command_config_t
- *
- * The following example erase space
- * \code
- *
- *int qspi_erase_block(int fd,u32 block_address){
- *   int result=0;
- *   qspi_addr_command_config_t qspi_attr;
- *   if (qspi_write_enable(fd) ==0){
- *       u8 status_reg = QSPI_SR_WIP;
- *       qspi_attr.command = SUBSECTOR_ERASE_4_BYTE_ADDR_CMD;
- *       qspi_attr.address = block_address;
- *       ioctl(fd, I_QSPI_ADDR_COMMAND, &qspi_attr);
- *       status_reg = qspi_read_status_reg(fd);
- *       while(status_reg & QSPI_SR_WIP){
- *           status_reg = qspi_read_status_reg(fd);
- *       }
- *   }else{
- *       result = -1;
- *   }
- *   return result;
- *}
- *
- * \endcode
- * \hideinitializer
- */
-#define I_QSPI_ADDR_COMMAND _IOCTL(QSPI_IOC_IDENT_CHAR, I_MCU_TOTAL + 1)
-typedef struct MCU_PACK {
-	u32 command;    /*<! command type*/
-	u32 regs_number;    /*<! regs number for read*/
-	u8 * data;      /*<! read data */
-} qspi_read_regs_config_t;
-
-/*! \brief See details below.
- * \details This tells the qspi bus to
- * for read regs to data bus.
- * The ctl argument to qspi_ioctl() is the
- *  pointer to qspi_read_regs_config_t
- *
- * The following example read status regs
- * \code
- * u8 qspi_read_status_reg(int fd){
- *   u8 data = 0;
- *   qspi_read_regs_config_t read_regs_config;
- *   read_regs_config.regs_number = 1;
- *   read_regs_config.command = READ_STATUS_REG_CMD;
- *   read_regs_config.data = &data;
- *   ioctl(fd, I_QSPI_READ_REGS, &read_regs_config);
- *   return data;
- * }
- * \endcode
- * \hideinitializer
- */
-#define I_QSPI_READ_REGS _IOCTL(QSPI_IOC_IDENT_CHAR, I_MCU_TOTAL + 2)
-
-typedef struct MCU_PACK {
-	u32 command;    /*<! command type*/
-	u32 regs_number;    /*<! regs number for read*/
-	u8 * data;      /*<! read data */
-} qspi_write_regs_config_t;
-
-/*! \brief See details below.
- * \details This tells the qspi bus to
- * set a regs from data bus.
- * The ctl argument to qspi_ioctl() is the
- * pointer to qspi_write_regs_config_t.
- *
- * The following example write two regs
- * \code
- *
- * u8 status[2];
- * qspi_attr_t qspi_attr;
- * status[0] = qspi_read_status_reg(fd);
- * memset(&qspi_attr,0,sizeof(qspi_attr_t));
- * qspi_read_regs_config_t read_regs_config;
- * qspi_write_regs_config_t write_regs_config;
- * read_regs_config.data = &status[1];
- * read_regs_config.command = READ_CFG_REG_CMD;
- * read_regs_config.regs_number = 1;
- * ioctl(fd, I_QSPI_READ_REGS, &read_regs_config);
- * qspi_write_enable(fd);
- * dummy_cycles = (u8)(dummy_cycles << 6) & QSPI_CR_NB_DUMMY;
- * status[1] &= ~QSPI_CR_NB_DUMMY;
- * status[1] |=dummy_cycles;
- * strenght &= QSPI_CR_ODS;
- * status[1] &= ~QSPI_CR_ODS;
- * status[1] |=strenght;
- * write_regs_config.data = &status[0];
- * write_regs_config.command = WRITE_STATUS_CFG_REG_CMD;
- * write_regs_config.regs_number = 2;
- * ioctl(fd, I_QSPI_WRITE_REGS, &write_regs_config);
- * u16 i =10000;
- * while(i--){};
- * ioctl(fd, I_QSPI_READ_REGS, &read_regs_config);
- * return 0;
- * \endcode
- * \hideinitializer
- */
-#define I_QSPI_WRITE_REGS _IOCTL(QSPI_IOC_IDENT_CHAR, I_MCU_TOTAL + 3)
-#define I_QSPI_TOTAL 4
+#define I_QSPI_TOTAL 1
 
 #ifdef __cplusplus
 }
