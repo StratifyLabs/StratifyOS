@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 
@@ -131,9 +131,9 @@ int appfs_init(const void * cfg){
 			}
 
 			appfs_ram_setrange(buf,
-					root_file_info.pageinfo.num,
-					root_file_info.fileinfo.exec.ram_size,
-					APPFS_MEMPAGETYPE_SYS);
+									 root_file_info.pageinfo.num,
+									 root_file_info.fileinfo.exec.ram_size,
+									 APPFS_MEMPAGETYPE_SYS);
 		}
 	}
 	cortexm_svcall(appfs_ram_root_saveusage, buf);
@@ -157,7 +157,7 @@ int appfs_startup(const void * cfg){
 	for(i=0; i < info.flash_pages; i++){
 		if (appfs_util_getfileinfo(&root_file_info, dev, i, MEM_FLAG_IS_FLASH, NULL) == APPFS_MEMPAGETYPE_USER ){
 			if ( (appfs_util_isexecutable(&root_file_info.fileinfo) == true) &&
-					(root_file_info.fileinfo.exec.o_flags & APPFS_FLAG_IS_STARTUP) ){
+				  (root_file_info.fileinfo.exec.o_flags & APPFS_FLAG_IS_STARTUP) ){
 
 				//start the process
 				mem.code.addr = (void*)root_file_info.fileinfo.exec.code_start;
@@ -166,13 +166,13 @@ int appfs_startup(const void * cfg){
 				mem.data.size = root_file_info.fileinfo.exec.ram_size;
 
 				if ( scheduler_create_process((void*)root_file_info.fileinfo.exec.startup,
-						0,
-						&mem,
-						(void*)root_file_info.fileinfo.exec.ram_start) >= 0 ){
+														0,
+														&mem,
+														(void*)root_file_info.fileinfo.exec.ram_start) >= 0 ){
 					started++;
-                    mcu_debug_log_info(MCU_DEBUG_APPFS, "Started %s", root_file_info.fileinfo.hdr.name);
+					mcu_debug_log_info(MCU_DEBUG_APPFS, "Started %s", root_file_info.fileinfo.hdr.name);
 				} else {
-                    mcu_debug_log_info(MCU_DEBUG_APPFS, "Failed to start %s", root_file_info.fileinfo.hdr.name);
+					mcu_debug_log_info(MCU_DEBUG_APPFS, "Failed to start %s", root_file_info.fileinfo.hdr.name);
 				}
 
 			}
@@ -210,22 +210,22 @@ int appfs_open(const void * cfg, void ** handle, const char * path, int flags, i
 
 	ret = 0;
 	switch(path_type){
-	case ANALYZE_PATH_INSTALL:
-		if( (flags & O_ACCMODE) != O_WRONLY ){
-            ret = SYSFS_SET_RETURN(EINVAL);
-		}
-		h->is_install = 1;
-		break;
+		case ANALYZE_PATH_INSTALL:
+			if( (flags & O_ACCMODE) != O_WRONLY ){
+				ret = SYSFS_SET_RETURN(EINVAL);
+			}
+			h->is_install = 1;
+			break;
 
-	case ANALYZE_PATH_RAM:
-	case ANALYZE_PATH_FLASH:
-		h->is_install = 0;
-		if( (flags & O_ACCMODE) != O_RDONLY ){
-            ret = SYSFS_SET_RETURN(EROFS);
-		}
-		break;
-	default:
-        ret = SYSFS_SET_RETURN(ENOENT);
+		case ANALYZE_PATH_RAM:
+		case ANALYZE_PATH_FLASH:
+			h->is_install = 0;
+			if( (flags & O_ACCMODE) != O_RDONLY ){
+				ret = SYSFS_SET_RETURN(EROFS);
+			}
+			break;
+		default:
+			ret = SYSFS_SET_RETURN(ENOENT);
 	}
 
 	if( ret == 0 ){
@@ -239,7 +239,7 @@ int appfs_open(const void * cfg, void ** handle, const char * path, int flags, i
 				h->type.reg.size = size;
 				h->type.reg.mode = args.fileinfo.hdr.mode;
 			} else { //the file does not already exist
-                ret = SYSFS_SET_RETURN(ENOENT);
+				ret = SYSFS_SET_RETURN(ENOENT);
 			}
 		}
 	}
@@ -268,12 +268,12 @@ int appfs_unlink(const void* cfg, const char * path){
 
 	//sys and free files cannot be deleted
 	if ( is_sys(name) || is_free(name) ){
-        return SYSFS_SET_RETURN(ENOTSUP);
+		return SYSFS_SET_RETURN(ENOTSUP);
 	}
 
 	//see if path exists
 	if ( appfs_util_lookupname(cfg, name, &args, mem_type, NULL) < 0 ){
-        return SYSFS_SET_RETURN(ENOENT);
+		return SYSFS_SET_RETURN(ENOENT);
 	}
 
 
@@ -301,7 +301,7 @@ int appfs_unlink(const void* cfg, const char * path){
 		//The Ram size is the code size + the data size round up to the next power of 2 to account for memory protection
 		tmp = mpu_getnextpowerof2(args.fileinfo.exec.code_size + args.fileinfo.exec.data_size);
 		if ( appfs_ram_setusage(args.pageinfo.num, tmp, APPFS_MEMPAGETYPE_FREE) < 0 ){
-            return SYSFS_SET_RETURN(EIO);
+			return SYSFS_SET_RETURN(EIO);
 		}
 	}
 
@@ -312,11 +312,11 @@ int appfs_unlink(const void* cfg, const char * path){
 		args.pageinfo.o_flags = MEM_FLAG_IS_QUERY;
 
 		if ( appfs_util_getpageinfo(cfg, &args.pageinfo) ){
-            return SYSFS_SET_RETURN(EIO);
+			return SYSFS_SET_RETURN(EIO);
 		}
 
 		if ( appfs_ram_setusage(args.pageinfo.num, args.fileinfo.exec.ram_size, APPFS_MEMPAGETYPE_FREE) < 0 ){
-            return SYSFS_SET_RETURN(EIO);
+			return SYSFS_SET_RETURN(EIO);
 		}
 	}
 
@@ -364,54 +364,54 @@ int appfs_stat(const void* cfg, const char * path, struct stat * st){
 	const char * name;
 
 	if ( (path_type = analyze_path(path, &name, &mem_type)) < 0 ){
-        return SYSFS_SET_RETURN(ENOENT);
+		return SYSFS_SET_RETURN(ENOENT);
 	}
 
 	switch(path_type){
-	case ANALYZE_PATH_ROOT:
-		st->st_size = 0;
-		st->st_blocks = 1;
-		st->st_uid = 0;
-		st->st_gid = 0;
-		st->st_mode = S_IFDIR | 0777;
-		return 0;
-	case ANALYZE_PATH_INSTALL:
-		st->st_size = 0;
-		st->st_blocks = 1;
-		st->st_uid = 0;
-		st->st_gid = 0;
-		handle.is_install = true;
-		break;
-	case ANALYZE_PATH_FLASH_DIR:
-		st->st_size = 0;
-		st->st_blocks = 1;
-		st->st_uid = 0;
-		st->st_gid = 0;
-		st->st_mode = S_IFDIR | 0777;
-		return 0;
-	case ANALYZE_PATH_RAM_DIR:
-		st->st_size = 0;
-		st->st_blocks = 1;
-		st->st_uid = 0;
-		st->st_gid = 0;
-		st->st_mode = S_IFDIR | 0777;
-		return 0;
+		case ANALYZE_PATH_ROOT:
+			st->st_size = 0;
+			st->st_blocks = 1;
+			st->st_uid = 0;
+			st->st_gid = 0;
+			st->st_mode = S_IFDIR | 0777;
+			return 0;
+		case ANALYZE_PATH_INSTALL:
+			st->st_size = 0;
+			st->st_blocks = 1;
+			st->st_uid = 0;
+			st->st_gid = 0;
+			handle.is_install = true;
+			break;
+		case ANALYZE_PATH_FLASH_DIR:
+			st->st_size = 0;
+			st->st_blocks = 1;
+			st->st_uid = 0;
+			st->st_gid = 0;
+			st->st_mode = S_IFDIR | 0777;
+			return 0;
+		case ANALYZE_PATH_RAM_DIR:
+			st->st_size = 0;
+			st->st_blocks = 1;
+			st->st_uid = 0;
+			st->st_gid = 0;
+			st->st_mode = S_IFDIR | 0777;
+			return 0;
 
-	case ANALYZE_PATH_RAM:
-	case ANALYZE_PATH_FLASH:
-		handle.is_install = 0;
-		//see if the path matches the name of any pages
-		if ( appfs_util_lookupname(cfg, name, &args, mem_type, &size) < 0 ){
-            return SYSFS_SET_RETURN(ENOENT);
-		}
-		if( args.fileinfo.hdr.mode == 0444 ){
-			size -= sizeof(appfs_file_t);
-		}
-		handle.type.reg.mode = args.fileinfo.hdr.mode;
-		handle.type.reg.size = size;
-		handle.type.reg.beg_addr = args.pageinfo.addr;
-		handle.type.reg.page = args.pageinfo.num;
-		handle.type.reg.o_flags = args.pageinfo.o_flags;
+		case ANALYZE_PATH_RAM:
+		case ANALYZE_PATH_FLASH:
+			handle.is_install = 0;
+			//see if the path matches the name of any pages
+			if ( appfs_util_lookupname(cfg, name, &args, mem_type, &size) < 0 ){
+				return SYSFS_SET_RETURN(ENOENT);
+			}
+			if( args.fileinfo.hdr.mode == 0444 ){
+				size -= sizeof(appfs_file_t);
+			}
+			handle.type.reg.mode = args.fileinfo.hdr.mode;
+			handle.type.reg.size = size;
+			handle.type.reg.beg_addr = args.pageinfo.addr;
+			handle.type.reg.page = args.pageinfo.num;
+			handle.type.reg.o_flags = args.pageinfo.o_flags;
 	}
 
 	return appfs_fstat(cfg, &handle, st);
@@ -467,7 +467,7 @@ int appfs_read(const void * cfg, void * handle, int flags, int loc, void * buf, 
 }
 
 int appfs_write(const void * cfg, void * handle, int flags, int loc, const void * buf, int nbyte){
-    return SYSFS_SET_RETURN(EROFS);
+	return SYSFS_SET_RETURN(EROFS);
 }
 
 
@@ -487,7 +487,7 @@ int appfs_opendir(const void* cfg, void ** handle, const char * path){
 	} else if ( strcmp(path, "ram") == 0 ){
 		*handle = (void*)2;
 	} else {
-        return SYSFS_SET_RETURN(ENOENT);
+		return SYSFS_SET_RETURN(ENOENT);
 	}
 	return 0;
 }
@@ -511,61 +511,61 @@ void root_ioctl(void * args){
 	attr = ctl;
 	switch( request ){
 
-	//INSTALL and CREATE only with with the special .install file
-	case I_APPFS_INSTALL:
-		if( !h->is_install ){
-            a->ret = SYSFS_SET_RETURN(ENOTSUP);
-		} else {
-			a->ret = appfs_util_root_writeinstall(a->cfg, h, attr);
-            mcu_core_invalidate_instruction_cache();
-		}
-		break;
+		//INSTALL and CREATE only with with the special .install file
+		case I_APPFS_INSTALL:
+			if( !h->is_install ){
+				a->ret = SYSFS_SET_RETURN(ENOTSUP);
+			} else {
+				a->ret = appfs_util_root_writeinstall(a->cfg, h, attr);
+				mcu_core_invalidate_instruction_cache();
+			}
+			break;
 
-	case I_APPFS_CREATE:
-		if( !h->is_install ){
-            a->ret = SYSFS_SET_RETURN(ENOTSUP);
-        } else {
-			a->ret = appfs_util_root_create(a->cfg, h, attr);
-            mcu_core_invalidate_data_cache();
-		}
-		break;
+		case I_APPFS_CREATE:
+			if( !h->is_install ){
+				a->ret = SYSFS_SET_RETURN(ENOTSUP);
+			} else {
+				a->ret = appfs_util_root_create(a->cfg, h, attr);
+				mcu_core_invalidate_data_cache();
+			}
+			break;
 
-		//These calls work with the specific applications
-	case I_APPFS_FREE_RAM:
-		if( h->is_install ){
-            a->ret = SYSFS_SET_RETURN(ENOTSUP);
-        } else {
-			a->ret =  appfs_util_root_free_ram(a->cfg, h);
-		}
-		break;
+			//These calls work with the specific applications
+		case I_APPFS_FREE_RAM:
+			if( h->is_install ){
+				a->ret = SYSFS_SET_RETURN(ENOTSUP);
+			} else {
+				a->ret =  appfs_util_root_free_ram(a->cfg, h);
+			}
+			break;
 
-	case I_APPFS_RECLAIM_RAM:
-		if( h->is_install ){
-            a->ret = SYSFS_SET_RETURN(ENOTSUP);
-        } else {
-			a->ret = appfs_util_root_reclaim_ram(a->cfg, h);
-		}
-		break;
+		case I_APPFS_RECLAIM_RAM:
+			if( h->is_install ){
+				a->ret = SYSFS_SET_RETURN(ENOTSUP);
+			} else {
+				a->ret = appfs_util_root_reclaim_ram(a->cfg, h);
+			}
+			break;
 
-	case I_APPFS_GETINFO:
-		if( h->is_install ){
-            a->ret = SYSFS_SET_RETURN(ENOTSUP);
-        } else {
-			f = appfs_util_getfile(h);
-			info->mode = f->hdr.mode;
-			info->o_flags = f->exec.o_flags;
-			info->signature = f->exec.signature;
-			info->version = f->hdr.version;
-			info->ram_size = f->exec.ram_size;
-			memcpy(info->id, f->hdr.id, LINK_NAME_MAX);
-			memcpy(info->name, f->hdr.name, LINK_NAME_MAX);
-			a->ret = 0;
-		}
-		break;
+		case I_APPFS_GETINFO:
+			if( h->is_install ){
+				a->ret = SYSFS_SET_RETURN(ENOTSUP);
+			} else {
+				f = appfs_util_getfile(h);
+				info->mode = f->hdr.mode;
+				info->o_flags = f->exec.o_flags;
+				info->signature = f->exec.signature;
+				info->version = f->hdr.version;
+				info->ram_size = f->exec.ram_size;
+				memcpy(info->id, f->hdr.id, LINK_NAME_MAX);
+				memcpy(info->name, f->hdr.name, LINK_NAME_MAX);
+				a->ret = 0;
+			}
+			break;
 
-	default:
-        a->ret = SYSFS_SET_RETURN(EINVAL);
-        break;
+		default:
+			a->ret = SYSFS_SET_RETURN(EINVAL);
+			break;
 	}
 
 }
@@ -587,7 +587,7 @@ static int readdir_mem(const void* cfg, int loc, struct dirent * entry, int type
 	root_load_fileinfo_t args;
 
 	if ( appfs_util_getfileinfo(&args, cfg, loc, type, NULL) < 0 ){
-        return SYSFS_SET_RETURN(ENOENT);
+		return SYSFS_SET_RETURN(ENOENT);
 	}
 
 	strncpy(entry->d_name, args.fileinfo.hdr.name, NAME_MAX);
@@ -598,17 +598,17 @@ static int readdir_mem(const void* cfg, int loc, struct dirent * entry, int type
 
 static int readdir_root(const void * cfg, int loc, struct dirent * entry){
 	switch(loc){
-	case 0:
-		strncpy(entry->d_name, ".install", NAME_MAX);
-		break;
-	case 1:
-		strncpy(entry->d_name, "flash", NAME_MAX);
-		break;
-	case 2:
-		strncpy(entry->d_name, "ram", NAME_MAX);
-		break;
-	default:
-        return SYSFS_SET_RETURN(ENOENT);
+		case 0:
+			strncpy(entry->d_name, ".install", NAME_MAX);
+			break;
+		case 1:
+			strncpy(entry->d_name, "flash", NAME_MAX);
+			break;
+		case 2:
+			strncpy(entry->d_name, "ram", NAME_MAX);
+			break;
+		default:
+			return SYSFS_SET_RETURN(ENOENT);
 	}
 	entry->d_ino = loc;
 	return 0;
@@ -620,14 +620,14 @@ int appfs_readdir_r(const void* cfg, void * handle, int loc, struct dirent * ent
 	int h;
 	h = (int)handle;
 	switch(h){
-	case 0:
-		return readdir_root(cfg, loc, entry);
-	case 1:
-		return readdir_mem(cfg, loc, entry, MEM_FLAG_IS_FLASH);
-	case 2:
-		return readdir_mem(cfg, loc, entry, MEM_FLAG_IS_RAM);
-	default:
-		return -1;
+		case 0:
+			return readdir_root(cfg, loc, entry);
+		case 1:
+			return readdir_mem(cfg, loc, entry, MEM_FLAG_IS_FLASH);
+		case 2:
+			return readdir_mem(cfg, loc, entry, MEM_FLAG_IS_RAM);
+		default:
+			return -1;
 	}
 }
 
