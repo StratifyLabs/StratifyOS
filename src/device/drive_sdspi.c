@@ -154,7 +154,7 @@ int continue_spi_read(void * handle, const mcu_event_t * ignore){
         //the read is complete
         spi_transfer(handle, 0, state->cmd, CMD_FRAME_SIZE); //gobble up the CRC
         checksum = (state->cmd[0] << 8) + state->cmd[1];
-        checksum_calc = mcu_calc_crc16(0x0000, (const uint8_t *)state->buf, (size_t)*(state->nbyte));
+		  checksum_calc = mcu_calc_crc16(0x0000, 0x1021, (const uint8_t *)state->buf, (size_t)*(state->nbyte));
         if( checksum != checksum_calc ){
             *(state->nbyte) = -1;
             err = EINVAL;
@@ -261,7 +261,7 @@ int continue_spi_write(void * handle, const mcu_event_t * ignore){
     uint16_t checksum;
 
     //calculate and write the checksum
-    checksum = mcu_calc_crc16(0x0000, (const uint8_t*)state->buf, *(state->nbyte));
+	 checksum = mcu_calc_crc16(0x0000,  0x1021, (const uint8_t*)state->buf, *(state->nbyte));
 
     //finish the write
     state->cmd[0] = checksum >> 8;
@@ -345,8 +345,10 @@ int drive_sdspi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
     drive_attr_t * attr = ctl;
     drive_sdspi_r_t resp;
     u32 o_flags;
-    spi_attr_t spi_attr;
-    int timeout;
+	 int timeout;
+
+	 char spi_config[config->spi_config_size];
+	 spi_attr_t * spi_attr_p = ( spi_attr_t *)spi_config;
 
     u16 erase_size;
     u16 erase_timeout;
@@ -374,10 +376,10 @@ int drive_sdspi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
         if( o_flags & DRIVE_FLAG_INIT ){
             state->flags = 0;
 
-            memcpy(&spi_attr, &(config->spi.attr), sizeof(spi_attr_t));
-            spi_attr.freq = 400000;
+				memcpy(spi_config, &(config->spi), config->spi_config_size);
+				spi_attr_p->freq = 400000;
 
-            if( mcu_spi_setattr(handle, &spi_attr) < 0 ){
+				if( mcu_spi_setattr(handle, spi_config) < 0 ){
                 mcu_debug_printf("SD_SPI: setattr failed\n");
                 return SYSFS_SET_RETURN(EIO);
             }
@@ -396,7 +398,7 @@ int drive_sdspi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 
             resp.r1 = exec_cmd_r1(handle, SDSPI_CMD0_GO_IDLE_STATE, 0, 0);
             if( resp.r1.start == 1 ){
-                mcu_debug_printf("SD_SPI: Failed GO IDLE\n");
+					 mcu_debug_printf("SD_SPI: Failed GO IDLE 0x%X\n", resp.r1.u8);
                 return SYSFS_SET_RETURN(EIO);
             }
 
@@ -458,8 +460,9 @@ int drive_sdspi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
                 return SYSFS_SET_RETURN(EIO);
             }
 
-            memcpy(&spi_attr, &(config->spi.attr), sizeof(spi_attr_t));
-            if( mcu_spi_setattr(handle, &spi_attr) < 0 ){
+				//set with default attributes as intended by the system
+				memcpy(spi_config, &(config->spi), config->spi_config_size);
+				if( mcu_spi_setattr(handle, spi_config) < 0 ){
                 mcu_debug_printf("SD_SPI: Failed BITRATE\n");
                 return SYSFS_SET_RETURN(EIO);
             }
@@ -646,7 +649,7 @@ int send_cmd(const devfs_handle_t * handle, uint8_t cmd, uint32_t arg, uint8_t *
     buffer[2] = arg >> 16;
     buffer[3] = arg >> 8;
     buffer[4] = arg;
-    buffer[5] = mcu_calc_crc7(0, buffer, 5);
+	 buffer[5] = mcu_calc_crc7(0, 0x09, buffer, 5);
 
     resp.r1.crc_error = 1;
 
