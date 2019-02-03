@@ -443,7 +443,7 @@ void link_cmd_readdir(link_transport_driver_t * driver, link_data_t * args){
 	lde.d_ino = de.d_ino;
 	strcpy(lde.d_name, de.d_name);
 
-	if( link_transport_slavewrite(driver, &args->reply, sizeof(link_readdir_reply_t), NULL, NULL) < 0 ){
+	if( link_transport_slavewrite(driver, &args->reply, sizeof(link_reply_t), NULL, NULL) < 0 ){
 		return;
 	}
 

@@ -28,6 +28,7 @@ if( ${SOS_BUILD_CONFIG} STREQUAL arm )
 			${SOURCES_PREFIX}/drive_sdio.c
 			${SOURCES_PREFIX}/drive_sdio_dma.c
 			${SOURCES_PREFIX}/drive_sdspi.c
+			${SOURCES_PREFIX}/drive_sdspi_dma.c
 			${SOURCES_PREFIX}/drive_sdssp.c
 			${SOURCES_PREFIX}/switchboard.c
 			${SOURCES_PREFIX}/tty_uart.c

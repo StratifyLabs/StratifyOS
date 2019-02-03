@@ -123,7 +123,7 @@ typedef struct MCU_PACK {
 	u32 resd[8];
 } display_info_t;
 
-#define I_DISPLAY_GETVERSION _IOCTL(DISPLAY_IOC_IDENT_CHAR, I_MCU_GETVERSION)
+#define I_DISPLAY_GETVERSION _IOCTL(DISPLAY_IOC_CHAR, I_MCU_GETVERSION)
 
 
 /*! \details This request gets the attributes of the device.

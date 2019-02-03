@@ -31,6 +31,7 @@
 #include "device/sys.h"
 #include "mcu/debug.h"
 #include "scheduler/scheduler_local.h"
+#include "cortexm/mpu.h"
 
 #include "signal/sig_local.h"
 #include "device/sys.h"
@@ -39,6 +40,7 @@
 extern void mcu_core_hardware_id();
 
 static int read_task(sys_taskattr_t * task);
+static int sys_setattr(const devfs_handle_t * handle, void * ctl);
 
 extern u32 _text;
 
@@ -109,6 +111,11 @@ int sys_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 		case I_SYS_GETBOARDCONFIG:
 			memcpy(ctl, &sos_board_config, sizeof(sos_board_config));
 			return 0;
+
+		case I_SYS_SETATTR:
+			return sys_setattr(handle, ctl);
+
+
 		default:
 			break;
 	}
@@ -164,6 +171,59 @@ int read_task(sys_taskattr_t * task){
 	}
 
 	return ret;
+}
+
+int sys_setattr(const devfs_handle_t * handle, void * ctl){
+	int result;
+	const sys_attr_t * attr = ctl;
+
+	if( attr == 0 ){ return SYSFS_SET_RETURN(EINVAL); }
+
+	u32 o_flags = attr->o_flags;
+
+	if( o_flags & SYS_FLAG_SET_MEMORY_REGION ){
+
+		if( attr->region == TASK_APPLICATION_DATA_USER_REGION_HIGH_PRIORITY ||
+			 attr->region == TASK_APPLICATION_DATA_USER_REGION_LOW_PRIORITY ){
+
+			int type = MPU_MEMORY_SRAM;
+			if( o_flags & SYS_FLAG_IS_FLASH ){
+				type = MPU_MEMORY_FLASH;
+
+			} else if( o_flags & SYS_FLAG_IS_EXTERNAL ){
+				type = MPU_MEMORY_EXTERNAL_SRAM;
+			}
+
+			int access = MPU_ACCESS_PRW;
+			if( (o_flags & SYS_FLAG_IS_READ_ALLOWED) && (o_flags & SYS_FLAG_IS_WRITE_ALLOWED) ){
+				access = MPU_ACCESS_PRW_URW;
+			} else if( o_flags & SYS_FLAG_IS_READ_ALLOWED ){
+				access = MPU_ACCESS_PRW_UR;
+			}
+
+
+			result = mpu_enable_region(
+						attr->region,
+						(void*)attr->address,
+						attr->size,
+						access,
+						type,
+						0);
+
+			if ( result < 0 ){
+				mcu_debug_log_error(MCU_DEBUG_SYS, "Failed to enable memory region 0x%lX to 0x%lX (%d)", attr->address, attr->size, result);
+				return result;
+			}
+
+		} else {
+			return SYSFS_SET_RETURN(EINVAL);
+		}
+
+
+	}
+
+	return 0;
+
 }
 
 

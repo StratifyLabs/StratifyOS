@@ -58,6 +58,10 @@ int link_transport_masterread(link_transport_mdriver_t * driver, void * buf, int
 
 		//callback to handle incoming data as it arrives
 		//copy the valid data to the buffer
+		if( pkt.size + bytes > nbyte ){
+			//if the target device has a bug, this will prevent a seg fault
+			pkt.size = nbyte - bytes;
+		}
 		memcpy(p, pkt.data, pkt.size);
 		bytes += pkt.size;
 		p += pkt.size;

@@ -36,8 +36,10 @@ typedef struct {
 } drive_sdspi_state_t;
 
 typedef struct {
-	spi_config_t spi;
 	mcu_pin_t cs;
+	u32 spi_config_size;
+	spi_config_t spi;
+	//some implementatations may add driver specific data here which is encompassed in spi_config_size
 } drive_sdspi_config_t;
 
 typedef struct MCU_PACK {

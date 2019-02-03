@@ -50,9 +50,19 @@ typedef enum {
 	CRC_FLAG_NONE = 0,
 	CRC_FLAG_ENABLE /*! Enable the CRC */ = (1<<0),
 	CRC_FLAG_DISABLE /*! Disable the CRC */ = (1<<1),
-	CRC_FLAG_IS_32BIT /*! Set in info flags for 32 bit CRC support */ = (1<<2),
-	CRC_FLAG_IS_16BIT /*! Set in info flags for 16 bit CRC support */ = (1<<3),
-	CRC_FLAG_IS_8BIT /*! Set in info flags for 8 bit CRC support */ = (1<<4),
+	CRC_FLAG_IS_32BIT /*! Use a 32-bit CRC */ = (1<<2),
+	CRC_FLAG_IS_16BIT /*! Use a 16-bit CRC */ = (1<<3),
+	CRC_FLAG_IS_8BIT /*! Use a 8-bit CRC */ = (1<<4),
+	CRC_FLAG_IS_7BIT /*! Use a 7-bit CRC */ = (1<<5),
+	CRC_FLAG_IS_INVERT_OUTPUT /*! Invert the output */ = (1<<6),
+	CRC_FLAG_IS_DEFAULT_POLYNOMIAL /*! Use the default polynomial */ = (1<<7),
+	CRC_FLAG_IS_DEFAULT_INTIAL_VALUE /*! Use the default initial value */ = (1<<8),
+	CRC_FLAG_IS_INVERT_INPUT_8BIT /*! Invert the input as bytes */ = (1<<9),
+	CRC_FLAG_IS_INVERT_INPUT_16BIT /*! Invert the input as 16-bit words */ = (1<<10),
+	CRC_FLAG_IS_INVERT_INPUT_32BIT /*! Invert the input as 32-bit words */ = (1<<11),
+	CRC_FLAG_IS_INPUT_32BIT /*! Input data is 32 bit words */ = (1<<12),
+	CRC_FLAG_IS_INPUT_16BIT /*! Input data is 16 bit words */ = (1<<13),
+	CRC_FLAG_IS_INPUT_8BIT /*! Input data is bytes */ = (1<<14),
 } crc_flag_t;
 
 
@@ -60,11 +70,12 @@ typedef struct {
 	u32 o_flags;
 	u32 o_events;
 	u32 polynomial;
+	u32 initial_value;
 	u32 resd[8];
 } crc_info_t;
 
 
-/*! \brief RNG Attributes
+/*! \brief CRC Attributes
  * \details This data structure defines
  * the structure used with I_CRC_SETATTR
  * ioctl requests on the RTC.  It is also used when opening the RTC.
@@ -72,6 +83,8 @@ typedef struct {
 typedef struct MCU_PACK {
 	u32 o_flags /*! Bitmask for setting attributes */;
 	u32 freq /*! Calibration frequency for setting the pre-scalar */;
+	u32 seed;
+	u32 initial_value;
 	u32 resd[8];
 } crc_attr_t;
 
