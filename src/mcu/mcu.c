@@ -106,7 +106,7 @@ int mcu_set_pin_assignment(
 			if( post_configure_pin ){
 				post_configure_pin(pin,arg);
 			}
-		}
+        }
 	}
 	return 0;
 }

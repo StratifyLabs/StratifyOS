@@ -93,8 +93,7 @@ typedef struct MCU_PACK {
 	u32 o_flags /*! Flag bitmask */;
 	qspi_pin_assignment_t pin_assignment /*! Pin Assignment */;
 	u32 freq /*! Target operating frequency */;
-	u8 width /*! Width for transactions */;
-	u32 size /*! Size of the flash memory */;
+    u8 width /*! Width for transactions -> Size of the flash memory ?*/;
 	u32 read_instruction;/*! use for set read operations */
 	u32 mem_mapped_read_instruction; /*! use for read operations in mem mapped mode*/
 	u32 write_instruction;/*! use for write operations */
