@@ -49,7 +49,7 @@
 
 /*! \brief See below for details */
 /*! \details These are the flags for mode in emc_attr_t */
-enum {
+typedef enum {
 	EMC_FLAG_DISABLE = (1<<0),
 	EMC_FLAG_ENABLE = (1<<1),
 	EMC_FLAG_IS_SDRAM = (1<<2),
@@ -60,22 +60,37 @@ enum {
 	EMC_FLAG_IS_8B_ACCESS = (1<<7),
 	EMC_FLAG_IS_16B_ACCESS = (1<<8),
 	EMC_FLAG_IS_32B_ACCESS = (1<<9)
-};
+}emc_flag_t;
+typedef struct MCU_PACK {
+    mcu_pin_t we;
+    mcu_pin_t oe;
+    mcu_pin_t bl[4];
+    mcu_pin_t nadv;
+    mcu_pin_t nwait;
+    mcu_pin_t ncs[4];
+    mcu_pin_t address[26];
+    mcu_pin_t data[32];
+} emc_pin_assignment_t;
 
 typedef struct {
 	u32 o_flags;
 	u32 o_events;
 	u32 freq;
 	u32 base_address;
-	u32 size;
-	u16 data_bus_width;
-	u16 resd16;
+    u32 size;
+    u8 data_bus_width;
+    u8 address_bus_width;
 	u32 resd[8];
 } emc_info_t;
 
 typedef struct MCU_PACK {
 	u32 o_flags;
-	u32 resd[8];
+    u32 base_address;
+    u32 size;
+    u32 freq;
+    u8 data_bus_width;
+    emc_pin_assignment_t pin_assignment;
+    u32 resd[8];
 } emc_attr_t;
 
 
