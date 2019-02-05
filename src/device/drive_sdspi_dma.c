@@ -31,11 +31,11 @@
 #define mcu_spi_ioctl mcu_spi_dma_ioctl
 
 
-#define drive_sdspi_open driver_sdspi_dma_open
-#define drive_sdspi_ioctl driver_sdspi_dma_ioctl
-#define drive_sdspi_read driver_sdspi_dma_read
-#define drive_sdspi_write driver_sdspi_dma_write
-#define drive_sdspi_close driver_sdspi_dma_close
+#define drive_sdspi_open drive_sdspi_dma_open
+#define drive_sdspi_ioctl drive_sdspi_dma_ioctl
+#define drive_sdspi_read drive_sdspi_dma_read
+#define drive_sdspi_write drive_sdspi_dma_write
+#define drive_sdspi_close drive_sdspi_dma_close
 
 
 #include "drive_sdspi.c"

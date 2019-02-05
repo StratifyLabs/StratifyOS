@@ -125,7 +125,7 @@ const sos_link_transport_usb_configuration_descriptor_t sos_link_transport_usb_c
 						.acm.bFunctionLength = sizeof(usbd_cdc_abstract_control_model_functional_descriptor_t),
 						.acm.bDescriptorType = 0x24,
 						.acm.bDescriptorSubType = 0x02, //ACM descriptor subtype
-						.acm.bmCapabilities = 0x06, //support for SERIAL_STATE
+						.acm.bmCapabilities = 0x02, //support for SERIAL_STATE
 						.union_descriptor.bFunctionLength = sizeof(usbd_cdc_union_functional_descriptor_t),
 						.union_descriptor.bDescriptorType = 0x24,
 						.union_descriptor.bDescriptorSubType = 0x06, //union descriptor subtype
@@ -134,7 +134,7 @@ const sos_link_transport_usb_configuration_descriptor_t sos_link_transport_usb_c
 						.call_management.bFunctionLength = sizeof(usbd_cdc_call_management_functional_descriptor_t),
 						.call_management.bDescriptorType = 0x24,
 						.call_management.bDescriptorSubType = 0x01, //call management subtype
-						.call_management.bmCapabilities = 0x03, //call management handled
+						.call_management.bmCapabilities = 0x00, //call management handled
 						.call_management.bDataInterface = 0x01 //data interface
 				},
 
