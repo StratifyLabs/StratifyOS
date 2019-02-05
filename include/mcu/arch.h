@@ -49,7 +49,8 @@
 	|| (defined __stm32f417xx) || (defined __stm32f412zx) || (defined __stm32f429xx) \
 	|| (defined __stm32f746xx) || (defined __stm32f722xx) || (defined __stm32f723xx) || (defined __stm32f767xx) \
 	|| (defined __stm32l475xx) || (defined __stm32l432xx) ||(defined __stm32f401xe) \
-	|| (defined __stm32h743xx) || (defined __stm32H750xx)
+	|| (defined __stm32h743xx) || (defined __stm32H750xx) \
+	|| (defined __stm32f205xx)	|| (defined __stm32f207xx)  || (defined __stm32f215xx)  || (defined __stm32f217xx)
 #undef __FPU_USED
 #include "arch/stm32/stm32_arch.h"
 #define ARCH_DEFINED
