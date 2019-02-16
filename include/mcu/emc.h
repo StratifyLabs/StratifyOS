@@ -56,46 +56,8 @@ MCU_EMC_DRIVER_DECLARATION(mcu_emc_sdram);
 MCU_EMC_DRIVER_DECLARATION(mcu_emc_nand);
 MCU_EMC_DRIVER_DECLARATION(mcu_emc_nor);
 MCU_EMC_DRIVER_DECLARATION(mcu_emc_psram);
+MCU_EMC_DRIVER_DECLARATION(mcu_emc_fmc_ahb);
 
-/*#define EMC_DEFINE_ATTR(attr_flags, \
-    attr_freq, \
-    attr_width, \
-    attr_data0_port, attr_data0_pin, \
-    attr_data1_port, attr_data1_pin, \
-    attr_data2_port, attr_data2_pin, \
-    attr_data3_port, attr_data3_pin, \
-    attr_sck_port, attr_sck_pin, \
-    attr_cs_port, attr_cs_pin) \
-    .o_flags = attr_flags, .freq = attr_freq, .width = attr_width, \
-    .pin_assignment.data[0] = {attr_data0_port, attr_data0_pin}, \
-    .pin_assignment.data[1] = {attr_data1_port, attr_data1_pin}, \
-    .pin_assignment.data[2] = {attr_data2_port, attr_data2_pin}, \
-    .pin_assignment.data[3] = {attr_data3_port, attr_data3_pin}, \
-    .pin_assignment.sck = {attr_sck_port, attr_sck_pin}, \
-    .pin_assignment.cs = {attr_cs_port, attr_cs_pin}
-
-#define EMC_DECLARE_CONFIG(name, \
-    attr_flags, \
-    attr_freq, \
-    attr_width, \
-    attr_data0_port, attr_data0_pin, \
-    attr_data1_port, attr_data1_pin, \
-    attr_data2_port, attr_data2_pin, \
-    attr_data3_port, attr_data3_pin, \
-    attr_sck_port, attr_sck_pin, \
-    attr_cs_port, attr_cs_pin) \
-    qspi_config_t name##_config = { \
-    .attr = { EMC_DEFINE_ATTR(attr_flags, \
-    attr_freq, \
-    attr_width, \
-    attr_data0_port, attr_data0_pin, \
-    attr_data1_port, attr_data1_pin, \
-    attr_data2_port, attr_data2_pin, \
-    attr_data3_port, attr_data3_pin, \
-    attr_sck_port, attr_sck_pin, \
-    attr_cs_port, attr_cs_pin) } \
-}
-*/
 #ifdef __cplusplus
 }
 #endif
