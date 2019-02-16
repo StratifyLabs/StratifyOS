@@ -62,7 +62,7 @@ if(BUILD_BOOT OR BUILD_ALL)
 set(SOS_LIB_OPTION boot)
 set(SOS_LIB_TYPE release)
 set(SOS_LIB_BUILD_FLAGS "")
-set(SOS_LIB_SOURCELIST ${BOOT_SOURCELIST})
+set(SOS_LIB_SOURCELIST ${BOOT_SOURCELIST} doxyfile)
 include(${SOS_TOOLCHAIN_CMAKE_PATH}/sos-lib-std.cmake)
 
 set(SOS_LIB_TYPE debug)
