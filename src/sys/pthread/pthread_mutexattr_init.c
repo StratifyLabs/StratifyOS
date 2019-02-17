@@ -17,10 +17,9 @@
  * 
  */
 
-/*! \addtogroup PTHREAD_MUTEX
+/*! \addtogroup pthread
  * @{
  *
- * \ingroup PTHREAD
  *
  */
 
@@ -31,7 +30,9 @@
 #include <pthread.h>
 #include <errno.h>
 
+/*! \cond */
 int pthread_mutexattr_check_initialized(const pthread_mutexattr_t * attr);
+/*! \endcond */
 
 
 /*! \details This function initializes \a attr with default values.
@@ -71,6 +72,7 @@ int pthread_mutexattr_destroy(pthread_mutexattr_t *attr){
 #endif
 }
 
+/*! \cond */
 int pthread_mutexattr_check_initialized(const pthread_mutexattr_t * attr){
 	if ( attr == NULL ){
 		return EINVAL;
@@ -82,6 +84,7 @@ int pthread_mutexattr_check_initialized(const pthread_mutexattr_t * attr){
 	}
 	return 0;
 }
+/*! \endcond */
 
 /*! @} */
 

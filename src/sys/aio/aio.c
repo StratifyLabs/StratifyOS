@@ -15,10 +15,9 @@
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>. */
 
 
-/*! \addtogroup AIO Asynchronous IO (AIO)
- * @{
+/*! \addtogroup aio
  *
- * \ingroup POSIX
+ * @{
  *
  */
 
@@ -36,6 +35,7 @@
 #include "../signal/sig_local.h"
 
 
+/*! \cond */
 static void root_suspend(void * args) MCU_ROOT_EXEC_CODE;
 static int suspend(struct aiocb *const list[], int nent, const struct timespec * timeout, bool block_on_all);
 static int data_transfer(struct aiocb * aiocbp);
@@ -46,6 +46,7 @@ typedef struct {
 	int read;
 	int ret;
 } root_aio_transfer_t;
+/*! \endcond */
 
 
 /*! \details This function is not supported this version.
@@ -84,24 +85,9 @@ int aio_fsync(int op, struct aiocb * aiocbp){
 	return -1;
 }
 
-int data_transfer(struct aiocb * aiocbp){
-	int fildes;
-	sysfs_file_t * file;
-
-	fildes = u_fildes_is_bad(aiocbp->aio_fildes);
-	if ( fildes < 0 ){
-		//check to see if fildes is a socket
-		errno = EBADF;
-		return -1;
-	}
-	aiocbp->aio_fildes = fildes;
-	file = get_open_file(fildes);
-	return sysfs_file_aio(file, aiocbp);
-}
-
 /*! \details The function initiates an asynchronous read using the data specified by \a aiocbp.
  *
- * \return 0 on success or -1 with errno (see \ref ERRNO) set to:
+ * \return 0 on success or -1 with errno (see \ref errno) set to:
  *  - EIO:  failed to start the transfer
  */
 int aio_read(struct aiocb * aiocbp /*! a pointer to the AIO data struture */){
@@ -111,7 +97,7 @@ int aio_read(struct aiocb * aiocbp /*! a pointer to the AIO data struture */){
 
 /*! \details The function initiates an asynchronous write using the data specified by \a aiocbp.
  *
- * \return 0 on success or -1 with errno (see \ref ERRNO) set to:
+ * \return 0 on success or -1 with errno (see \ref errno) set to:
  *  - EIO:  failed to start the transfer
  */
 int aio_write(struct aiocb * aiocbp /*! a pointer to the AIO data struture */){
@@ -132,46 +118,6 @@ ssize_t aio_return(struct aiocb * aiocbp /*! a pointer to the AIO data struture 
 	}
 }
 
-void root_suspend(void * args){
-	int i;
-	bool suspend;
-	sysfs_aio_suspend_t * p = (sysfs_aio_suspend_t*)args;
-	//disable interrupts
-	//! \todo See if an operation is in progress
-	if ( p->block_on_all == false ){
-		suspend = true;
-	} else {
-		suspend = false;
-	}
-    cortexm_disable_interrupts(); //no switching until the transfer is started
-	for(i = 0; i < p->nent; i++ ){
-		if (p->list[i] != NULL ){
-
-			//first check to see if we block on aio suspend (if anything is complete don't block)
-            if ( (p->list[i]->async.buf == NULL) && (p->block_on_all == false) ){ //if op.buf is NULL the operation is complete
-				suspend = false;
-				break;
-			}
-
-			//now check to see if we block on listio suspend (if anything is incomplete block)
-            if ( (p->list[i]->async.buf != NULL) && (p->block_on_all == true) ){
-				suspend = true;
-			}
-
-		}
-	}
-
-	if ( suspend == true ){
-		scheduler_root_assert_aiosuspend(task_get_current());
-		scheduler_timing_root_timedblock(args, &p->abs_timeout);
-	} else {
-		p->nent = -1;
-	}
-
-	//enable interrupts
-    cortexm_enable_interrupts();
-
-}
 
 
 int suspend(struct aiocb *const list[], int nent, const struct timespec * timeout, bool block_on_all){
@@ -205,7 +151,7 @@ int suspend(struct aiocb *const list[], int nent, const struct timespec * timeou
  * in \a list completes or until the \a timeout value is surpassed.  If \a timeout is NULL, it is
  * ignored.
  *
- * \return 0 on success or -1 with errno (see \ref ERRNO) set to:
+ * \return 0 on success or -1 with errno (see \ref errno) set to:
  *  - EAGAIN:  \a timeout was exceeded before any operations completed.
  *  - EINTR:  the thread received a signal before any operations completed.
  */
@@ -222,7 +168,7 @@ int aio_suspend(struct aiocb *const list[] /*! a list of AIO transfer structures
  *
  * \note This function is experimental in this version.
  *
- * \return Zero on success or -1 with errno (see \ref ERRNO) set to:
+ * \return Zero on success or -1 with errno (see \ref errno) set to:
  * - EINTR:  the thread received an signal before completed all transactions
  * - ENOTSUP: \a mode is LIO_NOWAIT and \a sig is not null or sigev_notify is not set to SIGEV_NONE
  * - EINVAL:  \a mode is not set to LIO_NOWAIT or LIO_WAIT
@@ -264,6 +210,64 @@ int lio_listio(int mode /*! The mode:  \a LIO_WAIT or \a LIO_NOWAIT */,
 	}
 
 	return 0;
+}
+
+/*! \cond */
+int data_transfer(struct aiocb * aiocbp){
+	int fildes;
+	sysfs_file_t * file;
+
+	fildes = u_fildes_is_bad(aiocbp->aio_fildes);
+	if ( fildes < 0 ){
+		//check to see if fildes is a socket
+		errno = EBADF;
+		return -1;
+	}
+	aiocbp->aio_fildes = fildes;
+	file = get_open_file(fildes);
+	return sysfs_file_aio(file, aiocbp);
+}
+
+
+void root_suspend(void * args){
+	int i;
+	bool suspend;
+	sysfs_aio_suspend_t * p = (sysfs_aio_suspend_t*)args;
+	//disable interrupts
+	//! \todo See if an operation is in progress
+	if ( p->block_on_all == false ){
+		suspend = true;
+	} else {
+		suspend = false;
+	}
+	 cortexm_disable_interrupts(); //no switching until the transfer is started
+	for(i = 0; i < p->nent; i++ ){
+		if (p->list[i] != NULL ){
+
+			//first check to see if we block on aio suspend (if anything is complete don't block)
+				if ( (p->list[i]->async.buf == NULL) && (p->block_on_all == false) ){ //if op.buf is NULL the operation is complete
+				suspend = false;
+				break;
+			}
+
+			//now check to see if we block on listio suspend (if anything is incomplete block)
+				if ( (p->list[i]->async.buf != NULL) && (p->block_on_all == true) ){
+				suspend = true;
+			}
+
+		}
+	}
+
+	if ( suspend == true ){
+		scheduler_root_assert_aiosuspend(task_get_current());
+		scheduler_timing_root_timedblock(args, &p->abs_timeout);
+	} else {
+		p->nent = -1;
+	}
+
+	//enable interrupts
+	 cortexm_enable_interrupts();
+
 }
 
 int sysfs_aio_data_transfer_callback(void * context, const mcu_event_t * event){
@@ -329,6 +333,7 @@ int sysfs_aio_data_transfer_callback(void * context, const mcu_event_t * event){
 
 	return 0;
 }
+/*! \endcond */
 
 
 /*! @} */

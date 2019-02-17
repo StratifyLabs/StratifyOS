@@ -17,7 +17,7 @@
  * 
  */
 
-/*! \addtogroup UNISTD
+/*! \addtogroup unistd
  * @{
  */
 

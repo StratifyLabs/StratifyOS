@@ -17,7 +17,7 @@
  * 
  */
 
-/*! \addtogroup UNISTD
+/*! \addtogroup unistd
  * @{
  */
 
@@ -33,9 +33,11 @@
  */
 pid_t getpid();
 
+/*! \cond */
 pid_t _getpid(){
 	return (pid_t)task_get_pid( task_get_current() );
 }
+/*! \endcond */
 
 /*! @} */
 

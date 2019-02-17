@@ -17,6 +17,14 @@
  *
  */
 
+/*! \addtogroup pthread
+ * @{
+ *
+ *
+ */
+
+/*! \file */
+
 
 #include "mcu/arch.h"
 #include "config.h"
@@ -27,7 +35,7 @@
 int pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *attr) MCU_WEAK;
 
 /*! \details This function initializes \a mutex with \a attr.
- * \return Zero on success or -1 with \a errno (see \ref ERRNO) set to:
+ * \return Zero on success or -1 with \a errno (see \ref errno) set to:
  * - EINVAL: mutex is NULL
  */
 int pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *attr){
@@ -64,4 +72,6 @@ int pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *attr){
 	mutex->pthread = -1;
 	return 0;
 }
+
+/*! @} */
 

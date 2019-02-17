@@ -19,9 +19,7 @@
 
 /*! \addtogroup USB_DEV USB Device
  *
- *
  * @{
- * \ingroup STFY
  *
  */
 

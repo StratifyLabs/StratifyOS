@@ -1,4 +1,4 @@
-/* Copyright 2011-2018 Tyler Gilbert; 
+/* Copyright 2011-2018 Tyler Gilbert;
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -13,11 +13,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
-/*! \addtogroup DIRENT
+/*! \addtogroup directory
  * @{
  */
 
@@ -36,7 +36,6 @@ extern "C" {
 
 #if !defined __link
 
-
 /*! \brief Directory Entry
  * \details This defines the data structure for a directory entry.
  *
@@ -46,11 +45,12 @@ struct dirent {
 	char d_name[NAME_MAX+1] /*! \brief Name of entry */;
 };
 
+
 typedef struct {
 	const void * fs;
 	void * handle;
 	long loc;
-    unsigned int checksum;
+	 unsigned int checksum;
 } DIR;
 
 int closedir(DIR * dirp);

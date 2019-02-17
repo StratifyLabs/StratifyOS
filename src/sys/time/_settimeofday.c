@@ -17,7 +17,7 @@
  * 
  */
 
-/*! \addtogroup TIME
+/*! \addtogroup time
  * @{
  */
 
@@ -35,10 +35,9 @@
 
 #include "../scheduler/scheduler_local.h"
 
+/*! \cond */
 struct timeval time_of_day_offset MCU_SYS_MEM;
-
 static void root_set_time(void * args) MCU_ROOT_EXEC_CODE;
-
 void root_set_time(void * args){
 	div_t d;
 	struct mcu_timeval tv;
@@ -58,16 +57,18 @@ void root_set_time(void * args){
 		time_of_day_offset.tv_sec--;
 	}
 }
+/*! \endcond */
 
 /*! \details This function sets the current time of day to the
  * time stored in \a tp.  The timezone (\a tzp) is ignored.
  *
- * \return Zero or -1 with errno (see \ref ERRNO) set to:
+ * \return Zero or -1 with errno (see \ref errno) set to:
  * - EIO: IO error when setting the real time clock
  *
  */
 int settimeofday(const struct timeval * tp, const struct timezone * tzp);
 
+/*! \cond */
 static int settimeofday_rtc(const struct timeval * tp);
 
 int _settimeofday(const struct timeval * tp, const struct timezone * tzp) {
@@ -97,6 +98,7 @@ int settimeofday_rtc(const struct timeval * tp){
 
 	return 0;
 }
+/*! \endcond */
 
 
 /*! @} */

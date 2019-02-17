@@ -17,11 +17,10 @@
  *
  */
 
-/*! \addtogroup SIGNAL
+/*! \addtogroup signal
  *
  * @{
  *
- * \ingroup POSIX
  */
 
 /*! \file */
@@ -36,6 +35,7 @@
 #include "sig_local.h"
 
 
+/*! \cond */
 static void abort_action(int signo, int flags);
 static void terminate_action(int signo, int flags);
 static void stop_action(int signo, int flags);
@@ -253,6 +253,7 @@ void continue_action(int signo, int flags){
 void ignore_action(int signo, int flags){
 
 }
+/*! \endcond */
 
 
 /*! @} */

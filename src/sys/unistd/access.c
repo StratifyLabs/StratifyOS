@@ -17,7 +17,7 @@
  * 
  */
 
-/*! \addtogroup UNI_PERMS
+/*! \addtogroup unistd
  * @{
  */
 
@@ -33,12 +33,14 @@
 
 #include "sos/fs/sysfs.h"
 
+/*! \cond */
 static int check_permissions(int file_mode, int file_uid, int file_gid, int amode);
+/*! \endcond */
 
 /*! \details This function checks to see if the specified access (\a amode)
  * is allowed for \a path.
  *
- * \return Zero on success (ie \a amode is allowed) or -1 with errno (see \ref ERRNO) set to:
+ * \return Zero on success (ie \a amode is allowed) or -1 with errno (see \ref errno) set to:
  * - ENAMETOOLONG: \a path exceeds PATH_MAX or a component of \a path exceeds NAME_MAX
  * - ENOENT: \a path does not exist
  * - EACCES: \a amode is not allowed for \a path or search permission is denied for a component of \a path
@@ -68,6 +70,7 @@ int access(const char * path, int amode){
 	return check_permissions(st.st_mode, st.st_uid, st.st_gid, amode);
 }
 
+/*! \cond */
 static uint8_t euid = 0;
 static uint8_t egid = 0;
 
@@ -133,6 +136,7 @@ int check_permissions(int file_mode, int file_uid, int file_gid, int amode){
 	errno = EACCES;
 	return -1;
 }
+/*! \endcond */
 
 
 

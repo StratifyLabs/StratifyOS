@@ -17,7 +17,7 @@
  * 
  */
 
-/*! \addtogroup UNI_FS
+/*! \addtogroup unistd
  * @{
  */
 
@@ -25,6 +25,10 @@
 
 #include  "unistd_fs.h"
 
+/*! \details Deletes a file or directory from the filesystem. */
+int unlink(const char * name);
+
+/*! \cond */
 int _unlink(const char * name){
 	const sysfs_t * fs;
 
@@ -43,6 +47,7 @@ int _unlink(const char * name){
 	errno = ENOENT;
 	return -1;
 }
+/*! \endcond */
 
 /*! @} */
 

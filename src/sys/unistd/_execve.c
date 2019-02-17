@@ -17,7 +17,7 @@
  * 
  */
 
-/*! \addtogroup UNI_PROCESS
+/*! \addtogroup unistd
  * @{
  */
 

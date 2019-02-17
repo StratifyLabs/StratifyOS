@@ -17,7 +17,7 @@
  *
  */
 
-/*! \addtogroup UNI_FILE_ACCESS
+/*! \addtogroup unistd
  * @{
  */
 
@@ -43,7 +43,7 @@
  * \param fildes The file descriptor returned by \ref open()
  * \param request The request to the device.
  *
- * \return The number of bytes actually read of -1 with errno (see \ref ERRNO) set to:
+ * \return The number of bytes actually read of -1 with errno (see \ref errno) set to:
  * - EBADF:  \a fildes is bad
  * - EIO:  IO error
  * - EAGAIN:  O_NONBLOCK is set for \a fildes and the device is busy

@@ -18,10 +18,9 @@
  */
 
 
-/*! \addtogroup PTHREAD_COND Conditional Variables
+/*! \addtogroup pthread
  * @{
  *
- * \ingroup PTHREAD
  *
  */
 
@@ -34,6 +33,7 @@
 
 #include "../scheduler/scheduler_local.h"
 
+/*! \cond */
 #define PSHARED_FLAG 31
 #define INIT_FLAG 30
 #define PID_MASK 0x3FFFFFFF
@@ -49,6 +49,8 @@ typedef struct {
 } root_cond_wait_t;
 static void root_cond_wait(void  * args) MCU_ROOT_EXEC_CODE;
 static void root_cond_broadcast(void * args) MCU_ROOT_EXEC_CODE;
+
+/*! \endcond */
 
 /*! \details This function initializes a pthread block condition.
  *
@@ -147,35 +149,6 @@ int pthread_cond_signal(pthread_cond_t *cond){
 	}
 
 	return 0;
-}
-
-void root_cond_wait(void  * args){
-	root_cond_wait_t * argsp = (root_cond_wait_t*)args;
-	int new_thread = argsp->new_thread;
-
-
-	if ( argsp->mutex->pthread == task_get_current() ){
-		//First unlock the mutex
-		//Restore the priority to the task that is unlocking the mutex
-        task_set_priority(task_get_current(), sos_sched_table[task_get_current()].attr.schedparam.sched_priority);
-
-		if ( new_thread != -1 ){
-			argsp->mutex->pthread = new_thread;
-			argsp->mutex->pid = task_get_pid(new_thread);
-			argsp->mutex->lock = 1;
-            task_set_priority(new_thread, argsp->mutex->prio_ceiling);
-			scheduler_root_assert_active(new_thread, SCHEDULER_UNBLOCK_MUTEX);
-		} else {
-			argsp->mutex->lock = 0;
-			argsp->mutex->pthread = -1; //The mutex is up for grabs
-		}
-
-		scheduler_timing_root_timedblock(argsp->cond, &argsp->interval);
-		argsp->ret = 0;
-	} else {
-		argsp->ret = -1;
-	}
-
 }
 
 
@@ -296,6 +269,37 @@ int pthread_cond_timedwait(pthread_cond_t *cond, pthread_mutex_t *mutex, const s
 
 	return 0;
 }
+
+/*! \cond */
+void root_cond_wait(void  * args){
+	root_cond_wait_t * argsp = (root_cond_wait_t*)args;
+	int new_thread = argsp->new_thread;
+
+
+	if ( argsp->mutex->pthread == task_get_current() ){
+		//First unlock the mutex
+		//Restore the priority to the task that is unlocking the mutex
+		  task_set_priority(task_get_current(), sos_sched_table[task_get_current()].attr.schedparam.sched_priority);
+
+		if ( new_thread != -1 ){
+			argsp->mutex->pthread = new_thread;
+			argsp->mutex->pid = task_get_pid(new_thread);
+			argsp->mutex->lock = 1;
+				task_set_priority(new_thread, argsp->mutex->prio_ceiling);
+			scheduler_root_assert_active(new_thread, SCHEDULER_UNBLOCK_MUTEX);
+		} else {
+			argsp->mutex->lock = 0;
+			argsp->mutex->pthread = -1; //The mutex is up for grabs
+		}
+
+		scheduler_timing_root_timedblock(argsp->cond, &argsp->interval);
+		argsp->ret = 0;
+	} else {
+		argsp->ret = -1;
+	}
+
+}
+/*! \endcond */
 
 /*! @} */
 

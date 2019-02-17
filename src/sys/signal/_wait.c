@@ -17,7 +17,7 @@
  * 
  */
 
-/*! \addtogroup SIGNAL
+/*! \addtogroup signal
  * @{
  */
 
@@ -29,6 +29,7 @@
 #include "../scheduler/scheduler_local.h"
 #include "sig_local.h"
 
+/*! \cond */
 static void root_wait_child(void * args) MCU_ROOT_EXEC_CODE;
 
 typedef struct {
@@ -38,6 +39,7 @@ typedef struct {
 } root_check_for_zombie_child_t;
 
 static void root_check_for_zombie_child(void * args) MCU_ROOT_EXEC_CODE;
+/*! \endcond */
 
 pid_t waitpid(pid_t pid, int *stat_loc, int options){
 	root_check_for_zombie_child_t args;
@@ -95,6 +97,9 @@ pid_t waitpid(pid_t pid, int *stat_loc, int options){
 	return task_get_pid( args.tid );
 }
 
+pid_t wait(int *stat_loc);
+
+/*! \cond */
 pid_t _wait(int *stat_loc){
 	return waitpid(-1, stat_loc, 0);
 }
@@ -163,5 +168,6 @@ void root_wait_child(void * args){
 		//scheduler_root_update_on_sleep(); //Sleep the current thread
 	} //otherwise -- tid is < 0 and there are no children
 }
+/*! \endcond */
 
 /*! @} */

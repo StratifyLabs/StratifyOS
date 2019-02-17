@@ -17,7 +17,7 @@
  *
  */
 
-/*! \addtogroup PTHREAD
+/*! \addtogroup pthread
  * @{
  *
  * \details This is the interface for POSIX threads.  Here is an example of creating a new thread:
@@ -64,11 +64,12 @@
 
 #include "../scheduler/scheduler_local.h"
 
-
+/*! \cond */
 static void root_join_thread(void * args) MCU_ROOT_EXEC_CODE;
+/*! \endcond */
 
 /*! \details This function creates a new thread.
- * \return Zero on success or -1 with \a errno (see \ref ERRNO) set to:
+ * \return Zero on success or -1 with \a errno (see \ref errno) set to:
  * - ENOMEM: error allocating memory for the thread
  * - EAGAIN: insufficient system resources to create a new thread
  *
@@ -86,7 +87,7 @@ int pthread_create(pthread_t * thread /*! If not null, the thread id is written 
     if ( attr == NULL ){
         mcu_debug_log_info(MCU_DEBUG_PTHREAD, "Init new attrs");
         if ( pthread_attr_init(&attrs) < 0 ){
-            //Errno is set by pthread_attr_init()
+				//errno is set by pthread_attr_init()
             return -1;
         }
     } else {
@@ -128,7 +129,7 @@ int pthread_create(pthread_t * thread /*! If not null, the thread id is written 
 
 
 /*! \details This function blocks the calling thread until \a thread terminates.
- * \return Zero on success or -1 with \a errno (see \ref ERRNO) set to:
+ * \return Zero on success or -1 with \a errno (see \ref errno) set to:
  * - ESRCH: \a thread does not exist
  * - EDEADLK: a deadlock has been detected or \a thread refers to the calling thread
  * - EINVAL: \a thread does not refer to a joinable thread.
@@ -172,6 +173,7 @@ int pthread_join(pthread_t thread, void ** value_ptr){
     return -1;
 }
 
+/*! \cond */
 void root_join_thread(void * args){
     int * p = (int*)args;
     int id = *p;
@@ -187,6 +189,7 @@ void root_join_thread(void * args){
         *p = -1;
     }
 }
+/*! \endcond */
 
 
 

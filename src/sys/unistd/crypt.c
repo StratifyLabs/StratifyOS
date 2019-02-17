@@ -17,7 +17,7 @@
  * 
  */
 
-/*! \addtogroup UNI_CRYPT
+/*! \addtogroup unistd
  * @{
  */
 

@@ -17,10 +17,9 @@
  * 
  */
 
-/*! \addtogroup PTHREAD_ATTR Attributes
+/*! \addtogroup pthread
  * @{
  *
- * \ingroup PTHREAD
  *
  */
 
@@ -36,7 +35,9 @@
 #include <string.h>
 #include <sched.h>
 
+/*! \cond */
 static int check_initialized(const pthread_attr_t * attr);
+/*! \endcond */
 
 /*! \details This function gets the detach state from \a attr and
  * stores it in \a detachstate.
@@ -91,7 +92,7 @@ int pthread_attr_getguardsize(const pthread_attr_t * attr /*! a pointer to the a
 
 /*! \details This function is not supported.  The guard size is
  * a fixed value that cannot be set by the user.
- * \return -1 with errno (see \ref ERRNO) set to ENOTSUP
+ * \return -1 with errno (see \ref errno) set to ENOTSUP
  */
 int pthread_attr_setguardsize(pthread_attr_t *attr,
 		size_t guardsize){
@@ -331,6 +332,7 @@ int pthread_attr_setstackaddr(pthread_attr_t *attr, void *stackaddr){
 	return -1;
 }
 
+/*! \cond */
 int check_initialized(const pthread_attr_t * attr){
 	if ( attr == NULL ){
 		return EINVAL;
@@ -342,6 +344,8 @@ int check_initialized(const pthread_attr_t * attr){
 	}
 	return 0;
 }
+/*! \endcond */
+
 
 /*! @} */
 

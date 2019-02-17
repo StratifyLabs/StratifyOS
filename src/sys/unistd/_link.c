@@ -17,7 +17,7 @@
  * 
  */
 
-/*! \addtogroup UNI_FS
+/*! \addtogroup unistd
  * @{
  */
 
@@ -28,12 +28,13 @@
 
 /*! \details This function creates a hard link between \a old and \a new.
  *
- * \return Zero on success or -1 on error with errno (see \ref ERRNO) set to:
+ * \return Zero on success or -1 on error with errno (see \ref errno) set to:
  *  - ENOTSUP:  operation not supported
  *
  */
 int link(const char *old, const char *new);
 
+/*! \cond */
 int _link(const char *old, const char *new){
 	const sysfs_t * fs_old;
 	const sysfs_t * fs_new;
@@ -63,6 +64,7 @@ int _link(const char *old, const char *new){
 	}
 	return -1;
 }
+/*! \endcond */
 
 /*! @} */
 

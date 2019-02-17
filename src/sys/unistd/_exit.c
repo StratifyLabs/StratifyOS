@@ -17,7 +17,7 @@
  * 
  */
 
-/*! \addtogroup UNISTD
+/*! \addtogroup unistd
  * @{
  */
 
@@ -35,10 +35,11 @@
 #include "../scheduler/scheduler_local.h"
 #include "../signal/sig_local.h"
 
+/*! \cond */
 static void root_stop_threads(int * send_signal) MCU_ROOT_EXEC_CODE;
 static void root_zombie_process(int * signal_sent) MCU_ROOT_EXEC_CODE;
-
 static int get_exec_flags();
+/*! \endcond */
 
 /*! \details This function causes the calling process
  * to exit with the specified exit code.
@@ -78,7 +79,7 @@ void _exit(int __status){
 	}
 }
 
-
+/*! \cond */
 void root_stop_threads(int * send_signal){
 	int i;
 	int tmp;
@@ -180,6 +181,7 @@ void root_zombie_process(int * signal_sent){
 
 	scheduler_root_update_on_sleep();
 }
+/*! \endcond */
 
 
 /*! @} */

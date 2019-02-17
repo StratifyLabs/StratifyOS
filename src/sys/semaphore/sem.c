@@ -17,7 +17,7 @@
  * 
  */
 
-/*! \addtogroup SEMAPHORE
+/*! \addtogroup semaphore
  * @{
  *
  */
@@ -40,6 +40,7 @@
 #define SEM_FILE_HDR_SIGNATURE 0x1285ABC8
 #define SEM_FILE_HDR_NOT_SIGNATURE (~SEM_FILE_HDR_SIGNATURE)
 
+/*! \cond */
 typedef struct {
 	u32 signature;
 	u32 not_signature;
@@ -105,6 +106,7 @@ static sem_t * sem_find_free(){
 	new_entry->next = 0;
 	return &new_entry->sem;
 }
+/*! \endcond */
 
 /*! \details Initializes \a sem as an unnamed semaphore with
  * \a pshared and \a value.
@@ -116,7 +118,7 @@ static sem_t * sem_find_free(){
  * The semaphore value will be decremented on sem_wait() and incremented
  * on sem_post().
  *
- * \return Zero on success or -1 with errno (see \ref ERRNO) set to:
+ * \return Zero on success or -1 with errno (see \ref errno) set to:
  * - EINVAL:  sem is NULL
  *
  */
@@ -135,7 +137,7 @@ int sem_init(sem_t *sem, int pshared, unsigned int value){
 
 /*! \details This function destroys \a sem--an unnamed semaphore.
  *
- * \return Zero on success or -1 with errno (see \ref ERRNO) set to:
+ * \return Zero on success or -1 with errno (see \ref errno) set to:
  * - EINVAL:  sem is NULL
  *
  */
@@ -152,7 +154,7 @@ int sem_destroy(sem_t *sem){
 /*! \details This function gets the value of the semaphore.  If the semaphore is locked,
  * the value is zero.
  *
- * \return Zero on success or -1 with errno (see \ref ERRNO) set to:
+ * \return Zero on success or -1 with errno (see \ref errno) set to:
  * - EINVAL:  sem is NULL
  *
  */
@@ -176,7 +178,7 @@ int sem_getvalue(sem_t *sem, int *sval){
  * sem_t * sem_open(const char * name, int oflag, int mode, int value){
  * \endcode
  *
- * \return Zero on success or SEM_FAILED with errno (see \ref ERRNO) set to:
+ * \return Zero on success or SEM_FAILED with errno (see \ref errno) set to:
  * - ENAMETOOLONG:  name length is greater than NAME_MAX
  * - EEXIST:  O_CREAT and O_EXCL are set in \a oflag but the semaphore already exists
  * - ENOENT:  O_CREAT is not set in \a oflag and the semaphore does not exist
@@ -262,7 +264,7 @@ sem_t * sem_open(const char * name, int oflag, ...){
  * must be deleted using sem_unlink() in order to free the system resources
  * associated with the semaphore.
  *
- * \return Zero on success or SEM_FAILED with errno (see \ref ERRNO) set to:
+ * \return Zero on success or SEM_FAILED with errno (see \ref errno) set to:
  * - EINVAL:  sem is NULL
  *
  */
@@ -285,16 +287,9 @@ int sem_close(sem_t *sem){
 	return 0;
 }
 
-void root_sem_post(void * args){
-	int id = *((int*)args);
-	sos_sched_table[id].block_object = NULL;
-	scheduler_root_assert_active(id, SCHEDULER_UNBLOCK_SEMAPHORE);
-    scheduler_root_update_on_wake(id, task_get_priority(id));
-}
-
 /*! \details Unlocks (increments) the value of the semaphore.
  *
- * \return Zero on success or SEM_FAILED with errno (see \ref ERRNO) set to:
+ * \return Zero on success or SEM_FAILED with errno (see \ref errno) set to:
  * - EINVAL:  sem is NULL
  * - EACCES:  process cannot access semaphore
  *
@@ -322,19 +317,6 @@ int sem_post(sem_t *sem){
 	return 0;
 }
 
-void root_sem_timedwait(void * args){
-	root_sem_args_t * p = (root_sem_args_t*)args;
-
-	if ( p->sem->value <= 0 ){
-		scheduler_timing_root_timedblock(p->sem, &p->interval);
-		p->ret = -1;
-	} else {
-		p->ret = 0;
-		p->sem->value--;
-	}
-
-}
-
 
 /*! \details Locks (decrements) the semaphore. If the semaphore cannot
  * be locked (it is already zero), this function will block until the
@@ -342,7 +324,7 @@ void root_sem_timedwait(void * args){
  *
  * @param sem A pointer to the semaphore
  * @param abs_timeout Absolute timeout value
- * @return Zero on success or SEM_FAILED with errno (see \ref ERRNO) set to:
+ * @return Zero on success or SEM_FAILED with errno (see \ref errno) set to:
  * - EINVAL:  sem is NULL
  * - EACCES:  process cannot access semaphore
  * - ETIMEDOUT:  timeout expired without locking the semaphore
@@ -377,21 +359,10 @@ int sem_timedwait(sem_t * sem, const struct timespec * abs_timeout){
 	return 0;
 }
 
-void root_sem_trywait(void * args){
-	root_sem_args_t * p = (root_sem_args_t*)args;
-
-	if ( p->sem->value > 0 ){
-		p->sem->value--;
-		p->ret = 0;
-	} else {
-		p->ret = -1;
-	}
-}
-
 /*! \details This function locks (decrements) the semaphore if it can be locked
  * immediately.
  *
- * \return Zero on success or -1 with errno (see \ref ERRNO) set to:
+ * \return Zero on success or -1 with errno (see \ref errno) set to:
  * - EINVAL:  sem is NULL
  * - EACCES:  process cannot access semaphore
  * - EAGAIN:  \a sem could not be immediately locked.
@@ -420,7 +391,7 @@ int sem_trywait(sem_t *sem){
 /*! \details This function unlinks a named semaphore.  It
  * also releases any system resources associated with the semaphore.
  *
- * \return Zero on success or SEM_FAILED with errno (see \ref ERRNO) set to:
+ * \return Zero on success or SEM_FAILED with errno (see \ref errno) set to:
  * - ENOENT:  the semaphore with \a name could not be found
  * - ENAMETOOLONG:  the length of \a name exceeds \a NAME_MAX
  *
@@ -459,27 +430,13 @@ int sem_unlink(const char *name){
 	return -1;
 }
 
-void root_sem_wait(void * args){
-	root_sem_args_t * p = args;
 
-    sos_sched_table[ task_get_current() ].block_object = p->sem;
-
-	if ( p->sem->value <= 0){
-		//task must be blocked until the semaphore is available
-		scheduler_root_update_on_sleep();
-		p->ret = -1; //didn't get the semaphore
-	} else {
-		//got the semaphore
-		p->sem->value--;
-		p->ret = 0;
-	}
-}
 
 /*! \details This function locks (decrements) the semaphore.  If
  * the semaphore is already zero (and therefore cannot be locked),
  * the calling thread blocks until the semaphore becomes available.
  *
- * \return Zero on success or SEM_FAILED with errno (see \ref ERRNO) set to:
+ * \return Zero on success or SEM_FAILED with errno (see \ref errno) set to:
  * - EINVAL:  \a sem is NULL
  * - EACCES:  \a sem is not pshared and was created in another process
  *
@@ -500,6 +457,55 @@ int sem_wait(sem_t *sem){
 	return 0;
 }
 
+/*! \cond */
+
+void root_sem_post(void * args){
+	int id = *((int*)args);
+	sos_sched_table[id].block_object = NULL;
+	scheduler_root_assert_active(id, SCHEDULER_UNBLOCK_SEMAPHORE);
+	 scheduler_root_update_on_wake(id, task_get_priority(id));
+}
+
+void root_sem_timedwait(void * args){
+	root_sem_args_t * p = (root_sem_args_t*)args;
+
+	if ( p->sem->value <= 0 ){
+		scheduler_timing_root_timedblock(p->sem, &p->interval);
+		p->ret = -1;
+	} else {
+		p->ret = 0;
+		p->sem->value--;
+	}
+
+}
+
+void root_sem_trywait(void * args){
+	root_sem_args_t * p = (root_sem_args_t*)args;
+
+	if ( p->sem->value > 0 ){
+		p->sem->value--;
+		p->ret = 0;
+	} else {
+		p->ret = -1;
+	}
+}
+
+void root_sem_wait(void * args){
+	root_sem_args_t * p = args;
+
+	 sos_sched_table[ task_get_current() ].block_object = p->sem;
+
+	if ( p->sem->value <= 0){
+		//task must be blocked until the semaphore is available
+		scheduler_root_update_on_sleep();
+		p->ret = -1; //didn't get the semaphore
+	} else {
+		//got the semaphore
+		p->sem->value--;
+		p->ret = 0;
+	}
+}
+
 int check_initialized(sem_t * sem){
 	if( sem == NULL ){
 		errno = EINVAL;
@@ -518,6 +524,7 @@ int check_initialized(sem_t * sem){
 
 	return 0;
 }
+/*! \endcond */
 
 
 /*! @} */

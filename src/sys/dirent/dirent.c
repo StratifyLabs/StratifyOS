@@ -18,7 +18,7 @@
  */
 
 
-/*! \addtogroup DIRENT
+/*! \addtogroup directory
  * @{
  *
  * \details This interface accesses directory entries (both files and folders).  Here is an example of how to use this
@@ -65,7 +65,7 @@
 #include "dirent.h"
 #include "mcu/debug.h"
 
-
+/*! \cond */
 static int check_ebadf(DIR * dirp){
 	if ( dirp == NULL ){
 		errno = EBADF;
@@ -78,10 +78,11 @@ static int check_ebadf(DIR * dirp){
 	}
 	return 0;
 }
+/*! \endcond */
 
 /*! \details Closes the directory stream specified by \a dirp.
  *
- * \return Zero or -1 with errno (see \ref ERRNO) set to:
+ * \return Zero or -1 with errno (see \ref errno) set to:
  * - EINVAL: \a dirp does not refere to an open directory stream
  *
  */
@@ -100,7 +101,7 @@ int closedir(DIR * dirp /*! A pointer to the open directory */){
 
 /*! \details Opens a directory.
  *
- * \return a pointer to the directory or NULL with errno (see \ref ERRNO) set to:
+ * \return a pointer to the directory or NULL with errno (see \ref errno) set to:
  * - ENOMEM: not enough memory
  * - ENOENT: \a dirname was not found
  * - EACCES: read access to \a dirname is not allowed
@@ -150,7 +151,7 @@ DIR * opendir(const char * dirname){
  * \note This function is not thread-safe nor re-entrant;  use \ref readdir_r()
  * as a thread-safe, re-entrant alternative.
  *
- * \return a pointer to a dirent or NULL with errno (see \ref ERRNO) set to:
+ * \return a pointer to a dirent or NULL with errno (see \ref errno) set to:
  * - EBADF: \a dirp is invalid
  * - ENOENT: the current position of the directory stream is invalid
  *
@@ -164,7 +165,7 @@ struct dirent *readdir(DIR * dirp /*! a pointer to the directory structure */){
 
 /*! \details Reads the next directory entry in the open directory (reentrant version).
  *
- * \return a pointer to a dirent or NULL with errno (see \ref ERRNO) set to:
+ * \return a pointer to a dirent or NULL with errno (see \ref errno) set to:
  * - EBADF: \a dirp is invalid
  * - ENOENT: the current position of the directory stream is invalid
  *

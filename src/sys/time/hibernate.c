@@ -17,7 +17,7 @@
  *
  */
 
-/*! \addtogroup TIME
+/*! \addtogroup time
  * @{
  */
 
@@ -39,6 +39,7 @@
 
 #include "../scheduler/scheduler_local.h"
 
+/*! \cond */
 static int set_alarm(int seconds);
 static void root_powerdown(void * args) MCU_ROOT_EXEC_CODE;
 static void root_hibernate(void * args) MCU_ROOT_EXEC_CODE;
@@ -134,5 +135,6 @@ void powerdown(int seconds){
 	cortexm_svcall(root_powerdown, NULL);
 	//device will reset after a powerdown event
 }
+/*! \endcond */
 
 /*! @} */

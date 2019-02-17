@@ -17,11 +17,6 @@
  * 
  */
 
-/*! \addtogroup STFY
- * @{
- */
-
-/*! \file */
 
 #include "config.h"
 #include <errno.h>
@@ -78,9 +73,3 @@ int sys_23_write(const devfs_handle_t * handle, devfs_async_t * wop){
 int sys_23_close(const devfs_handle_t * handle){
     return sys_close(handle);
 }
-
-
-
-
-
-/*! @} */

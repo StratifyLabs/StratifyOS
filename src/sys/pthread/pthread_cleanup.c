@@ -18,7 +18,7 @@
  */
 
 
-/*! \addtogroup PTHREAD
+/*! \addtogroup pthread
  * @{
  *
  */

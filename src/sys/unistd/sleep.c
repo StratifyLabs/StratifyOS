@@ -17,7 +17,7 @@
  * 
  */
 
-/*! \addtogroup UNI_SLEEP
+/*! \addtogroup unistd
  * @{
  */
 
@@ -27,7 +27,9 @@
 #include <time.h>
 #include "../scheduler/scheduler_local.h"
 
+/*! \cond */
 static void root_sleep(void * args) MCU_ROOT_EXEC_CODE;
+/*! \endcond */
 
 /*! \details This function causes the calling thread to sleep for \a seconds seconds.
  * \return 0
@@ -50,6 +52,7 @@ unsigned int sleep(unsigned int seconds /*! The number of seconds to sleep */){
 	return 0;
 }
 
+/*! \cond */
 void root_sleep(void * args){
 	struct mcu_timeval * p;
 	struct mcu_timeval abs_time;
@@ -63,5 +66,6 @@ void root_sleep(void * args){
 	}
 	scheduler_timing_root_timedblock(NULL, &abs_time);
 }
+/*! \endcond */
 
 /*! @} */

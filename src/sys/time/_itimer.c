@@ -17,7 +17,7 @@
  * 
  */
 
-/*! \addtogroup TIME
+/*! \addtogroup time
  * @{
  */
 

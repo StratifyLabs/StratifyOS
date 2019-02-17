@@ -17,7 +17,7 @@
  * 
  */
 
-/*! \addtogroup UNI_FILE_ACCESS
+/*! \addtogroup unistd
  * @{
  */
 
@@ -36,6 +36,7 @@
 #include "unistd_fs.h"
 #include "../scheduler/scheduler_local.h"
 
+/*! \cond */
 void root_assign_handle(void * args){
 	int * argp = args;
 	int i;
@@ -71,6 +72,7 @@ void set_open_file(int fildes, const sysfs_t * fs, void * handle, uint16_t flags
 	set_loc(fildes, 0);
 	set_flags(fildes, flags);
 }
+/*! \endcond */
 
 /*! \details This function opens a file with flags being the OR'd combination of:
  * - O_RDONLY, O_WRONLY or O_RDWR
@@ -91,7 +93,7 @@ void set_open_file(int fildes, const sysfs_t * fs, void * handle, uint16_t flags
  * - S_IWOTH:  Other write
  * - S_IXOTH:  Other execute
  *
- * \return Zero on success or -1 on error with errno (see \ref ERRNO) set to:
+ * \return Zero on success or -1 on error with errno (see \ref errno) set to:
  *  - ENAMETOOLONG:  \a name exceeds PATH_MAX or a component of \a name exceeds NAME_MAX
  *  - ENOENT: \a name could not be found
  *  - EIO: IO error
@@ -104,6 +106,7 @@ void set_open_file(int fildes, const sysfs_t * fs, void * handle, uint16_t flags
  */
 int open(const char * name, int flags, ... );
 
+/*! \cond */
 int _open(const char * name, int flags, ...) {
 	int tmp;
     int ret;
@@ -254,6 +257,7 @@ int u_init_stdio(int fildes){
 	return 0;
 #endif
 }
+/*! \endcond */
 
 
 

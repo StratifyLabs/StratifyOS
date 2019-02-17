@@ -17,7 +17,7 @@
  * 
  */
 
-/*! \addtogroup UNI_FILE_ACCESS
+/*! \addtogroup unistd
  * @{
  */
 
@@ -34,11 +34,12 @@
 /*! \details This function closes the file associated
  * with the specified descriptor.
  * \param fildes The File descriptor \a fildes.
- * \return Zero on success or -1 on error with errno (see \ref ERRNO) set to:
+ * \return Zero on success or -1 on error with errno (see \ref errno) set to:
  *  - EBADF:  Invalid file descriptor
  */
 int close(int fildes);
 
+/*! \cond */
 int _close(int fildes) {
 	//Close the file if it's open
 	int ret;
@@ -63,6 +64,7 @@ int _close(int fildes) {
 	u_reset_fildes(fildes);
 	return ret;
 }
+/*! \endcond */
 
 
 

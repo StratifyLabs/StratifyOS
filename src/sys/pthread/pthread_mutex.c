@@ -18,10 +18,9 @@
  */
 
 
-/*! \addtogroup PTHREAD_MUTEX Mutexes
+/*! \addtogroup pthread
  * @{
  *
- * \ingroup PTHREAD
  *
  */
 
@@ -40,6 +39,7 @@
 #include "mcu/debug.h"
 #include "../scheduler/scheduler_local.h"
 
+/*! \cond */
 static int mutex_check_initialized(const pthread_mutex_t * mutex);
 static int mutex_trylock(pthread_mutex_t *mutex, bool trylock, const struct timespec * abs_timeout);
 typedef struct {
@@ -58,6 +58,7 @@ typedef struct {
 static void root_mutex_unlock(root_mutex_unlock_t * args) MCU_ROOT_EXEC_CODE;
 static void root_mutex_block(root_mutex_trylock_t *args);
 static void root_mutex_unblocked(root_mutex_trylock_t *args) MCU_ROOT_EXEC_CODE;
+/*! \endcond */
 
 
 
@@ -186,8 +187,100 @@ int pthread_mutex_destroy(pthread_mutex_t *mutex){
 	return 0;
 }
 
+/*! \details This function causes the calling thread to lock \a mutex.  It \a mutex
+ * cannot be locked, the thread is block until either the mutex is locked or \a abs_timeout
+ * is greater than \a CLOCK_REALTIME.
+ *
+ * Example:
+ * \code
+ * struct timespec abstime;
+ * clock_gettime(CLOCK_REALTIME, &abstime);
+ * abstime.tv_sec += 5; //time out after five seconds
+ * if ( pthread_mutex_timedlock(mutex, &abstime) == -1 ){
+ * 	if ( errno == ETIMEDOUT ){
+ * 		//Timedout
+ * 	} else {
+ * 		//Failed
+ * 	}
+ * }
+ * \endcode
+ *
+ * \return Zero on success or -1 with errno set to:
+ * - EINVAL:  mutex or abs_timeout is NULL
+ * - EDEADLK:  the caller already holds the mutex
+ * - ETIMEDOUT:  \a abstime passed before \a cond arrived
+ *
+ */
+int pthread_mutex_timedlock(pthread_mutex_t * mutex, const struct timespec * abs_timeout){
+	int ret;
+	if ( task_get_current() == 0 ){
+		return 0;
+	}
+
+	if ( mutex_check_initialized(mutex) ){
+		return -1;
+	}
+
+	ret = mutex_trylock(mutex, false, abs_timeout);
+	switch(ret){
+		case 1:
+			errno = EDEADLK;
+			return -1;
+			break;
+		case -2:
+			//Either the lock was acquired or the timeout occurred
+			if ( mutex->pthread == task_get_current() ){
+				errno = 0;
+				//Lock was acquired
+				return 0;
+			} else {
+				//Timeout occurred
+				errno = ETIMEDOUT;
+				return -1;
+			}
+
+		case -1:
+			return -1;
+		default:
+			return 0;
+	}
+}
+
+/*! \details This function gets the mutex priority ceiling from \a mutex and stores
+ * it in \a prioceiling.
+ * \return Zero on success or -1 with \a errno (see \ref errno) set to:
+ * - EINVAL: mutex or prioceiling is NULL
+ */
+int pthread_mutex_getprioceiling(pthread_mutex_t * mutex, int *prioceiling){
+	if ( mutex_check_initialized(mutex) ){
+		return -1;
+	}
+
+	*prioceiling = mutex->prio_ceiling;
+	return 0;
+}
+
+/*! \details This function sets \a mutex priority ceiling to prioceiling.  If \a old_ceiling
+ * is not NULL, the old ceiling value is stored there.
+ *
+ * \return Zero on success or -1 with \a errno (see \ref errno) set to:
+ * - EINVAL: mutex is NULL
+ */
+int pthread_mutex_setprioceiling(pthread_mutex_t *mutex, int prioceiling, int *old_ceiling){
+	if ( mutex_check_initialized(mutex) ){
+		return -1;
+	}
+
+	if ( old_ceiling != NULL ){
+		*old_ceiling = mutex->prio_ceiling;
+	}
 
 
+	mutex->prio_ceiling = prioceiling;
+	return 0;
+}
+
+/*! \cond */
 int mutex_trylock(pthread_mutex_t *mutex, bool trylock, const struct timespec * abs_timeout){
 	int id;
 	root_mutex_trylock_t args;
@@ -334,99 +427,6 @@ void root_mutex_unlock(root_mutex_unlock_t * args){
 	}
 }
 
-/*! \details This function causes the calling thread to lock \a mutex.  It \a mutex
- * cannot be locked, the thread is block until either the mutex is locked or \a abs_timeout
- * is greater than \a CLOCK_REALTIME.
- *
- * Example:
- * \code
- * struct timespec abstime;
- * clock_gettime(CLOCK_REALTIME, &abstime);
- * abstime.tv_sec += 5; //time out after five seconds
- * if ( pthread_mutex_timedlock(mutex, &abstime) == -1 ){
- * 	if ( errno == ETIMEDOUT ){
- * 		//Timedout
- * 	} else {
- * 		//Failed
- * 	}
- * }
- * \endcode
- *
- * \return Zero on success or -1 with errno set to:
- * - EINVAL:  mutex or abs_timeout is NULL
- * - EDEADLK:  the caller already holds the mutex
- * - ETIMEDOUT:  \a abstime passed before \a cond arrived
- *
- */
-int pthread_mutex_timedlock(pthread_mutex_t * mutex, const struct timespec * abs_timeout){
-	int ret;
-	if ( task_get_current() == 0 ){
-		return 0;
-	}
-
-	if ( mutex_check_initialized(mutex) ){
-		return -1;
-	}
-
-	ret = mutex_trylock(mutex, false, abs_timeout);
-	switch(ret){
-		case 1:
-			errno = EDEADLK;
-			return -1;
-			break;
-		case -2:
-			//Either the lock was acquired or the timeout occurred
-			if ( mutex->pthread == task_get_current() ){
-				errno = 0;
-				//Lock was acquired
-				return 0;
-			} else {
-				//Timeout occurred
-				errno = ETIMEDOUT;
-				return -1;
-			}
-
-		case -1:
-			return -1;
-		default:
-			return 0;
-	}
-}
-
-/*! \details This function gets the mutex priority ceiling from \a mutex and stores
- * it in \a prioceiling.
- * \return Zero on success or -1 with \a errno (see \ref ERRNO) set to:
- * - EINVAL: mutex or prioceiling is NULL
- */
-int pthread_mutex_getprioceiling(pthread_mutex_t * mutex, int *prioceiling){
-	if ( mutex_check_initialized(mutex) ){
-		return -1;
-	}
-
-	*prioceiling = mutex->prio_ceiling;
-	return 0;
-}
-
-/*! \details This function sets \a mutex priority ceiling to prioceiling.  If \a old_ceiling
- * is not NULL, the old ceiling value is stored there.
- *
- * \return Zero on success or -1 with \a errno (see \ref ERRNO) set to:
- * - EINVAL: mutex is NULL
- */
-int pthread_mutex_setprioceiling(pthread_mutex_t *mutex, int prioceiling, int *old_ceiling){
-	if ( mutex_check_initialized(mutex) ){
-		return -1;
-	}
-
-	if ( old_ceiling != NULL ){
-		*old_ceiling = mutex->prio_ceiling;
-	}
-
-
-	mutex->prio_ceiling = prioceiling;
-	return 0;
-}
-
 int mutex_check_initialized(const pthread_mutex_t * mutex){
 	if ( (mutex == NULL) || (((u32)mutex & 0x03) != 0) ){
 		errno = EINVAL;
@@ -440,6 +440,7 @@ int mutex_check_initialized(const pthread_mutex_t * mutex){
 
 	return 0;
 }
+/*! \endcond */
 
 /*! @} */
 

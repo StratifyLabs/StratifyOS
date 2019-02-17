@@ -17,11 +17,6 @@
  * 
  */
 
-/*! \addtogroup STFY
- * @{
- */
-
-/*! \file */
 
 #include "config.h"
 #include <errno.h>
@@ -159,7 +154,3 @@ int read_task(sys_taskattr_t * task){
 
 	return ret;
 }
-
-
-
-/*! @} */

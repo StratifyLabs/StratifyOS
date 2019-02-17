@@ -17,10 +17,9 @@
  * 
  */
 
-/*! \addtogroup PTHREAD_COND
+/*! \addtogroup pthread
  * @{
  *
- * \ingroup PTHREAD
  *
  */
 
@@ -31,7 +30,7 @@
 #include <errno.h>
 #include <stdbool.h>
 
-
+/*! \cond */
 static int check_initialized(const pthread_condattr_t *attr){
 	if ( attr == NULL ){
 		errno = EINVAL;
@@ -43,6 +42,7 @@ static int check_initialized(const pthread_condattr_t *attr){
 	}
 	return 0;
 }
+/*! \endcond */
 
 /*! \details This function initializes \a attr with the default values.
  *

@@ -33,6 +33,17 @@
 extern "C" {
 #endif
 
+typedef struct {
+
+} mem_state_t;
+
+
+typedef struct {
+
+} mem_config_t;
+
+
+
 int mcu_mem_open(const devfs_handle_t * handle) MCU_ROOT_CODE;
 int mcu_mem_read(const devfs_handle_t * handle, devfs_async_t * rop) MCU_ROOT_CODE;
 int mcu_mem_write(const devfs_handle_t * handle, devfs_async_t * wop) MCU_ROOT_CODE;

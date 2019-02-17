@@ -18,11 +18,10 @@
  */
 
 
-/*! \addtogroup SIGNAL
+/*! \addtogroup signal
  *
  * @{
  *
- * \ingroup POSIX
  */
 
 /*! \file */
@@ -33,14 +32,16 @@
 #include "../scheduler/scheduler_local.h"
 #include "sig_local.h"
 
+/*! \cond */
 static int alloc_sigactions();
 static int alloc_sigaction(int sig);
+/*! \endcond */
 
 /*! \details This function sets the handler for \a sig to
  * \a func.
  *
  *
- * \return Zero or SIG_ERR with errno (see \ref ERRNO) set to:
+ * \return Zero or SIG_ERR with errno (see \ref errno) set to:
  * - EINVAL: \a sig is not a valid signal or is a signal that cannot be caught.
  *
  */
@@ -83,7 +84,7 @@ _sig_func_ptr signal(int sig, _sig_func_ptr func){
  * override any handler previously set with \ref signal().
  *
  *
- * \return Zero or SIG_ERR with errno (see \ref ERRNO) set to:
+ * \return Zero or SIG_ERR with errno (see \ref errno) set to:
  * - EINVAL: \a sig is not a valid signal or is a signal that cannot be caught.
  * - EINTR: a signal, not in \a set, was caught
  *
@@ -125,7 +126,7 @@ int sigaction(int sig, const struct sigaction * act, struct sigaction * oact){
 /*! \details This function sets the signal mask for the current thread.
  *
  *
- * \return Zero or SIG_ERR with errno (see \ref ERRNO) set to:
+ * \return Zero or SIG_ERR with errno (see \ref errno) set to:
  * - EINVAL: \a how is not one of SIG_BLOCK, SIG_SETMASK, or SIG_UNBLOCK
  *
  */
@@ -167,7 +168,7 @@ int pthread_sigmask(int how, const sigset_t * set, sigset_t * oset){
 /*! \details This function sets the signal mask for the current thread.
  * This function should only be called in single threaded applications.
  *
- * \return Zero or SIG_ERR with errno (see \ref ERRNO) set to:
+ * \return Zero or SIG_ERR with errno (see \ref errno) set to:
  * - EINVAL: \a how is not one of SIG_BLOCK, SIG_SETMASK, or SIG_UNBLOCK
  */
 int sigprocmask(int how, const sigset_t * set, sigset_t * oset){
@@ -230,6 +231,7 @@ int sigrelse(int sig){
 }
  */
 
+/*! \cond */
 int alloc_sigactions(){
 	int tmp;
 	void * mem;
@@ -261,6 +263,7 @@ int alloc_sigaction(int sig){
 	}
 	return 0;
 }
+/*! \endcond */
 
 /*! @} */
 
