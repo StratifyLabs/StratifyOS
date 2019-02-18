@@ -173,8 +173,8 @@ void root_get_serialno(void * dest){
 	mcu_core_getinfo(0, &info);
 	for(j=SERIAL_NUM_WIDTH; j >= 0; j--){
 		for(i=0; i < 8; i++){
-			*p++ = htoc((info.serial_number[j] >> 28) & 0x0F);
-			info.serial_number[j] <<= 4;
+			*p++ = htoc((info.serial.sn[j] >> 28) & 0x0F);
+			info.serial.sn[j] <<= 4;
 		}
 	}
 }

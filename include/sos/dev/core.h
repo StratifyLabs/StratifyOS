@@ -128,7 +128,7 @@ typedef struct MCU_PACK {
 	u32 o_flags /*! Setting certain flags will configure the core as described */;
 	u32 o_events;
 	u32 freq /*! The current clock speed */;
-	u32 serial_number[4] /*! The serial number of the device (from the silicon) */;
+	mcu_sn_t serial /*! The serial number of the device (from the silicon) */;
 	u32 resd[8];
 } core_info_t;
 

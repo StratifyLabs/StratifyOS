@@ -140,31 +140,31 @@
 
 /*! @} */
 
-/*! \addtogroup signal Signal Handling
+/*! \addtogroup signal
  * @{
  */
 
 /*! @} */
 
-/*! \addtogroup GRP Groups
+/*! \addtogroup grp
  * @{
  */
 
 /*! @} */
 
-/*! \addtogroup PWD Password
+/*! \addtogroup pwd
  * @{
  */
 
 /*! @} */
 
-/*! \addtogroup semaphore Semaphore
+/*! \addtogroup semaphore
  * @{
  */
 
 /*! @} */
 
-/*! \addtogroup mqueue Message Queue (mqueue)
+/*! \addtogroup mqueue
  * @{
  */
 
