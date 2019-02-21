@@ -452,7 +452,8 @@ int launch(const char * path,
 			  const char * args,
 			  int options,
 			  int ram_size,
-			  int (*update_progress)(int, int),
+			  int (*update_progress)(const void *, int, int),
+			  const void * update_context,
 			  char *const envp[]
 			  );
 
@@ -470,7 +471,8 @@ int install(const char * path,
 				char * name,
 				int options,
 				int ram_size,
-				int (*update_progress)(int, int));
+				int (*update_progress)(const void *, int, int),
+				const void * update_context);
 
 void htoa(char * dest, int num);
 char htoc(int nibble);

@@ -37,7 +37,8 @@ int install(const char * path,
 				char * exec_path,
 				int options,
 				int ram_size,
-				int (*update_progress)(int, int)){
+				int (*update_progress)(const void *, int, int),
+				const void * update_context){
 
 	int install_fd;
 	int image_fd;
@@ -131,7 +132,7 @@ int install(const char * path,
 				}
 
 				if( update_progress != 0 ){
-					if( update_progress(bytes_cumm, st.st_size) < 0 ){
+					if( update_progress(update_context, bytes_cumm, st.st_size) < 0 ){
 						//aborted by caller
 						close(image_fd);
 						close(install_fd);
