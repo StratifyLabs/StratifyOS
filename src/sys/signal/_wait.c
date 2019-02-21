@@ -121,6 +121,10 @@ void root_check_for_zombie_child(void * args){
 
 	for(i=1; i < task_get_total(); i++){
 		if( task_enabled(i) ){
+			mcu_debug_printf("check %d:%d:%d is child of %d\n", i, task_get_parent(i), task_get_pid( task_get_parent(i) ), current_pid);
+
+			//must check to see if the child is orphaned as well -- don't wait for orphaned children
+
 			if( task_get_pid( task_get_parent(i) ) == current_pid ){ //is the task a child
 				num_children++;
 				if ( scheduler_zombie_asserted(i) ){
@@ -164,7 +168,7 @@ void root_wait_child(void * args){
 	root_check_for_zombie_child(args);
 	if( p->tid == 0 ){
 		scheulder_root_assert_stopped(task_get_current());
-		scheduler_root_update_on_stopped(); //causes the currently executing thread to sleep
+		scheduler_root_update_on_stopped(); //causes the currently executing thread to sleep and wait for a signal (from a child
 		//scheduler_root_update_on_sleep(); //Sleep the current thread
 	} //otherwise -- tid is < 0 and there are no children
 }

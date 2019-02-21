@@ -45,7 +45,8 @@ static void cleanup_process(void * status);
 int scheduler_create_process(void (*p)(char *)  /*! The startup function (crt()) */,
 									  const char * path_arg /*! Path string with arguments */,
 									  task_memories_t * mem,
-									  void * reent /*! The location of the reent structure */){
+									  void * reent /*! The location of the reent structure */,
+									  int parent_id){
 	int tid;
 	init_sched_task_t args;
 
@@ -55,8 +56,8 @@ int scheduler_create_process(void (*p)(char *)  /*! The startup function (crt())
 				cleanup_process,
 				path_arg,
 				mem,
-				reent
-				);
+				reent,
+				parent_id);
 
 	if ( tid > 0 ){
 		//update the scheduler table using a privileged call
@@ -67,6 +68,7 @@ int scheduler_create_process(void (*p)(char *)  /*! The startup function (crt())
 		return -1;
 	}
 
+	mcu_debug_log_info(MCU_DEBUG_SYS, "start process id:%d pid:%d parent:%d (%d)", tid, task_get_pid(tid), task_get_parent(tid), task_get_current());
 	return task_get_pid( tid );
 }
 

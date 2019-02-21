@@ -82,5 +82,5 @@ int launch(const char * path,
         strncat(exec_path, args, PATH_ARG_MAX-1);
 	}
 
-	return process_start(exec_path, envp);
+	return process_start(exec_path, envp, options);
 }

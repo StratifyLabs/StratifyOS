@@ -201,6 +201,7 @@ void task_root_new_task(new_task_t * task){
 		if ( !task_used_asserted(i) ){
 			//initialize the process stack pointer
 			sos_task_table[i].pid = task->pid;
+			sos_task_table[i].parent = task->parent;
 			sos_task_table[i].flags = task->flags;
 			sos_task_table[i].sp = task->stackaddr - sizeof(hw_stack_frame_t) - sizeof(sw_stack_frame_t);
 			sos_task_table[i].reent = task->reent;

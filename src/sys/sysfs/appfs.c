@@ -168,7 +168,8 @@ int appfs_startup(const void * cfg){
 				if ( scheduler_create_process((void*)root_file_info.fileinfo.exec.startup,
 														0,
 														&mem,
-														(void*)root_file_info.fileinfo.exec.ram_start) >= 0 ){
+														(void*)root_file_info.fileinfo.exec.ram_start,
+														0) >= 0 ){
 					started++;
 					mcu_debug_log_info(MCU_DEBUG_APPFS, "Started %s", root_file_info.fileinfo.hdr.name);
 				} else {

@@ -41,9 +41,7 @@ static uint8_t launch_count = 0;
 #endif
 
 
-int process_start(const char *path_arg,
-		char *const envp[]
-){
+int process_start(const char *path_arg, char *const envp[], int options){
 	int fd;
 	int err;
 	appfs_file_t startup;
@@ -60,7 +58,7 @@ int process_start(const char *path_arg,
 	path = strtok_r(tmp_path, sysfs_whitespace, &p);
 
 	if( path == 0 ){
-        mcu_debug_log_error(MCU_DEBUG_SYS, "can't get path from %s", path_arg);
+		mcu_debug_log_error(MCU_DEBUG_SYS, "can't get path from %s", path_arg);
 		errno = EINVAL;
 		return -1;
 	}
@@ -68,12 +66,12 @@ int process_start(const char *path_arg,
 	len = strlen(path_arg);
 
 	if ( access(path, X_OK) < 0 ){
-        mcu_debug_log_warning(MCU_DEBUG_SYS, "no exec access:%s", path);
+		mcu_debug_log_warning(MCU_DEBUG_SYS, "no exec access:%s", path);
 		return -1;
 	}
 
 	//Open the program
-    mcu_debug_log_info(MCU_DEBUG_SYS, "process_start:%s", path);
+	mcu_debug_log_info(MCU_DEBUG_SYS, "process_start:%s", path);
 #if MCU_DEBUG
 	usleep(10*1000);
 #endif
@@ -113,26 +111,33 @@ int process_start(const char *path_arg,
 	close(fd);
 
 
-    //this gets freed in crt_sys.c by the process that is launched
+	//this gets freed in crt_sys.c by the process that is launched
 	process_path = _malloc_r(sos_task_table[0].global_reent, len+1);
 	if( process_path == 0 ){
-        mcu_debug_log_error(MCU_DEBUG_SYS, "couldn't alloc path argument in shared mem");
+		mcu_debug_log_error(MCU_DEBUG_SYS, "couldn't alloc path argument in shared mem");
 		return -1;
 	}
 	strcpy(process_path, path_arg);
 
-    mcu_debug_log_info(MCU_DEBUG_SYS, "process start: execute %s", process_path);
+	mcu_debug_log_info(MCU_DEBUG_SYS, "process start: execute %s", process_path);
+
+	int parent_id = task_get_current();
+
+	if( options & APPFS_FLAG_IS_ORPHAN ){
+		parent_id = 0;
+	}
 
 	err = scheduler_create_process((void*)startup.exec.startup,
-			process_path,
-			&mem,
-			(void*)startup.exec.ram_start);
+											 process_path,
+											 &mem,
+											 (void*)startup.exec.ram_start,
+											 parent_id);
 
 	if( err < 0 ){
 		_free_r(sos_task_table[0].global_reent, process_path);
 	}
 
-    mcu_debug_log_info(MCU_DEBUG_SYS, "process_start:returned %d", err);
+	mcu_debug_log_info(MCU_DEBUG_SYS, "process_start:returned %d", err);
 
 	return err;
 }

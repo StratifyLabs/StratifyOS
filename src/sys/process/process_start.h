@@ -31,7 +31,7 @@
 #include <stdint.h>
 #include <unistd.h>
 
-int process_start(const char *path, char *const envp[]);
+int process_start(const char *path, char *const envp[], int options);
 
 #endif /* SYSCALLS_PROCESS_H_ */
 

@@ -26,7 +26,8 @@ int task_create_process(void (*p)(char*),
 								void (*cleanup)(void*),
 								const char * path_arg,
 								task_memories_t * mem,
-								void * reent_ptr){
+								void * reent_ptr,
+								int parent_id){
 
 	int tid;
 	int err;
@@ -58,6 +59,7 @@ int task_create_process(void (*p)(char*),
 	task.flags = TASK_FLAGS_USED;
 	task.parent = task_get_current();
 	task.priority = 0;
+	task.parent = parent_id;
 
 	memcpy(&task_memories, mem, sizeof(task_memories_t));
 
