@@ -468,7 +468,7 @@ int launch(const char * path,
  * @return Zero on success
  */
 int install(const char * path,
-				char * name,
+				char * exec_path,
 				int options,
 				int ram_size,
 				int (*update_progress)(const void *, int, int),
