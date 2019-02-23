@@ -14,7 +14,7 @@ These hardware features are integrated into the OS in such a way that applicatio
 
 ## Getting Started
 
-Getting started on Stratify OS is very easy with the Stratify Labs cloud/command line tool called `sl`.
+Getting started on Stratify OS is easy with the Stratify Labs cloud/command line tool called `sl`.
 
 **Install on Mac OS X**
 
@@ -36,25 +36,10 @@ echo 'export PATH=/C/StratifyLabs-SDK/Tools/gcc/bin:$PATH' >> ~/.bash_profile
 source ~/.bash_profile
 ```
 
+Once you install `sl`, visit the [Stratify Labs web application](https://app.stratifylabs.co) to login and start the tutorials.
+
 ## License
 
 The Stratify OS source code is available the GPLv3 license.  We provide an exception to the license that allows you to distribute binary copies under the license of your choosing (similar to the old FreeRTOS license).  Read more about licensing here: http://stratifylabs.co/download/
 
-
-## Building Stratify OS
-
-The `sl` command line tool can be used to clone and build Stratify OS as well as other Stratify libraries such as lwip, mbedtls, fatfs, json, etc.
-
-The SDK is install using:
-
-```
-sl sdk.install
-```
-
-Then to pull and build Stratify OS:
-
-```
-sl sdk.update:library=StratifyOS
-sl sdk.update
-```
 
