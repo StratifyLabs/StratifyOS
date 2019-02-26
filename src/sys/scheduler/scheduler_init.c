@@ -57,6 +57,8 @@ int scheduler_start(void * (*init)(void*)){
 	sos_sched_table[0].attr.stackaddr = &_data;
 	sos_sched_table[0].attr.stacksize = sos_board_config.sys_memory_size;
 
+	mcu_debug_log_info(MCU_DEBUG_SCHEDULER, "Start");
+
 	ret = task_init(SCHED_RR_DURATION,
 						 scheduler, //run the scheduler
 						 NULL, //Let the task init function figure out where the stack needs to be and the heap size
@@ -73,6 +75,9 @@ int scheduler_start(void * (*init)(void*)){
 
 
 int scheduler_prepare(){
+
+
+	mcu_debug_log_info(MCU_DEBUG_SCHEDULER, "Init Timing");
 
 #if SCHED_USECOND_TMR_SLEEP_OC > -1
 	if ( scheduler_timing_init() ){
