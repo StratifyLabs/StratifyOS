@@ -74,13 +74,6 @@ int scheduler_start(void * (*init)(void*)){
 
 int scheduler_prepare(){
 
-	if ( mcu_debug_init() < 0 ){
-		cortexm_disable_interrupts();
-		mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_FATAL, (void*)"dbgi");
-	}
-
-	mcu_debug_log_info(MCU_DEBUG_SCHEDULER, "MCU Debug start");
-
 #if SCHED_USECOND_TMR_SLEEP_OC > -1
 	if ( scheduler_timing_init() ){
 		return -1;
