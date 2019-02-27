@@ -31,13 +31,6 @@ int _main() MCU_WEAK;
 int _main(){
 	init_hw();
 
-	if ( mcu_debug_init() < 0 ){
-		cortexm_disable_interrupts();
-		mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_FATAL, (void*)"dbgi");
-	}
-
-	mcu_debug_log_info(MCU_DEBUG_SYS, "MCU Debug start");
-
 	if ( scheduler_init() < 0 ){ //Initialize the data used for the scheduler
 		mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_FATAL, "main sched init");
 		cortexm_disable_interrupts();

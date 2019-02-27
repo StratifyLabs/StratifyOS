@@ -155,17 +155,19 @@ function(sos_sdk_build_lib PROJECT_PATH IS_INSTALL CONFIG)
 endfunction()
 
 function(sos_get_git_hash)
-	if(EXISTS ${CMAKE_SOURCE_DIR}/.git)
 		execute_process(
 			COMMAND git log -1 --format=%h
 			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 			OUTPUT_VARIABLE GIT_HASH_OUTPUT_VARIABLE
 			OUTPUT_STRIP_TRAILING_WHITESPACE
+			RESULT_VARIABLE RESULT
 			)
-		set(SOS_GIT_HASH ${GIT_HASH_OUTPUT_VARIABLE} PARENT_SCOPE)
-	else()
-		set(SOS_GIT_HASH "0000000" PARENT_SCOPE)
-	endif()
+
+		if(RESULT)
+			set(SOS_GIT_HASH "0000000" PARENT_SCOPE)
+		else()
+			set(SOS_GIT_HASH ${GIT_HASH_OUTPUT_VARIABLE} PARENT_SCOPE)
+		endif()
 endfunction()
 
 
