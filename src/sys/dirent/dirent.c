@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 
@@ -72,8 +72,8 @@ static int check_ebadf(DIR * dirp){
 		return -1;
 	}
 
-    if( cortexm_verify_zero_sum32(dirp, sizeof(DIR)/sizeof(u32)) == 0 ){
-        errno = EBADF;
+	if( cortexm_verify_zero_sum32(dirp, sizeof(DIR)/sizeof(u32)) == 0 ){
+		errno = EBADF;
 		return -1;
 	}
 	return 0;
@@ -90,10 +90,10 @@ int closedir(DIR * dirp /*! A pointer to the open directory */){
 	int ret;
 	const sysfs_t * fs;
 
-    if (check_ebadf(dirp) < 0 ){ return -1; }
+	if (check_ebadf(dirp) < 0 ){ return -1; }
 	fs = dirp->fs;
 	ret = fs->closedir(fs->config, &(dirp->handle));
-    SYSFS_PROCESS_RETURN(ret);
+	SYSFS_PROCESS_RETURN(ret);
 
 	free(dirp);
 	return ret;
@@ -132,7 +132,7 @@ DIR * opendir(const char * dirname){
 	//Open the directory and check for errors
 	err = fs->opendir(fs->config, &(dirp->handle), sysfs_stripmountpath(fs, dirname));
 	if ( err < 0 ){
-        SYSFS_PROCESS_RETURN(err);
+		SYSFS_PROCESS_RETURN(err);
 		free(dirp);
 		return NULL;
 	}
@@ -141,7 +141,7 @@ DIR * opendir(const char * dirname){
 	dirp->fs = fs;
 	dirp->loc = 0;
 
-    cortexm_assign_zero_sum32(dirp, sizeof(DIR)/sizeof(u32));
+	cortexm_assign_zero_sum32(dirp, sizeof(DIR)/sizeof(u32));
 
 	//Return the pointer to the table
 	return dirp;
@@ -171,8 +171,8 @@ struct dirent *readdir(DIR * dirp /*! a pointer to the directory structure */){
  *
  */
 int readdir_r(DIR * dirp /*! a pointer to the directory structure */,
-		struct dirent * entry /*! a pointer to the destination memory */,
-		struct dirent ** result /*! this value is assigned to \a entry on success and NULL on failure */){
+				  struct dirent * entry /*! a pointer to the destination memory */,
+				  struct dirent ** result /*! this value is assigned to \a entry on success and NULL on failure */){
 	int err;
 	const sysfs_t * fs;
 	if (check_ebadf(dirp) < 0 ){
@@ -186,15 +186,15 @@ int readdir_r(DIR * dirp /*! a pointer to the directory structure */,
 	err = fs->readdir_r(fs->config, dirp->handle, dirp->loc, entry);
 	if ( err < 0 ){
 		//errno is set by fs->readdir_r
-        SYSFS_PROCESS_RETURN(err);
+		SYSFS_PROCESS_RETURN(err);
 		if ( result ){
 			*result = NULL;
 		}
-        return err;
+		return err;
 	}
 
 	dirp->loc++;
-    cortexm_assign_zero_sum32(dirp, sizeof(DIR)/sizeof(u32));
+	cortexm_assign_zero_sum32(dirp, sizeof(DIR)/sizeof(u32));
 
 	if ( result ){
 		*result = entry;
@@ -206,9 +206,9 @@ int readdir_r(DIR * dirp /*! a pointer to the directory structure */,
  *
  */
 void rewinddir(DIR * dirp /*! a pointer to the directory structure */){
-    if( check_ebadf(dirp) < 0 ){ return; }
+	if( check_ebadf(dirp) < 0 ){ return; }
 	dirp->loc = 0;
-    cortexm_assign_zero_sum32(dirp, sizeof(DIR)/sizeof(u32));
+	cortexm_assign_zero_sum32(dirp, sizeof(DIR)/sizeof(u32));
 }
 
 /*! \details Seeks to the specified location in
@@ -216,10 +216,10 @@ void rewinddir(DIR * dirp /*! a pointer to the directory structure */){
  *
  */
 void seekdir(DIR * dirp /*! a pointer to the directory structure */,
-		long loc /*! the target location */){
-    if( check_ebadf(dirp) < 0 ){ return; }
+				 long loc /*! the target location */){
+	if( check_ebadf(dirp) < 0 ){ return; }
 	dirp->loc = loc;
-    cortexm_assign_zero_sum32(dirp, sizeof(DIR)/sizeof(u32));
+	cortexm_assign_zero_sum32(dirp, sizeof(DIR)/sizeof(u32));
 }
 
 /*! \details Gets the current location in the directory.
@@ -227,7 +227,7 @@ void seekdir(DIR * dirp /*! a pointer to the directory structure */,
  * \return The current directory location
  */
 long telldir(DIR * dirp /*! a pointer to the directory structure */){
-    if( check_ebadf(dirp) < 0 ){ return SYSFS_RETURN_EOF; }
+	if( check_ebadf(dirp) < 0 ){ return SYSFS_RETURN_EOF; }
 	return dirp->loc;
 }
 
