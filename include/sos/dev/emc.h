@@ -59,7 +59,15 @@ typedef enum {
 	EMC_FLAG_IS_NAND = (1<<6),
 	EMC_FLAG_IS_8B_ACCESS = (1<<7),
 	EMC_FLAG_IS_16B_ACCESS = (1<<8),
-	EMC_FLAG_IS_32B_ACCESS = (1<<9)
+    EMC_FLAG_IS_32B_ACCESS = (1<<9),
+    EMC_FLAG_IS_AHB = (1<<10)	,	/*!< use only data bus without address*/
+    EMC_FLAG_IS_PSRAM_BANK1 = (1<<11)	,	/*!< use subbank BANK1 - cs0*/
+    EMC_FLAG_IS_PSRAM_BANK2 = (1<<12)	,	/*!< use subbank BANK2 - cs1*/
+    EMC_FLAG_IS_PSRAM_BANK3 = (1<<13)	,	/*!< use subbank BANK3 - cs2*/
+    EMC_FLAG_IS_PSRAM_BANK4 = (1<<14)	,	/*!< use subbank BANK4 - cs3*/
+    EMC_FLAG_AHB_WRITE_DATA = (1<<15)	,	/*!< write data throuth ahb */
+    EMC_FLAG_AHB_WRITE_REG =  (1<<16)	,	/*!< write reg  throuth ahb*/
+
 }emc_flag_t;
 typedef struct MCU_PACK {
     mcu_pin_t we;
@@ -79,7 +87,6 @@ typedef struct {
 	u32 base_address;
     u32 size;
     u8 data_bus_width;
-    u8 address_bus_width;
 	u32 resd[8];
 } emc_info_t;
 
@@ -88,6 +95,7 @@ typedef struct MCU_PACK {
     u32 base_address;
     u32 size;
     u32 freq;
+    u32 data_or_reg;    /*!< use for AHB command*/
     u8 data_bus_width;
     emc_pin_assignment_t pin_assignment;
     u32 resd[8];
