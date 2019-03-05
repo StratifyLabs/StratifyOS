@@ -71,9 +71,11 @@ int task_init_mpu(void * system_memory, int system_memory_size){
 	//Calculate the device specific memory protection regions
 	mpu_dev_init();
 
+	u32 text_start = (u32)&_text & ~mcu_board_config.os_mpu_text_mask;
+
 	//Memory Protection
-	os_mem.code.addr = &_text;
-	os_mem.code.size = (char*)&_etext - (char*)&_text;
+	os_mem.code.addr = (void*)text_start;
+	os_mem.code.size = (char*)&_etext - (char*)text_start;
 	os_mem.data.addr = system_memory;
 	os_mem.data.size = system_memory_size;
 	err = init_os_memory_protection(&os_mem);
