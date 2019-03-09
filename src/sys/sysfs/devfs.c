@@ -209,9 +209,9 @@ int devfs_ioctl(const void * cfg, void * handle, int request, void * ctl){
     args.handle = handle;
     args.request = request;
     args.ctl = ctl;
-    args.ret = 0;
+    args.result = 0;
     cortexm_svcall(root_ioctl, &args);
-    return args.ret;
+    return args.result;
 }
 
 void root_ioctl(void * args){
@@ -224,13 +224,13 @@ void root_ioctl(void * args){
         if( _IOCTL_IOCTLRW(p->request) ){
             u32 size = _IOCTL_SIZE(p->request);
             if( task_validate_memory(p->ctl, size) < 0 ){
-                p->ret = SYSFS_SET_RETURN(EPERM);
+                p->result = SYSFS_SET_RETURN(EPERM);
                 return;
             }
         }
     }
 
-    p->ret = dev->driver.ioctl(&dev->handle, p->request, p->ctl);
+    p->result = dev->driver.ioctl(&dev->handle, p->request, p->ctl);
 }
 
 void root_devfs_close(void * args){

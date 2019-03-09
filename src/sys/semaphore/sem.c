@@ -63,7 +63,7 @@ typedef struct {
 	sem_t * sem;
 	int id;
 	int new_thread;
-	int ret;
+	int result;
 	struct mcu_timeval interval;
 } root_sem_args_t;
 
@@ -345,7 +345,7 @@ int sem_timedwait(sem_t * sem, const struct timespec * abs_timeout){
 
 	cortexm_svcall(root_sem_timedwait, &args);
 
-	if( args.ret < 0 ){
+	if( args.result < 0 ){
 		if ( scheduler_unblock_type(task_get_current()) == SCHEDULER_UNBLOCK_SLEEP){
 			//The timeout expired
 			errno = ETIMEDOUT;
@@ -376,15 +376,15 @@ int sem_trywait(sem_t *sem){
 	}
 
 	args.sem = sem;
-	args.ret = 0;
+	args.result = 0;
 
 	cortexm_svcall(root_sem_trywait, &args);
 
-	if( args.ret < 0 ){
+	if( args.result < 0 ){
 		errno = EAGAIN;
 	}
 
-	return args.ret;
+	return args.result;
 }
 
 
@@ -448,11 +448,11 @@ int sem_wait(sem_t *sem){
 	}
 
 	args.sem = sem;
-	args.ret = 0;
+	args.result = 0;
 
 	do {
 		cortexm_svcall(root_sem_wait, &args);
-	} while( args.ret <  0 );
+	} while( args.result <  0 );
 
 	return 0;
 }
@@ -471,9 +471,9 @@ void root_sem_timedwait(void * args){
 
 	if ( p->sem->value <= 0 ){
 		scheduler_timing_root_timedblock(p->sem, &p->interval);
-		p->ret = -1;
+		p->result = -1;
 	} else {
-		p->ret = 0;
+		p->result = 0;
 		p->sem->value--;
 	}
 
@@ -484,9 +484,9 @@ void root_sem_trywait(void * args){
 
 	if ( p->sem->value > 0 ){
 		p->sem->value--;
-		p->ret = 0;
+		p->result = 0;
 	} else {
-		p->ret = -1;
+		p->result = -1;
 	}
 }
 
@@ -498,11 +498,11 @@ void root_sem_wait(void * args){
 	if ( p->sem->value <= 0){
 		//task must be blocked until the semaphore is available
 		scheduler_root_update_on_sleep();
-		p->ret = -1; //didn't get the semaphore
+		p->result = -1; //didn't get the semaphore
 	} else {
 		//got the semaphore
 		p->sem->value--;
-		p->ret = 0;
+		p->result = 0;
 	}
 }
 

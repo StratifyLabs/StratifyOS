@@ -37,7 +37,6 @@ static void root_sleep(void * args) MCU_ROOT_EXEC_CODE;
 unsigned int sleep(unsigned int seconds /*! The number of seconds to sleep */){
 	struct mcu_timeval interval;
 	div_t d;
-
 	if ( task_get_current() != 0 ){
 		if ( seconds < SCHEDULER_TIMEVAL_SECONDS ){
 			interval.tv_sec = 0;

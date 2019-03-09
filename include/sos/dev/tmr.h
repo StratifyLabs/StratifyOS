@@ -1,4 +1,4 @@
-/* Copyright 2011-2018 Tyler Gilbert; 
+/* Copyright 2011-2018 Tyler Gilbert;
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -68,6 +68,9 @@ enum {
 	TMR_FLAG_IS_SOURCE_COUNTDOWN /*! Count down (not up) */ = (1<<9),
 	TMR_FLAG_IS_AUTO_RELOAD /*! Auto reload the timer */ = (1<<10),
 	TMR_FLAG_SET_CHANNEL /*! Configure channel characteristics */ = (1<<11),
+	TMR_FLAG_IS_CHANNEL_EDGERISING /*! Count rising edges */ = TMR_FLAG_IS_SOURCE_EDGERISING,
+	TMR_FLAG_IS_CHANNEL_EDGEFALLING /*! Count falling edges */ = TMR_FLAG_IS_SOURCE_EDGEFALLING,
+	TMR_FLAG_IS_CHANNEL_EDGEBOTH /*! Count both edges */ = TMR_FLAG_IS_SOURCE_EDGEBOTH,
 	TMR_FLAG_IS_CHANNEL_STOP_ON_RESET /*! Stop when the timer resets */ = (1<<12),
 	TMR_FLAG_IS_CHANNEL_RESET_ON_MATCH /*! Reset when the timer finds a match */ = (1<<13),
 	TMR_FLAG_IS_CHANNEL_STOP_ON_MATCH /*! Stop when the timer finds a match */ = (1<<14),

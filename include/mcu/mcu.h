@@ -180,7 +180,6 @@ typedef struct MCU_PACK {
  * \details This variable must be provided by the board support package.
  */
 extern const mcu_board_config_t mcu_board_config;
-extern u32 mcu_ram_usage_table[];
 
 
 

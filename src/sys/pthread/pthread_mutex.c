@@ -47,7 +47,7 @@ typedef struct {
 	pthread_mutex_t *mutex;
 	bool trylock;
 	struct mcu_timeval abs_timeout;
-	int ret;
+	int result;
 } root_mutex_trylock_t;
 static void root_mutex_trylock(root_mutex_trylock_t *args) MCU_ROOT_EXEC_CODE;
 
@@ -291,6 +291,7 @@ int mutex_trylock(pthread_mutex_t *mutex, bool trylock, const struct timespec * 
 
 	if ( !(mutex->flags & PTHREAD_MUTEX_FLAGS_INITIALIZED) ){
 		//Mutex is not initialized
+		mcu_debug_printf("invalid\n");
 		errno = EINVAL;
 		return -1;
 	}
@@ -299,6 +300,7 @@ int mutex_trylock(pthread_mutex_t *mutex, bool trylock, const struct timespec * 
 		//check if pid is equal to the PID of the mutex
 		if ( mutex->pid != getpid() ){
 			//this mutex belongs to a different process and is not shared
+			mcu_debug_printf("no access (%d != %d)\n", mutex->pid, getpid());
 			errno = EACCES;
 			return -1;
 		}
@@ -315,11 +317,13 @@ int mutex_trylock(pthread_mutex_t *mutex, bool trylock, const struct timespec * 
 				mutex->lock++;
 				return 0;
 			} else {
+				mcu_debug_printf("not available to %d\n", id);
 				errno = EAGAIN;
 				return -1;
 			}
 		} else {
 			//Already an owner of the mutex -- trylock returns 0, lock returns an error
+			mcu_debug_printf("already owner %d\n", id);
 			return 1;
 		}
 	}
@@ -330,13 +334,13 @@ int mutex_trylock(pthread_mutex_t *mutex, bool trylock, const struct timespec * 
 	args.trylock = trylock;
 	scheduler_timing_convert_timespec(&args.abs_timeout, abs_timeout);
 	cortexm_svcall((cortexm_svcall_t)root_mutex_trylock, &args);
-	if( args.ret == -2 ){
+	if( args.result == -2 ){
 		while( (scheduler_unblock_type(args.id) == SCHEDULER_UNBLOCK_SIGNAL)  ){
 			cortexm_svcall((cortexm_svcall_t)root_mutex_unblocked, &args);
 		}
 	}
 
-	return args.ret;
+	return args.result;
 }
 
 int pthread_mutex_force_unlock(pthread_mutex_t *mutex){
@@ -388,13 +392,13 @@ void root_mutex_trylock(root_mutex_trylock_t *args){
 			task_root_set_current_priority(args->mutex->prio_ceiling);
 		}
 		args->mutex->lock = 1; //This is the lock count
-		args->ret = 0;
+		args->result = 0;
 	} else {
 		//Mutex is not free
 		if ( args->trylock == false ){
 			root_mutex_block(args);
 		}
-		args->ret = -2;
+		args->result = -2;
 	}
 }
 

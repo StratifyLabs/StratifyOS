@@ -369,17 +369,10 @@ int send_and_reload_timer(volatile sos_process_timer_t * timer, u8 task_id, u32 
 												timer->sigevent.sigev_value.sival_int,
 												task_get_current() == task_id);
 		if( result < 0 ){
-			mcu_debug_printf("failed to fire %d\n", SYSFS_GET_RETURN(result));
+			mcu_debug_log_error(MCU_DEBUG_SCHEDULER, "failed to fire %d", SYSFS_GET_RETURN(result));
 		} else {
 			timer->o_flags |= SCHEDULER_TIMING_PROCESS_TIMER_FLAG_IS_QUEUED;
 		}
-
-	} else {
-		mcu_debug_printf("pending 0x%X %d %d 0x%X\n",
-							  timer->o_flags,
-							  timer->sigevent.sigev_notify,
-							  timer->sigevent.sigev_signo,
-							  timer->sigevent.sigev_value.sival_int);
 	}
 
 	//reload the timer if interval is valid
@@ -520,6 +513,7 @@ void scheduler_timing_root_get_realtime(struct mcu_timeval * tv){
 
 int root_handle_usecond_overflow_event(void * context, const mcu_event_t * data){
 	sched_usecond_counter++;
+	mcu_debug_printf("rollover\n");
 	root_handle_usecond_match_event(0, 0);
 	root_handle_usecond_process_timer_match_event(0, 0);
 	return 1; //do not clear callback
@@ -700,6 +694,7 @@ int open_usecond_tmr(){
 		if (err ){
 			return -1;
 		}
+
 	} else {
 		action.prio = 0;
 		action.channel = 0; //doesn't matter

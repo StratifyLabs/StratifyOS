@@ -530,7 +530,7 @@ void link_cmd_mkfs(link_transport_driver_t * driver, link_data_t * args){
 	args->reply.err = link_transport_slaveread(driver, path, args->op.exec.path_size, NULL, NULL);
 	args->reply.err = mkfs(path);
 	if ( args->reply.err < 0 ){
-		mcu_debug_log_error(MCU_DEBUG_LINK, "Failed to exec %s (%d)", path, errno);
+		mcu_debug_log_error(MCU_DEBUG_LINK, "Failed to mkfs %s (%d)", path, errno);
 		args->reply.err_number = errno;
 	}
 }

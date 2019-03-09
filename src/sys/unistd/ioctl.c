@@ -58,7 +58,6 @@ int ioctl(int fildes, int request, ...) {
 
 	if( FILDES_IS_SOCKET(fildes) ){
 		if( sos_board_config.socket_api != 0 ){
-			mcu_debug_printf("socket API IOCTL 0x%X 0x%X %p (%d)\n", fildes, request, ctl, fildes);
 			return sos_board_config.socket_api->ioctl(fildes & ~FILDES_SOCKET_FLAG, request, ctl);
 		}
 		errno = EBADF;

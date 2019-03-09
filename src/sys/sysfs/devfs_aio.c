@@ -23,7 +23,7 @@ typedef struct {
 	const devfs_device_t * device;
 	struct aiocb * aiocbp;
 	int read;
-	int ret;
+	int result;
 } root_aio_transfer_t;
 
 //static int data_transfer_callback(struct aiocb * aiocbp, const void * ignore);
@@ -36,26 +36,26 @@ void root_device_data_transfer(void * args){
 	//set the device callback for the read/write op
 	if ( p->read == 1 ){
 		//Read operation
-        p->ret = p->device->driver.read(&p->device->handle, (devfs_async_t*)&p->aiocbp->async);
+        p->result = p->device->driver.read(&p->device->handle, (devfs_async_t*)&p->aiocbp->async);
 	} else {
-        p->ret = p->device->driver.write(&p->device->handle, (devfs_async_t*)&p->aiocbp->async);
+        p->result = p->device->driver.write(&p->device->handle, (devfs_async_t*)&p->aiocbp->async);
 	}
 
 	sos_sched_table[task_get_current()].block_object = NULL;
 
     cortexm_enable_interrupts();
 
-	if ( p->ret == 0 ){
+	if ( p->result == 0 ){
 		if( p->aiocbp->async.nbyte > 0 ){
 			//AIO is in progress
 		}
-	} else if ( p->ret < 0 ){
+	} else if ( p->result < 0 ){
 		//AIO was not started -- errno is set by the driver
         //p->ret = -1;
-	} else if ( p->ret > 0 ){
+	} else if ( p->result > 0 ){
 		//The transfer happened synchronously -- call the callback manually
 		sysfs_aio_data_transfer_callback(p->aiocbp, 0);
-		p->ret = 0;
+		p->result = 0;
 	}
 }
 
@@ -77,5 +77,5 @@ int devfs_aio_data_transfer(const devfs_device_t * device, struct aiocb * aiocbp
 	args.aiocbp->async.handler.context = aiocbp;
 	args.aiocbp->aio_nbytes = -1; //means status is in progress
 	cortexm_svcall(root_device_data_transfer, &args);
-	return args.ret;
+	return args.result;
 }

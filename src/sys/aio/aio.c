@@ -44,7 +44,7 @@ typedef struct {
 	const devfs_device_t * device;
 	struct aiocb * aiocbp;
 	int read;
-	int ret;
+	int result;
 } root_aio_transfer_t;
 /*! \endcond */
 
@@ -54,9 +54,9 @@ typedef struct {
  * \return -1 with errno set to ENOTSUP
  */
 int aio_cancel(int fildes /*! the file descriptor */,
-		struct aiocb * aiocbp /*! a pointer to the AIO data structure */){
+					struct aiocb * aiocbp /*! a pointer to the AIO data structure */){
 
-    //this needs a special ioctl request to cancel current operations -- use MCU_SET_ACTION
+	//this needs a special ioctl request to cancel current operations -- use MCU_SET_ACTION
 
 	errno = ENOTSUP;
 	return -1;
@@ -69,10 +69,10 @@ int aio_cancel(int fildes /*! the file descriptor */,
  *  - Other interface specific error
  */
 int aio_error(const struct aiocb * aiocbp /*! a pointer to the AIO data struture */){
-    if ( (volatile void *)aiocbp->async.buf != NULL ){
+	if ( (volatile void *)aiocbp->async.buf != NULL ){
 		return EINPROGRESS;
 	} else {
-        return aiocbp->async.nbyte; //this is where the error value is stored in case of failure
+		return aiocbp->async.nbyte; //this is where the error value is stored in case of failure
 	}
 }
 
@@ -111,7 +111,7 @@ int aio_write(struct aiocb * aiocbp /*! a pointer to the AIO data struture */){
  * (or if the operation is not yet complete).  \ref aio_error() can be used to determine the error.
  */
 ssize_t aio_return(struct aiocb * aiocbp /*! a pointer to the AIO data struture */){
-    if ( aiocbp->async.buf != NULL ){
+	if ( aiocbp->async.buf != NULL ){
 		return -1;
 	} else {
 		return aiocbp->aio_nbytes; //this is the number of bytes that was read or written
@@ -144,7 +144,7 @@ int suspend(struct aiocb *const list[], int nent, const struct timespec * timeou
 		return -1;
 	}
 
-	return args.ret;
+	return args.result;
 }
 
 /*! \details This function will suspend the currently executing thread until an AIO operation
@@ -156,8 +156,8 @@ int suspend(struct aiocb *const list[], int nent, const struct timespec * timeou
  *  - EINTR:  the thread received a signal before any operations completed.
  */
 int aio_suspend(struct aiocb *const list[] /*! a list of AIO transfer structures */,
-		int nent /*! the number of transfer in \a list */,
-		const struct timespec * timeout /*! the absolute timeout value */){
+					 int nent /*! the number of transfer in \a list */,
+					 const struct timespec * timeout /*! the absolute timeout value */){
 	return suspend(list, nent, timeout, false);
 }
 
@@ -174,28 +174,28 @@ int aio_suspend(struct aiocb *const list[] /*! a list of AIO transfer structures
  * - EINVAL:  \a mode is not set to LIO_NOWAIT or LIO_WAIT
  */
 int lio_listio(int mode /*! The mode:  \a LIO_WAIT or \a LIO_NOWAIT */,
-		struct aiocb * const list[] /*! The list of AIO transfers */,
-		int nent /*! The number of transfers in \a list */,
-		struct sigevent * sig /*! The sigevent structure */){
+					struct aiocb * const list[] /*! The list of AIO transfers */,
+					int nent /*! The number of transfers in \a list */,
+					struct sigevent * sig /*! The sigevent structure */){
 	int i;
 
 	switch(mode){
-	case LIO_NOWAIT:
-		if ( sig != NULL ){
-			for(i=0; i < nent; i++){
-				if( list[i] != 0 ){
-					//error check sigevent
-					memcpy(&list[i]->aio_sigevent, sig, sizeof(struct sigevent));
+		case LIO_NOWAIT:
+			if ( sig != NULL ){
+				for(i=0; i < nent; i++){
+					if( list[i] != 0 ){
+						//error check sigevent
+						memcpy(&list[i]->aio_sigevent, sig, sizeof(struct sigevent));
+					}
 				}
 			}
-		}
 
-		//no break
-	case LIO_WAIT:
-		break;
-	default:
-		errno = EINVAL;
-		return -1;
+			//no break
+		case LIO_WAIT:
+			break;
+		default:
+			errno = EINVAL;
+			return -1;
 	}
 
 	for(i=0; i < nent; i++){
@@ -240,18 +240,18 @@ void root_suspend(void * args){
 	} else {
 		suspend = false;
 	}
-	 cortexm_disable_interrupts(); //no switching until the transfer is started
+	cortexm_disable_interrupts(); //no switching until the transfer is started
 	for(i = 0; i < p->nent; i++ ){
 		if (p->list[i] != NULL ){
 
 			//first check to see if we block on aio suspend (if anything is complete don't block)
-				if ( (p->list[i]->async.buf == NULL) && (p->block_on_all == false) ){ //if op.buf is NULL the operation is complete
+			if ( (p->list[i]->async.buf == NULL) && (p->block_on_all == false) ){ //if op.buf is NULL the operation is complete
 				suspend = false;
 				break;
 			}
 
 			//now check to see if we block on listio suspend (if anything is incomplete block)
-				if ( (p->list[i]->async.buf != NULL) && (p->block_on_all == true) ){
+			if ( (p->list[i]->async.buf != NULL) && (p->block_on_all == true) ){
 				suspend = true;
 			}
 
@@ -266,7 +266,7 @@ void root_suspend(void * args){
 	}
 
 	//enable interrupts
-	 cortexm_enable_interrupts();
+	cortexm_enable_interrupts();
 
 }
 
@@ -277,12 +277,16 @@ int sysfs_aio_data_transfer_callback(void * context, const mcu_event_t * event){
 	bool wakeup;
 	aiocbp = context;
 	sysfs_aio_suspend_t * p;
-    aiocbp->aio_nbytes = aiocbp->async.nbyte;
-    aiocbp->async.buf = NULL;
-    aiocbp->async.nbyte = 0;
+	aiocbp->aio_nbytes = aiocbp->async.nbyte;
+	aiocbp->async.buf = NULL;
+	if( aiocbp->async.nbyte < 0 ){
+		aiocbp->async.nbyte = SYSFS_GET_RETURN_ERRNO(aiocbp->async.nbyte);
+	} else {
+		aiocbp->async.nbyte = 0;
+	}
 
 	//Check to see if the thread is suspended on aio -- the block object is a list of aiocb -- check if aiocbp is in list
-    tid = aiocbp->async.tid;
+	tid = aiocbp->async.tid;
 	if( tid >= task_get_total() ){
 		//This is not a valid task id
 		return 0;
@@ -296,14 +300,14 @@ int sysfs_aio_data_transfer_callback(void * context, const mcu_event_t * event){
 				for(i=0; i < p->nent; i++){
 					if ( aiocbp == p->list[i] ){ //If this is true the thread is blocked on the operation that is currently completing
 						scheduler_root_assert_active(tid, SCHEDULER_UNBLOCK_AIO);
-                        scheduler_root_update_on_wake(tid, task_get_priority(tid) );
+						scheduler_root_update_on_wake(tid, task_get_priority(tid) );
 						break;
 					}
 				}
 			} else {
 				wakeup = true;
 				for(i=0; i < p->nent; i++){
-                    if ( p->list[i]->async.buf != NULL ){ //operation is not complete
+					if ( p->list[i]->async.buf != NULL ){ //operation is not complete
 						//don't wakeup because this operation is not complete
 						wakeup = false;
 					}
@@ -311,7 +315,7 @@ int sysfs_aio_data_transfer_callback(void * context, const mcu_event_t * event){
 
 				if( wakeup == true ){
 					scheduler_root_assert_active(tid, SCHEDULER_UNBLOCK_AIO);
-                    scheduler_root_update_on_wake(tid, task_get_priority(tid));
+					scheduler_root_update_on_wake(tid, task_get_priority(tid));
 				}
 			}
 		}
@@ -320,11 +324,11 @@ int sysfs_aio_data_transfer_callback(void * context, const mcu_event_t * event){
 		if( aiocbp->aio_sigevent.sigev_notify == SIGEV_SIGNAL ){
 			//send a signal
 			signal_root_send(0,
-					tid,
-					aiocbp->aio_sigevent.sigev_signo,
-					SI_ASYNCIO,
-					aiocbp->aio_sigevent.sigev_value.sival_int,
-					1);
+								  tid,
+								  aiocbp->aio_sigevent.sigev_signo,
+								  SI_ASYNCIO,
+								  aiocbp->aio_sigevent.sigev_value.sival_int,
+								  1);
 		}
 
 		//This needs to check if all operations in a list have complete and then use SIGEV_NONE, SIGEV_SIGNAL, or SIGEV_THREAD to notify

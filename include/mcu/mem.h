@@ -34,14 +34,21 @@ extern "C" {
 #endif
 
 typedef struct {
-
+	void * usage;
 } mem_state_t;
 
+typedef struct {
+	u16 o_flags; //assigned to MEM_FLAG_IS_RAM or MEM_FLAG_IS_FLASH
+	u16 page_count; //number of pages in the section
+	u32 address; //beginning of the section
+	u32 page_size; //number of bytes in each page
+} mem_section_t;
 
 typedef struct {
-
+	u32 usage_size;
+	u16 section_count;
+	mem_section_t sections[];
 } mem_config_t;
-
 
 
 int mcu_mem_open(const devfs_handle_t * handle) MCU_ROOT_CODE;

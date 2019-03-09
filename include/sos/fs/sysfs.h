@@ -205,7 +205,7 @@ typedef struct {
     int flags;
     int loc;
     int nbyte;
-    int ret;
+	 int result;
 } sysfs_read_t;
 
 typedef sysfs_read_t sysfs_write_t;
@@ -215,7 +215,7 @@ typedef struct {
     void * handle;
     int request;
     void * ctl;
-    int ret;
+	 int result;
 } sysfs_ioctl_t;
 
 typedef struct {
@@ -223,7 +223,7 @@ typedef struct {
     int nent;
     bool block_on_all;
     struct mcu_timeval abs_timeout;
-    int ret;
+	 int result;
     struct sigevent * event;
 } sysfs_aio_suspend_t;
 

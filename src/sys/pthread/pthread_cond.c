@@ -45,7 +45,7 @@ typedef struct {
 	pthread_mutex_t *mutex;
 	int new_thread;
 	struct mcu_timeval interval;
-	int ret;
+	int result;
 } root_cond_wait_t;
 static void root_cond_wait(void  * args) MCU_ROOT_EXEC_CODE;
 static void root_cond_broadcast(void * args) MCU_ROOT_EXEC_CODE;
@@ -192,7 +192,7 @@ int pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex){
 	args.new_thread = scheduler_get_highest_priority_blocked(mutex);
 	cortexm_svcall(root_cond_wait, &args);
 
-	if ( args.ret == -1 ){
+	if ( args.result == -1 ){
 		errno = EPERM;
 		return -1;
 	}
@@ -257,7 +257,7 @@ int pthread_cond_timedwait(pthread_cond_t *cond, pthread_mutex_t *mutex, const s
 	args.new_thread = scheduler_get_highest_priority_blocked(mutex);
 	cortexm_svcall(root_cond_wait, &args);
 
-	if ( args.ret == -1 ){
+	if ( args.result == -1 ){
 		errno = EPERM;
 		return -1;
 	}
@@ -293,9 +293,9 @@ void root_cond_wait(void  * args){
 		}
 
 		scheduler_timing_root_timedblock(argsp->cond, &argsp->interval);
-		argsp->ret = 0;
+		argsp->result = 0;
 	} else {
-		argsp->ret = -1;
+		argsp->result = -1;
 	}
 
 }

@@ -67,7 +67,9 @@ enum {
 	APPFS_FLAG_IS_ROOT = (1<<3), //run as root
 	APPFS_FLAG_IS_REPLACE = (1<<4), //replace (default is to duplicate)
 	APPFS_FLAG_IS_ORPHAN = (1<<5), //calling process wont' be parent
-	APPFS_FLAG_IS_UNIQUE = (1<<6) //install with a unique name in the flash or RAM
+	APPFS_FLAG_IS_UNIQUE = (1<<6), //install with a unique name in the flash or RAM
+	APPFS_FLAG_IS_CODE_TIGHTLY_COUPLED = (1<<7),
+	APPFS_FLAG_IS_DATA_TIGHTLY_COUPLED = (1<<8)
 };
 
 

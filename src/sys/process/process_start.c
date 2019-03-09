@@ -86,12 +86,14 @@ int process_start(const char *path_arg, char *const envp[], int options){
 	if ( err != sizeof(appfs_file_t) ){
 		//The read() function sets the errno already
 		close(fd);
+		mcu_debug_log_error(MCU_DEBUG_SYS, "failed to read program header");
 		return -1;
 	}
 
 	//verify the signature
-	if( appfs_util_isexecutable(&startup) == false ){
+	if( appfs_util_is_executable(&startup) == 0 ){
 		errno = ENOEXEC;
+		mcu_debug_log_error(MCU_DEBUG_SYS, "not executable");
 		return -1;
 	}
 
@@ -104,6 +106,7 @@ int process_start(const char *path_arg, char *const envp[], int options){
 	if( !reent_is_free((void*)startup.exec.ram_start) ){
 		errno = ENOTSUP;
 		close(fd);
+		mcu_debug_log_error(MCU_DEBUG_SYS, "already running");
 		return -1;
 	}
 
@@ -126,6 +129,9 @@ int process_start(const char *path_arg, char *const envp[], int options){
 	if( options & APPFS_FLAG_IS_ORPHAN ){
 		parent_id = 0;
 	}
+
+	mcu_debug_log_info(MCU_DEBUG_SYS, "process start: code:%p data:%p", (void*)startup.exec.startup,
+							 (void*)startup.exec.ram_start);
 
 	err = scheduler_create_process((void*)startup.exec.startup,
 											 process_path,

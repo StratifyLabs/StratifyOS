@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 
@@ -41,11 +41,12 @@
 #define APPFS_REWRITE_KERNEL_ADDR (0x00FF8000)
 #define APPFS_REWRITE_KERNEL_ADDR_MASK (0x7FFF)
 
-static void appfs_util_root_load_file_info(void * args) MCU_ROOT_EXEC_CODE;
-static int get_header_info(appfs_file_t * file, int page, int type);
-static int get_filesize(const devfs_device_t * dev, root_load_fileinfo_t * args, int filetype);
+static int populate_file_header(const devfs_device_t * dev, appfs_file_t * file, const mem_pageinfo_t * page_info, int type);
+static int get_flash_page_type(const devfs_device_t * dev, u32 address);
+static int read_appfs_file_header(const devfs_device_t * dev, u32 address, appfs_file_t * dest);
+static u32 find_protectable_addr(const devfs_device_t * dev, int size, int type, int * page, int skip_protection);
+static u32 find_protectable_free(const devfs_device_t * dev, int type, int size, int * page, int skip_protection);
 
-static void root_op_erase_pages(void * args) MCU_ROOT_EXEC_CODE;
 
 static u8 calc_checksum(const char * name){
 	int i;
@@ -58,36 +59,39 @@ static u8 calc_checksum(const char * name){
 }
 
 
-typedef struct {
-	int ret;
-	const devfs_device_t * dev;
-	devfs_async_t op;
-	int start_page;
-	int end_page;
-} root_op_t;
-
-void root_op_erase_pages(void * args){
+int appfs_util_root_erase_pages(const devfs_device_t * dev, int start_page, int end_page){
+	int result;
 	int i;
-	root_op_t * p = args;
-	for(i=p->start_page; i <= p->end_page; i++){
+	for(i=start_page; i <= end_page; i++){
 		mcu_wdt_reset();
-		p->ret = p->dev->driver.ioctl(&(p->dev->handle), I_MEM_ERASE_PAGE, (void*)i);
+		result = dev->driver.ioctl(&(dev->handle), I_MEM_ERASE_PAGE, (void*)i);
+		if( result < 0 ){ return result; }
 	}
-}
-
-int appfs_util_erasepages(const devfs_device_t * dev, int start_page, int end_page){
-	root_op_t args;
-	args.dev = dev;
-	args.start_page = start_page;
-	args.end_page = end_page;
-	cortexm_svcall(root_op_erase_pages, &args);
 	return 0;
 }
 
-int appfs_util_getpageinfo(const devfs_device_t * dev, mem_pageinfo_t * pageinfo){
+int appfs_util_root_get_pageinfo(const devfs_device_t * dev, mem_pageinfo_t * pageinfo){
 	return dev->driver.ioctl(&(dev->handle), I_MEM_GETPAGEINFO, pageinfo);
 }
 
+int appfs_util_root_get_meminfo(const devfs_device_t * device, mem_info_t * mem_info){
+	return device->driver.ioctl(&(device->handle), I_MEM_GETINFO, mem_info);
+}
+
+void appfs_util_svcall_get_meminfo(void * args){
+	appfs_get_meminfo_t * p = args;
+	p->result = appfs_util_root_get_meminfo(p->device, &p->mem_info);
+}
+
+void appfs_util_svcall_get_pageinfo(void * args){
+	appfs_get_pageinfo_t * p = args;
+	p->result = appfs_util_root_get_pageinfo(p->device, &p->page_info);
+}
+
+void appfs_util_svcall_erase_pages(void * args){
+	appfs_erase_pages_t * p = args;
+	p->result = appfs_util_root_erase_pages(p->device, p->start_page, p->end_page);
+}
 
 
 static u32 translate_value(u32 addr, u32 mask, u32 code_start, u32 data_start, u32 total, s32 * loc){
@@ -120,7 +124,7 @@ static u32 translate_value(u32 addr, u32 mask, u32 code_start, u32 data_start, u
 	return ret;
 }
 
-static int find_protectable_addr(const devfs_device_t * dev, int size, int type, int * page){
+u32 find_protectable_addr(const devfs_device_t * dev, int size, int type, int * page, int skip_protection){
 	int i;
 	u32 tmp_rbar;
 	u32 tmp_rasr;
@@ -139,20 +143,26 @@ static int find_protectable_addr(const devfs_device_t * dev, int size, int type,
 		//go through each page
 		pageinfo.num = i;
 		pageinfo.o_flags = type;
-		if ( dev->driver.ioctl(&(dev->handle), I_MEM_GETPAGEINFO, &pageinfo) < 0 ){
-			return -1;
+		if( appfs_util_root_get_pageinfo(dev, &pageinfo) < 0 ){
+			return (u32)-1;
 		}
 
-		err = mpu_calc_region(
-				TASK_APPLICATION_CODE_MPU_REGION, //doesn't matter what this is
-				(void*)pageinfo.addr,
-				size,
-				MPU_ACCESS_PR_UR,
-				mem_type,
-				true,
-				&tmp_rbar,
-				&tmp_rasr
-		);
+		if( skip_protection ){
+			err = 0;
+		} else {
+
+			//this will return 0 if the address and size is actually protectable
+			err = mpu_calc_region(
+						TASK_APPLICATION_CODE_MPU_REGION, //doesn't matter what this is
+						(void*)pageinfo.addr,
+						size,
+						MPU_ACCESS_PR_UR,
+						mem_type,
+						true,
+						&tmp_rbar,
+						&tmp_rasr
+						);
+		}
 
 		if ( err == 0 ){
 			*page = i;
@@ -162,33 +172,29 @@ static int find_protectable_addr(const devfs_device_t * dev, int size, int type,
 		i++;
 	} while(1);
 
-	return -1;
+	return (u32)-1;
 }
 
 int check_for_free_space(const devfs_device_t * dev, int start_page, int type, int size){
-	root_load_fileinfo_t info;
+	mem_pageinfo_t page_info;
 	int free_size;
 	int last_addr;
 	int last_size;
 	int ret;
 
-	info.dev = dev;
-	info.pageinfo.o_flags = type;
+	page_info.o_flags = type;
+	page_info.num = start_page;
 
-	info.pageinfo.num = start_page;
 	free_size = 0;
 	last_addr = -1;
 	last_size = -1;
 
 	do {
-		if ( type == MEM_FLAG_IS_FLASH ){
-            appfs_util_root_load_file_info(&info);
-		} else {
-			appfs_util_getpageinfo(dev, &info.pageinfo);
-		}
+
+		appfs_util_root_get_pageinfo(dev, &page_info);
 
 		if ( (last_addr != -1) &&  //make sure last_addr is initialized
-				(last_addr + last_size != info.pageinfo.addr) ){
+			  (last_addr + last_size != page_info.addr) ){
 			//memory is not contiguous
 			if( size <= free_size ){
 				return free_size;
@@ -197,16 +203,18 @@ int check_for_free_space(const devfs_device_t * dev, int start_page, int type, i
 			}
 		}
 
-		last_addr = info.pageinfo.addr;
-		last_size = info.pageinfo.size;
+		last_addr = page_info.addr;
+		last_size = page_info.size;
 		if ( type == MEM_FLAG_IS_FLASH ){
-			ret = appfs_util_getflashpagetype(&info.fileinfo.hdr);
+			//load the file info
+			ret = get_flash_page_type(dev, page_info.addr);
 		} else {
-			ret = appfs_ram_getusage(info.pageinfo.num);
+			//get the type from the ram usage table
+			ret = appfs_ram_root_get(dev, page_info.num);
 		}
 
 		if ( ret == APPFS_MEMPAGETYPE_FREE ){
-			free_size += info.pageinfo.size;
+			free_size += page_info.size;
 		} else {
 			if( size <= free_size ){
 				return free_size;
@@ -214,51 +222,52 @@ int check_for_free_space(const devfs_device_t * dev, int start_page, int type, i
 				return -1;
 			}
 		}
-		info.pageinfo.num++;
+		page_info.num++;
 	} while ( ret >= 0 );
 
 	return free_size;
 }
 
-static int find_protectable_free(const devfs_device_t * dev, int type, int size, int * page){
-	int start_addr;
+u32 find_protectable_free(const devfs_device_t * dev, int type, int size, int * page, int skip_protection){
+	u32 start_addr;
 	int tmp;
 	int space_available;
-	int smallest_space_addr;
+	u32 smallest_space_addr;
 	int smallest_space_page;
 
 	//find any area for the code
 	*page = 0;
 	//find an area of memory that is available to write
-	smallest_space_addr = -1;
+	smallest_space_addr = (u32)-1;
 	space_available = INT_MAX;
 	smallest_space_page = 0;
 
 	do {
 		start_addr = find_protectable_addr(dev,
-				size,
-				type,
-				page);
-		if ( start_addr >= 0 ){
+													  size,
+													  type,
+													  page,
+													  skip_protection);
+
+		if ( start_addr != (u32)-1 ){
 			//could not find any free space
 
 			tmp = check_for_free_space(dev, *page, type, size);
-			if( tmp > 0 ){
+			if( tmp > 0 && tmp < space_available ){
 				//there is room here -- find the smallest free space where the program fits
-				if( tmp < space_available ){
-					space_available = tmp;
-					smallest_space_addr = start_addr;
-					smallest_space_page = *page;
-					if( size == space_available ){ //this is as good as it gets
-						return smallest_space_addr;
-					}
+				space_available = tmp;
+				smallest_space_addr = start_addr;
+				smallest_space_page = *page;
+				if( size == space_available ){ //this is a perfect fit
+					return smallest_space_addr;
 				}
+
 			}
 
 			(*page)++;
 		}
 
-	} while( start_addr >= 0 );
+	} while( start_addr != (u32)-1 );
 
 	*page = smallest_space_page;
 
@@ -296,61 +305,57 @@ const appfs_file_t * appfs_util_getfile(appfs_handle_t * h){
 }
 
 int appfs_util_root_free_ram(const devfs_device_t * dev, appfs_handle_t * h){
-	root_load_fileinfo_t args;
 	const appfs_file_t * f;
 
 	if( h->is_install != 0 ){
-        return SYSFS_SET_RETURN(EBADF);
+		return SYSFS_SET_RETURN(EBADF);
 	}
 
 	//the RAM info is stored in flash
 	f = appfs_util_getfile(h);
 
-	args.pageinfo.addr = f->exec.ram_start;
-	args.pageinfo.o_flags = MEM_FLAG_IS_QUERY;
+	mem_pageinfo_t page_info;
+	page_info.addr = f->exec.ram_start;
+	page_info.o_flags = MEM_FLAG_IS_QUERY;
 
-	if ( appfs_util_getpageinfo(dev, &args.pageinfo) < 0 ){
-        return SYSFS_SET_RETURN(EINVAL);
+	if ( appfs_util_root_get_pageinfo(dev, &page_info) < 0 ){
+		return SYSFS_SET_RETURN(EINVAL);
 	}
 
-	if ( appfs_ram_root_setusage(args.pageinfo.num, f->exec.ram_size, APPFS_MEMPAGETYPE_FREE) < 0 ){
-        return SYSFS_SET_RETURN(EIO);
-	}
+	appfs_ram_root_set(dev, page_info.num, f->exec.ram_size, APPFS_MEMPAGETYPE_FREE);
 
 	return 0;
 }
 
 int appfs_util_root_reclaim_ram(const devfs_device_t * dev, appfs_handle_t * h){
-	root_load_fileinfo_t args;
 	const appfs_file_t * f;
 	size_t s;
 	size_t page_num;
+	mem_pageinfo_t page_info;
 
 	if( h->is_install ){
-        return SYSFS_SET_RETURN(EBADF);
+		return SYSFS_SET_RETURN(EBADF);
 	}
 
 	//the RAM info is store in flash
 	f = appfs_util_getfile(h);
 
-	args.pageinfo.addr = f->exec.ram_start;
-	args.pageinfo.o_flags = MEM_FLAG_IS_QUERY;
+	page_info.addr = f->exec.ram_start;
+	page_info.o_flags = MEM_FLAG_IS_QUERY;
 
-	if ( appfs_util_getpageinfo(dev, &args.pageinfo) ){
-        return SYSFS_SET_RETURN(EIO);
+	if ( appfs_util_root_get_pageinfo(dev, &page_info) ){
+		return SYSFS_SET_RETURN(EIO);
 	}
 
-	page_num = args.pageinfo.num;
+	page_num = page_info.num;
 
 	for(s=0; s < f->exec.ram_size; s += MCU_RAM_PAGE_SIZE ){
-		if( appfs_ram_getusage(page_num++) !=  APPFS_MEMPAGETYPE_FREE ){
-            return SYSFS_SET_RETURN(ENOMEM);
+		if( appfs_ram_root_get(dev, page_num++) !=  APPFS_MEMPAGETYPE_FREE ){
+			return SYSFS_SET_RETURN(ENOMEM);
 		}
 	}
 
-	if ( appfs_ram_root_setusage(args.pageinfo.num, f->exec.ram_size, APPFS_MEMPAGETYPE_SYS) < 0 ){
-        return SYSFS_SET_RETURN(EIO);
-	}
+	appfs_ram_root_set(dev, page_info.num, f->exec.ram_size, APPFS_MEMPAGETYPE_SYS);
 
 	return 0;
 }
@@ -360,7 +365,7 @@ static int mem_write_page(const devfs_device_t * dev, appfs_handle_t * h, appfs_
 	mem_writepage_t write_page;
 
 	if( (attr->loc + attr->nbyte) > (h->type.install.code_size + h->type.install.data_size) ){
-        return SYSFS_SET_RETURN(EINVAL);
+		return SYSFS_SET_RETURN(EINVAL);
 	}
 
 	write_page.addr = h->type.install.code_start + attr->loc;
@@ -370,7 +375,7 @@ static int mem_write_page(const devfs_device_t * dev, appfs_handle_t * h, appfs_
 }
 
 int appfs_util_root_create(const devfs_device_t * dev, appfs_handle_t * h, appfs_installattr_t * attr){
-	int code_start_addr;
+	u32 code_start_addr;
 	int type;
 	int len;
 	int page;
@@ -378,19 +383,19 @@ int appfs_util_root_create(const devfs_device_t * dev, appfs_handle_t * h, appfs
 	dest = (appfs_file_t*)attr->buffer;
 
 	if ( h->is_install == false ){
-        return SYSFS_SET_RETURN(EBADF);
+		return SYSFS_SET_RETURN(EBADF);
 	}
 
 	if ( attr->loc == 0 ){
 
 		//This is the header data -- make sure it is complete
 		if ( attr->nbyte < sizeof(appfs_file_t) ){
-            return SYSFS_SET_RETURN(ENOTSUP);
+			return SYSFS_SET_RETURN(ENOTSUP);
 		}
 
 
 		if( dest->exec.signature != APPFS_CREATE_SIGNATURE ){
-            return SYSFS_SET_RETURN(EINVAL);
+			return SYSFS_SET_RETURN(EINVAL);
 		}
 
 		//make sure the name is valid
@@ -411,10 +416,10 @@ int appfs_util_root_create(const devfs_device_t * dev, appfs_handle_t * h, appfs
 		dest->exec.o_flags = APPFS_FLAG_IS_FLASH;
 		type = MEM_FLAG_IS_FLASH;
 
-		//find space for the code
-		code_start_addr = find_protectable_free(dev, type, dest->exec.code_size, &page);
-		if ( code_start_addr == -1 ){
-            return SYSFS_SET_RETURN(ENOSPC);
+		//find space for the code -- this doesn't need to be protectable
+		code_start_addr = find_protectable_free(dev, type, dest->exec.code_size, &page, 1);
+		if ( code_start_addr == (u32)-1 ){
+			return SYSFS_SET_RETURN(ENOSPC);
 		}
 
 		//remove the header for read only flash files
@@ -437,7 +442,7 @@ int appfs_util_root_create(const devfs_device_t * dev, appfs_handle_t * h, appfs
 	} else {
 		if ( (attr->loc & 0x03) ){
 			//this is not a word aligned write
-            return SYSFS_SET_RETURN(EINVAL);
+			return SYSFS_SET_RETURN(EINVAL);
 		}
 	}
 
@@ -454,9 +459,9 @@ int appfs_util_root_writeinstall(const devfs_device_t * dev, appfs_handle_t * h,
 		const u32 * ptr;
 	} src;
 	int i;
-	int code_start_addr;
+	u32 code_start_addr;
 	int code_size;
-	int data_start_addr;
+	u32 data_start_addr;
 	int ram_size;
 	int type;
 	int len;
@@ -465,7 +470,7 @@ int appfs_util_root_writeinstall(const devfs_device_t * dev, appfs_handle_t * h,
 	s32 loc_err = 0;
 
 	if ( h->is_install == false ){
-        return SYSFS_SET_RETURN(EBADF);
+		return SYSFS_SET_RETURN(EBADF);
 	}
 
 	union {
@@ -478,8 +483,8 @@ int appfs_util_root_writeinstall(const devfs_device_t * dev, appfs_handle_t * h,
 	if ( attr->loc == 0 ){
 		//This is the header data -- make sure it is complete
 		if ( attr->nbyte < sizeof(appfs_file_t) ){
-            mcu_debug_log_error(MCU_DEBUG_APPFS, "Page size is less than min");
-            return SYSFS_SET_RETURN(ENOTSUP);
+			mcu_debug_log_error(MCU_DEBUG_APPFS, "Page size is less than min");
+			return SYSFS_SET_RETURN(ENOTSUP);
 		}
 
 		//make sure the name is valid
@@ -506,8 +511,8 @@ int appfs_util_root_writeinstall(const devfs_device_t * dev, appfs_handle_t * h,
 
 		//is signature correct
 		if ( src.file->exec.signature != symbols_table[0] ){
-            mcu_debug_log_error(MCU_DEBUG_APPFS, "Not executable");
-            return SYSFS_SET_RETURN(ENOEXEC);
+			mcu_debug_log_error(MCU_DEBUG_APPFS, "Not executable");
+			return SYSFS_SET_RETURN(ENOEXEC);
 		}
 
 		//check the options
@@ -523,40 +528,42 @@ int appfs_util_root_writeinstall(const devfs_device_t * dev, appfs_handle_t * h,
 		ram_size = src.file->exec.ram_size;
 
 		//find space for the code
-		code_start_addr = find_protectable_free(dev, type, code_size, &code_page);
-		if ( code_start_addr == -1 ){
-            mcu_debug_log_error(MCU_DEBUG_APPFS, "No exec region available");
-            return SYSFS_SET_RETURN(ENOSPC);
+		code_start_addr = find_protectable_free(dev, type, code_size, &code_page, 0);
+		if ( code_start_addr == (u32)-1 ){
+			mcu_debug_log_error(MCU_DEBUG_APPFS, "No exec region available");
+			return SYSFS_SET_RETURN(ENOSPC);
 		}
+		mcu_debug_log_info(MCU_DEBUG_APPFS, "Code start addr is %p", code_start_addr);
 
 		if ( !((src.file->exec.o_flags) & APPFS_FLAG_IS_FLASH) ){ //for RAM app's mark the RAM usage
 			//mark the range as SYS
-			appfs_ram_setrange(mcu_ram_usage_table,
-					code_page,
-					code_size,
-					APPFS_MEMPAGETYPE_SYS);
+			appfs_ram_root_set(dev,
+									 code_page,
+									 code_size,
+									 APPFS_MEMPAGETYPE_SYS);
 
 			//mark the first page as USER
-			appfs_ram_setrange(mcu_ram_usage_table,
-					code_page,
-					MCU_RAM_PAGE_SIZE, //mark the first page as USER
-					APPFS_MEMPAGETYPE_USER);
+			appfs_ram_root_set(dev,
+									 code_page,
+									 MCU_RAM_PAGE_SIZE, //mark the first page as USER
+									 APPFS_MEMPAGETYPE_USER);
 		}
 
 		ram_page = 0;
-		data_start_addr = find_protectable_free(dev, MEM_FLAG_IS_RAM, ram_size, &ram_page);
-		if( data_start_addr == -1 ){
+		data_start_addr = find_protectable_free(dev, MEM_FLAG_IS_RAM, ram_size, &ram_page, 0);
+		if( data_start_addr == (u32)-1 ){
 			if ( !((src.file->exec.o_flags) & APPFS_FLAG_IS_FLASH) ){ //for RAM app's mark the RAM usage
 				//free the code section
-				appfs_ram_setrange(mcu_ram_usage_table,
-						code_page,
-						code_size,
-						APPFS_MEMPAGETYPE_FREE);
+				appfs_ram_root_set(dev,
+										 code_page,
+										 code_size,
+										 APPFS_MEMPAGETYPE_FREE);
 
 			}
-            mcu_debug_log_error(MCU_DEBUG_APPFS, "No RAM region available %d", ram_size);
-            return SYSFS_SET_RETURN(ENOSPC);
+			mcu_debug_log_error(MCU_DEBUG_APPFS, "No RAM region available %d", ram_size);
+			return SYSFS_SET_RETURN(ENOSPC);
 		}
+		mcu_debug_log_info(MCU_DEBUG_APPFS, "Data start addr is %p", data_start_addr);
 
 		h->type.install.code_start = (u32)code_start_addr;
 		h->type.install.code_size = code_size;
@@ -566,30 +573,30 @@ int appfs_util_root_writeinstall(const devfs_device_t * dev, appfs_handle_t * h,
 		h->type.install.rewrite_mask = (u32)(src.file->exec.code_start) & APPFS_REWRITE_MASK;
 		h->type.install.kernel_symbols_total = symbols_total();
 
-		appfs_ram_setrange(mcu_ram_usage_table,
-				ram_page,
-				ram_size,
-				APPFS_MEMPAGETYPE_SYS);
+		appfs_ram_root_set(dev,
+								 ram_page,
+								 ram_size,
+								 APPFS_MEMPAGETYPE_SYS);
 
 		dest.file.exec.code_start = code_start_addr;
 		dest.file.exec.ram_start = data_start_addr;
 		dest.file.exec.startup = translate_value((u32)dest.file.exec.startup,
-				h->type.install.rewrite_mask,
-				h->type.install.code_start,
-				h->type.install.data_start,
-				h->type.install.kernel_symbols_total,
-				&loc_err);
+															  h->type.install.rewrite_mask,
+															  h->type.install.code_start,
+															  h->type.install.data_start,
+															  h->type.install.kernel_symbols_total,
+															  &loc_err);
 
 		for(i=sizeof(appfs_file_t) >> 2; i < attr->nbyte >> 2; i++){
 			dest.buf[i] = translate_value(src.ptr[i],
-					h->type.install.rewrite_mask,
-					h->type.install.code_start,
-					h->type.install.data_start,
-					h->type.install.kernel_symbols_total,
-					&loc_err);
+													h->type.install.rewrite_mask,
+													h->type.install.code_start,
+													h->type.install.data_start,
+													h->type.install.kernel_symbols_total,
+													&loc_err);
 			if( loc_err != 0 ){
-                mcu_debug_log_error(MCU_DEBUG_APPFS, "Code relocation error %d", loc_err);
-                return SYSFS_SET_RETURN_WITH_VALUE(EIO, loc_err);
+				mcu_debug_log_error(MCU_DEBUG_APPFS, "Code relocation error %d", loc_err);
+				return SYSFS_SET_RETURN_WITH_VALUE(EIO, loc_err);
 			}
 		}
 
@@ -597,18 +604,19 @@ int appfs_util_root_writeinstall(const devfs_device_t * dev, appfs_handle_t * h,
 
 		if ( (attr->loc & 0x03) ){
 			//this is not a word aligned write
-            return SYSFS_SET_RETURN(EINVAL);
+			mcu_debug_log_error(MCU_DEBUG_APPFS, "word alignment error 0x%X\n", attr->loc);
+			return SYSFS_SET_RETURN(EINVAL);
 		}
 		for(i=0; i < attr->nbyte >> 2; i++){
 			dest.buf[i] = translate_value(src.ptr[i],
-					h->type.install.rewrite_mask,
-					h->type.install.code_start,
-					h->type.install.data_start,
-					h->type.install.kernel_symbols_total,
-					&loc_err);
+													h->type.install.rewrite_mask,
+													h->type.install.code_start,
+													h->type.install.data_start,
+													h->type.install.kernel_symbols_total,
+													&loc_err);
 			if( loc_err != 0 ){
-                mcu_debug_log_error(MCU_DEBUG_APPFS, "Code relocation error %d", loc_err);
-                return SYSFS_SET_RETURN_WITH_VALUE(EIO, loc_err);
+				mcu_debug_log_error(MCU_DEBUG_APPFS, "Code relocation error %d", loc_err);
+				return SYSFS_SET_RETURN_WITH_VALUE(EIO, loc_err);
 			}
 		}
 	}
@@ -619,17 +627,21 @@ int appfs_util_root_writeinstall(const devfs_device_t * dev, appfs_handle_t * h,
 	return mem_write_page(dev, h, attr);
 }
 
-int appfs_util_getflashpagetype(appfs_header_t * info){
+int get_flash_page_type(const devfs_device_t * dev, u32 address){
 	int len;
 	int i;
-	len = strnlen(info->name, NAME_MAX-2);
+	appfs_file_t appfs_file;
+
+	read_appfs_file_header(dev, address, &appfs_file);
+	len = strnlen(appfs_file.hdr.name, NAME_MAX-2);
 	if ( (len == NAME_MAX - 2) || //check if the name is short enough
-			(len != strspn(info->name, sysfs_validset)) || //check if only valid characters are present
-            (info->name[NAME_MAX-1] != calc_checksum(info->name)) || //check for a valid checksum
-			(len == 0)
-	){
+		  (len != strspn(appfs_file.hdr.name, sysfs_validset)) || //check if only valid characters are present
+		  (appfs_file.hdr.name[NAME_MAX-1] != calc_checksum(appfs_file.hdr.name)) || //check for a valid checksum
+		  (len == 0)
+		  ){
+
 		for(i=0; i < NAME_MAX; i++){
-			if ( info->name[i] != 0xFF){
+			if ( appfs_file.hdr.name[i] != 0xFF){
 				break;
 			}
 		}
@@ -644,129 +656,146 @@ int appfs_util_getflashpagetype(appfs_header_t * info){
 	return APPFS_MEMPAGETYPE_USER;
 }
 
-int appfs_util_getpagetype(appfs_header_t * info, int page, int type){
-	if ( type == MEM_FLAG_IS_FLASH ){
-		return appfs_util_getflashpagetype(info);
+int appfs_util_is_executable(const appfs_file_t * info){
+	// do a priv read of the signature
+	if ( info->exec.signature != symbols_table[0] ){
+		return 0;
 	}
-	return appfs_ram_getusage(page);
+	return 1;
 }
 
-int get_header_info(appfs_file_t * file, int page, int type){
+int populate_file_header(const devfs_device_t * device, appfs_file_t * file, const mem_pageinfo_t * page_info, int memory_type){
 	char hex_num[9];
 	int page_type;
-	page_type = appfs_util_getpagetype(&file->hdr, page, type);
-	htoa(hex_num, page);
+
+	if ( memory_type == MEM_FLAG_IS_FLASH ){
+		page_type = get_flash_page_type(device, page_info->addr);
+	} else {
+		page_type = appfs_ram_root_get(device, page_info->num);
+	}
+
+	htoa(hex_num, page_info->num);
 	switch(page_type){
-	case APPFS_MEMPAGETYPE_SYS:
-		strcpy(file->hdr.name, ".sys");
-		strcat(file->hdr.name, hex_num);
-		file->hdr.mode = S_IFREG;
-		memset(&(file->exec), 0, sizeof(appfs_exec_t));
-		break;
-	case APPFS_MEMPAGETYPE_FREE:
-		strcpy(file->hdr.name, ".free");
-		strcat(file->hdr.name, hex_num);
-		file->hdr.mode = S_IFREG;
-		memset(&(file->exec), 0, sizeof(appfs_exec_t));
-		break;
-	case APPFS_MEMPAGETYPE_USER:
-		break;
+		case APPFS_MEMPAGETYPE_SYS:
+			strcpy(file->hdr.name, ".sys");
+			strcat(file->hdr.name, hex_num);
+			file->hdr.mode = S_IFREG;
+			memset(&(file->exec), 0, sizeof(appfs_exec_t));
+			break;
+		case APPFS_MEMPAGETYPE_FREE:
+			strcpy(file->hdr.name, ".free");
+			strcat(file->hdr.name, hex_num);
+			file->hdr.mode = S_IFREG;
+			memset(&(file->exec), 0, sizeof(appfs_exec_t));
+			break;
+		case APPFS_MEMPAGETYPE_USER:
+			break;
 	}
 
 	return page_type;
 }
 
-bool appfs_util_isexecutable(const appfs_file_t * info){
-	// do a priv read of the signature
-	if ( info->exec.signature != symbols_table[0] ){
-		return false;
-	}
-	return true;
+void appfs_util_svcall_get_fileinfo(void * args){
+	appfs_get_fileinfo_t * p = args;
+	p->result = appfs_util_root_get_fileinfo(
+				p->device,
+				&p->file_info,
+				p->page,
+				p->type,
+				&p->size);
 }
 
-void appfs_util_root_load_file_info(void * args){
-	root_load_fileinfo_t * p = (root_load_fileinfo_t*)args;
-	devfs_async_t op;
+int read_appfs_file_header(const devfs_device_t * dev, u32 address, appfs_file_t * dest){
+	//now that addr is available -- read the address
+	devfs_async_t async;
 
-	if ( p->dev->driver.ioctl(
-			&(p->dev->handle),
-			I_MEM_GETPAGEINFO,
-			&p->pageinfo
-	) < 0 ){
-		p->ret = -1;
-		return;
-	}
+	async.buf = dest;
+	async.nbyte = sizeof(appfs_file_t);
+	async.handler.context = NULL;
+	async.loc = (int)address;
+	async.tid = task_get_current();
 
-	op.buf = &(p->fileinfo);
-	op.nbyte = sizeof(appfs_file_t);
-	op.handler.context = NULL;
-	op.loc = (int)p->pageinfo.addr;
-	op.tid = task_get_current();
-
-	if ( p->dev->driver.read(&(p->dev->handle), &op) == sizeof(appfs_file_t) ){
-		//read successfully
-		p->ret = 0;
-		return;
-	}
-
-	//this is an EIO error
-	p->ret = -2;
+	//read the memory directly to get the file header
+	return dev->driver.read(&dev->handle, &async);
 }
 
-int appfs_util_getfileinfo(root_load_fileinfo_t * info, const devfs_device_t * dev, int page, int type, int * size){
-    int file_type;
-	info->dev = dev;
-	info->pageinfo.num = page;
-	info->pageinfo.o_flags = type;
-    cortexm_svcall(appfs_util_root_load_file_info, info);
-	if ( info->ret < 0 ){
-		return -1;
-	}
+
+int appfs_util_root_get_fileinfo(const devfs_device_t * dev, appfs_file_t * file_info, int page, int type, int * size){
+	int file_type;
+	int result;
+	mem_pageinfo_t page_info;
+	page_info.num = page;
+	page_info.o_flags = type;
+
+	//this will get the size and address of the page
+	result = appfs_util_root_get_pageinfo(dev, &page_info);
+	if( result < 0 ){ return result; }
+
+	result = read_appfs_file_header(dev, page_info.addr, file_info);
+	if( result < 0 ){ return result;	}
 
 	//get the header info for free and sys files
-    file_type = get_header_info(&(info->fileinfo), page, type);
+	file_type = populate_file_header(dev, file_info, &page_info, type);
 
 	if ( size != NULL ){
-        *size = get_filesize(dev, info, file_type);
+		if ( file_type == APPFS_MEMPAGETYPE_USER ){
+			*size = file_info->exec.code_size + file_info->exec.data_size;
+		} else {
+			*size = page_info.size;
+		}
 	}
 
-    return file_type;
+	return file_type;
 }
 
-int get_filesize(const devfs_device_t * dev, root_load_fileinfo_t * args, int filetype){
-	//this will start at the end of the page and count backwards until it hits a non 0xFF value
-	if ( filetype == APPFS_MEMPAGETYPE_USER ){
-		return args->fileinfo.exec.code_size + args->fileinfo.exec.data_size;
-	} else {
-		return args->pageinfo.size;
-	}
-}
+int appfs_util_lookupname(const devfs_device_t * device,
+								  const char * path,
+								  appfs_file_t * file_info,
+								  mem_pageinfo_t * page_info,
+								  int type,
+								  int * size){
+	appfs_get_fileinfo_t get_fileinfo_args;
+	appfs_get_pageinfo_t get_pageinfo_args;
 
-int appfs_util_lookupname(const void * cfg, const char * path, root_load_fileinfo_t * args, int type, int * size){
-	int i;
+	get_fileinfo_args.device = device;
+	get_fileinfo_args.type = type;
 
-	i = 0;
+	get_pageinfo_args.device = device;
+	get_pageinfo_args.page_info.o_flags = type;
 
 	if ( strnlen(path, NAME_MAX-2) == NAME_MAX-2 ){
 		return -1;
 	}
 
+	get_fileinfo_args.page = 0;
 	do {
 		//go through each page
-		if ( appfs_util_getfileinfo(args, cfg, i, type, size) < 0){
-			return -1;
-		}
 
-		if ( strncmp(path, args->fileinfo.hdr.name, NAME_MAX) == 0 ){
-			args->ret = i;
+		cortexm_svcall(appfs_util_svcall_get_fileinfo, &get_fileinfo_args);
+		//if ( appfs_util_root_get_fileinfo(device, file_info, i, type, size) < 0){
+		//	return -1;
+		//}
+
+		if( get_fileinfo_args.result < 0 ){ return get_fileinfo_args.result; }
+
+		get_pageinfo_args.page_info.num = get_fileinfo_args.page;
+		cortexm_svcall(appfs_util_svcall_get_pageinfo, &get_pageinfo_args);
+		if( get_pageinfo_args.result < 0 ){ return get_fileinfo_args.result; }
+
+		if ( strncmp(path, get_fileinfo_args.file_info.hdr.name, NAME_MAX) == 0 ){
+			memcpy(file_info, &get_fileinfo_args.file_info, sizeof(appfs_file_t));
+			memcpy(page_info, &get_pageinfo_args.page_info, sizeof(mem_pageinfo_t));
 			return 0;
 		}
-		i++;
+
+		get_fileinfo_args.page++;
+
 	} while(1);
 
 	//name not found
 	return -1;
 }
+
 
 
 
