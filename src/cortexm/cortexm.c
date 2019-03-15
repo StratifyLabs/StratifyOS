@@ -20,6 +20,7 @@
 #include "cortexm_local.h"
 #include "mcu/mcu.h"
 #include "mcu/core.h"
+#include "cortexm/mpu.h"
 
 void cortexm_delay_systick(u32 ticks){
 	u32 countdown = ticks;
@@ -105,21 +106,35 @@ int cortexm_verify_zero_sum8(void * data, int count){
 }
 
 
+
+void cortexm_reset_mode(){
+	cortexm_disable_interrupts();
+	mpu_disable();
+	cortexm_disable_systick_irq();
+}
+
+void cortexm_set_privileged_mode(){
+	register u32 control;
+	control = __get_CONTROL();
+	control &= ~0x01;
+	__set_CONTROL(control);
+}
+
 void cortexm_set_unprivileged_mode(){
-	register uint32_t control;
+	register u32 control;
 	control = __get_CONTROL();
 	control |= 0x01;
 	__set_CONTROL(control);
 }
 
 int cortexm_is_root_mode(){
-	register uint32_t control;
+	register u32 control;
 	control = __get_CONTROL();
 	return (control & 0x02) == 0;
 }
 
 void cortexm_set_thread_mode(){
-	register uint32_t control;
+	register u32 control;
 	control = __get_CONTROL();
 	control |= 0x02;
 	__set_CONTROL(control);
@@ -173,7 +188,10 @@ void cortexm_enable_interrupts(){
 }
 
 void cortexm_get_stack_ptr(void * ptr){
+	void ** ptrp = (void**)ptr;
+	void * result=NULL;
 	asm volatile ("MRS %0, msp\n\t" : "=r" (ptr) );
+	*ptrp = result;
 }
 
 void cortexm_set_stack_ptr(void * ptr){
@@ -219,6 +237,7 @@ int cortexm_set_irq_priority(int irq, int prio, u32 o_events){
 void cortexm_set_vector_table_addr(void * addr){
 #if defined SCB
 	SCB->VTOR = (uint32_t)addr;
+	__DSB();
 #endif
 }
 

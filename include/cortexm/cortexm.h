@@ -59,6 +59,8 @@ int cortexm_verify_zero_sum8(void * data, int size);
 typedef void (*cortexm_svcall_t)(void*);
 void cortexm_svcall(cortexm_svcall_t call, void * args) __attribute__((optimize("1")));
 
+void cortexm_reset_mode() MCU_ROOT_CODE;
+void cortexm_set_privileged_mode() MCU_ROOT_CODE;
 void cortexm_set_unprivileged_mode() MCU_ROOT_CODE;
 void cortexm_set_thread_mode() MCU_ROOT_CODE;
 int cortexm_is_root_mode();

@@ -291,7 +291,6 @@ int mutex_trylock(pthread_mutex_t *mutex, bool trylock, const struct timespec * 
 
 	if ( !(mutex->flags & PTHREAD_MUTEX_FLAGS_INITIALIZED) ){
 		//Mutex is not initialized
-		mcu_debug_printf("invalid\n");
 		errno = EINVAL;
 		return -1;
 	}
@@ -300,7 +299,6 @@ int mutex_trylock(pthread_mutex_t *mutex, bool trylock, const struct timespec * 
 		//check if pid is equal to the PID of the mutex
 		if ( mutex->pid != getpid() ){
 			//this mutex belongs to a different process and is not shared
-			mcu_debug_printf("no access (%d != %d)\n", mutex->pid, getpid());
 			errno = EACCES;
 			return -1;
 		}
@@ -317,13 +315,11 @@ int mutex_trylock(pthread_mutex_t *mutex, bool trylock, const struct timespec * 
 				mutex->lock++;
 				return 0;
 			} else {
-				mcu_debug_printf("not available to %d\n", id);
 				errno = EAGAIN;
 				return -1;
 			}
 		} else {
 			//Already an owner of the mutex -- trylock returns 0, lock returns an error
-			mcu_debug_printf("already owner %d\n", id);
 			return 1;
 		}
 	}

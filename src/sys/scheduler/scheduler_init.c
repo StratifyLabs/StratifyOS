@@ -52,20 +52,16 @@ int scheduler_init(){
  * \return Zero on success or an error code
  */
 int scheduler_start(void * (*init)(void*)){
-	int ret;
 	sos_sched_table[0].init = init;
 	sos_sched_table[0].attr.stackaddr = &_data;
 	sos_sched_table[0].attr.stacksize = sos_board_config.sys_memory_size;
 
-	ret = task_init(SCHED_RR_DURATION,
-						 scheduler, //run the scheduler
-						 NULL, //Let the task init function figure out where the stack needs to be and the heap size
-						 sos_board_config.sys_memory_size);
+	task_init(SCHED_RR_DURATION,
+				 scheduler, //run the scheduler
+				 NULL, //Let the task init function figure out where the stack needs to be and the heap size
+				 sos_board_config.sys_memory_size);
 
-	if( ret < 0 ){
-		return -1;
-	}
-
+	sos_led_root_error(0);
 
 	//Program never gets to this point
 	return -1;

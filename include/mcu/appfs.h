@@ -22,6 +22,7 @@
 #define _MCU_APPFS_H_
 
 #include "sos/dev/mem.h"
+#include "sos/dev/appfs.h"
 #include "sos/fs/devfs.h"
 
 #ifdef __cplusplus
@@ -48,6 +49,23 @@ typedef struct {
 	const devfs_device_t * flash_driver;
 	const appfs_mem_section_t sections[];
 } appfs_mem_config_t;
+
+#define APPFS_MEM_SECTION(arg_o_flags, arg_page_count, arg_page_size, arg_address) \
+{ .o_flags = arg_o_flags, .page_count = arg_page_count, .page_size = arg_page_size, .address = arg_address }
+
+#define APPFS_FLASH_SECTION(arg_page_count, arg_page_size, arg_address) \
+	APPFS_MEM_SECTION(MEM_FLAG_IS_FLASH, arg_page_count, arg_page_size, arg_address)
+
+#define APPFS_RAM_SECTION(arg_page_count, arg_page_size, arg_address) \
+	APPFS_MEM_SECTION(MEM_FLAG_IS_RAM, arg_page_count, arg_page_size, arg_address)
+
+#define APPFS_TIGHTLY_COUPLED_FLASH_SECTION(arg_page_count, arg_page_size, arg_address) \
+	APPFS_MEM_SECTION(MEM_FLAG_IS_FLASH | MEM_FLAG_IS_TIGHTLY_COUPLED, arg_page_count, arg_page_size, arg_address)
+
+#define APPFS_TIGHTLY_COUPLED_RAM_SECTION(arg_page_count, arg_page_size, arg_address) \
+	APPFS_MEM_SECTION(MEM_FLAG_IS_RAM | MEM_FLAG_IS_TIGHTLY_COUPLED, arg_page_count, arg_page_size, arg_address)
+
+#define APPFS_USAGE_WORDS(ram_page_total) ((ram_page_total*2+31)/32)
 
 int appfs_mem_open(const devfs_handle_t * handle) MCU_ROOT_CODE;
 int appfs_mem_read(const devfs_handle_t * handle, devfs_async_t * rop) MCU_ROOT_CODE;

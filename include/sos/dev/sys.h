@@ -159,7 +159,7 @@ typedef struct MCU_PACK {
  * and I_SYS_PHTHREADKILL requests.
  */
 typedef struct MCU_PACK {
-	u32 id /*! \brief The id (PID or pthread id) to send the signal to */;
+	u32 id /*! \brief The id (PID for I_SYS_KILL or pthread id for I_SYS_PTHREADKILL) to send the signal to */;
 	u32 si_signo /*! \brief The signal to send (SIGKILL or LINK_SIGKILL for example) */;
 	s32 si_sigcode /*! \brief The signal code (SI_USER or LINK_SI_USER for example) */;
 	s32 si_sigvalue /*! \brief The signal value (not used by default handlers) */;

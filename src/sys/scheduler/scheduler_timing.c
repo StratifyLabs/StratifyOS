@@ -513,7 +513,6 @@ void scheduler_timing_root_get_realtime(struct mcu_timeval * tv){
 
 int root_handle_usecond_overflow_event(void * context, const mcu_event_t * data){
 	sched_usecond_counter++;
-	mcu_debug_printf("rollover\n");
 	root_handle_usecond_match_event(0, 0);
 	root_handle_usecond_process_timer_match_event(0, 0);
 	return 1; //do not clear callback

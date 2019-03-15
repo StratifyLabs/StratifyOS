@@ -128,10 +128,7 @@ int appfs_mem_setaction(const devfs_handle_t * handle, void * ctl){
 int appfs_mem_erasepage(const devfs_handle_t * handle, void * ctl){
 	DECLARE_APPFS_CONFIG();
 	if( config->flash_driver != 0 ){
-		mcu_debug_printf("erase page using flash driver (%d)\n", (u32)ctl);
-		int result = config->flash_driver->driver.ioctl(&config->flash_driver->handle, I_FLASH_ERASEPAGE, ctl);
-		mcu_debug_printf("erase page return %d, %d\n", SYSFS_GET_RETURN(result), SYSFS_GET_RETURN_ERRNO(result));
-		return result;
+		return config->flash_driver->driver.ioctl(&config->flash_driver->handle, I_FLASH_ERASEPAGE, ctl);
 	}
 	return SYSFS_SET_RETURN(ENOTSUP);
 }
