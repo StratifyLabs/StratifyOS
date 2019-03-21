@@ -126,13 +126,15 @@ int task_init(int interval,
 	FPU->FPCCR = 0; //don't automatically save the FPU registers -- save them manually
 #endif
 
+	//this will causes crashes if it is moved after the context switching begins
+	mcu_core_enable_cache();
+
 	//Turn on the task timer (MCU implementation dependent)
 	set_systick_interval(interval);
 	sos_task_table[0].rr_time = m_task_rr_reload;
 	cortexm_set_stack_ptr( (void*)&_top_of_stack ); //reset the handler stack pointer
 	cortexm_enable_systick_irq();  //Enable context switching
 
-	mcu_core_enable_cache();
 
 	task_root_switch_context();
 	return 0;
