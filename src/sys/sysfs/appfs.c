@@ -498,7 +498,7 @@ void root_read(void * args){
 	}
 
 	if ( async.loc >= h->type.reg.size ){
-		p->result = -1;
+		p->result = SYSFS_SET_RETURN(EINVAL);
 		return; //return EOF
 	}
 
@@ -519,7 +519,6 @@ int appfs_read(const void * cfg, void * handle, int flags, int loc, void * buf, 
 	args.loc = loc;
 	args.buf = buf;
 	args.nbyte = nbyte;
-
 	cortexm_svcall(root_read, &args);
 	return args.result;
 

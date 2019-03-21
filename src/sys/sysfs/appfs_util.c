@@ -417,7 +417,7 @@ int appfs_util_root_create(const devfs_device_t * dev, appfs_handle_t * h, appfs
 		type = MEM_FLAG_IS_FLASH;
 
 		//find space for the code -- this doesn't need to be protectable
-		code_start_addr = find_protectable_free(dev, type, dest->exec.code_size, &page, 1);
+		code_start_addr = find_protectable_free(dev, type, dest->exec.code_size, &page, 0);
 		if ( code_start_addr == (u32)-1 ){
 			return SYSFS_SET_RETURN(ENOSPC);
 		}
@@ -778,6 +778,9 @@ int appfs_util_lookupname(const devfs_device_t * device,
 
 		if( get_fileinfo_args.result < 0 ){ return get_fileinfo_args.result; }
 
+		if( size ){
+			*size = get_fileinfo_args.size;
+		}
 		get_pageinfo_args.page_info.num = get_fileinfo_args.page;
 		cortexm_svcall(appfs_util_svcall_get_pageinfo, &get_pageinfo_args);
 		if( get_pageinfo_args.result < 0 ){ return get_fileinfo_args.result; }
