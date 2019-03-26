@@ -107,10 +107,13 @@ static u32 translate_value(u32 addr, u32 mask, u32 code_start, u32 data_start, u
 			if( ret < total ){
 				//get the symbol location from the symbols table
 				if( symbols_table[ret] == 0 ){
+					mcu_debug_log_error(MCU_DEBUG_APPFS, "symbol at offset %d (%p) is zero", ret, symbols_table + ret);
 					*loc = ret; //this symbol isn't available -- it was removed to save space in the MCU flash
 				}
 				return symbols_table[ret];
 			} else {
+				mcu_debug_log_error(MCU_DEBUG_APPFS, "location exceeds total for %p (%d)", addr, total);
+				return addr;
 				*loc = total;
 				return 0;
 			}
@@ -595,7 +598,7 @@ int appfs_util_root_writeinstall(const devfs_device_t * dev, appfs_handle_t * h,
 													h->type.install.kernel_symbols_total,
 													&loc_err);
 			if( loc_err != 0 ){
-				mcu_debug_log_error(MCU_DEBUG_APPFS, "Code relocation error %d", loc_err);
+				mcu_debug_log_error(MCU_DEBUG_APPFS, "Code relocation error: %d", loc_err);
 				return SYSFS_SET_RETURN_WITH_VALUE(EIO, loc_err);
 			}
 		}

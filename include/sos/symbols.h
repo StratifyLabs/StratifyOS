@@ -129,6 +129,21 @@ extern u32 __aeabi_d2ulz();
 extern u32 __gnu_f2h_ieee();
 extern u32 __gnu_h2f_ieee();
 
+extern u32 _Unwind_GetRegionStart();
+extern u32 _Unwind_GetTextRelBase();
+extern u32 _Unwind_GetDataRelBase();
+extern u32 _Unwind_VRS_Set();
+extern u32 _Unwind_Resume();
+extern u32 __gnu_unwind_frame();
+extern u32 _Unwind_GetLanguageSpecificData();
+extern u32 _Unwind_Complete();
+extern u32 _Unwind_DeleteException();
+extern u32 _Unwind_RaiseException();
+extern u32 _Unwind_Resume_or_Rethrow();
+extern u32 _Unwind_VRS_Get();
+extern u32 __aeabi_unwind_cpp_pr0();
+extern u32 __aeabi_unwind_cpp_pr1();
+
 #include <pthread.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -182,9 +197,8 @@ extern u32 __gnu_h2f_ieee();
 #include "arpa/inet.h"
 
 extern void __cxa_pure_virtual();
-void __cxa_atexit();
-void __cxa_finalize();
-extern char __aeabi_unwind_cpp_pr0[0];
+extern void __cxa_atexit();
+extern void __cxa_finalize();
 
 extern void __div0();
 

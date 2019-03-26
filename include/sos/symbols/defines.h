@@ -290,6 +290,69 @@
 #define wctype 0
 #endif
 
+#if SYMBOLS_IGNORE_WCHAR != 0
+#define fgetwc 0
+#define fgetws 0
+#define fputwc 0
+#define fputws 0
+#define fwide 0
+#define fwprintf 0
+#define fwscanf 0
+#define getwc 0
+#define getwchar 0
+#define putwc 0
+#define putwchar 0
+#define swprintf 0
+#define swscanf 0
+#define ungetwc 0
+#define vfwprintf 0
+#define vfwscanf 0
+#define vswprintf 0
+#define vswscanf 0
+#define vwprintf 0
+#define vwscanf 0
+#define wprintf 0
+#define wscanf 0
+#define wcstod 0
+#define wcstof 0
+#define wcstol 0
+#define wcstold 0
+#define wcstoll 0
+#define wcstoul 0
+#define wcstoull 0
+#define btowc 0
+#define mbrlen 0
+#define mbrtowc 0
+#define mbsinit 0
+#define mbsrtowcs 0
+#define wcrtomb 0
+#define wctob 0
+#define wcsrtombs 0
+#define wcscat 0
+#define wcschr 0
+#define wcscmp 0
+#define wcscoll 0
+#define wcscpy 0
+#define wcscspn 0
+#define wcslen 0
+#define wcsncat 0
+#define wcsncpy 0
+#define wcspbrk 0
+#define wcsrchr 0
+#define wcsspn 0
+#define wcsstr 0
+#define wcstok 0
+#define wcsxfrm 0
+#define wmemchr 0
+#define wmemcmp 0
+#define wmemcpy 0
+#define wmemmove 0
+#define wmemset 0
+#define wcsftime 0
+#define _ctype_ 0
+#define __locale_mb_cur_max 0
+#endif
+
 #if SYMBOLS_IGNORE_STR != 0
 #define strcat 0
 #define strchr 0
@@ -511,6 +574,24 @@
 #endif
 #define strtod 0
 #define strtof 0
+#endif
+
+#if (!defined SYMBOLS_USE_EXCEPTIONS) || (SYMBOLS_USE_EXCEPTIONS == 0)
+#define _Unwind_GetRegionStart 0
+#define _Unwind_GetTextRelBase 0
+#define _Unwind_GetDataRelBase 0
+#define _Unwind_VRS_Set 0
+#define _Unwind_Resume 0
+#define __gnu_unwind_frame 0
+#define _Unwind_GetLanguageSpecificData 0
+#define _Unwind_Complete 0
+#define _Unwind_DeleteException 0
+#define _Unwind_RaiseException 0
+#define _Unwind_Resume_or_Rethrow 0
+#define _Unwind_VRS_Get 0
+#define __aeabi_unwind_cpp_pr0 0
+#define __aeabi_unwind_cpp_pr1 0
+#define __cxa_atexit 0
 #endif
 
 
