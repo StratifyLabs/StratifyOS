@@ -42,7 +42,8 @@
 #define APPFS_REWRITE_KERNEL_ADDR_MASK (0x7FFF)
 
 static int populate_file_header(const devfs_device_t * dev, appfs_file_t * file, const mem_pageinfo_t * page_info, int type);
-static int get_flash_page_type(const devfs_device_t * dev, u32 address);
+static int get_flash_page_type(const devfs_device_t * dev, u32 address, u32 size);
+static int is_flash_blank(u32 address, u32 size);
 static int read_appfs_file_header(const devfs_device_t * dev, u32 address, appfs_file_t * dest);
 static u32 find_protectable_addr(const devfs_device_t * dev, int size, int type, int * page, int skip_protection);
 static u32 find_protectable_free(const devfs_device_t * dev, int type, int size, int * page, int skip_protection);
@@ -57,6 +58,17 @@ static u8 calc_checksum(const char * name){
 	}
 	return checksum;
 }
+
+int is_flash_blank(u32 address, u32 size){
+	u32 * dest = (u32*)address;
+	for(u32 i=0; i < size/sizeof(u32); i++){
+		if( *dest++ != 0xffffffff ){
+			return 0;
+		}
+	}
+	return 1;
+}
+
 
 
 int appfs_util_root_erase_pages(const devfs_device_t * dev, int start_page, int end_page){
@@ -210,7 +222,7 @@ int check_for_free_space(const devfs_device_t * dev, int start_page, int type, i
 		last_size = page_info.size;
 		if ( type == MEM_FLAG_IS_FLASH ){
 			//load the file info
-			ret = get_flash_page_type(dev, page_info.addr);
+			ret = get_flash_page_type(dev, page_info.addr, page_info.size);
 		} else {
 			//get the type from the ram usage table
 			ret = appfs_ram_root_get(dev, page_info.num);
@@ -630,10 +642,13 @@ int appfs_util_root_writeinstall(const devfs_device_t * dev, appfs_handle_t * h,
 	return mem_write_page(dev, h, attr);
 }
 
-int get_flash_page_type(const devfs_device_t * dev, u32 address){
+int get_flash_page_type(const devfs_device_t * dev, u32 address, u32 size){
 	int len;
-	int i;
 	appfs_file_t appfs_file;
+
+	if( is_flash_blank(address, size) ){
+		return APPFS_MEMPAGETYPE_FREE;
+	}
 
 	read_appfs_file_header(dev, address, &appfs_file);
 	len = strnlen(appfs_file.hdr.name, NAME_MAX-2);
@@ -643,17 +658,8 @@ int get_flash_page_type(const devfs_device_t * dev, u32 address){
 		  (len == 0)
 		  ){
 
-		for(i=0; i < NAME_MAX; i++){
-			if ( appfs_file.hdr.name[i] != 0xFF){
-				break;
-			}
-		}
+		return APPFS_MEMPAGETYPE_SYS;
 
-		if (i == NAME_MAX ){
-			return APPFS_MEMPAGETYPE_FREE;
-		} else {
-			return APPFS_MEMPAGETYPE_SYS;
-		}
 	}
 
 	return APPFS_MEMPAGETYPE_USER;
@@ -672,7 +678,7 @@ int populate_file_header(const devfs_device_t * device, appfs_file_t * file, con
 	int page_type;
 
 	if ( memory_type == MEM_FLAG_IS_FLASH ){
-		page_type = get_flash_page_type(device, page_info->addr);
+		page_type = get_flash_page_type(device, page_info->addr, page_info->size);
 	} else {
 		page_type = appfs_ram_root_get(device, page_info->num);
 	}

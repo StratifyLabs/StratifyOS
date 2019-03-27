@@ -591,7 +591,6 @@
 #define _Unwind_VRS_Get 0
 #define __aeabi_unwind_cpp_pr0 0
 #define __aeabi_unwind_cpp_pr1 0
-#define __cxa_atexit 0
 #endif
 
 
