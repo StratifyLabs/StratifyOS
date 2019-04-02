@@ -121,7 +121,7 @@ static int exec_trace_event(mqd_t mqdes, struct posix_trace_event_info * info, c
 
 typedef struct {
 	trace_id_t id;
-	int ret;
+	int result;
 } root_trace_id_t;
 static void root_set_trace_id(void * args);
 static void root_shutdown_trace_id(void * args);
@@ -164,12 +164,12 @@ void root_count_trace_id(void * args){
 void root_set_trace_id(void * args){
 	root_trace_id_t * p = args;
 	int i;
-	p->ret = 0;
+	p->result = 0;
 	for(i=0; i < task_get_total(); i++){
 		if( task_enabled(i) ){
 			if( task_get_pid(i) == p->id->pid ){
 				scheduler_root_set_trace_id(i, p->id);
-				p->ret++; //found the pid -- otherwise return ESRCH
+				p->result++; //found the pid -- otherwise return ESRCH
 			}
 		}
 	}
@@ -242,7 +242,7 @@ int posix_trace_create(pid_t pid, const trace_attr_t * attr, trace_id_t * id){
 	memcpy(*id, &trace_handle, sizeof(trace_id_handle_t));
 
 	args.id = *id;
-	args.ret = 0;
+	args.result = 0;
 	cortexm_svcall(root_set_trace_id, &args);
 
 	return 0;

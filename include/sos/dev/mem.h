@@ -41,7 +41,7 @@
 extern "C" {
 #endif
 
-#define MEM_VERSION (0x030000)
+#define MEM_VERSION (0x030100)
 #define MEM_IOC_IDENT_CHAR 'M'
 
 
@@ -50,7 +50,10 @@ typedef struct MCU_PACK {
 	u32 flash_size /*! The total size of the flash memory */;
 	u32 ram_pages /*! The total number of RAM pages */;
 	u32 ram_size /*! The total size of the RAM */;
-	u32 resd[8];
+	u32 system_ram_page /*! First page for system shared RAM */;
+	u32 usage_size;
+	u32 * usage;
+	u32 resd[5];
 } mem_info_t;
 
 /*! \brief Holds the devices attributes.
@@ -71,7 +74,8 @@ typedef struct MCU_PACK {
 enum {
 	MEM_FLAG_IS_QUERY /*! Query the page type */ = (1<<0),
 	MEM_FLAG_IS_RAM /*! RAM */ = (1<<1),
-	MEM_FLAG_IS_FLASH /*! Flash */ = (1<<2)
+	MEM_FLAG_IS_FLASH /*! Flash */ = (1<<2),
+	MEM_FLAG_IS_TIGHTLY_COUPLED /*! Tightly coupled memory (OR with RAM or FLASH) */ = (1<<3),
 };
 
 /*! \brief Holds the characteristics of a page.
@@ -148,6 +152,7 @@ typedef struct MCU_PACK {
  *
  */
 #define I_MEM_WRITEPAGE _IOCTLW(MEM_IOC_IDENT_CHAR, I_MCU_TOTAL + 2, mem_writepage_t)
+
 
 #define I_MEM_TOTAL 3
 

@@ -17,7 +17,7 @@
  * 
  */
 
-/*! \addtogroup UNI_FS
+/*! \addtogroup unistd
  * @{
  */
 
@@ -31,7 +31,7 @@
  * \param path Path to the new directory
  * \param mode Ignored
  *
- * \return Zero on success or -1 with errno (see \ref ERRNO) set to:
+ * \return Zero on success or -1 with errno (see \ref errno) set to:
  * - ENOENT:  \a path is an empty string or the parent directory cannot be found
  * - EEXIST:  \a path already exists
  * - ENOSPC:  Not enough space on the disk to add a new directory

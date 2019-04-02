@@ -17,7 +17,7 @@
  * 
  */
 
-/*! \addtogroup UNI_FS
+/*! \addtogroup unistd
  * @{
  */
 
@@ -28,7 +28,7 @@
 
 /*! \details This function removes the directory specified by \a path.
  *
- * \return Zero on success or -1 with errno (see \ref ERRNO) set to:
+ * \return Zero on success or -1 with errno (see \ref errno) set to:
  * - ENOENT:  \a path is an empty string or the parent directory cannot be found
  * - EEXIST:  \a path already exists
  * - ENOTDIR:  \a path is not a directory

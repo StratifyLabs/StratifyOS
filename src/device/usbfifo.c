@@ -20,54 +20,60 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <stddef.h>
+#include "cortexm/task.h"
 #include "device/usbfifo.h"
 #include "mcu/usb.h"
 #include "mcu/debug.h"
 
-static int set_read_action(const devfs_handle_t * handle, mcu_callback_t callback){
+static int cancel_read_action(const devfs_handle_t * handle){
 	mcu_action_t action;
-	const usbfifo_config_t * cfgp = handle->config;
+	const usbfifo_config_t * config = handle->config;
 
-	action.handler.callback = callback;
-	action.handler.context = (void*)handle;
+	action.handler.callback = 0;
+	action.handler.context = 0;
 	action.o_events = MCU_EVENT_FLAG_DATA_READY;
-	action.channel = cfgp->endpoint;
+	action.channel = config->endpoint;
 	action.prio = 0;
 	return mcu_usb_setaction(handle, &action);
 }
 
 static int data_received(void * context, const mcu_event_t * data){
 	int i;
-	int bytes_read;
 	const devfs_handle_t * handle;
 	const usbfifo_config_t * config;
 	usbfifo_state_t * state;
 	handle = context;
 	config = handle->config;
 	state = handle->state;
+	int result;
 	int size = config->fifo.size;
-	char buffer[config->endpoint_size];
 
-	//check to see if USB was disconnected
-	if( mcu_usb_isconnected(handle, NULL) ){
+	result = state->async_read.nbyte;
+	do {
 
-		//read the endpoint directly
-		bytes_read = mcu_usb_root_read_endpoint(handle, config->endpoint, buffer);
-		if( bytes_read > config->endpoint_size){
-			bytes_read = config->endpoint_size;
+		if( result > 0 ){
+
+			//write the new bytes to the buffer
+			for(i=0; i < result; i++){
+				config->fifo.buffer[ state->fifo.atomic_position.access.head ] = config->read_buffer[i];
+				fifo_inc_head(&(state->fifo), size);
+			}
+
+			//see if any functions are blocked waiting for data to arrive
+			fifo_data_received(&(config->fifo), &(state->fifo));
 		}
 
-		//write the new bytes to the buffer
-		for(i=0; i < bytes_read; i++){
-			config->fifo.buffer[ state->fifo.atomic_position.access.head ] = buffer[i];
-			fifo_inc_head(&(state->fifo), size);
+		state->async_read.nbyte = config->endpoint_size;
+		//what if this returns data right now
+		result = mcu_usb_read(handle, &state->async_read);
+		if( result < 0 ){
+			//fire an error -- set this as an error condition
+			return 0;
 		}
 
-		//see if any functions are blocked waiting for data to arrive
-		fifo_data_received(&(config->fifo), &(state->fifo));
-	}
+	} while( result > 0 );
 
-	return 1; //leave the callback in place
+	return 0; //done
 }
 
 int usbfifo_open(const devfs_handle_t * handle){
@@ -84,12 +90,12 @@ int usbfifo_open(const devfs_handle_t * handle){
 int usbfifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 	fifo_info_t * info = ctl;
 	mcu_action_t * action = ctl;
-	const usbfifo_config_t * cfgp = handle->config;
+	const usbfifo_config_t * config = handle->config;
 	usbfifo_state_t * state = handle->state;
 	int result;
 	switch(request){
 		case I_FIFO_GETINFO:
-			fifo_getinfo(info, &(cfgp->fifo), &(state->fifo));
+			fifo_getinfo(info, &(config->fifo), &(state->fifo));
 			break;
 		case I_USB_SETACTION:
 		case I_MCU_SETACTION:
@@ -113,13 +119,21 @@ int usbfifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 			/* no break */
 		case I_FIFO_INIT:
 			fifo_flush(&(state->fifo));
-			result = set_read_action(handle, data_received);
+			state->async_read.tid = task_get_current();
+			state->async_read.flags = 0;
+			state->async_read.handler.callback = data_received;
+			state->async_read.handler.context = (void*)handle;
+			state->async_read.loc = config->endpoint;
+			state->async_read.buf = config->read_buffer;
+			state->async_read.nbyte = config->endpoint_size;
+
+			result = mcu_usb_read(handle, &state->async_read);
 			if ( result < 0 ){ return SYSFS_SET_RETURN(EIO); }
 
 			break;
 		case I_FIFO_EXIT:
 			//clear the callback for the device
-			result = set_read_action(handle, NULL);
+			result = cancel_read_action(handle);
 			if( result < 0 ){ return SYSFS_SET_RETURN(EIO); }
 			return mcu_usb_close(handle);
 		default:

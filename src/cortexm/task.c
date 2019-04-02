@@ -126,14 +126,16 @@ int task_init(int interval,
 	FPU->FPCCR = 0; //don't automatically save the FPU registers -- save them manually
 #endif
 
+	//this will causes crashes if it is moved after the context switching begins
 	mcu_core_enable_cache();
 
 	//Turn on the task timer (MCU implementation dependent)
 	set_systick_interval(interval);
 	sos_task_table[0].rr_time = m_task_rr_reload;
-
 	cortexm_set_stack_ptr( (void*)&_top_of_stack ); //reset the handler stack pointer
 	cortexm_enable_systick_irq();  //Enable context switching
+
+
 	task_root_switch_context();
 	return 0;
 }
@@ -201,6 +203,7 @@ void task_root_new_task(new_task_t * task){
 		if ( !task_used_asserted(i) ){
 			//initialize the process stack pointer
 			sos_task_table[i].pid = task->pid;
+			sos_task_table[i].parent = task->parent;
 			sos_task_table[i].flags = task->flags;
 			sos_task_table[i].sp = task->stackaddr - sizeof(hw_stack_frame_t) - sizeof(sw_stack_frame_t);
 			sos_task_table[i].reent = task->reent;
@@ -424,7 +427,7 @@ void switch_contexts(){
 	asm volatile ("MSR psp, %0\n\t" : : "r" (sos_task_table[m_task_current].sp) );
 }
 
-void task_root_switch_context(void * args){
+void task_root_switch_context(){
 	sos_task_table[task_get_current()].rr_time = SysTick->VAL; //save the RR time from the SYSTICK
 	SCB->ICSR |= (1<<28); //set the pend SV interrupt pending -- causes mcu_core_pendsv_handler() to execute when current interrupt exits
 }

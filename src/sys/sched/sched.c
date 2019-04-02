@@ -17,12 +17,12 @@
  *
  */
 
-/*! \addtogroup SCHED Scheduler
+/*! \addtogroup sched
  * @{
  *
- * \ingroup POSIX
- *
  */
+
+/*! \file */
 
 #include "config.h"
 
@@ -32,6 +32,7 @@
 #include "mcu/mcu.h"
 
 
+/*! \cond */
 typedef struct {
     int tid;
     int policy;
@@ -40,7 +41,6 @@ typedef struct {
 static void root_set_scheduling_param(void * args) MCU_ROOT_EXEC_CODE;
 static void root_yield(void * args) MCU_ROOT_EXEC_CODE;
 
-/*! \file */
 static int get_pid_task(pid_t pid){
     int i;
     for(i=0; i < task_get_total(); i++){
@@ -50,9 +50,10 @@ static int get_pid_task(pid_t pid){
     }
     return -1;
 }
+/*! \endcond */
 
 /*! \details This function gets the maximum priority for \a policy.
- * \return Zero on success or -1 with errno (see \ref ERRNO) set to:
+ * \return Zero on success or -1 with errno (see \ref errno) set to:
  * - EINVAL:  \a policy is not SCHED_RR, SCHED_FIFO, or SCHED_OTHER
  *
  */
@@ -70,7 +71,7 @@ int sched_get_priority_max(int policy){
 }
 
 /*! \details This function gets the minimum priority for \a policy.
- * \return Zero on success or -1 with errno (see \ref ERRNO) set to:
+ * \return Zero on success or -1 with errno (see \ref errno) set to:
  * - EINVAL:  \a policy is not SCHED_RR, SCHED_FIFO, or SCHED_OTHER
  *
  */
@@ -88,7 +89,7 @@ int sched_get_priority_min(int policy){
 }
 
 /*! \details This function gets the scheduling parameter (priority) for \a pid.
- * \return Zero on success or -1 with errno (see \ref ERRNO) set to:
+ * \return Zero on success or -1 with errno (see \ref errno) set to:
  * - EINVAL:  \a policy is not SCHED_RR, SCHED_FIFO, or SCHED_OTHER
  * - ESRCH:  \a pid is not a valid process
  *
@@ -110,7 +111,7 @@ int sched_getparam(pid_t pid, struct sched_param * param){
 }
 
 /*! \details This function gets the scheduling policy.
- * \return The scheduling policy on success or -1 with errno (see \ref ERRNO) set to:
+ * \return The scheduling policy on success or -1 with errno (see \ref errno) set to:
  * - ESRCH:  \a pid is not a valid process
  *
  */
@@ -128,7 +129,7 @@ int sched_getscheduler(pid_t pid){
 }
 
 /*! \details This function gets the round robin interval for \a pid.
- * \return Zero on success or -1 with errno (see \ref ERRNO) set to:
+ * \return Zero on success or -1 with errno (see \ref errno) set to:
  * - EINVAL:  \a ts is NULL
  * - ESRCH:  \a pid is not a valid process
  *
@@ -146,7 +147,7 @@ int sched_rr_get_interval(pid_t pid, struct timespec * ts){
 }
 
 /*! \details This function sets the process's scheduling paramater (priority).
- * \return Zero on success or -1 with errno (see \ref ERRNO) set to:
+ * \return Zero on success or -1 with errno (see \ref errno) set to:
  * - ESRCH:  \a pid is not a valid process
  * - EPERM:  the calling process does not have permission to change the scheduling parameters
  *
@@ -174,7 +175,7 @@ int sched_setparam(pid_t pid, const struct sched_param * param){
 }
 
 /*! \details This function sets the scheduler policy and parameter (priority) for the process.
- * \return Zero on success or -1 with errno (see \ref ERRNO) set to:
+ * \return Zero on success or -1 with errno (see \ref errno) set to:
  * - EINVAL:  \a policy is not SCHED_RR, SCHED_FIFO, or SCHED_OTHER
  * - EPERM:  the calling process does not have permission to change the scheduling parameters
  * - ESRCH:  \a pid is not a valid process
@@ -220,7 +221,7 @@ int sched_yield(){
     return 0;
 }
 
-
+/*! \cond */
 void root_yield(void * args){
     task_assert_yield( task_get_current() );
     task_root_switch_context();
@@ -253,6 +254,7 @@ void root_set_scheduling_param(void * args){
     }
 
 }
+/*! \endcond */
 
 /*! @} */
 

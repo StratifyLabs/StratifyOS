@@ -17,7 +17,7 @@
  * 
  */
 
-/*! \addtogroup UNI_FILDES
+/*! \addtogroup unistd
  * @{
  */
 
@@ -27,7 +27,9 @@
 #include "config.h"
 #include  "unistd_fs.h"
 
+/*! \cond */
 static int get_size(int fildes);
+/*! \endcond */
 
 /*! \details This function sets the file offset for \a fildes using the following
  * values of \a whence:
@@ -35,7 +37,7 @@ static int get_size(int fildes);
  * - SEEK_CUR: set the offset to current location plus \a offset
  * - SEEK_END:  set the offset to the size of the file plus \a offset
  *
- * \return Zero on success or -1 on error with errno (see \ref ERRNO) set to:
+ * \return Zero on success or -1 on error with errno (see \ref errno) set to:
  *  - EBADF:  \a fildes is invalid
  *  - EINVAL:  \a whence is invalid
  *
@@ -43,6 +45,7 @@ static int get_size(int fildes);
 off_t lseek(int fildes, off_t offset, int whence);
 
 
+/*! \cond */
 off_t _lseek(int fildes, off_t offset, int whence){
 	int loc;
 	int32_t tmp;
@@ -83,6 +86,7 @@ int get_size(int fildes){
 	errno = tmp;
 	return st.st_size;
 }
+/*! \endcond */
 
 /*! @} */
 

@@ -17,7 +17,7 @@
  * 
  */
 
-/*! \addtogroup UNI_FS
+/*! \addtogroup unistd
  * @{
  */
 
@@ -28,7 +28,7 @@
 /*! \details This function gets various file statistics for
  * a given file name.
  *
- * \return Zero on success or -1 on error with errno (see \ref ERRNO) set to:
+ * \return Zero on success or -1 on error with errno (see \ref errno) set to:
  * - ENAMETOOLONG: \a path exceeds PATH_MAX or a component of \a path exceeds NAME_MAX
  * - ENOENT: \a path does not exist
  * - EACCES: search permission is denied for a component of \a path
@@ -36,6 +36,7 @@
  */
 int stat(const char * path, struct stat *buf);
 
+/*! \cond */
 int _stat(const char * path, struct stat *buf){
 	const sysfs_t * fs;
 
@@ -52,6 +53,7 @@ int _stat(const char * path, struct stat *buf){
 	errno = ENOENT;
 	return -1;
 }
+/*! \endcond */
 
 /*! @} */
 

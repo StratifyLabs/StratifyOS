@@ -17,7 +17,7 @@
  * 
  */
 
-/*! \addtogroup TIME
+/*! \addtogroup time
  * @{
  */
 
@@ -45,6 +45,7 @@ extern struct timeval time_of_day_offset MCU_SYS_MEM;
  */
 int gettimeofday(struct timeval * tp, void * tzp);
 
+/*! \cond */
 static int gettimeofday_rtc(struct timeval * ptimeval);
 static void gettimeofday_sched(struct timeval * ptimeval);
 
@@ -94,5 +95,6 @@ int gettimeofday_rtc(struct timeval * ptimeval){
 	close(fd);
 	return 0;
 }
+/*! \endcond */
 
 /*! @} */

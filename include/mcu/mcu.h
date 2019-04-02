@@ -173,13 +173,13 @@ typedef struct MCU_PACK {
 	uart_attr_t debug_uart_attr /*! The UART attributes for the UART debugger. */;
 	const void * arch_config /*! A pointer to MCU architecture specific data, for example, stm32_arch_config_t */;
 	u32 o_mcu_debug /*! Debugging flags (only used when linking to debug libraries */;
+	u32 os_mpu_text_mask /*! Mask to apply to _text when setting the kernel memory protection 0x0000ffff to ignore bottom 16-bits */;
 } mcu_board_config_t;
 
 /*! \brief MCU Board configuration variable
  * \details This variable must be provided by the board support package.
  */
 extern const mcu_board_config_t mcu_board_config;
-extern u32 mcu_ram_usage_table[];
 
 
 

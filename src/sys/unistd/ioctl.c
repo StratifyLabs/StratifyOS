@@ -17,7 +17,7 @@
  *
  */
 
-/*! \addtogroup UNI_FILE_ACCESS
+/*! \addtogroup unistd
  * @{
  */
 
@@ -43,7 +43,7 @@
  * \param fildes The file descriptor returned by \ref open()
  * \param request The request to the device.
  *
- * \return The number of bytes actually read of -1 with errno (see \ref ERRNO) set to:
+ * \return The number of bytes actually read of -1 with errno (see \ref errno) set to:
  * - EBADF:  \a fildes is bad
  * - EIO:  IO error
  * - EAGAIN:  O_NONBLOCK is set for \a fildes and the device is busy
@@ -58,7 +58,6 @@ int ioctl(int fildes, int request, ...) {
 
 	if( FILDES_IS_SOCKET(fildes) ){
 		if( sos_board_config.socket_api != 0 ){
-			mcu_debug_printf("socket API IOCTL 0x%X 0x%X %p (%d)\n", fildes, request, ctl, fildes);
 			return sos_board_config.socket_api->ioctl(fildes & ~FILDES_SOCKET_FLAG, request, ctl);
 		}
 		errno = EBADF;

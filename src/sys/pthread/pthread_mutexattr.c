@@ -17,10 +17,9 @@
  * 
  */
 
-/*! \addtogroup PTHREAD_MUTEX
+/*! \addtogroup pthread
  * @{
  *
- * \ingroup PTHREAD
  *
  */
 
@@ -31,13 +30,16 @@
 #include <pthread.h>
 #include <errno.h>
 
+
+/*! \cond */
 extern int pthread_mutexattr_check_initialized(const pthread_mutexattr_t * attr);
+/*! \endcond */
 
 
 /*! \details This function gets the priority ceiling from \a attr and stores it
  * in \a prioceiling.
  *
- * \return Zero on success or -1 with errno (see \ref ERRNO) set to:
+ * \return Zero on success or -1 with errno (see \ref errno) set to:
  * - EINVAL: \a attr does not refer to an initialized mutex attribute object
  */
 int pthread_mutexattr_getprioceiling(const pthread_mutexattr_t *attr /*! Mutex Thread Attribute Object */,
@@ -52,7 +54,7 @@ int pthread_mutexattr_getprioceiling(const pthread_mutexattr_t *attr /*! Mutex T
 
 /*! \details This function sets the priority ceiling in \a attr to \a prio_ceiling.
  *
- * \return Zero on success or -1 with errno (see \ref ERRNO) set to:
+ * \return Zero on success or -1 with errno (see \ref errno) set to:
  * - EINVAL: \a attr does not refer to an initialized mutex attribute object
  */
 int pthread_mutexattr_setprioceiling(pthread_mutexattr_t *attr /*! Mutex Thread Attribute Object */,
@@ -68,7 +70,7 @@ int pthread_mutexattr_setprioceiling(pthread_mutexattr_t *attr /*! Mutex Thread 
 /*! \details This function gets the protocol from \a attr and stores it
  * in \a protocol.
  *
- * \return Zero on success or -1 with errno (see \ref ERRNO) set to:
+ * \return Zero on success or -1 with errno (see \ref errno) set to:
  * - EINVAL: \a attr does not refer to an initialized mutex attribute object
  */
 int pthread_mutexattr_getprotocol(const pthread_mutexattr_t *attr /*! Mutex Thread Attribute Object */,
@@ -83,7 +85,7 @@ int pthread_mutexattr_getprotocol(const pthread_mutexattr_t *attr /*! Mutex Thre
 
 /*! \details This function sets protocol in \a attr to \a protocol.
  *
- * \return Zero on success or -1 with errno (see \ref ERRNO) set to:
+ * \return Zero on success or -1 with errno (see \ref errno) set to:
  * - EINVAL: \a attr does not refer to an initialized mutex attribute object
  */
 int pthread_mutexattr_setprotocol(pthread_mutexattr_t *attr /*! Mutex Thread Attribute Object */,
@@ -110,7 +112,7 @@ int pthread_mutexattr_setprotocol(pthread_mutexattr_t *attr /*! Mutex Thread Att
 /*! \details This function gets the process shared value from \a attr and stores it
  * in \a pshared.
  *
- * \return Zero on success or -1 with errno (see \ref ERRNO) set to:
+ * \return Zero on success or -1 with errno (see \ref errno) set to:
  * - EINVAL: \a attr does not refer to an initialized mutex attribute object
  */
 int pthread_mutexattr_getpshared(const pthread_mutexattr_t *attr /*! Mutex Thread Attribute Object */,
@@ -126,7 +128,7 @@ int pthread_mutexattr_getpshared(const pthread_mutexattr_t *attr /*! Mutex Threa
 /*! \details This function sets the process shared value in \a attr to \a pshared.
  * A non-zero \a pshared means the mutex is shared.
  *
- * \return Zero on success or -1 with errno (see \ref ERRNO) set to:
+ * \return Zero on success or -1 with errno (see \ref errno) set to:
  * - EINVAL: \a attr does not refer to an initialized mutex attribute object
  */
 int pthread_mutexattr_setpshared(pthread_mutexattr_t *attr /*! Mutex Thread Attribute Object */,
@@ -142,7 +144,7 @@ int pthread_mutexattr_setpshared(pthread_mutexattr_t *attr /*! Mutex Thread Attr
 /*! \details This function gets the type from \a attr and stores it
  * in \a type.
  *
- * \return Zero on success or -1 with errno (see \ref ERRNO) set to:
+ * \return Zero on success or -1 with errno (see \ref errno) set to:
  * - EINVAL: \a attr does not refer to an initialized mutex attribute object
  */
 int pthread_mutexattr_gettype(const pthread_mutexattr_t *attr /*! Mutex Thread Attribute Object */,
@@ -164,7 +166,7 @@ int pthread_mutexattr_gettype(const pthread_mutexattr_t *attr /*! Mutex Thread A
  * - PTHREAD_MUTEX_NORMAL
  * - PTHREAD_MUTEX_RECURSIVE
  *
- * \return Zero on success or -1 with errno (see \ref ERRNO) set to:
+ * \return Zero on success or -1 with errno (see \ref errno) set to:
  * - EINVAL: \a attr does not refer to an initialized mutex attribute object
  */
 int pthread_mutexattr_settype(pthread_mutexattr_t *attr /*! Mutex Thread Attribute Object */,

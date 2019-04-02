@@ -17,6 +17,13 @@
  * 
  */
 
+
+/*! \addtogroup aio
+ * @{
+ */
+
+/*! \file */
+
 #ifndef AIO_H_
 #define AIO_H_
 
@@ -70,3 +77,5 @@ int lio_listio(int mode, struct aiocb * const list[], int nent, struct sigevent 
 #endif
 
 #endif /* AIO_H_ */
+
+/*! @} */

@@ -13,76 +13,84 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 #include "sos/sos.h"
 #include "cortexm/mpu.h"
 #include "appfs_local.h"
 
-static void set_ram_usage(u32 * buf, u32 page, int usage);
+static void set_page_usage(u32 * usage, u32 page, int type);
+static int get_page_usage(u32 * usage, u32 page);
 
-int appfs_ram_setusage(u32 page, u32 size, int type){
-	u32 buf[APPFS_RAM_USAGE_WORDS_SIZE];
-	appfs_ram_getusage_all(buf);
-	appfs_ram_setrange(buf, page, size, type);
-	cortexm_svcall(appfs_ram_root_saveusage, buf);
-	return 0;
+int appfs_ram_root_get(const devfs_device_t * dev, u32 page){
+	appfs_ram_t ram;
+	ram.device = dev;
+	ram.page = page;
+	appfs_ram_svcall_get(&ram);
+	return ram.type;
 }
 
-int appfs_ram_root_setusage(u32 page, u32 size, int type){
-	u32 buf[APPFS_RAM_USAGE_WORDS_SIZE];
-	appfs_ram_getusage_all(buf);
-	appfs_ram_setrange(buf, page, size, type);
-	appfs_ram_root_saveusage(buf);
-	return 0;
+void appfs_ram_root_set(const devfs_device_t * dev, u32 page, u32 size, int type){
+	appfs_ram_t ram;
+	ram.device = dev;
+	ram.page = page;
+	ram.size = size;
+	ram.type = type;
+	appfs_ram_svcall_set(&ram);
+}
+
+void appfs_ram_root_init(const devfs_device_t * dev){
+	mem_info_t info;
+	dev->driver.ioctl(&dev->handle, I_MEM_GETINFO, &info);
+	memset(info.usage, 0, info.usage_size);
 }
 
 
-void appfs_ram_root_saveusage(void * args){
-	memcpy(mcu_ram_usage_table, args, APPFS_RAM_USAGE_WORDS_SIZE*sizeof(u32));
-}
+void appfs_ram_svcall_set(void * args){
+	u32 i;
+	u32 pages;
+	mem_info_t info;
+	appfs_ram_t * p = args;
+	p->device->driver.ioctl(&p->device->handle, I_MEM_GETINFO, &info);
+	p->size = (u32)mpu_getnextpowerof2((int)p->size);
 
-void appfs_ram_setrange(u32 * buf, u32 page, u32 size, int usage){
-    u32 i;
-    u32 pages;
-    size = (u32)mpu_getnextpowerof2((int)size);
-	pages = (size + MCU_RAM_PAGE_SIZE - 1) / MCU_RAM_PAGE_SIZE;
-	for(i=page; i < (page+pages); i++){
-		set_ram_usage(buf, i, usage);
+	pages = (p->size + MCU_RAM_PAGE_SIZE - 1) / MCU_RAM_PAGE_SIZE;
+
+	for(i=p->page; i < (p->page+pages); i++){
+		if( p->page < info.ram_pages ){
+			set_page_usage(info.usage, i, p->type);
+		}
 	}
 }
 
-int appfs_ram_getusage(u32 page){
-	int block;
-	int shift;
-	if ( (u32)page < APPFS_RAM_PAGES){
-		block = page >> 4;
-		shift = (page & 0xF) * 2;
-		return ( (mcu_ram_usage_table[block] >> (shift)) & APPFS_MEMPAGETYPE_MASK );
-    }
-
-    return -1;
+void appfs_ram_svcall_get(void * args){
+	mem_info_t info;
+	appfs_ram_t * p = args;
+	p->device->driver.ioctl(&p->device->handle, I_MEM_GETINFO, &info);
+	if( p->page < info.ram_pages){
+		p->type = get_page_usage(info.usage, p->page);
+	} else {
+		p->type = APPFS_MEMPAGETYPE_INVALID;
+	}
 }
 
-void appfs_ram_getusage_all(void * buf){
-	memcpy(buf, mcu_ram_usage_table, APPFS_RAM_USAGE_WORDS_SIZE*sizeof(u32));
-}
-
-void appfs_ram_initusage(void * buf){
-	memset(buf, 0, APPFS_RAM_USAGE_WORDS_SIZE*sizeof(u32));
-}
-
-static void set_ram_usage(u32 * buf, u32 page, int usage){
+int get_page_usage(u32 * usage, u32 page){
 	u32 block;
 	u32 shift;
-	if( page < APPFS_RAM_PAGES ){
-		block = page >> 4;
-		shift = (page & 0xF) * 2;
-        buf[block] &= (u32)~(APPFS_MEMPAGETYPE_MASK << (shift)); //clear the bits
-        buf[block] |= (u32)((usage & APPFS_MEMPAGETYPE_MASK) << (shift));  //set the bits
-	}
+	block = page >> 4;
+	shift = (page & 0xF) * 2;
+	return ( (usage[block] >> (shift)) & APPFS_MEMPAGETYPE_MASK );
+}
+
+void set_page_usage(u32 * usage, u32 page, int type){
+	u32 block;
+	u32 shift;
+	block = page >> 4;
+	shift = (page & 0xF) * 2;
+	usage[block] &= (u32)~(APPFS_MEMPAGETYPE_MASK << (shift)); //clear the bits
+	usage[block] |= (u32)((type & APPFS_MEMPAGETYPE_MASK) << (shift));  //set the bits
 }
 
 

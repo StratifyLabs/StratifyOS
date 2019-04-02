@@ -1,4 +1,4 @@
-/* Copyright 2011-2018 Tyler Gilbert; 
+/* Copyright 2011-2019 Tyler Gilbert;
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -17,7 +17,7 @@
  * 
  */
 
-/*! \addtogroup TIME
+/*! \addtogroup time
  * @{
  */
 
@@ -37,12 +37,13 @@
  * - children process user time
  * - children system time on behalf of the process
  *
- * \return Zero or -1 with errno (see \ref ERRNO) set to:
+ * \return Zero or -1 with errno (see \ref errno) set to:
  * - EINVAL: buffer is NULL
  *
  */
 clock_t times(struct tms *buffer);
 
+/*! \cond */
 clock_t _times(struct tms *buffer) {
 	int i;
 	clock_t value;
@@ -70,5 +71,6 @@ clock_t _times(struct tms *buffer) {
 	buffer->tms_cstime = 0; //children system time on behalf of process
 	return buffer->tms_cutime + buffer->tms_utime;
 }
+/*! \endcond */
 
 /*! @} */

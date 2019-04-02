@@ -378,7 +378,7 @@ link_transport_phy_t link_phy_open(const char * name, const void * s_options){
 	//make the buffer raw
 	cfmakeraw(&options); //raw with no buffering
 
-	link_debug(LINK_DEBUG_MESSAGE, "Open at %d bps no parity", BAUDRATE);
+	link_debug(LINK_DEBUG_MESSAGE, "Open %s at %d bps no parity", name, BAUDRATE);
 	cfsetspeed(&options, BAUDRATE);
 	//even parity
 	//8 bit data
@@ -506,7 +506,9 @@ int link_phy_read(link_transport_phy_t handle, void * buf, int nbyte){
 		return LINK_PHY_ERROR;
 	}
 
-	link_debug(LINK_DEBUG_MESSAGE, "Rx'd %d bytes", ret);
+	if( ret != 0 ){
+		link_debug(LINK_DEBUG_MESSAGE, "Rx'd %d bytes", ret);
+	}
 	return ret;
 }
 

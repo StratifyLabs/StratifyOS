@@ -17,11 +17,6 @@
  *
  */
 
-/*! \addtogroup STFY
- * @{
- */
-
-/*! \file */
 
 #include "sos/sos.h"
 #include "config.h"
@@ -75,5 +70,3 @@ const void * kernel_request_api(u32 request){
 	return 0;
 }
 
-
-/*! @} */

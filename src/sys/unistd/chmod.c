@@ -17,7 +17,7 @@
  * 
  */
 
-/*! \addtogroup UNI_PERMS
+/*! \addtogroup unistd
  * @{
  */
 
@@ -29,7 +29,7 @@
 /*! \details This function changes the mode of the specified file
  * or directory.
  *
- * \return Zero on success or -1 with errno (see \ref ERRNO) set to:
+ * \return Zero on success or -1 with errno (see \ref errno) set to:
  * - EIO:  IO Error
  * - ENAMETOOLONG: \a path exceeds PATH_MAX or a component of \a path exceeds NAME_MAX
  * - ENOENT: \a path does not exist

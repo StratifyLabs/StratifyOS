@@ -1,6 +1,6 @@
 # StratifyOS
 
-Stratify OS is an microcontroller RTOS for the ARM Cortex M architecture. It is designed to make it dead simple to use the [powerful hardware features of the ARM Cortex M](https://stratifylabs.co/user%20guides/2018/03/06/How-Stratify-OS-Levarages-ARM-Cortex-M/):
+Stratify OS is an microcontroller RTOS for the ARM Cortex M architecture. It is designed to make it dead simple to use the [powerful hardware features of the ARM Cortex M](https://docs.stratifylabs.co/Guide-ARM-Cortex-M/):
 
 - MPU
 - SysTick and PendSV
@@ -14,54 +14,32 @@ These hardware features are integrated into the OS in such a way that applicatio
 
 ## Getting Started
 
-Getting started on Stratify OS is very easy. You just need to install a binary image on your development board from the cloud. Then you can install your independently built applications.
+Getting started on Stratify OS is easy with the Stratify Labs cloud/command line tool called `sl`.
 
-- [Try it on the STM32 Nucleo144 Boards](https://stratifylabs.co/user%20guides/2018/02/10/Installing-StratifyOS-on-Nucleo-F446ZE/)
-- [Try it on mbed LPC1768](https://stratifylabs.co/user%20guides/2018/02/10/Installing-StratifyOS-on-mbedLPC1768/)
+**Install on Mac OS X**
 
-Once the OS is installed, you can run pre-built applications from the cloud or [build and run HelloWorld](https://stratifylabs.co/user%20guides/2018/02/10/HelloWorld-Download-Build-Install/) using the Stratify Labs SDK.
+```
+mkdir -p /Applications/StratifyLabs-SDK/Tools/gcc/bin
+curl -L -o /Applications/StratifyLabs-SDK/Tools/gcc/bin/sl 'https://stratifylabs.page.link/slmac'
+chmod 755 /Applications/StratifyLabs-SDK/Tools/gcc/bin/sl
+echo 'export PATH=/Applications/StratifyLabs-SDK/Tools/gcc/bin:$PATH' >> ~/.bash_profile
+source ~/.bash_profile
+```
 
-You can find more resources for getting started by visiting the [Stratify SDK documentation](https://stratifylabs.co/docs/).
+**Install on Windows (Git Bash)**
+
+```
+mkdir -p /C/StratifyLabs-SDK/Tools/gcc/bin
+curl -L -o /C/StratifyLabs-SDK/Tools/gcc/bin/sl.exe 'https://stratifylabs.page.link/slwin'
+chmod 755 /C/StratifyLabs-SDK/Tools/gcc/bin/sl.exe
+echo 'export PATH=/C/StratifyLabs-SDK/Tools/gcc/bin:$PATH' >> ~/.bash_profile
+source ~/.bash_profile
+```
+
+Once you install `sl`, visit the [Stratify Labs web application](https://app.stratifylabs.co) to login and start the tutorials.
 
 ## License
 
-The Stratify OS source code is available the GPLv3 license.  We provide an exception to the license that allows you to distribute binary copies under the license of your choosing (similar to the FreeRTOS license).  Read more about licensing and download the SDK here: http://stratifylabs.co/download/
+The Stratify OS source code is available the GPLv3 license.  We provide an exception to the license that allows you to distribute binary copies under the license of your choosing (similar to the old FreeRTOS license).  Read more about licensing here: http://stratifylabs.co/download/
 
-Stratify OS can be installed on [many popular development boards](http://stratifylabs.co/hardware/) in just a few minutes.
-
-## Building Stratify OS
-
-Stratify OS is built and distributed with the [Stratify Labs SDK](https://stratifylabs.co/download/). You only need to build and install the source code if you want to debug, contribute new features, or equip your local SDK with a previous version.
-
-Here are the steps to build and install Stratify OS. You need to have git, CMake and the Stratify Labs SDK installed before running these commands.
-
-The API builds for running with Stratify OS on embedded platforms. Stratify OS includes a serialization (called link) feature that enables communications with Stratify OS on Windows and Mac OS X.  The cmake scripts check for the suffix "_arm" or "_link" to see which to build.
-
-### Mac OS X
-
-```
-git clone https://github.com/StratifyLabs/StratifyOS.git
-cd StratifyOS
-mkdir cmake_arm; mkdir cmake_link
-cd cmake_arm
-cmake ..; make; make install
-cd ../cmake_link
-cmake ..; make; make install
-```
-
-### Windows
-
-For windows, you need to specify some additional options because "make" typically isn't available in the PATH environment. If you are using CMD or powershell use "-G "MinGW Makefiles. If you are using msys, you can use -G "Unix Makefiles" and use the commands listed above for Mac OS X.
-
-```
-git clone https://github.com/StratifyLabs/StratifyOS.git
-cd StratifyOS
-mkdir cmake_arm; mkdir cmake_link
-cd cmake_arm
-cmake .. -G "MinGW Makefiles"
-cmake --build . --target install
-cd ../cmake_link
-cmake .. -G "MinGW Makefiles"
-cmake --build . --target install
-```
 

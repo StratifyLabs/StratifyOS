@@ -125,7 +125,7 @@ const sos_link_transport_usb_configuration_descriptor_t sos_link_transport_usb_c
 						.acm.bFunctionLength = sizeof(usbd_cdc_abstract_control_model_functional_descriptor_t),
 						.acm.bDescriptorType = 0x24,
 						.acm.bDescriptorSubType = 0x02, //ACM descriptor subtype
-						.acm.bmCapabilities = 0x02, //support for SERIAL_STATE
+						.acm.bmCapabilities = 0x06, // Device supports the request combination of Set_Line_Coding, Set_Control_Line_State, Get_Line_Coding, and the notification Serial_State.
 						.union_descriptor.bFunctionLength = sizeof(usbd_cdc_union_functional_descriptor_t),
 						.union_descriptor.bDescriptorType = 0x24,
 						.union_descriptor.bDescriptorSubType = 0x06, //union descriptor subtype
@@ -134,7 +134,7 @@ const sos_link_transport_usb_configuration_descriptor_t sos_link_transport_usb_c
 						.call_management.bFunctionLength = sizeof(usbd_cdc_call_management_functional_descriptor_t),
 						.call_management.bDescriptorType = 0x24,
 						.call_management.bDescriptorSubType = 0x01, //call management subtype
-						.call_management.bmCapabilities = 0x00, //call management handled
+						.call_management.bmCapabilities = 0x00, //call management NOT handled -- if call management is handled, the device will be added to Network devices in Mac OS X
 						.call_management.bDataInterface = 0x01 //data interface
 				},
 

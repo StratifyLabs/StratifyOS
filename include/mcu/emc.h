@@ -36,6 +36,11 @@ typedef struct MCU_PACK {
 
 typedef struct MCU_PACK {
 	emc_attr_t attr; //default attributes
+	u32 base_address;
+	u32 size;
+	u32 freq;
+	u16 data_bus_width;
+	u16 resd;
 } emc_config_t;
 
 #ifdef __cplusplus

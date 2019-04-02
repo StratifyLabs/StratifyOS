@@ -32,7 +32,7 @@ u32 usbd_standard_request_get_descriptor(usbd_control_t * context);
 u32 usbd_standard_request_set_address (usbd_control_t * context);
 u32 usbd_standard_request_set_config (usbd_control_t * context);
 u32 usbd_standard_request_get_config (usbd_control_t * context);
-u32 usdd_standard_request_get_status (usbd_control_t * context);
+u32 usbd_standard_request_get_status (usbd_control_t * context);
 
 
 #endif /* USBD_STANDARD_H_ */

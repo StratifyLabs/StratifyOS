@@ -31,213 +31,212 @@
 
 
 static int execute_class_handler(usbd_control_t * context, const mcu_event_t * usb_event){
-    if( context->constants->class_event_handler != 0 ){
-        return context->constants->class_event_handler(context, usb_event);
-    }
-    return 0;
+	if( context->constants->class_event_handler != 0 ){
+		return context->constants->class_event_handler(context, usb_event);
+	}
+	return 0;
 }
 
 static void stall(usbd_control_t * context){
-    usbd_control_stall_endpoint(context->handle, (USBD_ENDPOINT_ADDRESS_IN|0x00));
-    context->data.nbyte = 0;
+	usbd_control_stall_endpoint(context->handle, (USBD_ENDPOINT_ADDRESS_IN|0x00));
+	context->data.nbyte = 0;
 }
 
 void usbd_control_root_init(void * args){
-    usbd_control_t * context = args;
-    mcu_action_t action;
+	usbd_control_t * context = args;
+	mcu_action_t action;
 
-    //Set up the action to take when there is data on the control endpoint
-    action.channel = 0;
-    action.handler.context = context;
-    action.handler.callback = usbd_control_handler;
-    action.o_events = MCU_EVENT_FLAG_DATA_READY | MCU_EVENT_FLAG_WRITE_COMPLETE | MCU_EVENT_FLAG_SETUP;
-    action.prio = 0;
-    if( mcu_usb_setaction(context->handle, &action) < 0 ){
-        mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_FATAL, "usbd control setaction");
-    }
+	//Set up the action to take when there is data on the control endpoint
+	action.channel = 0;
+	action.handler.context = context;
+	action.handler.callback = usbd_control_handler;
+	action.o_events = MCU_EVENT_FLAG_DATA_READY | MCU_EVENT_FLAG_WRITE_COMPLETE | MCU_EVENT_FLAG_SETUP;
+	action.prio = 0;
+	if( mcu_usb_setaction(context->handle, &action) < 0 ){
+		mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_FATAL, "usbd control setaction");
+	}
 
 
-    if( usbd_control_attach(context->handle) < 0 ){
-        mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_FATAL, "usbd control setaction");
-    }
+	if( usbd_control_attach(context->handle) < 0 ){
+		mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_FATAL, "usbd control setaction");
+	}
 }
 
 int usbd_control_handler(void * context_object, const mcu_event_t * usb_event /*! Callback data */){
-    u32 o_events = usb_event->o_events;
-    usbd_control_t * context = context_object;
-    int ret;
+	u32 o_events = usb_event->o_events;
+	usbd_control_t * context = context_object;
+	int ret;
 
-    if ( o_events & MCU_EVENT_FLAG_SETUP ){
-        //read the setup packet
-        usbd_control_handler_setup_stage(context);
-    }
+	if ( o_events & MCU_EVENT_FLAG_SETUP ){
+		//read the setup packet
+		usbd_control_handler_setup_stage(context);
+	}
 
-    if ( o_events & MCU_EVENT_FLAG_SETUP ){
-        ret = usbd_standard_request_handle_setup(context);
+	if ( o_events & MCU_EVENT_FLAG_SETUP ){
+		ret = usbd_standard_request_handle_setup(context);
 
-        //allow the class handler handle the standard request if the request was handled with usbd_standard_request_handle_setup(), no need to stall
-        if( (execute_class_handler(context, usb_event) == 0) && (ret == 0)){
-            stall(context);
-        }
+		//allow the class handler handle the standard request if the request was handled with usbd_standard_request_handle_setup(), no need to stall
+		if( (execute_class_handler(context, usb_event) == 0) && (ret == 0)){
+			stall(context);
+		}
 
-    } else if ( o_events & MCU_EVENT_FLAG_DATA_READY ){ //Data out stage
-        if (usbd_control_setup_request_direction(context) == USBD_REQUEST_TYPE_DIRECTION_HOST_TO_DEVICE) {
-            if (context->data.nbyte) {
-                usbd_control_dataout_stage(context);
-                if (context->data.nbyte == 0){
-                    if (usbd_control_setup_request_type(context) == USBD_REQUEST_STANDARD){
-                        stall(context);
-                    } else if( execute_class_handler(context, usb_event) == 0 ){
-                        stall(context);
-                    }
-                }
-            }
-        } else {
-            usbd_control_statusout_stage(context);
-        }
+	} else if ( o_events & MCU_EVENT_FLAG_DATA_READY ){ //Data out stage
+		if (usbd_control_setup_request_direction(context) == USBD_REQUEST_TYPE_DIRECTION_HOST_TO_DEVICE) {
+			if (context->data.nbyte) {
+				usbd_control_dataout_stage(context);
+				if (context->data.nbyte == 0){
+					if (usbd_control_setup_request_type(context) == USBD_REQUEST_STANDARD){
+						stall(context);
+					} else if( execute_class_handler(context, usb_event) == 0 ){
+						stall(context);
+					}
+				}
+			}
+		} else {
+			usbd_control_statusout_stage(context);
+		}
 
-    } else if ( o_events & MCU_EVENT_FLAG_WRITE_COMPLETE ){
-        if (usbd_control_setup_request_direction(context) == USBD_REQUEST_TYPE_DIRECTION_DEVICE_TO_HOST) {
+	} else if ( o_events & MCU_EVENT_FLAG_WRITE_COMPLETE ){
+		if (usbd_control_setup_request_direction(context) == USBD_REQUEST_TYPE_DIRECTION_DEVICE_TO_HOST) {
 
+			if( execute_class_handler(context, usb_event) ){
+				return 1;
+			}
 
-            if( execute_class_handler(context, usb_event) ){
-                return 1;
-            }
+			usbd_control_datain_stage(context);
+		}
+	} else if( o_events & MCU_EVENT_FLAG_STALL ){
+		usbd_control_unstall_endpoint(context->handle, ((usb_event_t*)usb_event->data)->epnum);
+	}
 
-            usbd_control_datain_stage(context);
-        }
-    } else if( o_events & MCU_EVENT_FLAG_STALL ){
-        usbd_control_unstall_endpoint(context->handle, ((usb_event_t*)usb_event->data)->epnum);
-    }
-
-    return 1;
+	return 1;
 }
 
 void * usbd_control_add_ptr(usbd_control_t * context, void * ptr, u32 value){
-    return (char*)ptr + value;
+	return (char*)ptr + value;
 }
 
 void usbd_control_handler_setup_stage(usbd_control_t * context){
-    mcu_usb_root_read_endpoint(context->handle, 0x00, (u8 *)&(context->setup_packet));
-    context->data.nbyte = context->setup_packet.wLength;
-    context->data.max = context->data.nbyte;
+	mcu_usb_root_read_endpoint(context->handle, 0x00, (u8 *)&(context->setup_packet));
+	context->data.nbyte = context->setup_packet.wLength;
+	context->data.max = context->data.nbyte;
 }
 
 void usbd_control_datain_stage(usbd_control_t * context) {
-    u32 nbyte;
-    if (context->data.nbyte > mcu_board_config.usb_max_packet_zero) {
-        nbyte = mcu_board_config.usb_max_packet_zero;
-    } else {
-        nbyte = context->data.nbyte;
-    }
+	u32 nbyte;
+	if (context->data.nbyte > mcu_board_config.usb_max_packet_zero) {
+		nbyte = mcu_board_config.usb_max_packet_zero;
+	} else {
+		nbyte = context->data.nbyte;
+	}
 
-    if( nbyte > 0 || ((context->data.max % mcu_board_config.usb_max_packet_zero) == 0) ){
-        mcu_usb_root_write_endpoint(context->handle, 0x80, context->data.dptr, nbyte);
-        context->data.dptr += nbyte;
-        context->data.nbyte -= nbyte;
-    }
+	if( nbyte > 0 || ((context->data.max % mcu_board_config.usb_max_packet_zero) == 0) ){
+		mcu_usb_root_write_endpoint(context->handle, 0x80, context->data.dptr, nbyte);
+		context->data.dptr += nbyte;
+		context->data.nbyte -= nbyte;
+	}
 }
 
 void usbd_control_dataout_stage(usbd_control_t * context){
-    u32 nbyte;
-    nbyte = mcu_usb_root_read_endpoint(context->handle, 0x00, context->data.dptr);
-    if( nbyte > context->data.nbyte ){
-        nbyte = context->data.nbyte;
-    }
-    context->data.dptr += nbyte;
-    context->data.nbyte -= nbyte;
+	u32 nbyte;
+	nbyte = mcu_usb_root_read_endpoint(context->handle, 0x00, context->data.dptr);
+	if( nbyte > context->data.nbyte ){
+		nbyte = context->data.nbyte;
+	}
+	context->data.dptr += nbyte;
+	context->data.nbyte -= nbyte;
 }
 
 
 //send a zero length packet
 void usbd_control_statusin_stage(usbd_control_t * context){
-    mcu_usb_root_write_endpoint(context->handle, 0x80, NULL, 0);
+	mcu_usb_root_write_endpoint(context->handle, 0x80, NULL, 0);
 }
 
 //receive a zero length packet
 void usbd_control_statusout_stage(usbd_control_t * context){
-    mcu_usb_root_read_endpoint(context->handle, 0x00, context->buf);
+	mcu_usb_root_read_endpoint(context->handle, 0x00, context->buf);
 }
 
 int usbd_control_reset(const devfs_handle_t * handle){
-    usb_attr_t attr;
-    attr.o_flags = USB_FLAG_RESET;
-    return mcu_usb_setattr(handle, &attr);
+	usb_attr_t attr;
+	attr.o_flags = USB_FLAG_RESET;
+	return mcu_usb_setattr(handle, &attr);
 }
 
 int usbd_control_attach(const devfs_handle_t * handle){
-    usb_attr_t attr;
-    attr.o_flags = USB_FLAG_ATTACH;
-    return mcu_usb_setattr(handle, &attr);
+	usb_attr_t attr;
+	attr.o_flags = USB_FLAG_ATTACH;
+	return mcu_usb_setattr(handle, &attr);
 }
 
 int usbd_control_detach(const devfs_handle_t * handle){
-    usb_attr_t attr;
-    attr.o_flags = USB_FLAG_DETACH;
-    return mcu_usb_setattr(handle, &attr);
+	usb_attr_t attr;
+	attr.o_flags = USB_FLAG_DETACH;
+	return mcu_usb_setattr(handle, &attr);
 }
 
 int usbd_control_configure(const devfs_handle_t * handle){
-    usb_attr_t attr;
-    attr.o_flags = USB_FLAG_CONFIGURE;
-    return mcu_usb_setattr(handle, &attr);
+	usb_attr_t attr;
+	attr.o_flags = USB_FLAG_CONFIGURE;
+	return mcu_usb_setattr(handle, &attr);
 }
 
 int usbd_control_unconfigure(const devfs_handle_t * handle){
-    usb_attr_t attr;
-    attr.o_flags = USB_FLAG_UNCONFIGURE;
-    return mcu_usb_setattr(handle, &attr);
+	usb_attr_t attr;
+	attr.o_flags = USB_FLAG_UNCONFIGURE;
+	return mcu_usb_setattr(handle, &attr);
 }
 
 int usbd_control_set_address(const devfs_handle_t * handle, u8 address){
-    usb_attr_t attr;
-    attr.o_flags = USB_FLAG_SET_ADDRESS;
-    attr.address = address;
-    return mcu_usb_setattr(handle, &attr);
+	usb_attr_t attr;
+	attr.o_flags = USB_FLAG_SET_ADDRESS;
+	attr.address = address;
+	return mcu_usb_setattr(handle, &attr);
 }
 
 int usbd_control_reset_endpoint(const devfs_handle_t * handle, u8 endpoint_number){
-    usb_attr_t attr;
-    attr.o_flags = USB_FLAG_RESET_ENDPOINT;
-    attr.address = endpoint_number;
-    return mcu_usb_setattr(handle, &attr);
+	usb_attr_t attr;
+	attr.o_flags = USB_FLAG_RESET_ENDPOINT;
+	attr.address = endpoint_number;
+	return mcu_usb_setattr(handle, &attr);
 }
 
 int usbd_control_enable_endpoint(const devfs_handle_t * handle, u8 endpoint_number){
-    usb_attr_t attr;
-    attr.o_flags = USB_FLAG_ENABLE_ENDPOINT;
-    attr.address = endpoint_number;
-    return mcu_usb_setattr(handle, &attr);
+	usb_attr_t attr;
+	attr.o_flags = USB_FLAG_ENABLE_ENDPOINT;
+	attr.address = endpoint_number;
+	return mcu_usb_setattr(handle, &attr);
 }
 
 int usbd_control_disable_endpoint(const devfs_handle_t * handle, u8 endpoint_number){
-    usb_attr_t attr;
-    attr.o_flags = USB_FLAG_DISABLE_ENDPOINT;
-    attr.address = endpoint_number;
-    return mcu_usb_setattr(handle, &attr);
+	usb_attr_t attr;
+	attr.o_flags = USB_FLAG_DISABLE_ENDPOINT;
+	attr.address = endpoint_number;
+	return mcu_usb_setattr(handle, &attr);
 }
 
 int usbd_control_stall_endpoint(const devfs_handle_t * handle, u8 endpoint_number){
-    usb_attr_t attr;
-    attr.o_flags = USB_FLAG_STALL_ENDPOINT;
-    attr.address = endpoint_number;
-    return mcu_usb_setattr(handle, &attr);
+	usb_attr_t attr;
+	attr.o_flags = USB_FLAG_STALL_ENDPOINT;
+	attr.address = endpoint_number;
+	return mcu_usb_setattr(handle, &attr);
 }
 
 int usbd_control_unstall_endpoint(const devfs_handle_t * handle, u8 endpoint_number){
-    usb_attr_t attr;
-    attr.o_flags = USB_FLAG_UNSTALL_ENDPOINT;
-    attr.address = endpoint_number;
-    return mcu_usb_setattr(handle, &attr);
+	usb_attr_t attr;
+	attr.o_flags = USB_FLAG_UNSTALL_ENDPOINT;
+	attr.address = endpoint_number;
+	return mcu_usb_setattr(handle, &attr);
 }
 
 int usbd_control_configure_endpoint(const devfs_handle_t * handle, const usbd_endpoint_descriptor_t * endpoint_descriptor){
-    usb_attr_t attr;
-    attr.o_flags = USB_FLAG_CONFIGURE_ENDPOINT;
-    attr.address = endpoint_descriptor->bEndpointAddress;
-    attr.max_packet_size = endpoint_descriptor->wMaxPacketSize;
-    attr.type = endpoint_descriptor->bmAttributes;
-    return mcu_usb_setattr(handle, &attr);
+	usb_attr_t attr;
+	attr.o_flags = USB_FLAG_CONFIGURE_ENDPOINT;
+	attr.address = endpoint_descriptor->bEndpointAddress;
+	attr.max_packet_size = endpoint_descriptor->wMaxPacketSize;
+	attr.type = endpoint_descriptor->bmAttributes;
+	return mcu_usb_setattr(handle, &attr);
 }
 
 

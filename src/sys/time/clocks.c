@@ -18,7 +18,7 @@
  */
 
 
-/*! \addtogroup TIME
+/*! \addtogroup time
  * @{
  */
 
@@ -33,14 +33,16 @@
 
 #include "../scheduler/scheduler_local.h"
 
+/*! \cond */
 #define CLOCK_PROCESS_FLAG (1<<31)
 static s32 convert_clocks_to_nanoseconds(s32 clocks);
 static void task_timer_to_timespec(struct timespec * tp, u64 task_timer);
+/*! \endcond */
 
 
 /*! \details This function is not supported.
  *
- * \return Zero on success or -1 with errno (see \ref ERRNO) set to:
+ * \return Zero on success or -1 with errno (see \ref errno) set to:
  * - ENOTSUP:  not supported
  */
 int clock_getcpuclockid(pid_t pid, clockid_t *clock_id){
@@ -54,7 +56,7 @@ int clock_getcpuclockid(pid_t pid, clockid_t *clock_id){
  * - CLOCK_PROCESS_CPUTIME
  * - CLOCK_THREAD_CPUTIME
  *
- * \return Zero on success or -1 with errno (see \ref ERRNO) set to:
+ * \return Zero on success or -1 with errno (see \ref errno) set to:
  * - EINVAL:  \a id is not one of the above clocks or tp is NULL
  *
  */
@@ -105,28 +107,13 @@ int clock_gettime(clockid_t id, struct timespec * tp){
 	return 0;
 }
 
-int32_t convert_clocks_to_nanoseconds(int32_t clocks){
-	uint64_t tmp;
-	tmp = (u64)clocks * SCHEDULER_CLOCK_NSEC_DIV + 512;
-	return (u32)(tmp / 1024);
-}
-
-void task_timer_to_timespec(struct timespec * tp, u64 task_timer){
-	u64 nanosec;
-	ldiv_t divide;
-	divide = ldiv(task_timer, mcu_core_getclock());
-	nanosec = divide.rem * SCHEDULER_CLOCK_NSEC_DIV;
-	tp->tv_sec = divide.quot;
-	tp->tv_nsec = nanosec;
-}
-
 /*! \details This function gets the resolution of the \a id clock where \a id is one of:
  * - CLOCK_MONOTONIC
  * - CLOCK_REALTIME
  * - CLOCK_PROCESS_CPUTIME
  * - CLOCK_THREAD_CPUTIME
  *
- * \return Zero on success or -1 with errno (see \ref ERRNO) set to:
+ * \return Zero on success or -1 with errno (see \ref errno) set to:
  * - EINVAL:  \a id is not one of the above clocks or res is NULL
  *
  */
@@ -162,7 +149,7 @@ int clock_getres(clockid_t id, struct timespec * res){
 
 /*! \details This function is not supported.
  *
- * \return Zero on success or -1 with errno (see \ref ERRNO) set to:
+ * \return Zero on success or -1 with errno (see \ref errno) set to:
  * - ENOTSUP:  not supported
  *
  */
@@ -170,5 +157,22 @@ int clock_settime(clockid_t id, const struct timespec * tp){
 	errno = ENOTSUP;
 	return -1;
 }
+
+/*! \cond */
+int32_t convert_clocks_to_nanoseconds(int32_t clocks){
+	uint64_t tmp;
+	tmp = (u64)clocks * SCHEDULER_CLOCK_NSEC_DIV + 512;
+	return (u32)(tmp / 1024);
+}
+
+void task_timer_to_timespec(struct timespec * tp, u64 task_timer){
+	u64 nanosec;
+	ldiv_t divide;
+	divide = ldiv(task_timer, mcu_core_getclock());
+	nanosec = divide.rem * SCHEDULER_CLOCK_NSEC_DIV;
+	tp->tv_sec = divide.quot;
+	tp->tv_nsec = nanosec;
+}
+/*! \endcond */
 
 /*! @} */

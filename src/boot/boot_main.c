@@ -80,6 +80,7 @@ int boot_main(){
 
 	if ( check_run_app() ){
 		boot_event(BOOT_EVENT_RUN_APP, 0);
+		//assign stack pointer to stack value
 		app_reset();
 	} else {
 		boot_event(BOOT_EVENT_RUN_BOOTLOADER, 0);

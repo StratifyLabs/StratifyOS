@@ -20,11 +20,13 @@
 
 #include <sys/unistd.h>
 #include <unistd.h>
+#include "mcu/types.h"
 #include "sys/malloc/malloc_local.h"
 #include "cortexm/cortexm.h"
 #include "sos/sos.h"
 
 #include "config.h"
+#include "mcu/mcu.h"
 #include "mcu/debug.h"
 #include "mcu/core.h"
 #include "trace.h"

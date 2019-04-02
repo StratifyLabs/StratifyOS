@@ -48,7 +48,7 @@
 
 /*! \file */
 
-/*! \addtogroup STFY Stratify OS
+/*! \addtogroup StratifyOS Stratify OS
  * @{
  *
  * \details <b>Stratify OS</b> includes two main APIs for users: the \ref STDC and the \ref POSIX API.
@@ -71,38 +71,38 @@
 
 /*!
  *
- * \addtogroup STDC C Standard Library
+ * \addtogroup stdc C Standard Library
  * @{
- * \details <b>Stratify OS</b> comes pre-installed with the majority of the C Standard library including:
- * - <assert.h>
- * - <ctype.h>
- * - <errno.h>
- * - <float.h>
- * - <inttypes.h>
- * - <iso646.h>
- * - <limits.h>
- * - <locale.h>
- * - <math.h>
- * - <setjmp.h>
- * - <signal.h>
- * - <stdarg.h>
- * - <stdbool.h>
- * - <stddef.h>
- * - <stdint.h>
- * - <stdio.h>
- * - <stdlib.h>
- * - <string.h>
- * - <tgmath.h>
- * - <time.h>
- * - <wchar.h>
- * - <wctype.h>
+ * \details **Stratify OS** comes pre-installed with the majority of the C Standard library including:
+ * - assert.h
+ * - ctype.h
+ * - errno.h
+ * - float.h
+ * - inttypes.h
+ * - iso646.h
+ * - limits.h
+ * - locale.h
+ * - math.h
+ * - setjmp.h
+ * - signal.h
+ * - stdarg.h
+ * - stdbool.h
+ * - stddef.h
+ * - stdint.h
+ * - stdio.h
+ * - stdlib.h
+ * - string.h
+ * - tgmath.h
+ * - time.h
+ * - wchar.h
+ * - wctype.h
  *
  * The following C standard library components are not available:
- * - <complex.h>
- * - <fenv.h>
+ * - complex.h
+ * - fenv.h
  *
  * If you need to familiarize yourself with the details of the C Standard Library, try
- * the <a href="http://en.wikipedia.org/wiki/C_standard_library">Wikipedia page</a>.
+ * the <a target="_blank" href="http://en.wikipedia.org/wiki/C_standard_library">Wikipedia page</a>.
  *
  *
  */
@@ -116,7 +116,7 @@
  * perform interprocess communication.
  */
 
-/*! \addtogroup TIME Time
+/*! \addtogroup time Time
  * @{
  *
  * \details Unix style time functions are available in <b>Stratify OS</b> as documented herein.  The C standard library
@@ -126,100 +126,57 @@
 
 /*! @} */
 
-/*! \addtogroup UNISTD Unix Standard (unistd)
+/*! \addtogroup unistd Unix Standard (unistd)
  * @{
  *
  */
 
-/*! \addtogroup UNI_FS Filesystem
- * @{
- */
-
-/*! \addtogroup UNI_PERMS Permissions
- * @{
- */
 
 /*! @} */
 
-/*! \addtogroup UNI_CRYPT Encryption
+/*! \addtogroup pthread Posix Threads (pthread)
  * @{
  */
 
 /*! @} */
 
-/*! \addtogroup UNI_FILE_ACCESS Access
+/*! \addtogroup signal
  * @{
  */
 
 /*! @} */
 
-/*! \addtogroup UNI_FILDES Descriptor Handling
+/*! \addtogroup grp
  * @{
  */
 
 /*! @} */
 
-/*! @} */
-
-/*! \addtogroup UNI_PROCESS Processes
+/*! \addtogroup pwd
  * @{
  */
 
 /*! @} */
 
-/*! \addtogroup UNI_SLEEP Sleep Funcions
+/*! \addtogroup semaphore
  * @{
  */
 
 /*! @} */
 
-
-
-/*! @} */
-
-/*! \addtogroup PTHREAD Posix Threads (pthread)
+/*! \addtogroup mqueue
  * @{
  */
 
 /*! @} */
 
-/*! \addtogroup SIGNAL Signal Handling
+/*! \addtogroup directory Directory Entry (dirent)
  * @{
  */
 
 /*! @} */
 
-/*! \addtogroup GRP Groups
- * @{
- */
-
-/*! @} */
-
-/*! \addtogroup PWD Password
- * @{
- */
-
-/*! @} */
-
-/*! \addtogroup SEMAPHORE Semaphore
- * @{
- */
-
-/*! @} */
-
-/*! \addtogroup MQUEUE Message Queue (mqueue)
- * @{
- */
-
-/*! @} */
-
-/*! \addtogroup DIRENT Directory Entry (dirent)
- * @{
- */
-
-/*! @} */
-
-/*! \addtogroup ERRNO Error Numbers
+/*! \addtogroup errno
  * @{
  *
  * \details
@@ -495,7 +452,8 @@ int launch(const char * path,
 			  const char * args,
 			  int options,
 			  int ram_size,
-			  int (*update_progress)(int, int),
+			  int (*update_progress)(const void *, int, int),
+			  const void * update_context,
 			  char *const envp[]
 			  );
 
@@ -510,10 +468,11 @@ int launch(const char * path,
  * @return Zero on success
  */
 int install(const char * path,
-				char * name,
+				char * exec_path,
 				int options,
 				int ram_size,
-				int (*update_progress)(int, int));
+				int (*update_progress)(const void *, int, int),
+				const void * update_context);
 
 void htoa(char * dest, int num);
 char htoc(int nibble);

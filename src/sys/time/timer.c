@@ -1,3 +1,30 @@
+/* Copyright 2011-2019 Tyler Gilbert;
+ * This file is part of Stratify OS.
+ *
+ * Stratify OS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Stratify OS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ */
+
+/*! \addtogroup time
+ * @{
+ */
+
+/*! \file */
+
+
+
 #include <time.h>
 #include <signal.h>
 #include <limits.h>
@@ -11,6 +38,7 @@
 #include "cortexm/task.h"
 #include "../scheduler/scheduler_timing.h"
 
+/*! \cond */
 unsigned int process_alarm(unsigned int seconds, useconds_t useconds, useconds_t interval){
 	timer_t timer_id = task_get_parent( task_get_current() );
 
@@ -27,11 +55,14 @@ unsigned int process_alarm(unsigned int seconds, useconds_t useconds, useconds_t
 
 	return o_timer.it_value.tv_sec;
 }
+/*! \endcond */
 
 /*!
- * \brief alarm
- * \param seconds
- * \return
+ * \details Sets an alarm that will send the SIGALRM signal to
+ * the calling process.
+ *
+ * @param seconds Number of seconds to elapse before alarm is sent
+ * @return Zero on success
  */
 unsigned int alarm(unsigned int seconds){
 	//timer id is from task zero and timer 0 -- it is pre-initialized
@@ -39,16 +70,21 @@ unsigned int alarm(unsigned int seconds){
 }
 
 /*!
- * \brief ualarm
- * \param seconds
- * \return
+ * \details Sets an alarm that will send the SIGALRM signal to
+ * the calling process.
+ *
+ * @param useconds Number of microseconds until the alarm happens
+ * @param interval If non-zero, will send the alarm periodically at *interval* microseconds
+ *
+ * @return Zero on success
  */
 unsigned int ualarm(useconds_t useconds, useconds_t interval){
 	return process_alarm(0, useconds, interval);
 }
 
 /*!
- * \brief timer_create
+ * \details Creates a timer.
+ *
  * \param clock_id
  * \param evp
  * \param timerid
@@ -74,8 +110,8 @@ int timer_create(clockid_t clock_id, struct sigevent *evp, timer_t *timerid){
 
 
 /*!
- * \brief timer_delete
- * \param timerid
+ * \details Deletes the specified timer.
+ * \param timerid The timer id
  * \return
  */
 int timer_delete(timer_t timerid){
@@ -87,8 +123,9 @@ int timer_delete(timer_t timerid){
 }
 
 /*!
- * \brief timer_settime
- * \param timerid
+ * \details Sets the time for the specified timer.
+ *
+ * \param timerid Timer ID
  * \param flags
  * \param value
  * \param ovalue
@@ -151,3 +188,6 @@ int timer_getoverrun(timer_t timerid){
 	errno = ENOTSUP;
 	return -1;
 }
+
+
+/*!  @} */

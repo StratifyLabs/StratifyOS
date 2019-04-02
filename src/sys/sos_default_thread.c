@@ -17,11 +17,6 @@
  *
  */
 
-/*! \addtogroup STFY
- * @{
- */
-
-/*! \file */
 
 #include <errno.h>
 #include <unistd.h>

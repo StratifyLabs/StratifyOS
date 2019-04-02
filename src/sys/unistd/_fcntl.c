@@ -17,7 +17,7 @@
  * 
  */
 
-/*! \addtogroup UNI_FILDES
+/*! \addtogroup unistd
  * @{
  */
 
@@ -40,13 +40,14 @@
  * \param fildes The file descriptor
  * \param cmd The operation to perform
  *
- * \return Zero on success or -1 on error with errno (see \ref ERRNO) set to:
+ * \return Zero on success or -1 on error with errno (see \ref errno) set to:
  *  - EBADF:  invalid file descriptor
  *  - ENOTSUP:  \a cmd is not supported for the file descriptor
  *
  */
 int fcntl(int fildes, int cmd, ...);
 
+/*! \cond */
 int _fcntl(int fildes, int cmd, ...){
 	int tmp;
 	int flags;
@@ -109,5 +110,6 @@ int _fcntl(int fildes, int cmd, ...){
 
 	return -1;
 }
+/*! \endcond */
 
 /*! @} */

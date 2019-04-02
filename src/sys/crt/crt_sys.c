@@ -51,6 +51,7 @@ void root_load_data(void * args){
 
 	code_size = p->code_size;
 	if( code_size > mpu_size((u32)sos_task_table[ task_get_current() ].mem.code.size) ){
+		//fatal error here?
 		return;
 	}
 
@@ -78,14 +79,14 @@ char ** const crt_import_argv(char * path_arg, int * argc){
 	int count;
 	int len;
 
-    *argc = 0;
+	*argc = 0;
 
-    if( path_arg == 0 ){
+	if( path_arg == 0 ){
 		return 0;
 	}
 
 	//this needs to be strnlen -- security
-    len = strlen(path_arg) + 1;
+	len = strlen(path_arg) + 1;
 
 	arg_buffer = malloc(len);
 	if( arg_buffer == 0 ){
@@ -108,7 +109,7 @@ char ** const crt_import_argv(char * path_arg, int * argc){
 
 	argv = malloc(sizeof(char*)*count);
 	if( argv == 0 ){
-        free(arg_buffer);
+		free(arg_buffer);
 		return 0;
 	}
 

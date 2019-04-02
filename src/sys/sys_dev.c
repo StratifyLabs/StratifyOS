@@ -17,11 +17,6 @@
  *
  */
 
-/*! \addtogroup STFY
- * @{
- */
-
-/*! \file */
 
 #include "config.h"
 #include <errno.h>
@@ -226,6 +221,3 @@ int sys_setattr(const devfs_handle_t * handle, void * ctl){
 
 }
 
-
-
-/*! @} */

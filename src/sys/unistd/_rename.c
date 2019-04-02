@@ -17,7 +17,7 @@
  * 
  */
 
-/*! \addtogroup UNI_FS
+/*! \addtogroup unistd
  * @{
  */
 
@@ -35,6 +35,7 @@
  */
 int rename(const char *old, const char *new);
 
+/*! \cond */
 int _rename(const char *old, const char *new){
 	const sysfs_t * fs_old;
 	const sysfs_t * fs_new;
@@ -57,5 +58,6 @@ int _rename(const char *old, const char *new){
 	errno = ENOTSUP;
 	return -1;
 }
+/*! \endcond */
 
 /*! @} */

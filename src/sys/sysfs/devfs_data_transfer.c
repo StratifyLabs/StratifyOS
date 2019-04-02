@@ -38,7 +38,7 @@ typedef struct {
 	const void * device;
 	devfs_async_t async;
 	volatile int is_read;
-	int ret;
+	int result;
 } root_device_data_transfer_t;
 
 
@@ -95,7 +95,7 @@ void root_check_op_complete(void * args){
 	root_device_data_transfer_t * p = (root_device_data_transfer_t*)args;
 
 	if( p->is_read != ARGS_READ_DONE ){
-		if ( p->ret == 0 ){
+		if ( p->result == 0 ){
 			if ( p->async.nbyte >= 0 ){ //wait for the operation to complete or for data to arrive
 
 				cortexm_disable_interrupts(); //checking the block object and sleeping have to happen atomically (driver could interrupt)
@@ -122,16 +122,16 @@ void root_device_data_transfer(void * args){
 	//check async.buf and async.nbyte to ensure if belongs to the process
 	//EPERM if it fails Issue #127
 	if( task_validate_memory(p->async.buf, p->async.nbyte) < 0 ){
-		p->ret = SYSFS_SET_RETURN(EPERM);
+		p->result = SYSFS_SET_RETURN(EPERM);
 	} else {
 		//assume the operation is going to block
 		sos_sched_table[ task_get_current() ].block_object = (void*)p->device + p->is_read;
 
 		if ( p->is_read != 0 ){
 			//Read operation
-			p->ret = dev->driver.read(&(dev->handle), &(p->async));
+			p->result = dev->driver.read(&(dev->handle), &(p->async));
 		} else {
-			p->ret = dev->driver.write(&(dev->handle), &(p->async));
+			p->result = dev->driver.write(&(dev->handle), &(p->async));
 		}
 	}
 
@@ -175,7 +175,7 @@ int devfs_data_transfer(const void * config, const devfs_device_t * device, int 
 	//privilege call for the operation
 	do {
 
-		args.ret = -101010;
+		args.result = -101010;
 		args.async.nbyte = nbyte;
 
 		//This transfers the data
@@ -186,7 +186,7 @@ int devfs_data_transfer(const void * config, const devfs_device_t * device, int 
 		while( (scheduler_unblock_type(task_get_current()) == SCHEDULER_UNBLOCK_SIGNAL)
 				 && ((volatile int)args.is_read != ARGS_READ_DONE) ){
 
-			if( args.ret == 0 ){
+			if( args.result == 0 ){
 				//no data was transferred -- operation was interrupted by a signal
 				clear_device_action(config, device, loc, args.is_read);
 				return SYSFS_SET_RETURN(EINTR);
@@ -196,38 +196,38 @@ int devfs_data_transfer(const void * config, const devfs_device_t * device, int 
 			cortexm_svcall(root_check_op_complete, (void*)&args);
 		}
 
-		if ( args.ret == 0 ){
+		if ( args.result == 0 ){
 			//the operation happened asynchronously
 			if ( args.async.nbyte > 0 ){
 				//The operation has completed and transferred args.async.nbyte bytes
-				args.ret = args.async.nbyte;
+				args.result = args.async.nbyte;
 			} else if ( args.async.nbyte == 0 ){
 				//There was no data to read/write -- try again ??? not sure if this is right
 				if (args.async.flags & O_NONBLOCK ){
-					args.ret = SYSFS_SET_RETURN(ENODATA);
+					args.result = SYSFS_SET_RETURN(ENODATA);
 				}
 			} else if ( args.async.nbyte < 0 ){
 				//there was an error executing the operation (or the operation was cancelled)
-				args.ret = args.async.nbyte;
+				args.result = args.async.nbyte;
 			}
-		} else if ( args.ret < 0 ){
+		} else if ( args.result < 0 ){
 			//there was an error starting the operation (such as EAGAIN)
 
 			//this is a rare/strange error where cortexm_svcall fails to run properly
-			if( args.ret == -101010 ){
+			if( args.result == -101010 ){
 				if( retry < 5 ){
 					retry++;
-					args.ret = 0;
+					args.result = 0;
 					mcu_debug_log_warning(MCU_DEBUG_DEVFS, "-101010 error");
 				} else {
-					args.ret = SYSFS_SET_RETURN(EFAULT);
+					args.result = SYSFS_SET_RETURN(EFAULT);
 				}
 			}
 		}
-	} while ( args.ret == 0 );
+	} while ( args.result == 0 );
 
 
-	return args.ret;
+	return args.result;
 }
 
 //used to execute any handler

@@ -18,11 +18,10 @@
  */
 
 
-/*! \addtogroup SIGNAL
+/*! \addtogroup signal
  *
  * @{
  *
- * \ingroup POSIX
  */
 
 /*! \file */
@@ -37,13 +36,15 @@
 
 #include "sig_local.h"
 
+/*! \cond */
 static int check_pending_set(const sigset_t * set);
+/*! \endcond */
 
 /*! \details This function sends the signal \a signo to the process \a pid.
  * The signal value is specified by \a value.
  *
  *
- * \return Zero or -1 with errno (see \ref ERRNO) set to:
+ * \return Zero or -1 with errno (see \ref errno) set to:
  * - EINVAL: \a signo is not a valid signal number
  * - ESRCH: \a pid is not a valid process id
  *
@@ -71,7 +72,7 @@ int sigqueue(pid_t pid, int signo, const union sigval value){
  * The signals defined by \a set should be blocked when this function is called
  * (see \ref pthread_sigmask() and \ref sigprocmask()).
  *
- * \return Zero or -1 with errno (see \ref ERRNO) set to:
+ * \return Zero or -1 with errno (see \ref errno) set to:
  * - EINVAL: \a set contains an invalid or unsupported signal
  *
  *
@@ -100,7 +101,7 @@ int sigwait(const sigset_t * set, int * sig){
  * If no signals in set are pending, the task is blocked until a signal
  * becomes pending or until the timeout expires.
  *
- * \return Zero or -1 with errno (see \ref ERRNO) set to:
+ * \return Zero or -1 with errno (see \ref errno) set to:
  * - EINVAL: \a set contains an invalid or unsupported signal
  * - EAGAIN: \a timeout expired before any signals arrived
  * - EINTR: a signal, not in \a set, was caught
@@ -152,7 +153,7 @@ int sigtimedwait(const sigset_t * set,
  * \todo Add error checking
  *
  *
- * \return Zero or -1 with errno (see \ref ERRNO) set to:
+ * \return Zero or -1 with errno (see \ref errno) set to:
  * - EINVAL: \a set contains an invalid or unsupported signal
  * - EINTR: a signal, not in \a set, was caught
  *
@@ -180,6 +181,7 @@ int sigwaitinfo(const sigset_t *set, siginfo_t *info){
 	return 0;
 }
 
+/*! \cond */
 int check_pending_set(const sigset_t * set){
 	sigset_t mask;
 	int i;
@@ -205,5 +207,6 @@ void signal_root_wait(void * args){
 		scheduler_root_update_on_sleep();
 	}
 }
+/*! \endcond */
 
 /*! @} */

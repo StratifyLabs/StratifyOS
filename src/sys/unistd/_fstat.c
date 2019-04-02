@@ -18,7 +18,7 @@
  */
 
 
-/*! \addtogroup UNI_FILDES
+/*! \addtogroup unistd
  * @{
  */
 
@@ -31,13 +31,14 @@
 /*! \details This function gets various file statistics for
  * the specified file descriptor.
  *
- * \return Zero on success or -1 on error with errno (see \ref ERRNO) set to:
+ * \return Zero on success or -1 on error with errno (see \ref errno) set to:
  *  - EBADF:  \a fildes is invalid
  *  - EINVAL: \a buf is NULL
  *
  */
 int fstat(int fildes, struct stat *buf);
 
+/*! \cond */
 int _fstat(int fildes, struct stat *buf){
 	void * handle;
 	const sysfs_t * fs;
@@ -59,6 +60,7 @@ int _fstat(int fildes, struct stat *buf){
 		return -1;
 	}
 }
+/*! \endcond */
 
 /*! @} */
 

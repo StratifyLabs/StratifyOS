@@ -17,7 +17,7 @@
  * 
  */
 
-/*! \addtogroup UNISTD
+/*! \addtogroup unistd
  * @{
  */
 
@@ -35,10 +35,11 @@
 #include "../scheduler/scheduler_local.h"
 #include "../signal/sig_local.h"
 
+/*! \cond */
 static void root_stop_threads(int * send_signal) MCU_ROOT_EXEC_CODE;
 static void root_zombie_process(int * signal_sent) MCU_ROOT_EXEC_CODE;
-
 static int get_exec_flags();
+/*! \endcond */
 
 /*! \details This function causes the calling process
  * to exit with the specified exit code.
@@ -78,7 +79,7 @@ void _exit(int __status){
 	}
 }
 
-
+/*! \cond */
 void root_stop_threads(int * send_signal){
 	int i;
 	int tmp;
@@ -105,7 +106,7 @@ void root_stop_threads(int * send_signal){
 	parent_reent = (struct _reent *)sos_task_table[tmp].global_reent;
 
 	if ( task_get_pid(tmp) == 0 ){
-		//process 0 never waits
+		//process 0 never waits - so don't send it a signal
 		*send_signal = false;
 	} else {
 		*send_signal = true;
@@ -120,10 +121,12 @@ void root_stop_threads(int * send_signal){
 		}
 	}
 
+#if 0
 	//ORPHAN nevers sends a signal to parent and never becomes a zombie process
 	if( options & APPFS_FLAG_IS_ORPHAN ){
 		*send_signal = false;
 	}
+#endif
 
 	if ( scheduler_zombie_asserted(task_get_current()) ){
 		//This will be executed if a SIGTERM is sent to a ZOMBIE process
@@ -180,6 +183,7 @@ void root_zombie_process(int * signal_sent){
 
 	scheduler_root_update_on_sleep();
 }
+/*! \endcond */
 
 
 /*! @} */

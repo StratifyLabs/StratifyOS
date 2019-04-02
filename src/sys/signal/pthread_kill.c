@@ -17,7 +17,7 @@
  *
  */
 
-/*! \addtogroup SIGNAL
+/*! \addtogroup signal
  * @{
  */
 
@@ -38,6 +38,7 @@
 
 #include "mcu/debug.h"
 
+/*! \cond */
 static int signal_root_forward(int send_tid,
 										 int tid,
 										 int si_signo,
@@ -215,6 +216,14 @@ int signal_send(int tid, int si_signo, int si_sigcode, int sig_value){
 	return 0;
 }
 
+void signal_root_activate(int * thread){
+	int id = *thread;
+	scheduler_root_deassert_stopped(id);
+	scheduler_root_assert_active(id, SCHEDULER_UNBLOCK_SIGNAL);
+	scheduler_root_update_on_wake(id, scheduler_priority(id));
+}
+/*! \endcond */
+
 /*! \details This function sends the signal \a signo to \a thread.
  * The handler is executed in the context of \a thread, but the
  * signal effects the entire process.  For example,
@@ -225,7 +234,7 @@ int signal_send(int tid, int si_signo, int si_sigcode, int sig_value){
  * will be executed on thread 8's stack.
  *
  *
- * \return Zero or -1 with errno (see \ref ERRNO) set to:
+ * \return Zero or -1 with errno (see \ref errno) set to:
  * - EINVAL: \a signo is not a valid signal number
  * - ESRCH: \a pid is not a valid process id
  *
@@ -234,12 +243,7 @@ int pthread_kill(pthread_t thread, int signo){
 	return signal_send(thread, signo, SI_USER, 0);
 }
 
-void signal_root_activate(int * thread){
-	int id = *thread;
-	scheduler_root_deassert_stopped(id);
-	scheduler_root_assert_active(id, SCHEDULER_UNBLOCK_SIGNAL);
-	scheduler_root_update_on_wake(id, scheduler_priority(id));
-}
+
 
 
 

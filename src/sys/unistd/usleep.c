@@ -17,7 +17,7 @@
  *
  */
 
-/*! \addtogroup UNI_SLEEP
+/*! \addtogroup unistd
  * @{
  */
 
@@ -32,16 +32,17 @@
 #include "mcu/debug.h"
 #include "../scheduler/scheduler_local.h"
 
+/*! \cond */
 static void root_usleep(void * args) MCU_ROOT_EXEC_CODE;
-
 static void root_get_usecond_tmr(void * args);
+/*! \endcond */
 
 /*! \details Causes the calling thread to sleep for \a useconds microseconds.
  *
  * If useconds is greater than a threshold, the calling thread will
  * yield the processor.
  *
- * \return 0 or -1 for an error with errno (see \ref ERRNO) set to:
+ * \return 0 or -1 for an error with errno (see \ref errno) set to:
  * - EINVAL: \a useconds is greater than 1 million.
  */
 int usleep(useconds_t useconds){
@@ -86,6 +87,7 @@ int usleep(useconds_t useconds){
     return 0;
 }
 
+/*! \cond */
 void root_get_usecond_tmr(void * args){
     devfs_handle_t tmr_handle;
     tmr_handle.port = sos_board_config.clk_usecond_tmr;
@@ -106,5 +108,6 @@ void root_usleep(void * args){
 
     scheduler_timing_root_timedblock(NULL, &abs_time);
 }
+/*! \endcond */
 
 /*! @} */

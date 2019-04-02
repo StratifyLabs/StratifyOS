@@ -250,3 +250,5 @@ typedef switchboard_connection_t switchboard_attr_t;
 #endif
 
 #endif // DEV_SOS_SWITCHBOARD_H
+
+/*! @} */

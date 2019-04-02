@@ -17,7 +17,7 @@
  *
  */
 
-/*! \addtogroup PTHREAD
+/*! \addtogroup pthread
  * @{
  *
  */
@@ -32,18 +32,20 @@
 
 #include "../scheduler/scheduler_local.h"
 
+
+/*! \cond */
 typedef struct {
     int tid;
     int policy;
     const struct sched_param * param;
 } root_set_pthread_scheduling_param_t;
 static void root_set_scheduling_param(void * args) MCU_ROOT_EXEC_CODE;
-
+/*! \endcond */
 
 /*! \details This function gets \a thread's scheduling policy and scheduling parameters and
  * stores them in \a policy and \a param respectively.
  *
- * \return Zero on success or -1 with errno (see \ref ERRNO) set to:
+ * \return Zero on success or -1 with errno (see \ref errno) set to:
  * - ESRCH:  thread is not a valid
  * - EINVAL:  policy or param is NULL
  *
@@ -69,7 +71,7 @@ int pthread_getschedparam(pthread_t thread, int *policy,
 /*! \details This function sets \a thread's scheduling policy and scheduling parameters to
  * \a policy and \a param respectively.
  *
- * \return Zero on success or -1 with errno (see \ref ERRNO) set to:
+ * \return Zero on success or -1 with errno (see \ref errno) set to:
  * - ESRCH:  thread is not a valid
  * - EINVAL:  param is NULL or the priority is invalid
  *
@@ -109,7 +111,7 @@ int pthread_setschedparam(pthread_t thread,
     return -1;
 }
 
-
+/*! \cond */
 void root_set_scheduling_param(void * args){
     root_set_pthread_scheduling_param_t * p = (root_set_pthread_scheduling_param_t*)args;
     int id;
@@ -142,6 +144,7 @@ void root_set_scheduling_param(void * args){
 #endif
 
 }
+/*! \endcond */
 
 /*! @} */
 

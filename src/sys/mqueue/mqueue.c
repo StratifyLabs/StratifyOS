@@ -17,7 +17,7 @@
  * 
  */
 
-/*! \addtogroup MQUEUE
+/*! \addtogroup mqueue
  * @{
  *
  * \details This interface allows processes to share data by sending and receiving messages.
@@ -105,6 +105,7 @@
 //#define MSG_NONBLOCK 2
 //#define MSG_FLAGS_MASK 0x03
 
+/*! \cond */
 #define MSG_FILE_HDR_SIGNATURE 0x0A5518664
 #define MSG_FILE_HDR_NOT_SIGNATURE (~MSG_FILE_HDR_SIGNATURE)
 
@@ -322,10 +323,11 @@ typedef struct {
 	int entry_size;
 	struct message * new_msg;
 } root_send_receive_t;
+/*! \endcond */
 
 /*! \details This function gets the message queue attributes and stores them at \a mqstat.
  *
- * \return Zero on success or -1 with errno (see \ref ERRNO) set to:
+ * \return Zero on success or -1 with errno (see \ref errno) set to:
  * - EBADF: \a mqdes is not a valid message queue descriptor
  *
  */
@@ -358,7 +360,7 @@ int mq_getattr(mqd_t mqdes, struct mq_attr *mqstat){
 
 /*! \details This function is not supported.
  *
- * \return Zero on success or -1 with errno (see \ref ERRNO) set to:
+ * \return Zero on success or -1 with errno (see \ref errno) set to:
  * - ENOTSUP
  *
  */
@@ -411,7 +413,7 @@ int mq_setattr(mqd_t mqdes, const struct mq_attr * mqstat, struct mq_attr * omqs
  * mqd_t mq_open(const char * name, int oflag, mode_t mode, const struct mq_attr * attr);
  * \endcode
  *
- * \return Zero on success or -1 with errno (see \ref ERRNO) set to:
+ * \return Zero on success or -1 with errno (see \ref errno) set to:
  * - ENAMETOOLONG:  \a name length is greater than NAME_MAX
  * - EEXIST:  O_CREAT and O_EXCL are set in \a oflag but the queue already exists
  * - ENOENT:  O_CREAT is not set in \a oflag and the queue does not exist
@@ -543,7 +545,7 @@ mqd_t mq_open(const char * name /*! the full path to the message queue */,
 
 /*! \details This function closes the message queue.
  *
- * \return Zero on success or -1 with errno (see \ref ERRNO) set to:
+ * \return Zero on success or -1 with errno (see \ref errno) set to:
  * - EBADF:  \a mqdes is not a valid descriptor
  *
  */
@@ -579,7 +581,7 @@ int mq_close(mqd_t mqdes /*! the message queue handler */){
  * have it open.  If another process has the queue open, the queue will be deleted when
  * said process closes the queue using \ref mq_close().
  *
- * \return Zero on success or -1 with errno (see \ref ERRNO) set to:
+ * \return Zero on success or -1 with errno (see \ref errno) set to:
  * - ENAMETOOLONG:  length of \a name exceeds NAME_MAX
  * - EACCES: write permission to \a name is denied
  * - ENOENT:  the queue does not exist
@@ -632,7 +634,7 @@ void mq_flush(mqd_t mqdes){
 
 /*! \details This function is not supported.
  *
- * \return Zero on success or -1 with errno (see \ref ERRNO) set to:
+ * \return Zero on success or -1 with errno (see \ref errno) set to:
  * - ENOTSUP:  feature is not supported
  *
  */
@@ -646,7 +648,7 @@ int mq_notify(mqd_t mqdes,
  * the message at \a msg_ptr.
  *
  *
- * \return Zero on success or -1 with errno (see \ref ERRNO) set to:
+ * \return Zero on success or -1 with errno (see \ref errno) set to:
  * - EAGAIN:  no message on the queue and O_NONBLOCK is set in the descriptor flags
  * - EIO:  I/O error while accessing the queue
  * - EMSGSIZE:  \a msg_len is less than the message size of the queue
@@ -700,7 +702,7 @@ void root_receive(void * args){
  * If O_NONBLOCK is set in \a mqdes, the function returns immediately whether a message is ready
  * or not.
  *
- * \return Zero on success or -1 with errno (see \ref ERRNO) set to:
+ * \return Zero on success or -1 with errno (see \ref errno) set to:
  * - EAGAIN:  no message on the queue and O_NONBLOCK is set in the descriptor flags
  * - EIO:  I/O error while accessing the queue
  * - ETIMEDOUT:  \a abs_timeout was exceeded by \a CLOCK_REALTIME
@@ -778,7 +780,7 @@ ssize_t mq_timedreceive(mqd_t mqdes /*! see \ref mq_receive() */,
  * If O_NONBLOCK is set in \a mqdes, the function returns immediately whether a message is sent
  * or not.
  *
- * \return Zero on success or -1 with errno (see \ref ERRNO) set to:
+ * \return Zero on success or -1 with errno (see \ref errno) set to:
  * - EAGAIN:  no room on the queue and O_NONBLOCK is set in the descriptor flags
  * - EIO:  I/O error while accessing the queue
  * - EBADF: \a mqdes is not a valid message queue descriptor
@@ -845,7 +847,7 @@ void root_send(void * args){
  * If O_NONBLOCK is set in \a mqdes, the function returns immediately whether a message is sent
  * or not.
  *
- * \return Zero on success or -1 with errno (see \ref ERRNO) set to:
+ * \return Zero on success or -1 with errno (see \ref errno) set to:
  * - EAGAIN:  no message on the queue and O_NONBLOCK is set in the descriptor flags
  * - EIO:  I/O error while accessing the queue
  * - ETIMEDOUT:  \a abs_timeout was exceeded by \a CLOCK_REALTIME
@@ -943,6 +945,7 @@ int mq_trysend(mqd_t mqdes, const char * msg_ptr, size_t msg_len, unsigned msg_p
 	return mq_timedsend(mqdes, msg_ptr, msg_len, msg_prio, &abs_timeout);
 }
 
+/*! \cond */
 void root_block_on_mq(void * args){
 	root_block_on_mq_t * argsp = (root_block_on_mq_t*)args;
 	scheduler_timing_root_timedblock(argsp->block, &argsp->abs_timeout);
@@ -982,6 +985,7 @@ void check_for_blocked_task(void * block){
 		//See if any tasks need to be notified if a message was just sent
 	}
 }
+/*! \endcond */
 
 /*! @} */
 

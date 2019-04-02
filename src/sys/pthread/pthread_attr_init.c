@@ -17,10 +17,8 @@
  * 
  */
 
-/*! \addtogroup PTHREAD_ATTR
+/*! \addtogroup pthread
  * @{
- *
- * \ingroup PTHREAD
  *
  */
 

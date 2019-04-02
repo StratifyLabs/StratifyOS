@@ -2,7 +2,6 @@
 #include "sos/symbols.h"
 #include "sos/symbols/table.h"
 
-char __aeabi_unwind_cpp_pr0[0];
 
 void __cxa_pure_virtual(){}
 

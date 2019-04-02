@@ -33,12 +33,13 @@
 #define PATH_ARG_MAX LINK_PATH_ARG_MAX
 
 int launch(const char * path,
-		char * exec_dest,
-		const char * args,
-		int options,
-		int ram_size,
-		int (*update_progress)(int, int),
-		char *const envp[]){
+			  char * exec_dest,
+			  const char * args,
+			  int options,
+			  int ram_size,
+			  int (*update_progress)(const void *, int, int),
+			  const void * update_context,
+			  char *const envp[]){
 
 	char exec_path[PATH_ARG_MAX];
 
@@ -49,7 +50,7 @@ int launch(const char * path,
 
 
 	if( args != 0 ){
-        if( strnlen(args, PATH_ARG_MAX) > PATH_ARG_MAX - PATH_MAX ){
+		if( strnlen(args, PATH_ARG_MAX) > PATH_ARG_MAX - PATH_MAX ){
 			errno=ENAMETOOLONG;
 			return -1;
 		}
@@ -65,22 +66,22 @@ int launch(const char * path,
 	//if path is already in app then there is no need to install -- just execute
 	if( strncmp(path, "/app/", 5) != 0 ){
 
-		if( install(path, exec_path, options, ram_size, update_progress) < 0 ){
+		if( install(path, exec_path, options, ram_size, update_progress, update_context) < 0 ){
 			return -1;
 		}
 
 	} else {
-        strncpy(exec_path, path, PATH_ARG_MAX-1);
+		strncpy(exec_path, path, PATH_ARG_MAX-1);
 	}
 
 	if( exec_dest != 0 ){
-        strncpy(exec_dest, exec_path, PATH_MAX-1);
+		strncpy(exec_dest, exec_path, PATH_MAX-1);
 	}
 
 	if( args ){
-        strncat(exec_path, " ", PATH_ARG_MAX-1);
-        strncat(exec_path, args, PATH_ARG_MAX-1);
+		strncat(exec_path, " ", PATH_ARG_MAX-1);
+		strncat(exec_path, args, PATH_ARG_MAX-1);
 	}
 
-	return process_start(exec_path, envp);
+	return process_start(exec_path, envp, options);
 }

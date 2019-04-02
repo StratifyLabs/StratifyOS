@@ -17,7 +17,7 @@
  * 
  */
 
-/*! \addtogroup UNI_FILE_ACCESS
+/*! \addtogroup unistd
  * @{
  */
 
@@ -39,7 +39,7 @@
  * \param buf A pointer to the destination memory (process must have write access)
  * \param nbyte The number of bytes to read
  *
- * \return The number of bytes actually read of -1 with errno (see \ref ERRNO) set to:
+ * \return The number of bytes actually read of -1 with errno (see \ref errno) set to:
  * - EBADF:  \a fildes is bad
  * - EACCES:  \a fildes is on in O_RDONLY mode
  * - EIO:  IO error
@@ -48,6 +48,7 @@
  */
 int write(int fildes, const void *buf, size_t nbyte);
 
+/*! \cond */
 int _write(int fildes, const void *buf, size_t nbyte) {
 	sysfs_file_t * file;
 
@@ -74,6 +75,7 @@ int _write(int fildes, const void *buf, size_t nbyte) {
 	file = get_open_file(fildes);
 	return sysfs_file_write(file, buf, nbyte);
 }
+/*! \endcond */
 
 
 

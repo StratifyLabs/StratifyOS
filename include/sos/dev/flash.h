@@ -84,7 +84,7 @@ typedef struct {
 #define I_FLASH_GETVERSION _IOCTL(FLASH_IOC_IDENT_CHAR, I_MCU_GETVERSION)
 #define I_FLASH_GETINFO _IOCTLR(FLASH_IOC_IDENT_CHAR, I_MCU_GETINFO, flash_info_t)
 #define I_FLASH_SETATTR _IOCTLW(FLASH_IOC_IDENT_CHAR, I_MCU_SETATTR, flash_attr_t)
-#define I_FLASH_SETACTION _IOCTLW(FLASH_IOC_IDENT_CHAR, I_MCU_SETACTION, flash_attr_t)
+#define I_FLASH_SETACTION _IOCTLW(FLASH_IOC_IDENT_CHAR, I_MCU_SETACTION, mcu_action_t)
 
 /*! \brief See details below
  * \details This request erases the page containing the

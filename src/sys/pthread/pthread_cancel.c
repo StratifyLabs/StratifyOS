@@ -17,7 +17,7 @@
  * 
  */
 
-/*! \addtogroup PTHREAD
+/*! \addtogroup pthread
  * @{
  *
  */
@@ -38,12 +38,18 @@ int pthread_cancel(pthread_t thread){
 	return -1;
 }
 
+/*! \details This function is not supported.
+ * \return -1 with errno equal to ENOTSUP
+ */
 int pthread_setcancelstate(int state, int *oldstate){
 	//errno = ENOTSUP;
 	//return -1;
 	return 0;
 }
 
+/*! \details This function is not supported.
+ * \return -1 with errno equal to ENOTSUP
+ */
 int pthread_setcanceltype(int type, int *oldtype){
 	//errno = ENOTSUP;
 	//return -1;

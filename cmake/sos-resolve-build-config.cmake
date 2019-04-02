@@ -22,3 +22,5 @@ else()
     message( FATAL_ERROR "No Configuration available build in *_link or *_arm directory or say -DSOS_BUILD_CONFIG:STRING=<arm|link>")
   endif()
 endif()
+
+

@@ -41,6 +41,7 @@ typedef struct {
 #define APPFS_MEMPAGETYPE_SYS 1
 #define APPFS_MEMPAGETYPE_USER 2
 #define APPFS_MEMPAGETYPE_MASK 0x03
+#define APPFS_MEMPAGETYPE_INVALID (-1)
 
 typedef struct {
 	int beg_addr /*! the address of the beginning of the file */;
@@ -60,45 +61,72 @@ typedef struct {
 } appfs_handle_t;
 
 typedef struct {
-	int ret;
-	const devfs_device_t * dev;
-	mem_pageinfo_t pageinfo;
-	appfs_file_t fileinfo;
-} root_load_fileinfo_t;
+	const devfs_device_t * device;
+	u32 page;
+	u32 size;
+	int type;
+} appfs_ram_t;
 
+typedef struct {
+	const devfs_device_t * device;
+	mem_pageinfo_t page_info;
+	int result;
+} appfs_get_pageinfo_t;
 
-//page utilities
-int appfs_util_getpagetype(appfs_header_t * info, int page, int type);
-int appfs_util_getflashpagetype(appfs_header_t * info);
+typedef struct {
+	const devfs_device_t * device;
+	appfs_file_t file_info;
+	int page;
+	int type;
+	int size;
+	int result;
+} appfs_get_fileinfo_t;
+
+typedef struct {
+	const devfs_device_t * device;
+	mem_info_t mem_info;
+	int result;
+} appfs_get_meminfo_t;
+
+typedef struct {
+	const devfs_device_t * device;
+	u32 start_page;
+	u32 end_page;
+	int result;
+} appfs_erase_pages_t;
+
 
 //file utilities
-int appfs_util_lookupname(const void * cfg, const char * path, root_load_fileinfo_t * args, int type, int * size);
-
-//memory access utilities
-void appfs_util_root_closeinstall(void * args) MCU_ROOT_EXEC_CODE;
-int appfs_util_root_writeinstall(const devfs_device_t * dev, appfs_handle_t * h, appfs_installattr_t * attr) MCU_ROOT_EXEC_CODE;
-int appfs_util_root_create(const devfs_device_t * dev, appfs_handle_t * h, appfs_installattr_t * attr) MCU_ROOT_EXEC_CODE;
-int appfs_util_root_free_ram(const devfs_device_t * dev, appfs_handle_t * h) MCU_ROOT_EXEC_CODE;
-int appfs_util_root_reclaim_ram(const devfs_device_t * dev, appfs_handle_t * h) MCU_ROOT_EXEC_CODE;
-int appfs_util_getfileinfo(root_load_fileinfo_t * info, const devfs_device_t * dev, int page, int type, int * size);
-int appfs_util_erasepages(const devfs_device_t * dev, int start_page, int end_page);
-int appfs_util_getpageinfo(const devfs_device_t * dev, mem_pageinfo_t * pageinfo);
-
+int appfs_util_lookupname(const devfs_device_t * device,
+								  const char * path,
+								  appfs_file_t * file_info,
+								  mem_pageinfo_t * page_info,
+								  int type,
+								  int * size);
 const appfs_file_t * appfs_util_getfile(appfs_handle_t * h);
-bool appfs_util_isexecutable(const appfs_file_t * info);
+int appfs_util_is_executable(const appfs_file_t * info);
 
-//ram access
-extern u32 _ram_pages;
-#define APPFS_RAM_PAGES ((u32)(&_ram_pages))
-#define APPFS_RAM_USAGE_WORDS_SIZE APPFS_RAM_USAGE_WORDS(APPFS_RAM_PAGES)
+//call through cortexm_svcall()
+void appfs_util_svcall_get_fileinfo(void * args) MCU_ROOT_EXEC_CODE;
+void appfs_util_svcall_get_pageinfo(void * args) MCU_ROOT_EXEC_CODE;
+void appfs_util_svcall_get_meminfo(void * args) MCU_ROOT_EXEC_CODE;
+void appfs_util_svcall_erase_pages(void * args) MCU_ROOT_EXEC_CODE;
+void appfs_ram_svcall_get(void * args) MCU_ROOT_EXEC_CODE;
+void appfs_ram_svcall_set(void * args) MCU_ROOT_EXEC_CODE;
 
-void appfs_ram_initusage(void * buf);
-void appfs_ram_getusage_all(void * buf);
-int appfs_ram_getusage(u32 page);
-int appfs_ram_setusage(u32 page, u32 size, int type);
-int appfs_ram_root_setusage(u32 page, u32 size, int type) MCU_ROOT_EXEC_CODE;
-void appfs_ram_root_saveusage(void * args) MCU_ROOT_EXEC_CODE;
-void appfs_ram_setrange(u32 * buf, u32 page, u32 size, int usage);
+
+//call in root mode only
+int appfs_util_root_writeinstall(const devfs_device_t * device, appfs_handle_t * h, appfs_installattr_t * attr) MCU_ROOT_CODE;
+int appfs_util_root_create(const devfs_device_t * device, appfs_handle_t * h, appfs_installattr_t * attr) MCU_ROOT_CODE;
+int appfs_util_root_free_ram(const devfs_device_t * device, appfs_handle_t * h) MCU_ROOT_CODE;
+int appfs_util_root_reclaim_ram(const devfs_device_t * device, appfs_handle_t * h) MCU_ROOT_CODE;
+int appfs_util_root_get_meminfo(const devfs_device_t * device, mem_info_t * mem_info) MCU_ROOT_CODE;
+int appfs_util_root_get_pageinfo(const devfs_device_t * device, mem_pageinfo_t * pageinfo) MCU_ROOT_CODE;
+int appfs_util_root_get_fileinfo(const devfs_device_t * device, appfs_file_t * file_info, int page, int type, int * size) MCU_ROOT_CODE;
+int appfs_util_root_erase_pages(const devfs_device_t * device, int start_page, int end_page) MCU_ROOT_CODE;
+void appfs_ram_root_init(const devfs_device_t * device) MCU_ROOT_CODE;
+int appfs_ram_root_get(const devfs_device_t * device, u32 page) MCU_ROOT_CODE;
+void appfs_ram_root_set(const devfs_device_t * device, u32 page, u32 size, int type) MCU_ROOT_CODE;
 
 
 #endif /* APPFS_LOCAL_H_ */

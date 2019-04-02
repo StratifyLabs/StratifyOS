@@ -38,7 +38,7 @@
 #define BLOCK_SIZE 512
 #define CMD_FRAME_SIZE 16
 
-#define LONG_DELAY 250
+#define LONG_DELAY 500
 #define SHORT_DELAY 100
 
 #define FLAG_PROTECTED (1<<0)
@@ -395,22 +395,28 @@ int drive_sdspi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 
 				//init sequence
 				//apply at least 74 init clocks with DI and CS high
-				deassert_cs(handle);
-				cortexm_delay_us(LONG_DELAY);
-				spi_transfer(handle, 0, 0, CMD_FRAME_SIZE*6);
-				cortexm_delay_us(LONG_DELAY);
+				for(u32 i=0; i < 5; i++){
+					deassert_cs(handle);
+					cortexm_delay_us(LONG_DELAY*i);
+					spi_transfer(handle, 0, 0, CMD_FRAME_SIZE*12);
+					cortexm_delay_us(LONG_DELAY*i);
 
-				cortexm_delay_us(500);
+					cortexm_delay_us(LONG_DELAY*i);
 
-				resp.r1 = exec_cmd_r1(handle, SDSPI_CMD0_GO_IDLE_STATE, 0, 0);
-				if( resp.r1.start == 1 ){
-					mcu_debug_printf("SD_SPI: Failed GO IDLE 0x%X\n", resp.r1.u8);
-					return SYSFS_SET_RETURN(EIO);
-				}
+					resp.r1 = exec_cmd_r1(handle, SDSPI_CMD0_GO_IDLE_STATE, 0, 0);
+					if( resp.r1.start == 1 ){
+						mcu_debug_printf("SD_SPI: Failed GO IDLE 0x%X\n", resp.r1.u8);
+						if( i == 4 ){
+							return SYSFS_SET_RETURN(EIO);
+						}
+					}
 
-				if( resp.r1.idle != 1 ){
-					mcu_debug_printf("SD_SPI: Failed No IDLE 0x%X\n", resp.r1.u8);
-					return SYSFS_SET_RETURN(EIO);
+					if( resp.r1.idle != 1 ){
+						mcu_debug_printf("SD_SPI: Failed No IDLE 0x%X\n", resp.r1.u8);
+						if( i == 4 ){
+							return SYSFS_SET_RETURN(EIO);
+						}
+					}
 				}
 
 				//send CMD8
