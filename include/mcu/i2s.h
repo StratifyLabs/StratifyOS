@@ -47,6 +47,10 @@ typedef struct MCU_PACK {
 } i2s_config_t;
 
 typedef struct MCU_PACK {
+    sai_attr_t attr; //default attributes
+} sai_config_t;
+
+typedef struct MCU_PACK {
 	u32 value;
 } i2s_event_t;
 
@@ -88,7 +92,7 @@ MCU_I2S_DRIVER_DECLARATION(mcu_sai_dma);
 
 #define I2S_DEFINE_ATTR(attr_flags, \
 	attr_freq, \
-	attr_mck_mult, \
+    attr_mck_mult, \
 	attr_ws_port, attr_ws_pin, \
 	attr_sck_port, attr_sck_pin, \
 	attr_sdout_port, attr_sdout_pin, \
@@ -119,6 +123,69 @@ MCU_I2S_DRIVER_DECLARATION(mcu_sai_dma);
 	attr_sdout_port, attr_sdout_pin, \
 	attr_sdin_port, attr_sdin_pin, \
 	attr_mck_port, attr_mck_pin) } \
+}
+
+
+#define SAI_DEFINE_ATTR(attr_flags, \
+    attr_freq, \
+    attr_mck_mult, \
+    attr_slot, \
+    attr_sck_port, attr_sck_pin, \
+    attr_sd_port, attr_sd_pin, \
+    attr_mclk_port, attr_mclk_pin,\
+    attr_fs_port, attr_fs_pin) \
+    .o_flags = attr_flags, .freq = attr_freq, .mck_mult = attr_mck_mult, .slot = attr_slot, \
+    .pin_assignment.sck = {attr_sck_port, attr_sck_pin},\
+    .pin_assignment.sd  = {attr_sd_port, attr_sd_pin},\
+    .pin_assignment.mclk= {attr_mclk_port, attr_mclk_pin},\
+    .pin_assignment.fs =  {attr_fs_port, attr_fs_pin}
+
+#define SAI_DECLARE_CONFIG(name, \
+    attr_flags, \
+    attr_freq, \
+    attr_mck_mult, \
+    attr_slot, \
+    attr_sck_port, attr_sck_pin, \
+    attr_sd_port, attr_sd_pin, \
+    attr_mclk_port, attr_mclk_pin,\
+    attr_fs_port, attr_fs_pin) \
+    sai_config_t name##_config = { \
+    .attr = { SAI_DEFINE_ATTR(attr_flags, \
+    attr_freq, \
+    attr_mck_mult, \
+    attr_slot, \
+    attr_sck_port, attr_sck_pin, \
+    attr_sd_port, attr_sd_pin, \
+    attr_mclk_port, attr_mclk_pin,\
+    attr_fs_port, attr_fs_pin) \
+    } \
+}
+
+#define SAI_DMA_DECLARE_CONFIG(name, \
+    attr_flags, \
+    attr_freq, \
+    attr_mck_mult, \
+    attr_slot, \
+    attr_sck_port, attr_sck_pin, \
+    attr_sd_port, attr_sd_pin, \
+    attr_mclk_port, attr_mclk_pin,\
+    attr_fs_port, attr_fs_pin,\
+    dma_number,dma_stream_number,\
+    dma_channel_number,dma_priority,\
+    dma_o_flags)\
+    stm32_sai_dma_config_t name##_config = { \
+    .sai_config.attr = { SAI_DEFINE_ATTR(attr_flags, \
+    attr_freq, \
+    attr_mck_mult, \
+    attr_slot, \
+    attr_sck_port, attr_sck_pin, \
+    attr_sd_port, attr_sd_pin, \
+    attr_mclk_port, attr_mclk_pin,\
+    attr_fs_port, attr_fs_pin) \
+    },\
+    .dma_config = {dma_number,dma_stream_number,\
+    dma_channel_number,dma_priority,\
+    dma_o_flags}\
 }
 
 #ifdef __cplusplus
