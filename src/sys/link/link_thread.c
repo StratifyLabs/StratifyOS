@@ -263,6 +263,7 @@ void link_cmd_ioctl(link_transport_driver_t * driver, link_data_t * args){
 		//If the ioctl function wrote data to the ctl argument, pass the data over the link
 		err = link_transport_slavewrite(driver, io_buf, size, NULL, NULL);
 		if ( err == -1 ){
+			mcu_debug_log_error(MCU_DEBUG_LINK, "slave write failed");
 			args->op.cmd = 0;
 			args->reply.err = -1;
 		}
