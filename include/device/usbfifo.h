@@ -68,7 +68,7 @@ int usbfifo_close(const devfs_handle_t * handle);
 	char usb_fifo_name##_buffer[usb_fifo_buffer_size] MCU_SYS_MEM; \
 	const usbfifo_config_t usb_fifo_name##_config = { \
 	.endpoint = usb_attr_endpoint, \
-	.endpoint_size = usb_attr_endpoint_size, .read_buffer = usb_fifo_name##_read_buffer \
+	.endpoint_size = usb_attr_endpoint_size, .read_buffer = usb_fifo_name##_read_buffer, \
 	.fifo = { .size = usb_fifo_buffer_size, .buffer = usb_fifo_name##_buffer } \
 	}
 
