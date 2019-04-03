@@ -66,10 +66,10 @@ set(BUILD_TARGET ${SOS_NAME}_${SOS_CONFIG}.elf)
 add_executable(${BUILD_TARGET} ${SOS_SOURCELIST})
 add_custom_target(bin_${SOS_NAME}_${SOS_CONFIG} DEPENDS ${BUILD_TARGET} COMMAND ${CMAKE_OBJCOPY} -j .boot_hdr -j .text -j .data -O binary ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${BUILD_TARGET} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${SOS_NAME}.bin)
 add_custom_target(asm_${SOS_NAME}_${SOS_CONFIG} DEPENDS bin_${SOS_NAME}_${SOS_CONFIG} COMMAND ${CMAKE_OBJDUMP} -S -j .boot_hdr -j .text -j .priv_code -j .data -j .bss -j .sysmem -d ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${BUILD_TARGET} > ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${SOS_NAME}.lst)
-add_custom_target(size_${SOS_CONFIG} DEPENDS asm_${SOS_NAME}_${SOS_CONFIG} COMMAND ${CMAKE_SIZE} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${BUILD_TARGET})
-add_custom_target(${SOS_CONFIG} ALL DEPENDS size_${SOS_CONFIG})
-add_custom_target(flash_${SOS_CONFIG}
-	DEPENDS size_${SOS_CONFIG}
+add_custom_target(size_${SOS_NAME}_${SOS_CONFIG} DEPENDS asm_${SOS_NAME}_${SOS_CONFIG} COMMAND ${CMAKE_SIZE} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${BUILD_TARGET})
+add_custom_target(${SOS_CONFIG} ALL DEPENDS size_${SOS_NAME}_${SOS_CONFIG})
+add_custom_target(flash_${SOS_NAME}_${SOS_CONFIG}
+	DEPENDS size_${SOS_NAME}_${SOS_CONFIG}
 	COMMAND ${SOS_TOOLCHAIN_CMAKE_PATH}/../../bin/sl os.install:path=${SOS_NAME},build=${SOS_CONFIG}
 	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/../
 	)
