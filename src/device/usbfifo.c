@@ -49,6 +49,10 @@ static int data_received(void * context, const mcu_event_t * data){
 	int size = config->fifo.size;
 
 	result = state->async_read.nbyte;
+
+	if( state->async_read.loc == 1 ){
+		mcu_debug_printf("data rx on 1\n");
+	}
 	do {
 
 		if( result > 0 ){
@@ -93,6 +97,7 @@ int usbfifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 	const usbfifo_config_t * config = handle->config;
 	usbfifo_state_t * state = handle->state;
 	int result;
+	int count;
 	switch(request){
 		case I_FIFO_GETINFO:
 			fifo_getinfo(info, &(config->fifo), &(state->fifo));
@@ -127,8 +132,14 @@ int usbfifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 			state->async_read.buf = config->read_buffer;
 			state->async_read.nbyte = config->endpoint_size;
 
-			result = mcu_usb_read(handle, &state->async_read);
+			count = 0;
+			do {
+				//flush the USB and get an async call
+				result = mcu_usb_read(handle, &state->async_read);
+				count++;
+			} while( (result > 0) && (count < 10) );
 			if ( result < 0 ){ return SYSFS_SET_RETURN(EIO); }
+			if( count == 0 ){ return SYSFS_SET_RETURN(EIO); }
 
 			break;
 		case I_FIFO_EXIT:
