@@ -82,7 +82,6 @@ void fifo_set_notify_write(fifo_state_t * state, int value);
 int fifo_is_overflow(fifo_state_t * state);
 void fifo_set_overflow(fifo_state_t * state, int value);
 
-
 int fifo_read_buffer(const fifo_config_t * cfgp, fifo_state_t * state, char * buf, int nbyte);
 int fifo_write_buffer(const fifo_config_t * cfgp, fifo_state_t * state, const char * buf, int nbyte, int non_blocking);
 

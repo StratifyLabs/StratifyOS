@@ -28,7 +28,6 @@
 #define _MCU_UART_H_
 
 #include "sos/dev/uart.h"
-
 #include "sos/fs/devfs.h"
 
 #ifdef __cplusplus
@@ -41,22 +40,23 @@ typedef struct MCU_PACK {
 
 typedef struct MCU_PACK {
 	uart_attr_t attr; //default attributes
+	const void * fifo_config;
 } uart_config_t;
 
+#define MCU_UART_IOCTL_REQUEST_DECLARATION(driver_name) \
+	DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, getinfo); \
+	DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, setattr); \
+	DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, setaction); \
+	DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, get); \
+	DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, put); \
+	DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, flush)
 
-int mcu_uart_open(const devfs_handle_t * handle) MCU_ROOT_CODE;
-int mcu_uart_read(const devfs_handle_t * handle, devfs_async_t * rop) MCU_ROOT_CODE;
-int mcu_uart_write(const devfs_handle_t * handle, devfs_async_t * wop) MCU_ROOT_CODE;
-int mcu_uart_ioctl(const devfs_handle_t * handle, int request, void * ctl) MCU_ROOT_CODE;
-int mcu_uart_close(const devfs_handle_t * handle) MCU_ROOT_CODE;
+#define MCU_UART_DRIVER_DECLARATION(variant) \
+	DEVFS_DRIVER_DECLARTION(variant); \
+	MCU_UART_IOCTL_REQUEST_DECLARATION(variant)
 
-int mcu_uart_getinfo(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
-int mcu_uart_setattr(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
-int mcu_uart_setaction(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
-
-int mcu_uart_get(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
-int mcu_uart_put(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
-int mcu_uart_flush(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
+MCU_UART_DRIVER_DECLARATION(mcu_uart);
+MCU_UART_DRIVER_DECLARATION(mcu_uart_dma);
 
 #define UART_DEFINE_ATTR(uart_attr_flags, \
 	uart_attr_width, \
@@ -85,6 +85,7 @@ int mcu_uart_flush(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
 	uart_attr_rx_port, uart_attr_rx_pin, \
 	uart_attr_rts_port, uart_attr_rts_pin, \
 	uart_attr_cts_port, uart_attr_cts_pin ) } }
+
 
 #ifdef __cplusplus
 }

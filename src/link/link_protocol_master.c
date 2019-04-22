@@ -150,7 +150,7 @@ int wait_ack(link_transport_mdriver_t * driver, uint8_t checksum, int timeout){
 			count+=1;
 			if( count >= timeout ){
 				link_error("timeout %d of %d (%d) -- %d >= %d",
-							  ack.checksum, checksum, ack.ack, count, timeout);
+							  bytes_read, sizeof(ack), ack.ack, count, timeout);
 				return LINK_TIMEOUT_ERROR;
 			}
 		}

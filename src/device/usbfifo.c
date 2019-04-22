@@ -50,9 +50,6 @@ static int data_received(void * context, const mcu_event_t * data){
 
 	result = state->async_read.nbyte;
 
-	if( state->async_read.loc == 1 ){
-		mcu_debug_printf("data rx on 1\n");
-	}
 	do {
 
 		if( result > 0 ){

@@ -154,8 +154,8 @@ int fifo_write_buffer(const fifo_config_t * cfgp, fifo_state_t * state, const ch
 }
 
 void fifo_flush(fifo_state_t * state){
-    state->atomic_position.access.head = 0;
-    state->atomic_position.access.tail = 0;
+	 state->atomic_position.access.head = 0;
+	 state->atomic_position.access.tail = 0;
     fifo_set_overflow(state, 0);
 }
 
