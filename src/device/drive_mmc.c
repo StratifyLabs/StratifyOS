@@ -83,8 +83,26 @@ int drive_mmc_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 			mmc_attr.o_flags = MMC_FLAG_GET_CARD_STATE;
 			result = mcu_mmc_setattr(handle, &mmc_attr);
 
+
 			if( result < 0 ){ return result; }
-			return (result != MMC_CARD_STATE_TRANSFER);
+
+			switch(result){
+				default:
+				//case MMC_CARD_STATE_NONE:
+				//case MMC_CARD_STATE_READY:
+				//case MMC_CARD_STATE_DISCONNECTED:
+				//case MMC_CARD_STATE_ERROR:
+				//case MMC_CARD_STATE_TRANSFER:
+					//these states mean the device is ready
+					return 0;
+				case MMC_CARD_STATE_IDENTIFICATION:
+				case MMC_CARD_STATE_STANDBY:
+				case MMC_CARD_STATE_SENDING:
+				case MMC_CARD_STATE_RECEIVING:
+				case MMC_CARD_STATE_PROGRAMMING:
+					//these states mean the device is busy temporarily
+					return 1;
+			}
 
 		case I_DRIVE_GETINFO:
 			result = mcu_mmc_getinfo(handle, &mmc_info);
