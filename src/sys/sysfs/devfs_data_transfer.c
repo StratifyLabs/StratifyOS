@@ -98,8 +98,8 @@ void root_check_op_complete(void * args){
 		if ( p->result == 0 ){
 			if ( p->async.nbyte >= 0 ){ //wait for the operation to complete or for data to arrive
 
-				cortexm_disable_interrupts(); //checking the block object and sleeping have to happen atomically (driver could interrupt)
-
+				//checking the block object and sleeping have to happen atomically (driver could interrupt if it has a higher priority)
+				cortexm_disable_interrupts();
 				//Block waiting for the operation to complete or new data to be ready
 				//if the interrupt has already fired the block_object will be zero already
 				if( sos_sched_table[ task_get_current() ].block_object != 0 ){;
