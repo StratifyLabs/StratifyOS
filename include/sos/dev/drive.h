@@ -54,8 +54,8 @@
 enum {
 	DRIVE_FLAG_PROTECT /*! Enables driver write protection. */ = (1<<0),
 	DRIVE_FLAG_UNPROTECT /*! Disables driver write protection. */ = (1<<1),
-	DRIVE_FLAG_ERASE_BLOCKS = (1<<2),
-	DRIVE_FLAG_ERASE_SECTORS /*! Erases sectors on the disk. */ = (1<<2),
+	DRIVE_FLAG_ERASE_BLOCKS /*! Erases blocks on the disk. A block consists of the smallest eraseable memory size (\sa driver_info_t and erase_block_size) */ = (1<<2),
+	DRIVE_FLAG_ERASE_SECTORS = (1<<2),
 	DRIVE_FLAG_ERASE_DEVICE /*! Erases the drive. */ = (1<<3),
 	DRIVE_FLAG_POWERDOWN /*! Puts the drive in power down mode. */ = (1<<4),
 	DRIVE_FLAG_POWERUP /*! Powers up the driver (after power down). */ = (1<<5),
@@ -71,9 +71,9 @@ enum {
 typedef struct MCU_PACK {
 	u32 o_flags /*! Attribute flags supported by this driver */;
 	u32 o_events /*! MCU Event flags supported by this driver */;
-	u16 address_size /*! Number of bytes per address location (1 for small devices 512 for larger ones */;
+	u16 address_size /*! Number of bytes per address location (typically 1 for small devices 512 for larger ones) */;
 	u16 write_block_size /*! Minimum write block size */;
-	u32 num_write_blocks /*! Number of write blocks (size is num_write_blocks*write_block_size */;
+	u32 num_write_blocks /*! Number of write blocks (size is num_write_blocks*write_block_size) */;
 	u32 erase_block_size /*! Minimum eraseable block size */;
 	u32 erase_block_time /*! Time in microseconds to erase one block */;
 	u32 erase_device_time /*! Time in microseconds to erase the device */;
@@ -88,8 +88,8 @@ typedef struct MCU_PACK {
  */
 typedef struct MCU_PACK {
 	u32 o_flags /*! Drive flags such as \ref DRIVE_FLAG_INIT */;
-	u32 start /*! Start block (used with \ref DRIVE_FLAG_ERASE_BLOCKS) */;
-	u32 end /*! End block (used with \ref DRIVE_FLAG_ERASE_BLOCKS) */;
+	u32 start /*! Start block (used with \ref DRIVE_FLAG_ERASE_BLOCKS). This should be the address divided by drive_info_t->address_size. */;
+	u32 end /*! End block (used with \ref DRIVE_FLAG_ERASE_BLOCKS). This should be the address divided by drive_info_t->address_size. */;
 	u32 resd[8];
 } drive_attr_t;
 
@@ -97,7 +97,7 @@ typedef struct MCU_PACK {
 #define I_DRIVE_GETVERSION _IOCTL(DRIVE_IOC_IDENT_CHAR, I_MCU_GETVERSION)
 /*! \details Gets the drive info (drive_info_t). */
 #define I_DRIVE_GETINFO _IOCTLR(DRIVE_IOC_IDENT_CHAR, I_MCU_GETINFO, drive_info_t)
-/*! \details Sets the drive attributes (\sa 43drive_attr_t). */
+/*! \details Sets the drive attributes (\sa drive_attr_t). */
 #define I_DRIVE_SETATTR _IOCTLW(DRIVE_IOC_IDENT_CHAR, I_MCU_SETATTR, drive_attr_t)
 #define I_DRIVE_SETACTION _IOCTLW(DRIVE_IOC_IDENT_CHAR, I_MCU_SETATTR, mcu_action_t)
 
