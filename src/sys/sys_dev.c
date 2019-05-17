@@ -85,18 +85,18 @@ int sys_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 			return 0;
 		case I_SYS_KILL:
 			for(i = 1; i < task_get_total(); i++){
-				if( (task_get_pid(i) == killattr->id) &&
+				if( (task_get_pid(i) == killattr->id) && task_enabled(i) &&
 					 !task_thread_asserted(i)
 					 ){
-					signal_root_send(task_get_current(),
+					int result = signal_root_send(task_get_current(),
 										  i,
 										  killattr->si_signo,
 										  killattr->si_sigcode,
 										  killattr->si_sigvalue, 1);
-					break;
+					return result;
 				}
 			}
-			return 0;
+			return SYSFS_SET_RETURN(EINVAL);
 		case I_SYS_PTHREADKILL:
 			return signal_root_send(task_get_current(),
 											killattr->id,
