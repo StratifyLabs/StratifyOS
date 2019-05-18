@@ -58,8 +58,23 @@ enum {
 	I2S_FLAG_IS_MCK_ENABLED /*! Set this bit to enable the mclk output */ = (1<<12),
 	I2S_FLAG_IS_FORMAT_PCM_SHORT /*! Set this bit for PCM Short format*/ = (1<<13),
 	I2S_FLAG_IS_FORMAT_PCM_LONG /*! Set this bit for PCM Long format*/ = (1<<14),
-	I2S_FLAG_IS_WIDTH_16_EXTENDED /*! I2S has 16-bits of data in 32-bit blocks */ = (1<<15)
-
+    I2S_FLAG_IS_WIDTH_16_EXTENDED /*! I2S has 16-bits of data in 32-bit blocks */ = (1<<15),
+    SAI_FLAG_IS_OUTPUTDRIVE_DISABLE /*! SAI_Block_Output_Drive SAI Block Output Drive*/ = (1<<16),
+    SAI_FLAG_IS_FIFOTHRESHOLD_EMPTY /*! SAI_Block_Fifo_Threshold SAI Block Fifo Threshold*/ = (1<<17),
+    SAI_FLAG_IS_FIFOTHRESHOLD_1QF /*! SAI_Block_Fifo_Threshold SAI Block Fifo Threshold*/ = (1<<18),
+    SAI_FLAG_IS_FIFOTHRESHOLD_HF /*! SAI_Block_Fifo_Threshold SAI Block Fifo Threshold*/ = (1<<19),
+    SAI_FLAG_IS_FIFOTHRESHOLD_3QF /*! SAI_Block_Fifo_Threshold SAI Block Fifo Threshold*/ = (1<<20),
+    SAI_FLAG_IS_FIFOTHRESHOLD_FULL /*! SAI_Block_Fifo_Threshold SAI Block Fifo Threshold*/ = (1<<21),
+    SAI_FLAG_IS_ULAW_1CPL_COMPANDING /*! SAI Block Companding Mode*/ = (1<<22),
+    SAI_FLAG_IS_ALAW_1CPL_COMPANDING /*! SAI Block Companding Mode*/ = (1<<23),
+    SAI_FLAG_IS_ULAW_2CPL_COMPANDING /*! SAI Block Companding Mode*/ = (1<<24),
+    SAI_FLAG_IS_ALAW_2CPL_COMPANDING /*! SAI Block Companding Mode*/ = (1<<25),
+    SAI_FLAG_ENABLE       /*! SAI enable command*/ = (1<<26),
+    SAI_DMA_ENABLE       /*! SAI dma enable command*/ = (1<<27),
+    SAI_FLAG_IS_SYNCHRONOUS /*! Synchronous with other block of same SAI */ = (1<<28),
+    SAI_FLAG_IS_SYNCHRONOUS_EXT_SAI1 /*! Synchronous with other SAI, SAI1 */ = (1<<29),
+    SAI_FLAG_IS_SYNCHRONOUS_EXT_SAI2 /*! Synchronous with other SAI, SAI2 */ = (1<<30),
+    SAI_FLAG_SET_SLOT/*!< update active slot*/ = (1<<31)
 };
 
 /*! \brief I2S IO Attributes
@@ -83,12 +98,28 @@ typedef struct MCU_PACK {
 } i2s_pin_assignment_t;
 
 typedef struct MCU_PACK {
+    mcu_pin_t sck;    /*!< in/out bit clock*/
+    mcu_pin_t sd;     /*!< data line*/
+    mcu_pin_t mclk; /*!< output master clock not used in slave mode*/
+    mcu_pin_t fs;   /*!< frame synchronization*/
+} sai_pin_assignment_t;
+
+typedef struct MCU_PACK {
 	u32 o_flags  /*! Flag bitmask */;
 	u32 freq /*! The I2S audio frequency */;
 	i2s_pin_assignment_t pin_assignment /*! The pin assignement values */;
 	u32 mck_mult /*! The I2S mclk multiplier value */;
 	u32 resd[8];
 } i2s_attr_t;
+
+typedef struct MCU_PACK {
+    u32 o_flags  /*! Flag bitmask */;
+    u32 freq /*! The sai audio frequency */;
+    u32 slot /*!< active slots*/;
+    sai_pin_assignment_t pin_assignment /*! The pin assignement values */;
+    u32 mck_mult /*! The sai mclk multiplier value */;
+    u32 resd[8];
+} sai_attr_t;
 
 #define I_I2S_GETVERSION _IOCTL(I2S_IOC_IDENT_CHAR, I_MCU_GETVERSION)
 
