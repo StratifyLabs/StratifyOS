@@ -164,15 +164,24 @@ int mpu_calc_region(int region,
 		*rasr |= (1<<28);
 	}
 
+
+	/*
+	 * Bits 19, 20, 21 = TEX
+	 * Bit 18 = shareable (can't be cached)
+	 * Bit 17 = cacheable
+	 * Bit 16 = write-back
+	 *
+	 *
+	 */
 	switch(type){
 	case MPU_MEMORY_EXTERNAL_SRAM:
-		*rasr |= ((1<<16)|(1<<17)|(1<<18));
+		*rasr |= ((1<<17)|(1<<16)); //Outer and Inner Write-Back, no Write-Allocate
 		break;
 	case MPU_MEMORY_SRAM:
-		*rasr |= ((1<<18)|(1<<17));
+		*rasr |= (1<<17)|(1<<16); //Outer and Inner Write-Back, no Write-Allocate
 		break;
 	case MPU_MEMORY_FLASH:
-		*rasr |= (1<<17);
+		*rasr |= (1<<17)|(1<<16); //Outer and Inner Write-Back, no Write-Allocate
 		break;
 	case MPU_MEMORY_PERIPHERALS:
 		*rasr |= ((1<<16)|(1<<18));

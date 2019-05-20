@@ -69,7 +69,8 @@ int task_init_mpu(void * system_memory, int system_memory_size){
 	int err;
 
 	//Calculate the device specific memory protection regions
-	mpu_dev_init();
+	//mpu_dev_init();
+
 
 	u32 text_start = (u32)&_text & ~mcu_board_config.os_mpu_text_mask;
 
@@ -92,6 +93,8 @@ int task_init_mpu(void * system_memory, int system_memory_size){
 
 	//Turn the MPU On
 	mpu_enable();
+
+	mcu_core_enable_cache();
 
 	return 0;
 }
@@ -207,6 +210,7 @@ int init_os_memory_protection(task_memories_t * os_mem){
 		mcu_debug_log_error(MCU_DEBUG_SYS, "Failed to init shared mem 0x%lX -> 0x%lX bytes (%d)", (u32)os_mem->data.addr, (u32)os_mem->data.size, err);
 		return err;
 	}
+
 
 	return 0;
 
