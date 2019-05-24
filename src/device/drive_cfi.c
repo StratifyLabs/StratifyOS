@@ -117,7 +117,6 @@ int drive_cfi_spi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 								0);
 
 					if( result < 0 ){
-						mcu_debug_printf("Failed to set serial driver attriutes");
 						return result;
 					}
 
@@ -245,9 +244,6 @@ int drive_cfi_spi_read(const devfs_handle_t * handle, devfs_async_t * async){
 		drive_cfi_deassert_cs(handle);
 	}
 
-	if( result < 0 ){
-		mcu_debug_printf("Failed to read SPI\n");
-	}
 	return result;
 }
 

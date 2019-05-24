@@ -188,9 +188,9 @@ int appfs_startup(const void * cfg){
 			 (get_fileinfo_args.file_info.exec.o_flags & APPFS_FLAG_IS_STARTUP) ){
 
 			//start the process
-			mem.code.addr = (void*)get_fileinfo_args.file_info.exec.code_start;
+			mem.code.address = (void*)get_fileinfo_args.file_info.exec.code_start;
 			mem.code.size = get_fileinfo_args.file_info.exec.code_size;
-			mem.data.addr = (void*)get_fileinfo_args.file_info.exec.ram_start;
+			mem.data.address = (void*)get_fileinfo_args.file_info.exec.ram_start;
 			mem.data.size = get_fileinfo_args.file_info.exec.ram_size;
 
 			if ( scheduler_create_process((void*)get_fileinfo_args.file_info.exec.startup,

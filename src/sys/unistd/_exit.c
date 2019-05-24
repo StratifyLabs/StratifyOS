@@ -167,7 +167,7 @@ void root_stop_threads(int * send_signal){
 int get_exec_flags(){
 	appfs_file_t * hdr;
 	//check to see if the app should discard itself
-	hdr = (appfs_file_t *)mpu_addr((u32)sos_task_table[task_get_current()].mem.code.addr);
+	hdr = (appfs_file_t *)sos_task_table[task_get_current()].mem.code.address;
 	return hdr->exec.o_flags;
 }
 

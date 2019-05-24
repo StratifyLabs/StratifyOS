@@ -37,7 +37,7 @@ int task_create_process(void (*p)(char*),
 	static int task_process_counter = 1;
 
 	//Variable initialization
-	stackaddr = mem->data.addr + mem->data.size;
+	stackaddr = mem->data.address + mem->data.size;
 
 	//Check the stack alignment
 	if ( (unsigned int)stackaddr & 0x03 ){

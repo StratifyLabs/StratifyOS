@@ -85,7 +85,7 @@ void root_init_sched_task(init_sched_task_t * task){
 	PTHREAD_ATTR_SET_INHERIT_SCHED((&(sos_sched_table[id].attr)), PTHREAD_EXPLICIT_SCHED);
 	PTHREAD_ATTR_SET_DETACH_STATE((&(sos_sched_table[id].attr)), PTHREAD_CREATE_DETACHED);
 
-	sos_sched_table[id].attr.stackaddr = task->mem->data.addr; //Beginning of process data memory
+	sos_sched_table[id].attr.stackaddr = task->mem->data.address; //Beginning of process data memory
 	sos_sched_table[id].attr.stacksize = task->mem->data.size; //Size of the memory (not just the stack)
 	sos_sched_table[id].attr.schedparam.sched_priority = 0; //This is the priority to revert to after being escalated
 
@@ -96,7 +96,7 @@ void root_init_sched_task(init_sched_task_t * task){
 	scheduler_root_assert_active(id, 0);
 	scheduler_root_assert_inuse(id);
 	scheduler_root_update_on_wake(id, task_get_priority(id));
-	stackguard = (uint32_t)task->mem->data.addr + sizeof(struct _reent);
+	stackguard = (uint32_t)task->mem->data.address + sizeof(struct _reent);
 	if( task_root_set_stackguard(id, (void*)stackguard, SCHED_DEFAULT_STACKGUARD_SIZE) < 0 ){
 		mcu_debug_log_warning(MCU_DEBUG_SCHEDULER, "Failed to set stackguard");
 	}
@@ -110,6 +110,7 @@ void root_init_sched_task(init_sched_task_t * task){
 
 static void cleanup_process(void * status){
 	//Processes should ALWAYS use exit -- this should never get called but is here just in case
+	SOS_TRACE_FATAL("cleanup");
 	kill(task_get_pid(task_get_current()), SIGKILL);
 }
 

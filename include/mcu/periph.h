@@ -21,6 +21,7 @@
 #include "adc.h"
 #include "dac.h"
 #include "core.h"
+#include "crypt.h"
 #include "eint.h"
 #include "emc.h"
 #include "eeprom.h"

@@ -287,7 +287,7 @@ void posix_trace_event_addr_tid(trace_event_id_t event_id, const void * data_ptr
 		addr = addr - 1;
 	} else {
 		//app
-		addr = addr - (uint32_t)mpu_addr((u32)sos_task_table[tid].mem.code.addr) - 1 + 0xDE000000;
+		addr = addr - (u32)sos_task_table[tid].mem.code.address - 1 + 0xDE000000;
 	}
 
 	event_info.posix_event_id = event_id;

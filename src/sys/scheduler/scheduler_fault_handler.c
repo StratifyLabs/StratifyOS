@@ -90,7 +90,7 @@ void mcu_fault_event_handler(fault_t * fault){
 		//check for a stack overflow error
 		u32 psp;
 		cortexm_get_thread_stack_ptr(&psp);
-		if( psp <= (u32)mpu_addr((u32)sos_task_table[task_get_current()].mem.stackguard.addr) + mpu_size(sos_task_table[task_get_current()].mem.stackguard.size) ){
+		if( psp <= (u32)sos_task_table[task_get_current()].mem.stackguard.address + sos_task_table[task_get_current()].mem.stackguard.size ){
 			mcu_debug_log_error(MCU_DEBUG_SYS, "Stack Overflow");
 		}
 #endif

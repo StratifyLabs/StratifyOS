@@ -242,8 +242,8 @@ void task_root_delete(int id){
 
 void task_root_resetstack(int id){
 	//set the stack pointer to the original value
-	sos_task_table[id].sp = mpu_addr((u32)sos_task_table[id].mem.data.addr) + mpu_size((u32)sos_task_table[id].mem.data.size) -
-			(sizeof(hw_stack_frame_t) + sizeof(sw_stack_frame_t));
+	sos_task_table[id].sp = (void*)((u32)sos_task_table[id].mem.data.address + sos_task_table[id].mem.data.size -
+			(sizeof(hw_stack_frame_t) + sizeof(sw_stack_frame_t)));
 	if( id == task_get_current() ){ //make effective now
 		cortexm_set_thread_stack_ptr((void*)sos_task_table[id].sp);
 	}
@@ -376,15 +376,15 @@ void switch_contexts(){
 	//Enable the MPU for the task stack guard
 #if MPU_PRESENT || __MPU_PRESENT
 	//Enable the MPU for the process code section
-	MPU->RBAR = (u32)(sos_task_table[m_task_current].mem.code.addr);
-	MPU->RASR = (u32)(sos_task_table[m_task_current].mem.code.size);
+	MPU->RBAR = (u32)(sos_task_table[m_task_current].mem.code.rbar);
+	MPU->RASR = (u32)(sos_task_table[m_task_current].mem.code.rasr);
 
 	//Enable the MPU for the process data section
-	MPU->RBAR = (u32)(sos_task_table[m_task_current].mem.data.addr);
-	MPU->RASR = (u32)(sos_task_table[m_task_current].mem.data.size);
+	MPU->RBAR = (u32)(sos_task_table[m_task_current].mem.data.rbar);
+	MPU->RASR = (u32)(sos_task_table[m_task_current].mem.data.rasr);
 
-	MPU->RBAR = (u32)(sos_task_table[m_task_current].mem.stackguard.addr);
-	MPU->RASR = (u32)(sos_task_table[m_task_current].mem.stackguard.size);
+	MPU->RBAR = (u32)(sos_task_table[m_task_current].mem.stackguard.rbar);
+	MPU->RASR = (u32)(sos_task_table[m_task_current].mem.stackguard.rasr);
 
 	//disable MPU for ROOT tasks
 	if( task_root_asserted(m_task_current) ){

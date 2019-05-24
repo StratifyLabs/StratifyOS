@@ -54,8 +54,8 @@ int task_validate_memory(void * target, int size){
 }
 
 int is_part_of_memory(void * target, int size, volatile task_memory_t * task_memory){
-	u32 task_address = (u32)mpu_addr((u32)task_memory->addr);
-	u32 task_size = mpu_size(task_memory->size);
+	u32 task_address = (u32)task_memory->address;
+	u32 task_size = task_memory->size;
 	u32 target_address = (u32)target;
 	u32 target_size = (u32)size;
 	if( (target_address >= task_address) && (target_address+target_size <= task_address + task_size) ){
@@ -75,9 +75,9 @@ int task_init_mpu(void * system_memory, int system_memory_size){
 	u32 text_start = (u32)&_text & ~mcu_board_config.os_mpu_text_mask;
 
 	//Memory Protection
-	os_mem.code.addr = (void*)text_start;
+	os_mem.code.address = (void*)text_start;
 	os_mem.code.size = (char*)&_etext - (char*)text_start;
-	os_mem.data.addr = system_memory;
+	os_mem.data.address = system_memory;
 	os_mem.data.size = system_memory_size;
 	err = init_os_memory_protection(&os_mem);
 	if ( err < 0 ){
@@ -128,7 +128,7 @@ int task_root_set_stackguard(int tid, void * stackaddr, int stacksize){
 	if ( (u32)tid < task_get_total() ){
 
 		newaddr = (u32)stackaddr;
-		newaddr = (newaddr & ~(stacksize - 1)) + stacksize;
+		newaddr = (newaddr & ~(stacksize - 1)) + stacksize; //align to the size of the guard
 
 		err = mpu_calc_region(
 					TASK_APPLICATION_STACK_GUARD_REGION,
@@ -140,18 +140,19 @@ int task_root_set_stackguard(int tid, void * stackaddr, int stacksize){
 					&rbar,
 					&rasr);
 
-		if ( err ){
-			return err;
+		if ( err == 0 ){
+			return -1;
 		}
 
 	} else {
 		return -1;
 	}
 
-	sos_task_table[tid].mem.stackguard.addr = (void*)rbar;
-	sos_task_table[tid].mem.stackguard.size = rasr;
+	sos_task_table[tid].mem.stackguard.rbar = rbar;
+	sos_task_table[tid].mem.stackguard.rasr = rasr;
 
 	if ( tid == task_get_current() ){
+		//make the settings effective now if the task is currently active
 		MPU->RBAR = rbar;
 		MPU->RASR = rasr;
 	}
@@ -163,10 +164,12 @@ int task_root_set_stackguard(int tid, void * stackaddr, int stacksize){
 int init_os_memory_protection(task_memories_t * os_mem){
 	int err;
 
+#if 0
 	err = mpu_dev_init();
 	if ( err < 0 ){
 		return err;
 	}
+#endif
 
 	//Make OS System memory read-only -- region 0 -- highest priority
 	err = mpu_enable_region(
@@ -186,28 +189,28 @@ int init_os_memory_protection(task_memories_t * os_mem){
 	//Make the OS flash executable and readable -- region 3
 	err = mpu_enable_region(
 				TASK_SYSTEM_CODE_MPU_REGION,
-				os_mem->code.addr,
+				os_mem->code.address,
 				os_mem->code.size,
 				MPU_ACCESS_PR_UR,
 				MPU_MEMORY_FLASH,
 				1
 				);
 	if ( err < 0 ){
-		mcu_debug_log_error(MCU_DEBUG_SYS, "Failed to init OS flash 0x%lX -> 0x%ld bytes (%d)", (u32)os_mem->code.addr, (u32)os_mem->code.size, err);
+		mcu_debug_log_error(MCU_DEBUG_SYS, "Failed to init OS flash 0x%lX -> 0x%ld bytes (%d)", (u32)os_mem->code.address, (u32)os_mem->code.size, err);
 		return err;
 	}
 
 	//Make the OS shared memory R/W -- region 5
 	err = mpu_enable_region(
 				TASK_SYSTEM_DATA_MPU_REGION,
-				os_mem->data.addr,
+				os_mem->data.address,
 				os_mem->data.size,
 				MPU_ACCESS_PRW_URW,
 				MPU_MEMORY_SRAM,
 				0
 				);
 	if ( err < 0 ){
-		mcu_debug_log_error(MCU_DEBUG_SYS, "Failed to init shared mem 0x%lX -> 0x%lX bytes (%d)", (u32)os_mem->data.addr, (u32)os_mem->data.size, err);
+		mcu_debug_log_error(MCU_DEBUG_SYS, "Failed to init shared mem 0x%lX -> 0x%lX bytes (%d)", (u32)os_mem->data.address, (u32)os_mem->data.size, err);
 		return err;
 	}
 
@@ -222,7 +225,7 @@ int task_mpu_calc_protection(task_memories_t * mem){
 	uint32_t rasr;
 	uint32_t rbar;
 
-	if ( mem->code.addr < (void*)&_data ){
+	if ( mem->code.address < (void*)&_data ){
 		mem_type = MPU_MEMORY_FLASH;
 	} else {
 		mem_type = MPU_MEMORY_SRAM;
@@ -232,7 +235,7 @@ int task_mpu_calc_protection(task_memories_t * mem){
 	//Region 6
 	err = mpu_calc_region(
 				TASK_APPLICATION_CODE_MPU_REGION,
-				mem->code.addr,
+				mem->code.address,
 				mem->code.size,
 				MPU_ACCESS_PR_UR,
 				mem_type,
@@ -241,17 +244,17 @@ int task_mpu_calc_protection(task_memories_t * mem){
 				&rasr
 				);
 
-	if ( err < 0 ){
-		return err;
+	if ( err == 0 ){
+		return -1;
 	}
 
-	mem->code.addr = (void*)rbar;
-	mem->code.size = rasr;
+	mem->code.rbar = rbar;
+	mem->code.rasr = rasr;
 
 	//Region 7
 	err = mpu_calc_region(
 				TASK_APPLICATION_DATA_MPU_REGION,
-				mem->data.addr,
+				mem->data.address,
 				mem->data.size,
 				MPU_ACCESS_PRW_URW,
 				MPU_MEMORY_SRAM,
@@ -260,12 +263,12 @@ int task_mpu_calc_protection(task_memories_t * mem){
 				&rasr
 				);
 
-	if ( err < 0 ){
-		return err;
+	if ( err == 0 ){
+		return -1;
 	}
 
-	mem->data.addr = (void*)rbar;
-	mem->data.size = rasr;
+	mem->data.rbar = rbar;
+	mem->data.rasr = rasr;
 
 	return 0;
 }

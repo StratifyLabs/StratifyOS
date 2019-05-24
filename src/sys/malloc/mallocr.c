@@ -222,6 +222,8 @@ void _free_r(struct _reent * reent_ptr, void * addr){
 	//mcu_debug_log_info(MCU_DEBUG_MALLOC, "f:%d 0x%X", getpid(), addr);
 	malloc_set_chunk_free(chunk, chunk->header.num_chunks);
 	cleanup_memory(reent_ptr, 0);
+	mcu_debug_log_info(MCU_DEBUG_MALLOC, "f:%d %p %p %p", getpid(), addr, reent_ptr, _GLOBAL_REENT);
+
 	__malloc_unlock(reent_ptr);
 }
 
@@ -255,7 +257,7 @@ int get_more_memory(struct _reent * reent_ptr, u32 size, int is_new_heap){
 			chunk = new_heap - MALLOC_SBRK_JUMP_SIZE;
 		}
 		malloc_set_chunk_free(chunk, jump_size / MALLOC_CHUNK_SIZE);
-		set_last_chunk(chunk + chunk->header.num_chunks); //mark the last block (heap should have extra room for this)
+		set_last_chunk(chunk + chunk->header.num_chunks); //mark the last block (heap should have extra room for this)		
 	}
 	return 0;
 }
@@ -329,7 +331,7 @@ void * _malloc_r(struct _reent * reent_ptr, size_t size){
 
 	__malloc_unlock(reent_ptr);
 
-	mcu_debug_log_info(MCU_DEBUG_MALLOC, "a:%d 0x%X %d 0x%X 0x%X", getpid(), alloc, size, reent_ptr, _GLOBAL_REENT);
+	mcu_debug_log_info(MCU_DEBUG_MALLOC, "a:%d 0x%X %d (%d) 0x%X 0x%X", getpid(), alloc, size, num_chunks*MALLOC_CHUNK_SIZE, reent_ptr, _GLOBAL_REENT);
 
 	return alloc;
 }

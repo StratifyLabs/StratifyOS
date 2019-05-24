@@ -88,7 +88,7 @@ void sos_trace_event_addr_tid(link_trace_event_id_t event_id, const void * data_
 			addr = addr - 1;
 		} else {
 			//app
-			addr = addr - (u32)mpu_addr((u32)sos_task_table[tid].mem.code.addr) - 1 + 0xDE000000;
+			addr = addr - (u32)sos_task_table[tid].mem.code.address - 1 + 0xDE000000;
 		}
 
 		clock_gettime(CLOCK_REALTIME, &spec);

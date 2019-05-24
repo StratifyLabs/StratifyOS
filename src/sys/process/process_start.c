@@ -97,9 +97,9 @@ int process_start(const char *path_arg, char *const envp[], int options){
 		return -1;
 	}
 
-	mem.code.addr = (void*)startup.exec.code_start;
+	mem.code.address = (void*)startup.exec.code_start;
 	mem.code.size = startup.exec.code_size;
-	mem.data.addr = (void*)startup.exec.ram_start;
+	mem.data.address = (void*)startup.exec.ram_start;
 	mem.data.size = startup.exec.ram_size;
 
 	//check to see if the process is already running

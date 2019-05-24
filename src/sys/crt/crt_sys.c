@@ -44,19 +44,19 @@ void root_load_data(void * args){
 	void * dest_addr;
 
 	//sanity check the size
-	size =  mpu_size((u32)sos_task_table[ task_get_current() ].mem.data.size);
+	size =  sos_task_table[ task_get_current() ].mem.data.size;
 	if( p->data_size < size ){ //p->data_size is the total amount of RAM available to the application
 		size = p->data_size;
 	}
 
 	code_size = p->code_size;
-	if( code_size > mpu_size((u32)sos_task_table[ task_get_current() ].mem.code.size) ){
+	if( code_size > sos_task_table[ task_get_current() ].mem.code.size ){
 		//fatal error here?
 		return;
 	}
 
-	dest_addr = mpu_addr((u32)sos_task_table[ task_get_current() ].mem.data.addr);
-	code_addr = mpu_addr((u32)sos_task_table[ task_get_current() ].mem.code.addr);
+	dest_addr = sos_task_table[ task_get_current() ].mem.data.address;
+	code_addr = sos_task_table[ task_get_current() ].mem.code.address;
 	code_size = p->code_size;
 	src_addr = code_addr + code_size;
 	memcpy(dest_addr, src_addr, size);

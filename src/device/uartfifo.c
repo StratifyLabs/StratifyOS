@@ -65,7 +65,6 @@ static int data_received(void * context, const mcu_event_t * data){
 		result = mcu_uart_read(handle, &state->async_read);
 		if( result < 0 ){
 			//fire an error -- set this as an error condition
-			mcu_debug_printf("failed to read (%d, %d)\n", SYSFS_GET_RETURN(result), SYSFS_GET_RETURN_ERRNO(result));
 			return 0;
 		}
 
@@ -135,7 +134,6 @@ int uartfifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 			if ( result < 0 ){ return SYSFS_SET_RETURN(EIO); }
 			if( count == 0 ){ return SYSFS_SET_RETURN(EIO); }
 
-			mcu_debug_printf("fifo started\n");
 			break;
 		default:
 			return mcu_uart_ioctl(handle, request, ctl);

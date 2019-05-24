@@ -59,10 +59,11 @@ typedef enum {
  *
  */
 typedef enum {
-	MPU_SIZE_RESERVED0,
+	MPU_SIZE_RESERVED0 = -1, //register is one less that the exponent
 	MPU_SIZE_RESERVED1,
 	MPU_SIZE_RESERVED2,
 	MPU_SIZE_RESERVED3,
+	MPU_SIZE_RESERVED4,
 	MPU_SIZE_32B /*! 32B */,
 	MPU_SIZE_64B /*! 64B */,
 	MPU_SIZE_128B /*! 128B */,
@@ -72,10 +73,11 @@ typedef enum {
 	MPU_SIZE_2KB /*! 2KB */,
 	MPU_SIZE_4KB /*! 4KB */,
 	MPU_SIZE_8KB /*! 8KB */,
-	MPU_SIZE_16KB /*!16K2B */,
+	MPU_SIZE_16KB /*! 16K2B */,
 	MPU_SIZE_32KB /*! 32KB */,
 	MPU_SIZE_64KB /*! 64KB */,
 	MPU_SIZE_128KB /*! 128KB */,
+	MPU_SIZE_256KB /*! 128KB */,
 	MPU_SIZE_512KB /*! 512KB */,
 	MPU_SIZE_1MB /*! 1MB */,
 	MPU_SIZE_2MB /*! 2MB */,
@@ -85,6 +87,7 @@ typedef enum {
 	MPU_SIZE_32MB /*! 32MB */,
 	MPU_SIZE_64MB /*! 64MB */,
 	MPU_SIZE_128MB /*! 128MB */,
+	MPU_SIZE_256MB /*! 256MB */,
 	MPU_SIZE_512MB /*! 512MB */,
 	MPU_SIZE_1GB /*! 1GB */,
 	MPU_SIZE_2GB /*! 2GB */,
@@ -125,28 +128,19 @@ mpu_size_t mpu_calc_size(uint32_t size /*! The size of the memory in bytes */);
  */
 int mpu_enable_region(int region /*! The region to enable */,
 		void * addr /*! The starting address */,
-		int size /*! The size of the region */,
+		u32 size /*! The size of the region */,
 		mpu_access_t access /*! MPU Access value */,
 		mpu_memory_t type /*! MPU memory type */,
 		int executable /*! Non-zero to mark code as executable */) MCU_ROOT_CODE;
 
-int mpu_calc_region(int region,
+u32 mpu_calc_region(int region,
 		void * addr,
-		int size,
+		u32 size,
 		mpu_access_t access,
 		mpu_memory_t type,
 		int executable,
 		uint32_t * rbar,
 		uint32_t * rasr);
-
-//convert rbar to address
-static inline void * mpu_addr(u32 rbar){ return (void*)(rbar & ~0x1F); }
-static inline u32 mpu_size(u32 rasr){
-	u32 shift;
-	shift = ((rasr >> 1) & 0x1F) + 1;
-	return (1<<shift);
-}
-
 
 int mpu_getnextpowerof2(int size);
 

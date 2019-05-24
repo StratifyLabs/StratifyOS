@@ -45,8 +45,8 @@ static int populate_file_header(const devfs_device_t * dev, appfs_file_t * file,
 static int get_flash_page_type(const devfs_device_t * dev, u32 address, u32 size);
 static int is_flash_blank(u32 address, u32 size);
 static int read_appfs_file_header(const devfs_device_t * dev, u32 address, appfs_file_t * dest);
-static u32 find_protectable_addr(const devfs_device_t * dev, int size, int type, int * page, int skip_protection);
-static u32 find_protectable_free(const devfs_device_t * dev, int type, int size, int * page, int skip_protection);
+static u32 find_protectable_addr(const devfs_device_t * dev, int size, int type, int * page, u32 * protectable_size, int skip_protection);
+static u32 find_protectable_free(const devfs_device_t * dev, int type, int size, int * page, u32 * protectable_size, int skip_protection);
 
 
 static u8 calc_checksum(const char * name){
@@ -130,22 +130,28 @@ static u32 translate_value(u32 addr, u32 mask, u32 code_start, u32 data_start, u
 				return 0;
 			}
 		} else if (addr & APPFS_REWRITE_RAM_MASK ){
-			ret |= data_start;
+			ret += data_start;
 		} else {
-			ret |= code_start;
+			ret += code_start;
 		}
 	}
 
 	return ret;
 }
 
-u32 find_protectable_addr(const devfs_device_t * dev, int size, int type, int * page, int skip_protection){
+u32 find_protectable_addr(const devfs_device_t * dev,
+								  int size,
+								  int type,
+								  int * page,
+								  u32 * protectable_size,
+								  int skip_protection){
 	int i;
 	u32 tmp_rbar;
 	u32 tmp_rasr;
 	mem_pageinfo_t pageinfo;
 	int err;
 	int mem_type;
+	u32 region_size;
 
 	if ( type == MEM_FLAG_IS_FLASH ){
 		mem_type = MPU_MEMORY_FLASH;
@@ -167,7 +173,7 @@ u32 find_protectable_addr(const devfs_device_t * dev, int size, int type, int * 
 		} else {
 
 			//this will return 0 if the address and size is actually protectable
-			err = mpu_calc_region(
+			region_size = mpu_calc_region(
 						TASK_APPLICATION_CODE_MPU_REGION, //doesn't matter what this is
 						(void*)pageinfo.addr,
 						size,
@@ -177,10 +183,19 @@ u32 find_protectable_addr(const devfs_device_t * dev, int size, int type, int * 
 						&tmp_rbar,
 						&tmp_rasr
 						);
+
+			if( region_size == 0 ){
+				err = -1;
+			} else {
+				err = 0;
+			}
+
+
 		}
 
 		if ( err == 0 ){
 			*page = i;
+			*protectable_size	= region_size;
 			return pageinfo.addr;
 		}
 
@@ -243,32 +258,27 @@ int check_for_free_space(const devfs_device_t * dev, int start_page, int type, i
 	return free_size;
 }
 
-u32 find_protectable_free(const devfs_device_t * dev, int type, int size, int * page, int skip_protection){
+u32 find_protectable_free(const devfs_device_t * dev, int type, int size, int * page, u32 * protectable_size, int skip_protection){
 	u32 start_addr;
-	int tmp;
 	int space_available;
-	u32 smallest_space_addr;
-	int smallest_space_page;
 
 	//find any area for the code
 	*page = 0;
-	//find an area of memory that is available to write
-	smallest_space_addr = (u32)-1;
-	space_available = INT_MAX;
-	smallest_space_page = 0;
 
 	do {
 		start_addr = find_protectable_addr(dev,
 													  size,
 													  type,
 													  page,
+													  protectable_size,
 													  skip_protection);
 
 		if ( start_addr != (u32)-1 ){
 			//could not find any free space
 
-			tmp = check_for_free_space(dev, *page, type, size);
-			if( tmp > 0 && tmp < space_available ){
+			space_available = check_for_free_space(dev, *page, type, *protectable_size);
+			if( space_available > 0 ){
+#if 0
 				//there is room here -- find the smallest free space where the program fits
 				space_available = tmp;
 				smallest_space_addr = start_addr;
@@ -276,6 +286,9 @@ u32 find_protectable_free(const devfs_device_t * dev, int type, int size, int * 
 				if( size == space_available ){ //this is a perfect fit
 					return smallest_space_addr;
 				}
+#else
+				return start_addr;
+#endif
 
 			}
 
@@ -284,9 +297,10 @@ u32 find_protectable_free(const devfs_device_t * dev, int type, int size, int * 
 
 	} while( start_addr != (u32)-1 );
 
-	*page = smallest_space_page;
+	*page = 0;
 
-	return smallest_space_addr;
+	//return an invalid address
+	return (u32)-1;
 }
 
 /*
@@ -431,8 +445,10 @@ int appfs_util_root_create(const devfs_device_t * dev, appfs_handle_t * h, appfs
 		dest->exec.o_flags = APPFS_FLAG_IS_FLASH;
 		type = MEM_FLAG_IS_FLASH;
 
+		u32 protectable_size;
+
 		//find space for the code -- this doesn't need to be protectable
-		code_start_addr = find_protectable_free(dev, type, dest->exec.code_size, &page, 0);
+		code_start_addr = find_protectable_free(dev, type, dest->exec.code_size, &page, &protectable_size, 0);
 		if ( code_start_addr == (u32)-1 ){
 			return SYSFS_SET_RETURN(ENOSPC);
 		}
@@ -541,20 +557,20 @@ int appfs_util_root_writeinstall(const devfs_device_t * dev, appfs_handle_t * h,
 
 		code_size = src.file->exec.code_size + src.file->exec.data_size; //code plus initialized data
 		ram_size = src.file->exec.ram_size;
-
+		u32 protectable_size;
 		//find space for the code
-		code_start_addr = find_protectable_free(dev, type, code_size, &code_page, 0);
+		code_start_addr = find_protectable_free(dev, type, code_size, &code_page, &protectable_size, 0);
 		if ( code_start_addr == (u32)-1 ){
 			mcu_debug_log_error(MCU_DEBUG_APPFS, "No exec region available");
 			return SYSFS_SET_RETURN(ENOSPC);
 		}
-		mcu_debug_log_info(MCU_DEBUG_APPFS, "Code start addr is %p", code_start_addr);
+		mcu_debug_log_info(MCU_DEBUG_APPFS, "Code start addr is %p:%d", code_start_addr, protectable_size);
 
 		if ( !((src.file->exec.o_flags) & APPFS_FLAG_IS_FLASH) ){ //for RAM app's mark the RAM usage
 			//mark the range as SYS
 			appfs_ram_root_set(dev,
 									 code_page,
-									 code_size,
+									 protectable_size,
 									 APPFS_MEMPAGETYPE_SYS);
 
 			//mark the first page as USER
@@ -565,20 +581,20 @@ int appfs_util_root_writeinstall(const devfs_device_t * dev, appfs_handle_t * h,
 		}
 
 		ram_page = 0;
-		data_start_addr = find_protectable_free(dev, MEM_FLAG_IS_RAM, ram_size, &ram_page, 0);
+		data_start_addr = find_protectable_free(dev, MEM_FLAG_IS_RAM, ram_size, &ram_page, &protectable_size, 0);
 		if( data_start_addr == (u32)-1 ){
 			if ( !((src.file->exec.o_flags) & APPFS_FLAG_IS_FLASH) ){ //for RAM app's mark the RAM usage
 				//free the code section
 				appfs_ram_root_set(dev,
 										 code_page,
-										 code_size,
+										 protectable_size,
 										 APPFS_MEMPAGETYPE_FREE);
 
 			}
 			mcu_debug_log_error(MCU_DEBUG_APPFS, "No RAM region available %d", ram_size);
 			return SYSFS_SET_RETURN(ENOSPC);
 		}
-		mcu_debug_log_info(MCU_DEBUG_APPFS, "Data start addr is %p", data_start_addr);
+		mcu_debug_log_info(MCU_DEBUG_APPFS, "Data start addr is %p:%d", data_start_addr, protectable_size);
 
 		h->type.install.code_start = (u32)code_start_addr;
 		h->type.install.code_size = code_size;
@@ -595,12 +611,19 @@ int appfs_util_root_writeinstall(const devfs_device_t * dev, appfs_handle_t * h,
 
 		dest.file.exec.code_start = code_start_addr;
 		dest.file.exec.ram_start = data_start_addr;
+		mcu_debug_log_info(MCU_DEBUG_APPFS, "code startup is at %p (%p %p 0x%X)", dest.file.exec.startup,
+								 h->type.install.code_start,
+								 h->type.install.data_start,
+								 h->type.install.rewrite_mask);
 		dest.file.exec.startup = translate_value((u32)dest.file.exec.startup,
 															  h->type.install.rewrite_mask,
 															  h->type.install.code_start,
 															  h->type.install.data_start,
 															  h->type.install.kernel_symbols_total,
 															  &loc_err);
+
+		mcu_debug_log_info(MCU_DEBUG_APPFS, "code startup is translated to at %p", dest.file.exec.startup);
+
 
 		for(i=sizeof(appfs_file_t) >> 2; i < attr->nbyte >> 2; i++){
 			dest.buf[i] = translate_value(src.ptr[i],

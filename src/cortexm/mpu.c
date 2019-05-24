@@ -108,57 +108,84 @@ int mpu_getnextpowerof2(int size){
 }
 
 
-int mpu_calc_region(int region,
+u32 mpu_calc_region(int region,
 		void * addr,
-		int size,
+		u32 size,
 		mpu_access_t access,
 		mpu_memory_t type,
 		int executable,
 		u32 * rbar,
 		u32 * rasr){
-	u32 up_size;
-	u32 addr_tmp;
+
+	const u32 target_address = (u32)addr;
+	u32 aligned_address = target_address;
+	u32 aligned_size;
 	u32 subregion_size;
-	u8 subregion_mask;
-	u8 subregions;
-	mpu_size_t mpu_size;
+	u32 subregion_count;
+	u32 subregion_offset;
+	u32 max_subregion_size;
+	max_subregion_size = 0;
+	subregion_size = 0;
 
-
-	//Get the next power of two size
-	up_size = mpu_getnextpowerof2(size);
-	if ( up_size < 32 ){
-		//must be at least 32 bytes for MPU
-		return -1;
+	if( size < 32 ){
+		return 0; //too small, can't protect less than 32 bytes
 	}
 
-	//Make sure the address is aligned to the size
-	addr_tmp = (u32)addr;
+	do {
+		subregion_count = 0;
+		subregion_offset = 0;
+		//zoom out the aligned address until something fits
+		aligned_size = 1<<(__CLZ(__RBIT((u32)aligned_address)));
+		if( size <= aligned_size || (aligned_size == 0) ){ //aligned size = 0 means 4GB of size
+			if( aligned_size == 0 ){
+				max_subregion_size = 1<<29;
+			} else {
+				max_subregion_size = aligned_size >> 3;
+			}
 
-	if ( addr_tmp & ((up_size)-1) ){
-		return -2; //this should be an alignment error
+			if( max_subregion_size > (u32)size ){
+				max_subregion_size = size;
+			}
+
+			//check subregion sizes from smallest to largest
+			for(subregion_size = 32; subregion_size <= max_subregion_size; subregion_size<<=1){
+
+				if( target_address % subregion_size == 0 ){ //check that the address is aligned to a subregion boundary
+					subregion_count = (size + subregion_size-1) / subregion_size; //round size up to capture all memory
+					subregion_offset = (target_address - aligned_address) / subregion_size;
+					if( subregion_count + subregion_offset > 8 ){
+						subregion_count = 0;
+						subregion_offset = 0;
+					} else {
+						break;
+					}
+				}
+
+			}
+		}
+
+		if( subregion_count == 0 ){
+			aligned_address -= aligned_size;
+		}
+	} while( (subregion_count == 0) && (max_subregion_size != size) );
+
+
+	if( subregion_count == 0 ){
+		return 0;
 	}
-
-	//Make sure the size is aligned with a subregion
-	subregion_size = up_size >> 3; //Divide by 8
-
-	if ( subregion_size == 0 ){
-		return -3;
-	}
-
-	if ( (up_size % subregion_size) != 0 ){
-		return -4;
-	}
-
-	subregions = up_size / subregion_size;
-	subregion_mask = ~((1<<subregions) - 1);
 
 	//Check the size
-	mpu_size = mpu_calc_size(up_size);
-	if ( mpu_size < MPU_SIZE_32B ){
-		return -5;
+	u32 mpu_size = 31 - __CLZ(subregion_size*8) - 1;
+	if ( mpu_size < 4 ){
+		return 0;
 	}
 
-	*rasr = (mpu_size << 1)|(1<<0)|(access<<24)|(subregion_mask<<8);
+	u8 subregion_disable_mask = 0xFF;
+	for(u8 i=0; i < subregion_count; i++){
+		subregion_disable_mask &= ~(1<<(subregion_offset + i));
+	}
+
+	*rasr = (mpu_size << 1)|(1<<0)|(access<<24)|(subregion_disable_mask<<8);
 
 	if ( !executable ){
 		*rasr |= (1<<28);
@@ -188,13 +215,14 @@ int mpu_calc_region(int region,
 		break;
 	}
 
-	*rbar = (u32)addr | ((1<<4)|region);
-	return 0;
+	*rbar = (u32)aligned_address|((1<<4)|region);
+
+	return subregion_size*subregion_count;
 }
 
 int mpu_enable_region(int region,
 		void * addr,
-		int size,
+		u32 size,
 		mpu_access_t access,
 		mpu_memory_t type,
 		int executable){
@@ -211,8 +239,8 @@ int mpu_enable_region(int region,
 	}
 
 	err = mpu_calc_region(region, addr, size, access, type, executable, &rbar, &rasr);
-	if ( err < 0 ){
-		return err;
+	if ( err == 0 ){
+		return -1;
 	}
 
 
