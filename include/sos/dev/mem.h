@@ -53,7 +53,11 @@ typedef struct MCU_PACK {
 	u32 system_ram_page /*! First page for system shared RAM */;
 	u32 usage_size;
 	u32 * usage;
-	u32 resd[5];
+	u32 external_ram_pages /*! The total number of external RAM pages */;
+	u32 external_ram_size /*! The total size of external RAM */;
+	u32 tightlycoupled_ram_pages /*! The total number of external RAM pages */;
+	u32 tightlycoupled_ram_size /*! The total size of external RAM */;
+	u32 resd[1];
 } mem_info_t;
 
 /*! \brief Holds the devices attributes.
@@ -72,10 +76,11 @@ typedef struct MCU_PACK {
  *
  */
 enum {
-	MEM_FLAG_IS_QUERY /*! Query the page type */ = (1<<0),
+	MEM_FLAG_IS_QUERY /*! Query the page type. This is used when the address is known but the page number, size, and type are not known */ = (1<<0),
 	MEM_FLAG_IS_RAM /*! RAM */ = (1<<1),
 	MEM_FLAG_IS_FLASH /*! Flash */ = (1<<2),
 	MEM_FLAG_IS_TIGHTLY_COUPLED /*! Tightly coupled memory (OR with RAM or FLASH) */ = (1<<3),
+	MEM_FLAG_IS_EXTERNAL /*! External memory chip (OR with RAM or FLASH) */ = (1<<4),
 };
 
 /*! \brief Holds the characteristics of a page.

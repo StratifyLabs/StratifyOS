@@ -62,14 +62,16 @@ typedef struct MCU_PACK {
 #define APPFS_CREATE_SIGNATURE 0x12345678
 
 enum {
-	APPFS_FLAG_IS_FLASH = (1<<0),
+	APPFS_FLAG_IS_FLASH = (1<<0), //install code in flash memory (data is always in RAM)
 	APPFS_FLAG_IS_STARTUP = (1<<1), //if set executes on boot
 	APPFS_FLAG_IS_ROOT = (1<<3), //run as root
 	APPFS_FLAG_IS_REPLACE = (1<<4), //replace (default is to duplicate)
 	APPFS_FLAG_IS_ORPHAN = (1<<5), //calling process wont' be parent
 	APPFS_FLAG_IS_UNIQUE = (1<<6), //install with a unique name in the flash or RAM
-	APPFS_FLAG_IS_CODE_TIGHTLY_COUPLED = (1<<7),
-	APPFS_FLAG_IS_DATA_TIGHTLY_COUPLED = (1<<8)
+	APPFS_FLAG_IS_CODE_TIGHTLY_COUPLED = (1<<7), //install code in tightly coupled memory
+	APPFS_FLAG_IS_DATA_TIGHTLY_COUPLED = (1<<8), //install data in tightly coupled memory
+	APPFS_FLAG_IS_CODE_EXTERNAL = (1<<9), //install code in external memory
+	APPFS_FLAG_IS_DATA_EXTERNAL = (1<<10), //install data in external memory
 };
 
 

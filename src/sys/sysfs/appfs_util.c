@@ -153,7 +153,7 @@ u32 find_protectable_addr(const devfs_device_t * dev,
 	int mem_type;
 	u32 region_size;
 
-	if ( type == MEM_FLAG_IS_FLASH ){
+	if ( type & MEM_FLAG_IS_FLASH ){
 		mem_type = MPU_MEMORY_FLASH;
 	} else {
 		mem_type = MPU_MEMORY_SRAM;
@@ -168,35 +168,36 @@ u32 find_protectable_addr(const devfs_device_t * dev,
 			return (u32)-1;
 		}
 
-		if( skip_protection ){
-			err = 0;
-		} else {
+		if( pageinfo.o_flags == type ){ // type should be an exact match with the page info flags (external, tightly coupled or normal)
 
-			//this will return 0 if the address and size is actually protectable
-			region_size = mpu_calc_region(
-						TASK_APPLICATION_CODE_MPU_REGION, //doesn't matter what this is
-						(void*)pageinfo.addr,
-						size,
-						MPU_ACCESS_PR_UR,
-						mem_type,
-						true,
-						&tmp_rbar,
-						&tmp_rasr
-						);
-
-			if( region_size == 0 ){
-				err = -1;
-			} else {
+			if( skip_protection ){
 				err = 0;
+			} else {
+
+				//this will return 0 if the address and size is actually protectable
+				region_size = mpu_calc_region(
+							TASK_APPLICATION_CODE_MPU_REGION, //doesn't matter what this is
+							(void*)pageinfo.addr,
+							size,
+							MPU_ACCESS_PR_UR,
+							mem_type,
+							true,
+							&tmp_rbar,
+							&tmp_rasr
+							);
+
+				if( region_size == 0 ){
+					err = -1;
+				} else {
+					err = 0;
+				}
 			}
 
-
-		}
-
-		if ( err == 0 ){
-			*page = i;
-			*protectable_size	= region_size;
-			return pageinfo.addr;
+			if ( err == 0 ){
+				*page = i;
+				*protectable_size	= region_size;
+				return pageinfo.addr;
+			}
 		}
 
 		i++;
@@ -559,7 +560,30 @@ int appfs_util_root_writeinstall(const devfs_device_t * dev, appfs_handle_t * h,
 		ram_size = src.file->exec.ram_size;
 		u32 protectable_size;
 		//find space for the code
-		code_start_addr = find_protectable_free(dev, type, code_size, &code_page, &protectable_size, 0);
+		code_start_addr = (u32)-1;
+
+		mcu_debug_log_info(MCU_DEBUG_APPFS, "Install flags 0x%lX", src.file->exec.o_flags);
+
+		//check for external or tightly coupled flags and see if memory is available in those regions
+		if( src.file->exec.o_flags & APPFS_FLAG_IS_DATA_EXTERNAL ){
+			code_start_addr = find_protectable_free(dev, type | MEM_FLAG_IS_EXTERNAL, code_size, &code_page, &protectable_size, 0);
+		} else if( src.file->exec.o_flags & APPFS_FLAG_IS_DATA_TIGHTLY_COUPLED ){
+			code_start_addr = find_protectable_free(dev, type | MEM_FLAG_IS_TIGHTLY_COUPLED, code_size, &code_page, &protectable_size, 0);
+		}
+
+		//if failed to find external or tightly coupled memory -- try just regular memory
+		if( code_start_addr == (u32)-1 ){
+			code_start_addr = find_protectable_free(dev, type, code_size, &code_page, &protectable_size, 0);
+
+			if( code_start_addr == (u32)-1 ){ //try other memory types if default is not available
+				code_start_addr = find_protectable_free(dev, type | MEM_FLAG_IS_EXTERNAL, code_size, &code_page, &protectable_size, 0);
+				if( code_start_addr == (u32)-1 ){
+					code_start_addr = find_protectable_free(dev, type | MEM_FLAG_IS_TIGHTLY_COUPLED, code_size, &code_page, &protectable_size, 0);
+				}
+			}
+
+		}
+
 		if ( code_start_addr == (u32)-1 ){
 			mcu_debug_log_error(MCU_DEBUG_APPFS, "No exec region available");
 			return SYSFS_SET_RETURN(ENOSPC);
@@ -581,7 +605,28 @@ int appfs_util_root_writeinstall(const devfs_device_t * dev, appfs_handle_t * h,
 		}
 
 		ram_page = 0;
-		data_start_addr = find_protectable_free(dev, MEM_FLAG_IS_RAM, ram_size, &ram_page, &protectable_size, 0);
+		data_start_addr = (u32)-1;
+		//check to see if more specific memory is available (external or tightly coupled)
+		if( src.file->exec.o_flags & APPFS_FLAG_IS_DATA_EXTERNAL ){
+			data_start_addr = find_protectable_free(dev, MEM_FLAG_IS_RAM | MEM_FLAG_IS_EXTERNAL, ram_size, &ram_page, &protectable_size, 0);
+		} else if( src.file->exec.o_flags & APPFS_FLAG_IS_DATA_TIGHTLY_COUPLED ){
+			data_start_addr = find_protectable_free(dev, MEM_FLAG_IS_RAM | MEM_FLAG_IS_TIGHTLY_COUPLED, ram_size, &ram_page, &protectable_size, 0);
+		}
+
+		//if no external/tightly coupled memory available (or not specified) then just install in regular RAM
+		if( data_start_addr == (u32)-1 ){
+			data_start_addr = find_protectable_free(dev, MEM_FLAG_IS_RAM, ram_size, &ram_page, &protectable_size, 0);
+
+			if( data_start_addr == (u32)-1 ){ //try other memory types if default is not available
+				data_start_addr = find_protectable_free(dev, MEM_FLAG_IS_RAM | MEM_FLAG_IS_EXTERNAL, ram_size, &ram_page, &protectable_size, 0);
+				if( data_start_addr == (u32)-1 ){
+					data_start_addr = find_protectable_free(dev, MEM_FLAG_IS_RAM | MEM_FLAG_IS_TIGHTLY_COUPLED, ram_size, &ram_page, &protectable_size, 0);
+				}
+			}
+
+
+		}
+
 		if( data_start_addr == (u32)-1 ){
 			if ( !((src.file->exec.o_flags) & APPFS_FLAG_IS_FLASH) ){ //for RAM app's mark the RAM usage
 				//free the code section

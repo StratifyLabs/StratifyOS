@@ -33,8 +33,9 @@ static const appfs_mem_section_t * get_page_section_info(const appfs_mem_config_
 static u32 get_memory_page_count(const appfs_mem_config_t * config, u32 type);
 static u32 get_memory_size(const appfs_mem_config_t * config, u32 type);
 
-static u32 get_page_size(const appfs_mem_config_t * config, u32 page, u32 type);
-static u32 get_page_addr(const appfs_mem_config_t * config, u32 page, u32 type);
+//static u32 get_page_size(const appfs_mem_config_t * config, u32 page, u32 type);
+//static u32 get_page_addr(const appfs_mem_config_t * config, u32 page, u32 type);
+static int get_page_info(const appfs_mem_config_t * config, u32 page, u32 type, mem_pageinfo_t * info);
 
 static u32 get_page(const appfs_mem_config_t * config, u32 address, u32 size, u32 * type);
 
@@ -105,6 +106,10 @@ int appfs_mem_getinfo(const devfs_handle_t * handle, void * ctl){
 	info->flash_size = get_memory_size(config, MEM_FLAG_IS_FLASH);
 	info->ram_pages = get_memory_page_count(config, MEM_FLAG_IS_RAM);
 	info->ram_size = get_memory_size(config, MEM_FLAG_IS_RAM);
+	info->external_ram_pages = get_memory_page_count(config, MEM_FLAG_IS_RAM | MEM_FLAG_IS_EXTERNAL);
+	info->external_ram_size = get_memory_size(config, MEM_FLAG_IS_RAM | MEM_FLAG_IS_EXTERNAL);
+	info->tightlycoupled_ram_pages = get_memory_page_count(config, MEM_FLAG_IS_RAM | MEM_FLAG_IS_TIGHTLY_COUPLED);
+	info->tightlycoupled_ram_size = get_memory_size(config, MEM_FLAG_IS_RAM | MEM_FLAG_IS_TIGHTLY_COUPLED);
 	info->system_ram_page = config->system_ram_page;
 	info->usage = config->usage;
 	info->usage_size = config->usage_size;
@@ -135,24 +140,31 @@ int appfs_mem_erasepage(const devfs_handle_t * handle, void * ctl){
 
 int appfs_mem_getpageinfo(const devfs_handle_t * handle, void * ctl){
 	DECLARE_APPFS_CONFIG();
-	u32 size = 0;
 	mem_pageinfo_t * pageinfo = ctl;
 
 	if( pageinfo->o_flags & MEM_FLAG_IS_QUERY ){
 		u32 type;
 		pageinfo->num = get_page(config, pageinfo->addr, 0, &type);
-		pageinfo->size = get_page_size(config, pageinfo->num, MEM_FLAG_IS_RAM);
 		pageinfo->o_flags = type;
+		//pageinfo->size = get_page_size(config, pageinfo->num, type & (MEM_FLAG_IS_RAM|MEM_FLAG_IS_FLASH));
 		if( type == 0 ){ return SYSFS_SET_RETURN(EINVAL); }
-		return 0;
+		//return 0;
 	}
 
+	if( get_page_info(config, pageinfo->num, pageinfo->o_flags, pageinfo) < 0 ){
+		return SYSFS_SET_RETURN(EINVAL);
+	}
+
+	return 0;
+
+#if 0
 	size = get_page_size(config, pageinfo->num, pageinfo->o_flags);
+	mcu_debug_printf("get info for page %d 0x%lX %ld\n", pageinfo->num, pageinfo->o_flags, size);
 	if (size == 0 ){ return SYSFS_SET_RETURN(EINVAL); }
 	pageinfo->addr = get_page_addr(config, pageinfo->num, pageinfo->o_flags);
 	pageinfo->size = size;
-
 	return 0;
+#endif
 }
 
 int appfs_mem_writepage(const devfs_handle_t * handle, void * ctl){
@@ -187,7 +199,7 @@ const appfs_mem_section_t * get_page_section_info(
 		u32 * offset){
 	u32 find_page = 0;
 	for(u32 i=0; i < config->section_count; i++){
-		if( config->sections[i].o_flags & type ){
+		if( config->sections[i].o_flags & type ){ //does page match any flag in type -- ram types will have same numbering
 			if( page < find_page + config->sections[i].page_count ){
 				//page lands on this page
 				*offset = page - find_page;
@@ -238,6 +250,7 @@ u32 get_memory_size(const appfs_mem_config_t * config, u32 type){
 	return size;
 }
 
+#if 0
 u32 get_page_size(const appfs_mem_config_t * config, u32 page, u32 type){
 	u32 offset;
 	const appfs_mem_section_t * section = get_page_section_info(config, page, type, &offset);
@@ -250,6 +263,18 @@ u32 get_page_addr(const appfs_mem_config_t * config, u32 page, u32 type){
 	const appfs_mem_section_t * section = get_page_section_info(config, page, type, &offset);
 	if( section == 0 ){ return 0; }
 	return section->address + offset * section->page_size;
+}
+#endif
+
+int get_page_info(const appfs_mem_config_t * config, u32 page, u32 type, mem_pageinfo_t * info){
+	u32 offset;
+	const appfs_mem_section_t * section = get_page_section_info(config, page, type, &offset);
+	if( section == 0 ){ return -1; }
+	info->num = page;
+	info->addr = section->address + offset * section->page_size;
+	info->o_flags = section->o_flags;
+	info->size = section->page_size;
+	return 0;
 }
 
 
