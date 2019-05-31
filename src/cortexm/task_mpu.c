@@ -48,7 +48,6 @@ int task_validate_memory(void * target, int size){
 		return 0;
 	}
 
-
 	//target and size overflow the memory
 	return -1;
 }
@@ -115,6 +114,7 @@ int task_setstackguard(int tid, void * stackaddr, int stacksize){
 	arg.tid = tid;
 	arg.stackaddr = stackaddr;
 	arg.stacksize = stacksize;
+	//security? args is written
 	cortexm_svcall(root_setstackguard, &arg);
 	return arg.tid;
 }

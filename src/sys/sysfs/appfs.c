@@ -273,7 +273,7 @@ int appfs_open(const void * cfg, void ** handle, const char * path, int flags, i
 		}
 	}
 
-	if ( ret == -1 ){
+	if ( ret < 0 ){
 		free(h);
 		h = NULL;
 	}
@@ -346,8 +346,14 @@ int appfs_unlink(const void* cfg, const char * path){
 
 
 	} else {
+		u32 rasr, rbar;
 		ram.page = get_pageinfo_args.page_info.num;
-		ram.size = file_info.exec.code_size + file_info.exec.data_size;
+
+		//the actual amount is not stored anywhere so it needs to be calculated again using the MPU
+		ram.size = mpu_calc_region(0,
+											(void*)get_pageinfo_args.page_info.addr,
+											file_info.exec.code_size + file_info.exec.data_size,
+											0, 0, 0, &rbar, &rasr);
 		//The Ram size is the code size + the data size round up to the next power of 2 to account for memory protection
 		cortexm_svcall(appfs_ram_svcall_set, &ram);
 	}
@@ -363,6 +369,7 @@ int appfs_unlink(const void* cfg, const char * path){
 		get_pageinfo_args.page_info.addr = file_info.exec.ram_start;
 		get_pageinfo_args.page_info.o_flags = MEM_FLAG_IS_QUERY;
 
+		//use query to get the page number of the address
 		cortexm_svcall(appfs_util_svcall_get_pageinfo, &get_pageinfo_args);
 		if ( get_pageinfo_args.result < 0 ){
 			return SYSFS_SET_RETURN(EIO);

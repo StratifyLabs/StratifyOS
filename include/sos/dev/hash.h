@@ -40,11 +40,8 @@
 #define HASH_IOC_CHAR 'h'
 
 enum {
-	HASH_FLAG_SET_SEED /*! Set the seed using I_HASH_SETATTR */ = (1<<0),
-	HASH_FLAG_IS_PSEUDO /*! Set in info flags is generator is pseudorandom */ = (1<<1),
-	HASH_FLAG_IS_TRUE /*! Set in info flags is generator is a true random number generator */ = (1<<2),
-	HASH_FLAG_ENABLE /*! Enables the random number generator */ = (1<<3),
-	HASH_FLAG_DISABLE /*! Disables the random number generator */ = (1<<4)
+	HASH_FLAG_SET /*! Set the hash algorithm settings */ = (1<<0),
+
 };
 
 /*! \brief Random info

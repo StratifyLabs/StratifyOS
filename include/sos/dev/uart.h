@@ -113,7 +113,9 @@ typedef enum {
 typedef struct MCU_PACK {
 	u32 o_flags /*! A bitmask for the supported features */;
 	u32 o_events /*! Events supported by this driver */;
-	u32 resd[8];
+	u32 size_ready /*! Number of bytes ready if a FIFO is built-in */;
+	u32 size /*! Number of bytes available to the FIFO */;
+	u32 resd[7];
 } uart_info_t;
 
 typedef struct MCU_PACK {

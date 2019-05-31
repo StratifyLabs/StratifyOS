@@ -44,8 +44,7 @@ enum {
 	CRYPT_FLAG_IS_AES_CBC /*! Sets the cipher to AES CBC */ = (1<<2),
 	CRYPT_FLAG_IS_AES_CTR /*! Sets the cipher to AES CTR */ = (1<<3),
 	CRYPT_FLAG_IS_AES_GCM /*! Sets the cipher to AES GCM */ = (1<<4),
-	CRYPT_FLAG_IS_ENCRYPT /*! Sets the cipher to encryption mode */ = (1<<5),
-	CRYPT_FLAG_IS_DECRYPT /*! Sets the cipher to decryption mode */ = (1<<6),
+	CRYPT_FLAG_IS_AES_CCM /*! Sets the cipher to AES GCM */ = (1<<5),
 	CRYPT_FLAG_IS_AES_128 /*! Sets the cipher to a 128-bit key */ = (1<<7),
 	CRYPT_FLAG_IS_AES_192 /*! Sets the cipher to a 128-bit key */ = (1<<8),
 	CRYPT_FLAG_IS_AES_256 /*! Sets the cipher to a 128-bit key */ = (1<<9),
@@ -53,14 +52,9 @@ enum {
 	CRYPT_FLAG_IS_DATA_8 /*! Sets the data size to a 8-bits */ = (1<<11),
 	CRYPT_FLAG_IS_DATA_16 /*! Sets the data size to a 16-bits */ = (1<<12),
 	CRYPT_FLAG_IS_DATA_32 /*! Sets the data size to a 32-bits */ = (1<<13),
-	CRYPT_FLAG_IS_TAG_32 /*! Sets the tag size to 32-bits */ = (1<<14),
-	CRYPT_FLAG_IS_TAG_64 /*! Sets the tag size to 64-bits */ = (1<<15),
-	CRYPT_FLAG_IS_TAG_96 /*! Sets the tag size to 96-bits */ = (1<<16),
-	CRYPT_FLAG_IS_TAG_104 /*! Sets the tag size to 104-bits */ = (1<<17),
-	CRYPT_FLAG_IS_TAG_112 /*! Sets the tag size to 112-bits */ = (1<<18),
-	CRYPT_FLAG_IS_TAG_120 /*! Sets the tag size to 120-bits */ = (1<<19),
-	CRYPT_FLAG_IS_TAG_128 /*! Sets the tag size to 128-bits */ = (1<<20),
-
+	CRYPT_FLAG_SET_MODE /*! Sets the cipher to encryption mode for use with CRYPT_FLAG_IS_ENCRYPT or CRYPT_FLAG_IS_DECRYPT */ = (1<<14),
+	CRYPT_FLAG_IS_ENCRYPT /*! Sets the cipher to encryption mode for use with CRYPT_FLAG_SET_MODE */ = (1<<15),
+	CRYPT_FLAG_IS_DECRYPT /*! Sets the cipher to decryption mode for use with CRYPT_FLAG_SET_MODE */ = (1<<16),
 };
 
 /*! \brief Random info

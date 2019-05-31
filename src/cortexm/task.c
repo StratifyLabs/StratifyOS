@@ -174,16 +174,16 @@ int task_create_thread(void *(*p)(void*),
 	}
 
 	//Initialize the task
-	task.stackaddr = stackaddr;
+	task.stackaddr = stackaddr; //security?
 	task.start = (u32)p;
 	task.stop = (u32)cleanup;
 	task.r0 = (u32)arg;
 	task.r1 = 0;
-	task.pid = pid;
+	task.pid = pid; //security?
 	task.flags = TASK_FLAGS_USED | TASK_FLAGS_THREAD;
-	task.parent = task_get_parent(thread_zero);
-	task.priority = 0;
-	task.reent = mem_addr;
+	task.parent = task_get_parent(thread_zero); //security?
+	task.priority = 0; //security?
+	task.reent = mem_addr; //security?
 	task.global_reent = sos_task_table[ thread_zero ].global_reent;
 	task.mem = (void*)&(sos_task_table[ thread_zero ].mem);
 
@@ -263,6 +263,7 @@ void * task_get_sbrk_stack_ptr(struct _reent * reent_ptr){
 				if ( task_used_asserted(i) ){
 					if ( (i == task_get_current()) ){
 						//If the main thread is the current thread return the current stack
+						//security? can set stackaddr to any value -- only write valid locations
 						cortexm_svcall(cortexm_get_thread_stack_ptr, &stackaddr);
 						return stackaddr;
 					} else {
@@ -314,6 +315,7 @@ u64 task_gettime(int tid){
 	if ( tid != task_get_current() ){
 		return sos_task_table[tid].timer.t + (m_task_rr_reload - sos_task_table[tid].rr_time);
 	} else {
+		//security? args is written
 		cortexm_svcall((cortexm_svcall_t)root_task_read_rr_timer, &val);
 		return sos_task_table[tid].timer.t + val;
 	}

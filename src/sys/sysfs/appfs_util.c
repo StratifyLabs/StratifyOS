@@ -401,7 +401,11 @@ static int mem_write_page(const devfs_device_t * dev, appfs_handle_t * h, appfs_
 	write_page.addr = h->type.install.code_start + attr->loc;
 	write_page.nbyte = attr->nbyte;
 	memcpy(write_page.buf, attr->buffer, 256);
-	return dev->driver.ioctl(&(dev->handle), I_MEM_WRITEPAGE, &write_page);
+	int result = dev->driver.ioctl(&(dev->handle), I_MEM_WRITEPAGE, &write_page);
+	if( result < 0 ){
+		mcu_debug_log_error(MCU_DEBUG_APPFS, "failed to write page (%d, %d)", SYSFS_GET_RETURN(result), SYSFS_GET_RETURN_ERRNO(result));
+	}
+	return result;
 }
 
 int appfs_util_root_create(const devfs_device_t * dev, appfs_handle_t * h, appfs_installattr_t * attr){
@@ -656,6 +660,8 @@ int appfs_util_root_writeinstall(const devfs_device_t * dev, appfs_handle_t * h,
 
 		dest.file.exec.code_start = code_start_addr;
 		dest.file.exec.ram_start = data_start_addr;
+		dest.file.exec.ram_size = protectable_size;
+
 		mcu_debug_log_info(MCU_DEBUG_APPFS, "code startup is at %p (%p %p 0x%X)", dest.file.exec.startup,
 								 h->type.install.code_start,
 								 h->type.install.data_start,

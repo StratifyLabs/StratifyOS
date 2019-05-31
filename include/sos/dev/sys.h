@@ -83,7 +83,8 @@ typedef struct MCU_PACK {
 	char bsp_git_hash[16] /*! Git Hash for the board support package */;
 	char sos_git_hash[16] /*! Git Hash for the SOS build */;
 	char mcu_git_hash[16] /*! Git Hash for the linked MCU library */;
-	u32 resd[20];
+	u32 o_mcu_board_config_flags /*! Flags set by mcu board configuration*/;
+	u32 resd[19];
 } sys_info_t;
 
 /*! \details This structure defines the system attributes.

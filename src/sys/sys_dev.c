@@ -62,6 +62,7 @@ int sys_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 			info->cpu_freq = mcu_core_getclock();
 			info->sys_mem_size = sos_board_config.sys_memory_size;
 			info->o_flags = sos_board_config.o_sys_flags;
+			info->o_mcu_board_config_flags = mcu_board_config.o_flags;
 			strncpy(info->id, sos_board_config.sys_id, PATH_MAX-1);
 			strncpy(info->stdin_name, sos_board_config.stdin_dev, NAME_MAX-1);
 			strncpy(info->stdout_name, sos_board_config.stdout_dev, NAME_MAX-1);

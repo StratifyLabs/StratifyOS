@@ -99,14 +99,14 @@ int mcu_debug_vprintf(const char * format, va_list args);
 #define mcu_debug_root_printf mcu_debug_printf
 #define mcu_debug_user_printf mcu_debug_printf
 
-
 void mcu_debug_log_info(u32 o_flags, const char * format, ...);
 void mcu_debug_log_warning(u32 o_flags, const char * format, ...);
 void mcu_debug_log_error(u32 o_flags, const char * format, ...);
 void mcu_debug_log_fatal(u32 o_flags, const char * format, ...);
 
-
 #endif
+
+#define MCU_DEBUG_LINE_TRACE() mcu_debug_printf("%s():%d\n", __FUNCTION__, __LINE__)
 
 
 
