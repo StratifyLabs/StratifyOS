@@ -41,21 +41,27 @@
 
 enum {
 	HASH_FLAG_SET /*! Set the hash algorithm settings */ = (1<<0),
-
+	HASH_FLAG_IS_MD1 /*! Sets the algorithm MD1 use with HASH_FLAG_SET */ = (1<<1),
+	HASH_FLAG_IS_SHA1 /*! Sets the algorithm SHA1 use with HASH_FLAG_SET */ = (1<<2),
+	HASH_FLAG_IS_MD5 /*! Sets the algorithm MD5 use with HASH_FLAG_SET */ = (1<<3),
+	HASH_FLAG_IS_SHA224 /*! Sets the algorithm SHA224 use with HASH_FLAG_SET */ = (1<<4),
+	HASH_FLAG_IS_SHA256 /*! Sets the algorithm SHA256 use with HASH_FLAG_SET */ = (1<<5),
+	HASH_FLAG_IS_DATA_8 /*! Sets the data size to a 8-bits */ = (1<<6),
+	HASH_FLAG_IS_DATA_16 /*! Sets the data size to a 16-bits */ = (1<<7),
+	HASH_FLAG_IS_DATA_32 /*! Sets the data size to a 32-bits */ = (1<<8),
 };
 
-/*! \brief Random info
+/*! \brief Hash info
  */
 typedef struct MCU_PACK {
 	u32 o_flags /*! Bitwise flags */;
 	u32 resd[8];
 } hash_info_t;
 
-/*! \brief Random attributes
+/*! \brief Hash attributes
  */
 typedef struct MCU_PACK {
 	u32 o_flags /*! Bitwise flags */;
-	u32 seed /*! Seed value when setting seed */;
 	u32 resd[8];
 } hash_attr_t;
 
