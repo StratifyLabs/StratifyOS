@@ -68,8 +68,18 @@ static int data_received(void * context, const mcu_event_t * data){
 		//what if this returns data right now
 		result = mcu_usb_read(handle, &state->async_read);
 		if( result < 0 ){
-			//fire an error -- set this as an error condition
-			return 0;
+			//EAGAIN can happen if too much data arrives at one time
+			if( SYSFS_GET_RETURN_ERRNO(result) == EAGAIN ){
+				//cortexm_delay_ms(1);
+				result = mcu_usb_read(handle, &state->async_read);
+			}
+
+			if( result < 0 ){
+				//fire an error -- set this as an error condition
+				mcu_debug_printf("failed to read USB (%d, %d)\n",
+									  SYSFS_GET_RETURN(result), SYSFS_GET_RETURN_ERRNO(result));
+				return 0;
+			}
 		}
 
 	} while( result > 0 );
