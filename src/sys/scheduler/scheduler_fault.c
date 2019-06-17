@@ -52,7 +52,11 @@ void scheduler_fault_build_trace_string(char * dest){
 
 void scheduler_fault_build_string(char * dest, const char * term){
 	char hex_buffer[9];
-	strcpy(dest, "F");
+	strcpy(dest, "I");
+	htoa(hex_buffer, m_scheduler_fault.tid);
+	strcat(dest, hex_buffer);
+
+	strcat(dest, ":F");
 	htoa(hex_buffer, m_scheduler_fault.fault.num);
 	strcat(dest, hex_buffer);
 

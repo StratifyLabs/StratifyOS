@@ -83,7 +83,7 @@ extern "C" {
 #define DAC_VERSION (0x030000)
 #define DAC_IOC_IDENT_CHAR 'd'
 
-enum {
+enum dac_flags {
 	DAC_FLAG_NONE = 0,
 	DAC_FLAG_SET_CONVERTER = (1<<0),
 	DAC_FLAG_IS_LEFT_JUSTIFIED = (1<<1),
@@ -96,9 +96,6 @@ enum {
 	DAC_FLAG_IS_TRIGGER_EINT_RISING = (1<<8),
 	DAC_FLAG_IS_TRIGGER_EINT_FALLING = (1<<9),
 	DAC_FLAG_IS_TRIGGER_TMR = (1<<10)
-
-
-
 };
 
 

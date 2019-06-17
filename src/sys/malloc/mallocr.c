@@ -223,10 +223,9 @@ void _free_r(struct _reent * reent_ptr, void * addr){
 	//mcu_debug_log_info(MCU_DEBUG_MALLOC, "f:%d 0x%X", getpid(), addr);
 	malloc_set_chunk_free(chunk, chunk->header.num_chunks);
 	cleanup_memory(reent_ptr, 0);
-#if defined ___debug
-	register u32 lr asm("lr");
-#endif
-	mcu_debug_log_info(MCU_DEBUG_MALLOC, "f:%d %p %p %p from %p", getpid(), addr, reent_ptr, _GLOBAL_REENT, lr);
+
+	mcu_debug_log_info(MCU_DEBUG_MALLOC, "f:%d %p %p %p", getpid(), addr, reent_ptr, _GLOBAL_REENT);
+
 
 	__malloc_unlock(reent_ptr);
 }
@@ -336,10 +335,8 @@ void * _malloc_r(struct _reent * reent_ptr, size_t size){
 
 	__malloc_unlock(reent_ptr);
 
-#if defined ___debug
-	register u32 lr asm("lr");
-#endif
-	mcu_debug_log_info(MCU_DEBUG_MALLOC, "a:%d 0x%X %d (%d) 0x%X 0x%X from %p", getpid(), alloc, size, num_chunks*MALLOC_CHUNK_SIZE, reent_ptr, _GLOBAL_REENT, lr);
+	mcu_debug_log_info(MCU_DEBUG_MALLOC, "a:%d,%d %p %d (%d) %p %p", getpid(), task_get_current(), alloc, size, num_chunks*MALLOC_CHUNK_SIZE, reent_ptr, _GLOBAL_REENT);
+
 
 	return alloc;
 }

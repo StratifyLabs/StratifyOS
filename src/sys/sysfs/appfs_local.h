@@ -44,8 +44,8 @@ typedef struct {
 #define APPFS_MEMPAGETYPE_INVALID (-1)
 
 typedef struct {
-	int beg_addr /*! the address of the beginning of the file */;
-	int size /*! the current size of the file */;
+	u32 beg_addr /*! the address of the beginning of the file */;
+	u32 size /*! the current size of the file */;
 	int page /*! the start page of the open file */;
 	u32 o_flags /*! Memory flags (MEM_FLAG_IS_FLASH or MEM_FLAG_IS_RAM) */;
 	u32 mode /*! \brief File mode 0444 for data and 0555 for executables */;

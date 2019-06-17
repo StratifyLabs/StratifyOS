@@ -535,10 +535,19 @@ int appfs_write(const void * cfg, void * handle, int flags, int loc, const void 
 	return SYSFS_SET_RETURN(EROFS);
 }
 
+void root_appfs_close(void * args){
+	appfs_handle_t * h = args;
+	mcu_core_invalidate_instruction_cache();
+	mcu_core_invalidate_data_cache_block(
+				(void*)h->type.install.code_start, h->type.install.code_size);
+}
 
 int appfs_close(const void* cfg, void ** handle){
 	//close a file
 	appfs_handle_t * h = (appfs_handle_t*)*handle;
+	if( h->is_install ){
+		cortexm_svcall(root_appfs_close, h);
+	}
 	free(h);
 	h = NULL;
 	return 0;
@@ -591,7 +600,6 @@ void root_ioctl(void * args){
 				a->result = SYSFS_SET_RETURN(ENOTSUP);
 			} else {
 				a->result = appfs_util_root_create(a->cfg, h, attr);
-				mcu_core_invalidate_data_cache();
 			}
 			break;
 

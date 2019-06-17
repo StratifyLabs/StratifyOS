@@ -54,7 +54,7 @@
 extern "C" {
 #endif
 
-#define DISPLAY_VERSION (0x030000)
+#define DISPLAY_VERSION (0x030100)
 #define DISPLAY_IOC_CHAR 'D'
 
 enum {
@@ -98,33 +98,49 @@ typedef struct MCU_PACK {
 typedef struct MCU_PACK {
 	u8 pixel_format /*! Pixel format of the display (e.g. DISPLAY_PALETTE_PIXEL_FORMAT_RGB565) */;
 	u8 count /*! The number of pixel entries in the palette */;
-	void * colors /*! A pointer to the colors in the palette */;
+	void * colors /*! A pointer to the colors in the palette (should point to shareable memory) */;
 } display_palette_t;
 
+enum display_flags {
+	DISPLAY_FLAG_INIT /*! Initializes the display */ = (1<<0),
+	DISPLAY_FLAG_SET_WINDOW	/*! Sets the window used when writing to the display */ = (1<<1),
+	DISPLAY_FLAG_CLEAR /*! Clears the display */ = (1<<2),
+	DISPLAY_FLAG_ENABLE /*! Enables the display */ = (1<<3),
+	DISPLAY_FLAG_DISABLE /*! Disables the display */ = (1<<4),
+	DISPLAY_FLAG_SET_MODE /*! Sets the write mode to either raw or palette */ = (1<<5),
+	DISPLAY_FLAG_IS_MODE_RAW /*! Data is written directly to the display */ = (1<<6),
+	DISPLAY_FLAG_IS_MODE_PALETTE /*! Data is interpreted as a bitmap and is mapped using the palette */ = (1<<7)
+};
 
-/*! \brief Display attributes
+typedef struct MCU_PACK {
+	u32 o_flags /*! Flags used for performing various actions like DISPLAY_FLAG_INIT */;
+	s16 window_x /*! x position for the window (used with DISPLAY_FLAG_SET_WINDOW) */;
+	s16 window_y /*! y position for the window (used with DISPLAY_FLAG_SET_WINDOW) */;
+	s16 window_width /*! window width (used with DISPLAY_FLAG_SET_WINDOW) */;
+	s16 window_height /*! window height (used with DISPLAY_FLAG_SET_WINDOW) */;
+	u32 resd[8];
+} display_attr_t;
+
+
+/*! \brief Display Information
  * \details This contains the attributes of a display.
  */
 typedef struct MCU_PACK {
+	u32 o_flags /*! \brief Display flags that are supported by the driver */;
+	u32 freq /*! \brief This is the maximum refresh rate of the frequency */;
 	u16 width /*! \brief display width in pixels */;
 	u16 height /*! \brief display height in pixels */;
-	void * mem /*! \brief A pointer to the shared display memory which is mapped to the screen. */;
-	void * scratch_mem /*! \brief A pointer to the shared display memory which is mapped to the screen. */;
-	u32 size /*! \brief The size of \a mem in bytes (typically w*h*bits_per_pixel/8) */;
 	u16 cols /*! \brief Number of memory 32-bit word columns */;
 	u16 rows /*! \brief Number of memory rows */;
-	u32 freq /*! \brief This value is R/W and specifies how often the screen can be refreshed */;
-	u16 o_flags /*! \brief Display flags (not used) */;
 	u16 bits_per_pixel /*! The number of bits in each pixel: 1, 2, 4, 8, 16, 24, or 32 */;
-	u16 margin_left /*! \brief Left margin */;
-	u16 margin_right /*! \brief Right margin */;
-	u16 margin_top /*! \brief Top margin */;
-	u16 margin_bottom /*! \brief Bottom margin */;
+	u16 margin_left /*! \brief Left margin (pixels in the width that are not visible on the left) */;
+	u16 margin_right /*! \brief Right margin (pixels in the width that are not visible on the right) */;
+	u16 margin_top /*! \brief Top margin (pixels in the height that are not visible on the top) */;
+	u16 margin_bottom /*! \brief Bottom margin (pixels in the height that are not visible on the bottom) */;
 	u32 resd[8];
 } display_info_t;
 
 #define I_DISPLAY_GETVERSION _IOCTL(DISPLAY_IOC_CHAR, I_MCU_GETVERSION)
-
 
 /*! \details This request gets the attributes of the device.
  *
@@ -135,7 +151,9 @@ typedef struct MCU_PACK {
  * \endcode
  * \hideinitializer
  */
-#define I_DISPLAY_GETINFO _IOCTLR(DISPLAY_IOC_CHAR, 0, display_info_t)
+#define I_DISPLAY_GETINFO _IOCTLR(DISPLAY_IOC_CHAR, I_MCU_GETINFO, display_info_t)
+#define I_DISPLAY_SETATTR _IOCTLW(DISPLAY_IOC_CHAR, I_MCU_SETATTR, display_attr_t)
+#define I_DISPLAY_SETACTION _IOCTLW(DISPLAY_IOC_CHAR, I_MCU_SETACTION, mcu_action_t)
 
 /*! \details This request clears the LCD.  This does not
  * affect the video memory.  This is only supported on
@@ -148,7 +166,7 @@ typedef struct MCU_PACK {
  * \endcode
  * \hideinitializer
  */
-#define I_DISPLAY_CLEAR _IOCTL(DISPLAY_IOC_CHAR, 1)
+#define I_DISPLAY_CLEAR _IOCTL(DISPLAY_IOC_CHAR, I_MCU_TOTAL)
 
 /*! \details This request tells the driver to update the display
  * as soon as possible.
@@ -159,39 +177,8 @@ typedef struct MCU_PACK {
  * \endcode
  * \hideinitializer
  */
-#define I_DISPLAY_REFRESH _IOCTL(DISPLAY_IOC_CHAR, 2)
+#define I_DISPLAY_REFRESH _IOCTL(DISPLAY_IOC_CHAR, I_MCU_TOTAL+1)
 
-/*! \details This request initializes the LCD.  This request
- * is normally performed by the system meaning an application
- * will not typically call this command.
- *
- * Example:
- * \code
- * ioctl(fildes, I_DISPLAY_INIT);
- * \endcode
- * \hideinitializer
- */
-#define I_DISPLAY_INIT _IOCTL(DISPLAY_IOC_CHAR, 3)
-
-/*! \details This turns on the LCD so that an image is shown.
- *
- * Example:
- * \code
- * ioctl(fildes, I_DISPLAY_ENABLE);
- * \endcode
- * \hideinitializer
- */
-#define I_DISPLAY_ENABLE _IOCTL(DISPLAY_IOC_CHAR, 4)
-
-/*! \details This turns off the LCD so that no image is shown.
- *
- * Example:
- * \code
- * ioctl(fildes, I_DISPLAY_DISABLE);
- * \endcode
- * \hideinitializer
- */
-#define I_DISPLAY_DISABLE _IOCTL(DISPLAY_IOC_CHAR, 5)
 
 /*! \details Returns a positive value if the display is busy.
  *
@@ -203,7 +190,7 @@ typedef struct MCU_PACK {
  * \endcode
  * \hideinitializer
  */
-#define I_DISPLAY_ISBUSY _IOCTL(DISPLAY_IOC_CHAR, 6)
+#define I_DISPLAY_ISBUSY _IOCTL(DISPLAY_IOC_CHAR, I_MCU_TOTAL+2)
 
 /*! \details Gets the palette attributes of the display.
  *
@@ -214,10 +201,10 @@ typedef struct MCU_PACK {
  * \endcode
  * \hideinitializer
  */
-#define I_DISPLAY_GETPALETTE _IOCTLR(DISPLAY_IOC_CHAR, 7, display_palette_t)
+#define I_DISPLAY_GETPALETTE _IOCTLR(DISPLAY_IOC_CHAR, I_MCU_TOTAL+3, display_palette_t)
 
 
-#define I_DISPLAY_TOTAL 8
+#define I_DISPLAY_TOTAL (I_MCU_TOTAL+4)
 
 /*! @} */
 
