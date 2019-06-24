@@ -21,7 +21,8 @@ if( ${SOS_BUILD_CONFIG} STREQUAL arm )
       ${SOURCES_PREFIX}/null.c
       ${SOURCES_PREFIX}/random.c
 			${SOURCES_PREFIX}/drive_cfi_local.h
-			${SOURCES_PREFIX}/drive_cfi.c
+			${SOURCES_PREFIX}/drive_cfi_spi.c
+			${SOURCES_PREFIX}/drive_cfi_qspi.c
 			${SOURCES_PREFIX}/drive_sdspi_local.h
 			${SOURCES_PREFIX}/drive_mmc.c
 			${SOURCES_PREFIX}/drive_mmc_dma.c

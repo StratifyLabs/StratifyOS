@@ -45,8 +45,8 @@ typedef struct MCU_PACK {
 #define MCU_QSPI_IOCTL_REQUEST_DECLARATION(driver_name) \
 	DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, getinfo); \
 	DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, setattr); \
-    DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, setaction);\
-    DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, command)
+	DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, setaction);\
+	DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, execcommand)
 
 #define MCU_QSPI_DRIVER_DECLARATION(variant) \
 	DEVFS_DRIVER_DECLARTION(variant); \
@@ -55,61 +55,6 @@ typedef struct MCU_PACK {
 MCU_QSPI_DRIVER_DECLARATION(mcu_qspi);
 MCU_QSPI_DRIVER_DECLARATION(mcu_qspi_dma);
 
-#define QSPI_DEFINE_ATTR(attr_flags, \
-	attr_freq, \
-	attr_width, \
-    attr_read_instruction, \
-    attr_mem_mapped_read_instruction, \
-    attr_write_instruction, \
-    attr_dummy_cycle, \
-    attr_data0_port, attr_data0_pin, \
-    attr_data1_port, attr_data1_pin, \
-    attr_data2_port, attr_data2_pin, \
-    attr_data3_port, attr_data3_pin, \
-	attr_sck_port, attr_sck_pin, \
-    attr_cs_port, attr_cs_pin) \
-	.o_flags = attr_flags, .freq = attr_freq, .width = attr_width, \
-    .pin_assignment.data[0] = {attr_data0_port, attr_data0_pin}, \
-    .pin_assignment.data[1] = {attr_data1_port, attr_data1_pin}, \
-    .pin_assignment.data[2] = {attr_data2_port, attr_data2_pin}, \
-    .pin_assignment.data[3] = {attr_data3_port, attr_data3_pin}, \
-	.pin_assignment.sck = {attr_sck_port, attr_sck_pin}, \
-    .pin_assignment.cs = {attr_cs_port, attr_cs_pin}, \
-    .read_instruction = attr_read_instruction, \
-    .mem_mapped_read_instruction = attr_mem_mapped_read_instruction, \
-    .write_instruction = attr_write_instruction, \
-    .dummy_cycle = attr_dummy_cycle
-
-
-#define QSPI_DECLARE_CONFIG(name, \
-	attr_flags, \
-	attr_freq, \
-	attr_width, \
-    attr_read_instruction, \
-    attr_mem_mapped_read_instruction, \
-    attr_write_instruction, \
-    attr_dummy_cycle, \
-    attr_data0_port, attr_data0_pin, \
-    attr_data1_port, attr_data1_pin, \
-    attr_data2_port, attr_data2_pin, \
-    attr_data3_port, attr_data3_pin, \
-    attr_sck_port, attr_sck_pin, \
-    attr_cs_port, attr_cs_pin) \
-    qspi_config_t name##_config = { \
-    .attr = { QSPI_DEFINE_ATTR(attr_flags, \
-	attr_freq, \
-	attr_width, \
-    attr_read_instruction, \
-    attr_mem_mapped_read_instruction, \
-    attr_write_instruction, \
-    attr_dummy_cycle, \
-    attr_data0_port, attr_data0_pin, \
-    attr_data1_port, attr_data1_pin, \
-    attr_data2_port, attr_data2_pin, \
-    attr_data3_port, attr_data3_pin, \
-    attr_sck_port, attr_sck_pin, \
-	attr_cs_port, attr_cs_pin) } \
-}
 
 
 #ifdef __cplusplus

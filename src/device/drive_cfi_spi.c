@@ -1,15 +1,9 @@
 
-#include <sos/dev/qspi.h>
-#include <sos/dev/spi.h>
-#include <mcu/pio.h>
-#include <mcu/debug.h>
+#include "sos/dev/spi.h"
+#include "mcu/pio.h"
+#include "mcu/debug.h"
 
 #include "device/drive_cfi.h"
-
-#if !defined I_SWAP
-#define I_SWAP I_SPI_SWAP
-#define I_SETATTR I_SPI_SETATTR
-#endif
 
 #if 0
 enum cfi_instructions {
@@ -56,25 +50,24 @@ enum cfi_instructions {
 };
 #endif
 
-
-static int drive_cfi_write_instruction(
+static int drive_cfi_spi_write_instruction(
 		const devfs_handle_t * handle,
 		u8 instruction,
 		const u8 * data,
 		u8 data_size);
 
-static int drive_cfi_write_instruction_with_cs(
+static int drive_cfi_spi_write_instruction_with_cs(
 		const devfs_handle_t * handle,
 		u8 instruction,
 		const u8 * data,
 		u8 data_size);
 
-static u8 drive_cfi_read_status_with_cs(const devfs_handle_t * handle);
+static u8 drive_cfi_spi_read_status_with_cs(const devfs_handle_t * handle);
 
-static void drive_cfi_initialize_cs(const devfs_handle_t * handle);
-static void drive_cfi_assert_cs(const devfs_handle_t * handle);
-static void drive_cfi_deassert_cs(const devfs_handle_t * handle);
-static int drive_cfi_handle_complete(void * context, const mcu_event_t * event);
+static void drive_cfi_spi_initialize_cs(const devfs_handle_t * handle);
+static void drive_cfi_spi_assert_cs(const devfs_handle_t * handle);
+static void drive_cfi_spi_deassert_cs(const devfs_handle_t * handle);
+static int drive_cfi_spi_handle_complete(void * context, const mcu_event_t * event);
 
 
 int drive_cfi_spi_open(const devfs_handle_t * handle){
@@ -108,12 +101,12 @@ int drive_cfi_spi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 					//execute powerup sequence
 
 					//init the CS pin if it is available
-					drive_cfi_initialize_cs(handle);
+					drive_cfi_spi_initialize_cs(handle);
 
 					//set serial driver attributes to defaults
 					result= config->serial_device->driver.ioctl(
 								&config->serial_device->handle,
-								I_SETATTR,
+								I_SPI_SETATTR,
 								0);
 
 					if( result < 0 ){
@@ -123,27 +116,27 @@ int drive_cfi_spi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 				}
 
 				if( o_flags & DRIVE_FLAG_PROTECT ){
-					drive_cfi_write_instruction_with_cs(handle, config->opcode.write_enable, 0, 0);
-					drive_cfi_write_instruction_with_cs(handle, config->opcode.protect, 0, 0);
+					drive_cfi_spi_write_instruction_with_cs(handle, config->opcode.write_enable, 0, 0);
+					drive_cfi_spi_write_instruction_with_cs(handle, config->opcode.protect, 0, 0);
 				}
 
 				if( o_flags & DRIVE_FLAG_UNPROTECT ){
-					drive_cfi_write_instruction_with_cs(handle, config->opcode.write_enable, 0, 0);
-					drive_cfi_write_instruction_with_cs(handle, config->opcode.unprotect, 0, 0);
+					drive_cfi_spi_write_instruction_with_cs(handle, config->opcode.write_enable, 0, 0);
+					drive_cfi_spi_write_instruction_with_cs(handle, config->opcode.unprotect, 0, 0);
 				}
 
 				if( o_flags & DRIVE_FLAG_RESET ){
-					drive_cfi_write_instruction_with_cs(handle, config->opcode.enable_reset, 0, 0);
-					drive_cfi_write_instruction_with_cs(handle, config->opcode.reset, 0, 0);
+					drive_cfi_spi_write_instruction_with_cs(handle, config->opcode.enable_reset, 0, 0);
+					drive_cfi_spi_write_instruction_with_cs(handle, config->opcode.reset, 0, 0);
 				}
 
 				if( o_flags & DRIVE_FLAG_POWERUP ){
-					drive_cfi_write_instruction_with_cs(handle, config->opcode.power_up, 0, 0);
+					drive_cfi_spi_write_instruction_with_cs(handle, config->opcode.power_up, 0, 0);
 
 				}
 
 				if( o_flags & DRIVE_FLAG_POWERDOWN ){
-					drive_cfi_write_instruction_with_cs(handle, config->opcode.power_down, 0, 0);
+					drive_cfi_spi_write_instruction_with_cs(handle, config->opcode.power_down, 0, 0);
 				}
 
 				if( o_flags & DRIVE_FLAG_ERASE_BLOCKS ){
@@ -152,14 +145,14 @@ int drive_cfi_spi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 					for(u32 i=attr->start; i < attr->end; i+=4096){
 						address[0] = i >> 16;
 						address[1] = i >> 8;
-						address[0] = i;
-						drive_cfi_write_instruction_with_cs(handle, config->opcode.block_erase, address, sizeof(address));
+						address[2] = i;
+						drive_cfi_spi_write_instruction_with_cs(handle, config->opcode.block_erase, address, sizeof(address));
 					}
 
 				}
 
 				if( o_flags & DRIVE_FLAG_ERASE_DEVICE ){
-					drive_cfi_write_instruction_with_cs(handle, config->opcode.device_erase, 0, 0);
+					drive_cfi_spi_write_instruction_with_cs(handle, config->opcode.device_erase, 0, 0);
 				}
 
 
@@ -188,7 +181,7 @@ int drive_cfi_spi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 			break;
 
 		case I_DRIVE_ISBUSY:
-			status = drive_cfi_read_status_with_cs(handle);
+			status = drive_cfi_spi_read_status_with_cs(handle);
 			if( (status & config->opcode.busy_status_mask) != 0 ){
 				//device is busy
 				return 1;
@@ -200,14 +193,14 @@ int drive_cfi_spi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 	return SYSFS_RETURN_SUCCESS;
 }
 
-int drive_cfi_handle_complete(void * context, const mcu_event_t * event){
+int drive_cfi_spi_handle_complete(void * context, const mcu_event_t * event){
 	const devfs_handle_t * handle = context;
 	drive_cfi_state_t * state = handle->state;
 
 	//operation is complete
 
 	//deassert the cs
-	drive_cfi_deassert_cs(handle);
+	drive_cfi_spi_deassert_cs(handle);
 
 	devfs_execute_event_handler(&state->handler, MCU_EVENT_FLAG_WRITE_COMPLETE, 0);
 	state->handler.callback = 0;
@@ -224,7 +217,7 @@ int drive_cfi_spi_read(const devfs_handle_t * handle, devfs_async_t * async){
 
 
 	//assert CS for the page program and data write
-	drive_cfi_assert_cs(handle);
+	drive_cfi_spi_assert_cs(handle);
 
 	//read instruction
 	u32 address = async->loc & 0x00ffffff;
@@ -233,15 +226,15 @@ int drive_cfi_spi_read(const devfs_handle_t * handle, devfs_async_t * async){
 	fast_read[1] = address >> 8;
 	fast_read[2] = address;
 	fast_read[3] = 0; //dummy byte
-	drive_cfi_write_instruction(handle, config->opcode.fast_read, fast_read, sizeof(fast_read));
+	drive_cfi_spi_write_instruction(handle, config->opcode.fast_read, fast_read, sizeof(fast_read));
 
 	//hi-jack the callback handler and restore it laster
 	state->handler = async->handler;
-	async->handler.callback = drive_cfi_handle_complete;
+	async->handler.callback = drive_cfi_spi_handle_complete;
 	async->handler.context = (void*)handle;
 	result = config->serial_device->driver.read(&config->serial_device->handle, async);
 	if( result != 0 ){
-		drive_cfi_deassert_cs(handle);
+		drive_cfi_spi_deassert_cs(handle);
 	}
 
 	return result;
@@ -266,10 +259,10 @@ int drive_cfi_spi_write(const devfs_handle_t * handle, devfs_async_t * async){
 	}
 
 	//write enable instruction
-	drive_cfi_write_instruction_with_cs(handle, config->opcode.write_enable, 0, 0);
+	drive_cfi_spi_write_instruction_with_cs(handle, config->opcode.write_enable, 0, 0);
 
 	//assert CS for the page program and data write
-	drive_cfi_assert_cs(handle);
+	drive_cfi_spi_assert_cs(handle);
 
 	//page program instruction
 	u32 address = async->loc & 0x00ffffff;
@@ -277,15 +270,15 @@ int drive_cfi_spi_write(const devfs_handle_t * handle, devfs_async_t * async){
 	page_program[0] = address >> 16;
 	page_program[1] = address >> 8;
 	page_program[2] = address;
-	drive_cfi_write_instruction(handle, config->opcode.page_program, page_program, sizeof(page_program));
+	drive_cfi_spi_write_instruction(handle, config->opcode.page_program, page_program, sizeof(page_program));
 
 	//hi-jack the callback handler and restore it laster
 	state->handler = async->handler;
-	async->handler.callback = drive_cfi_handle_complete;
+	async->handler.callback = drive_cfi_spi_handle_complete;
 	async->handler.context = (void*)handle;
 	result = config->serial_device->driver.write(&config->serial_device->handle, async);
 	if( result != 0 ){
-		drive_cfi_deassert_cs(handle);
+		drive_cfi_spi_deassert_cs(handle);
 	}
 	return result;
 }
@@ -294,7 +287,7 @@ int drive_cfi_spi_close(const devfs_handle_t * handle){
 	return mcu_spi_close(handle);
 }
 
-void drive_cfi_initialize_cs(const devfs_handle_t * handle){
+void drive_cfi_spi_initialize_cs(const devfs_handle_t * handle){
 	const drive_cfi_config_t * config = handle->config;
 	mcu_pin_t cs = config->cs;
 	if( cs.port != 255 ){
@@ -308,7 +301,7 @@ void drive_cfi_initialize_cs(const devfs_handle_t * handle){
 	}
 }
 
-void drive_cfi_assert_cs(const devfs_handle_t * handle){
+void drive_cfi_spi_assert_cs(const devfs_handle_t * handle){
 	const drive_cfi_config_t * config = handle->config;
 	mcu_pin_t cs = config->cs;
 	if( cs.port != 255 ){
@@ -319,7 +312,7 @@ void drive_cfi_assert_cs(const devfs_handle_t * handle){
 	}
 }
 
-void drive_cfi_deassert_cs(const devfs_handle_t * handle){
+void drive_cfi_spi_deassert_cs(const devfs_handle_t * handle){
 	const drive_cfi_config_t * config = handle->config;
 	mcu_pin_t cs = config->cs;
 	if( cs.port != 255 ){
@@ -330,61 +323,43 @@ void drive_cfi_deassert_cs(const devfs_handle_t * handle){
 	}
 }
 
-int drive_cfi_write_instruction_with_cs(
+int drive_cfi_spi_write_instruction_with_cs(
 		const devfs_handle_t * handle,
 		u8 instruction,
 		const u8 * data,
 		u8 data_size){
 
 	//assert cs
-	drive_cfi_assert_cs(handle);
+	drive_cfi_spi_assert_cs(handle);
 
-	drive_cfi_write_instruction(handle, instruction, data, data_size);
+	drive_cfi_spi_write_instruction(handle, instruction, data, data_size);
 
 	//deassert cs
-	drive_cfi_deassert_cs(handle);
+	drive_cfi_spi_deassert_cs(handle);
 
 	return 0;
 }
 
-u8 drive_cfi_read_status_with_cs(const devfs_handle_t * handle){
+u8 drive_cfi_spi_read_status_with_cs(const devfs_handle_t * handle){
 	const drive_cfi_config_t * config = handle->config;
 	u8 result;
-#if I_SWAP == I_SPI_SWAP
-	result = config->serial_device->driver.ioctl(&config->serial_device->handle, I_SWAP, (void*)(u32)config->opcode.read_busy_status);
-#else
-
-#endif
-
+	result = config->serial_device->driver.ioctl(&config->serial_device->handle, I_SPI_SWAP, (void*)(u32)config->opcode.read_busy_status);
 	return result;
 }
 
-int drive_cfi_write_instruction(
+int drive_cfi_spi_write_instruction(
 		const devfs_handle_t * handle,
 		u8 instruction,
 		const u8 * data,
 		u8 data_size){
 	const drive_cfi_config_t * config = handle->config;
-
-#if I_SWAP == I_SPI_SWAP
-	config->serial_device->driver.ioctl(&config->serial_device->handle, I_SWAP, (void*)(u32)instruction);
+	config->serial_device->driver.ioctl(&config->serial_device->handle, I_SPI_SWAP, (void*)(u32)instruction);
 	for(u8 i=0; i < data_size; i++){
 		config->serial_device->driver.ioctl(
 					&config->serial_device->handle,
-					I_SWAP,
+					I_SPI_SWAP,
 					(void*)(u32)data[i]);
 	}
-#else
-	config->serial_device->driver.ioctl(&config->serial_device->handle, I_SWAP, (void*)(u32)instruction);
-	mcu_spi_swap(handle, (void*)(u32)instruction);
-	for(u8 i=0; i < data_size; i++){
-		config->serial_device->driver.ioctl(
-					&config->serial_device->handle,
-					I_SWAP,
-					(void*)(u32)data[i]);
-	}
-
-#endif
 
 	return 0;
 }

@@ -342,7 +342,7 @@ void close_connection(switchboard_state_t * state){
 int check_for_stopped_or_destroyed(switchboard_state_t * state){
 	if( state->nbyte < 0 ){
 		u32 o_events = MCU_EVENT_FLAG_STOP | MCU_EVENT_FLAG_CANCELED;
-		mcu_debug_log_warning(MCU_DEBUG_DEVICE, "Stopping %s -> %s (%d) 0x%lX", state->input.device->name, state->output.device->name, state->nbyte, state->o_flags);
+		mcu_debug_log_warning(MCU_DEBUG_DEVICE, "Stopping %s -> %s (%d, %d) 0x%lX", state->input.device->name, state->output.device->name, SYSFS_GET_RETURN(state->nbyte), SYSFS_GET_RETURN_ERRNO(state->nbyte), state->o_flags);
 
 		if( state->o_flags & SWITCHBOARD_FLAG_IS_ERROR ){
 			o_events |= MCU_EVENT_FLAG_ERROR;
@@ -651,8 +651,10 @@ int handle_write_complete(void * context, const mcu_event_t * event){
 		if( state->output.async.nbyte < 0 ){
 			state->nbyte = state->output.async.nbyte;
 		} else {
+			mcu_debug_printf("sb events 0x%lX\n", o_events);
 			state->nbyte = SYSFS_SET_RETURN(EIO);
 		}
+
 	} else {
 		complete_write(state); //this frees the buffer that was just written
 

@@ -87,6 +87,7 @@ typedef struct {
 	u8 unprotect;
 	u8 read_busy_status;
 	u8 busy_status_mask;
+	u8 enter_qpi_mode;
 	u16 page_program_size;
 } drive_cfi_opcode_config_t;
 
@@ -95,10 +96,12 @@ typedef struct {
 	drive_cfi_info_config_t info;
 	drive_cfi_opcode_config_t opcode;
 	mcu_pin_t cs;
+	u32 qspi_flags;
 } drive_cfi_config_t;
 
 
 DEVFS_DRIVER_DECLARTION(drive_cfi_spi);
+DEVFS_DRIVER_DECLARTION(drive_cfi_qspi);
 
 
 #endif /* DEVICE_CFI_H_ */

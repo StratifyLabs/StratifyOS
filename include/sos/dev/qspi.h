@@ -49,25 +49,19 @@ extern "C" {
 
 typedef enum {
 	QSPI_FLAG_SET_MASTER /*! Configure the QSPI as master */ = (1<<0),
-	QSPI_FLAG_IS_READ_MEM_MAPPED_MODE /*! Configure the QSPI as mem mapped mode(read only)*/ = (1<<1),
-	QSPI_FLAG_IS_CLK_HIGH_WHILE_CS /*!<Clk goes high while nCS is released, else low*/ = (1<<2),
-	QSPI_FLAG_IS_FLASH_ID_2 /*!<use flash 2, else 1*/= (1<<3),
-	QSPI_FLAG_IS_INSTRUCTION_1_LINE/*!<write command use one line instead 4*/ = (1<<4),
-	QSPI_FLAG_IS_INSTRUCTION_4_LINE/*!<write command use one line instead 4*/ = (1<<5),
-	QSPI_FLAG_IS_ADDRESS_8_BITS    /*!<8-bit address, default 32*/= (1<<6),
-	QSPI_FLAG_IS_ADDRESS_16_BITS   /*!<16-bit address, default 32*/ = (1<<7),
-	QSPI_FLAG_IS_ADDRESS_24_BITS   /*!<24-bit address, default 32*/ = (1<<8),
-	QSPI_FLAG_IS_ADDRESS_32_BITS   /*!<24-bit address, default 32*/ = (1<<9),
-	QSPI_FLAG_IS_ADDRESS_1_LINE /*!<use addressed command*/ = (1<<10),
-	QSPI_FLAG_IS_ADDRESS_4_LINES /*!<use addressed command*/ = (1<<11),
-	QSPI_FLAG_IS_DATA_1_LINE /*!<use addressed command*/ = (1<<12),
-	QSPI_FLAG_IS_DATA_4_LINES /*!<use addressed command*/ = (1<<13),
-	QSPI_FLAG_READ_REGISTER /*!<use with QSPI_FLAG_IS_REGISTER_WIDTH_*/= (1<<14),
-	QSPI_FLAG_WRITE_REGISTER /*!<use with QSPI_FLAG_IS_REGISTER_WIDTH_*/= (1<<15),
-	QSPI_FLAG_IS_REGISTER_WIDTH_8/*!<use with QSPI_FLAG_READ_REGISTER or QSPI_FLAG_WRITE_REGISTER*/=(1<<16),
-	QSPI_FLAG_IS_REGISTER_WIDTH_16/*!<use with QSPI_FLAG_READ_REGISTER or QSPI_FLAG_WRITE_REGISTER*/=(1<<17),
-	QSPI_FLAG_IS_REGISTER_WIDTH_24/*!<use with QSPI_FLAG_READ_REGISTER or QSPI_FLAG_WRITE_REGISTER*/=(1<<18),
-	QSPI_FLAG_IS_REGISTER_WIDTH_32/*!<use with QSPI_FLAG_READ_REGISTER or QSPI_FLAG_WRITE_REGISTER*/=(1<<19)
+	QSPI_FLAG_IS_CLK_HIGH_WHILE_CS /*! Clock goes high while nCS is released, else low*/ = (1<<1),
+	QSPI_FLAG_IS_FLASH_ID_2 /*! use flash 2, else 1*/= (1<<2),
+	QSPI_FLAG_IS_ADDRESS_8_BITS /*! 8-bit address, default 32*/= (1<<3),
+	QSPI_FLAG_IS_ADDRESS_16_BITS /*! 16-bit address, default 32*/ = (1<<4),
+	QSPI_FLAG_IS_ADDRESS_24_BITS /*! 24-bit address, default 32*/ = (1<<5),
+	QSPI_FLAG_IS_ADDRESS_32_BITS /*! 24-bit address, default 32*/ = (1<<6),
+	QSPI_FLAG_IS_COMMAND_DUAL /*! Use 2 lines for commands (default is 1 line) */ = (1<<7),
+	QSPI_FLAG_IS_COMMAND_QUAD /*! Use 4 lines for commands (default is 1 line) */ = (1<<8),
+	QSPI_FLAG_IS_DATA_DUAL /*! Use 2 lines for data */ = (1<<9),
+	QSPI_FLAG_IS_DATA_QUAD /*! Use 4 lines for data */ = (1<<10),
+	QSPI_FLAG_EXECUTE_COMMAND /*! Use with qspi_command_t in qspi_attr_t */ = (1<<11),
+	QSPI_FLAG_IS_COMMAND_READ /*! Command reads data from device */ = (1<<12),
+	QSPI_FLAG_IS_COMMAND_WRITE /*! Command write data to device */ = (1<<13),
 } qspi_flag_t;
 
 typedef struct MCU_PACK {
@@ -86,9 +80,12 @@ typedef struct MCU_PACK {
 } qspi_pin_assignment_t;
 
 typedef struct MCU_PACK {
-	u32 opcode /*! use for send command */;
-	u32 data_size /*! number of data bytes to transmit */;
-	u8 data[32] /*! data to transmit with command according to *data_size* */;
+	u32 o_flags /*! Flags that affect the command */;
+	u16 opcode /*! The opcode to send to the device */;
+	u16 dummy_size /*! The number of dummy bytes to send */;
+	u32 address /*! If an address is used in the command it is assigned here. */;
+	u32 data_size /*! The number of data bytes to read or write */;
+	u8 data[32] /*! The location of the data that is read or written */;
 } qspi_command_t;
 
 /*! \brief QSPI Set Attributes Data
@@ -98,12 +95,6 @@ typedef struct MCU_PACK {
 	u32 o_flags /*! Flag bitmask */;
 	qspi_pin_assignment_t pin_assignment /*! Pin Assignment */;
 	u32 freq /*! Target operating frequency */;
-	u8 width /*! Width for transactions -> Size of the flash memory ?*/;
-	u32 read_instruction;/*! use for set read operations */
-	u32 mem_mapped_read_instruction; /*! use for read operations in mem mapped mode*/
-	u32 write_instruction;/*! use for write operations */
-	u32 dummy_cycle;/*! number dummy cycles for read operations*/
-	qspi_command_t command;
 	u32 resd[8];/*! */
 } qspi_attr_t;
 
@@ -120,9 +111,10 @@ typedef struct MCU_PACK {
 /*! \brief This request sets the SPI attributes.
  * \hideinitializer
  */
-#define I_QSPI_SETATTR _IOCTLRW(QSPI_IOC_IDENT_CHAR, I_MCU_SETATTR, qspi_attr_t)
+#define I_QSPI_SETATTR _IOCTLW(QSPI_IOC_IDENT_CHAR, I_MCU_SETATTR, qspi_attr_t)
 #define I_QSPI_SETACTION _IOCTLW(QSPI_IOC_IDENT_CHAR, I_MCU_SETACTION, mcu_action_t)
 
+#define I_QSPI_EXECCOMMAND _IOCTLRW(QSPI_IOC_IDENT_CHAR, I_MCU_TOTAL, qspi_command_t)
 
 #define I_QSPI_TOTAL 1
 
