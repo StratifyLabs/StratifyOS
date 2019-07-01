@@ -54,7 +54,7 @@
 enum {
 	DRIVE_FLAG_PROTECT /*! Enables driver write protection. */ = (1<<0),
 	DRIVE_FLAG_UNPROTECT /*! Disables driver write protection. */ = (1<<1),
-	DRIVE_FLAG_ERASE_BLOCKS /*! Erases blocks on the disk. A block consists of the smallest eraseable memory size (\sa driver_info_t and erase_block_size) */ = (1<<2),
+	DRIVE_FLAG_ERASE_BLOCKS /*! Erases blocks on the disk. A block consists of the smallest eraseable memory size (\sa driver_info_t and erase_block_size). The return value is the amount of memory actually erased. Some devices can only erase only block at a time. */ = (1<<2),
 	DRIVE_FLAG_ERASE_SECTORS = (1<<2),
 	DRIVE_FLAG_ERASE_DEVICE /*! Erases the drive. */ = (1<<3),
 	DRIVE_FLAG_POWERDOWN /*! Puts the drive in power down mode. */ = (1<<4),

@@ -49,7 +49,8 @@ extern "C" {
 
 typedef enum {
 	QSPI_FLAG_SET_MASTER /*! Configure the QSPI as master */ = (1<<0),
-	QSPI_FLAG_IS_CLK_HIGH_WHILE_CS /*! Clock goes high while nCS is released, else low*/ = (1<<1),
+	QSPI_FLAG_IS_CLOCK_MODE_0 /*! Clock goes low while nCS is released, else high*/ = 0,
+	QSPI_FLAG_IS_CLOCK_MODE_3 /*! Clock goes high while nCS is released, else low*/ = (1<<1),
 	QSPI_FLAG_IS_FLASH_ID_2 /*! use flash 2, else 1*/= (1<<2),
 	QSPI_FLAG_IS_ADDRESS_8_BITS /*! 8-bit address, default 32*/= (1<<3),
 	QSPI_FLAG_IS_ADDRESS_16_BITS /*! 16-bit address, default 32*/ = (1<<4),

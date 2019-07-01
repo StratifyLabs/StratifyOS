@@ -375,7 +375,11 @@ int drive_sdspi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 					if( is_busy(handle) != 0 ){
 						return SYSFS_SET_RETURN(EBUSY);
 					}
-					return erase_blocks(handle, attr->start, attr->end);
+					int result = erase_blocks(handle, attr->start, attr->end);
+					if( result < 0 ){
+						return result;
+					}
+					return attr->end - attr->start;
 				}
 			}
 

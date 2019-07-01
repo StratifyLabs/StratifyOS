@@ -61,7 +61,11 @@ int drive_mmc_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 					mmc_attr.o_flags = MMC_FLAG_ERASE_BLOCKS;
 					mmc_attr.start = attr->start;
 					mmc_attr.end = attr->end;
-					return mcu_mmc_setattr(handle, &mmc_attr);
+					result = mcu_mmc_setattr(handle, &mmc_attr);
+					if( result < 0 ){
+						return result;
+					}
+					return attr->end - attr->start;
 				}
 			}
 
@@ -108,7 +112,9 @@ int drive_mmc_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 			result = mcu_mmc_getinfo(handle, &mmc_info);
 			if( result < 0 ){ return result; }
 
-			info->o_flags = DRIVE_FLAG_ERASE_BLOCKS | DRIVE_FLAG_INIT;
+			info->o_flags = DRIVE_FLAG_INIT |
+					DRIVE_FLAG_ERASE_BLOCKS |
+					DRIVE_FLAG_RESET;
 			info->o_events = mmc_info.o_events;
 			info->address_size = mmc_info.block_size;
 			info->bitrate = mmc_info.freq;

@@ -124,6 +124,33 @@ typedef struct {
 } sos_socket_api_t;
 
 
+typedef struct {
+
+	void (*initialize)(void ** context);
+	void (*deinitialize)(void ** context);
+	int (*set_encryption_key)(void * context, const unsigned char * key, unsigned int keybits);
+	int (*set_decryption_key)(void * context, const unsigned char * key, unsigned int keybits);
+
+	//ECB
+	//CBC
+	//CTR
+
+} crypt_aes_t;
+
+typedef struct {
+
+	void (*initialize)(void ** context);
+	void (*deinitialize)(void ** context);
+	int (*start)(void * context, const unsigned char * key, unsigned int keybits);
+	int (*update)(void * context, const unsigned char * input, u32 size);
+	int (*finish)(void * context, const unsigned char * key, unsigned int keybits);
+
+	//ECB
+	//CBC
+	//CTR
+
+} crypt_sha256_t;
+
 
 
 
