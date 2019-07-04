@@ -56,13 +56,17 @@ typedef enum {
 	QSPI_FLAG_IS_ADDRESS_16_BITS /*! 16-bit address, default 32*/ = (1<<4),
 	QSPI_FLAG_IS_ADDRESS_24_BITS /*! 24-bit address, default 32*/ = (1<<5),
 	QSPI_FLAG_IS_ADDRESS_32_BITS /*! 24-bit address, default 32*/ = (1<<6),
-	QSPI_FLAG_IS_COMMAND_DUAL /*! Use 2 lines for commands (default is 1 line) */ = (1<<7),
-	QSPI_FLAG_IS_COMMAND_QUAD /*! Use 4 lines for commands (default is 1 line) */ = (1<<8),
-	QSPI_FLAG_IS_DATA_DUAL /*! Use 2 lines for data */ = (1<<9),
-	QSPI_FLAG_IS_DATA_QUAD /*! Use 4 lines for data */ = (1<<10),
-	QSPI_FLAG_EXECUTE_COMMAND /*! Use with qspi_command_t in qspi_attr_t */ = (1<<11),
-	QSPI_FLAG_IS_COMMAND_READ /*! Command reads data from device */ = (1<<12),
-	QSPI_FLAG_IS_COMMAND_WRITE /*! Command write data to device */ = (1<<13),
+	QSPI_FLAG_IS_OPCODE_WRITE /*! Write an opcode */ = (1<<7),
+	QSPI_FLAG_IS_OPCODE_DUAL /*! Use 2 lines for commands (default is 1 line) */ = (1<<8),
+	QSPI_FLAG_IS_OPCODE_QUAD /*! Use 4 lines for commands (default is 1 line) */ = (1<<9),
+	QSPI_FLAG_IS_DATA_DUAL /*! Use 2 lines for data */ = (1<<10),
+	QSPI_FLAG_IS_DATA_QUAD /*! Use 4 lines for data */ = (1<<11),
+	QSPI_FLAG_EXECUTE_COMMAND /*! Use with qspi_command_t in qspi_attr_t */ = (1<<12),
+	QSPI_FLAG_IS_DATA_READ /*! Command reads data from device */ = (1<<13),
+	QSPI_FLAG_IS_DATA_WRITE /*! Command write data to device */ = (1<<14),
+	QSPI_FLAG_IS_ADDRESS_WRITE /*! Write the address as part of the command */ = (1<<15),
+	QSPI_FLAG_IS_ADDRESS_DUAL /*! Use 2 lines for address (default is 1 line) */ = (1<<16),
+	QSPI_FLAG_IS_ADDRESS_QUAD /*! Use 4 lines for address (default is 1 line) */ = (1<<17),
 } qspi_flag_t;
 
 typedef struct MCU_PACK {
@@ -83,7 +87,7 @@ typedef struct MCU_PACK {
 typedef struct MCU_PACK {
 	u32 o_flags /*! Flags that affect the command */;
 	u16 opcode /*! The opcode to send to the device */;
-	u16 dummy_size /*! The number of dummy bytes to send */;
+	u16 dummy_cycles /*! The number of dummy cycles to send */;
 	u32 address /*! If an address is used in the command it is assigned here. */;
 	u32 data_size /*! The number of data bytes to read or write */;
 	u8 data[32] /*! The location of the data that is read or written */;

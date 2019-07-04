@@ -89,6 +89,8 @@ typedef struct {
 	u8 busy_status_mask;
 	u8 enter_qpi_mode;
 	u16 page_program_size;
+	u8 read_dummy_cycles;
+	u8 write_dummy_cycles;
 } drive_cfi_opcode_config_t;
 
 typedef struct {
@@ -97,6 +99,7 @@ typedef struct {
 	drive_cfi_opcode_config_t opcode;
 	mcu_pin_t cs;
 	u32 qspi_flags;
+
 } drive_cfi_config_t;
 
 
