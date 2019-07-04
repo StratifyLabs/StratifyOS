@@ -191,6 +191,8 @@ int drive_cfi_qspi_write(const devfs_handle_t * handle, devfs_async_t * async){
 		async->nbyte = page_size - (async->loc & page_program_mask);
 	}
 
+	drive_cfi_qspi_execute_quick_command(handle, config->opcode.write_enable, 0, config->qspi_flags);
+
 	//write enable instruction
 	int result = drive_cfi_qspi_execute_command(handle,
 															  config->opcode.page_program,
