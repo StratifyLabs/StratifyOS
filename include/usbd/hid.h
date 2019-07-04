@@ -31,8 +31,8 @@
 /*! \file */
 
 
-#ifndef MCU_USBD_HID_H_
-#define MCU_USBD_HID_H_
+#ifndef USBD_HID_H_
+#define USBD_HID_H_
 
 #include "mcu/types.h"
 
@@ -380,4 +380,4 @@ typedef struct MCU_PACK {
 
 
 
-#endif  /* MCU_USBD_HID_H_ */
+#endif  /* USBD_HID_H_ */

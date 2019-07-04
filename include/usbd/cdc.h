@@ -35,10 +35,8 @@
 
 /*! \file */
 
-#ifndef MCU_USBD_CDC_H_
-#define MCU_USBD_CDC_H_
-
-#include "mcu/types.h"
+#ifndef USBD_CDC_H_
+#define USBD_CDC_H_
 
 #include "types.h"
 
@@ -325,6 +323,6 @@ typedef struct MCU_PACK {
 } usbd_cdc_line_coding_request_t;
 
 
-#endif /* MCU_USBD_CDC_H_ */
+#endif /* USBD_CDC_H_ */
 
 /*! @} */

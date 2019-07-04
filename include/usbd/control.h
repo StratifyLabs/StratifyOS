@@ -23,8 +23,8 @@
  *
  */
 
-#ifndef MCU_USBD_CONTROL_H_
-#define MCU_USBD_CONTROL_H_
+#ifndef USBD_CONTROL_H_
+#define USBD_CONTROL_H_
 
 #include "sos/fs/devfs.h"
 #include "sos/dev/usb.h"
@@ -137,6 +137,6 @@ int usbd_control_configure_endpoint(const devfs_handle_t * handle, const usbd_en
 
 
 
-#endif /* MCU_USBD_CONTROL_H_ */
+#endif /* USBD_CONTROL_H_ */
 
 /*! @} */

@@ -26,8 +26,8 @@
  *
  */
 
-#ifndef MCU_USBD_TYPEDEFS_H_
-#define MCU_USBD_TYPEDEFS_H_
+#ifndef USBD_TYPES_H_
+#define USBD_TYPES_H_
 
 #include "mcu/types.h"
 #include "defines.h"
@@ -162,6 +162,6 @@ typedef struct MCU_PACK {
 		.string = { __VA_ARGS__ } }
 
 
-#endif /* MCU_USBD_TYPEDEFS_H_ */
+#endif /* USBD_TYPES_H_ */
 
 /*! @} */

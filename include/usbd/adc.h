@@ -31,8 +31,8 @@
 /*! \file */
 
 
-#ifndef MCU_USBD_ADC_H_
-#define MCU_USBD_ADC_H_
+#ifndef USBD_ADC_H_
+#define USBD_ADC_H_
 
 #include "mcu/types.h"
 
@@ -258,4 +258,4 @@ typedef struct MCU_PACK {
 
 
 
-#endif /* __USBD_ADC_H__ */
+#endif /* USBD_ADC_H_ */
