@@ -61,6 +61,7 @@ int drive_cfi_qspi_ioctl(const devfs_handle_t * handle, int request, void * ctl)
 
 					if( result < 0 ){ return result; }
 
+
 					if( config->qspi_flags & QSPI_FLAG_IS_OPCODE_QUAD ){
 						//enter QPI mode
 						drive_cfi_qspi_execute_quick_command(
@@ -68,6 +69,14 @@ int drive_cfi_qspi_ioctl(const devfs_handle_t * handle, int request, void * ctl)
 									config->opcode.enter_qpi_mode,
 									0,
 									0);
+					}
+
+					if( config->qspi_flags & QSPI_FLAG_IS_ADDRESS_32_BITS ){
+						drive_cfi_qspi_execute_quick_command(
+									handle,
+									config->opcode.enter_4byte_address_mode,
+									0,
+									config->qspi_flags);
 					}
 
 					if( result < 0 ){
@@ -146,6 +155,7 @@ int drive_cfi_qspi_ioctl(const devfs_handle_t * handle, int request, void * ctl)
 			info->erase_block_time = config->info.erase_block_time;
 			info->erase_device_time = config->info.erase_device_time;
 			info->bitrate = config->info.bitrate;
+			info->page_program_size = config->opcode.page_program_size;
 			break;
 
 		case I_DRIVE_ISBUSY:

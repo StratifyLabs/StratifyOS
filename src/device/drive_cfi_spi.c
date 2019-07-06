@@ -178,6 +178,7 @@ int drive_cfi_spi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 			info->erase_block_time = config->info.erase_block_time;
 			info->erase_device_time = config->info.erase_device_time;
 			info->bitrate = config->info.bitrate;
+			info->page_program_size = config->opcode.page_program_size;
 			break;
 
 		case I_DRIVE_ISBUSY:
