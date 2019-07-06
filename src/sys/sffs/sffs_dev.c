@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 #include <errno.h>
@@ -33,13 +33,15 @@
 
 #include "mcu/debug.h"
 
+static int wait_busy(const void * cfg, u32 delay);
+
 
 int sffs_dev_getlist_block(const void * cfg){
-    return SFFS_STATE(cfg)->list_block;
+	return SFFS_STATE(cfg)->list_block;
 }
 
 void sffs_dev_setlist_block(const void * cfg, int list_block){
-    SFFS_STATE(cfg)->list_block = list_block;
+	SFFS_STATE(cfg)->list_block = list_block;
 }
 
 void sffs_dev_setdelay_mutex(pthread_mutex_t * mutex){
@@ -47,75 +49,99 @@ void sffs_dev_setdelay_mutex(pthread_mutex_t * mutex){
 }
 
 int sffs_dev_getserialno(const void * cfg){
-    return SFFS_STATE(cfg)->serialno;
+	return SFFS_STATE(cfg)->serialno;
 }
 
 void sffs_dev_setserialno(const void * cfg, int serialno){
-    SFFS_STATE(cfg)->serialno = serialno;
+	SFFS_STATE(cfg)->serialno = serialno;
+}
+
+int wait_busy(const void * cfg, u32 delay){
+	int result;
+	int count = 0;
+	do {
+		result = sysfs_shared_ioctl(SFFS_DRIVE(cfg), I_DRIVE_ISBUSY, 0);
+		if( result > 0 ){
+			usleep(delay);
+		}
+	} while( result > 0 && (count++ < 1000) );
+
+	return result;
 }
 
 int sffs_dev_open(const void * cfg){
-    int result;
-    result = sysfs_shared_open(SFFS_DRIVE(cfg));
-    if( result < 0 ){ return result; }
-    return sysfs_shared_ioctl(SFFS_DRIVE(cfg), I_DRIVE_GETINFO, &(SFFS_STATE(cfg)->dattr));
+	int result;
+	result = sysfs_shared_open(SFFS_DRIVE(cfg));
+	if( result < 0 ){ return result; }
+
+	drive_attr_t drive_attr;
+	drive_attr.o_flags = DRIVE_FLAG_INIT;
+	result = sysfs_shared_ioctl(SFFS_DRIVE(cfg), I_DRIVE_SETATTR, &drive_attr);
+	if( result < 0 ){
+		mcu_debug_printf("failed to init drive (%d, %d)\n", result, errno);
+		return result;
+	}
+
+	return sysfs_shared_ioctl(SFFS_DRIVE(cfg), I_DRIVE_GETINFO, &(SFFS_STATE(cfg)->dattr));
 }
 
 int sffs_dev_write(const void * cfg, int loc, const void * buf, int nbyte){
 	int ret;
 	//int i;
 	char buffer[nbyte];
-    ret = sysfs_shared_write(SFFS_DRIVE(cfg), loc,  buf, nbyte);
-    if( ret < 0 ){ return ret; }
+	ret = sysfs_shared_write(SFFS_DRIVE(cfg), loc,  buf, nbyte);
+	if( ret < 0 ){ return ret; }
+
+	wait_busy(cfg, 100);
+
 	memset(buffer, 0, nbyte);
-    sysfs_shared_read(SFFS_DRIVE(cfg), loc, buffer, nbyte);
+	sysfs_shared_read(SFFS_DRIVE(cfg), loc, buffer, nbyte);
 	if ( memcmp(buffer, buf, nbyte) != 0 ){
-        return SYSFS_SET_RETURN(EIO);
+		return SYSFS_SET_RETURN(EIO);
 	}
 
 	return ret;
 }
 
 int sffs_dev_read(const void * cfg, int loc, void * buf, int nbyte){
-    return sysfs_shared_read(SFFS_DRIVE(cfg), loc, buf, nbyte);
+	return sysfs_shared_read(SFFS_DRIVE(cfg), loc, buf, nbyte);
 }
 
 
 int sffs_dev_erase(const void * cfg){
 	drive_attr_t attr;
-	int usec;
 	attr.o_flags = DRIVE_FLAG_ERASE_DEVICE;
-    if( sysfs_shared_ioctl(SFFS_DRIVE(cfg), I_DRIVE_SETATTR, &attr) < 0 ){
+	if( sysfs_shared_ioctl(SFFS_DRIVE(cfg), I_DRIVE_SETATTR, &attr) < 0 ){
 		return -1;
 	}
 
-    usec = SFFS_STATE(cfg)->dattr.erase_device_time;
+	u32 delay = SFFS_STATE(cfg)->dattr.erase_device_time;
+	if( delay >= 1000000UL ){
+		delay = 999999UL;
+	}
+	wait_busy(cfg, delay);
 
-	usleep(usec);
 	return 0;
 }
 
 int sffs_dev_erasesection(const void * cfg, int loc){
 	drive_attr_t attr;
-    int result;
-	int usec;
+	int result;
 
 	attr.o_flags = DRIVE_FLAG_ERASE_BLOCKS;
 	attr.start = loc;
 	attr.end = loc;
 
-    if( (result = sysfs_shared_ioctl(SFFS_DRIVE(cfg), I_DRIVE_SETATTR, &attr)) < 0 ){
-        return result;
+	if( (result = sysfs_shared_ioctl(SFFS_DRIVE(cfg), I_DRIVE_SETATTR, &attr)) < 0 ){
+		return result;
 	}
 
+	wait_busy(cfg, SFFS_STATE(cfg)->dattr.erase_block_time);
 
-    usec = SFFS_STATE(cfg)->dattr.erase_block_time;
-
-	usleep(usec);
 	return 0;
 }
 
 int sffs_dev_close(const void * cfg){
-    return sysfs_shared_close(SFFS_DRIVE(cfg));
+	return sysfs_shared_close(SFFS_DRIVE(cfg));
 }
 

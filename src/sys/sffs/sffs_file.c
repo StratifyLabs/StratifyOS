@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 
@@ -259,9 +259,9 @@ int sffs_file_savesegment(const void * cfg, cl_handle_t * handle){
 
 		//Enter the new block in the list
 		if ( sffs_filelist_update(cfg,
-				handle->segment_list_block,
-				handle->segment,
-				block) < 0){
+										  handle->segment_list_block,
+										  handle->segment,
+										  block) < 0){
 			sffs_error("could not update file list\n");
 			return -1;
 		}
@@ -416,8 +416,8 @@ int sffs_file_open(const void * cfg, cl_handle_t * handle, serial_t serialno, in
 			sffs_debug(DEBUG_LEVEL, "New header block is open as serialno %d at block %d\n", serialno, block);
 			//write the constant part of the file header
 			if ( sffs_dev_write(cfg, get_sffs_block_data_addr(cfg, block) + offsetof(cl_hdr_t, open),
-					&(hdr->open),
-					sizeof(cl_hdr_open_t)) != sizeof(cl_hdr_open_t) ){
+									  &(hdr->open),
+									  sizeof(cl_hdr_open_t)) != sizeof(cl_hdr_open_t) ){
 				sffs_error("failed to write the open portion of header\n");
 				return -1;
 			}
@@ -492,8 +492,8 @@ int sffs_file_new(const void * cfg, cl_handle_t * handle, const char * name, int
 
 	//write the constant part of the file header
 	if ( sffs_dev_write(cfg, get_sffs_block_data_addr(cfg, block) + offsetof(cl_hdr_t, open),
-			&(hdr.open),
-			sizeof(cl_hdr_open_t)) != sizeof(cl_hdr_open_t) ){
+							  &(hdr.open),
+							  sizeof(cl_hdr_open_t)) != sizeof(cl_hdr_open_t) ){
 		return -1;
 	}
 
@@ -501,12 +501,12 @@ int sffs_file_new(const void * cfg, cl_handle_t * handle, const char * name, int
 }
 
 static int finish_close(const void * cfg,
-		uint8_t discard_status,
-		block_t new_block,
-		block_t old_block,
-		int new_addr,
-		int old_addr,
-		bool already_closed){
+								uint8_t discard_status,
+								block_t new_block,
+								block_t old_block,
+								int new_addr,
+								int old_addr,
+								bool already_closed){
 	bool close_failed;
 
 	sffs_debug(DEBUG_LEVEL, "need to discard old file list/header\n");
@@ -589,9 +589,9 @@ int mark_file_closed(const void * cfg, block_t hdr_block){
 	hdr = (cl_hdr_t*)tmp.data;
 
 	sffs_debug(DEBUG_LEVEL, "discarding file data serialno: %d hdr %d list %d\n",
-			tmp.hdr.serialno,
-			hdr_block,
-			hdr->open.content_block);
+				  tmp.hdr.serialno,
+				  hdr_block,
+				  hdr->open.content_block);
 	//Discard all the segments in the file
 	if ( sffs_filelist_init(cfg, &list, hdr->open.content_block) < 0 ){
 		sffs_error("failed to init file list\n");
@@ -673,8 +673,8 @@ int sffs_file_close(const void * cfg, cl_handle_t * handle){
 	//Write the information available on close (size is written on close)
 	sffs_debug(DEBUG_LEVEL, "close file (size:%d content block:%d)\n", hdr.close.size, handle->segment_list_block);
 	if ( sffs_dev_write(cfg, get_sffs_block_data_addr(cfg, handle->hdr_block) + offsetof(cl_hdr_t, close),
-			&hdr.close,
-			sizeof(cl_hdr_close_t)) != sizeof(cl_hdr_close_t) ){
+							  &hdr.close,
+							  sizeof(cl_hdr_close_t)) != sizeof(cl_hdr_close_t) ){
 		sffs_error("failed to write close data\n");
 		return -2;
 	}
@@ -693,7 +693,7 @@ int sffs_file_close(const void * cfg, cl_handle_t * handle){
 		discard_status = SFFS_SNLIST_ITEM_STATUS_DISCARDING_HDR_LIST;
 
 		sffs_debug(DEBUG_LEVEL, "finish close status 0x%X hdr %d old hdr %d serialno %d\n",
-				discard_status, handle->hdr_block, block, handle->segment_data.hdr.serialno);
+					  discard_status, handle->hdr_block, block, handle->segment_data.hdr.serialno);
 		if ( finish_close(cfg, discard_status, handle->hdr_block, block, handle->serialno_addr, old_addr, false) < 0 ){
 			return -3;
 		}
@@ -747,96 +747,96 @@ int sffs_file_clean(const void * cfg, serial_t serialno, block_t hdr_block, uint
 	}
 
 	switch(status){
-	case SFFS_SNLIST_ITEM_STATUS_DISCARDING:
-		if ( cleanup_file(cfg, old_block, old_addr, status) < 0 ){
-			sffs_error("failed to complete discard\n");
-			return -1;
-		}
-		break;
-	case SFFS_SNLIST_ITEM_STATUS_DISCARDING_HDR_LIST:
-	case SFFS_SNLIST_ITEM_STATUS_DISCARDING_HDR:
-		//look for the new file
-		if ( (new_block = sffs_serialno_get(cfg, serialno, SFFS_SNLIST_ITEM_STATUS_CLOSING, &new_addr)) == BLOCK_INVALID ){
-			//no "CLOSING" files exist -- check for "CLOSED"
-			if ( (new_block = sffs_serialno_get(cfg, serialno, SFFS_SNLIST_ITEM_STATUS_CLOSED, &new_addr)) == BLOCK_INVALID ){
-				sffs_error("new file is not found anywhere\n");
+		case SFFS_SNLIST_ITEM_STATUS_DISCARDING:
+			if ( cleanup_file(cfg, old_block, old_addr, status) < 0 ){
+				sffs_error("failed to complete discard\n");
 				return -1;
-			} else {
-				sffs_debug(DEBUG_LEVEL, "new file is already closed\n");
-				already_closed = true;
 			}
-		} else {
-			already_closed = false;
-		}
+			break;
+		case SFFS_SNLIST_ITEM_STATUS_DISCARDING_HDR_LIST:
+		case SFFS_SNLIST_ITEM_STATUS_DISCARDING_HDR:
+			//look for the new file
+			if ( (new_block = sffs_serialno_get(cfg, serialno, SFFS_SNLIST_ITEM_STATUS_CLOSING, &new_addr)) == BLOCK_INVALID ){
+				//no "CLOSING" files exist -- check for "CLOSED"
+				if ( (new_block = sffs_serialno_get(cfg, serialno, SFFS_SNLIST_ITEM_STATUS_CLOSED, &new_addr)) == BLOCK_INVALID ){
+					sffs_error("new file is not found anywhere\n");
+					return -1;
+				} else {
+					sffs_debug(DEBUG_LEVEL, "new file is already closed\n");
+					already_closed = true;
+				}
+			} else {
+				already_closed = false;
+			}
 
-		if ( sffs_block_load(cfg, new_block, &sffs_block_data) < 0 ){
-			sffs_error("failed to load new block %d\n", new_block);
-			return -1;
-		}
-
-		sffs_debug(DEBUG_LEVEL, "finish closing and discarding file\n");
-		if ( finish_close(cfg, status, new_block, old_block, new_addr, old_addr, already_closed) < 0 ){
-			return -1;
-		}
-		break;
-
-	case SFFS_SNLIST_ITEM_STATUS_CLOSING:
-
-		//need to see if another file is "CLOSED"
-		sffs_debug(DEBUG_LEVEL, "cleaning CLOSING file\n");
-		if ( (new_block = sffs_serialno_get(cfg, serialno, SFFS_SNLIST_ITEM_STATUS_CLOSED, &new_addr)) == BLOCK_INVALID ){
-
-			//the CLOSING file is the only one that exists -- it just needs to be clean and closed
-			sffs_debug(DEBUG_LEVEL, "clean CLOSING file (no other files)\n");
-
-			if ( sffs_block_load(cfg, old_block, &sffs_block_data) < 0 ){
+			if ( sffs_block_load(cfg, new_block, &sffs_block_data) < 0 ){
 				sffs_error("failed to load new block %d\n", new_block);
 				return -1;
 			}
 
-
-			//Close the file (includes discarding obsolete segments)
-			if ( mark_file_closed(cfg, hdr_block) < 0 ){
-				sffs_error("failed to clean file list block\n");
+			sffs_debug(DEBUG_LEVEL, "finish closing and discarding file\n");
+			if ( finish_close(cfg, status, new_block, old_block, new_addr, old_addr, already_closed) < 0 ){
 				return -1;
 			}
+			break;
 
-			CL_TP_DESC(CL_PROB_COMMON, "cleaned but not CLOSED");
+		case SFFS_SNLIST_ITEM_STATUS_CLOSING:
 
-			if ( sffs_serialno_setstatus(cfg, old_addr, SFFS_SNLIST_ITEM_STATUS_CLOSED) < 0 ){
+			//need to see if another file is "CLOSED"
+			sffs_debug(DEBUG_LEVEL, "cleaning CLOSING file\n");
+			if ( (new_block = sffs_serialno_get(cfg, serialno, SFFS_SNLIST_ITEM_STATUS_CLOSED, &new_addr)) == BLOCK_INVALID ){
+
+				//the CLOSING file is the only one that exists -- it just needs to be clean and closed
+				sffs_debug(DEBUG_LEVEL, "clean CLOSING file (no other files)\n");
+
+				if ( sffs_block_load(cfg, old_block, &sffs_block_data) < 0 ){
+					sffs_error("failed to load new block %d\n", new_block);
+					return -1;
+				}
+
+
+				//Close the file (includes discarding obsolete segments)
+				if ( mark_file_closed(cfg, hdr_block) < 0 ){
+					sffs_error("failed to clean file list block\n");
+					return -1;
+				}
+
+				CL_TP_DESC(CL_PROB_COMMON, "cleaned but not CLOSED");
+
+				if ( sffs_serialno_setstatus(cfg, old_addr, SFFS_SNLIST_ITEM_STATUS_CLOSED) < 0 ){
+					sffs_error("failed to close file\n");
+					return -1;
+				}
+
+			} else {
+
+				sffs_debug(DEBUG_LEVEL, "clean CLOSING file (other file is already closed)\n");
+
+				//the file already exists as "CLOSED"
+				sffs_debug(DEBUG_LEVEL, "cleaning CLOSING file but original is still CLOSED\n");
+				if ( cleanup_file(cfg, old_block, old_addr, SFFS_SNLIST_ITEM_STATUS_DISCARDING_HDR) < 0 ){
+					sffs_error("failed to complete discard\n");
+					return -1;
+				}
+
+				return 1;
+			}
+			break;
+		case SFFS_SNLIST_ITEM_STATUS_OPEN:
+
+			sffs_debug(DEBUG_LEVEL, "cleaning open file\n");
+			if ( sffs_serialno_setstatus(cfg, old_addr, SFFS_SNLIST_ITEM_STATUS_DIRTY) < 0 ){
 				sffs_error("failed to close file\n");
 				return -1;
 			}
 
-		} else {
-
-			sffs_debug(DEBUG_LEVEL, "clean CLOSING file (other file is already closed)\n");
-
-			//the file already exists as "CLOSED"
-			sffs_debug(DEBUG_LEVEL, "cleaning CLOSING file but original is still CLOSED\n");
-			if ( cleanup_file(cfg, old_block, old_addr, SFFS_SNLIST_ITEM_STATUS_DISCARDING_HDR) < 0 ){
-				sffs_error("failed to complete discard\n");
-				return -1;
-			}
-
 			return 1;
-		}
-		break;
-	case SFFS_SNLIST_ITEM_STATUS_OPEN:
 
-		sffs_debug(DEBUG_LEVEL, "cleaning open file\n");
-		if ( sffs_serialno_setstatus(cfg, old_addr, SFFS_SNLIST_ITEM_STATUS_DIRTY) < 0 ){
-			sffs_error("failed to close file\n");
+			break;
+
+		default:
+			sffs_error("unknown status %d\n", status);
 			return -1;
-		}
-
-		return 1;
-
-		break;
-
-	default:
-		sffs_error("unknown status %d\n", status);
-		return -1;
 	}
 
 	return 0;
@@ -866,49 +866,49 @@ int cleanup_file(const void * cfg, block_t hdr_block, int addr, uint8_t status){
 
 
 	switch(status){
-	case SFFS_SNLIST_ITEM_STATUS_DISCARDING:
-		sffs_debug(DEBUG_LEVEL, "discarding file data serialno: %d hdr %d list %d\n",
-				tmp.hdr.serialno,
-				hdr_block,
-				hdr->open.content_block);
-		//Discard all the segments in the file
-		if ( sffs_filelist_init(cfg, &list, hdr->open.content_block) < 0 ){
-			sffs_error("failed to open list\n");
-			return -1;
-		}
+		case SFFS_SNLIST_ITEM_STATUS_DISCARDING:
+			sffs_debug(DEBUG_LEVEL, "discarding file data serialno: %d hdr %d list %d\n",
+						  tmp.hdr.serialno,
+						  hdr_block,
+						  hdr->open.content_block);
+			//Discard all the segments in the file
+			if ( sffs_filelist_init(cfg, &list, hdr->open.content_block) < 0 ){
+				sffs_error("failed to open list\n");
+				return -1;
+			}
 
-		while( sffs_list_getnext(cfg, &list, &file_item, &filelist_addr) == 0 ){
+			while( sffs_list_getnext(cfg, &list, &file_item, &filelist_addr) == 0 ){
 
-			sffs_debug(DEBUG_LEVEL + 2, "discard this block 0x%X\n", file_item.status);
-			if ( (file_item.status == SFFS_FILELIST_STATUS_CURRENT) || (file_item.status == SFFS_FILELIST_STATUS_OBSOLETE) ){
-				//if the whole file is discarded, discard all blocks
-				sffs_debug(DEBUG_LEVEL + 2, "Discarding obsolete block %d\n", file_item.block);
-				if ( sffs_block_discard(cfg, file_item.block) < 0 ){
-					sffs_error("failed to discard block\n");
-					return -1;
-				}
+				sffs_debug(DEBUG_LEVEL + 2, "discard this block 0x%X\n", file_item.status);
+				if ( (file_item.status == SFFS_FILELIST_STATUS_CURRENT) || (file_item.status == SFFS_FILELIST_STATUS_OBSOLETE) ){
+					//if the whole file is discarded, discard all blocks
+					sffs_debug(DEBUG_LEVEL + 2, "Discarding obsolete block %d\n", file_item.block);
+					if ( sffs_block_discard(cfg, file_item.block) < 0 ){
+						sffs_error("failed to discard block\n");
+						return -1;
+					}
 
-				//mark it dirty in the list
-				if ( sffs_filelist_setstatus(cfg, SFFS_FILELIST_STATUS_DIRTY, filelist_addr) < 0 ){
-					sffs_error("failed to set status to dirty\n");
-					return -1;
+					//mark it dirty in the list
+					if ( sffs_filelist_setstatus(cfg, SFFS_FILELIST_STATUS_DIRTY, filelist_addr) < 0 ){
+						sffs_error("failed to set status to dirty\n");
+						return -1;
+					}
 				}
 			}
-		}
 
-	case SFFS_SNLIST_ITEM_STATUS_DISCARDING_HDR_LIST:
-		//Discard the list of file segments
-		if ( sffs_list_discard(cfg, hdr->open.content_block) ){
-			sffs_error("failed to discard list\n");
-			return -1;
-		}
+		case SFFS_SNLIST_ITEM_STATUS_DISCARDING_HDR_LIST:
+			//Discard the list of file segments
+			if ( sffs_list_discard(cfg, hdr->open.content_block) ){
+				sffs_error("failed to discard list\n");
+				return -1;
+			}
 
-	case SFFS_SNLIST_ITEM_STATUS_DISCARDING_HDR:
-		//Discard the header
-		if ( sffs_block_discard(cfg, hdr_block) < 0 ){
-			sffs_error("failed to discard header\n");
-			return -1;
-		}
+		case SFFS_SNLIST_ITEM_STATUS_DISCARDING_HDR:
+			//Discard the header
+			if ( sffs_block_discard(cfg, hdr_block) < 0 ){
+				sffs_error("failed to discard header\n");
+				return -1;
+			}
 	}
 
 

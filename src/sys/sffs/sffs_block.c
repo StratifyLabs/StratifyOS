@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 #include <stdbool.h>
@@ -125,9 +125,9 @@ int sffs_block_save(const void * cfg, block_t sffs_block_num, sffs_block_data_t 
 	sffs_debug(DEBUG_LEVEL + 3, "save block %d\n", sffs_block_num);
 	data->hdr.status = BLOCK_STATUS_OPEN; //the block must be closed at a later time using sffs_block_close()
 	if ( sffs_dev_write(cfg, get_sffs_block_addr(cfg, sffs_block_num) + offsetof(sffs_block_hdr_t, status),
-			&(data->hdr.status),
-			sizeof(*data) - offsetof(sffs_block_hdr_t, status)) !=
-					sizeof(*data) - offsetof(sffs_block_hdr_t, status) ){
+							  &(data->hdr.status),
+							  sizeof(*data) - offsetof(sffs_block_hdr_t, status)) !=
+		  sizeof(*data) - offsetof(sffs_block_hdr_t, status) ){
 		sffs_error("failed to save block\n");
 		return -1;
 	}
@@ -377,7 +377,7 @@ int erase_dirty_block(const void * cfg, block_t sffs_block_num){
 		}
 
 		if ( (hdr.status == BLOCK_STATUS_CLOSED) ||
-				(hdr.status == BLOCK_STATUS_OPEN) ){
+			  (hdr.status == BLOCK_STATUS_OPEN) ){
 			//Save this block in the scratch area
 			if ( sffs_scratch_saveblock(cfg, i) < 0 ){
 				sffs_error("failed to save block %d\n", i);

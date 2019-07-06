@@ -133,12 +133,12 @@ static int create_report(const char * name){
 		}
 
 		fprintf(f, "%s,%s,%d,%s,%d,%d\n",
-				tp_table[i].func,
-				tp_table[i].file,
-				tp_table[i].line,
-				tp_table[i].desc,
-				tp_table[i].count,
-				tp_table[i].failed);
+				  tp_table[i].func,
+				  tp_table[i].file,
+				  tp_table[i].line,
+				  tp_table[i].desc,
+				  tp_table[i].count,
+				  tp_table[i].failed);
 	}
 
 	fclose(f);
@@ -191,7 +191,7 @@ static sffs_tp_t * add_tp(const char * file, int line, const char * func, const 
 			tp_table[i].line = line;
 			strncpy(tp_table[i].func, func, FUNC_LEN);
 			if ( desc != NULL ){
-			strncpy(tp_table[i].desc, desc, DESC_LEN);
+				strncpy(tp_table[i].desc, desc, DESC_LEN);
 			} else {
 				strncpy(tp_table[i].desc, "none", DESC_LEN);
 			}

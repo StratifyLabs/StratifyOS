@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 
@@ -42,11 +42,11 @@ bool list_typeisvalid(uint8_t type){
 		return false;
 	}
 	switch( type & ~(BLOCK_TYPE_LINKED_LIST_FLAG) ){
-	case BLOCK_TYPE_SERIALNO_LIST:
-	case BLOCK_TYPE_FILE_LIST:
-		return true;
-	default:
-		return false;
+		case BLOCK_TYPE_SERIALNO_LIST:
+		case BLOCK_TYPE_FILE_LIST:
+			return true;
+		default:
+			return false;
 	}
 }
 
@@ -286,7 +286,7 @@ int sffs_list_append(const void * cfg, sffs_list_t * list, uint8_t type, void * 
 	}
 	 */
 	if ( sffs_dev_write(cfg, dev_addr, item, list->item_size) !=
-			list->item_size ){
+		  list->item_size ){
 		sffs_error("failed to write item\n");
 		return -1;
 	}
@@ -296,12 +296,12 @@ int sffs_list_append(const void * cfg, sffs_list_t * list, uint8_t type, void * 
 }
 
 block_t sffs_list_consolidate(const void * cfg,
-		serial_t serialno,
-		block_t list_block,
-		uint8_t type,
-		int item_size,
-		int (*is_dirty)(void*),
-		int (*is_free)(void*)){
+										serial_t serialno,
+										block_t list_block,
+										uint8_t type,
+										int item_size,
+										int (*is_dirty)(void*),
+										int (*is_free)(void*)){
 
 	sffs_block_data_t sffs_block_data;
 	sffs_block_data_t new_sffs_block_data;
@@ -348,14 +348,14 @@ block_t sffs_list_consolidate(const void * cfg,
 
 		//make sure the loaded block is valid
 		if ( (list->hdr.prev != old_prev_block) || //linking is not correct
-				(list_typeisvalid(sffs_block_data.hdr.type) == false) || //block type is not correct
-				(serialno != sffs_block_data.hdr.serialno) || //serialno is not correct
-				(sffs_block_data.hdr.status != BLOCK_STATUS_CLOSED) //block status must be closed
-		){
+			  (list_typeisvalid(sffs_block_data.hdr.type) == false) || //block type is not correct
+			  (serialno != sffs_block_data.hdr.serialno) || //serialno is not correct
+			  (sffs_block_data.hdr.status != BLOCK_STATUS_CLOSED) //block status must be closed
+			  ){
 			sffs_debug(DEBUG_LEVEL, "--------------------END OF LIST %d != %d %d != %d 0x%X != 0x%X\n",
-					list->hdr.prev, old_prev_block,
-					serialno, sffs_block_data.hdr.serialno,
-					sffs_block_data.hdr.status, BLOCK_STATUS_CLOSED);
+						  list->hdr.prev, old_prev_block,
+						  serialno, sffs_block_data.hdr.serialno,
+						  sffs_block_data.hdr.status, BLOCK_STATUS_CLOSED);
 			break; //end of the list
 		}
 

@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 
@@ -80,12 +80,12 @@ int sffs_list_append(const void * cfg, sffs_list_t * list, uint8_t type, void * 
 int sffs_list_discard(const void * cfg, block_t list_block);
 int sffs_list_close(const void * cfg, block_t list_block);
 block_t sffs_list_consolidate(const void * cfg,
-		serial_t serialno,
-		block_t list_block,
-		uint8_t type,
-		int item_size,
-		int (*is_dirty)(void*),
-		int (*is_free)(void*));
+										serial_t serialno,
+										block_t list_block,
+										uint8_t type,
+										int item_size,
+										int (*is_dirty)(void*),
+										int (*is_free)(void*));
 
 
 #endif /* SFFS_LIST_H_ */

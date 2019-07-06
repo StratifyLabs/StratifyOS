@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 
@@ -84,8 +84,8 @@ block_t find_list_block(const void * cfg){
 	while( sffs_block_loadhdr(cfg, &sffs_block_hdr, list_block) == 0 ){
 
 		if ( ( (sffs_block_hdr.status == BLOCK_STATUS_OPEN) ||
-				(sffs_block_hdr.status == BLOCK_STATUS_CLOSED) ) &&
-				(sffs_block_hdr.type == BLOCK_TYPE_SERIALNO_LIST) ){
+				 (sffs_block_hdr.status == BLOCK_STATUS_CLOSED) ) &&
+			  (sffs_block_hdr.type == BLOCK_TYPE_SERIALNO_LIST) ){
 			sffs_dev_setlist_block(cfg, list_block);
 			sffs_debug(DEBUG_LEVEL, "list block status is 0x%X\n", sffs_block_hdr.status);
 			check_block = sffs_serialno_get(cfg, CL_SERIALNO_LIST, SFFS_SNLIST_ITEM_STATUS_CLOSED, NULL);
@@ -253,12 +253,12 @@ int consolidate_list(const void * cfg, int (*is_free)(void*), int (*is_dirty)(vo
 
 	//consolidate the list using sffs_list_consolidate()
 	if ( (new_block = sffs_list_consolidate(cfg,
-			CL_SERIALNO_LIST,
-			sn_list_block,
-			BLOCK_TYPE_SERIALNO_LIST,
-			sizeof(cl_snlist_item_t),
-			is_dirty,
-			sffs_serialno_isfree)) == BLOCK_INVALID ){
+														 CL_SERIALNO_LIST,
+														 sn_list_block,
+														 BLOCK_TYPE_SERIALNO_LIST,
+														 sizeof(cl_snlist_item_t),
+														 is_dirty,
+														 sffs_serialno_isfree)) == BLOCK_INVALID ){
 		sffs_error("new block is not valid\n");
 		return -1;
 	}
@@ -388,19 +388,19 @@ block_t sffs_serialno_get(const void * cfg, serial_t serialno, uint8_t status, i
 		return BLOCK_INVALID;
 	}
 	sffs_debug(DEBUG_LEVEL, "scanning serialno list for %d status 0x%X (0x%X %d 0x%X)\n",
-			serialno,
-			status,
-			list.block_data.hdr.status,
-			list.block_data.hdr.serialno,
-			list.block_data.hdr.type);
+				  serialno,
+				  status,
+				  list.block_data.hdr.status,
+				  list.block_data.hdr.serialno,
+				  list.block_data.hdr.type);
 
 	while( sffs_list_getnext(cfg, &list, &item, &dev_addr) == 0 ){
 		sffs_debug(DEBUG_LEVEL+4, "status:0x%X serialno:%d block:%d checksum:%d from addr:0x%X\n",
-				item.status,
-				item.serialno,
-				item.block,
-				item.checksum,
-				dev_addr);
+					  item.status,
+					  item.serialno,
+					  item.block,
+					  item.checksum,
+					  dev_addr);
 
 		if( validate_checksum(&item) == 0 ){
 			if ( (item.status == status) && (item.serialno == serialno) ){
@@ -447,14 +447,14 @@ int sffs_serialno_append(const void * cfg, serial_t serialno, block_t new_block,
 		return -1;
 	}
 	sffs_debug(DEBUG_LEVEL, "append entry to list 0x%X %d %d 0x%X\n",
-			item.status,
-			item.serialno,
-			item.block,
-			item.checksum);
+				  item.status,
+				  item.serialno,
+				  item.block,
+				  item.checksum);
 	return sffs_list_append(cfg,
-			&list,
-			BLOCK_TYPE_SERIALNO_LIST,
-			&item,
-			addr);
+									&list,
+									BLOCK_TYPE_SERIALNO_LIST,
+									&item,
+									addr);
 }
 

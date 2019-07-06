@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 
@@ -49,15 +49,15 @@ int sffs_dev_read(const void * cfg, int loc, void * buf, int nbyte);
 int sffs_dev_close(const void * cfg);
 
 static inline int sffs_dev_getsize(const void * cfg){
-    return SFFS_STATE(cfg)->dattr.num_write_blocks * SFFS_STATE(cfg)->dattr.write_block_size;
+	return SFFS_STATE(cfg)->dattr.num_write_blocks * SFFS_STATE(cfg)->dattr.write_block_size;
 }
 
 static inline int sffs_dev_geterasesize(const void * cfg){
-    return SFFS_STATE(cfg)->dattr.erase_block_size;
+	return SFFS_STATE(cfg)->dattr.erase_block_size;
 }
 
 static inline int sffs_dev_getblocksize(const void * cfg){
-    return SFFS_STATE(cfg)->dattr.write_block_size;
+	return SFFS_STATE(cfg)->dattr.write_block_size;
 }
 
 int sffs_dev_erase(const void * cfg);

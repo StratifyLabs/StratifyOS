@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 
@@ -50,9 +50,9 @@ enum {
 };
 
 typedef struct MCU_PACK {
-    u8 status;
+	u8 status;
 	block_t original_block; //0xFF for unused, X for in use, and 0x00 for dirty
-    u8 checksum;
+	u8 checksum;
 } sffs_scratch_entry_t;
 
 

@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 
@@ -134,6 +134,7 @@ typedef struct MCU_PACK {
 #define mcu_debug_user_printf(...) printf(__VA_ARGS__)
 
 #else
+#define CL_DEBUG 1
 #include "mcu/debug.h"
 #endif
 
