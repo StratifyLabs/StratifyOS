@@ -134,7 +134,7 @@ typedef struct MCU_PACK {
 #define mcu_debug_user_printf(...) printf(__VA_ARGS__)
 
 #else
-#define CL_DEBUG 1
+#define CL_DEBUG 0
 #include "mcu/debug.h"
 #endif
 
