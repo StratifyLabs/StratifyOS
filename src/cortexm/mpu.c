@@ -202,13 +202,13 @@ u32 mpu_calc_region(int region,
 	 */
 	switch(type){
 	case MPU_MEMORY_EXTERNAL_SRAM:
-		*rasr |= ((1<<17)|(1<<16)); //Outer and Inner Write-Back, no Write-Allocate
+		*rasr |= (1<<17); //Outer and Inner Write-Back, no Write-Allocate
 		break;
 	case MPU_MEMORY_SRAM:
-		*rasr |= (1<<17)|(1<<16); //Outer and Inner Write-Back, no Write-Allocate
+		*rasr |= (1<<17); //Outer and Inner Write-Back, no Write-Allocate
 		break;
 	case MPU_MEMORY_FLASH:
-		*rasr |= (1<<17)|(1<<16); //Outer and Inner Write-Back, no Write-Allocate
+		*rasr |= (1<<17); //Outer and Inner Write-Back, no Write-Allocate
 		break;
 	case MPU_MEMORY_PERIPHERALS:
 		*rasr |= ((1<<16)|(1<<18)); //shareable, not cacheable
