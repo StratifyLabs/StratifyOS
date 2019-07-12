@@ -148,7 +148,7 @@ int drive_cfi_qspi_ioctl(const devfs_handle_t * handle, int request, void * ctl)
 					0;
 
 			info->o_events = MCU_EVENT_FLAG_WRITE_COMPLETE | MCU_EVENT_FLAG_DATA_READY;
-			info->address_size = config->info.address_size; //one byte for each address location
+			info->addressable_size = config->info.addressable_size; //one byte for each address location
 			info->write_block_size = config->info.write_block_size; //can write one byte at a time
 			info->num_write_blocks = config->info.num_write_blocks;
 			info->erase_block_size = config->info.erase_block_size;
@@ -174,6 +174,16 @@ int drive_cfi_qspi_ioctl(const devfs_handle_t * handle, int request, void * ctl)
 int drive_cfi_qspi_read(const devfs_handle_t * handle, devfs_async_t * async){
 	const drive_cfi_config_t * config = handle->config;
 
+	//check for the end of the drive
+	int num_blocks = async->nbyte / config->info.addressable_size;
+	if( async->loc + num_blocks > config->info.num_write_blocks ){
+		num_blocks = config->info.num_write_blocks - async->loc;
+		if( num_blocks <= 0 ){
+			return SYSFS_RETURN_EOF;
+		}
+		async->nbyte = num_blocks * config->info.addressable_size;
+	}
+
 	//get ready for the read by sending the read command
 	int result = drive_cfi_qspi_execute_command(handle,
 															  config->opcode.fast_read,
@@ -192,6 +202,16 @@ int drive_cfi_qspi_read(const devfs_handle_t * handle, devfs_async_t * async){
 
 int drive_cfi_qspi_write(const devfs_handle_t * handle, devfs_async_t * async){
 	const drive_cfi_config_t * config = handle->config;
+
+	//check for the end of the drive
+	int num_blocks = async->nbyte / config->info.addressable_size;
+	if( async->loc + num_blocks > config->info.num_write_blocks ){
+		num_blocks = config->info.num_write_blocks - async->loc;
+		if( num_blocks <= 0 ){
+			return SYSFS_RETURN_EOF;
+		}
+		async->nbyte = num_blocks * config->info.addressable_size;
+	}
 
 	u32 page_size = config->opcode.page_program_size;
 	u32 page_program_mask = page_size-1;

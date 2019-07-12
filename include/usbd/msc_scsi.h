@@ -44,7 +44,7 @@
 #define USBD_MSC_SCSI_START_STOP_UNIT 0x1B
 #define USBD_MSC_SCSI_MEDIA_REMOVAL 0x1E
 #define USBD_MSC_SCSI_READ_FORMAT_CAPACITIES 0x23
-#define USBD_MSC_SCSI_READ_CAPACITY 0x25
+#define USBD_MSC_SCSI_READ_CAPACITY10 0x25
 #define USBD_MSC_SCSI_READ10 0x28
 #define USBD_MSC_SCSI_WRITE10 0x2A
 #define USBD_MSC_SCSI_VERIFY10 0x2F
@@ -62,14 +62,65 @@
 #define USBD_MSC_SCSI_SERVICE_ACTION_OUT16 0x9F
 #define USBD_MSC_SCSI_REPORT_ID_INFO 0xA3
 
+#define USBD_MSC_SCSI_SENSE_INFORMATION 0x00
+#define USBD_MSC_SCSI_SENSE_COMMAND_SPECIFIC_INFORMATION 0x02
+#define USBD_MSC_SCSI_SENSE_SENSE_KEY_SPECIFIC 0x02
+#define USBD_MSC_SCSI_SENSE_FIELD_REPLACEABLE_UNIT 0x03
+#define USBD_MSC_SCSI_SENSE_STREAM_COMMANDS 0x04
+#define USBD_MSC_SCSI_SENSE_BLOCK_COMMANDS 0x05
+#define USBD_MSC_SCSI_SENSE_OSD_OBJECT_IDENTIFICATION 0x06
+#define USBD_MSC_SCSI_SENSE_OSD_RESPONSE_INTEGRITY_CHECK_VALUE 0x07
+#define USBD_MSC_SCSI_SENSE_OSD_ATTRIBUTE_IDENTIFICATION 0x08
+#define USBD_MSC_SCSI_SENSE_ATA_RETURN 0x09
+#define USBD_MSC_SCSI_SENSE_ANOTHER_PROGRESS_INDICATION 0x0A
+
+
+
 typedef struct MCU_PACK {
 	u8 opcode;
 	u8 o_flags;
 	u8 page_code;
-	u8 allocation_length_high;
-	u8 allocation_length_low;
+	u16 allocation_length; //big endian
 	u8 control;
 } usbd_msc_scsi_inquiry_t;
+
+#define USBD_MSC_SCSI_INQUIRY_PERIPHERAL_TYPE_DIRECT_ACCESS 0x00
+#define USBD_MSC_SCSI_INQUIRY_VERSION_NO_STANDARD 0x00
+#define USBD_MSC_SCSI_INQUIRY_VERSION_OBSOLETE 0x02
+#define USBD_MSC_SCSI_INQUIRY_VERSION_ANSI_301_1997 0x03
+#define USBD_MSC_SCSI_INQUIRY_VERSION_ANSI_351_2001 0x04
+#define USBD_MSC_SCSI_INQUIRY_VERSION_ANSI_408_2005 0x05
+#define USBD_MSC_SCSI_INQUIRY_VERSION_ANSI_513_2015 0x06
+#define USBD_MSC_SCSI_INQUIRY_REMOVABLE_MEDIUM 0x80
+#define USBD_MSC_SCSI_INQUIRY_NONREMOVABLE_MEDIUM 0x00
+
+#define USBD_MSC_SCSI_INQUIRY_O_FLAGS0_NORMACA (1<<5)
+#define USBD_MSC_SCSI_INQUIRY_O_FLAGS0_HISUP (1<<4)
+#define USBD_MSC_SCSI_INQUIRY_O_FLAGS0_RESPONSE_DATA_FORMAT 0x02
+
+#define USBD_MSC_SCSI_INQUIRY_O_FLAGS1_PROTECT (1<<0)
+#define USBD_MSC_SCSI_INQUIRY_O_FLAGS1_3PC (1<<3)
+#define USBD_MSC_SCSI_INQUIRY_O_FLAGS1_TPGS(x) (x<<4)
+#define USBD_MSC_SCSI_INQUIRY_O_FLAGS1_ACC (1<<6)
+#define USBD_MSC_SCSI_INQUIRY_O_FLAGS1_SCCS (1<<7)
+
+typedef struct MCU_PACK {
+	u8 vendor_identification[8];
+	u8 product_identification[16];
+	u8 product_revision_level[4];
+} usbd_msc_scsi_standard_inquiry_indentification_t;
+
+typedef struct MCU_PACK {
+	u8 peripheral;
+	u8 removable_medium;
+	u8 version;
+	u8 o_flags0;
+	u8 additional_length;
+	u8 o_flags1;
+	u8 o_flags2;
+	u8 o_flags3;
+	usbd_msc_scsi_standard_inquiry_indentification_t identification;
+} usbd_msc_scsi_standard_inquiry_data_t;
 
 typedef struct MCU_PACK {
 	u8 opcode;
@@ -78,7 +129,85 @@ typedef struct MCU_PACK {
 	u8 reserved;
 	u8 ffmt;
 	u8 control;
-} usbd_msc_scsi_foram_unit_t;
+} usbd_msc_scsi_format_unit_t;
+
+typedef struct MCU_PACK {
+	u8 opcode;
+	u8 o_flags;
+	u32 logical_block_address; //big endian
+	u8 group_number;
+	u16 transfer_length;
+	u8 control;
+} usbd_msc_scsi_transfer_10_t;
+
+typedef struct MCU_PACK {
+	u8 opcode;
+	u8 o_flags;
+	u32 logical_block_address; //big endian
+	u8 group_number;
+	u32 transfer_length;
+	u8 control;
+} usbd_msc_scsi_transfer_12_t;
+
+typedef struct MCU_PACK {
+	u8 opcode;
+	u8 o_flags;
+	u32 logical_block_address; //big endian
+	u8 group_number;
+	u16 verification_length;
+	u8 control;
+} usbd_msc_scsi_verify10_t;
+
+typedef struct MCU_PACK {
+	u8 opcode;
+	u8 reserved0;
+	u32 logical_block_address; //big endian
+	u16 reserved1;
+	u8 reserved2;
+	u8 control;
+} usbd_msc_scsi_read_capacity10_t;
+
+typedef struct MCU_PACK {
+	u32 returned_logical_block_address;
+	u32 block_length_in_bytes;
+} usbd_msc_scsi_read_capacity10_data_t;
+
+typedef struct MCU_PACK {
+	u8 reserved1;
+	u8 reserved2;
+	u8 reserved3;
+	u8 capacity_list_length;
+	u32 block_count;
+	u8 descriptor_code;
+	u8 block_size_high;
+	u8 block_size_medium;
+	u8 block_size_low;
+} usbd_msc_scsi_read_format_capacities_data_t;
+
+
+typedef struct MCU_PACK {
+	u8 opcode;
+	u8 o_flags;
+	u32 logical_block_address; //big endian
+	u8 group_number;
+	u16 number_of_blocks;
+	u8 control;
+} usbd_msc_scsi_sync_cache10_t;
+
+typedef struct MCU_PACK {
+	u8 opcode;
+	u8 o_flags;
+	u8 page_code;
+	u8 subpage_code;
+	u8 allocation_length;
+	u8 control;
+} usbd_msc_scsi_mode_sense6_t;
+
+typedef struct MCU_PACK {
+	u16 reserved;
+	u16 information_length;
+	u8 information[64];
+} usbd_msc_scsi_report_id_data_t;
 
 typedef struct MCU_PACK {
 

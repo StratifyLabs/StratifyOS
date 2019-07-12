@@ -145,8 +145,14 @@ int usbfifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 				result = mcu_usb_read(handle, &state->async_read);
 				count++;
 			} while( (result > 0) && (count < 10) );
-			if ( result < 0 ){ return SYSFS_SET_RETURN(EIO); }
-			if( count == 0 ){ return SYSFS_SET_RETURN(EIO); }
+			if ( result < 0 ){
+				mcu_debug_printf("failed to init USB fifo (%d)\n", SYSFS_GET_RETURN(result));
+				return SYSFS_SET_RETURN(EIO);
+			}
+			if( count == 0 ){
+				mcu_debug_printf("failed to init USB fifo -- count\n");
+				return SYSFS_SET_RETURN(EIO);
+			}
 
 			break;
 		case I_FIFO_EXIT:

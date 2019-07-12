@@ -68,7 +68,7 @@ static void drive_cfi_spi_initialize_cs(const devfs_handle_t * handle);
 static void drive_cfi_spi_assert_cs(const devfs_handle_t * handle);
 static void drive_cfi_spi_deassert_cs(const devfs_handle_t * handle);
 static int drive_cfi_spi_handle_complete(void * context, const mcu_event_t * event);
-
+static int drive_initialize(const devfs_handle_t * handle);
 
 int drive_cfi_spi_open(const devfs_handle_t * handle){
 	int result;
@@ -77,9 +77,20 @@ int drive_cfi_spi_open(const devfs_handle_t * handle){
 	result = config->serial_device->driver.open(&config->serial_device->handle);
 	if( result < 0 ){ return result; }
 
-	//load device status
+	//initialize on every open since reinitialization is not a problem
+	return drive_initialize(handle);
+}
 
-	return SYSFS_RETURN_SUCCESS;
+int drive_initialize(const devfs_handle_t * handle){
+	const drive_cfi_config_t * config = handle->config;
+	//init the CS pin if it is available
+	drive_cfi_spi_initialize_cs(handle);
+
+	//set serial driver attributes to defaults
+	return config->serial_device->driver.ioctl(
+				&config->serial_device->handle,
+				I_SPI_SETATTR,
+				0);
 }
 
 int drive_cfi_spi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
@@ -98,16 +109,8 @@ int drive_cfi_spi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 				u32 o_flags = attr->o_flags;
 
 				if( o_flags & DRIVE_FLAG_INIT ){
-					//execute powerup sequence
-
-					//init the CS pin if it is available
-					drive_cfi_spi_initialize_cs(handle);
-
 					//set serial driver attributes to defaults
-					result= config->serial_device->driver.ioctl(
-								&config->serial_device->handle,
-								I_SPI_SETATTR,
-								0);
+					result = drive_initialize(handle);
 
 					if( result < 0 ){
 						return result;
@@ -171,7 +174,7 @@ int drive_cfi_spi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 					0;
 
 			info->o_events = MCU_EVENT_FLAG_WRITE_COMPLETE | MCU_EVENT_FLAG_DATA_READY;
-			info->address_size = config->info.address_size; //one byte for each address location
+			info->addressable_size = config->info.addressable_size; //one byte for each address location
 			info->write_block_size = config->info.write_block_size; //can write one byte at a time
 			info->num_write_blocks = config->info.num_write_blocks;
 			info->erase_block_size = config->info.erase_block_size;
@@ -213,9 +216,18 @@ int drive_cfi_spi_read(const devfs_handle_t * handle, devfs_async_t * async){
 	const drive_cfi_config_t * config = handle->config;
 	drive_cfi_state_t * state = handle->state;
 
+	//check for the end of the drive
+	int num_blocks = async->nbyte / config->info.addressable_size;
+	if( async->loc + num_blocks > config->info.num_write_blocks ){
+		num_blocks = config->info.num_write_blocks - async->loc;
+		if( num_blocks <= 0 ){
+			return SYSFS_RETURN_EOF;
+		}
+		async->nbyte = num_blocks * config->info.addressable_size;
+	}
+
 	//is device already busy?
 	if( state->handler.callback != 0 ){ return SYSFS_SET_RETURN(EBUSY); }
-
 
 	//assert CS for the page program and data write
 	drive_cfi_spi_assert_cs(handle);
@@ -247,6 +259,16 @@ int drive_cfi_spi_write(const devfs_handle_t * handle, devfs_async_t * async){
 	int result;
 	const drive_cfi_config_t * config = handle->config;
 	drive_cfi_state_t * state = handle->state;
+
+	//check for the end of the drive
+	int num_blocks = async->nbyte / config->info.addressable_size;
+	if( async->loc + num_blocks > config->info.num_write_blocks ){
+		num_blocks = config->info.num_write_blocks - async->loc;
+		if( num_blocks <= 0 ){
+			return SYSFS_RETURN_EOF;
+		}
+		async->nbyte = num_blocks * config->info.addressable_size;
+	}
 
 	//is device already busy?
 	if( state->handler.callback != 0 ){ return SYSFS_SET_RETURN(EBUSY); }

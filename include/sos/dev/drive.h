@@ -71,7 +71,7 @@ enum {
 typedef struct MCU_PACK {
 	u32 o_flags /*! Attribute flags supported by this driver */;
 	u32 o_events /*! MCU Event flags supported by this driver */;
-	u16 address_size /*! Number of bytes per address location (typically 1 for small devices 512 for larger ones) */;
+	u16 addressable_size /*! Number of bytes per address location (typically 1 for small devices 512 for larger ones) */;
 	u16 write_block_size /*! Minimum write block size */;
 	u32 num_write_blocks /*! Number of write blocks (size is num_write_blocks*write_block_size) */;
 	u32 erase_block_size /*! Minimum eraseable block size */;

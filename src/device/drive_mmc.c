@@ -116,7 +116,7 @@ int drive_mmc_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 					DRIVE_FLAG_ERASE_BLOCKS |
 					DRIVE_FLAG_RESET;
 			info->o_events = mmc_info.o_events;
-			info->address_size = mmc_info.block_size;
+			info->addressable_size = mmc_info.block_size;
 			info->bitrate = mmc_info.freq;
 			info->erase_block_size = mmc_info.block_size;
 			info->erase_block_time = 0;

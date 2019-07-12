@@ -228,7 +228,7 @@ int sst25vf_share_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 		  break;
 	 case I_DRIVE_GETINFO:
 		  info = ctl;
-		  info->address_size = 1;
+		  info->addressable_size = 1;
 		  info->bitrate = 50000000;
 		  info->erase_block_size = SST25VF_BLOCK_ERASE_SIZE;
 		  info->erase_block_time = SST25VF_BLOCK_ERASE_TIME;

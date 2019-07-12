@@ -64,7 +64,7 @@ typedef struct {
 } drive_cfi_state_t;
 
 typedef struct {
-	u16 address_size;
+	u16 addressable_size;
 	u16 write_block_size;
 	u32 num_write_blocks;
 	u32 erase_block_size;

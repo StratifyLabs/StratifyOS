@@ -92,7 +92,7 @@ int drive_sdio_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 
         info->o_flags = DRIVE_FLAG_ERASE_BLOCKS | DRIVE_FLAG_INIT;
         info->o_events = sdio_info.o_events;
-        info->address_size = sdio_info.block_size;
+		  info->addressable_size = sdio_info.block_size;
         info->bitrate = sdio_info.freq;
         info->erase_block_size = sdio_info.block_size;
         info->erase_block_time = 0;
