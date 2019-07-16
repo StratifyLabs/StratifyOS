@@ -61,6 +61,7 @@ typedef struct {
 
 typedef struct {
     mcu_event_handler_t handler;
+	 u8 is_initialized;
 } drive_cfi_state_t;
 
 typedef struct {
@@ -86,6 +87,8 @@ typedef struct {
 	u8 protect;
 	u8 unprotect;
 	u8 read_busy_status;
+	u8 write_status;
+	u8 initial_status_value;
 	u8 busy_status_mask;
 	u8 enter_qpi_mode;
 	u8 enter_4byte_address_mode;

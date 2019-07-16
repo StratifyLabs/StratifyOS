@@ -133,6 +133,15 @@ typedef struct MCU_PACK {
 
 typedef struct MCU_PACK {
 	u8 opcode;
+	u8 immediately;
+	u8 reserved;
+	u8 power_condition_modifier;
+	u8 o_flags;
+	u8 control;
+} usbd_msc_scsi_start_stop_unit_t;
+
+typedef struct MCU_PACK {
+	u8 opcode;
 	u8 o_flags;
 	u32 logical_block_address; //big endian
 	u8 group_number;
@@ -184,6 +193,41 @@ typedef struct MCU_PACK {
 	u8 block_size_low;
 } usbd_msc_scsi_read_format_capacities_data_t;
 
+
+#define USBD_MSC_SCSI_REQUEST_SENSE_KEY_NO_SENSE (0x00)
+#define USBD_MSC_SCSI_REQUEST_SENSE_KEY_RECOVERED_ERROR (0x01)
+#define USBD_MSC_SCSI_REQUEST_SENSE_KEY_NOT_READY (0x02)
+#define USBD_MSC_SCSI_REQUEST_SENSE_KEY_MEDIUM_ERROR (0x03)
+#define USBD_MSC_SCSI_REQUEST_SENSE_KEY_HARDWARE_ERROR (0x04)
+#define USBD_MSC_SCSI_REQUEST_SENSE_KEY_ILLEGAL_REQUEST (0x05)
+#define USBD_MSC_SCSI_REQUEST_SENSE_KEY_UNIT_ATTENTION (0x06)
+#define USBD_MSC_SCSI_REQUEST_SENSE_KEY_DATA_PROTECT (0x07)
+#define USBD_MSC_SCSI_REQUEST_SENSE_KEY_FIRMWARE_ERROR (0x09)
+#define USBD_MSC_SCSI_REQUEST_SENSE_KEY_ABORTED_COMMAND (0x0B)
+#define USBD_MSC_SCSI_REQUEST_SENSE_KEY_EQUAL (0x0C)
+#define USBD_MSC_SCSI_REQUEST_SENSE_KEY_VOLUME_OVERFLOW (0x0D)
+#define USBD_MSC_SCSI_REQUEST_SENSE_KEY_MISCOMPARE (0x0E)
+
+typedef struct MCU_PACK {
+	u8 opcode;
+	u8 description;
+	u16 reserved;
+	u8 allocation_length;
+	u8 control;
+} usbd_msc_scsi_request_sense_t;
+
+typedef struct MCU_PACK {
+	u8 error_code_valid;
+	u8 segment_number;
+	u8 sense_key_flags;
+	u8 information[4];
+	u8 additional_sense_length;
+	u8 command_specific_information[4];
+	u8 additional_sense_code;
+	u8 additional_sense_code_qualifier;
+	u8 field_replaceable_unit_code;
+	u8 sense_key_specific[3];
+} usbd_msc_scsi_request_sense_data_t;
 
 typedef struct MCU_PACK {
 	u8 opcode;
