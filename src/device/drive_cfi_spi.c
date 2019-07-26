@@ -87,7 +87,6 @@ int drive_initialize(const devfs_handle_t * handle){
 	int result;
 
 	if( state->is_initialized == 0 ){
-		state->is_initialized = 1;
 		//init the CS pin if it is available
 		drive_cfi_spi_initialize_cs(handle);
 
@@ -107,9 +106,8 @@ int drive_initialize(const devfs_handle_t * handle){
 			u8 update_status = config->opcode.initial_status_value;
 			drive_cfi_spi_write_instruction_with_cs(handle, config->opcode.write_status, &update_status, 1);
 		}
-
-
 	}
+	state->is_initialized++;
 	return 0;
 }
 
@@ -323,6 +321,8 @@ int drive_cfi_spi_write(const devfs_handle_t * handle, devfs_async_t * async){
 }
 
 int drive_cfi_spi_close(const devfs_handle_t * handle){
+	drive_cfi_state_t * state = handle->state;
+	if( state->is_initialized ){ state->is_initialized--; }
 	return mcu_spi_close(handle);
 }
 

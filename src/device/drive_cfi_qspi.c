@@ -22,6 +22,7 @@ static int drive_cfi_qspi_execute_quick_command(
 		u32 o_flags);
 
 static u8 drive_cfi_qspi_read_status(const devfs_handle_t * handle);
+static int drive_initialize(const devfs_handle_t * handle);
 
 
 int drive_cfi_qspi_open(const devfs_handle_t * handle){
@@ -31,9 +32,56 @@ int drive_cfi_qspi_open(const devfs_handle_t * handle){
 	result = config->serial_device->driver.open(&config->serial_device->handle);
 	if( result < 0 ){ return result; }
 
-	//load device status
+	//initialize if not yet initialized
 
-	return SYSFS_RETURN_SUCCESS;
+	return drive_initialize(handle);
+}
+
+int drive_initialize(const devfs_handle_t * handle){
+	const drive_cfi_config_t * config = handle->config;
+	drive_cfi_state_t * state = handle->state;
+	int result;
+
+	if( state->is_initialized == 0 ){
+		//init the CS pin if it is available
+		//set serial driver attributes to defaults
+		result = config->serial_device->driver.ioctl(
+					&config->serial_device->handle,
+					I_QSPI_SETATTR,
+					0);
+
+		if( result < 0 ){ return result; }
+
+
+		if( config->qspi_flags & QSPI_FLAG_IS_OPCODE_QUAD ){
+			//enter QPI mode
+			drive_cfi_qspi_execute_quick_command(
+						handle,
+						config->opcode.enter_qpi_mode,
+						0,
+						0);
+		}
+
+		if( config->qspi_flags & QSPI_FLAG_IS_ADDRESS_32_BITS ){
+			drive_cfi_qspi_execute_quick_command(
+						handle,
+						config->opcode.enter_4byte_address_mode,
+						0,
+						config->qspi_flags);
+		}
+
+		drive_cfi_qspi_execute_quick_command(handle, config->opcode.write_enable, 0, 0);
+		drive_cfi_qspi_execute_quick_command(handle, config->opcode.unprotect, 0, 0);
+
+		if( config->opcode.write_status != 0 && config->opcode.write_status != 0xff ){
+			drive_cfi_qspi_execute_quick_command(handle, config->opcode.write_enable, 0, config->qspi_flags);
+			u8 update_status = config->opcode.initial_status_value;
+			drive_cfi_qspi_execute_command(handle, config->opcode.write_status, 0, &update_status, 1, 0, config->qspi_flags);
+		}
+	}
+	state->is_initialized++;
+
+	return 0;
 }
 
 int drive_cfi_qspi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
@@ -54,34 +102,8 @@ int drive_cfi_qspi_ioctl(const devfs_handle_t * handle, int request, void * ctl)
 				if( o_flags & DRIVE_FLAG_INIT ){
 
 					//set serial driver attributes to defaults
-					result = config->serial_device->driver.ioctl(
-								&config->serial_device->handle,
-								I_QSPI_SETATTR,
-								0);
-
+					result = drive_initialize(handle);
 					if( result < 0 ){ return result; }
-
-
-					if( config->qspi_flags & QSPI_FLAG_IS_OPCODE_QUAD ){
-						//enter QPI mode
-						drive_cfi_qspi_execute_quick_command(
-									handle,
-									config->opcode.enter_qpi_mode,
-									0,
-									0);
-					}
-
-					if( config->qspi_flags & QSPI_FLAG_IS_ADDRESS_32_BITS ){
-						drive_cfi_qspi_execute_quick_command(
-									handle,
-									config->opcode.enter_4byte_address_mode,
-									0,
-									config->qspi_flags);
-					}
-
-					if( result < 0 ){
-						return result;
-					}
 
 				}
 
@@ -202,7 +224,6 @@ int drive_cfi_qspi_read(const devfs_handle_t * handle, devfs_async_t * async){
 
 int drive_cfi_qspi_write(const devfs_handle_t * handle, devfs_async_t * async){
 	const drive_cfi_config_t * config = handle->config;
-
 	//check for the end of the drive
 	int num_blocks = async->nbyte / config->info.addressable_size;
 	if( async->loc + num_blocks > config->info.num_write_blocks ){
@@ -232,13 +253,17 @@ int drive_cfi_qspi_write(const devfs_handle_t * handle, devfs_async_t * async){
 															  async->loc,
 															  config->qspi_flags | QSPI_FLAG_IS_ADDRESS_WRITE);
 
-	if( result < 0 ){ return result; }
+	if( result < 0 ){
+		return result;
+	}
 
 	return config->serial_device->driver.write(&config->serial_device->handle, async);
 
 }
 
 int drive_cfi_qspi_close(const devfs_handle_t * handle){
+	drive_cfi_state_t * state = handle->state;
+	if( state->is_initialized ){ state->is_initialized--; }
 	return mcu_qspi_close(handle);
 }
 

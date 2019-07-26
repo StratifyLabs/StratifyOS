@@ -16,33 +16,31 @@ if( ${SOS_CONFIG} MATCHES "release$" ) # matches if the config ends with "releas
 	set(BUILD_TYPE "")
 	set(BUILD_NAME build_${SOS_CONFIG})
 	set(BUILD_UNDEFINE_SYMBOL symbols_table)
-	set(BUILD_HARDWARD_ID ,--defsym=mcu_core_hardware_id=${SOS_HARDWARD_ID})
 	set(BUILD_EXTRA_LIBRARIES "")
 elseif( ${SOS_CONFIG} MATCHES "debug$" ) # matches if the config ends with "debug"
 	set(BUILD_TYPE "_debug")
 	set(BUILD_NAME build_${SOS_CONFIG})
 	set(BUILD_UNDEFINE_SYMBOL symbols_table)
 	set(BUILD_EXTRA_LIBRARIES "")
-	set(BUILD_HARDWARD_ID ,--defsym=mcu_core_hardware_id=${SOS_HARDWARD_ID})
 elseif( ${SOS_CONFIG} MATCHES "release_boot$" ) # matches if the config ends with "release_boot"
 	set(BUILD_TYPE "")
 	set(BUILD_NAME build_${SOS_CONFIG})
 	set(BUILD_EXTRA_LIBRARIES -lsos_boot)
 	set(BUILD_UNDEFINE_SYMBOL _main)
-	set(BUILD_HARDWARD_ID "")
 elseif( ${SOS_CONFIG} MATCHES "debug_boot$" ) # matches if the config ends with "debug_boot"
 	set(BUILD_TYPE "_debug")
 	set(BUILD_NAME build_${SOS_CONFIG})
 	set(BUILD_UNDEFINE_SYMBOL _main)
 	set(BUILD_EXTRA_LIBRARIES -lsos_boot_debug)
-	set(BUILD_HARDWARD_ID "")
 else()
 	set(BUILD_TYPE "")
 	set(BUILD_NAME build_${SOS_CONFIG})
 	set(BUILD_UNDEFINE_SYMBOL symbols_table)
-	set(BUILD_HARDWARD_ID ,--defsym=mcu_core_hardware_id=${SOS_HARDWARD_ID})
 	set(BUILD_EXTRA_LIBRARIES "")
 endif()
+
+set(BUILD_HARDWARD_ID ,--defsym=mcu_core_hardware_id=${SOS_HARDWARD_ID})
+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/${BUILD_NAME})
 
 file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
