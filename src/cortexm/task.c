@@ -126,14 +126,16 @@ int task_init(int interval,
 	FPU->FPCCR = 0; //don't automatically save the FPU registers -- save them manually
 #endif
 
+
 	//Turn on the task timer (MCU implementation dependent)
 	set_systick_interval(interval);
 	sos_task_table[0].rr_time = m_task_rr_reload;
 	cortexm_set_stack_ptr( (void*)&_top_of_stack ); //reset the handler stack pointer
 	cortexm_enable_systick_irq();  //Enable context switching
-
-
 	task_root_switch_context();
+
+	while(1){}
+
 	return 0;
 }
 

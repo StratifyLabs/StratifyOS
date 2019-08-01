@@ -114,6 +114,10 @@ void cortexm_reset_mode(){
 	cortexm_disable_interrupts();
 	mpu_disable();
 	cortexm_disable_systick_irq();
+	for(s16 i=-14; i < 255; i++){
+		cortexm_disable_irq(i);
+		mcu_core_set_nvic_priority(i, 0);
+	}
 }
 
 void cortexm_set_privileged_mode(){

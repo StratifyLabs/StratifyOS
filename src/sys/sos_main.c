@@ -59,6 +59,15 @@ void init_hw(){
 	}
 	mcu_fault_init();
 	cortexm_enable_interrupts(); //Enable the interrupts
+
+#if 0
+	if ( mcu_debug_init() < 0 ){
+		cortexm_disable_interrupts();
+		mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_FATAL, (void*)"dbgi");
+	}
+
+	mcu_debug_log_info(MCU_DEBUG_SYS, "MCU Debug start--");
+#endif
 }
 
 int kernel_request(int request, void * data){
