@@ -536,10 +536,17 @@ int appfs_write(const void * cfg, void * handle, int flags, int loc, const void 
 }
 
 void root_appfs_close(void * args){
-	appfs_handle_t * h = args;
+	//flash may not be synced with memory because of programming ops
 	mcu_core_invalidate_instruction_cache();
-	mcu_core_invalidate_data_cache_block(
-				(void*)h->type.install.code_start, h->type.install.code_size);
+
+	appfs_handle_t * h = args;
+	mcu_core_clean_data_cache_block(
+				(void*)h->type.install.code_start, h->type.install.code_size
+				);
+
+	mcu_core_clean_data_cache_block(
+				(void*)h->type.install.data_start, h->type.install.data_size
+				);
 }
 
 int appfs_close(const void* cfg, void ** handle){
