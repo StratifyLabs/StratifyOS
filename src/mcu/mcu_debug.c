@@ -74,7 +74,7 @@ typedef struct {
 } mcu_debug_buffer_t;
 
 static void mcu_debug_vlog(u32 o_flags, const char * intro, const char * format, va_list args);
-static void mcu_debug_root_write_uart_svcall(void * args);
+static void mcu_debug_svcall_write_uart(void * args);
 
 int mcu_debug_init(){
 	devfs_handle_t handle;
@@ -102,7 +102,8 @@ void mcu_debug_root_write_uart(const char * buffer, int nbyte){
 	}
 }
 
-void mcu_debug_root_write_uart_svcall(void * args){
+void mcu_debug_svcall_write_uart(void * args){
+	CORTEXM_SVCALL_ENTER();
 	mcu_debug_buffer_t * p = args;
 	mcu_debug_root_write_uart(p->buffer, p->len);
 }
@@ -142,9 +143,9 @@ int mcu_debug_vprintf(const char * format, va_list args){
 	svcall_args.buffer[255] = 0;
 	svcall_args.len = vsnprintf(svcall_args.buffer, 255, format, args);
 	if( cortexm_is_root_mode() ){
-		mcu_debug_root_write_uart_svcall(&svcall_args);
+		mcu_debug_svcall_write_uart(&svcall_args);
 	} else {
-		cortexm_svcall(mcu_debug_root_write_uart_svcall, &svcall_args);
+		cortexm_svcall(mcu_debug_svcall_write_uart, &svcall_args);
 	}
 	return svcall_args.len;
 }

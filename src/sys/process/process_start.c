@@ -125,9 +125,14 @@ int process_start(const char *path_arg, char *const envp[], int options){
 	mcu_debug_log_info(MCU_DEBUG_SYS, "process start: execute %s", process_path);
 
 	int parent_id = task_get_current();
+	int is_root = 0;
 
 	if( options & APPFS_FLAG_IS_ORPHAN ){
 		parent_id = 0;
+	}
+
+	if( options & APPFS_FLAG_IS_ROOT ){
+		is_root = 1;
 	}
 
 	mcu_debug_log_info(MCU_DEBUG_SYS, "process start: code:%p data:%p", (void*)startup.exec.startup,
@@ -137,7 +142,8 @@ int process_start(const char *path_arg, char *const envp[], int options){
 											 process_path,
 											 &mem,
 											 (void*)startup.exec.ram_start,
-											 parent_id);
+											 parent_id,
+											 is_root);
 
 	if( err < 0 ){
 		_free_r(sos_task_table[0].global_reent, process_path);

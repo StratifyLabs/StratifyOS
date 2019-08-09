@@ -37,13 +37,14 @@
 
 /*! \cond */
 struct timeval time_of_day_offset MCU_SYS_MEM;
-static void root_set_time(void * args) MCU_ROOT_EXEC_CODE;
-void root_set_time(void * args){
+static void svcall_set_time(void * args) MCU_ROOT_EXEC_CODE;
+void svcall_set_time(void * args){
+	CORTEXM_SVCALL_ENTER();
 	div_t d;
 	struct mcu_timeval tv;
 	struct timeval tmp;
 	struct timeval * t = (struct timeval *)args;
-	scheduler_timing_root_get_realtime(&tv);
+	scheduler_timing_svcall_get_realtime(&tv);
 
 	//time = value + offset
 	//offset = time - value
@@ -74,7 +75,7 @@ static int settimeofday_rtc(const struct timeval * tp);
 int _settimeofday(const struct timeval * tp, const struct timezone * tzp) {
 	settimeofday_rtc(tp);
 	//also, set the simulated time
-	cortexm_svcall(root_set_time, (void*)tp);
+	cortexm_svcall(svcall_set_time, (void*)tp);
 
 	return 0;
 }

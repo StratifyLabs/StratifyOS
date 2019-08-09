@@ -25,6 +25,7 @@
 #include "mcu/core.h"
 #include "device/sys.h"
 #include "mcu/debug.h"
+#include "mcu/mcu.h"
 #include "scheduler/scheduler_local.h"
 #include "cortexm/mpu.h"
 
@@ -37,9 +38,6 @@ extern void mcu_core_hardware_id();
 static int read_task(sys_taskattr_t * task);
 static int sys_setattr(const devfs_handle_t * handle, void * ctl);
 
-extern u32 _text;
-
-u8 sys_euid MCU_SYS_MEM;
 
 int sys_open(const devfs_handle_t * handle){
 	return 0;
@@ -179,8 +177,7 @@ int sys_setattr(const devfs_handle_t * handle, void * ctl){
 
 	if( o_flags & SYS_FLAG_SET_MEMORY_REGION ){
 
-		if( attr->region == TASK_APPLICATION_DATA_USER_REGION_HIGH_PRIORITY ||
-			 attr->region == TASK_APPLICATION_DATA_USER_REGION_LOW_PRIORITY ){
+		if( attr->region == TASK_APPLICATION_DATA_USER_REGION ){
 
 			int type = MPU_MEMORY_SRAM;
 			if( o_flags & SYS_FLAG_IS_FLASH ){

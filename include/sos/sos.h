@@ -593,9 +593,13 @@ extern const sos_board_config_t sos_board_config;
 #define SOS_USER 1
 
 void sos_led_startup();
-void sos_led_root_enable(void * args);
-void sos_led_root_disable(void * args);
-void sos_led_root_error(void * args);
+void sos_led_svcall_enable(void * args);
+void sos_led_svcall_disable(void * args);
+void sos_led_svcall_error(void * args);
+
+void sos_led_root_enable();
+void sos_led_root_disable();
+void sos_led_root_error();
 
 #endif
 

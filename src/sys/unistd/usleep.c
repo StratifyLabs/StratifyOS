@@ -33,8 +33,8 @@
 #include "../scheduler/scheduler_local.h"
 
 /*! \cond */
-static void root_usleep(void * args) MCU_ROOT_EXEC_CODE;
-static void root_get_usecond_tmr(void * args);
+static void svcall_usleep(void * args) MCU_ROOT_EXEC_CODE;
+static void svcall_get_usecond_tmr(void * args);
 /*! \endcond */
 
 /*! \details Causes the calling thread to sleep for \a useconds microseconds.
@@ -59,18 +59,18 @@ int usleep(useconds_t useconds){
 			u32 start;
 			u32 end;
 
-			cortexm_svcall(root_get_usecond_tmr, &start);
+			cortexm_svcall(svcall_get_usecond_tmr, &start);
 			end = start + useconds;
 
 			if( end > SOS_USECOND_PERIOD ){
 				end -= SOS_USECOND_PERIOD; //adjust for overflow
 				do {
-					cortexm_svcall(root_get_usecond_tmr, &now);
+					cortexm_svcall(svcall_get_usecond_tmr, &now);
 					//--------------END*******************START--------- wait in ---- time
 				} while( (now <= end) || (now >= start) );
 			} else {
 				do {
-					cortexm_svcall(root_get_usecond_tmr, &now);
+					cortexm_svcall(svcall_get_usecond_tmr, &now);
 					//--------------START*******************END--------- wait in **** time
 				} while( (now <= end) && (now >= start) );
 			}
@@ -78,7 +78,7 @@ int usleep(useconds_t useconds){
 		} else {
 			//clocks is greater than 4800 -- there is time to change to another task
 			useconds -= (600 / tmp); //this is a fudge factor to handle the amount of time to start waiting
-			cortexm_svcall(root_usleep, &useconds);
+			cortexm_svcall(svcall_usleep, &useconds);
 		}
 	} else {
 		errno = EINVAL;
@@ -88,17 +88,19 @@ int usleep(useconds_t useconds){
 }
 
 /*! \cond */
-void root_get_usecond_tmr(void * args){
+void svcall_get_usecond_tmr(void * args){
+	CORTEXM_SVCALL_ENTER();
 	devfs_handle_t tmr_handle;
 	tmr_handle.port = sos_board_config.clk_usecond_tmr;
 	mcu_tmr_get(&tmr_handle, args);
 }
 
-void root_usleep(void * args){
+void svcall_usleep(void * args){
+	CORTEXM_SVCALL_ENTER();
 	const useconds_t * p;
 	struct mcu_timeval abs_time;
 	p = (useconds_t*)args;
-	scheduler_timing_root_get_realtime(&abs_time);
+	scheduler_timing_svcall_get_realtime(&abs_time);
 	abs_time.tv_usec = abs_time.tv_usec + *p;
 
 	if ( abs_time.tv_usec > SOS_USECOND_PERIOD ){

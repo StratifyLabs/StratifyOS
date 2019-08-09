@@ -42,8 +42,10 @@
 #define ANALYZE_PATH_RAM 4
 #define ANALYZE_PATH_RAM_DIR 5
 
-static void root_ioctl(void * args);
-static void root_init(void * args);
+static void svcall_ioctl(void * args);
+static void svcall_init(void * args);
+static void svcall_read(void * args);
+static void svcall_close(void * args);
 static int readdir_rootdir(const void * cfg, int loc, struct dirent * entry);
 
 static int analyze_path(const char * path, const char ** name, int * mem_type){
@@ -107,7 +109,8 @@ static bool is_sys(const char * name){
 }
 
 
-void root_init(void * args){
+void svcall_init(void * args){
+	CORTEXM_SVCALL_ENTER();
 	int i;
 	mem_info_t info;
 	appfs_file_t appfs_file;
@@ -155,7 +158,7 @@ void root_init(void * args){
 
 //called unpriv for mounting
 int appfs_init(const void * cfg){
-	cortexm_svcall(root_init, (void*)cfg);
+	cortexm_svcall(svcall_init, (void*)cfg);
 	return 0;
 }
 
@@ -192,12 +195,18 @@ int appfs_startup(const void * cfg){
 			mem.code.size = get_fileinfo_args.file_info.exec.code_size;
 			mem.data.address = (void*)get_fileinfo_args.file_info.exec.ram_start;
 			mem.data.size = get_fileinfo_args.file_info.exec.ram_size;
+			int is_root = 0;
+
+			if( get_fileinfo_args.file_info.exec.o_flags & APPFS_FLAG_IS_ROOT ){
+				is_root = 1;
+			}
 
 			if ( scheduler_create_process((void*)get_fileinfo_args.file_info.exec.startup,
 													0,
 													&mem,
 													(void*)get_fileinfo_args.file_info.exec.ram_start,
-													0) >= 0 ){
+													0,
+													is_root) >= 0 ){
 				started++;
 				mcu_debug_log_info(MCU_DEBUG_APPFS, "Started %s", get_fileinfo_args.file_info.hdr.name);
 			} else {
@@ -483,7 +492,8 @@ int appfs_stat(const void* cfg, const char * path, struct stat * st){
 	return appfs_fstat(cfg, &handle, st);
 }
 
-void root_read(void * args){
+void svcall_read(void * args){
+	CORTEXM_SVCALL_ENTER();
 	sysfs_read_t * p = args;
 
 	devfs_async_t async;
@@ -526,7 +536,7 @@ int appfs_read(const void * cfg, void * handle, int flags, int loc, void * buf, 
 	args.loc = loc;
 	args.buf = buf;
 	args.nbyte = nbyte;
-	cortexm_svcall(root_read, &args);
+	cortexm_svcall(svcall_read, &args);
 	return args.result;
 
 }
@@ -535,7 +545,8 @@ int appfs_write(const void * cfg, void * handle, int flags, int loc, const void 
 	return SYSFS_SET_RETURN(EROFS);
 }
 
-void root_appfs_close(void * args){
+void svcall_close(void * args){
+	CORTEXM_SVCALL_ENTER();
 	//flash may not be synced with memory because of programming ops
 	mcu_core_invalidate_instruction_cache();
 
@@ -553,7 +564,7 @@ int appfs_close(const void* cfg, void ** handle){
 	//close a file
 	appfs_handle_t * h = (appfs_handle_t*)*handle;
 	if( h->is_install ){
-		cortexm_svcall(root_appfs_close, h);
+		cortexm_svcall(svcall_close, h);
 	}
 	free(h);
 	h = NULL;
@@ -575,7 +586,8 @@ int appfs_opendir(const void* cfg, void ** handle, const char * path){
 
 
 
-void root_ioctl(void * args){
+void svcall_ioctl(void * args){
+	CORTEXM_SVCALL_ENTER();
 	sysfs_ioctl_t * a = args;
 	appfs_handle_t * h = a->handle;
 	int request = a->request;
@@ -656,7 +668,7 @@ int appfs_ioctl(const void * cfg, void * handle, int request, void * ctl){
 	args.handle = handle;
 	args.request = request;
 	args.ctl = ctl;
-	cortexm_svcall(root_ioctl, &args);
+	cortexm_svcall(svcall_ioctl, &args);
 	return args.result;
 
 }

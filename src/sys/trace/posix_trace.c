@@ -123,8 +123,8 @@ typedef struct {
 	trace_id_t id;
 	int result;
 } root_trace_id_t;
-static void root_set_trace_id(void * args);
-static void root_shutdown_trace_id(void * args);
+static void svcall_set_trace_id(void * args);
+static void svcall_shutdown_trace_id(void * args);
 
 static int trace_timedgetnext_event(trace_id_t id,
 		struct posix_trace_event_info * event,
@@ -147,7 +147,8 @@ int posix_trace_close(trace_id_t id){
 }
 
 
-void root_count_trace_id(void * args){
+void svcall_count_trace_id(void * args){
+	CORTEXM_SVCALL_ENTER();
 	pid_t * pid = (pid_t*)args;
 	int i;
 	int ret = 0;
@@ -161,7 +162,8 @@ void root_count_trace_id(void * args){
 	*pid = ret;
 }
 
-void root_set_trace_id(void * args){
+void svcall_set_trace_id(void * args){
+	CORTEXM_SVCALL_ENTER();
 	root_trace_id_t * p = args;
 	int i;
 	p->result = 0;
@@ -200,7 +202,7 @@ int posix_trace_create(pid_t pid, const trace_attr_t * attr, trace_id_t * id){
 	pid_t tmp_pid;
 	tmp_pid = pid;
 	//check to see if there are any tasks with the target ID -- if not, don't create the trace
-	cortexm_svcall(root_count_trace_id, &tmp_pid);
+	cortexm_svcall(svcall_count_trace_id, &tmp_pid);
 	if( tmp_pid == 0 ){
 		errno = ESRCH;
 		return -1;
@@ -243,7 +245,7 @@ int posix_trace_create(pid_t pid, const trace_attr_t * attr, trace_id_t * id){
 
 	args.id = *id;
 	args.result = 0;
-	cortexm_svcall(root_set_trace_id, &args);
+	cortexm_svcall(svcall_set_trace_id, &args);
 
 	return 0;
 }
@@ -523,7 +525,8 @@ int posix_trace_set_filter(trace_id_t id, const trace_event_set_t * event_set, i
 	return 0;
 }
 
-void root_shutdown_trace_id(void * args){
+void svcall_shutdown_trace_id(void * args){
+	CORTEXM_SVCALL_ENTER();
 	int i;
 	root_trace_id_t * p = args;
 	for(i=0; i < task_get_total(); i++){
@@ -541,7 +544,7 @@ int posix_trace_shutdown(trace_id_t id){
 	if( is_invalid(id) ){ return -1; }
 
 	args.id = id;
-	cortexm_svcall(root_shutdown_trace_id, &args);
+	cortexm_svcall(svcall_shutdown_trace_id, &args);
 	mq_discard(id->mq);
 	memset(id, 0, sizeof(trace_id_handle_t));
 	return 0;

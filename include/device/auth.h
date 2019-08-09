@@ -1,4 +1,4 @@
-/* Copyright 2011-2017 Tyler Gilbert;
+/* Copyright 2011-2018 Tyler Gilbert; 
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -13,37 +13,23 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- *
- *
+ * 
+ * 
  */
 
-#include "sos/sos.h"
-#include "mcu/core.h"
-#include "mcu/pio.h"
-#include "cortexm/cortexm.h"
 
-void sos_led_startup(){
-	int i;
-	int duty;
-	const int factor = 10;
-	duty = 0;
-	if( mcu_board_config.led.port != 255 ){
-		for(i=0; i < 100; i++){
-			duty = i*factor;
-			cortexm_svcall(sos_led_svcall_enable, 0);
-			usleep(duty);
-			cortexm_svcall(sos_led_svcall_disable, 0);
-			usleep(100*factor - duty);
-		}
+#ifndef DEVICE_AUTH_H_
+#define DEVICE_AUTH_H_
 
-		for(i=0; i < 100; i++){
-			duty = i*factor;
-			cortexm_svcall(sos_led_svcall_enable, 0);
-			usleep(100*factor - duty);
-			cortexm_svcall(sos_led_svcall_disable, 0);
-			usleep(duty);
-		}
-	}
-}
+#include "sos/fs/types.h"
+#include "sos/dev/auth.h"
 
+int auth_open(const devfs_handle_t * handle);
+int auth_ioctl(const devfs_handle_t * handle, int request, void * ctl);
+int auth_read(const devfs_handle_t * handle, devfs_async_t * async);
+int auth_write(const devfs_handle_t * handle, devfs_async_t * async);
+int auth_close(const devfs_handle_t * handle);
+
+
+#endif /* DEVICE_AUTH_H_ */
 

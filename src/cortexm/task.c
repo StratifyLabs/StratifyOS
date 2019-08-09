@@ -30,7 +30,7 @@ volatile s8 m_task_current_priority MCU_SYS_MEM;
 static volatile u8 m_task_exec_count MCU_SYS_MEM;
 int m_task_rr_reload MCU_SYS_MEM;
 volatile int m_task_current MCU_SYS_MEM;
-static void root_task_read_rr_timer(u32 * val);
+static void svcall_read_rr_timer(u32 * val);
 static int set_systick_interval(int interval) MCU_ROOT_CODE;
 static void switch_contexts();
 
@@ -190,13 +190,16 @@ int task_create_thread(void *(*p)(void*),
 	task.mem = (void*)&(sos_task_table[ thread_zero ].mem);
 
 	//Do a priv call while accessing the task table so there are no interruptions
-	cortexm_svcall( (cortexm_svcall_t)task_root_new_task, &task);
+	cortexm_svcall( (cortexm_svcall_t)task_svcall_new_task, &task);
 	return task.tid;
 }
 
-void task_root_new_task(new_task_t * task){
+void task_svcall_new_task(new_task_t * task){
+	CORTEXM_SVCALL_ENTER();
 	int i;
 	hw_stack_frame_t * frame;
+
+	//validate arguments
 
 	for(i=1; i < task_get_total(); i++){
 		if ( !task_used_asserted(i) ){
@@ -204,6 +207,10 @@ void task_root_new_task(new_task_t * task){
 			sos_task_table[i].pid = task->pid;
 			sos_task_table[i].parent = task->parent;
 			sos_task_table[i].flags = task->flags;
+			//calling process must be root for new process to be created as root
+			if( !task_root_asserted(task_get_current()) ){
+				sos_task_table[i].flags &= ~TASK_FLAGS_ROOT;
+			}
 			sos_task_table[i].sp = task->stackaddr - sizeof(hw_stack_frame_t) - sizeof(sw_stack_frame_t);
 			sos_task_table[i].reent = task->reent;
 			sos_task_table[i].global_reent = task->global_reent;
@@ -266,7 +273,7 @@ void * task_get_sbrk_stack_ptr(struct _reent * reent_ptr){
 					if ( (i == task_get_current()) ){
 						//If the main thread is the current thread return the current stack
 						//security? can set stackaddr to any value -- only write valid locations
-						cortexm_svcall(cortexm_get_thread_stack_ptr, &stackaddr);
+						cortexm_svcall(cortexm_svcall_get_thread_stack_ptr, &stackaddr);
 						return stackaddr;
 					} else {
 						//Return the stack value from thread 0 if another thread is running
@@ -296,7 +303,8 @@ int task_get_thread_zero(int pid){
 	return -1;
 }
 
-static void root_task_read_rr_timer(u32 * val){
+static void svcall_read_rr_timer(u32 * val){
+	CORTEXM_SVCALL_ENTER();
 	*val = m_task_rr_reload - SysTick->VAL;
 }
 
@@ -306,7 +314,7 @@ u64 task_root_gettime(int tid){
 	if ( tid != task_get_current() ){
 		return sos_task_table[tid].timer.t + (m_task_rr_reload - sos_task_table[tid].rr_time);
 	} else {
-		root_task_read_rr_timer(&val);
+		svcall_read_rr_timer(&val);
 		return sos_task_table[tid].timer.t + val;
 	}
 }
@@ -318,7 +326,7 @@ u64 task_gettime(int tid){
 		return sos_task_table[tid].timer.t + (m_task_rr_reload - sos_task_table[tid].rr_time);
 	} else {
 		//security? args is written
-		cortexm_svcall((cortexm_svcall_t)root_task_read_rr_timer, &val);
+		cortexm_svcall((cortexm_svcall_t)svcall_read_rr_timer, &val);
 		return sos_task_table[tid].timer.t + val;
 	}
 }
@@ -486,10 +494,11 @@ void mcu_core_pendsv_handler(){
 }
 
 
-static void root_task_restore(void * args) MCU_NAKED;
-void root_task_restore(void * args){
+static void svcall_restore_task(void * args) MCU_NAKED;
+void svcall_restore_task(void * args){
 	asm volatile ("push {lr}\n\t");
 	u32 pstack;
+	CORTEXM_SVCALL_ENTER();
 
 	//discard the current HW stack by adjusting the PSP up by sizeof(hw_stack_frame_t) --sw_stack_frame_t is same size
 	pstack = __get_PSP();
@@ -504,7 +513,7 @@ void root_task_restore(void * args){
 
 void task_restore(){
 	//handlers inserted with task_interrupt() must call this function when the task completes in order to restore the stack
-	cortexm_svcall(root_task_restore, NULL);
+	cortexm_svcall(svcall_restore_task, NULL);
 }
 
 int task_root_interrupt_call(void * args){
@@ -552,9 +561,10 @@ u32 task_interrupt_stacksize(){
 }
 
 
-void task_root_interrupt(void * args){
+void task_svcall_interrupt(void * args){
 	task_save_context(); //save the current software context
 	//This function inserts the handler on the specified task's stack
+	CORTEXM_SVCALL_ENTER();
 
 	if( task_root_interrupt_call(args) ){
 		task_load_context(); //the context needs to be loaded for the current task -- otherwise it is loaded by the switcher
@@ -563,7 +573,7 @@ void task_root_interrupt(void * args){
 
 int task_interrupt(task_interrupt_t * intr){
 	if ( intr->tid < task_get_total() ){
-		cortexm_svcall(task_root_interrupt, intr);
+		cortexm_svcall(task_svcall_interrupt, intr);
 		return 0;
 	}
 	return -1;

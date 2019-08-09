@@ -35,6 +35,8 @@
 static volatile u32 sched_usecond_counter MCU_SYS_MEM;
 
 static int open_usecond_tmr();
+static void svcall_allocate_timer(void * args);
+static void root_allocate_timer(void * args);
 static int root_handle_usecond_overflow_event(void * context, const mcu_event_t * data);
 static int root_handle_usecond_match_event(void * context, const mcu_event_t * data);
 static int root_handle_usecond_process_timer_match_event(void * context, const mcu_event_t * data);
@@ -65,10 +67,15 @@ typedef struct {
 	timer_t timer_id;
 	const struct sigevent * event;
 	int result;
-} root_allocate_timer_t;
+} svcall_allocate_timer_t;
 
-static void root_allocate_timer(void * args){
-	root_allocate_timer_t * p = args;
+void svcall_allocate_timer(void * args){
+	CORTEXM_SVCALL_ENTER();
+	root_allocate_timer(args);
+}
+
+void root_allocate_timer(void * args){
+	svcall_allocate_timer_t * p = args;
 	volatile sos_process_timer_t * timer = scheduler_timing_process_timer(p->timer_id);
 	if( timer->o_flags == 0 ){
 		if( p->event ){
@@ -97,7 +104,7 @@ void scheduler_timing_root_process_timer_initialize(u16 task_id){
 
 	//the first available timer slot is reserved for alarm/ualarm
 	if( task_get_parent(task_id) == task_id ){
-		root_allocate_timer_t args;
+		svcall_allocate_timer_t args;
 		args.timer_id = SCHEDULER_TIMING_PROCESS_TIMER(task_id, 0);
 		args.event = 0;
 		root_allocate_timer(&args);
@@ -107,14 +114,14 @@ void scheduler_timing_root_process_timer_initialize(u16 task_id){
 timer_t scheduler_timing_process_create_timer(const struct sigevent * evp){
 	s32 count = scheduler_timing_process_timer_count();
 	int pid = task_get_pid(task_get_current());
-	root_allocate_timer_t args;
+	svcall_allocate_timer_t args;
 	args.event = evp;
 	args.result = -1;
 	for(u8 task_id = 0; task_id < task_get_total(); task_id++){
 		if( task_get_pid(task_id) == pid ){
 			for(u8 id_offset = 0; id_offset < count; id_offset++){
 				args.timer_id = SCHEDULER_TIMING_PROCESS_TIMER(task_id, id_offset);
-				cortexm_svcall(root_allocate_timer, &args);
+				cortexm_svcall(svcall_allocate_timer, &args);
 				if( args.result == 0 ){
 					return args.timer_id;
 				}
@@ -127,11 +134,12 @@ timer_t scheduler_timing_process_create_timer(const struct sigevent * evp){
 typedef struct {
 	timer_t timer_id;
 	int result;
-} root_delete_timer_t;
+} svcall_delete_timer_t;
 
-static void root_delete_timer(void * args) MCU_ROOT_EXEC_CODE;
-void root_delete_timer(void * args){
-	root_delete_timer_t * p = args;
+static void svcall_delete_timer(void * args) MCU_ROOT_EXEC_CODE;
+void svcall_delete_timer(void * args){
+	CORTEXM_SVCALL_ENTER();
+	svcall_delete_timer_t * p = args;
 	volatile sos_process_timer_t * timer = scheduler_timing_process_timer(p->timer_id);
 	if( timer == 0 ){
 		p->result = -1;
@@ -144,10 +152,10 @@ void root_delete_timer(void * args){
 }
 
 int scheduler_timing_process_delete_timer(timer_t timer_id){
-	root_delete_timer_t args;
+	svcall_delete_timer_t args;
 	args.timer_id = timer_id;
 	args.result = -202020;
-	cortexm_svcall(root_delete_timer, &args);
+	cortexm_svcall(svcall_delete_timer, &args);
 	return args.result;
 }
 
@@ -159,11 +167,12 @@ typedef struct {
 	struct mcu_timeval * o_value;
 	struct mcu_timeval * o_interval;
 	int result;
-} root_settime_t;
+} svcall_settime_t;
 
-static void root_settime(void * args) MCU_ROOT_EXEC_CODE;
-void root_settime(void * args){
-	root_settime_t * p = args;
+static void svcall_settime(void * args) MCU_ROOT_EXEC_CODE;
+void svcall_settime(void * args){
+	CORTEXM_SVCALL_ENTER();
+	svcall_settime_t * p = args;
 	struct mcu_timeval abs_time;
 
 
@@ -212,7 +221,7 @@ int scheduler_timing_process_set_timer(timer_t timerid, int flags,
 													const struct mcu_timeval * interval,
 													struct mcu_timeval * o_value,
 													struct mcu_timeval * o_interval){
-	root_settime_t args;
+	svcall_settime_t args;
 	args.timer_id = timerid;
 	args.flags = flags;
 	args.value = value;
@@ -220,7 +229,7 @@ int scheduler_timing_process_set_timer(timer_t timerid, int flags,
 	args.o_value = o_value;
 	args.o_interval = o_interval;
 	args.result = -202020;
-	cortexm_svcall(root_settime, &args);
+	cortexm_svcall(svcall_settime, &args);
 	return args.result;
 }
 
@@ -230,11 +239,12 @@ typedef struct {
 	struct mcu_timeval * interval;
 	struct mcu_timeval * now;
 	int result;
-} root_gettime_t;
+} svcall_gettime_t;
 
-static void root_gettime(void * args) MCU_ROOT_EXEC_CODE;
-void root_gettime(void * args){
-	root_gettime_t * p = args;
+static void svcall_gettime(void * args) MCU_ROOT_EXEC_CODE;
+void svcall_gettime(void * args){
+	CORTEXM_SVCALL_ENTER();
+	svcall_gettime_t * p = args;
 
 	volatile sos_process_timer_t * timer = scheduler_timing_process_timer(p->timer_id);
 	if( timer == 0 ){
@@ -256,14 +266,14 @@ void root_gettime(void * args){
 
 
 int scheduler_timing_process_get_timer(timer_t timerid, struct mcu_timeval * value, struct mcu_timeval * interval, struct mcu_timeval * now){
-	root_gettime_t args;
+	svcall_gettime_t args;
 	args.timer_id = timerid;
 	args.result = -202020;
 	args.value = value;
 	args.interval = interval;
 	args.now = now;
 
-	cortexm_svcall(root_gettime, &args);
+	cortexm_svcall(svcall_gettime, &args);
 	return args.result;
 }
 
@@ -332,10 +342,11 @@ void update_tmr_for_process_timer_match(volatile sos_process_timer_t * timer){
 typedef struct {
 	int si_signo;
 	int sig_value;
-} root_unqueue_timer_t;
+} svcall_unqueue_timer_t;
 
-static void root_unqueue_timer(void * args){
-	root_unqueue_timer_t * p = args;
+static void svcall_unqueue_timer(void * args){
+	CORTEXM_SVCALL_ENTER();
+	svcall_unqueue_timer_t * p = args;
 	timer_t timer_id;
 	for(u8 j=0; j < SOS_PROCESS_TIMER_COUNT; j++){
 		timer_id = SCHEDULER_TIMING_PROCESS_TIMER(task_get_current(), j);
@@ -352,10 +363,10 @@ static void root_unqueue_timer(void * args){
 void scheduler_timing_process_unqueue_timer(int tid,
 														  int si_signo,
 														  union sigval sig_value){
-	root_unqueue_timer_t args;
+	svcall_unqueue_timer_t args;
 	args.si_signo = si_signo;
 	args.sig_value = sig_value.sival_int;
-	cortexm_svcall(root_unqueue_timer, &args);
+	cortexm_svcall(svcall_unqueue_timer, &args);
 }
 
 int send_and_reload_timer(volatile sos_process_timer_t * timer, u8 task_id, u32 now){
@@ -463,7 +474,7 @@ void scheduler_timing_convert_mcu_timeval(struct timespec * ts, const struct mcu
 //never used
 u32 scheduler_timing_get_realtime(){
 	struct mcu_timeval tv;
-	cortexm_svcall((cortexm_svcall_t)scheduler_timing_root_get_realtime, &tv);
+	cortexm_svcall((cortexm_svcall_t)scheduler_timing_svcall_get_realtime, &tv);
 	return tv.tv_usec;
 }
 
@@ -501,6 +512,11 @@ struct mcu_timeval scheduler_timing_subtract_mcu_timeval(const struct mcu_timeva
 }
 
 
+
+void scheduler_timing_svcall_get_realtime(void *args){
+	CORTEXM_SVCALL_ENTER();
+	scheduler_timing_root_get_realtime(args);
+}
 
 void scheduler_timing_root_get_realtime(struct mcu_timeval * tv){
 	devfs_handle_t tmr_handle;

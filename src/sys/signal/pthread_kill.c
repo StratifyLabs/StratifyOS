@@ -47,8 +47,9 @@ static int signal_root_forward(int send_tid,
 static void signal_forward_handler(int send_tid, int signo, int sigcode, int sigvalue);
 
 //this checks to see if sending a signal will cause a stack/heap collision in the target thread
-static void signal_root_check_stack(void * args) MCU_ROOT_EXEC_CODE;
-void signal_root_check_stack(void * args){
+static void svcall_check_signal_stack(void * args) MCU_ROOT_EXEC_CODE;
+void svcall_check_signal_stack(void * args){
+	CORTEXM_SVCALL_ENTER();
 	int * arg = (int*)args;
 	int tid = *arg;
 	int ret = 0;
@@ -95,7 +96,7 @@ int signal_root_forward(int send_tid, int tid, int si_signo, int si_sigcode, int
 			if ( si_signo < SCHEDULER_NUM_SIGNALS ){
 
 				check_stack = tid;
-				signal_root_check_stack(&check_stack);
+				svcall_check_signal_stack(&check_stack);
 				if( check_stack < 0 ){
 					errno = ENOMEM;
 					return -1;
@@ -109,7 +110,7 @@ int signal_root_forward(int send_tid, int tid, int si_signo, int si_sigcode, int
 				intr.arg[1] = si_signo;
 				intr.arg[2] = si_sigcode;
 				intr.arg[3] = sig_value;
-				task_root_interrupt(&intr);
+				task_svcall_interrupt(&intr);
 			} else {
 				return -1;
 			}
@@ -138,7 +139,7 @@ int signal_root_send(int send_tid, int tid, int si_signo, int si_sigcode, int si
 			if ( si_signo < SCHEDULER_NUM_SIGNALS ){
 
 				check_stack = tid;
-				signal_root_check_stack(&check_stack);
+				svcall_check_signal_stack(&check_stack);
 				if( check_stack < 0 ){
 					return SYSFS_SET_RETURN(ENOMEM);
 				}
@@ -152,7 +153,7 @@ int signal_root_send(int send_tid, int tid, int si_signo, int si_sigcode, int si
 				intr.arg[1] = si_signo;
 				intr.arg[2] = si_sigcode;
 				intr.arg[3] = sig_value;
-				task_root_interrupt(&intr);
+				task_svcall_interrupt(&intr);
 			} else {
 				return SYSFS_SET_RETURN(EINVAL);
 			}
@@ -193,7 +194,7 @@ int signal_send(int tid, int si_signo, int si_sigcode, int sig_value){
 
 		if ( si_signo < SCHEDULER_NUM_SIGNALS ){
 			check_stack = tid;
-			cortexm_svcall(signal_root_check_stack, &check_stack);
+			cortexm_svcall(svcall_check_signal_stack, &check_stack);
 			if( check_stack < 0 ){
 				errno = ENOMEM;
 				return -1;

@@ -27,9 +27,10 @@ typedef struct {
 } root_aio_transfer_t;
 
 //static int data_transfer_callback(struct aiocb * aiocbp, const void * ignore);
-static void root_device_data_transfer(void * args);
+static void svcall_device_data_transfer(void * args);
 
-void root_device_data_transfer(void * args){
+void svcall_device_data_transfer(void * args){
+	CORTEXM_SVCALL_ENTER();
 	root_aio_transfer_t * p = (root_aio_transfer_t*)args;
 
     cortexm_disable_interrupts(); //no switching until the transfer is started -- does Issue #130 change this
@@ -76,6 +77,6 @@ int devfs_aio_data_transfer(const devfs_device_t * device, struct aiocb * aiocbp
 	args.aiocbp->async.handler.callback = sysfs_aio_data_transfer_callback;
 	args.aiocbp->async.handler.context = aiocbp;
 	args.aiocbp->aio_nbytes = -1; //means status is in progress
-	cortexm_svcall(root_device_data_transfer, &args);
+	cortexm_svcall(svcall_device_data_transfer, &args);
 	return args.result;
 }

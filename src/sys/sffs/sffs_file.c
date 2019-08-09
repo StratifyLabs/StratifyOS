@@ -41,7 +41,7 @@
 
 #define DEBUG_LEVEL 10
 
-static void execute_callback(cl_handle_t * handle) MCU_ROOT_EXEC_CODE;
+static void svcall_execute_callback(cl_handle_t * handle) MCU_ROOT_EXEC_CODE;
 static int cleanup_file(const void * cfg, block_t hdr_block, int addr, uint8_t status);
 int mark_file_closed(const void * cfg, block_t hdr_block);
 
@@ -50,7 +50,8 @@ static int get_sffs_block_data_addr(const void * cfg, block_t block){
 	return block * BLOCK_SIZE + offsetof(sffs_block_data_t, data);
 }
 
-void execute_callback(cl_handle_t * handle){
+void svcall_execute_callback(cl_handle_t * handle){
+	CORTEXM_SVCALL_ENTER();
 	handle->op->handler.callback(handle->op->handler.context, NULL);
 }
 
@@ -145,7 +146,7 @@ int sffs_file_finishread(const void * cfg, cl_handle_t * handle){
 	}
 
 	if ( handle->op->handler.callback != NULL ){
-		cortexm_svcall((cortexm_svcall_t)execute_callback, handle);
+		cortexm_svcall((cortexm_svcall_t)svcall_execute_callback, handle);
 	}
 
 	return 0;
@@ -212,7 +213,7 @@ int sffs_file_finishwrite(const void * cfg, cl_handle_t * handle){
 	}
 
 	if ( handle->op->handler.callback != NULL ){
-		cortexm_svcall((cortexm_svcall_t)execute_callback, handle);
+		cortexm_svcall((cortexm_svcall_t)svcall_execute_callback, handle);
 	}
 	return 0;
 }

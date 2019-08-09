@@ -36,7 +36,7 @@
 
 
 /*! \cond */
-static void root_suspend(void * args) MCU_ROOT_EXEC_CODE;
+static void svcall_suspend(void * args) MCU_ROOT_EXEC_CODE;
 static int suspend(struct aiocb *const list[], int nent, const struct timespec * timeout, bool block_on_all);
 static int data_transfer(struct aiocb * aiocbp);
 
@@ -57,9 +57,16 @@ int aio_cancel(int fildes /*! the file descriptor */,
 					struct aiocb * aiocbp /*! a pointer to the AIO data structure */){
 
 	//this needs a special ioctl request to cancel current operations -- use MCU_SET_ACTION
+	mcu_action_t action;
+	memset(&action, 0, sizeof(mcu_action_t));
+	if( aiocbp->aio_lio_opcode == LIO_READ ){
+		action.o_events = MCU_EVENT_FLAG_DATA_READY;
+	} else {
+		action.o_events = MCU_EVENT_FLAG_WRITE_COMPLETE;
+	}
+	action.channel = aiocbp->aio_offset;
+	return ioctl(fildes, I_MCU_SETACTION, &action);
 
-	errno = ENOTSUP;
-	return -1;
 }
 
 /*! \details This function gets the error value for \a aiocbp.
@@ -128,7 +135,7 @@ int suspend(struct aiocb *const list[], int nent, const struct timespec * timeou
 	args.nent = nent;
 	args.block_on_all = block_on_all; //only block on one or block on all
 	scheduler_timing_convert_timespec(&args.abs_timeout, timeout);
-	cortexm_svcall(root_suspend, &args);
+	cortexm_svcall(svcall_suspend, &args);
 
 	if( args.nent == -1 ){
 		return 0; //one of the AIO's in the list has already completed
@@ -229,7 +236,8 @@ int data_transfer(struct aiocb * aiocbp){
 }
 
 
-void root_suspend(void * args){
+void svcall_suspend(void * args){
+	CORTEXM_SVCALL_ENTER();
 	int i;
 	bool suspend;
 	sysfs_aio_suspend_t * p = (sysfs_aio_suspend_t*)args;

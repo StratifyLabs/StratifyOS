@@ -75,7 +75,7 @@ int clock_gettime(clockid_t id, struct timespec * tp){
 	switch(id){
 	case CLOCK_MONOTONIC:
 	case CLOCK_REALTIME:
-		cortexm_svcall((cortexm_svcall_t)scheduler_timing_root_get_realtime, &sched_time);
+		cortexm_svcall((cortexm_svcall_t)scheduler_timing_svcall_get_realtime, &sched_time);
 		d = div(sched_time.tv_usec, 1000000);
 		tp->tv_sec = sched_time.tv_sec * SCHEDULER_TIMEVAL_SECONDS + d.quot;
 		tp->tv_nsec = d.rem * 1000;

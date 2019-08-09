@@ -39,11 +39,12 @@ typedef struct {
 	devfs_async_t async;
 	volatile int is_read;
 	int result;
-} root_device_data_transfer_t;
+} svcall_device_data_transfer_t;
 
 
+static void svcall_check_op_complete(void * args);
 static void root_check_op_complete(void * args);
-static void root_device_data_transfer(void * args) MCU_ROOT_EXEC_CODE;
+static void svcall_device_data_transfer(void * args) MCU_ROOT_EXEC_CODE;
 static int root_data_transfer_callback(void * context, const mcu_event_t * data) MCU_ROOT_CODE;
 static void clear_device_action(const void * config, const devfs_device_t * device, int loc, int is_read);
 
@@ -51,7 +52,7 @@ int root_data_transfer_callback(void * context, const mcu_event_t * event){
 	//activate all tasks that are blocked on this signal
 	int i;
 	int new_priority;
-	root_device_data_transfer_t * args = (root_device_data_transfer_t*)context;
+	svcall_device_data_transfer_t * args = (svcall_device_data_transfer_t*)context;
 
 	new_priority = -1;
 	if ( (uint32_t)args->async.tid < task_get_total() ){
@@ -91,8 +92,14 @@ int root_data_transfer_callback(void * context, const mcu_event_t * event){
 }
 
 
+void svcall_check_op_complete(void * args){
+	CORTEXM_SVCALL_ENTER();
+	root_check_op_complete(args);
+}
+
+
 void root_check_op_complete(void * args){
-	root_device_data_transfer_t * p = (root_device_data_transfer_t*)args;
+	svcall_device_data_transfer_t * p = (svcall_device_data_transfer_t*)args;
 
 	if( p->is_read != ARGS_READ_DONE ){
 		if ( p->result == 0 ){
@@ -115,9 +122,26 @@ void root_check_op_complete(void * args){
 	}
 }
 
-void root_device_data_transfer(void * args){
-	root_device_data_transfer_t * p = (root_device_data_transfer_t*)args;
+void svcall_device_data_transfer(void * args){
+	CORTEXM_SVCALL_ENTER();
+	svcall_device_data_transfer_t * p = (svcall_device_data_transfer_t*)args;
 	const devfs_device_t * dev = p->device;
+
+	//check permissions on this device - IOCTL needs read/write access
+	if( p->is_read ){
+		if( sysfs_is_r_ok(dev->mode, dev->uid, SYSFS_GROUP) == 0 ){
+			p->result = SYSFS_SET_RETURN(EPERM);
+			return;
+		}
+	} else {
+
+		if( sysfs_is_w_ok(dev->mode, dev->uid, SYSFS_GROUP) == 0 ){
+			p->result = SYSFS_SET_RETURN(EPERM);
+			return;
+		}
+
+	}
+
 
 	//check async.buf and async.nbyte to ensure if belongs to the process
 	//EPERM if it fails Issue #127
@@ -152,7 +176,7 @@ void clear_device_action(const void * config, const devfs_device_t * device, int
 
 
 int devfs_data_transfer(const void * config, const devfs_device_t * device, int flags, int loc, void * buf, int nbyte, int is_read){
-	volatile root_device_data_transfer_t args;
+	volatile svcall_device_data_transfer_t args;
 
 	if ( nbyte == 0 ){
 		return 0;
@@ -179,7 +203,7 @@ int devfs_data_transfer(const void * config, const devfs_device_t * device, int 
 		args.async.nbyte = nbyte;
 
 		//This transfers the data
-		cortexm_svcall(root_device_data_transfer, (void*)&args);
+		cortexm_svcall(svcall_device_data_transfer, (void*)&args);
 
 		//We arrive here if the data is done transferring or there is no data to transfer and O_NONBLOCK is set
 		//or if there was an error
@@ -193,7 +217,7 @@ int devfs_data_transfer(const void * config, const devfs_device_t * device, int 
 			}
 
 			//check again if the op is complete
-			cortexm_svcall(root_check_op_complete, (void*)&args);
+			cortexm_svcall(svcall_check_op_complete, (void*)&args);
 		}
 
 		if ( args.result == 0 ){

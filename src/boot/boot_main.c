@@ -48,9 +48,9 @@ static void (*app_reset)();
 void run_bootloader();
 
 void led_flash(){
-	sos_led_root_enable(0);
+	sos_led_svcall_enable(0);
 	cortexm_delay_ms(500);
-	sos_led_root_disable(0);
+	sos_led_svcall_disable(0);
 	cortexm_delay_ms(500);
 }
 
@@ -58,9 +58,9 @@ void led_flash_run_bootloader(){
 	int i;
 	for(i=0; i < 3; i++){
 
-		sos_led_root_enable(0);
+		sos_led_svcall_enable(0);
 		cortexm_delay_ms(50);
-		sos_led_root_disable(0);
+		sos_led_svcall_disable(0);
 		cortexm_delay_ms(50);
 	}
 }

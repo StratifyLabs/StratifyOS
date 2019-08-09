@@ -49,6 +49,7 @@ void appfs_ram_root_init(const devfs_device_t * dev){
 
 
 void appfs_ram_svcall_set(void * args){
+	CORTEXM_SVCALL_ENTER();
 	u32 i;
 	u32 pages;
 	mem_info_t info;

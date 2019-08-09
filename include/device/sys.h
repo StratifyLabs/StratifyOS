@@ -27,7 +27,6 @@
 #include "sos/fs/devfs.h"
 #include "cortexm/task.h"
 
-
 int sys_open(const devfs_handle_t * handle);
 int sys_ioctl(const devfs_handle_t * handle, int request, void * ctl);
 int sys_read(const devfs_handle_t * handle, devfs_async_t * rop);
@@ -39,12 +38,6 @@ int sys_23_ioctl(const devfs_handle_t * handle, int request, void * ctl);
 int sys_23_read(const devfs_handle_t * handle, devfs_async_t * rop);
 int sys_23_write(const devfs_handle_t * handle, devfs_async_t * wop);
 int sys_23_close(const devfs_handle_t * handle);
-
-
-
-extern uint8_t sys_euid;
-
-
 
 
 #endif /* DEV_SYS_H_ */

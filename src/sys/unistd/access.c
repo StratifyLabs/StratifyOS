@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 /*! \addtogroup unistd
@@ -31,11 +31,9 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "sos/sos.h"
 #include "sos/fs/sysfs.h"
 
-/*! \cond */
-static int check_permissions(int file_mode, int file_uid, int file_gid, int amode);
-/*! \endcond */
 
 /*! \details This function checks to see if the specified access (\a amode)
  * is allowed for \a path.
@@ -49,7 +47,7 @@ static int check_permissions(int file_mode, int file_uid, int file_gid, int amod
 int access(const char * path, int amode){
 	const sysfs_t * fs;
 	struct stat st;
-    int ret;
+	int ret;
 
 	//Do a safe check of the path string length
 	if ( sysfs_ispathinvalid(path) == true ){
@@ -59,87 +57,16 @@ int access(const char * path, int amode){
 	fs = sysfs_find(path, true);
 	if ( fs == NULL ){
 		errno = ENOENT;
-        return -1;
+		return -1;
 	}
 
-    if ( (ret = fs->stat(fs->config, sysfs_stripmountpath(fs, path), &st)) < 0 ){
-        SYSFS_PROCESS_RETURN(ret);
-        return ret;
+	if ( (ret = fs->stat(fs->config, sysfs_stripmountpath(fs, path), &st)) < 0 ){
+		SYSFS_PROCESS_RETURN(ret);
+		return ret;
 	}
 
-	return check_permissions(st.st_mode, st.st_uid, st.st_gid, amode);
+	return sysfs_access(st.st_mode, st.st_uid, st.st_gid, amode);
 }
-
-/*! \cond */
-static uint8_t euid = 0;
-static uint8_t egid = 0;
-
-void sffs_sys_seteuid(int uid){
-	euid = uid;
-}
-
-void cafs_sys_setegid(int gid){
-	egid = gid;
-}
-
-int sffs_sys_geteuid(){
-	return euid;
-}
-
-int sffs_sys_getegid(){
-	return egid;
-}
-
-int check_permissions(int file_mode, int file_uid, int file_gid, int amode){
-	int is_ok;
-
-	is_ok = 0;
-	if ( amode & R_OK ){
-		if ( file_mode & S_IROTH ){
-			is_ok |= R_OK;
-		} else if ( (file_mode & S_IRUSR)  && ( file_uid == sffs_sys_geteuid()) ){
-			//Check to see if s.st_uid matches current user id
-			is_ok |= R_OK;
-		} else if ( (file_mode & S_IRGRP) && ( file_gid == sffs_sys_getegid()) ){
-			//Check to see if gid matches current group id
-			is_ok |= R_OK;
-		}
-	}
-
-	if ( amode & W_OK ){
-		if ( file_mode & S_IWOTH ){
-			is_ok |= W_OK;
-		} else if ( (file_mode & S_IWUSR) && ( file_uid == sffs_sys_geteuid()) ){
-			//Check to see if user id matches file_uid
-			is_ok |= W_OK;
-		} else if ( (file_mode & S_IWGRP) && ( file_gid == sffs_sys_getegid()) ){
-			//Check to see if gid matches current group id
-			is_ok |= W_OK;
-		}
-	}
-
-	if ( amode & X_OK){
-		if ( file_mode & S_IXOTH ){
-			is_ok |= X_OK;
-		} else if ( (file_mode & S_IXUSR) && ( file_uid == sffs_sys_geteuid())  ){
-			//Check to see if s.st_uid matches current user id
-			is_ok |= X_OK;
-		} else if ( (file_mode & S_IXGRP) && ( file_gid == sffs_sys_getegid()) ){
-			//Check to see if gid matches current group id
-			is_ok |= X_OK;
-		}
-	}
-
-	if ( is_ok == amode ){
-		return 0;
-	}
-	errno = EACCES;
-	return -1;
-}
-/*! \endcond */
-
-
-
 
 
 /*! @} */

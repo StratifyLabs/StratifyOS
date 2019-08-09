@@ -61,7 +61,7 @@ int scheduler_start(void * (*init)(void*)){
 				 NULL, //Let the task init function figure out where the stack needs to be and the heap size
 				 sos_board_config.sys_memory_size);
 
-	sos_led_root_error(0);
+	sos_led_svcall_error(0);
 
 	//Program never gets to this point
 	return -1;

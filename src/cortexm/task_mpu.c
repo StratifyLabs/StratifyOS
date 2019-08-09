@@ -104,7 +104,8 @@ typedef struct {
 	int stacksize;
 } root_setstackguard_t;
 
-static void root_setstackguard(void * arg){
+static void svcall_setstackguard(void * arg){
+	CORTEXM_SVCALL_ENTER();
 	root_setstackguard_t * p = arg;
 	p->tid = task_root_set_stackguard(p->tid, p->stackaddr, p->stacksize);
 }
@@ -115,7 +116,7 @@ int task_setstackguard(int tid, void * stackaddr, int stacksize){
 	arg.stackaddr = stackaddr;
 	arg.stacksize = stacksize;
 	//security? args is written
-	cortexm_svcall(root_setstackguard, &arg);
+	cortexm_svcall(svcall_setstackguard, &arg);
 	return arg.tid;
 }
 
@@ -170,6 +171,16 @@ int init_os_memory_protection(task_memories_t * os_mem){
 		return err;
 	}
 #endif
+
+	if( mcu_board_config.secret_key_address != 0 ){
+		err = mpu_enable_region(
+					TASK_SYSTEM_SECRET_KEY_REGION,
+					mcu_board_config.secret_key_address,
+					mcu_board_config.secret_key_size,
+					MPU_ACCESS_PR,
+					MPU_MEMORY_FLASH,
+					0);
+	}
 
 	//Make OS System memory read-only -- region 0 -- highest priority
 	err = mpu_enable_region(

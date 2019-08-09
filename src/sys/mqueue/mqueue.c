@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 /*! \addtogroup mqueue
@@ -142,8 +142,8 @@ static mq_list_t * mq_first = 0;
 
 //static void root_send(void * args) MCU_ROOT_EXEC_CODE;
 //static void root_receive(void * args) MCU_ROOT_EXEC_CODE;
-static void root_wake_blocked(void * args) MCU_ROOT_EXEC_CODE;
-static void root_block_on_mq(void * args) MCU_ROOT_EXEC_CODE;
+static void svcall_wake_blocked(void * args) MCU_ROOT_EXEC_CODE;
+static void svcall_block_on_mq(void * args) MCU_ROOT_EXEC_CODE;
 
 
 static int mq_entry_size(const mq_t * mq){
@@ -334,14 +334,14 @@ typedef struct {
 int mq_getattr(mqd_t mqdes, struct mq_attr *mqstat){
 	mq_t * mq = mq_get_ptr(mqdes);
 	if ( mq == NULL ){
-        errno = EBADF;
-        mcu_debug_log_error(MCU_DEBUG_MQUEUE, "Cannot get attr of null");
+		errno = EBADF;
+		mcu_debug_log_error(MCU_DEBUG_MQUEUE, "Cannot get attr of null");
 		return -1;
 	}
 
 	//read the mq in priv mode
-    mcu_debug_log_error(MCU_DEBUG_MQUEUE, "Cannot get attr of null");
-    mqstat->mq_maxmsg = mq->max_msgs;
+	mcu_debug_log_error(MCU_DEBUG_MQUEUE, "Cannot get attr of null");
+	mqstat->mq_maxmsg = mq->max_msgs;
 	mqstat->mq_msgsize = mq->max_size;
 	mqstat->mq_curmsgs = mq_cur_msgs(mq);
 
@@ -365,39 +365,39 @@ int mq_getattr(mqd_t mqdes, struct mq_attr *mqstat){
  *
  */
 int mq_setattr(mqd_t mqdes, const struct mq_attr * mqstat, struct mq_attr * omqstat){
-    if( omqstat ){
-        if( mq_getattr(mqdes, omqstat) < 0 ){
-            return -1;
-        }
-    }
+	if( omqstat ){
+		if( mq_getattr(mqdes, omqstat) < 0 ){
+			return -1;
+		}
+	}
 
-    mq_t * mq = mq_get_ptr(mqdes);
-    if( mq == 0 ){
-        errno = EBADF;
-        return -1;
-    }
+	mq_t * mq = mq_get_ptr(mqdes);
+	if( mq == 0 ){
+		errno = EBADF;
+		return -1;
+	}
 
-    //update the flags -- other properties are ignored
-    if( mqstat->mq_flags & O_NONBLOCK ){
-        mq->status |= MQ_STATUS_NONBLOCK_MASK;
-    } else {
-        mq->status &= ~MQ_STATUS_NONBLOCK_MASK;
-    }
+	//update the flags -- other properties are ignored
+	if( mqstat->mq_flags & O_NONBLOCK ){
+		mq->status |= MQ_STATUS_NONBLOCK_MASK;
+	} else {
+		mq->status &= ~MQ_STATUS_NONBLOCK_MASK;
+	}
 
-    if ( (mqstat->mq_flags & O_WRONLY) || (mqstat->mq_flags & O_RDWR) ){
-        mq->status |= MQ_STATUS_RDWR_MASK;
-    } else {
-        mq->status &= ~MQ_STATUS_RDWR_MASK;
-    }
+	if ( (mqstat->mq_flags & O_WRONLY) || (mqstat->mq_flags & O_RDWR) ){
+		mq->status |= MQ_STATUS_RDWR_MASK;
+	} else {
+		mq->status &= ~MQ_STATUS_RDWR_MASK;
+	}
 
-    if( mqstat->mq_flags & MQ_FLAGS_LOOP ){
-        mq->status |= MQ_STATUS_LOOP_MASK;
-    } else {
-        mq->status &= ~MQ_STATUS_LOOP_MASK;
-    }
+	if( mqstat->mq_flags & MQ_FLAGS_LOOP ){
+		mq->status |= MQ_STATUS_LOOP_MASK;
+	} else {
+		mq->status &= ~MQ_STATUS_LOOP_MASK;
+	}
 
 
-    return 0;
+	return 0;
 }
 
 
@@ -424,8 +424,8 @@ int mq_setattr(mqd_t mqdes, const struct mq_attr * mqstat, struct mq_attr * omqs
  *
  */
 mqd_t mq_open(const char * name /*! the full path to the message queue */,
-		int oflag /*! the flags used for opening the message queue */,
-		... /*! mode_t mode, const struct mq_attr * attr when O_CREAT is set in \a oflag */){
+				  int oflag /*! the flags used for opening the message queue */,
+				  ... /*! mode_t mode, const struct mq_attr * attr when O_CREAT is set in \a oflag */){
 	mq_t * new_mq;
 	ssize_t mqdes;
 	int action;
@@ -473,56 +473,56 @@ mqd_t mq_open(const char * name /*! the full path to the message queue */,
 	}
 
 	switch(action){
-	case 0:
-		va_start(ap, oflag);
-		mode = va_arg(ap, mode_t);
-		attr = va_arg(ap, const struct mq_attr *);
-		va_end(ap);
+		case 0:
+			va_start(ap, oflag);
+			mode = va_arg(ap, mode_t);
+			attr = va_arg(ap, const struct mq_attr *);
+			va_end(ap);
 
-		//check for valid message attributes
-		if ( (attr->mq_maxmsg <= 0) || (attr->mq_msgsize <= 0) ){
-			errno = EINVAL;
-			return -1;
-		}
+			//check for valid message attributes
+			if ( (attr->mq_maxmsg <= 0) || (attr->mq_msgsize <= 0) ){
+				errno = EINVAL;
+				return -1;
+			}
 
-		//Create the new message queue
-		reent_ptr = sos_task_table[0].global_reent;
-		new_mq = mq_find_free();
-		if ( new_mq == NULL ){
-			//errno is set by malloc
-			return -1;
-		}
+			//Create the new message queue
+			reent_ptr = sos_task_table[0].global_reent;
+			new_mq = mq_find_free();
+			if ( new_mq == NULL ){
+				//errno is set by malloc
+				return -1;
+			}
 
-		//initialize the mutex
-		if( mq_init_mutex(new_mq) < 0 ){
-			return -1;
-		}
+			//initialize the mutex
+			if( mq_init_mutex(new_mq) < 0 ){
+				return -1;
+			}
 
-		new_mq->mode = mode;
-		new_mq->max_msgs = attr->mq_maxmsg;
-		tmp = attr->mq_msgsize & 0x03;
-		if( tmp != 0 ){ //make sure the size is word aligned
-			//not aligned -- add bytes to make sure it's aligned
-			new_mq->max_size = attr->mq_msgsize + 4 - tmp;
-		} else {
-			//aligned
-			new_mq->max_size = attr->mq_msgsize;
-		}
-		new_mq->status = 1;
-		new_mq->age = 0;
-		new_mq->msg_table = _calloc_r(reent_ptr, new_mq->max_msgs , (new_mq->max_size + sizeof(struct message)) );
-		if ( new_mq->msg_table == NULL ){
-			return -1;
-		}
+			new_mq->mode = mode;
+			new_mq->max_msgs = attr->mq_maxmsg;
+			tmp = attr->mq_msgsize & 0x03;
+			if( tmp != 0 ){ //make sure the size is word aligned
+				//not aligned -- add bytes to make sure it's aligned
+				new_mq->max_size = attr->mq_msgsize + 4 - tmp;
+			} else {
+				//aligned
+				new_mq->max_size = attr->mq_msgsize;
+			}
+			new_mq->status = 1;
+			new_mq->age = 0;
+			new_mq->msg_table = _calloc_r(reent_ptr, new_mq->max_msgs , (new_mq->max_size + sizeof(struct message)) );
+			if ( new_mq->msg_table == NULL ){
+				return -1;
+			}
 
-		mq_init_table(new_mq);
-		strncpy(new_mq->name, name, NAME_MAX);
-		break;
+			mq_init_table(new_mq);
+			strncpy(new_mq->name, name, NAME_MAX);
+			break;
 
-	case 1:
-		//increment the reference to this mq (priv mode)
-		new_mq->status++;
-		break;
+		case 1:
+			//increment the reference to this mq (priv mode)
+			new_mq->status++;
+			break;
 	}
 
 	if ( oflag & O_NONBLOCK ){
@@ -639,7 +639,7 @@ void mq_flush(mqd_t mqdes){
  *
  */
 int mq_notify(mqd_t mqdes,
-		const struct sigevent *notification){
+				  const struct sigevent *notification){
 	errno = ENOTSUP;
 	return -1;
 }
@@ -656,10 +656,10 @@ int mq_notify(mqd_t mqdes,
  *
  */
 ssize_t mq_receive(mqd_t mqdes /*! the message queue handle */,
-		char * msg_ptr /*! a pointer to the destination memory for the message */,
-		size_t msg_len /*! the number of bytes available in \a msg_ptr (must be at least the size of the
-		message size) */,
-		unsigned * msg_prio /*! if not NULL, the priority of the received message is stored here */){
+						 char * msg_ptr /*! a pointer to the destination memory for the message */,
+						 size_t msg_len /*! the number of bytes available in \a msg_ptr (must be at least the size of the
+								 message size) */,
+						 unsigned * msg_prio /*! if not NULL, the priority of the received message is stored here */){
 	return mq_timedreceive(mqdes, msg_ptr, msg_len, msg_prio, NULL);
 }
 
@@ -711,10 +711,10 @@ void root_receive(void * args){
  *
  */
 ssize_t mq_timedreceive(mqd_t mqdes /*! see \ref mq_receive() */,
-		char * msg_ptr /*! see \ref mq_receive() */,
-		size_t msg_len /*! see \ref mq_receive() */,
-		unsigned * msg_prio /*! see \ref mq_receive() */,
-		const struct timespec * abs_timeout /*! the absolute timeout value */){
+								char * msg_ptr /*! see \ref mq_receive() */,
+								size_t msg_len /*! see \ref mq_receive() */,
+								unsigned * msg_prio /*! see \ref mq_receive() */,
+								const struct timespec * abs_timeout /*! the absolute timeout value */){
 
 	struct message * new_msg;
 	int size;
@@ -787,9 +787,9 @@ ssize_t mq_timedreceive(mqd_t mqdes /*! see \ref mq_receive() */,
  *
  */
 int mq_send(mqd_t mqdes /*! the message queue handle */,
-		const char * msg_ptr /*! a pointer to the message to be sent */,
-		size_t msg_len /*! the message size (must be less than or equal to \a mq_msgsize associated with \a mqdes */,
-		unsigned msg_prio /*! the priority of the message (see \ref MQ_PRIO_MAX) */){
+				const char * msg_ptr /*! a pointer to the message to be sent */,
+				size_t msg_len /*! the message size (must be less than or equal to \a mq_msgsize associated with \a mqdes */,
+				unsigned msg_prio /*! the priority of the message (see \ref MQ_PRIO_MAX) */){
 	return mq_timedsend(mqdes, msg_ptr, msg_len, msg_prio, NULL);
 }
 
@@ -855,10 +855,10 @@ void root_send(void * args){
  *
  */
 int mq_timedsend(mqd_t mqdes /*! see \ref mq_send() */,
-		const char * msg_ptr /*! see \ref mq_send() */,
-		size_t msg_len /*! see \ref mq_send() */,
-		unsigned msg_prio /*! see \ref mq_send() */,
-		const struct timespec * abs_timeout /*! the absolute timeout value */){
+					  const char * msg_ptr /*! see \ref mq_send() */,
+					  size_t msg_len /*! see \ref mq_send() */,
+					  unsigned msg_prio /*! see \ref mq_send() */,
+					  const struct timespec * abs_timeout /*! the absolute timeout value */){
 
 	mq_t * mq;
 	int size;
@@ -946,7 +946,8 @@ int mq_trysend(mqd_t mqdes, const char * msg_ptr, size_t msg_len, unsigned msg_p
 }
 
 /*! \cond */
-void root_block_on_mq(void * args){
+void svcall_block_on_mq(void * args){
+	CORTEXM_SVCALL_ENTER();
 	root_block_on_mq_t * argsp = (root_block_on_mq_t*)args;
 	scheduler_timing_root_timedblock(argsp->block, &argsp->abs_timeout);
 }
@@ -961,7 +962,7 @@ int block_on_mq(void * block, const struct timespec * abs_timeout){
 		}
 	}
 	scheduler_timing_convert_timespec(&args.abs_timeout, abs_timeout);
-	cortexm_svcall(root_block_on_mq, &args);
+	cortexm_svcall(svcall_block_on_mq, &args);
 	if ( scheduler_unblock_type( task_get_current() ) == SCHEDULER_UNBLOCK_SLEEP ){
 		errno = ETIMEDOUT;
 		return -1;
@@ -969,18 +970,19 @@ int block_on_mq(void * block, const struct timespec * abs_timeout){
 	return 0;
 }
 
-void root_wake_blocked(void * args){
+void svcall_wake_blocked(void * args){
+	CORTEXM_SVCALL_ENTER();
 	int * task = (int*)args;
 	int id = *task;
 	scheduler_root_assert_active(id, SCHEDULER_UNBLOCK_MQ);
-    scheduler_root_update_on_wake(id, task_get_priority(id));
+	scheduler_root_update_on_wake(id, task_get_priority(id));
 }
 
 void check_for_blocked_task(void * block){
 	int new_thread;
 	new_thread = scheduler_get_highest_priority_blocked(block);
 	if ( new_thread != -1 ){
-		cortexm_svcall(root_wake_blocked, &new_thread);
+		cortexm_svcall(svcall_wake_blocked, &new_thread);
 	} else {
 		//See if any tasks need to be notified if a message was just sent
 	}

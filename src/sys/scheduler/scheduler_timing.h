@@ -39,7 +39,8 @@ void scheduler_timing_root_timedblock(void * block_object, struct mcu_timeval * 
 
 void scheduler_timing_convert_timespec(struct mcu_timeval * tv, const struct timespec * ts);
 void scheduler_timing_convert_mcu_timeval(struct timespec * ts, const struct mcu_timeval * mcu_tv);
-void scheduler_timing_root_get_realtime(struct mcu_timeval * tv) MCU_ROOT_EXEC_CODE;
+void scheduler_timing_svcall_get_realtime(void * args) MCU_ROOT_EXEC_CODE;
+void scheduler_timing_root_get_realtime(struct mcu_timeval * tv) MCU_ROOT_CODE;
 
 struct mcu_timeval scheduler_timing_add_mcu_timeval(const struct mcu_timeval * a, const struct mcu_timeval * b);
 struct mcu_timeval scheduler_timing_subtract_mcu_timeval(const struct mcu_timeval * a, const struct mcu_timeval * b);

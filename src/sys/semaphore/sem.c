@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 /*! \addtogroup semaphore
@@ -52,10 +52,10 @@ typedef struct {
 	void * next;
 } sem_list_t;
 
-static void root_sem_wait(void * args) MCU_ROOT_EXEC_CODE;
-static void root_sem_post(void * args) MCU_ROOT_EXEC_CODE;
-static void root_sem_trywait(void * args) MCU_ROOT_EXEC_CODE;
-static void root_sem_timedwait(void * args) MCU_ROOT_EXEC_CODE;
+static void svcall_sem_wait(void * args) MCU_ROOT_EXEC_CODE;
+static void svcall_sem_post(void * args) MCU_ROOT_EXEC_CODE;
+static void svcall_sem_trywait(void * args) MCU_ROOT_EXEC_CODE;
+static void svcall_sem_timedwait(void * args) MCU_ROOT_EXEC_CODE;
 
 static int check_initialized(sem_t * sem);
 
@@ -230,31 +230,31 @@ sem_t * sem_open(const char * name, int oflag, ...){
 	}
 
 	switch(action){
-	case 0:
-		//Create the new semaphore
-		new_sem = sem_find_free();
-		if ( new_sem == NULL ){
-			//errno is set by malloc
-			return SEM_FAILED;
-		}
+		case 0:
+			//Create the new semaphore
+			new_sem = sem_find_free();
+			if ( new_sem == NULL ){
+				//errno is set by malloc
+				return SEM_FAILED;
+			}
 
-		va_start(ap, oflag);
-		mode = va_arg(ap, mode_t);
-		value = va_arg(ap, unsigned);
-		va_end(ap);
+			va_start(ap, oflag);
+			mode = va_arg(ap, mode_t);
+			value = va_arg(ap, unsigned);
+			va_end(ap);
 
-		new_sem->is_initialized = 1;
-		new_sem->value = value;
-		new_sem->references = 1;
-		new_sem->mode = mode;
-		new_sem->pshared = 1;
-		strncpy(new_sem->name, name, NAME_MAX-1);
-		break;
+			new_sem->is_initialized = 1;
+			new_sem->value = value;
+			new_sem->references = 1;
+			new_sem->mode = mode;
+			new_sem->pshared = 1;
+			strncpy(new_sem->name, name, NAME_MAX-1);
+			break;
 
-	case 1:
-		//use the existing semaphore
-		new_sem->references++;
-		break;
+		case 1:
+			//use the existing semaphore
+			new_sem->references++;
+			break;
 	}
 
 	return new_sem;
@@ -311,7 +311,7 @@ int sem_post(sem_t *sem){
 	new_thread = scheduler_get_highest_priority_blocked(sem);
 
 	if ( new_thread != -1 ){
-		cortexm_svcall(root_sem_post, &new_thread);
+		cortexm_svcall(svcall_sem_post, &new_thread);
 	}
 
 	return 0;
@@ -343,7 +343,7 @@ int sem_timedwait(sem_t * sem, const struct timespec * abs_timeout){
 	args.sem = sem;
 	scheduler_timing_convert_timespec(&args.interval, abs_timeout);
 
-	cortexm_svcall(root_sem_timedwait, &args);
+	cortexm_svcall(svcall_sem_timedwait, &args);
 
 	if( args.result < 0 ){
 		if ( scheduler_unblock_type(task_get_current()) == SCHEDULER_UNBLOCK_SLEEP){
@@ -378,7 +378,7 @@ int sem_trywait(sem_t *sem){
 	args.sem = sem;
 	args.result = 0;
 
-	cortexm_svcall(root_sem_trywait, &args);
+	cortexm_svcall(svcall_sem_trywait, &args);
 
 	if( args.result < 0 ){
 		errno = EAGAIN;
@@ -451,7 +451,7 @@ int sem_wait(sem_t *sem){
 	args.result = 0;
 
 	do {
-		cortexm_svcall(root_sem_wait, &args);
+		cortexm_svcall(svcall_sem_wait, &args);
 	} while( args.result <  0 );
 
 	return 0;
@@ -459,14 +459,16 @@ int sem_wait(sem_t *sem){
 
 /*! \cond */
 
-void root_sem_post(void * args){
+void svcall_sem_post(void * args){
+	CORTEXM_SVCALL_ENTER();
 	int id = *((int*)args);
 	sos_sched_table[id].block_object = NULL;
 	scheduler_root_assert_active(id, SCHEDULER_UNBLOCK_SEMAPHORE);
-	 scheduler_root_update_on_wake(id, task_get_priority(id));
+	scheduler_root_update_on_wake(id, task_get_priority(id));
 }
 
-void root_sem_timedwait(void * args){
+void svcall_sem_timedwait(void * args){
+	CORTEXM_SVCALL_ENTER();
 	root_sem_args_t * p = (root_sem_args_t*)args;
 
 	if ( p->sem->value <= 0 ){
@@ -479,7 +481,8 @@ void root_sem_timedwait(void * args){
 
 }
 
-void root_sem_trywait(void * args){
+void svcall_sem_trywait(void * args){
+	CORTEXM_SVCALL_ENTER();
 	root_sem_args_t * p = (root_sem_args_t*)args;
 
 	if ( p->sem->value > 0 ){
@@ -490,10 +493,11 @@ void root_sem_trywait(void * args){
 	}
 }
 
-void root_sem_wait(void * args){
+void svcall_sem_wait(void * args){
+	CORTEXM_SVCALL_ENTER();
 	root_sem_args_t * p = args;
 
-	 sos_sched_table[ task_get_current() ].block_object = p->sem;
+	sos_sched_table[ task_get_current() ].block_object = p->sem;
 
 	if ( p->sem->value <= 0){
 		//task must be blocked until the semaphore is available

@@ -45,7 +45,7 @@
 
 
 static int start_first_thread();
-static void root_fault_logged(void * args) MCU_ROOT_EXEC_CODE;
+static void svcall_fault_logged(void * args) MCU_ROOT_EXEC_CODE;
 
 static int check_faults();
 
@@ -112,7 +112,8 @@ void scheduler(){
 	}
 }
 
-void root_fault_logged(void * args){
+void svcall_fault_logged(void * args){
+	CORTEXM_SVCALL_ENTER();
 	m_scheduler_fault.fault.num = 0;
 }
 
@@ -172,7 +173,7 @@ int check_faults(){
 		mcu_debug_log_error(MCU_DEBUG_SYS, "ISR Caller 0x%lX %ld", (u32)m_scheduler_fault.fault.handler_caller, m_scheduler_fault.tid);
 		usleep(2000);
 
-		cortexm_svcall(root_fault_logged, NULL);
+		cortexm_svcall(svcall_fault_logged, NULL);
 
 	}
 

@@ -30,19 +30,19 @@
 #include "sig_local.h"
 
 /*! \cond */
-static void root_wait_child(void * args) MCU_ROOT_EXEC_CODE;
+static void svcall_wait_child(void * args) MCU_ROOT_EXEC_CODE;
 
 typedef struct {
 	int pid;
 	int status;
 	int tid;
-} root_check_for_zombie_child_t;
+} svcall_check_for_zombie_child_t;
 
-static void root_check_for_zombie_child(void * args) MCU_ROOT_EXEC_CODE;
+static void svcall_check_for_zombie_child(void * args) MCU_ROOT_EXEC_CODE;
 /*! \endcond */
 
 pid_t waitpid(pid_t pid, int *stat_loc, int options){
-	root_check_for_zombie_child_t args;
+	svcall_check_for_zombie_child_t args;
 
 	if ( (pid < -1) || (pid == 0) ){
 		errno = ENOTSUP;
@@ -54,7 +54,7 @@ pid_t waitpid(pid_t pid, int *stat_loc, int options){
 		args.tid = 0;
 		args.pid = pid;
 		if ( !(options & WNOHANG) ){
-			cortexm_svcall(root_wait_child, &args);
+			cortexm_svcall(svcall_wait_child, &args);
 			//sleep here and wait for the signal to arrive
 		}
 
@@ -63,7 +63,7 @@ pid_t waitpid(pid_t pid, int *stat_loc, int options){
 		if( args.tid == 0 ){
 			if( SIGCHLD_ASSERTED() ){
 				//signal has arrived -- check again for the zombie
-				cortexm_svcall(root_check_for_zombie_child, &args);
+				cortexm_svcall(svcall_check_for_zombie_child, &args);
 			} else if ( !(options & WNOHANG) ){
 				errno = EINTR;
 				return -1;
@@ -104,10 +104,11 @@ pid_t _wait(int *stat_loc){
 	return waitpid(-1, stat_loc, 0);
 }
 
-void root_check_for_zombie_child(void * args){
+void svcall_check_for_zombie_child(void * args){
+	CORTEXM_SVCALL_ENTER();
 	int num_children;
-	root_check_for_zombie_child_t * p;
-	p = (root_check_for_zombie_child_t*)args;
+	svcall_check_for_zombie_child_t * p;
+	p = (svcall_check_for_zombie_child_t*)args;
 	int i;
 	int num_zombies;
 	int current_pid;
@@ -158,12 +159,13 @@ void root_check_for_zombie_child(void * args){
 	}
 }
 
-void root_wait_child(void * args){
+void svcall_wait_child(void * args){
+	CORTEXM_SVCALL_ENTER();
 	//see if SIGCHLD is blocked and the status is available now
-	root_check_for_zombie_child_t * p;
-	p = (root_check_for_zombie_child_t*)args;
+	svcall_check_for_zombie_child_t * p;
+	p = (svcall_check_for_zombie_child_t*)args;
 
-	root_check_for_zombie_child(args);
+	svcall_check_for_zombie_child(args);
 	if( p->tid == 0 ){
 		scheulder_root_assert_stopped(task_get_current());
 		scheduler_root_update_on_stopped(); //causes the currently executing thread to sleep and wait for a signal (from a child

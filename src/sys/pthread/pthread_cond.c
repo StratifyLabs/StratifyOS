@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 
@@ -38,7 +38,7 @@
 #define INIT_FLAG 30
 #define PID_MASK 0x3FFFFFFF
 
-static void root_cond_signal(void * args) MCU_ROOT_EXEC_CODE;
+static void svcall_cond_signal(void * args) MCU_ROOT_EXEC_CODE;
 
 typedef struct {
 	pthread_cond_t *cond;
@@ -46,9 +46,9 @@ typedef struct {
 	int new_thread;
 	struct mcu_timeval interval;
 	int result;
-} root_cond_wait_t;
-static void root_cond_wait(void  * args) MCU_ROOT_EXEC_CODE;
-static void root_cond_broadcast(void * args) MCU_ROOT_EXEC_CODE;
+} svcall_cond_wait_t;
+static void svcall_cond_wait(void  * args) MCU_ROOT_EXEC_CODE;
+static void svcall_cond_broadcast(void * args) MCU_ROOT_EXEC_CODE;
 
 /*! \endcond */
 
@@ -90,10 +90,11 @@ int pthread_cond_destroy(pthread_cond_t *cond){
 	return 0;
 }
 
-void root_cond_broadcast(void * args){
+void svcall_cond_broadcast(void * args){
+	CORTEXM_SVCALL_ENTER();
 	int prio;
 	prio = scheduler_root_unblock_all(args, SCHEDULER_UNBLOCK_COND);
-    scheduler_root_update_on_wake(-1, prio);
+	scheduler_root_update_on_wake(-1, prio);
 }
 
 /*! \details This function wakes all threads that are blocked on \a cond.
@@ -113,14 +114,15 @@ int pthread_cond_broadcast(pthread_cond_t *cond){
 	}
 
 	//wake all tasks blocking on cond
-	cortexm_svcall(root_cond_broadcast, cond);
+	cortexm_svcall(svcall_cond_broadcast, cond);
 	return 0;
 }
 
-void root_cond_signal(void * args){
+void svcall_cond_signal(void * args){
+	CORTEXM_SVCALL_ENTER();
 	int id = *((int*)args);
 	scheduler_root_assert_active(id, SCHEDULER_UNBLOCK_COND);
-    scheduler_root_update_on_wake(id, task_get_priority(id));
+	scheduler_root_update_on_wake(id, task_get_priority(id));
 }
 
 /*! \details This function wakes the highest priority thread
@@ -145,7 +147,7 @@ int pthread_cond_signal(pthread_cond_t *cond){
 	new_thread = scheduler_get_highest_priority_blocked(cond);
 
 	if ( new_thread != -1 ){
-		cortexm_svcall(root_cond_signal, &new_thread);
+		cortexm_svcall(svcall_cond_signal, &new_thread);
 	}
 
 	return 0;
@@ -162,7 +164,7 @@ int pthread_cond_signal(pthread_cond_t *cond){
  */
 int pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex){
 	int pid;
-	root_cond_wait_t args;
+	svcall_cond_wait_t args;
 
 	if ( cond == NULL ){
 		errno = EINVAL;
@@ -190,7 +192,7 @@ int pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex){
 
 	//release the mutex and block on the cond
 	args.new_thread = scheduler_get_highest_priority_blocked(mutex);
-	cortexm_svcall(root_cond_wait, &args);
+	cortexm_svcall(svcall_cond_wait, &args);
 
 	if ( args.result == -1 ){
 		errno = EPERM;
@@ -227,7 +229,7 @@ int pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex){
  */
 int pthread_cond_timedwait(pthread_cond_t *cond, pthread_mutex_t *mutex, const struct timespec *abstime){
 	int pid;
-	root_cond_wait_t args;
+	svcall_cond_wait_t args;
 
 	if ( cond == NULL ){
 		errno = EINVAL;
@@ -255,7 +257,7 @@ int pthread_cond_timedwait(pthread_cond_t *cond, pthread_mutex_t *mutex, const s
 
 	//release the mutex and block on the cond
 	args.new_thread = scheduler_get_highest_priority_blocked(mutex);
-	cortexm_svcall(root_cond_wait, &args);
+	cortexm_svcall(svcall_cond_wait, &args);
 
 	if ( args.result == -1 ){
 		errno = EPERM;
@@ -271,21 +273,22 @@ int pthread_cond_timedwait(pthread_cond_t *cond, pthread_mutex_t *mutex, const s
 }
 
 /*! \cond */
-void root_cond_wait(void  * args){
-	root_cond_wait_t * argsp = (root_cond_wait_t*)args;
+void svcall_cond_wait(void  * args){
+	CORTEXM_SVCALL_ENTER();
+	svcall_cond_wait_t * argsp = (svcall_cond_wait_t*)args;
 	int new_thread = argsp->new_thread;
 
 
 	if ( argsp->mutex->pthread == task_get_current() ){
 		//First unlock the mutex
 		//Restore the priority to the task that is unlocking the mutex
-		  task_set_priority(task_get_current(), sos_sched_table[task_get_current()].attr.schedparam.sched_priority);
+		task_set_priority(task_get_current(), sos_sched_table[task_get_current()].attr.schedparam.sched_priority);
 
 		if ( new_thread != -1 ){
 			argsp->mutex->pthread = new_thread;
 			argsp->mutex->pid = task_get_pid(new_thread);
 			argsp->mutex->lock = 1;
-				task_set_priority(new_thread, argsp->mutex->prio_ceiling);
+			task_set_priority(new_thread, argsp->mutex->prio_ceiling);
 			scheduler_root_assert_active(new_thread, SCHEDULER_UNBLOCK_MUTEX);
 		} else {
 			argsp->mutex->lock = 0;

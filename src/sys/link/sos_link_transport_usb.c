@@ -123,7 +123,7 @@ link_transport_phy_t sos_link_transport_usb_open(const char * name,
 
 	mcu_debug_log_info(MCU_DEBUG_USB | MCU_DEBUG_LINK, "USB Dev Init");
 	//initialize USB device
-	cortexm_svcall(usbd_control_root_init, context);
+	cortexm_svcall(usbd_control_svcall_init, context);
 
 	if( pio_fd >= 0 ){
 		if( usb_up_active_high ){

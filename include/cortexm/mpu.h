@@ -121,28 +121,28 @@ int mpu_disable() MCU_ROOT_CODE;
  *
  * \return The MPU memory size value that is large enough to contain the specified memory
  */
-mpu_size_t mpu_calc_size(uint32_t size /*! The size of the memory in bytes */);
+mpu_size_t mpu_calc_size(uint32_t size /*! The size of the memory in bytes */) MCU_ROOT_CODE;
 
 /*! \details This function enables the memory protection region.
  *
  */
 int mpu_enable_region(int region /*! The region to enable */,
-		void * addr /*! The starting address */,
+		const void * addr /*! The starting address */,
 		u32 size /*! The size of the region */,
 		mpu_access_t access /*! MPU Access value */,
 		mpu_memory_t type /*! MPU memory type */,
 		int executable /*! Non-zero to mark code as executable */) MCU_ROOT_CODE;
 
 u32 mpu_calc_region(int region,
-		void * addr,
+		const void * addr,
 		u32 size,
 		mpu_access_t access,
 		mpu_memory_t type,
 		int executable,
 		uint32_t * rbar,
-		uint32_t * rasr);
+		uint32_t * rasr) MCU_ROOT_CODE;
 
-int mpu_getnextpowerof2(int size);
+int mpu_getnextpowerof2(int size) MCU_ROOT_CODE;
 
 int mpu_dev_init() MCU_ROOT_CODE;
 

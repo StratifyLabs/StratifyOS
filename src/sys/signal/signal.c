@@ -198,7 +198,7 @@ int sigsuspend(const sigset_t * sigmask){
 	THREAD_SIGMASK = *sigmask;
 
 	//Suspend this thread until delivery of a signal
-	cortexm_svcall(signal_root_wait, NULL);
+	cortexm_svcall(signal_svcall_wait, NULL);
 
 	errno = EINTR;
 	THREAD_SIGMASK = mask;

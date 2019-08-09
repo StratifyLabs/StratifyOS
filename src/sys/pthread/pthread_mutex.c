@@ -48,16 +48,16 @@ typedef struct {
 	bool trylock;
 	struct mcu_timeval abs_timeout;
 	int result;
-} root_mutex_trylock_t;
-static void root_mutex_trylock(root_mutex_trylock_t *args) MCU_ROOT_EXEC_CODE;
+} svcall_mutex_trylock_t;
+static void svcall_mutex_trylock(svcall_mutex_trylock_t *args) MCU_ROOT_EXEC_CODE;
 
 typedef struct {
 	int id;
 	pthread_mutex_t *mutex;
-} root_mutex_unlock_t;
-static void root_mutex_unlock(root_mutex_unlock_t * args) MCU_ROOT_EXEC_CODE;
-static void root_mutex_block(root_mutex_trylock_t *args);
-static void root_mutex_unblocked(root_mutex_trylock_t *args) MCU_ROOT_EXEC_CODE;
+} svcall_mutex_unlock_t;
+static void svcall_mutex_unlock(svcall_mutex_unlock_t * args) MCU_ROOT_EXEC_CODE;
+static void root_mutex_block(svcall_mutex_trylock_t *args);
+static void svcall_mutex_unblocked(svcall_mutex_trylock_t *args) MCU_ROOT_EXEC_CODE;
 /*! \endcond */
 
 
@@ -139,7 +139,7 @@ int pthread_mutex_trylock(pthread_mutex_t *mutex){
  *
  */
 int pthread_mutex_unlock(pthread_mutex_t *mutex){
-	root_mutex_unlock_t args;
+	svcall_mutex_unlock_t args;
 
 	if ( task_get_current() == 0 ){
 		return 0;
@@ -163,7 +163,7 @@ int pthread_mutex_unlock(pthread_mutex_t *mutex){
 	}
 
 	args.mutex = mutex;  //The Mutex
-	cortexm_svcall((cortexm_svcall_t)root_mutex_unlock, &args);
+	cortexm_svcall((cortexm_svcall_t)svcall_mutex_unlock, &args);
 	return 0;
 }
 
@@ -283,7 +283,7 @@ int pthread_mutex_setprioceiling(pthread_mutex_t *mutex, int prioceiling, int *o
 /*! \cond */
 int mutex_trylock(pthread_mutex_t *mutex, bool trylock, const struct timespec * abs_timeout){
 	int id;
-	root_mutex_trylock_t args;
+	svcall_mutex_trylock_t args;
 	if ( mutex == NULL ){
 		errno = EINVAL;
 		return -1;
@@ -329,10 +329,10 @@ int mutex_trylock(pthread_mutex_t *mutex, bool trylock, const struct timespec * 
 	args.mutex = mutex;
 	args.trylock = trylock;
 	scheduler_timing_convert_timespec(&args.abs_timeout, abs_timeout);
-	cortexm_svcall((cortexm_svcall_t)root_mutex_trylock, &args);
+	cortexm_svcall((cortexm_svcall_t)svcall_mutex_trylock, &args);
 	if( args.result == -2 ){
 		while( (scheduler_unblock_type(args.id) == SCHEDULER_UNBLOCK_SIGNAL)  ){
-			cortexm_svcall((cortexm_svcall_t)root_mutex_unblocked, &args);
+			cortexm_svcall((cortexm_svcall_t)svcall_mutex_unblocked, &args);
 		}
 	}
 
@@ -340,26 +340,27 @@ int mutex_trylock(pthread_mutex_t *mutex, bool trylock, const struct timespec * 
 }
 
 int pthread_mutex_force_unlock(pthread_mutex_t *mutex){
-	root_mutex_unlock_t args;
+	svcall_mutex_unlock_t args;
 
 	if ( mutex->flags & PTHREAD_MUTEX_FLAGS_PSHARED ){ //All pshared objects must be in shared memory space
 		if ( mutex->pid == getpid() && (mutex->lock != 0) ){
 			args.id = mutex->pthread; //Current owner of the mutex
 			args.mutex = mutex;  //The Mutex
-			cortexm_svcall((cortexm_svcall_t)root_mutex_unlock, &args);
+			cortexm_svcall((cortexm_svcall_t)svcall_mutex_unlock, &args);
 		}
 	}
 
 	return 0;
 }
 
-void root_mutex_block(root_mutex_trylock_t *args){
+void root_mutex_block(svcall_mutex_trylock_t *args){
 	//block the calling mutex
 	sos_sched_table[ args->id ].block_object = args->mutex; //Elevate the priority of the task based on prio_ceiling
 	scheduler_timing_root_timedblock(args->mutex, &args->abs_timeout);
 }
 
-void root_mutex_unblocked(root_mutex_trylock_t *args){
+void svcall_mutex_unblocked(svcall_mutex_trylock_t *args){
+	CORTEXM_SVCALL_ENTER();
 	if( args->mutex->pthread == args->id ){
 		//mutex is locked -- exit loop
 		scheduler_root_set_unblock_type(args->id, SCHEDULER_UNBLOCK_MUTEX);
@@ -376,7 +377,8 @@ void root_mutex_unblocked(root_mutex_trylock_t *args){
 
 }
 
-void root_mutex_trylock(root_mutex_trylock_t *args){
+void svcall_mutex_trylock(svcall_mutex_trylock_t *args){
+	CORTEXM_SVCALL_ENTER();
 	if ( args->mutex->pthread == -1 ){  //Is the mutex free
 		//The mutex is free -- lock it up
 		args->mutex->pthread = args->id; //This is to hold the mutex in case another task tries to grab it
@@ -398,7 +400,8 @@ void root_mutex_trylock(root_mutex_trylock_t *args){
 	}
 }
 
-void root_mutex_unlock(root_mutex_unlock_t * args){
+void svcall_mutex_unlock(svcall_mutex_unlock_t * args){
+	CORTEXM_SVCALL_ENTER();
 	int new_thread;
 
 	//Restore the priority to the task that is unlocking the mutex

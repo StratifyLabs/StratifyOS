@@ -35,7 +35,7 @@
 #include "mcu/core.h"
 
 
-static void root_update_guard(void * args) MCU_ROOT_EXEC_CODE;
+static void svcall_update_guard(void * args) MCU_ROOT_EXEC_CODE;
 
 //returns zero or returns the previous top of the heap
 void * _sbrk_r(struct _reent * reent_ptr, ptrdiff_t incr){
@@ -58,13 +58,14 @@ void * _sbrk_r(struct _reent * reent_ptr, ptrdiff_t incr){
 	}
 
 	//adjust the location of the stack guard -- always 32 bytes for processes
-	cortexm_svcall(root_update_guard, base + size + incr);
+	cortexm_svcall(svcall_update_guard, base + size + incr);
 
 	reent_ptr->procmem_base->size += incr;
 	return (caddr_t)(base + size);
 }
 
-void root_update_guard(void * args){
+void svcall_update_guard(void * args){
+	CORTEXM_SVCALL_ENTER();
 	int tid;
 	tid = task_get_thread_zero( task_get_pid(task_get_current() ) );
 	task_root_set_stackguard(tid, args, SCHED_DEFAULT_STACKGUARD_SIZE);

@@ -86,7 +86,7 @@ int sigwait(const sigset_t * set, int * sig){
 		}
 
 		//Block until a signal arrives
-		cortexm_svcall(signal_root_wait, NULL);
+		cortexm_svcall(signal_svcall_wait, NULL);
 
 	} while(1);
 
@@ -124,7 +124,7 @@ int sigtimedwait(const sigset_t * set,
 			}
 		}
 		//block the thread until a signal arrives
-		cortexm_svcall(signal_root_wait, &abs_timeout);
+		cortexm_svcall(signal_svcall_wait, &abs_timeout);
 
 		//Check to see if a non-blocked signal was caught --executed by user function
 		if ( scheduler_sigcaught_asserted(task_get_current()) ){ //! \todo the sigcault flag should not be in a protected area of memory
@@ -168,7 +168,7 @@ int sigwaitinfo(const sigset_t *set, siginfo_t *info){
 			}
 		}
 		//block the thread until a signal arrives
-		cortexm_svcall(signal_root_wait, NULL);
+		cortexm_svcall(signal_svcall_wait, NULL);
 
 		//Check to see if a non-blocked signal was caught --executed by user function
 		if ( scheduler_sigcaught_asserted(task_get_current()) ){
@@ -200,7 +200,8 @@ int check_pending_set(const sigset_t * set){
 	return 0;
 }
 
-void signal_root_wait(void * args){
+void signal_svcall_wait(void * args){
+	CORTEXM_SVCALL_ENTER();
 	if ( args != NULL ){
 		scheduler_timing_root_timedblock(NULL, (struct mcu_timeval *)args);
 	} else {

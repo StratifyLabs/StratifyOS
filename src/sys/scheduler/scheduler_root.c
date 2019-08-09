@@ -26,7 +26,8 @@
 
 #include "scheduler_local.h"
 
-void scheduler_root_set_delaymutex(void * args){
+void scheduler_svcall_set_delaymutex(void * args){
+	CORTEXM_SVCALL_ENTER();
 	sos_sched_table[ task_get_current() ].signal_delay_mutex = args;
 }
 

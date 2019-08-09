@@ -91,16 +91,19 @@ int appfs_util_root_get_meminfo(const devfs_device_t * device, mem_info_t * mem_
 }
 
 void appfs_util_svcall_get_meminfo(void * args){
+	CORTEXM_SVCALL_ENTER();
 	appfs_get_meminfo_t * p = args;
 	p->result = appfs_util_root_get_meminfo(p->device, &p->mem_info);
 }
 
 void appfs_util_svcall_get_pageinfo(void * args){
+	CORTEXM_SVCALL_ENTER();
 	appfs_get_pageinfo_t * p = args;
 	p->result = appfs_util_root_get_pageinfo(p->device, &p->page_info);
 }
 
 void appfs_util_svcall_erase_pages(void * args){
+	CORTEXM_SVCALL_ENTER();
 	appfs_erase_pages_t * p = args;
 	p->result = appfs_util_root_erase_pages(p->device, p->start_page, p->end_page);
 }
@@ -779,6 +782,7 @@ int populate_file_header(const devfs_device_t * device, appfs_file_t * file, con
 }
 
 void appfs_util_svcall_get_fileinfo(void * args){
+	CORTEXM_SVCALL_ENTER();
 	appfs_get_fileinfo_t * p = args;
 	p->result = appfs_util_root_get_fileinfo(
 				p->device,

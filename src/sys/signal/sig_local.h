@@ -40,7 +40,7 @@ int signal_root_send(int send_tid,
 		int forward //this must be non-zero unless si_signo == SIGKILL
 		) MCU_WEAK MCU_ROOT_CODE;
 void signal_root_activate(int * thread) MCU_ROOT_EXEC_CODE;
-void signal_root_wait(void * args) MCU_ROOT_EXEC_CODE;
+void signal_svcall_wait(void * args) MCU_ROOT_EXEC_CODE;
 
 
 //this is set if the signal received executes a user defined function

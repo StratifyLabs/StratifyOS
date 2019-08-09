@@ -24,6 +24,11 @@
 
 typedef open_file_t sysfs_file_t;
 
+enum sysfs_user {
+	SYSFS_ROOT = 0,
+	SYSFS_USER = 1,
+	SYSFS_GROUP = 0
+};
 
 typedef struct {
 	u32 port /*! The port associated with the device (for mcu peripherals) */;

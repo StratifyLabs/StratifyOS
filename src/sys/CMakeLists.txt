@@ -149,6 +149,12 @@ if( ${SOS_BUILD_CONFIG} STREQUAL arm )
       ${SOURCES_PREFIX}/symbols.c
       ${SOURCES_PREFIX}/sys_23_dev.c
       ${SOURCES_PREFIX}/sys_26_dev.c
-      ${SOURCES_PREFIX}/sys_dev.c
-      PARENT_SCOPE)
+			${SOURCES_PREFIX}/sys_dev.c
+			${SOURCES_PREFIX}/auth/auth_dev.c
+			${SOURCES_PREFIX}/auth/prng.c
+			${SOURCES_PREFIX}/auth/prng.h
+			${SOURCES_PREFIX}/auth/tinycrypt_sha256_api.c
+			${SOURCES_PREFIX}/auth/tinycrypt_sha256.c
+			${SOURCES_PREFIX}/auth/tinycrypt_sha256.h
+			PARENT_SCOPE)
   endif()

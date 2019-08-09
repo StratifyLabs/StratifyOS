@@ -109,7 +109,7 @@ int mpu_getnextpowerof2(int size){
 
 
 u32 mpu_calc_region(int region,
-		void * addr,
+		const void * addr,
 		u32 size,
 		mpu_access_t access,
 		mpu_memory_t type,
@@ -221,7 +221,7 @@ u32 mpu_calc_region(int region,
 }
 
 int mpu_enable_region(int region,
-		void * addr,
+		const void * addr,
 		u32 size,
 		mpu_access_t access,
 		mpu_memory_t type,

@@ -61,17 +61,18 @@ typedef struct MCU_PACK {
 
 #define APPFS_CREATE_SIGNATURE 0x12345678
 
-enum {
-	APPFS_FLAG_IS_FLASH = (1<<0), //install code in flash memory (data is always in RAM)
-	APPFS_FLAG_IS_STARTUP = (1<<1), //if set executes on boot
-	APPFS_FLAG_IS_ROOT = (1<<3), //run as root
-	APPFS_FLAG_IS_REPLACE = (1<<4), //replace (default is to duplicate)
-	APPFS_FLAG_IS_ORPHAN = (1<<5), //calling process wont' be parent
-	APPFS_FLAG_IS_UNIQUE = (1<<6), //install with a unique name in the flash or RAM
-	APPFS_FLAG_IS_CODE_TIGHTLY_COUPLED = (1<<7), //install code in tightly coupled memory
-	APPFS_FLAG_IS_DATA_TIGHTLY_COUPLED = (1<<8), //install data in tightly coupled memory
-	APPFS_FLAG_IS_CODE_EXTERNAL = (1<<9), //install code in external memory
-	APPFS_FLAG_IS_DATA_EXTERNAL = (1<<10), //install data in external memory
+enum appfs_flags {
+	APPFS_FLAG_IS_FLASH /*! Application is stored in flash */ = (1<<0),
+	APPFS_FLAG_IS_STARTUP /*! Application stored in flash runs at startup */ = (1<<1),
+	APPFS_FLAG_IS_ROOT /*! Application runs as root */ = (1<<3),
+	APPFS_FLAG_IS_REPLACE /*! Application will replace an existing application (default is to duplicate) */ = (1<<4),
+	APPFS_FLAG_IS_ORPHAN /*! Application runs as an orphan (parent doesn't need to wait()). */ = (1<<5),
+	APPFS_FLAG_IS_UNIQUE /*! Application will run with a unique name by appending a counter value */ = (1<<6),
+	APPFS_FLAG_IS_CODE_TIGHTLY_COUPLED /*! Application code will be installed in tightly coupled memory if possible */ = (1<<7),
+	APPFS_FLAG_IS_DATA_TIGHTLY_COUPLED /*! Application data will reside in tightly coupled memory if possible */ = (1<<8),
+	APPFS_FLAG_IS_CODE_EXTERNAL /*! Application code will be installed in external memory if possible */ = (1<<9),
+	APPFS_FLAG_IS_DATA_EXTERNAL /*! Application code will reside in external memory if possible */ = (1<<10),
+	APPFS_FLAG_IS_HASHED /*! Application binary has SHA256 hash appended to the end */ = (1<<11),
 };
 
 

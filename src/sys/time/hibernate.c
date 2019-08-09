@@ -41,10 +41,11 @@
 
 /*! \cond */
 static int set_alarm(int seconds);
-static void root_powerdown(void * args) MCU_ROOT_EXEC_CODE;
-static void root_hibernate(void * args) MCU_ROOT_EXEC_CODE;
+static void svcall_powerdown(void * args) MCU_ROOT_EXEC_CODE;
+static void svcall_hibernate(void * args) MCU_ROOT_EXEC_CODE;
 
-void root_powerdown(void * args){
+void svcall_powerdown(void * args){
+	CORTEXM_SVCALL_ENTER();
 	mcu_core_execsleep(0, (void*)CORE_DEEPSLEEP_STANDBY);
 }
 
@@ -87,7 +88,8 @@ void root_post_hibernate(void * args){
 	scheduler_root_update_on_stopped();
 }
 
-void root_hibernate(void * args){
+void svcall_hibernate(void * args){
+	CORTEXM_SVCALL_ENTER();
 	root_prepare_hibernate(args);
 
 	mcu_core_execsleep(0, (void*)CORE_DEEPSLEEP);
@@ -121,7 +123,7 @@ int hibernate(int seconds){
 		set_alarm(seconds);
 	}
 	mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_HIBERNATE, &seconds);
-	cortexm_svcall(root_hibernate, &seconds);
+	cortexm_svcall(svcall_hibernate, &seconds);
 	mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_WAKEUP_FROM_HIBERNATE, &seconds);
 	return 0;
 }
@@ -132,7 +134,7 @@ void powerdown(int seconds){
 		set_alarm(seconds);
 	}
 	mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_POWERDOWN, &seconds);
-	cortexm_svcall(root_powerdown, NULL);
+	cortexm_svcall(svcall_powerdown, NULL);
 	//device will reset after a powerdown event
 }
 /*! \endcond */

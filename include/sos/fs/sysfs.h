@@ -155,6 +155,10 @@ bool sysfs_ispathinvalid(const char * path);
 const char * sysfs_getfilename(const char * path, int * elements);
 int sysfs_getamode(int flags);
 int sysfs_access(int file_mode, int file_uid, int file_gid, int amode);
+int sysfs_is_rw_ok(int file_mode, int file_uid, int file_gid);
+int sysfs_is_r_ok(int file_mode, int file_uid, int file_gid);
+int sysfs_is_w_ok(int file_mode, int file_uid, int file_gid);
+int sysfs_is_x_ok(int file_mode, int file_uid, int file_gid);
 const char * sysfs_get_filename(const char * path);
 
 static inline bool sysfs_isterminator(const sysfs_t * fs);

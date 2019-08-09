@@ -45,7 +45,7 @@ extern "C" {
 #define SYS_VERSION (0x030200)
 #define SYS_IOC_CHAR 's'
 
-enum {
+enum sys_flags {
 	SYS_FLAG_IS_STDIO_FIFO /*! Indicates STDIO are independent FIFOs (board config flag) */ = (1<<0),
 	SYS_FLAG_IS_STDIO_VCP /*! Deprecated (board config flag) */ = (1<<1),
 	SYS_FLAG_IS_WDT_DISABLED /*! Disables the WDT (board config flag) */ = (1<<2),
@@ -53,10 +53,12 @@ enum {
 	SYS_FLAG_IS_TRACE /*! Deprecated (board config flag) */ = (1<<4),
 	SYS_FLAG_IS_STDIO_CFIFO /*! STDIO is a with channels 0:stdout 1:stdin 2: stderr (board config flag) */ = (1<<5),
 	SYS_FLAG_IS_STDIO_CFIFO_SHARE_OUTERR /*! Used with SYS_FLAG_IS_STDIO_CFIFO to indicate stderr and stdout are the same channel (0) (board config flag) */ = (1<<6),
-	SYS_FLAG_IS_ACTIVE_ON_IDLE /*! Don't stop the CPU when the system is idle (board config flag) */ = (1<<7)
+	SYS_FLAG_IS_ACTIVE_ON_IDLE /*! Don't stop the CPU when the system is idle (board config flag) */ = (1<<7),
+	SYS_FLAG_IS_KEYED /*! Binary has a 256-bit secret key appended to the end (before HASH if present).*/ = (1<<8),
+	SYS_FLAG_IS_HASHED /*! Binary has a 256-bit SHA256 hash appended to the end (after secret key if present) */ = (1<<9),
 };
 
-enum {
+enum sys_memory_flags {
 	SYS_FLAG_SET_MEMORY_REGION = (1<<0),
 	SYS_FLAG_IS_READ_ALLOWED = (1<<1),
 	SYS_FLAG_IS_WRITE_ALLOWED = (1<<2),
@@ -184,8 +186,8 @@ typedef struct MCU_PACK {
  * to certain parts of the device.
  */
 typedef struct MCU_PACK {
-	u8 key[32] /*! \brief The password used to unlock the device */;
-} sys_sudo_t;
+	u8 key[32] /*! \brief Used to pass values back and forth */;
+} sys_auth_t;
 
 #define I_SYS_GETVERSION _IOCTL(SYS_IOC_IDENT_CHAR, I_MCU_GETVERSION)
 #define I_SYS_GETINFO _IOCTLR(SYS_IOC_CHAR, I_MCU_GETINFO, sys_info_t)
@@ -237,21 +239,8 @@ typedef struct MCU_PACK {
  */
 #define I_SYS_GETPROCESS _IOCTLRW(SYS_IOC_CHAR, I_MCU_TOTAL+4, sys_process_t)
 
-/*! \brief See below for details
- * \details This request temporarily changes the effective user ID to root.
- * As root certain system functions are available that would not available to
- * the user.  For example, as root, an application can set an interrupt callback
- * that is executed in privileged mode.
- *
- * \code
- * sys_sudo_t passwd;
- * strcpy(passwd.key, "the password");
- * if( ioctl(fd, I_SYS_SUDO, &passwd) < 0 ){
- * 	//failed to accept password
- * }
- * \endcode
- */
-#define I_SYS_SUDO _IOCTLW(SYS_IOC_CHAR, I_MCU_TOTAL+5, sys_sudo_t)
+
+#define I_SYS_SUDO _IOCTLW(SYS_IOC_CHAR, I_MCU_TOTAL+5, sys_auth_t)
 
 /*! \brief See below for details.
  * \details This copies the sos_board_config_t data that is set by the
@@ -263,6 +252,35 @@ typedef struct MCU_PACK {
  *
  */
 #define I_SYS_GETBOARDCONFIG _IOCTLR(SYS_IOC_CHAR, I_MCU_TOTAL+6, sos_board_config_t)
+
+/*! \brief See below for details.
+ * \details This gets a 256-bit random
+ * number that can be used with I_SYS_AUTH
+ * to authenticate the calling thread.
+ *
+ */
+#define I_SYS_GETRANDOM _IOCTLR(SYS_IOC_CHAR, I_MCU_TOTAL+7, sys_auth_t)
+
+/*! \brief See below for details.
+ * \details This sends a challenge based on a shared
+ * secret key and a random number. It also reads the
+ * response so that the challenger can also validate
+ * that the system is authentic.
+ *
+ * Once the calling thread is authenticated, it will
+ * be placed in root access mode.
+ *
+ * Executing I_SYS_AUTH with an invalid value will
+ * remove root access mode from the calling thread.
+ *
+ * The system must have a kernel API for CRYPT_ROOT_SHA256_API_REQUEST
+ * and set the SYS_FLAG_IS_KEYED flag and appened a secret key to
+ * the end of the binary. Without both of these, all calls
+ * to I_SYS_AUTH will result in the calling thread having root access.
+ *
+ */
+#define I_SYS_AUTH _IOCTLRW(SYS_IOC_CHAR, I_MCU_TOTAL+7, sys_auth_t)
+
 
 #define I_SYS_TOTAL 7
 

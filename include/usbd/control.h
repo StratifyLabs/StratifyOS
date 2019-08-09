@@ -71,6 +71,7 @@ typedef struct MCU_PACK {
 	const devfs_handle_t * handle;
 } usbd_control_t;
 
+void usbd_control_svcall_init(void * context);
 void usbd_control_root_init(void * context);
 int usbd_control_handler(void * context, const mcu_event_t * data);
 

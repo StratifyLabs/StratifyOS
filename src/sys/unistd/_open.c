@@ -37,7 +37,8 @@
 #include "../scheduler/scheduler_local.h"
 
 /*! \cond */
-void root_assign_handle(void * args){
+void svcall_assign_handle(void * args){
+	CORTEXM_SVCALL_ENTER();
 	int * argp = args;
 	int i;
 	int start = *argp;
@@ -55,7 +56,7 @@ void root_assign_handle(void * args){
 int u_new_open_file(int start){
 	int arg = start;
 
-	cortexm_svcall(root_assign_handle, &arg);
+	cortexm_svcall(svcall_assign_handle, &arg);
 	if( arg < 0 ){
 		errno = EMFILE;
 	}

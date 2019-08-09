@@ -22,7 +22,13 @@
 #include "mcu/pio.h"
 #include "cortexm/cortexm.h"
 
-void sos_led_root_enable(void * args){
+void sos_led_svcall_enable(void * args){
+	CORTEXM_SVCALL_ENTER();
+	MCU_UNUSED_ARGUMENT(args);
+	sos_led_root_enable();
+}
+
+void sos_led_root_enable(){
 	if( mcu_board_config.led.port != 255 ){
 		pio_attr_t attr;
 		devfs_handle_t handle;
@@ -38,7 +44,13 @@ void sos_led_root_enable(void * args){
 	}
 }
 
-void sos_led_root_disable(void * args){
+void sos_led_svcall_disable(void * args){
+	CORTEXM_SVCALL_ENTER();
+	MCU_UNUSED_ARGUMENT(args);
+	sos_led_root_disable();
+}
+
+void sos_led_root_disable(){
 	if( mcu_board_config.led.port != 255 ){
 		pio_attr_t attr;
 		devfs_handle_t handle;
@@ -49,11 +61,17 @@ void sos_led_root_disable(void * args){
 	}
 }
 
-void sos_led_root_error(void * args){
+void sos_led_svcall_error(void * args){
+	CORTEXM_SVCALL_ENTER();
+	MCU_UNUSED_ARGUMENT(args);
+	sos_led_root_error();
+}
+
+void sos_led_root_error(){
 	while(1){
-		sos_led_root_enable(0);
+		sos_led_svcall_enable(0);
 		cortexm_delay_ms(50);
-		sos_led_root_disable(0);
+		sos_led_svcall_disable(0);
 		cortexm_delay_ms(50);
 	}
 }

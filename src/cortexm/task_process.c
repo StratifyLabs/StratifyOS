@@ -27,7 +27,8 @@ int task_create_process(void (*p)(char*),
 								const char * path_arg,
 								task_memories_t * mem,
 								void * reent_ptr,
-								int parent_id){
+								int parent_id,
+								int is_root){
 
 	int tid;
 	int err;
@@ -57,6 +58,9 @@ int task_create_process(void (*p)(char*),
 	task.global_reent = task.reent;
 
 	task.flags = TASK_FLAGS_USED;
+	if( is_root ){
+		task.flags |= TASK_FLAGS_ROOT;
+	}
 	task.parent = task_get_current();
 	task.priority = 0;
 	task.parent = parent_id;
@@ -69,7 +73,7 @@ int task_create_process(void (*p)(char*),
 	task.mem = &task_memories;
 
 	//Do a priv call while accessing the task table so there are no interruptions
-	cortexm_svcall( (cortexm_svcall_t)task_root_new_task, &task);
+	cortexm_svcall( (cortexm_svcall_t)task_svcall_new_task, &task);
 	tid = task.tid;
 	return tid;
 }

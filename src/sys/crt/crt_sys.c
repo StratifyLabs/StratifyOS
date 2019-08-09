@@ -33,8 +33,9 @@ typedef struct {
 	int data_size;
 } root_load_data_t;
 
-static void root_load_data(void * args) MCU_ROOT_EXEC_CODE;
-void root_load_data(void * args){
+static void svcall_load_data(void * args) MCU_ROOT_EXEC_CODE;
+void svcall_load_data(void * args){
+	CORTEXM_SVCALL_ENTER();
 
 	root_load_data_t * p = args;
 	int size;
@@ -67,7 +68,7 @@ void crt_load_data(void * global_reent, int code_size, int data_size){
 	root_load_data_t args;
 	args.code_size = code_size;
 	args.data_size = data_size;
-	cortexm_svcall(root_load_data, &args);
+	cortexm_svcall(svcall_load_data, &args);
 }
 
 char ** const crt_import_argv(char * path_arg, int * argc){

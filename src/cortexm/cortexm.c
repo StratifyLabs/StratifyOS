@@ -23,7 +23,7 @@
 #include "cortexm/mpu.h"
 
 //this is used to ensure svcall's execute from start to finish
-cortexm_svcall_t cortexm_svcall_validation;
+cortexm_svcall_t cortexm_svcall_validation MCU_SYS_MEM;
 
 void cortexm_delay_systick(u32 ticks){
 	u32 countdown = ticks;
@@ -212,6 +212,11 @@ void cortexm_get_stack_ptr(void * ptr){
 
 void cortexm_set_stack_ptr(void * ptr){
 	asm volatile ("MSR msp, %0\n\t" : : "r" (ptr) );
+}
+
+void cortexm_svcall_get_thread_stack_ptr(void * ptr){
+	CORTEXM_SVCALL_ENTER();
+	cortexm_get_thread_stack_ptr(ptr);
 }
 
 void cortexm_get_thread_stack_ptr(void * ptr){

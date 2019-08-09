@@ -45,7 +45,7 @@ void sffs_dev_setlist_block(const void * cfg, int list_block){
 }
 
 void sffs_dev_setdelay_mutex(pthread_mutex_t * mutex){
-	cortexm_svcall(scheduler_root_set_delaymutex, mutex);
+	cortexm_svcall(scheduler_svcall_set_delaymutex, mutex);
 }
 
 int sffs_dev_getserialno(const void * cfg){

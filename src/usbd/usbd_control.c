@@ -42,6 +42,11 @@ static void stall(usbd_control_t * context){
 	context->data.nbyte = 0;
 }
 
+void usbd_control_svcall_init(void * args){
+	CORTEXM_SVCALL_ENTER();
+	usbd_control_root_init(args);
+}
+
 void usbd_control_root_init(void * args){
 	usbd_control_t * context = args;
 	mcu_action_t action;

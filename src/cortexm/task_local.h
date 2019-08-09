@@ -78,7 +78,7 @@ typedef struct {
 	u32 r3;
 } new_task_t;
 
-void task_root_new_task(new_task_t * task);
+void task_svcall_new_task(new_task_t * task);
 
 static inline void task_save_context() MCU_ALWAYS_INLINE;
 void task_save_context(){

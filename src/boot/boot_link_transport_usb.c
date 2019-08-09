@@ -73,7 +73,7 @@ link_transport_phy_t boot_link_transport_usb_open(const char * name,
 
 	dstr("USB INIT\n");
 	//initialize USB device
-	usbd_control_root_init(context);
+	usbd_control_svcall_init(context);
 
 	m_read_tail = 0;
 	m_read_head = 0;

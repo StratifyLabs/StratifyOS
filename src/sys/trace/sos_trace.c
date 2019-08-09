@@ -29,6 +29,7 @@
 
 static void sos_trace_event_addr(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len, u32 addr);
 static void sos_trace_build_event(link_trace_event_t * event, link_trace_event_id_t event_id, const void * data_ptr, size_t data_len, u32 addr, int tid, const struct timespec * spec);
+static void svcall_trace_event(void * args);
 
 void sos_trace_root_trace_event(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len){
 	register u32 lr asm("lr");
@@ -75,6 +76,11 @@ void sos_trace_event_addr(link_trace_event_id_t event_id, const void * data_ptr,
 	sos_trace_event_addr_tid(event_id, data_ptr, data_len, addr, task_get_current());
 }
 
+void svcall_trace_event(void * args){
+	CORTEXM_SVCALL_ENTER();
+	sos_board_config.trace_event(args);
+}
+
 void sos_trace_event_addr_tid(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len, u32 addr, int tid){
 	//record event id and in-calling processes trace stream
 	struct timespec spec;
@@ -119,7 +125,7 @@ void sos_trace_event_addr_tid(link_trace_event_id_t event_id, const void * data_
 		cortexm_assign_zero_sum32(&event, CORTEXM_ZERO_SUM32_COUNT(event));
 		*/
 
-		cortexm_svcall(sos_board_config.trace_event, &event);
+		cortexm_svcall(svcall_trace_event, &event);
 	}
 
 }

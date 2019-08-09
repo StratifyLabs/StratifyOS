@@ -78,10 +78,12 @@ typedef struct {
 	//decrypt
 } crypt_rsa_api_t;
 
+
 #if !defined __link
 #define CRYPT_SHA256_API_REQUEST MCU_API_REQUEST_CODE('s','2','5','6')
 #define CRYPT_SHA512_API_REQUEST MCU_API_REQUEST_CODE('s','5','1','2')
 #endif
 
+extern const crypt_hash_api_t tinycrypt_sha256_hash_api;
 
 #endif // CRYPT_API_H
