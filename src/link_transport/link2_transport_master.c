@@ -108,19 +108,11 @@ int link2_transport_masterwrite(link_transport_mdriver_t * driver, const void * 
 		}
 
 		//send packet
-#if 0
-		printf("write packet size %d of %d/%d\n",
-				 pkt.size + LINK2_PACKET_HEADER_SIZE,
-				 bytes,
-				 nbyte);
-#endif
-
 		if( driver->phy_driver.write(
 				 driver->phy_driver.handle,
 				 &pkt,
 				 pkt.size + LINK2_PACKET_HEADER_SIZE
 				 ) != (pkt.size + LINK2_PACKET_HEADER_SIZE) ){
-			printf("\nerror %s():%d\n", __FUNCTION__, __LINE__);
 			return SYSFS_SET_RETURN(1);
 		}
 
@@ -128,8 +120,7 @@ int link2_transport_masterwrite(link_transport_mdriver_t * driver, const void * 
 		if( (err = wait_ack(
 					driver,
 					pkt_checksum(&pkt),
-					//driver->phy_driver.timeout
-				  5000
+					driver->phy_driver.timeout
 					)) < 0 ){
 			driver->phy_driver.flush(driver->phy_driver.handle);
 #if 0
@@ -143,9 +134,7 @@ int link2_transport_masterwrite(link_transport_mdriver_t * driver, const void * 
 			return err;
 		}
 
-		//printf("Got ack 0x%X\n", err);
 		if( err != LINK2_PACKET_ACK ){
-			printf("\nerror %s():%d 0x%X\n", __FUNCTION__, __LINE__, err);
 			return SYSFS_SET_RETURN(1);
 		}
 
@@ -200,7 +189,6 @@ int wait_ack(link_transport_mdriver_t * driver, u8 checksum, int timeout){
 
 
 	if( ack.checksum != checksum ){
-		printf("0x%X != 0x%X\n", ack.checksum, checksum);
 		return LINK_PROT_ERROR;
 	}
 

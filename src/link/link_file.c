@@ -436,13 +436,17 @@ int link_unlink(link_transport_mdriver_t * driver, const char * path){
 		return LINK_TRANSFER_ERR;
 	}
 
+	//some erase operations take a long time
 	link_transport_mastersettimeout(driver, 5000);
+
 	//read the reply to see if the file deleted correctly
 	err = link_transport_masterread(driver, &reply, sizeof(reply));
 	if ( err < 0 ){
 		return err;
 	}
-	link_transport_mastersettimeout(driver, 500);
+
+	//restore the timeout to the default
+	link_transport_mastersettimeout(driver, 0);
 
 
 	if ( reply.err < 0 ){

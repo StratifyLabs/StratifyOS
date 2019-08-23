@@ -93,7 +93,9 @@ int link_reset(link_transport_mdriver_t * driver){
 		op.ioctl.fildes = LINK_BOOTLOADER_FILDES;
 		op.ioctl.request = I_BOOTLOADER_RESET;
 		op.ioctl.arg = 0;
+		link_transport_mastersettimeout(driver, 10);
 		link_transport_masterwrite(driver, &op, sizeof(link_ioctl_t));
+		link_transport_mastersettimeout(driver, 0);
 		driver->phy_driver.close(&(driver->phy_driver.handle));
 	} else {
 		link_debug(LINK_DEBUG_MESSAGE, "reset device with /dev/core");
@@ -120,12 +122,14 @@ int reset_device(link_transport_mdriver_t * driver, int invoke_bootloader){
 			attr.o_flags = CORE_FLAG_EXEC_INVOKE_BOOTLOADER;
 		}
 
+		link_transport_mastersettimeout(driver, 50);
 		if( link_ioctl(driver, fd, I_CORE_SETATTR, &attr) < 0 ){
 			//try the old version of the bootloader
 			if( link_ioctl(driver, fd, I_CORE_INVOKEBOOTLOADER_2, &attr) < 0 ){
 				ret = -1;
 			}
 		}
+		link_transport_mastersettimeout(driver, 0);
 		//since the device has been reset -- close the handle
 		driver->transport_version = 0;
 		driver->phy_driver.close(&(driver->phy_driver.handle));

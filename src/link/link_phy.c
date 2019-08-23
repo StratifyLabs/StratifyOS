@@ -495,8 +495,8 @@ int link_phy_write(link_transport_phy_t handle, const void * buf, int nbyte){
 
 		if( page_size == max_page_size ){
 			//this just seems to force the OS to flush the write because of the context change
-			//the context change probably gives the MCU more than 1us
-			usleep(10);
+			//the context change probably gives the MCU more than 100us
+			usleep(100);
 		}
 
 		p += ret;
