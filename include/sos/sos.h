@@ -506,12 +506,11 @@ int kernel_request(int request, void * data) MCU_WEAK;
 const void * kernel_request_api(u32 request) MCU_WEAK;
 
 typedef struct {
-	//bool logged;
-	uint32_t tid;
-	uint32_t pid;
+	u32 tid;
+	s32 free_stack_size;
+	s32 free_heap_size;
+	u32 pid;
 	fault_t fault;
-	//time_t time;
-	//unsigned int useconds;
 } scheduler_fault_t;
 
 #define SOS_TRACE_MESSAGE(msg) sos_trace_event(LINK_POSIX_TRACE_MESSAGE, msg, strnlen(msg, LINK_POSIX_TRACE_DATA_SIZE))

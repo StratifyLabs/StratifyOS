@@ -66,7 +66,7 @@ void mcu_core_hardfault_handler(){
 void hardfault_handler(u32 fault_status, hw_stack_frame_t * handler_stack){
 	hw_stack_frame_t * stack;
 	fault_t fault;
-	cortexm_get_thread_stack_ptr( &stack );
+	cortexm_get_thread_stack_ptr( (void**)&stack );
 
 	fault.addr = (void*)0xFFFFFFFF;
 	fault.num = MCU_FAULT_HARD_UNKNOWN;
@@ -103,7 +103,7 @@ void cortexm_wdtfault_handler(void * stack){
 	fault_t fault;
 	hw_stack_frame_t * handler_stack = stack;
 	hw_stack_frame_t * user_stack;
-	cortexm_get_thread_stack_ptr( &user_stack );
+	cortexm_get_thread_stack_ptr( (void**)&user_stack );
 
 	fault.num = MCU_FAULT_WDT;
 	fault.addr = (void*)-1;
@@ -128,7 +128,7 @@ void mcu_core_memfault_handler(){
 void memfault_handler(u32 mem_status, hw_stack_frame_t * handler_stack){
 	fault_t fault;
 	hw_stack_frame_t * stack;
-	cortexm_get_thread_stack_ptr( &stack );
+	cortexm_get_thread_stack_ptr( (void**)&stack );
 
 	fault.addr = stack;
 	fault.num = MCU_FAULT_MEM_UNKNOWN;
@@ -183,7 +183,7 @@ void mcu_core_busfault_handler(){
 void busfault_handler(u32 bus_status, hw_stack_frame_t * handler_stack){
 	fault_t fault;
 	hw_stack_frame_t * stack;
-	cortexm_get_thread_stack_ptr( &stack );	//Clear the fault
+	cortexm_get_thread_stack_ptr( (void**)&stack );	//Clear the fault
 
 	fault.addr = (void*)0xFFFFFFFF;
 	fault.num = MCU_FAULT_BUS_UNKNOWN;
@@ -238,7 +238,7 @@ void usagefault_handler(u32 usage_status, hw_stack_frame_t * handler_stack){
 	//Clear the fault
 	fault_t fault;
 	hw_stack_frame_t * stack;
-	cortexm_get_thread_stack_ptr( &stack );
+	cortexm_get_thread_stack_ptr( (void**)&stack );
 
 	fault.addr = (void*)0xFFFFFFFF;
 	fault.num = MCU_FAULT_USAGE_UNKNOWN;

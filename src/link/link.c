@@ -1,4 +1,4 @@
-/* Copyright 2011-2016 Tyler Gilbert; 
+/* Copyright 2011-2016 Tyler Gilbert;
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -30,14 +30,16 @@ const link_transport_mdriver_t link_default_driver = {
 	.unlock = link_phy_unlock,
 	.status = link_phy_status,
 	.options = 0,
-	.dev.handle = LINK_PHY_OPEN_ERROR,
-	.dev.open = link_phy_open,
-	.dev.write = link_phy_write,
-	.dev.read = link_phy_read,
-	.dev.close = link_phy_close,
-	.dev.flush = link_phy_flush,
-	.dev.wait = link_phy_wait,
-	.dev.timeout = 100
+	.phy_driver.handle = LINK_PHY_OPEN_ERROR,
+	.phy_driver.open = link_phy_open,
+	.phy_driver.write = link_phy_write,
+	.phy_driver.read = link_phy_read,
+	.phy_driver.close = link_phy_close,
+	.phy_driver.flush = link_phy_flush,
+	.phy_driver.wait = link_phy_wait,
+	.phy_driver.timeout = 100,
+	.phy_driver.o_flags = 0,
+	.transport_version = 0
 };
 
 int link_errno;
@@ -57,12 +59,14 @@ void link_exit(){}
 
 int link_disconnect(link_transport_mdriver_t * driver){
 	int ret;
-	if( driver->dev.handle == LINK_PHY_OPEN_ERROR ){
+
+	driver->transport_version = 0;
+	if( driver->phy_driver.handle == LINK_PHY_OPEN_ERROR ){
 		return 0;
 	}
 
-	ret = driver->dev.close(&(driver->dev.handle));
-	driver->dev.handle = LINK_PHY_OPEN_ERROR;
+	ret = driver->phy_driver.close(&(driver->phy_driver.handle));
+	driver->phy_driver.handle = LINK_PHY_OPEN_ERROR;
 
 	return ret;
 }
@@ -87,8 +91,9 @@ int link_connect(link_transport_mdriver_t * driver, const char * sn){
 
 	while( (err = driver->getname(name, last, LINK_PHY_NAME_MAX)) == 0 ){
 		//success in getting new name
-		driver->dev.handle = driver->dev.open(name, driver->options);
-		if( driver->dev.handle != LINK_PHY_OPEN_ERROR ){
+		driver->transport_version = 0;
+		driver->phy_driver.handle = driver->phy_driver.open(name, driver->options);
+		if( driver->phy_driver.handle != LINK_PHY_OPEN_ERROR ){
 			link_debug(LINK_DEBUG_MESSAGE, "Read serial number for %s", name);
 			if( link_readserialno(driver, serialno, LINK_MAX_SN_SIZE) == 0 ){
 				//check for NULL sn, zero length sn or matching sn
@@ -97,31 +102,31 @@ int link_connect(link_transport_mdriver_t * driver, const char * sn){
 				strncpy(driver->dev_name, name, 63);
 
 				if( (sn == NULL) || (strlen(sn) == 0) || (strcmp(sn, serialno) == 0) ){
-					link_debug(LINK_DEBUG_MESSAGE, "Open Anon at %p", driver->dev.handle);
+					link_debug(LINK_DEBUG_MESSAGE, "Open Anon at %p", driver->phy_driver.handle);
 					return 0;
 				}
 
 				if( (strcmp(sn, serialno) == 0) ){
-					link_debug(LINK_DEBUG_MESSAGE, "Open %s at %p", sn, driver->dev.handle);
+					link_debug(LINK_DEBUG_MESSAGE, "Open %s at %p", sn, driver->phy_driver.handle);
 					return 0;
 				}
 
 				//check for half the serial number for compatibility to old serial number format
 				len = strlen(sn);
 				if( strcmp(&(sn[len/2]), serialno) == 0 ){
-					link_debug(LINK_DEBUG_MESSAGE, "Open SN at %p", driver->dev.handle);
+					link_debug(LINK_DEBUG_MESSAGE, "Open SN at %p", driver->phy_driver.handle);
 					return 0;
 				}
 
 				len = strlen(serialno);
 				if( strcmp(sn, &(serialno[len/2])) == 0 ){
-					link_debug(LINK_DEBUG_MESSAGE, "Open SN at %p", driver->dev.handle);
+					link_debug(LINK_DEBUG_MESSAGE, "Open SN at %p", driver->phy_driver.handle);
 					return 0;
 				}
 			}
 			link_debug(LINK_DEBUG_MESSAGE, "Close Handle");
-			driver->dev.close(&(driver->dev.handle));
-			driver->dev.handle = LINK_PHY_OPEN_ERROR;
+			driver->phy_driver.close(&(driver->phy_driver.handle));
+			driver->phy_driver.handle = LINK_PHY_OPEN_ERROR;
 
 		} else {
 			link_error("Failed to open %s\n", name);
@@ -142,9 +147,12 @@ int link_readserialno(link_transport_mdriver_t * driver, char * serialno, int le
 	link_reply_t reply;
 	int err;
 
+	//reset the protocol version in case the new device is using a different version
+	driver->transport_version = 0;
+
 	op.cmd = LINK_CMD_READSERIALNO;
 
-	link_debug(LINK_DEBUG_MESSAGE, "Send command (%d) to read serial number on %p", op.cmd, driver->dev.handle);
+	link_debug(LINK_DEBUG_MESSAGE, "Send command (%d) to read serial number on %p", op.cmd, driver->phy_driver.handle);
 	err = link_transport_masterwrite(driver, &op, sizeof(link_cmd_t));
 	if ( err < 0 ){
 		link_error("failed to write op");
@@ -186,15 +194,16 @@ int link_ping(link_transport_mdriver_t * driver, const char * name, int is_keep_
 	int err = -1;
 	int tries = 0;
 
-	driver->dev.handle = driver->dev.open(name, driver->options);
-	if( driver->dev.handle != LINK_PHY_OPEN_ERROR ){
+	driver->transport_version = 0;
+	driver->phy_driver.handle = driver->phy_driver.open(name, driver->options);
+	if( driver->phy_driver.handle != LINK_PHY_OPEN_ERROR ){
 		link_debug(LINK_DEBUG_MESSAGE, "Look for bootloader or device on %s", name);
 
 		//link_transport_mastersettimeout(100);
 
 		do {
 			link_debug(LINK_DEBUG_MESSAGE, "Flush %s", name);
-			driver->dev.flush(driver->dev.handle);
+			driver->phy_driver.flush(driver->phy_driver.handle);
 			if( is_legacy ){
 				link_debug(LINK_DEBUG_MESSAGE, "is legacy bootloader");
 				err = link_isbootloader_legacy(driver);
@@ -216,8 +225,8 @@ int link_ping(link_transport_mdriver_t * driver, const char * name, int is_keep_
 		} while( (err == LINK_PROT_ERROR) && (tries < 2) );
 
 		if( (is_keep_open == 0) || (err != 0)){
-			driver->dev.close(&(driver->dev.handle));
-			driver->dev.handle = LINK_PHY_OPEN_ERROR;
+			driver->phy_driver.close(&(driver->phy_driver.handle));
+			driver->phy_driver.handle = LINK_PHY_OPEN_ERROR;
 		}
 	}
 
@@ -252,7 +261,7 @@ int link_mkfs(link_transport_mdriver_t * driver, const char * path){
 		return LINK_TRANSFER_ERR;
 	}
 
-	driver->dev.wait(100);
+	driver->phy_driver.wait(100);
 
 	//read the reply to see if the file opened correctly
 	err = link_transport_masterread(driver, &reply, sizeof(reply));
@@ -296,17 +305,18 @@ char * link_new_device_list(link_transport_mdriver_t * driver, int max){
 	memset(last, 0, LINK_PHY_NAME_MAX);
 
 	//set timeout to account for devices that don't respond
-	link_transport_mastersettimeout(50);
+	link_transport_mastersettimeout(driver, 50);
 
 	while ( (err = driver->getname(name, last, LINK_PHY_NAME_MAX)) == 0 ){
 		//success in getting new name
-		driver->dev.handle = driver->dev.open(name, driver->options);
-		if( driver->dev.handle != LINK_PHY_OPEN_ERROR ){
+		driver->transport_version = 0;
+		driver->phy_driver.handle = driver->phy_driver.open(name, driver->options);
+		if( driver->phy_driver.handle != LINK_PHY_OPEN_ERROR ){
 			if( link_readserialno(driver, serialno, LINK_MAX_SN_SIZE) == 0 ){
 				entry = &(sn_list[LINK_MAX_SN_SIZE*cnt]);
 				strcpy(entry, serialno);
 
-				link_debug(LINK_DEBUG_MESSAGE, "Open dev/sys on %p", driver->dev.handle);
+				link_debug(LINK_DEBUG_MESSAGE, "Open dev/sys on %p", driver->phy_driver.handle);
 
 				//check to see if device is a bootloader?
 				if( link_isbootloader(driver) ){
@@ -332,14 +342,14 @@ char * link_new_device_list(link_transport_mdriver_t * driver, int max){
 					return sn_list;
 				}
 			}
-			driver->dev.close(&(driver->dev.handle));
-			driver->dev.handle = LINK_PHY_OPEN_ERROR;
+			driver->phy_driver.close(&(driver->phy_driver.handle));
+			driver->phy_driver.handle = LINK_PHY_OPEN_ERROR;
 		}
 		strcpy(last, name);
 	}
 
 	//set timeout back to the default
-	link_transport_mastersettimeout(0);
+	link_transport_mastersettimeout(driver, 0);
 
 	return sn_list;
 }
@@ -359,7 +369,7 @@ char * link_device_list_entry(char * list, int entry){
 int link_handle_err(link_transport_mdriver_t * driver, int err){
 	int tries;
 	int err2;
-	driver->dev.flush(driver->dev.handle);
+	driver->phy_driver.flush(driver->phy_driver.handle);
 	switch(err){
 		case LINK_TIMEOUT_ERROR:
 			link_error("TIMEOUT Error");
@@ -378,8 +388,8 @@ int link_handle_err(link_transport_mdriver_t * driver, int err){
 
 				if( err2 == 0 ){
 					link_debug(LINK_DEBUG_MESSAGE, "Successfully overcame PROT error");
-					driver->dev.wait(10);
-					driver->dev.flush(driver->dev.handle);
+					driver->phy_driver.wait(10);
+					driver->phy_driver.flush(driver->phy_driver.handle);
 					return LINK_PROT_ERROR; //try the operation again
 				}
 

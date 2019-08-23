@@ -135,9 +135,9 @@ int read_task(sys_taskattr_t * task){
 			task->is_enabled = 1;
 			task->pid = task_get_pid( task->tid );
 			task->timer = task_root_gettime(task->tid);
-			task->mem_loc = (uint32_t)sos_sched_table[task->tid].attr.stackaddr;
+			task->mem_loc = (u32)sos_sched_table[task->tid].attr.stackaddr;
 			task->mem_size = sos_sched_table[task->tid].attr.stacksize;
-			task->stack_ptr = (uint32_t)sos_task_table[task->tid].sp;
+			task->stack_ptr = (u32)sos_task_table[task->tid].sp;
 			task->prio = task_get_priority(task->tid);
 			task->prio_ceiling = sos_sched_table[task->tid].attr.schedparam.sched_priority;
 			task->is_active = (task_active_asserted(task->tid) != 0) | ((task_stopped_asserted(task->tid != 0)<<1));
@@ -145,12 +145,20 @@ int read_task(sys_taskattr_t * task){
 
 			strncpy(task->name, ((struct _reent*)sos_task_table[ task->tid ].global_reent)->procmem_base->proc_name, NAME_MAX);
 
-			if ( !task->is_thread && ( sos_task_table[task->tid].reent != NULL) ){
-				task->malloc_loc = (uint32_t)&(((struct _reent*)sos_task_table[task->tid].reent)->procmem_base->base)
-						+ ((struct _reent*)sos_task_table[task->tid].reent)->procmem_base->size;
+#if 1
+			task->malloc_loc = scheduler_calculate_heap_end(task->tid);
+#else
+			if ( !task->is_thread &&
+				  ( sos_task_table[task->tid].reent != NULL)
+				  ){
+				task->malloc_loc =
+						(u32)&(((struct _reent*)sos_task_table[task->tid].reent)->procmem_base->base) +
+						((struct _reent*)sos_task_table[task->tid].reent)->procmem_base->size;
+
 			} else {
 				task->malloc_loc = 0;
 			}
+#endif
 
 
 			ret = 1;

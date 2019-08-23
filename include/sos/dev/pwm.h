@@ -66,12 +66,13 @@ typedef struct MCU_PACK {
 	mcu_pin_t channel[4];
 } pwm_pin_assignment_t;
 
+/*! \details PWM Attributes */
 typedef struct MCU_PACK {
-	u32 o_flags;
+	u32 o_flags /*! Or'd flags such as PWM_FLAG_SET_TIMER */;
 	pwm_pin_assignment_t pin_assignment;
 	u32 freq /*! The PWM counter frequency */;
 	u32 period /*! The PWM period in counts */;
-	mcu_channel_t channel;
+	mcu_channel_t channel /*! Channel when using PWM_FLAG_SET_CHANNELS */;
 	u32 resd[8];
 } pwm_attr_t;
 

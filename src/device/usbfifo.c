@@ -54,6 +54,8 @@ static int data_received(void * context, const mcu_event_t * data){
 
 		if( result > 0 ){
 
+			//mcu_debug_printf("a%d\n", result);
+
 			//write the new bytes to the buffer
 			for(i=0; i < result; i++){
 				config->fifo.buffer[ state->fifo.atomic_position.access.head ] = config->read_buffer[i];
@@ -64,8 +66,10 @@ static int data_received(void * context, const mcu_event_t * data){
 			fifo_data_received(&(config->fifo), &(state->fifo));
 		}
 
+		//the callback can modify nbyte -- restore it here
 		state->async_read.nbyte = config->endpoint_size;
-		//what if this returns data right now
+
+		//if this returns > 0 then data is ready right now
 		result = mcu_usb_read(handle, &state->async_read);
 		if( result < 0 ){
 			//EAGAIN can happen if too much data arrives at one time

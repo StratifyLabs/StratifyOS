@@ -107,7 +107,6 @@ void * link_update(void * arg){
 	int err;
 	link_transport_driver_t * driver = arg;
 	link_data_t data;
-	char packet_data[LINK_MAX_TRANSFER_SIZE];
 	data.op.cmd = 0;
 	err = 0;
 
@@ -123,13 +122,11 @@ void * link_update(void * arg){
 		//Wait for data to arrive on the link transport device
 		while( 1 ){
 
-			if ( (err = link_transport_slaveread(driver, &packet_data, LINK_MAX_TRANSFER_SIZE, NULL, NULL)) <= 0 ){
+			if ( (err = link_transport_slaveread(driver, &data.op, sizeof(data.op), NULL, NULL)) <= 0 ){
+				memset(&data.op, 0, sizeof(data.op));
 				mcu_debug_log_warning(MCU_DEBUG_LINK, "slave read error %d", err);
-				driver->flush(driver->handle);
 				continue;
 			}
-
-			memcpy(&data.op, packet_data, sizeof(data.op));
 
 			if( err > 0 ){
 				break;
@@ -140,7 +137,6 @@ void * link_update(void * arg){
 		}
 
 		if ( data.op.cmd < LINK_CMD_TOTAL ){
-			//mcu_debug_printf("cmd:%d\n", data.op.cmd);
 			link_cmd_func_table[data.op.cmd](driver, &data);
 		} else {
 			data.reply.err = -1;
@@ -155,7 +151,7 @@ void * link_update(void * arg){
 
 	}
 
-	mcu_debug_user_printf("Link quit\n");
+	mcu_debug_log_warning(MCU_DEBUG_LINK, "Link quit");
 	return NULL;
 }
 
@@ -234,7 +230,7 @@ void link_cmd_ioctl(link_transport_driver_t * driver, link_data_t * args){
 	size = _IOCTL_SIZE(args->op.ioctl.request);
 	char io_buf[size];
 	if ( _IOCTL_IOCTLW(args->op.ioctl.request) != 0 ){ //this means data is being sent over the bulk interrupt
-		if( link_transport_slaveread(driver, io_buf, size, NULL, NULL) == -1 ){
+		if( link_transport_slaveread(driver, io_buf, size, NULL, NULL) < 0 ){
 			args->op.cmd = 0;
 			args->reply.err = -1;
 			return;
@@ -294,14 +290,21 @@ void link_cmd_read(link_transport_driver_t * driver, link_data_t * args){
 void link_cmd_write(link_transport_driver_t * driver, link_data_t * args){
 	if( args->op.write.fildes != driver->handle ){
 		errno = 0;
-		args->reply.err = write_device(driver, args->op.write.fildes, args->op.write.nbyte);
+		args->reply.err = write_device(
+					driver,
+					args->op.write.fildes,
+					args->op.write.nbyte
+					);
 	}  else {
 		args->reply.err = -1;
 		args->reply.err_number = EBADF;
 	}
 	if ( args->reply.err < 0 ){
-		mcu_debug_log_error(MCU_DEBUG_LINK, "Failed to write (%d)", errno);
 		args->reply.err_number = errno;
+		mcu_debug_log_error(MCU_DEBUG_LINK, "Failed to write (%d, %d)",
+								  args->reply.err,
+								  args->reply.err_number);
+
 	}
 }
 
@@ -549,7 +552,7 @@ int write_device_callback(void * context, void * buf, int nbyte){
 	int * fildes;
 	int ret;
 	fildes = context;
-	ret =  write(*fildes, buf, nbyte);
+	ret =	write(*fildes, buf, nbyte);
 	return ret;
 }
 

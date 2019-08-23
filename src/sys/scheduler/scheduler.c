@@ -119,58 +119,99 @@ void svcall_fault_logged(void * args){
 
 int check_faults(){
 	if ( m_scheduler_fault.fault.num != 0 ){
-		char buffer[256];
+		char buffer[LINK_POSIX_TRACE_DATA_SIZE+1];
 		//Trace the fault -- and output on debug
-		scheduler_fault_build_trace_string(buffer);
+		buffer[LINK_POSIX_TRACE_DATA_SIZE] = 0;
+
+		snprintf(buffer,
+					LINK_POSIX_TRACE_DATA_SIZE,
+					"fault:%d",
+					m_scheduler_fault.fault.num
+					);
 		sos_trace_event_addr_tid(
 					POSIX_TRACE_FATAL,
-					buffer, strlen(buffer),
+					buffer,
+					strlen(buffer),
 					(u32)m_scheduler_fault.fault.pc + 1,
 					m_scheduler_fault.tid);
 
 		usleep(2000);
 		mcu_debug_log_error(MCU_DEBUG_SYS, "%s", buffer);
 
-		char hex_buffer[9];
-		strcpy(buffer, "ADDR 0x");
-		htoa(hex_buffer, (u32)m_scheduler_fault.fault.addr);
-		strcat(buffer, hex_buffer);
+		snprintf(buffer,
+					LINK_POSIX_TRACE_DATA_SIZE-1,
+					"addr:%p",
+					m_scheduler_fault.fault.addr
+					);
+
 		sos_trace_event_addr_tid(
-					POSIX_TRACE_MESSAGE,
-					buffer, strlen(buffer),
+					POSIX_TRACE_FATAL,
+					buffer,
+					strlen(buffer),
 					(u32)m_scheduler_fault.fault.pc + 1,
-					m_scheduler_fault.tid);
-		mcu_debug_log_error(MCU_DEBUG_SYS, "ADDR 0x%lX %ld", (u32)m_scheduler_fault.fault.pc + 1, m_scheduler_fault.tid);
+					m_scheduler_fault.tid
+					);
 		usleep(2000);
+		mcu_debug_log_error(MCU_DEBUG_SYS, "%s", buffer);
 
-
-		strcpy(buffer, "Caller");
+		strncpy(buffer, "caller", LINK_POSIX_TRACE_DATA_SIZE);
 		sos_trace_event_addr_tid(
 					POSIX_TRACE_MESSAGE,
-					buffer, strlen(buffer),
+					buffer,
+					strlen(buffer),
 					(u32)m_scheduler_fault.fault.caller,
-					m_scheduler_fault.tid);
+					m_scheduler_fault.tid
+					);
 		mcu_debug_log_error(MCU_DEBUG_SYS, "Caller 0x%lX %ld", (u32)m_scheduler_fault.fault.caller, m_scheduler_fault.tid);
 		usleep(2000);
 
+		snprintf(buffer,
+					LINK_POSIX_TRACE_DATA_SIZE-1,
+					"stack:%ld",
+					m_scheduler_fault.free_stack_size
+					);
 
-		strcpy(buffer, "ISR PC");
+		sos_trace_event_addr_tid(
+					POSIX_TRACE_MESSAGE,
+					buffer,
+					strlen(buffer),
+					(u32)m_scheduler_fault.fault.pc + 1,
+					m_scheduler_fault.tid);
+		mcu_debug_log_error(MCU_DEBUG_SYS, "Stack free %ld %ld", m_scheduler_fault.free_stack_size, m_scheduler_fault.tid);
+		usleep(2000);
+
+		snprintf(buffer,
+					LINK_POSIX_TRACE_DATA_SIZE-1,
+					"heap:%ld",
+					m_scheduler_fault.free_heap_size
+					);
+
+		sos_trace_event_addr_tid(
+					POSIX_TRACE_MESSAGE,
+					buffer,
+					strlen(buffer),
+					(u32)m_scheduler_fault.fault.pc + 1,
+					m_scheduler_fault.tid);
+		mcu_debug_log_error(MCU_DEBUG_SYS, "Heap free %ld %ld", m_scheduler_fault.free_heap_size, m_scheduler_fault.tid);
+		usleep(2000);
+
+		strcpy(buffer, "root pc");
 		sos_trace_event_addr_tid(
 					POSIX_TRACE_MESSAGE,
 					buffer, strlen(buffer),
 					(u32)m_scheduler_fault.fault.handler_pc + 1,
 					m_scheduler_fault.tid);
-		mcu_debug_log_error(MCU_DEBUG_SYS, "ISR PC 0x%lX %ld", (u32)m_scheduler_fault.fault.handler_pc+1, m_scheduler_fault.tid);
+		mcu_debug_log_error(MCU_DEBUG_SYS, "ROOT PC 0x%lX %ld", (u32)m_scheduler_fault.fault.handler_pc+1, m_scheduler_fault.tid);
 		usleep(2000);
 
 
-		strcpy(buffer, "ISR Caller");
+		strcpy(buffer, "root caller");
 		sos_trace_event_addr_tid(
 					POSIX_TRACE_MESSAGE,
 					buffer, strlen(buffer),
 					(u32)m_scheduler_fault.fault.handler_caller,
 					m_scheduler_fault.tid);
-		mcu_debug_log_error(MCU_DEBUG_SYS, "ISR Caller 0x%lX %ld", (u32)m_scheduler_fault.fault.handler_caller, m_scheduler_fault.tid);
+		mcu_debug_log_error(MCU_DEBUG_SYS, "ROOT Caller 0x%lX %ld", (u32)m_scheduler_fault.fault.handler_caller, m_scheduler_fault.tid);
 		usleep(2000);
 
 		cortexm_svcall(svcall_fault_logged, NULL);
@@ -320,6 +361,17 @@ int start_first_thread(){
 }
 
 
+
+u32 scheduler_calculate_heap_end(u32 task_id){
+	if( (task_id < task_get_total()) &&
+		 (task_thread_asserted(task_id) == 0) &&
+		 (sos_task_table[task_id].reent != NULL) ){
+
+		return (u32)&(((struct _reent*)sos_task_table[task_id].reent)->procmem_base->base) +
+				((struct _reent*)sos_task_table[task_id].reent)->procmem_base->size;
+	}
+	return 0;
+}
 
 
 /*! @} */

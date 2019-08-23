@@ -37,9 +37,9 @@ int link_settime(link_transport_mdriver_t * driver, struct link_tm * t){
 
 	link_debug(LINK_DEBUG_MESSAGE, "write time");
 	ret = link_ioctl(driver,
-			fd,
-			I_RTC_SET,
-			&ltm);
+						  fd,
+						  I_RTC_SET,
+						  &ltm);
 
 	link_debug(LINK_DEBUG_MESSAGE, "close");
 	if( link_close(driver, fd) < 0 ){
@@ -61,9 +61,9 @@ int link_gettime(link_transport_mdriver_t * driver, struct link_tm * t){
 	}
 
 	ret = link_ioctl(driver,
-			fd,
-			I_RTC_GET,
-			t);
+						  fd,
+						  I_RTC_GET,
+						  t);
 	if( ret < 0 ){
 		link_error("Failed to I_RTC_GET");
 	}

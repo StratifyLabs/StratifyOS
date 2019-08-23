@@ -24,24 +24,11 @@
 #include <stdarg.h>
 #include <string.h>
 
-#ifndef __link
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-
-#include "cortexm/cortexm.h"
-#include "mcu/core.h"
-#include "sos/fs/devfs.h"
-#include "uart.h"
-
-#if defined __debug
-#define ___debug
-#endif
-
-enum {
+enum mcu_debug_flags {
 	MCU_DEBUG_ERROR = 1,
 	MCU_DEBUG_WARNING = 2,
 	MCU_DEBUG_INFO = 3,
@@ -77,6 +64,19 @@ enum {
 	MCU_DEBUG_USER5 = (1<<31)
 };
 
+#ifndef __link
+
+#include "cortexm/cortexm.h"
+#include "mcu/core.h"
+#include "sos/fs/devfs.h"
+#include "uart.h"
+
+#if defined __debug
+#define ___debug
+#endif
+
+
+
 #if !defined ___debug
 #define mcu_debug_init() 0
 #define mcu_debug_write_uart(x)
@@ -86,7 +86,7 @@ enum {
 #define mcu_debug_log_info(o_flags, format, ...)
 #define mcu_debug_log_warning(o_flags, format, ...)
 #define mcu_debug_log_error(o_flags, format, ...)
-#define mcu_debug_log_fatal(o_flags, format, ...);
+#define mcu_debug_log_fatal(o_flags, format, ...)
 #else
 #define MCU_DEBUG 1
 int mcu_debug_init();
@@ -106,14 +106,22 @@ void mcu_debug_log_fatal(u32 o_flags, const char * format, ...);
 
 #endif
 
-#define MCU_DEBUG_LINE_TRACE() mcu_debug_printf("%s():%d\n", __FUNCTION__, __LINE__)
 
+#else
+
+#define mcu_debug_printf(format, ...) printf(format, __VA_ARGS__)
+#define mcu_debug_log_info(o_flags, format, ...) printf(format, __VA_ARGS__)
+#define mcu_debug_log_warning(o_flags, format, ...) printf(format, __VA_ARGS__)
+#define mcu_debug_log_error(o_flags, format, ...) printf(format, __VA_ARGS__)
+#define mcu_debug_log_fatal(o_flags, format, ...) printf(format, __VA_ARGS__)
+
+#endif
+
+#define MCU_DEBUG_LINE_TRACE() mcu_debug_printf("%s():%d\n", __FUNCTION__, __LINE__)
 
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif
 
 

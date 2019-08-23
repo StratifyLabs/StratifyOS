@@ -8,7 +8,6 @@ if( ${SOS_BUILD_CONFIG} STREQUAL link )
       ${SOURCES_PREFIX}/link_file.c
       ${SOURCES_PREFIX}/link_phy.c
       ${SOURCES_PREFIX}/link_process.c
-      ${SOURCES_PREFIX}/link_protocol_master.c
       ${SOURCES_PREFIX}/link_stdio.c
       ${SOURCES_PREFIX}/link_sys_attr.c
       ${SOURCES_PREFIX}/link_time.c

@@ -13,7 +13,7 @@
 
 static int send_ack(link_transport_driver_t * driver, uint8_t ack, uint8_t checksum);
 
-int link_transport_slaveread(link_transport_driver_t * driver, void * buf, int nbyte, int (*callback)(void*,void*,int), void * context){
+int link1_transport_slaveread(link_transport_driver_t * driver, void * buf, int nbyte, int (*callback)(void*,void*,int), void * context){
     link_pkt_t pkt;
     char * p;
     int bytes;
@@ -25,14 +25,14 @@ int link_transport_slaveread(link_transport_driver_t * driver, void * buf, int n
     p = buf;
     do {
 
-        if( (err = link_transport_wait_start(driver, &pkt, driver->timeout)) < 0 ){
+		  if( (err = link1_transport_wait_start(driver, &pkt, driver->timeout)) < 0 ){
             send_ack(driver, LINK_PACKET_NACK, 0);
             driver->wait(driver->timeout);
             driver->flush(driver->handle);
             return -1;
         }
 
-        if( (err = link_transport_wait_packet(driver, &pkt, driver->timeout)) < 0 ){
+		  if( (err = link1_transport_wait_packet(driver, &pkt, driver->timeout)) < 0 ){
             send_ack(driver, LINK_PACKET_NACK, 0);
             driver->wait(driver->timeout);
             driver->flush(driver->handle);
@@ -49,7 +49,7 @@ int link_transport_slaveread(link_transport_driver_t * driver, void * buf, int n
 
         checksum = pkt_checksum(&pkt);
         //a packet has arrived -- checksum it
-        if( link_transport_checksum_isok(&pkt) == false ){
+		  if( link1_transport_checksum_isok(&pkt) == false ){
             //bad checksum on packet -- treat as a non-packet
             send_ack(driver, LINK_PACKET_NACK, checksum);
             driver->wait(driver->timeout);
@@ -85,7 +85,7 @@ int link_transport_slaveread(link_transport_driver_t * driver, void * buf, int n
     return bytes;
 }
 
-int link_transport_slavewrite(link_transport_driver_t * driver, const void * buf, int nbyte, int (*callback)(void*,void*,int), void * context){
+int link1_transport_slavewrite(link_transport_driver_t * driver, const void * buf, int nbyte, int (*callback)(void*,void*,int), void * context){
     link_pkt_t pkt;
     char * p;
     int bytes;
@@ -113,7 +113,7 @@ int link_transport_slavewrite(link_transport_driver_t * driver, const void * buf
             //copy data from buf
             memcpy(pkt.data, p, pkt.size);
         }
-        link_transport_insert_checksum(&pkt);
+		  link1_transport_insert_checksum(&pkt);
 
         //send packet
         if( driver->write(driver->handle, &pkt, pkt.size + LINK_PACKET_HEADER_SIZE) != (pkt.size + LINK_PACKET_HEADER_SIZE) ){

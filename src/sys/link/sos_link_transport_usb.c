@@ -44,6 +44,8 @@ const usbfifo_config_t sos_link_transport_usb_fifo_cfg = {
 		.size = USB0_DEVFIFO_BUFFER_SIZE
 	}
 };
+
+
 usbfifo_state_t sos_link_transport_usb_fifo_state MCU_SYS_MEM;
 
 static int open_pio(mcu_pin_t pin, int active_high){

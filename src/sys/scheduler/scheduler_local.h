@@ -69,4 +69,6 @@ int scheduler_create_process(void (*p)(char *),
 int scheduler_switch_context(void * args);
 int scheduler_get_highest_priority_blocked(void * block_object);
 
+u32 scheduler_calculate_heap_end(u32 task_id);
+
 #endif /* SCHED_FLAGS_H_ */

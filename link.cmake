@@ -15,6 +15,9 @@ include(${SOS_TOOLCHAIN_CMAKE_PATH}/sos-lib.cmake)
 install(FILES include/mcu/types.h DESTINATION include/mcu)
 install(FILES include/mcu/mcu.h DESTINATION include/mcu)
 install(DIRECTORY include/sos DESTINATION include)
+
+option(SOS_SKIP_CMAKE "Dont install the cmake files" OFF)
+
 if(NOT SOS_SKIP_CMAKE)
 	install(DIRECTORY cmake/ DESTINATION arm-none-eabi/cmake)
 endif()

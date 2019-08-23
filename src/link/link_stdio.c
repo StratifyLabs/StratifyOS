@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 
@@ -34,10 +34,10 @@ int link_close_stdio(link_transport_mdriver_t * driver){
 }
 
 int link_read_stdout(link_transport_mdriver_t * driver, void * buf, int nbyte){
-	return driver->dev.read(driver->dev.handle, buf, nbyte);
+	return driver->phy_driver.read(driver->phy_driver.handle, buf, nbyte);
 }
 
 
 int link_write_stdin(link_transport_mdriver_t * driver, const void * buf, int nbyte){
-	return driver->dev.write(driver->dev.handle, buf, nbyte);
+	return driver->phy_driver.write(driver->phy_driver.handle, buf, nbyte);
 }

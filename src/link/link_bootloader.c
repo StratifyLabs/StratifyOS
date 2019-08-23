@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 #include <string.h>
@@ -26,59 +26,59 @@
 static int reset_device(link_transport_mdriver_t * driver, int invoke_bootloader);
 
 int link_bootloader_attr(link_transport_mdriver_t * driver, bootloader_attr_t * attr, u32 id){
-    link_errno = 0;
-    int ret = link_ioctl(driver, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_GETINFO, attr);
-    if( ret < 0 ){
-        if( link_errno == 9 ){ //EBADF
-            link_debug(LINK_DEBUG_MESSAGE, "Device is present but is not a bootloader");
-            return LINK_DEVICE_PRESENT_BUT_NOT_BOOTLOADER;
-        }
-        return -1;
+	link_errno = 0;
+	int ret = link_ioctl(driver, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_GETINFO, attr);
+	if( ret < 0 ){
+		if( link_errno == 9 ){ //EBADF
+			link_debug(LINK_DEBUG_MESSAGE, "Device is present but is not a bootloader");
+			return LINK_DEVICE_PRESENT_BUT_NOT_BOOTLOADER;
+		}
+		return -1;
 	}
 
 	return 0;
 }
 
 int link_bootloader_attr_legacy(link_transport_mdriver_t * driver, bootloader_attr_t * attr, u32 id){
-    bootloader_attr_legacy_t legacy_attr;
-    int ret;
-    link_errno = 0;
-    if( (ret = link_ioctl(driver, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_GETATTR_LEGACY, &legacy_attr)) < 0 ){
-        if( link_errno != 0 ){
-            link_debug(LINK_DEBUG_MESSAGE, "Legacy Device is present but is not a bootloader");
-            return LINK_DEVICE_PRESENT_BUT_NOT_BOOTLOADER;
-        }
-        return -1;
-    }
+	bootloader_attr_legacy_t legacy_attr;
+	int ret;
+	link_errno = 0;
+	if( (ret = link_ioctl(driver, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_GETATTR_LEGACY, &legacy_attr)) < 0 ){
+		if( link_errno != 0 ){
+			link_debug(LINK_DEBUG_MESSAGE, "Legacy Device is present but is not a bootloader");
+			return LINK_DEVICE_PRESENT_BUT_NOT_BOOTLOADER;
+		}
+		return -1;
+	}
 
-    memcpy(attr, &legacy_attr, sizeof(legacy_attr));
-    attr->hardware_id = 0x00000001; //CoAction Hero is the only board with legacy bootloader installed
+	memcpy(attr, &legacy_attr, sizeof(legacy_attr));
+	attr->hardware_id = 0x00000001; //CoAction Hero is the only board with legacy bootloader installed
 
-    return 0;
+	return 0;
 }
 
 int link_isbootloader_legacy(link_transport_mdriver_t * driver){
-    bootloader_attr_t attr;
-    int ret = link_bootloader_attr_legacy(driver, &attr, 0);
-    if( ret == LINK_DEVICE_PRESENT_BUT_NOT_BOOTLOADER ){
-        return 0;
-    } else if ( ret < 0 ){
-        return -1;
-    }
-    return 1;
+	bootloader_attr_t attr;
+	int ret = link_bootloader_attr_legacy(driver, &attr, 0);
+	if( ret == LINK_DEVICE_PRESENT_BUT_NOT_BOOTLOADER ){
+		return 0;
+	} else if ( ret < 0 ){
+		return -1;
+	}
+	return 1;
 }
 
 int link_isbootloader(link_transport_mdriver_t * driver){
 	bootloader_attr_t attr;
-    int ret;
+	int ret;
 
-    ret = link_bootloader_attr(driver, &attr, 0);
+	ret = link_bootloader_attr(driver, &attr, 0);
 
-    if( ret == LINK_DEVICE_PRESENT_BUT_NOT_BOOTLOADER ){
-        return 0;
-    } else if ( ret < 0 ){
-        return -1;
-    }
+	if( ret == LINK_DEVICE_PRESENT_BUT_NOT_BOOTLOADER ){
+		return 0;
+	} else if ( ret < 0 ){
+		return -1;
+	}
 
 	//If the above succeeds, the bootloader is present
 	return 1;
@@ -94,7 +94,7 @@ int link_reset(link_transport_mdriver_t * driver){
 		op.ioctl.request = I_BOOTLOADER_RESET;
 		op.ioctl.arg = 0;
 		link_transport_masterwrite(driver, &op, sizeof(link_ioctl_t));
-		driver->dev.close(&(driver->dev.handle));
+		driver->phy_driver.close(&(driver->phy_driver.handle));
 	} else {
 		link_debug(LINK_DEBUG_MESSAGE, "reset device with /dev/core");
 		return reset_device(driver, 0);
@@ -127,7 +127,8 @@ int reset_device(link_transport_mdriver_t * driver, int invoke_bootloader){
 			}
 		}
 		//since the device has been reset -- close the handle
-		driver->dev.close(&(driver->dev.handle));
+		driver->transport_version = 0;
+		driver->phy_driver.close(&(driver->phy_driver.handle));
 	}
 	return ret;
 }
@@ -137,16 +138,16 @@ int link_resetbootloader(link_transport_mdriver_t * driver){
 }
 
 int link_eraseflash(link_transport_mdriver_t * driver){
-    if( link_ioctl_delay(driver, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_ERASE, NULL, 0, 750) < 0 ){
+	if( link_ioctl_delay(driver, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_ERASE, NULL, 0, 750) < 0 ){
 		return -1;
 	}
 
-	driver->dev.wait(500);
-	driver->dev.wait(500);
-	driver->dev.wait(500);
-	driver->dev.wait(500);
-	driver->dev.wait(500);
-	driver->dev.wait(500);
+	driver->phy_driver.wait(500);
+	driver->phy_driver.wait(500);
+	driver->phy_driver.wait(500);
+	driver->phy_driver.wait(500);
+	driver->phy_driver.wait(500);
+	driver->phy_driver.wait(500);
 	return 0;
 }
 

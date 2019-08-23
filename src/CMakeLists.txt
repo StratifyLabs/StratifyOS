@@ -13,8 +13,8 @@ if( ${SOS_BUILD_CONFIG} STREQUAL arm )
   add_subdirectory(device)
   list(APPEND SOURCELIST ${SOURCES})
 
-  set(SOURCES_PREFIX ${SRC_SOURCES_PREFIX}/link_common)
-  add_subdirectory(link_common)
+	set(SOURCES_PREFIX ${SRC_SOURCES_PREFIX}/link_transport)
+	add_subdirectory(link_transport)
   list(APPEND SOURCELIST ${SOURCES})
 
   set(SOURCES_PREFIX ${SRC_SOURCES_PREFIX}/mcu)
@@ -35,8 +35,8 @@ else()
   add_subdirectory(link)
   list(APPEND SOURCELIST ${SOURCES})
 
-  set(SOURCES_PREFIX ${SRC_SOURCES_PREFIX}/link_common)
-  add_subdirectory(link_common)
+	set(SOURCES_PREFIX ${SRC_SOURCES_PREFIX}/link_transport)
+	add_subdirectory(link_transport)
   list(APPEND SOURCELIST ${SOURCES})
 
 endif()

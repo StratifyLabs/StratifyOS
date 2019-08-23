@@ -52,6 +52,39 @@ void mcu_fault_event_handler(fault_t * fault){
 		m_scheduler_fault.tid = task_get_current();
 		m_scheduler_fault.pid = pid;
 		memcpy((void*)&m_scheduler_fault.fault, fault, sizeof(fault_t));
+
+		//grab stack and memory usage
+		u32 tid = m_scheduler_fault.tid;
+		u32 tid_thread_zero = task_get_thread_zero(pid);
+		u32 end_of_heap = scheduler_calculate_heap_end( tid_thread_zero );
+
+		volatile void * stack;
+
+		//free heap size is thread 0 stack location - end of the heap
+
+		if( tid == tid_thread_zero ){
+			cortexm_get_thread_stack_ptr((void**)&stack);
+		} else {
+			stack = sos_task_table[tid_thread_zero].sp;
+		}
+
+		m_scheduler_fault.free_heap_size =
+				(u32)stack -
+				end_of_heap;
+
+		if( task_thread_asserted(tid) ){
+			//since this is a thread the stack is on the heap (malloc'd)
+			cortexm_get_thread_stack_ptr((void**)&stack);
+			m_scheduler_fault.free_stack_size =
+					(u32)stack -
+					(u32)sos_sched_table[tid].attr.stackaddr -
+					SCHED_DEFAULT_STACKGUARD_SIZE;
+		} else {
+			//free stack is the same as the free heap for first thread in process
+			m_scheduler_fault.free_stack_size =
+					m_scheduler_fault.free_heap_size;
+		}
+
 	}
 
 	if ( (pid == 0) || (task_enabled_active_not_stopped( task_get_current() ) == 0) ){
@@ -89,7 +122,7 @@ void mcu_fault_event_handler(fault_t * fault){
 		mcu_debug_log_error(MCU_DEBUG_SYS, "Task Fault:%d:%s", task_get_current(), buffer);
 		//check for a stack overflow error
 		u32 psp;
-		cortexm_get_thread_stack_ptr(&psp);
+		cortexm_get_thread_stack_ptr((void**)&psp);
 		if( psp <= (u32)sos_task_table[task_get_current()].mem.stackguard.address + sos_task_table[task_get_current()].mem.stackguard.size ){
 			mcu_debug_log_error(MCU_DEBUG_SYS, "Stack Overflow");
 		}

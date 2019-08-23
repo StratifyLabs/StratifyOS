@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 
@@ -35,16 +35,16 @@ int link_exec(link_transport_mdriver_t * driver, const char * file){
 	link_debug(LINK_DEBUG_MESSAGE, "exec %s", file);
 
 	op.exec.cmd = LINK_CMD_EXEC;
-    op.exec.path_size = strnlen(file, LINK_PATH_ARG_MAX);
+	op.exec.path_size = strnlen(file, LINK_PATH_ARG_MAX);
 
-    if( op.exec.path_size >= LINK_PATH_ARG_MAX ){
-        link_error("Path size is too long %d > %d",
-                   op.exec.path_size, LINK_PATH_ARG_MAX);
-        return -1;
-    }
+	if( op.exec.path_size >= LINK_PATH_ARG_MAX ){
+		link_error("Path size is too long %d > %d",
+					  op.exec.path_size, LINK_PATH_ARG_MAX);
+		return -1;
+	}
 
 
-	link_debug(LINK_DEBUG_MESSAGE, "Write op (0x%lX)", (long unsigned int)driver->dev.handle);
+	link_debug(LINK_DEBUG_MESSAGE, "Write op (0x%lX)", (long unsigned int)driver->phy_driver.handle);
 	err = link_transport_masterwrite(driver, &op, sizeof(link_open_t));
 	if ( err < 0 ){
 		return err;
@@ -54,7 +54,7 @@ int link_exec(link_transport_mdriver_t * driver, const char * file){
 	link_debug(LINK_DEBUG_MESSAGE, "Write exec path (%d bytes)", op.exec.path_size);
 	len = link_transport_masterwrite(driver, file, op.exec.path_size);
 	if ( len < 0 ){
-        link_error("Failed to write bulk output");
+		link_error("Failed to write bulk output");
 		return LINK_TRANSFER_ERR;
 	}
 

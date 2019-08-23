@@ -418,11 +418,11 @@ link_transport_phy_t link_phy_open(const char * name, const void * s_options){
 		link_debug(LINK_DEBUG_MESSAGE, "Use default serial port settings 460800bps, 1 stop bits, 0 parity");
 	}
 
-	//set the attributes
 	if( tcflush(fd, TCIFLUSH) < 0 ){
 		return LINK_PHY_OPEN_ERROR;
 	}
 
+	//set the attributes
 	if( tcsetattr(fd, TCSANOW, &options) < 0 ){
 		return LINK_PHY_OPEN_ERROR;
 	}
@@ -459,6 +459,10 @@ int link_phy_write(link_transport_phy_t handle, const void * buf, int nbyte){
 	link_phy_container_t * phy = handle;
 	int tmp;
 	int ret;
+	int bytes_written = 0;
+	int page_size;
+	int max_page_size = 1024;
+	const char * p = buf;
 
 	if( handle == LINK_PHY_OPEN_ERROR ){
 		return LINK_PHY_ERROR;
@@ -468,15 +472,37 @@ int link_phy_write(link_transport_phy_t handle, const void * buf, int nbyte){
 		return LINK_PHY_ERROR;
 	}
 
-	tmp = errno;
-	ret = write(phy->fd, buf, nbyte);
-	if( ret < 0 ){
-		if ( errno == EAGAIN ){
-			errno = tmp;
-			return 0;
+	do {
+		if( nbyte - bytes_written > max_page_size ){
+			page_size = max_page_size;
+		} else {
+			page_size = nbyte - bytes_written;
 		}
-		return LINK_PHY_ERROR;
-	}
+
+		//printf("write %d for %d of %d\n", page_size, bytes_written, nbyte);
+		tmp = errno;
+		ret = write(
+					phy->fd,
+					p,
+					page_size);
+		if( ret < 0 ){
+			if ( errno == EAGAIN ){
+				errno = tmp;
+				return 0;
+			}
+			return LINK_PHY_ERROR;
+		}
+
+		if( page_size == max_page_size ){
+			//this just seems to force the OS to flush the write because of the context change
+			//the context change probably gives the MCU more than 1us
+			usleep(10);
+		}
+
+		p += ret;
+		bytes_written += ret;
+
+	} while( bytes_written < nbyte);
 
 	link_debug(LINK_DEBUG_MESSAGE, "Tx'd %d bytes", ret);
 	return nbyte;

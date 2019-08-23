@@ -54,10 +54,12 @@
 extern "C" {
 #endif
 
+/*! \cond */
 #define ADC_IOC_IDENT_CHAR 'a'
 #define ADC_VERSION (0x030000)
+/*! \endcond */
 
-
+/*! \details ADC flags */
 typedef enum {
 	ADC_LOC_IS_GROUP /*! Set loc value when reading ADC to read the group) */ = (1<<30),
 	ADC_FLAG_SET_CONVERTER /*! Configure the ADC */ = (1<<0),
@@ -75,6 +77,7 @@ typedef enum {
 	ADC_FLAG_IS_CONTINOUS_CONVERSION = (1<<12)
 } adc_flag_t;
 
+/*! \details ADC info for use with I_ADC_GETINFO. */
 typedef struct MCU_PACK {
 	u32 o_flags /*! A bitmask for the supported features */;
 	u32 o_events /*! Events supported by this driver */;

@@ -143,8 +143,19 @@ int boot_link_transport_usb_read(link_transport_phy_t handle, void * buf, int nb
 
 	while( bytes_read < nbyte ){
 		//need more data to service request
-		ret = mcu_sync_io(m_context->handle, mcu_usb_read, SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT_OUT, buffer, SOS_LINK_TRANSPORT_ENDPOINT_SIZE, O_RDWR | MCU_SYNC_IO_FLAG_READ);
-		write_buffer(buffer, ret);
+		ret = mcu_sync_io(
+					m_context->handle,
+					mcu_usb_read,
+					SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT_OUT,
+					buffer,
+					SOS_LINK_TRANSPORT_ENDPOINT_SIZE,
+					O_RDWR | MCU_SYNC_IO_FLAG_READ
+					);
+
+		if( ret > 0 ){
+			write_buffer(buffer, ret);
+		}
+
 		ret = read_buffer(buf + bytes_read, nbyte - bytes_read);
 		bytes_read += ret;
 	}

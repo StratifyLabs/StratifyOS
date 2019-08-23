@@ -97,7 +97,7 @@ int link_open(link_transport_mdriver_t * driver, const char * path, int flags, .
 		return posix_open(path, convert_flags(flags) | POSIX_OPEN_FLAGS, mode);
 	}
 
-	link_debug(LINK_DEBUG_MESSAGE, "open %s 0%o 0x%X using %p", path, mode, flags, driver->dev.handle);
+	link_debug(LINK_DEBUG_MESSAGE, "open %s 0%o 0x%X using %p", path, mode, flags, driver->phy_driver.handle);
 
 
 	op.open.cmd = LINK_CMD_OPEN;
@@ -105,10 +105,10 @@ int link_open(link_transport_mdriver_t * driver, const char * path, int flags, .
 	op.open.flags = flags;
 	op.open.mode = mode;
 
-	link_debug(LINK_DEBUG_MESSAGE, "Write open op (%p)", driver->dev.handle);
+	link_debug(LINK_DEBUG_MESSAGE, "Write open op (%p)", driver->phy_driver.handle);
 	err = link_transport_masterwrite(driver, &op, sizeof(link_open_t));
 	if ( err < 0 ){
-		link_error("failed to write open op with handle %p", driver->dev.handle);
+		link_error("failed to write open op with handle %p", driver->phy_driver.handle);
 		return link_handle_err(driver, err);
 	}
 
@@ -202,9 +202,9 @@ int link_ioctl_delay(link_transport_mdriver_t * driver, int fildes, int request,
 
 	if( delay > 0 ){
 		link_debug(LINK_DEBUG_MESSAGE, "Delay for %dms", delay);
-		driver->dev.wait(delay);
-		driver->dev.wait(delay);
-		driver->dev.wait(delay);
+		driver->phy_driver.wait(delay);
+		driver->phy_driver.wait(delay);
+		driver->phy_driver.wait(delay);
 	}
 
 	if( _IOCTL_IOCTLR(request) ){
@@ -379,7 +379,7 @@ int link_symlink(link_transport_mdriver_t * driver, const char * old_path, const
 	op.symlink.path_size_old = strlen(old_path) + 1;
 	op.symlink.path_size_new = strlen(new_path) + 1;
 
-	link_debug(LINK_DEBUG_MESSAGE, "Write link op (0x%lX)", (long unsigned int)driver->dev.handle);
+	link_debug(LINK_DEBUG_MESSAGE, "Write link op (0x%lX)", (long unsigned int)driver->phy_driver.handle);
 	err = link_transport_masterwrite(driver, &op, sizeof(link_symlink_t));
 	if ( err < 0 ){
 		return err;
@@ -435,11 +435,15 @@ int link_unlink(link_transport_mdriver_t * driver, const char * path){
 	if ( len < 0 ){
 		return LINK_TRANSFER_ERR;
 	}
-	//read the reply to see if the file opened correctly
+
+	link_transport_mastersettimeout(driver, 5000);
+	//read the reply to see if the file deleted correctly
 	err = link_transport_masterread(driver, &reply, sizeof(reply));
 	if ( err < 0 ){
 		return err;
 	}
+	link_transport_mastersettimeout(driver, 500);
+
 
 	if ( reply.err < 0 ){
 		link_errno = reply.err_number;
@@ -466,7 +470,7 @@ int link_lseek(link_transport_mdriver_t * driver, int fildes, s32 offset, int wh
 	op.lseek.whence = whence;
 
 	link_errno = 0;
-	link_debug(LINK_DEBUG_MESSAGE, "seek command 0x%X (0x%lX)", fildes, (long unsigned int)driver->dev.handle);
+	link_debug(LINK_DEBUG_MESSAGE, "seek command 0x%X (0x%lX)", fildes, (long unsigned int)driver->phy_driver.handle);
 
 	err = link_transport_masterwrite(driver, &op, sizeof(link_lseek_t));
 	if ( err < 0 ){

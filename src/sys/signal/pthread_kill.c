@@ -61,7 +61,7 @@ void svcall_check_signal_stack(void * args){
 		sp = (u32)sos_task_table[tid].sp;
 	} else {
 		//read the current stack pointer
-		cortexm_get_thread_stack_ptr(&sp);
+		cortexm_get_thread_stack_ptr((void**)&sp);
 	}
 
 	if( (sp - task_interrupt_stacksize() - (2*SCHED_DEFAULT_STACKGUARD_SIZE)) < //stackguard * 2 gives the handler a little bit of memory

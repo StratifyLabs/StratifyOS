@@ -203,8 +203,8 @@ void cortexm_enable_interrupts(){
 	asm volatile ("cpsie i");
 }
 
-void cortexm_get_stack_ptr(void * ptr){
-	void ** ptrp = (void**)ptr;
+void cortexm_get_stack_ptr(void ** ptr){
+	void ** ptrp = ptr;
 	void * result=NULL;
 	asm volatile ("MRS %0, msp\n\t" : "=r" (ptr) );
 	*ptrp = result;
@@ -219,8 +219,8 @@ void cortexm_svcall_get_thread_stack_ptr(void * ptr){
 	cortexm_get_thread_stack_ptr(ptr);
 }
 
-void cortexm_get_thread_stack_ptr(void * ptr){
-	void ** ptrp = (void**)ptr;
+void cortexm_get_thread_stack_ptr(void ** ptr){
+	void ** ptrp = ptr;
 	void * result=NULL;
 	asm volatile ("MRS %0, psp\n\t" : "=r" (result) );
 	*ptrp = result;

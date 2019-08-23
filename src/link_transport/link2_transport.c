@@ -10,9 +10,12 @@
 
 #define pkt_checksum(pktp) ((pktp)->data[(pktp)->size])
 
-void link_transport_insert_checksum(link_pkt_t * pkt){
+void link2_transport_insert_checksum(link2_pkt_t * pkt){
 	int i;
-	u8 checksum;
+	u16 checksum;
+
+	//needs to be a more powerful checksum for link2 - optionally enabled
+
 	checksum = 0;
 	checksum ^= pkt->size;
 	for(i=0; i < pkt->size; i++){
@@ -21,15 +24,15 @@ void link_transport_insert_checksum(link_pkt_t * pkt){
 	pkt->data[i] = checksum;
 }
 
-bool link_transport_checksum_isok(link_pkt_t * pkt){
-	u8 checksum;
-	if( pkt->size <= LINK_PACKET_DATA_SIZE ){
+bool link2_transport_checksum_isok(link2_pkt_t * pkt){
+	u16 checksum;
+	if( pkt->size <= LINK2_PACKET_DATA_SIZE ){
 		checksum = pkt->data[pkt->size];
 	} else {
 		return false;
 	}
 
-	link_transport_insert_checksum(pkt);
+	link2_transport_insert_checksum(pkt);
 	if( checksum == pkt_checksum(pkt) ){
 		return true;
 	}
@@ -37,7 +40,7 @@ bool link_transport_checksum_isok(link_pkt_t * pkt){
 	return false;
 }
 
-int link_transport_wait_start(link_transport_driver_t * driver, link_pkt_t * pkt, int timeout){
+int link2_transport_wait_start(link_transport_driver_t * driver, link2_pkt_t * pkt, int timeout){
 	int bytes_read;
 	int count;
 	count = 0;
@@ -48,8 +51,8 @@ int link_transport_wait_start(link_transport_driver_t * driver, link_pkt_t * pkt
 			return LINK_PHY_ERROR;
 		}
 		if( bytes_read > 0 ){
-			if( pkt->start != LINK_PACKET_START){
-				return LINK_PROT_ERROR;
+			if( pkt->start == LINK2_PACKET_START){
+				return LINK2_PACKET_START;
 			}
 		} else {
 #if defined __win32
@@ -63,27 +66,29 @@ int link_transport_wait_start(link_transport_driver_t * driver, link_pkt_t * pkt
 			}
 		}
 	} while( bytes_read != 1);
-	return 0;
+
+	return LINK_PROT_ERROR;
 }
 
 
-int link_transport_wait_packet(link_transport_driver_t * driver, link_pkt_t * pkt, int timeout){
+int link2_transport_wait_packet(link_transport_driver_t * driver, link2_pkt_t * pkt, int timeout){
 	char * p;
 	int bytes_read;
 	int bytes;
 	int count;
 	int page_size;
 
-	p = (char*)&(pkt->size);
+	p = ((char*)pkt) + 1; //start received after start
 	count = 0;
 	bytes = 0;
 	pkt->size = 0;
+
 	do {
 
 		if( bytes == 0 ){
 			page_size = 1;
 		} else {
-			page_size = (pkt->size - bytes) + LINK_PACKET_HEADER_SIZE-1;
+			page_size = (pkt->size - bytes) + LINK2_PACKET_HEADER_SIZE-1;
 		}
 
 		bytes_read = driver->read(driver->handle, p, page_size);
@@ -93,7 +98,7 @@ int link_transport_wait_packet(link_transport_driver_t * driver, link_pkt_t * pk
 
 
 		if( bytes_read > 0 ){
-			if( pkt->size > LINK_PACKET_DATA_SIZE ){
+			if( pkt->size > LINK2_PACKET_DATA_SIZE ){
 				//this is erroneous data
 				return LINK_PROT_ERROR;
 			}
@@ -113,7 +118,7 @@ int link_transport_wait_packet(link_transport_driver_t * driver, link_pkt_t * pk
 			}
 		}
 
-	} while( bytes < (pkt->size + LINK_PACKET_HEADER_SIZE-1));
+	} while( bytes < (pkt->size + LINK2_PACKET_HEADER_SIZE-1));
 
 	return 0;
 }
