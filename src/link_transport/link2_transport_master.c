@@ -7,12 +7,10 @@
 #include "sos/fs/sysfs.h"
 
 #ifdef __win32
-#define TIMEOUT_VALUE 500
+#define DEFAULT_TIMEOUT_VALUE 500
 #else
-#define TIMEOUT_VALUE 5000 //used for more complex operations
+#define DEFAULT_TIMEOUT_VALUE 500
 #endif
-
-#define INITIAL_TIMEOUT_VALUE 500 //used for first ping
 
 
 #define pkt_checksum(pktp) ((pktp)->data[(pktp)->size])
@@ -25,7 +23,7 @@ static int wait_ack(
 
 void link2_transport_mastersettimeout(link_transport_mdriver_t * driver, int t){
 	if ( t == 0 ){
-		driver->phy_driver.timeout = TIMEOUT_VALUE;
+		driver->phy_driver.timeout = DEFAULT_TIMEOUT_VALUE;
 	} else {
 		driver->phy_driver.timeout = t;
 	}

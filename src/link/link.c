@@ -159,9 +159,13 @@ int link_readserialno(link_transport_mdriver_t * driver, char * serialno, int le
 		return link_handle_err(driver, err);
 	}
 
+	link_transport_mastersettimeout(driver, 50);
+
 	link_debug(LINK_DEBUG_MESSAGE, "Read the reply");
 	//Get the reply
 	err = link_transport_masterread(driver, &reply, sizeof(reply));
+	link_transport_mastersettimeout(driver, 0);
+
 	if ( err < 0 ){
 		link_error("failed to read reply");
 		return link_handle_err(driver, err);
@@ -199,7 +203,7 @@ int link_ping(link_transport_mdriver_t * driver, const char * name, int is_keep_
 	if( driver->phy_driver.handle != LINK_PHY_OPEN_ERROR ){
 		link_debug(LINK_DEBUG_MESSAGE, "Look for bootloader or device on %s", name);
 
-		//link_transport_mastersettimeout(100);
+		link_transport_mastersettimeout(driver, 25);
 
 		do {
 			link_debug(LINK_DEBUG_MESSAGE, "Flush %s", name);
@@ -223,6 +227,8 @@ int link_ping(link_transport_mdriver_t * driver, const char * name, int is_keep_
 			}
 			tries++;
 		} while( (err == LINK_PROT_ERROR) && (tries < 2) );
+
+		link_transport_mastersettimeout(driver, 0);
 
 		if( (is_keep_open == 0) || (err != 0)){
 			driver->phy_driver.close(&(driver->phy_driver.handle));

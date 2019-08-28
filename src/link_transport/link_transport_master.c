@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include "sos/link.h"
 #include "sos/fs/sysfs.h"
+#include "../link/link_local.h"
 
 #ifdef __win32
 #define TIMEOUT_VALUE 500
@@ -24,6 +25,7 @@ static int resolve_protocol(link_transport_mdriver_t * driver);
 
 void link_transport_mastersettimeout(link_transport_mdriver_t * driver, int t){
 	if( resolve_protocol(driver) < 0 ){
+		link_error("failed to resolve protocol");
 		return;
 	}
 
@@ -40,6 +42,7 @@ void link_transport_mastersettimeout(link_transport_mdriver_t * driver, int t){
 int link_transport_masterread(link_transport_mdriver_t * driver, void * buf, int nbyte){
 
 	if( resolve_protocol(driver) < 0 ){
+		link_error("failed to resolve protocol");
 		return LINK_PROT_ERROR;
 	}
 
@@ -51,11 +54,13 @@ int link_transport_masterread(link_transport_mdriver_t * driver, void * buf, int
 		return link2_transport_masterread(driver, buf, nbyte);
 	}
 
+	link_error("tranport version is an invalid value (%d)", driver->transport_version);
 	return LINK_PROT_ERROR;
 }
 
 int link_transport_masterwrite(link_transport_mdriver_t * driver, const void * buf, int nbyte){
 	if( resolve_protocol(driver) < 0 ){
+		link_error("failed to resolve protocol");
 		return LINK_PROT_ERROR;
 	}
 
@@ -67,6 +72,7 @@ int link_transport_masterwrite(link_transport_mdriver_t * driver, const void * b
 		return link2_transport_masterwrite(driver, buf, nbyte);
 	}
 
+	link_error("tranport version is an invalid value (%d)", driver->transport_version);
 	return LINK_PROT_ERROR;
 }
 

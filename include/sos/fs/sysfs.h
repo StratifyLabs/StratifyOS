@@ -27,8 +27,9 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <sys/stat.h>
-#include <dirent.h>
 #include <sys/lock.h>
+
+struct dirent;
 
 #if !defined __link
 #include "types.h"

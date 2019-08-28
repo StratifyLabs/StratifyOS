@@ -53,7 +53,7 @@ int link_rd_err(link_transport_phy_t dev);
 extern int link_debug_level;
 link_debug_context_t link_debug_context;
 void link_write_debug_message(link_debug_context_t * context);
-#define link_debug(x, ...) do { link_debug_context.type = x; sprintf(link_debug_context.function, "%s()", __FUNCTION__ ); sprintf(link_debug_context.file, "%s():", __FILE__ ); link_debug_context.line = __LINE__; sprintf(link_debug_context.msg, __VA_ARGS__); link_write_debug_message(&link_debug_context);  } while(0)
+#define link_debug(x, ...) do { link_debug_context.type = x; sprintf(link_debug_context.function, "%s(): %d", __FUNCTION__, __LINE__); sprintf(link_debug_context.file, "%s():", __FILE__ ); link_debug_context.line = __LINE__; sprintf(link_debug_context.msg, __VA_ARGS__); link_write_debug_message(&link_debug_context);  } while(0)
 #define link_error(...) link_debug(LINK_DEBUG_CRITICAL, __VA_ARGS__)
 #else
 #define link_debug(x, ...)

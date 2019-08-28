@@ -142,16 +142,9 @@ int link_resetbootloader(link_transport_mdriver_t * driver){
 }
 
 int link_eraseflash(link_transport_mdriver_t * driver){
-	if( link_ioctl_delay(driver, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_ERASE, NULL, 0, 750) < 0 ){
+	if( link_ioctl_delay(driver, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_ERASE, NULL, 0, 0) < 0 ){
 		return -1;
 	}
-
-	driver->phy_driver.wait(500);
-	driver->phy_driver.wait(500);
-	driver->phy_driver.wait(500);
-	driver->phy_driver.wait(500);
-	driver->phy_driver.wait(500);
-	driver->phy_driver.wait(500);
 	return 0;
 }
 
@@ -213,9 +206,11 @@ int link_writeflash(link_transport_mdriver_t * driver, int addr, const void * bu
 		memset(wattr.buf, 0xFF, BOOTLOADER_WRITEPAGESIZE);
 		memcpy(wattr.buf, buf, page_size);
 
-
+		link_transport_mastersettimeout(driver, 5000);
 		err = link_ioctl_delay(driver, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_WRITEPAGE, &wattr, 0, 0);
+		link_transport_mastersettimeout(driver, 0);
 		if( err < 0 ){
+			link_error("I_BOOTLOADER_WRITEPAGE failed");
 			return err;
 		}
 
