@@ -27,11 +27,11 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <sys/stat.h>
-#include <sys/lock.h>
 
 struct dirent;
 
 #if !defined __link
+#include <sys/lock.h>
 #include "types.h"
 #include "aio.h"
 #endif
