@@ -50,7 +50,8 @@ typedef enum {
 	MPU_MEMORY_FLASH /*! Flash Memory */,
 	MPU_MEMORY_SRAM /*! SRAM */,
 	MPU_MEMORY_EXTERNAL_SRAM /*! External SRAM */,
-	MPU_MEMORY_PERIPHERALS /*! Peripheral Registers */
+	MPU_MEMORY_PERIPHERALS /*! Peripheral Registers */,
+	MPU_MEMORY_LCD /*! Peripheral Registers */
 } mpu_memory_t;
 
 

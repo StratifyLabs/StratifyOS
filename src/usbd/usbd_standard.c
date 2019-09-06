@@ -443,7 +443,7 @@ u32 usbd_standard_request_get_descriptor(usbd_control_t * context) {
 		const usbd_configuration_descriptor_t * cfg;
 	} ptr;
 
-	u32 len;
+	u32 len = 0;
 	u32 i;
 
 
@@ -452,7 +452,6 @@ u32 usbd_standard_request_get_descriptor(usbd_control_t * context) {
 
 			case USBD_DESCRIPTOR_TYPE_DEVICE:
 				//give the device descriptor
-
 				context->data.dptr = (u8 * const)context->constants->device;
 				len = sizeof(usbd_device_descriptor_t);
 				break;
@@ -501,7 +500,8 @@ u32 usbd_standard_request_get_descriptor(usbd_control_t * context) {
 
 				break;
 
-			//case USBD_DESCRIPTOR_TYPE_QUALIFIER: break;
+			case USBD_DESCRIPTOR_TYPE_QUALIFIER:
+				return 0;
 
 			default:
 				return 0;
@@ -511,9 +511,12 @@ u32 usbd_standard_request_get_descriptor(usbd_control_t * context) {
 		return 0;
 	}
 
+
 	if (context->data.nbyte > len) {
 		context->data.nbyte = len;
 	}
+
+
 
 	return 1;
 }

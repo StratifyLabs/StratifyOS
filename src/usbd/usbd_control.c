@@ -81,16 +81,23 @@ int usbd_control_handler(void * context_object, const mcu_event_t * usb_event /*
 		ret = usbd_standard_request_handle_setup(context);
 
 		//allow the class handler handle the standard request if the request was handled with usbd_standard_request_handle_setup(), no need to stall
-		if( (execute_class_handler(context, usb_event) == 0) && (ret == 0)){
+		if( (execute_class_handler(context, usb_event) == 0) &&
+				(ret == 0) ){
 			stall(context);
 		}
 
 	} else if ( o_events & MCU_EVENT_FLAG_DATA_READY ){ //Data out stage
-		if (usbd_control_setup_request_direction(context) == USBD_REQUEST_TYPE_DIRECTION_HOST_TO_DEVICE) {
-			if (context->data.nbyte) {
+		if (
+			 usbd_control_setup_request_direction(context) ==
+			 USBD_REQUEST_TYPE_DIRECTION_HOST_TO_DEVICE
+			 ) {
+			if( context->data.nbyte ){
 				usbd_control_dataout_stage(context);
 				if (context->data.nbyte == 0){
-					if (usbd_control_setup_request_type(context) == USBD_REQUEST_STANDARD){
+					if (
+						 usbd_control_setup_request_type(context) ==
+						 USBD_REQUEST_STANDARD
+						 ){
 						stall(context);
 					} else if( execute_class_handler(context, usb_event) == 0 ){
 						stall(context);
@@ -124,22 +131,33 @@ void * usbd_control_add_ptr(usbd_control_t * context, void * ptr, u32 value){
 void usbd_control_handler_setup_stage(usbd_control_t * context){
 	mcu_usb_root_read_endpoint(context->handle, 0x00, (u8 *)&(context->setup_packet));
 	context->data.nbyte = context->setup_packet.wLength;
-	context->data.max = context->data.nbyte;
+	context->data.is_zlp = 0;
 }
 
 void usbd_control_datain_stage(usbd_control_t * context) {
 	u32 nbyte;
-	if (context->data.nbyte > mcu_board_config.usb_max_packet_zero) {
+
+	//we can only send max packet size at a time
+	if (context->data.nbyte >= mcu_board_config.usb_max_packet_zero) {
 		nbyte = mcu_board_config.usb_max_packet_zero;
+		context->data.is_zlp = 1;
 	} else {
 		nbyte = context->data.nbyte;
+		context->data.is_zlp = 0;
 	}
 
-	if( nbyte > 0 || ((context->data.max % mcu_board_config.usb_max_packet_zero) == 0) ){
+	if( (nbyte > 0) ||
+		 (context->data.is_zlp) //need to send a ZLP to mark the end
+		 ){
 		mcu_usb_root_write_endpoint(context->handle, 0x80, context->data.dptr, nbyte);
 		context->data.dptr += nbyte;
 		context->data.nbyte -= nbyte;
+		if( nbyte == 0 ){
+			context->data.is_zlp = 0;
+		}
 	}
+
+
 }
 
 void usbd_control_dataout_stage(usbd_control_t * context){

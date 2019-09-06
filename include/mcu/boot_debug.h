@@ -62,10 +62,23 @@ void dsetmode(int leading_zeros);
 
 #define DEBUG_BOOTLOADER 1
 
+#define DTRACE_LINE() do { dstr(__FUNCTION__); dstr("():"); dint(__LINE__); dstr("\n"); } while(0)
+
+#define DTRACE_INT_PARAMETER(x,y) do { dstr(x); dint(y); dstr("\n"); } while(0)
+#define DTRACE_UINT_PARAMETER(x,y) do { dstr(x); duint(y); dstr("\n"); } while(0)
+#define DTRACE_HEX_PARAMETER(x,y) do { dstr(x); dhex(y); dstr("\n"); } while(0)
+#define DTRACE_BIN_PARAMETER(x,y) do { dstr(x); dbin(y); dstr("\n"); } while(0)
+
 #else
 #define dstr(a)
 #define dint(a)
 #define dhex(a)
+#define DTRACE_LINE()
+#define DTRACE_INT_PARAMETER(x,y)
+#define DTRACE_UINT_PARAMETER(x,y)
+#define DTRACE_HEX_PARAMETER(x,y)
+#define DTRACE_BIN_PARAMETER(x,y)
+
 #endif
 
 

@@ -272,8 +272,11 @@ void * _malloc_r(struct _reent * reent_ptr, size_t size){
 	malloc_chunk_t * next;
 	alloc = NULL;
 
+	mcu_debug_log_info(MCU_DEBUG_MALLOC, "%s():%d->", __FUNCTION__, __LINE__);
+
 	if ( reent_ptr == NULL ){
 		errno = EINVAL;
+		mcu_debug_log_info(MCU_DEBUG_MALLOC, "%s():%d<-", __FUNCTION__, __LINE__);
 		return NULL;
 	}
 
@@ -286,6 +289,7 @@ void * _malloc_r(struct _reent * reent_ptr, size_t size){
 		if ( get_more_memory(reent_ptr, size, 1) < 0 ){
 			__malloc_unlock(reent_ptr);
 			errno = ENOMEM;
+			mcu_debug_log_info(MCU_DEBUG_MALLOC, "%s():%d<-", __FUNCTION__, __LINE__);
 			return NULL;
 		}
 	}
@@ -303,6 +307,7 @@ void * _malloc_r(struct _reent * reent_ptr, size_t size){
 				__malloc_unlock(reent_ptr); //unlock in case it is shared memory
 				malloc_process_fault(reent_ptr); //this will exit the process
 				errno = ENOMEM;
+				mcu_debug_log_info(MCU_DEBUG_MALLOC, "%s():%d<-", __FUNCTION__, __LINE__);
 				return NULL;
 			}
 
@@ -311,6 +316,7 @@ void * _malloc_r(struct _reent * reent_ptr, size_t size){
 				cleanup_memory(reent_ptr, 0); //give memory back to stack
 				__malloc_unlock(reent_ptr);
 				errno = ENOMEM;
+				mcu_debug_log_info(MCU_DEBUG_MALLOC, "%s():%d<-", __FUNCTION__, __LINE__);
 				return NULL;
 			}
 
@@ -326,6 +332,7 @@ void * _malloc_r(struct _reent * reent_ptr, size_t size){
 			} else if ( chunk->header.num_chunks < num_chunks ){
 				__malloc_unlock(reent_ptr);
 				errno = ENOMEM;
+				mcu_debug_log_info(MCU_DEBUG_MALLOC, "%s():%d<-", __FUNCTION__, __LINE__);
 				return NULL;
 			}
 			malloc_set_chunk_used(reent_ptr, chunk, num_chunks, size);

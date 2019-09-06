@@ -52,7 +52,7 @@ typedef struct {
 typedef struct {
   u8 * dptr;
   u16 nbyte;
-  u16 max;
+  u16 is_zlp;
 } usbd_control_data_t;
 
 typedef struct MCU_PACK {
@@ -116,7 +116,6 @@ static inline int usbd_control_setup_request_recipient(usbd_control_t * context)
 
 static inline void usbd_control_prepare_buffer(usbd_control_t * context){
 	context->data.dptr = context->buf;
-	context->data.max = USBD_CONTROL_DATAOUT_BUF_SIZE;
 }
 
 

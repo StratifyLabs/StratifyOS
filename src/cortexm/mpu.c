@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 #include "cortexm_local.h"
@@ -40,7 +40,7 @@ int mpu_enable(){
 }
 
 int mpu_disable(){
-    MPU->CTRL = 0; //disable the MPU
+	MPU->CTRL = 0; //disable the MPU
 	return 0;
 }
 
@@ -109,13 +109,13 @@ int mpu_getnextpowerof2(int size){
 
 
 u32 mpu_calc_region(int region,
-		const void * addr,
-		u32 size,
-		mpu_access_t access,
-		mpu_memory_t type,
-		int executable,
-		u32 * rbar,
-		u32 * rasr){
+						  const void * addr,
+						  u32 size,
+						  mpu_access_t access,
+						  mpu_memory_t type,
+						  int executable,
+						  u32 * rbar,
+						  u32 * rasr){
 
 	const u32 target_address = (u32)addr;
 	u32 aligned_address = target_address;
@@ -194,25 +194,28 @@ u32 mpu_calc_region(int region,
 
 	/*
 	 * Bits 19, 20, 21 = TEX
-	 * Bit 18 = shareable (can't be cached)
-	 * Bit 17 = cacheable
-	 * Bit 16 = write-back
+	 * Bit 18 = shareable (can't be cached) (S)
+	 * Bit 17 = cacheable (C)
+	 * Bit 16 = write-back (B)
 	 *
 	 *
 	 */
 	switch(type){
-	case MPU_MEMORY_EXTERNAL_SRAM:
-		*rasr |= (1<<17); //Outer and Inner Write-Back, no Write-Allocate
-		break;
-	case MPU_MEMORY_SRAM:
-		*rasr |= (1<<17); //Outer and Inner Write-Back, no Write-Allocate
-		break;
-	case MPU_MEMORY_FLASH:
-		*rasr |= (1<<17); //Outer and Inner Write-Back, no Write-Allocate
-		break;
-	case MPU_MEMORY_PERIPHERALS:
-		*rasr |= ((1<<16)|(1<<18)); //shareable, not cacheable
-		break;
+		case MPU_MEMORY_EXTERNAL_SRAM:
+			*rasr |= (1<<17); //Outer and Inner Write-Back, no Write-Allocate
+			break;
+		case MPU_MEMORY_SRAM:
+			*rasr |= (1<<17); //Outer and Inner Write-Back, no Write-Allocate
+			break;
+		case MPU_MEMORY_FLASH:
+			*rasr |= (1<<17); //Outer and Inner Write-Back, no Write-Allocate
+			break;
+		case MPU_MEMORY_PERIPHERALS:
+			*rasr |= ((1<<16)|(1<<18)); //shareable, not cacheable
+			break;
+		case MPU_MEMORY_LCD:
+			*rasr |= (1<<18)|(1<<16);
+			break;
 	}
 
 	*rbar = (u32)aligned_address|((1<<4)|region);
@@ -221,11 +224,11 @@ u32 mpu_calc_region(int region,
 }
 
 int mpu_enable_region(int region,
-		const void * addr,
-		u32 size,
-		mpu_access_t access,
-		mpu_memory_t type,
-		int executable){
+							 const void * addr,
+							 u32 size,
+							 mpu_access_t access,
+							 mpu_memory_t type,
+							 int executable){
 	int err;
 	u32 rasr;
 	u32 rbar;

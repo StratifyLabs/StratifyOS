@@ -219,11 +219,7 @@ int sys_setattr(const devfs_handle_t * handle, void * ctl){
 		} else {
 			return SYSFS_SET_RETURN(EINVAL);
 		}
-
-
 	}
-
 	return 0;
-
 }
 

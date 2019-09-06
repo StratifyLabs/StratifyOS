@@ -97,6 +97,8 @@ int scheduler_prepare(){
 		mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_FATAL, (void*)"tski");
 	}
 
+	mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_DEBUG_INITIALIZED, 0);
+
 	cortexm_set_unprivileged_mode(); //Enter unpriv mode
 	return 0;
 }
