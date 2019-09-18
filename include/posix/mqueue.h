@@ -48,7 +48,8 @@ struct mq_attr {
 	long mq_curmsgs /*! number of messages currently queued */;
 };
 
-/*! \details This defines the maximum priority that can be assigned to a message.
+/*! \details This defines the maximum
+ * priority that can be assigned to a message.
  * \hideinitializer
  */
 #define MQ_PRIO_MAX INT_MAX

@@ -117,6 +117,10 @@ extern "C" {
 #define SWITCHBOARD_VERSION (0x030600)
 #define SWITCHBOARD_IOC_IDENT_CHAR 'W'
 
+/*! \details Switchboard flags used with
+ * switchboard_attr_t.o_flags and I_SWITCHBOARD_SETATTR.
+ *
+ */
 typedef enum {
 	SWITCHBOARD_FLAG_CONNECT /*! Configure a switchboard connection (used in o_flags of switchboard_attr_t) */ = (1<<0),
 	SWITCHBOARD_FLAG_DISCONNECT /*! Clears the specified connection (used in o_flags of switchboard_attr_t) */ = (1<<1),

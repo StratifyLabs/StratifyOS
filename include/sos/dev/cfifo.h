@@ -56,7 +56,6 @@ typedef struct MCU_PACK {
 
 /*! \brief FIFO Attributes
  * \details This structure defines the attributes of a FIFO.
- *  The attributes are read-only using \ref I_FIFO_ATTR.
  */
 typedef struct MCU_PACK {
 	u32 o_flags /*! Fifo flags */;

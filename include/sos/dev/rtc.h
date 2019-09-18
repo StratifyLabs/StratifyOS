@@ -45,8 +45,12 @@ extern "C" {
 #define RTC_VERSION (0x030000)
 #define RTC_IOC_IDENT_CHAR 'r'
 
+/*! \details RTC flags used with
+ * rtc_attr_t.o_flags and I_RTC_SETATTR.
+ *
+ */
 typedef enum {
-	RTC_FLAG_NONE = 0,
+	RTC_FLAG_NONE /*! No Flags */ = 0,
 	RTC_FLAG_ENABLE /*! Set the alarm */ = (1<<0),
 	RTC_FLAG_DISABLE /*! Set the alarm */ = (1<<1),
 	RTC_FLAG_IS_SOURCE_EXTERNAL_32768 /*! External 32.768KHz Crystal */ = (1<<2),
@@ -115,7 +119,7 @@ typedef enum {
 typedef struct MCU_PACK {
 	struct link_tm time /*! \brief Time (compatible with struct tm) used with set/get */;
 	u32 useconds /*! \brief Microseconds used with set/get */;
-	u32 time_t;
+	u32 time_t /*! c time value  (seconds since epoch) */;
 	u32 use_time_t;
 } rtc_time_t;
 
@@ -135,8 +139,8 @@ typedef struct {
 typedef struct MCU_PACK {
 	u32 o_flags /*! Bitmask for setting attributes */;
 	u32 freq /*! Calibration frequency for setting the pre-scalar */;
-	rtc_time_t time;
-	u32 resd[8];
+	rtc_time_t time /*! Time structure */;
+	u32 resd[8] /*! Reserved */;
 } rtc_attr_t;
 
 #define I_RTC_GETVERSION _IOCTL(RTC_IOC_IDENT_CHAR, I_MCU_GETVERSION)

@@ -47,6 +47,11 @@ extern "C" {
 #define QSPI_VERSION (0x030000)
 #define QSPI_IOC_IDENT_CHAR 'Q'
 
+
+/*! \details QSPI flags used with
+ * qspi_attr_t.o_flags and I_QSPI_SETATTR.
+ *
+ */
 typedef enum {
 	QSPI_FLAG_SET_MASTER /*! Configure the QSPI as master */ = (1<<0),
 	QSPI_FLAG_IS_CLOCK_MODE_0 /*! Clock goes low while nCS is released, else high*/ = 0,

@@ -45,6 +45,10 @@ extern "C" {
 #define SYS_VERSION (0x030200)
 #define SYS_IOC_CHAR 's'
 
+/*! \details SYS flags used with
+ * sys_attr_t.o_flags and I_SYS_SETATTR.
+ *
+ */
 enum sys_flags {
 	SYS_FLAG_IS_STDIO_FIFO /*! Indicates STDIO are independent FIFOs (board config flag) */ = (1<<0),
 	SYS_FLAG_IS_STDIO_VCP /*! Deprecated (board config flag) */ = (1<<1),
@@ -71,7 +75,7 @@ typedef struct MCU_PACK {
 	char sys_version[8] /*!  The System (board) Version */;
 	char arch[16] /*!  The target architecture (v7m, v7em, v7em_f4ss, v7em_f4sh, v7em_f5ss, v7em_f5sh, v7em_f5ds, v7em_f5dh) */;
 	u32 signature /*!  Ths OS library signature used to ensure proper build system is used for applications */;
-	u32 security /*!  Security flags (see \ref sys_security_flags_t)*/;
+	u32 security /*!  Security flags */;
 	u32 cpu_freq /*!  The CPU clock frequency */;
 	u32 sys_mem_size /*!  The number of bytes in RAM shared across OS and other processes */;
 	char stdout_name[LINK_NAME_MAX] /*!  Default value for the standard output */;
@@ -97,7 +101,7 @@ typedef struct MCU_PACK {
 	char sys_version[8] /*!  The System (board) Version */;
 	char arch[16] /*!  The target architecture (lpc17xx, lpc13xx, etc) */;
 	u32 signature /*!  Ths OS library signature used to ensure proper build system is used for applications */;
-	u32 security /*!  Security flags (see \ref sys_security_flags_t)*/;
+	u32 security /*!  Security flags */;
 	u32 cpu_freq /*!  The CPU clock frequency */;
 	u32 sys_mem_size /*!  The number of bytes in RAM shared across OS and other processes */;
 	char stdout_name[LINK_NAME_MAX] /*!  Default value for the standard output */;
@@ -114,7 +118,7 @@ typedef struct MCU_PACK {
 	char sys_version[8] /*!  The System (board) Version */;
 	char arch[8] /*!  The target architecture (lpc17xx, lpc13xx, etc) */;
 	u32 signature /*!  Ths OS library signature used to ensure proper build system is used for applications */;
-	u32 security /*!  Security flags (see \ref sys_security_flags_t)*/;
+	u32 security /*!  Security flags */;
 	u32 cpu_freq /*!  The CPU clock frequency */;
 	u32 sys_mem_size /*!  The number of bytes in RAM shared across OS and other processes */;
 	char stdout_name[LINK_NAME_MAX] /*!  Default value for the standard output */;
@@ -182,7 +186,7 @@ typedef struct MCU_PACK {
 
 /*! \brief Data structure to unlock the security word features.
  * \details This data structure is used with I_SYS_UNLOCK.  A successful
- * request will unlock the security features (see \a security in \ref sys_info_t) of the device giving access
+ * request will unlock the security features (see \a security in sys_info_t) of the device giving access
  * to certain parts of the device.
  */
 typedef struct MCU_PACK {

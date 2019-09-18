@@ -444,6 +444,7 @@ int unmount(const char * path);
  * @param options Install options mask (flash, startup, etc)
  * @param ram_size The amount of RAM that will be allocated to stack/heap (excludes code even if running from RAM), set to zero for default RAM size
  * @param update_progress Callback to show progress of install/launch
+ * @param update_context Value passed to update_progress() callback
  * @param envp Null for this version
  * @return Zero on success
  */
@@ -465,6 +466,7 @@ int launch(const char * path,
  * @param options Install options
  * @param ram_size The number of bytes to use for heap/stack
  * @param update_progress Callback to show progress of the install
+ * @param update_context Value passed to update_progress() callback
  * @return Zero on success
  */
 int install(const char * path,

@@ -101,6 +101,11 @@ typedef struct MCU_PACK {
 	void * colors /*! A pointer to the colors in the palette (should point to shareable memory) */;
 } display_palette_t;
 
+/*! \brief Display flags
+ * \details Display flags used with
+ * display_attr_t.o_flags and I_DISPLAY_SETATTR.
+ *
+ */
 enum display_flags {
 	DISPLAY_FLAG_INIT /*! Initializes the display */ = (1<<0),
 	DISPLAY_FLAG_SET_WINDOW	/*! Sets the window used when writing to the display */ = (1<<1),

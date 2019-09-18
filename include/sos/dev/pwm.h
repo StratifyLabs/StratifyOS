@@ -45,6 +45,10 @@ extern "C" {
 #define PWM_VERSION (0x030000)
 #define PWM_IOC_IDENT_CHAR 'p'
 
+/*! \details PWM flags used with
+ * pwm_attr_t.o_flags and I_PMW_SETATTR.
+ *
+ */
 typedef enum {
 	PWM_FLAG_SET_TIMER /*! Set to configure the frequency and period (implies PWM_FLAG_SET_CHANNEL) */ = (1<<0),
 	PWM_FLAG_IS_ACTIVE_HIGH /*! Set to configure the outputs as active high */ = (1<<1),

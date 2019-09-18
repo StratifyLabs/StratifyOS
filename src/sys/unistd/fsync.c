@@ -39,7 +39,6 @@
  * as the \a ctl argument.
  *
  * \param fildes The file descriptor returned by \ref open()
- * \param request The request to the device.
  *
  * \return The number of bytes actually read of -1 with errno (see \ref errno) set to:
  * - EBADF:  \a fildes is bad

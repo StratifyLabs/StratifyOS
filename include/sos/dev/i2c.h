@@ -24,48 +24,48 @@
  * \details This module implements an I2C multi-master or slave bus.
  *
  * The following is an example of how to write the I2C in an OS environment:
- * \code
- *
+ * ```
+ * //md2code:include
  * #include <unistd.h>
  * #include <fcntl.h>
  * #include <errno.h>
- * #include <stdio.h>
- * #include "mcu/mcu.h"
+ * #include <sos/dev/i2c.h>
+ * ```
  *
- * int access_i2c(){
- * 	int fd;
- * 	i2c_attr_t attr;
- * 	i2c_reqattr_t req;
- * 	u8 data[8];
+ * ```
+ * //md2code:main
  *
- * 	fd = open("/dev/i2c0", O_RDWR);
- * 	if ( fd < 0 ){
- * 		printf("Error opening peripheral (%d)\n", errno);
- * 	} else {
- *		attr.bitrate = 4000000; //Use a 400KHz I2C clock frequency
- * 		attr.pin_assign = 0; //Use GPIO configuration zero (see device specific documentation for details)
- * 		if( ioctl(fd, I_SETATTR, &attr) < 0 ){
- * 			printf("Failed to set peripheral configuration (%d)\n", errno);
- * 			return -1;
- *		}
+ * int fd;
+ * i2c_attr_t attr;
+ * u8 data[8];
  *
- *		//Now use ioctl to setup a transfer operation
- *		req.slave_addr = 0x3F; //This is the right-justified 7-bit or 10-bit slave address
- *		req.transfer = I2C_TRANSFER_NORMAL; //This is a "normal", see i2c_trasfer_mode_t for details
- *		ioctl(fd, I_I2C_SETUP, &req);
+ * fd = open("/dev/i2c0", O_RDWR);
+ * if ( fd < 0 ){
+ *   printf("Error opening peripheral (%d)\n", errno);
+ * } else {
+ *   attr.o_flags = I2C_FLAG_SET_MASTER;
+ *   attr.freq = 4000000; //Use a 400KHz I2C clock frequency
+ *   if( ioctl(fd, I_I2C_SETATTR, &attr) < 0 ){
+ *     printf("Failed to set peripheral configuration (%d)\n", errno);
+ *     return -1;
+ *   }
  *
- *		//now read the I2C:  This will 1) Start 2) write the 8-bit ptr value 3) Restart 4) Read 8 bytes and 5) Stop
- *		lseek(fd, 0, SEEK_SET); //this is the ptr value
- *		if ( read(fd, data, 8) < 0 ){
- *			printf("Error Reading adc0 (%d)\n"< errno);
- *			return -1;
- *		}
- * 	}
- * 	close(fd);
- * 	return 0;
+ *   //Now use ioctl to setup a transfer operation
+ *   attr.slave_addr[0].addr8[0] = 0x3F; //This is the right-justified 7-bit or 10-bit slave address
+ *   attr.o_flags = I2C_FLAG_PREPARE_PTR_DATA; //This is a "normal", see i2c_trasfer_mode_t for details
+ *   ioctl(fd, I_I2C_SETATTR, &attr);
+ *
+ *   //now read the I2C:  This will 1) Start 2) write the 8-bit ptr value 3) Restart 4) Read 8 bytes and 5) Stop
+ *   lseek(fd, 0, SEEK_SET); //this is the ptr value
+ *	  if ( read(fd, data, 8) < 0 ){
+ *     printf("Error Reading adc0 (%d)\n", errno);
+ *     return -1;
+ *   }
+ *   close(fd);
  * }
  *
- * \endcode
+ *
+ * ```
  */
 
 /*! \file
@@ -91,7 +91,7 @@ extern "C" {
 /*! \details This enumeration lists the errors which may
  * occur when running an I2C operation.
  */
-enum {
+enum i2c_error {
 	I2C_ERROR_NONE /*! No errors */,
 	I2C_ERROR_START /*! Error while starting */,
 	I2C_ERROR_WRITE /*! Error while writing */,
@@ -111,11 +111,15 @@ typedef struct MCU_PACK {
 	u32 o_events /*! Bitmask of supported events */;
 	u32 freq /*! Maximum supported bitrate */;
 	u32 err /*! The error of the most recent transaction */;
-	u32 resd[8];
+	u32 resd[8] /*! Reserved */;
 } i2c_info_t;
 
+/*! \details I2C flags used with
+ * i2c_attr_t.o_flags and I_I2C_SETATTR.
+ *
+ */
 typedef enum {
-	I2C_FLAG_NONE = 0,
+	I2C_FLAG_NONE /*! No Flags */ = 0,
 	I2C_FLAG_SET_MASTER /*! Operate as a master I2C bus */ = (1<<0),
 	I2C_FLAG_SET_SLAVE/*! Operate as a slave (ignored if master is set) */ = (1<<1),
 	I2C_FLAG_IS_SLAVE_ACK_GENERAL_CALL /*! If slave operation, ack general call */ = (1<<2),

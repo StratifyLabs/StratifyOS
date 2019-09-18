@@ -47,9 +47,12 @@ extern "C" {
 
 #define CORE_IOC_IDENT_CHAR 'c'
 
-
+/*! \details Core flags used with
+ * core_attr_t.o_flags and I_CORE_SETATTR.
+ *
+ */
 typedef enum {
-	CORE_FLAG_NONE,
+	CORE_FLAG_NONE /*! No Flag */,
 	CORE_FLAG_IS_RESET_SOFTWARE /*! Software Reset (default if hardware reset cannot be determined) */ = (1<<0),
 	CORE_FLAG_IS_RESET_POR /*! Power on Reset */ = (1<<1),
 	CORE_FLAG_IS_RESET_EXTERNAL /*! External Reset signal */ = (1<<2),

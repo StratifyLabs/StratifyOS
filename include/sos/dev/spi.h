@@ -112,6 +112,10 @@ extern "C" {
 #define SPI_VERSION (0x030000)
 #define SPI_IOC_IDENT_CHAR 's'
 
+/*! \details SPI flags used with
+ * spi_attr_t.o_flags and I_SPI_SETATTR.
+ *
+ */
 typedef enum {
 	SPI_FLAG_IS_FORMAT_SPI /*! SPI Format */ = (1<<0),
 	SPI_FLAG_IS_FORMAT_TI /*! TI Format */ = (1<<1),

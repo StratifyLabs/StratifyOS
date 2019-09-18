@@ -20,64 +20,63 @@
 /*! \addtogroup mqueue
  * @{
  *
- * \details This interface allows processes to share data by sending and receiving messages.
+ * \details This interface allows
+ * processes to share data by sending
+ * and receiving messages.
  *
- * Here is an example of how to create a new message queue and put a message in the new queue:
+ * Here is an example of how to create
+ * a new message queue and put a message
+ * in the new queue:
  *
- * \code
+ * ```
+ * //md2code:include
  * #include <mqueue.h>
  * #include <stdio.h>
+ * ```
  *
- * void create_queue_and_send_msg(){
- * 	mqd_t mdes;
- * 	struct mq_attr attr;
- * 	char msg[32];
+ * ```
+ * //md2code:main
+ *	mqd_t mdes;
+ *	struct mq_attr attr;
+ *	char msg[32];
  *
- * 	attr.mq_maxmsg = 4;
- * 	attr.mq_msgsize = 32;
+ *	attr.mq_maxmsg = 4;
+ *	attr.mq_msgsize = 32;
  *
- * 	mdes = mq_open("/path/to/queue", O_CREAT|O_EXCL|O_RDWR, 0666, &attr);
- * 	if ( mdes == (mqd_t)-1 ){
- * 		perror("failed to create queue");
- * 		return;
- * 	}
+ *	mdes = mq_open("/path/to/queue", O_CREAT|O_EXCL|O_RDWR, 0666, &attr);
+ *	if ( mdes == (mqd_t)-1 ){
+ *		perror("failed to create queue");
+ *		return;
+ *	}
  *
- * 	//now send a message in the queue
- * 	strcpy(msg, "this is the message");
- * 	if ( mq_send(mdes, msg, strlen(msg), 0) < 0 ){
- * 		perror("failed to send message");
- * 	}
- *
- * }
- *
- * \endcode
+ *	//now send a message in the queue
+ *	strcpy(msg, "this is the message");
+ *	if ( mq_send(mdes, msg, strlen(msg), 0) < 0 ){
+ *		perror("failed to send message");
+ *	}
+ * ```
  *
  * Another process can read the message in the queue my using the following code:
  *
- * \code
- * #include <mqueue.h>
- * #include <stdio.h>
+ * ```
+ * //md2code:main
+ *	mqd_t mdes;
+ *	char msg[32];
+ *	unsigned msg_prio;
  *
- * void read_msg(){
- * 	mqd_t mdes;
- * 	char msg[32];
- * 	unsigned msg_prio;
+ *	mdes = mq_open("/path/to/queue", O_RDWR);
+ *	if ( mdes == (mqd_t)-1 ){
+ *		perror("failed to create queue");
+ *		return;
+ *	}
  *
- * 	mdes = mq_open("/path/to/queue", O_RDWR);
- * 	if ( mdes == (mqd_t)-1 ){
- * 		perror("failed to create queue");
- * 		return;
- * 	}
+ *	//now send a message in the queue
+ *	if ( mq_receive(mdes, msg, strlen(msg), &msg_prio) < 0 ){
+ *		perror("failed to send message");
+ *	}
  *
- * 	//now send a message in the queue
- * 	if ( mq_receive(mdes, msg, strlen(msg), &msg_prio) < 0 ){
- * 		perror("failed to send message");
- * 	}
- *
- * 	printf("received: %s\n", msg);
- *
- * }
- * \endcode
+ *	printf("received: %s\n", msg);
+ * ```
  */
 
 /*! \file */
@@ -405,8 +404,6 @@ int mq_setattr(mqd_t mqdes, const struct mq_attr * mqstat, struct mq_attr * omqs
  *
  * \param name The name of the message queue
  * \param oflag The flags to use when opening (O_CREAT, O_EXCL, O_RDWR, O_RDONLY)
- * \param mode The access mode settings for the queue
- * \param attr The message queue attributes
  *
  * If using O_CREAT, the following prototype is used:
  * \code
@@ -789,7 +786,7 @@ ssize_t mq_timedreceive(mqd_t mqdes /*! see \ref mq_receive() */,
 int mq_send(mqd_t mqdes /*! the message queue handle */,
 				const char * msg_ptr /*! a pointer to the message to be sent */,
 				size_t msg_len /*! the message size (must be less than or equal to \a mq_msgsize associated with \a mqdes */,
-				unsigned msg_prio /*! the priority of the message (see \ref MQ_PRIO_MAX) */){
+				unsigned msg_prio /*! the priority of the message (see MQ_PRIO_MAX) */){
 	return mq_timedsend(mqdes, msg_ptr, msg_len, msg_prio, NULL);
 }
 

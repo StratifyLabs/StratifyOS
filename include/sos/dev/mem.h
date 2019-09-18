@@ -63,7 +63,7 @@ typedef struct MCU_PACK {
 /*! \brief Holds the devices attributes.
  * \details This defines the attributes of the memory.
  *
- * It is used with \ref I_MEM_GETINFO.  The attributes
+ * It is used with I_MEM_GETINFO.  The attributes
  * are read-only so I_MEM_SETATTR has no effect.
  *
  */

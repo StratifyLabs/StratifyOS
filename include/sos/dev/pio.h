@@ -92,6 +92,10 @@ extern "C" {
 #define PIO_VERSION (0x030000)
 #define PIO_IOC_IDENT_CHAR 'p'
 
+/*! \details PIO flags used with
+ * pio_attr_t.o_flags and I_PIO_SETATTR.
+ *
+ */
 typedef enum {
 	PIO_FLAG_SET_INPUT /*! Configure the pin as an input */ = (1<<0),
 	PIO_FLAG_SET_OUTPUT /*! Configure the pin as an output */ = (1<<1),

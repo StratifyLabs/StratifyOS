@@ -46,8 +46,12 @@ extern "C" {
 #define CRC_VERSION (0x030000)
 #define CRC_IOC_IDENT_CHAR 'C'
 
+/*! \details CRC flags used with
+ * crc_attr_t.o_flags and I_CRC_SETATTR.
+ *
+ */
 typedef enum {
-	CRC_FLAG_NONE = 0,
+	CRC_FLAG_NONE /*! No Flags */ = 0,
 	CRC_FLAG_ENABLE /*! Enable the CRC */ = (1<<0),
 	CRC_FLAG_DISABLE /*! Disable the CRC */ = (1<<1),
 	CRC_FLAG_IS_32BIT /*! Use a 32-bit CRC */ = (1<<2),

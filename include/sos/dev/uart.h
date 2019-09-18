@@ -93,7 +93,10 @@ extern "C" {
 #define UART_VERSION (0x030000)
 #define UART_IOC_IDENT_CHAR 'u'
 
-
+/*! \details UART flags used with
+ * uart_attr_t.o_flags and I_UART_SETATTR.
+ *
+ */
 typedef enum {
 	UART_FLAG_SET_LINE_CODING /*! Set the control line state (baudrate, stop bits, etc) */ = (1<<0),
 	UART_FLAG_IS_STOP1 /*! One stop bit (default behavior) */ = (1<<1),
