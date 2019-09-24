@@ -36,6 +36,7 @@ typedef struct {
 typedef struct {
     stream_ffifo_channel_state_t rx;
     stream_ffifo_channel_state_t tx;
+	 u32 o_flags;
 } stream_ffifo_state_t;
 
 typedef struct {

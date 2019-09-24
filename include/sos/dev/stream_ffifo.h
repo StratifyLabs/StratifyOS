@@ -57,7 +57,7 @@ enum {
 };
 
 typedef struct MCU_PACK {
-	u32 o_flags /*! Use with STREAM_FFIFO_FLAG_START or STREAM_FFIFO_FLAG_STOP */;
+	volatile u32 o_flags /*! Use with STREAM_FFIFO_FLAG_START or STREAM_FFIFO_FLAG_STOP */;
 	ffifo_attr_t tx;
 	ffifo_attr_t rx;
 } stream_ffifo_attr_t;
@@ -71,6 +71,8 @@ typedef struct MCU_PACK {
 typedef struct MCU_PACK {
 	stream_ffifo_channel_info_t rx;
 	stream_ffifo_channel_info_t tx;
+	u32 o_flags;
+	u32 o_status;
 } stream_ffifo_info_t;
 
 
