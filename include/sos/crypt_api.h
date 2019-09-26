@@ -78,10 +78,18 @@ typedef struct {
 	//decrypt
 } crypt_rsa_api_t;
 
+typedef struct {
+	int (*init)(void ** context);
+	void (*deinit)(void ** context);
+	int (*seed)(void * context, unsigned char * data, u32 data_len);
+	int (*random)(void * context, unsigned char * output, u32 output_length);
+} crypt_random_api_t;
+
 
 #if !defined __link
 #define CRYPT_SHA256_API_REQUEST MCU_API_REQUEST_CODE('s','2','5','6')
 #define CRYPT_SHA512_API_REQUEST MCU_API_REQUEST_CODE('s','5','1','2')
+#define CRYPT_RANDOM_API_REQUEST MCU_API_REQUEST_CODE('r','a','n','d')
 #endif
 
 extern const crypt_hash_api_t tinycrypt_sha256_hash_api;

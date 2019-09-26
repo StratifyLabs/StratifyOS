@@ -60,7 +60,11 @@ int wait_busy(const void * cfg, u32 delay){
 	int result;
 	int count = 0;
 	do {
-		result = sysfs_shared_ioctl(SFFS_DRIVE(cfg), I_DRIVE_ISBUSY, 0);
+		result = sysfs_shared_ioctl(
+					SFFS_DRIVE(cfg),
+					I_DRIVE_ISBUSY,
+					0
+					);
 		if( result > 0 ){
 			usleep(delay);
 		}
@@ -109,17 +113,48 @@ int sffs_dev_read(const void * cfg, int loc, void * buf, int nbyte){
 
 
 int sffs_dev_erase(const void * cfg){
-	drive_attr_t attr;
-	attr.o_flags = DRIVE_FLAG_ERASE_DEVICE;
-	if( sysfs_shared_ioctl(SFFS_DRIVE(cfg), I_DRIVE_SETATTR, &attr) < 0 ){
+	drive_info_t info;
+
+	if( sysfs_shared_ioctl(
+				SFFS_DRIVE(cfg),
+				I_DRIVE_GETINFO,
+				&info
+				) < 0 ){
 		return -1;
 	}
 
-	u32 delay = SFFS_STATE(cfg)->dattr.erase_device_time;
-	if( delay >= 1000000UL ){
-		delay = 999999UL;
+	if( info.o_flags & DRIVE_FLAG_ERASE_DEVICE ){
+
+		drive_attr_t attr;
+		attr.o_flags = DRIVE_FLAG_ERASE_DEVICE;
+		if( sysfs_shared_ioctl(
+				 SFFS_DRIVE(cfg),
+				 I_DRIVE_SETATTR,
+				 &attr) < 0 ){
+			return -1;
+		}
+
+		u32 delay =
+				SFFS_STATE(cfg)->dattr.erase_device_time;
+		if( delay >= 1000000UL ){
+			delay = 999999UL;
+		}
+		wait_busy(cfg, delay);
+
+	} else {
+		//chip doesn't support full erase -- erase by section
+		for(
+			 u32 i = 0;
+			 i < info.num_write_blocks;
+			 i += info.erase_block_size){
+			if( sffs_dev_erasesection(
+						cfg,
+						i
+						) < 0 ){
+				return -1;
+			}
+		}
 	}
-	wait_busy(cfg, delay);
 
 	return 0;
 }
@@ -132,11 +167,17 @@ int sffs_dev_erasesection(const void * cfg, int loc){
 	attr.start = loc;
 	attr.end = loc;
 
-	if( (result = sysfs_shared_ioctl(SFFS_DRIVE(cfg), I_DRIVE_SETATTR, &attr)) < 0 ){
+	if( (result = sysfs_shared_ioctl(
+			  SFFS_DRIVE(cfg),
+			  I_DRIVE_SETATTR,
+			  &attr)) < 0 ){
 		return result;
 	}
 
-	wait_busy(cfg, SFFS_STATE(cfg)->dattr.erase_block_time);
+	wait_busy(
+				cfg,
+				SFFS_STATE(cfg)->dattr.erase_block_time
+				);
 
 	return 0;
 }

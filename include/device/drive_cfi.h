@@ -72,6 +72,7 @@ typedef struct {
 	u32 erase_block_time;
 	u32 erase_device_time;
 	u32 bitrate;
+	u32 partition_start;
 } drive_cfi_info_config_t;
 
 typedef struct {
@@ -103,7 +104,6 @@ typedef struct {
 	drive_cfi_opcode_config_t opcode;
 	mcu_pin_t cs;
 	u32 qspi_flags;
-
 } drive_cfi_config_t;
 
 

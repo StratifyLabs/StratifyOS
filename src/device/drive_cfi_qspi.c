@@ -108,51 +108,105 @@ int drive_cfi_qspi_ioctl(const devfs_handle_t * handle, int request, void * ctl)
 				}
 
 				if( o_flags & DRIVE_FLAG_PROTECT ){
-					drive_cfi_qspi_execute_quick_command(handle, config->opcode.write_enable, 0, config->qspi_flags);
-					drive_cfi_qspi_execute_quick_command(handle, config->opcode.protect, 0, config->qspi_flags);
+					drive_cfi_qspi_execute_quick_command(
+								handle,
+								config->opcode.write_enable,
+								0,
+								config->qspi_flags
+								);
+					drive_cfi_qspi_execute_quick_command(
+								handle,
+								config->opcode.protect,
+								0,
+								config->qspi_flags
+								);
 				}
 
 				if( o_flags & DRIVE_FLAG_UNPROTECT ){
-					drive_cfi_qspi_execute_quick_command(handle, config->opcode.write_enable, 0, config->qspi_flags);
-					drive_cfi_qspi_execute_quick_command(handle, config->opcode.unprotect, 0, config->qspi_flags);
+					drive_cfi_qspi_execute_quick_command(
+								handle,
+								config->opcode.write_enable,
+								0,
+								config->qspi_flags
+								);
+
+					drive_cfi_qspi_execute_quick_command(
+								handle,
+								config->opcode.unprotect,
+								0,
+								config->qspi_flags
+								);
 				}
 
 				if( o_flags & DRIVE_FLAG_RESET ){
-					drive_cfi_qspi_execute_quick_command(handle, config->opcode.enable_reset, 0, config->qspi_flags);
-					drive_cfi_qspi_execute_quick_command(handle, config->opcode.reset, 0, config->qspi_flags);
+					drive_cfi_qspi_execute_quick_command(
+								handle,
+								config->opcode.enable_reset,
+								0,
+								config->qspi_flags
+								);
+
+					drive_cfi_qspi_execute_quick_command(
+								handle,
+								config->opcode.reset,
+								0,
+								config->qspi_flags
+								);
 				}
 
 				if( o_flags & DRIVE_FLAG_POWERUP ){
-					drive_cfi_qspi_execute_quick_command(handle, config->opcode.power_up, 0, config->qspi_flags);
+					drive_cfi_qspi_execute_quick_command(
+								handle,
+								config->opcode.power_up,
+								0,
+								config->qspi_flags
+								);
 
 				}
 
 				if( o_flags & DRIVE_FLAG_POWERDOWN ){
-					drive_cfi_qspi_execute_quick_command(handle, config->opcode.power_down, 0, config->qspi_flags);
+					drive_cfi_qspi_execute_quick_command(
+								handle,
+								config->opcode.power_down,
+								0,
+								config->qspi_flags
+								);
 				}
 
 				if( o_flags & DRIVE_FLAG_ERASE_BLOCKS ){
 					//erase the smallest possible section size
-					drive_cfi_qspi_execute_quick_command(handle, config->opcode.write_enable, 0, config->qspi_flags);
-					drive_cfi_qspi_execute_quick_command(handle,
-																	 config->opcode.block_erase,
-																	 attr->start,
-																	 QSPI_FLAG_IS_ADDRESS_WRITE | config->qspi_flags);
+					drive_cfi_qspi_execute_quick_command(
+								handle,
+								config->opcode.write_enable,
+								0,
+								config->qspi_flags
+								);
+
+					drive_cfi_qspi_execute_quick_command(
+								handle,
+								config->opcode.block_erase,
+								attr->start + config->info.partition_start,
+								QSPI_FLAG_IS_ADDRESS_WRITE | config->qspi_flags
+								);
 
 					//only one block can be erased at a time
 					return config->info.erase_block_size;
-
-
-
 				}
 
-				if( o_flags & DRIVE_FLAG_ERASE_DEVICE ){
-					drive_cfi_qspi_execute_quick_command(handle, config->opcode.write_enable, 0, config->qspi_flags);
+				if( (config->opcode.device_erase != 0xff) &&
+					 (o_flags & DRIVE_FLAG_ERASE_DEVICE) ){
+					drive_cfi_qspi_execute_quick_command(
+								handle, config->opcode.write_enable,
+								0,
+								config->qspi_flags
+								);
+
 					drive_cfi_qspi_execute_quick_command(
 								handle,
 								config->opcode.device_erase,
 								0,
 								config->qspi_flags);
+
 				}
 
 			}
@@ -164,10 +218,13 @@ int drive_cfi_qspi_ioctl(const devfs_handle_t * handle, int request, void * ctl)
 					DRIVE_FLAG_PROTECT |
 					DRIVE_FLAG_UNPROTECT |
 					DRIVE_FLAG_ERASE_BLOCKS |
-					DRIVE_FLAG_ERASE_DEVICE |
 					DRIVE_FLAG_POWERUP |
 					DRIVE_FLAG_POWERDOWN |
 					0;
+
+			if( config->opcode.device_erase != 0xff ){
+				info->o_events |= DRIVE_FLAG_ERASE_DEVICE;
+			}
 
 			info->o_events = MCU_EVENT_FLAG_WRITE_COMPLETE | MCU_EVENT_FLAG_DATA_READY;
 			info->addressable_size = config->info.addressable_size; //one byte for each address location
@@ -178,6 +235,8 @@ int drive_cfi_qspi_ioctl(const devfs_handle_t * handle, int request, void * ctl)
 			info->erase_device_time = config->info.erase_device_time;
 			info->bitrate = config->info.bitrate;
 			info->page_program_size = config->opcode.page_program_size;
+			info->partition_start = config->info.partition_start;
+
 			break;
 
 		case I_DRIVE_ISBUSY:
@@ -197,27 +256,36 @@ int drive_cfi_qspi_read(const devfs_handle_t * handle, devfs_async_t * async){
 	const drive_cfi_config_t * config = handle->config;
 
 	//check for the end of the drive
-	int num_blocks = async->nbyte / config->info.addressable_size;
-	if( async->loc + num_blocks > config->info.num_write_blocks ){
-		num_blocks = config->info.num_write_blocks - async->loc;
+	int num_blocks =
+			async->nbyte / config->info.addressable_size;
+	if( async->loc + num_blocks >
+		 config->info.num_write_blocks ){
+		num_blocks =
+				config->info.num_write_blocks - async->loc;
 		if( num_blocks <= 0 ){
 			return SYSFS_RETURN_EOF;
 		}
-		async->nbyte = num_blocks * config->info.addressable_size;
+		async->nbyte =
+				num_blocks * config->info.addressable_size;
 	}
 
 	//get ready for the read by sending the read command
-	int result = drive_cfi_qspi_execute_command(handle,
-															  config->opcode.fast_read,
-															  config->opcode.read_dummy_cycles,
-															  0, //data is null because it will be ready with read()
-															  async->nbyte, //the number of bytes to read
-															  async->loc,  //the address to read
-															  config->qspi_flags | QSPI_FLAG_IS_ADDRESS_WRITE);
+	int result = drive_cfi_qspi_execute_command(
+				handle,
+				config->opcode.fast_read,
+				config->opcode.read_dummy_cycles,
+				0, //data is null because it will be ready with read()
+				async->nbyte, //the number of bytes to read
+				async->loc + config->info.partition_start,  //the address to read
+				config->qspi_flags | QSPI_FLAG_IS_ADDRESS_WRITE
+				);
 
 	if( result < 0 ){ return result; }
 
-	return config->serial_device->driver.read(&config->serial_device->handle, async);
+	return config->serial_device->driver.read(
+				&config->serial_device->handle,
+				async
+				);
 }
 
 
@@ -245,13 +313,15 @@ int drive_cfi_qspi_write(const devfs_handle_t * handle, devfs_async_t * async){
 	drive_cfi_qspi_execute_quick_command(handle, config->opcode.write_enable, 0, config->qspi_flags);
 
 	//write enable instruction
-	int result = drive_cfi_qspi_execute_command(handle,
-															  config->opcode.page_program,
-															  config->opcode.write_dummy_cycles,
-															  0, //no data
-															  async->nbyte,
-															  async->loc,
-															  config->qspi_flags | QSPI_FLAG_IS_ADDRESS_WRITE);
+	int result = drive_cfi_qspi_execute_command(
+				handle,
+				config->opcode.page_program,
+				config->opcode.write_dummy_cycles,
+				0, //no data
+				async->nbyte,
+				async->loc + config->info.partition_start,
+				config->qspi_flags | QSPI_FLAG_IS_ADDRESS_WRITE
+				);
 
 	if( result < 0 ){
 		return result;
@@ -271,20 +341,19 @@ int drive_cfi_qspi_close(const devfs_handle_t * handle){
 u8 drive_cfi_qspi_read_status(const devfs_handle_t * handle){
 	const drive_cfi_config_t * config = handle->config;
 	u8 status;
-	int result = drive_cfi_qspi_execute_command(handle,
-															  config->opcode.read_busy_status,
-															  0,
-															  &status,
-															  1,
-															  0,
-															  config->qspi_flags | QSPI_FLAG_IS_DATA_READ);
+	int result = drive_cfi_qspi_execute_command(
+				handle,
+				config->opcode.read_busy_status,
+				0,
+				&status,
+				1,
+				0,
+				config->qspi_flags | QSPI_FLAG_IS_DATA_READ
+				);
 
 	if( result < 0 ){
 		return 0xff;
 	}
-
-	//mcu_debug_printf("status is 0x%X\n", status);
-
 
 	return status;
 }
@@ -294,7 +363,15 @@ int drive_cfi_qspi_execute_quick_command(
 		u8 instruction,
 		u32 address,
 		u32 o_flags){
-	return drive_cfi_qspi_execute_command(handle, instruction, 0, 0, 0, address, o_flags);
+	return drive_cfi_qspi_execute_command(
+				handle,
+				instruction,
+				0,
+				0,
+				0,
+				address,
+				o_flags
+				);
 }
 
 int drive_cfi_qspi_execute_command(
@@ -317,8 +394,11 @@ int drive_cfi_qspi_execute_command(
 		memcpy(command.data, data, data_size);
 	}
 	int result = config->serial_device->driver.ioctl(&config->serial_device->handle, I_QSPI_EXECCOMMAND, &command);
-	if( (result == 0) && (o_flags & QSPI_FLAG_IS_DATA_READ) ){
-		memcpy(data, command.data, data_size);
+	if( (result == 0) &&
+		 (o_flags & QSPI_FLAG_IS_DATA_READ) ){
+		memcpy(data,
+				 command.data,
+				 data_size);
 	}
 
 	return result;

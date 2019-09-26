@@ -29,10 +29,11 @@ option(SOS_ARCH_ARM_V7EM_F4SH "Build v7em_f4sh configuration | use with sos-app-
 option(SOS_ARCH_ARM_V7EM_F5SH "Build v7em_f5sh configuration | use with sos-app-std.cmake or sos-lib-std.cmake to auto set SOS_ARCH" OFF)
 option(SOS_ARCH_ARM_V7EM_F5DH "Build v7em_f5dh configuration | use with sos-app-std.cmake or sos-lib-std.cmake to auto set SOS_ARCH" OFF)
 
-
-set(SOS_BUILD_C_FLAGS "-Wall -mthumb -D__StratifyOS__ -ffunction-sections -fdata-sections -fomit-frame-pointer" CACHE STRING "C Flags for building | Application, OS Package, Library")
-set(SOS_BUILD_CXX_FLAGS "-fno-exceptions -fno-unwind-tables" CACHE STRING "CXX Flags for building | Application, OS Package, Library")
+set(SOS_BUILD_FLAGS "" CACHE STRING "Additional C/C++ Flags for building | Application, OS Package, Library")
+set(SOS_BUILD_C_FLAGS "-Wall -mthumb -D__StratifyOS__ -ffunction-sections -fdata-sections -fomit-frame-pointer" CACHE STRING "C Flags for building (must be overriden using the command line) | Application, OS Package, Library")
+set(SOS_BUILD_CXX_FLAGS "-fno-exceptions -fno-unwind-tables -fno-rtti" CACHE STRING "CXX Flags for building (must be overriden using the command line) | Application, OS Package, Library")
 set(SOS_BUILD_ASM_FLAGS "-mthumb" CACHE STRING "ASM build flags | Application, OS Package, Library")
+
 
 #Resolve the build configuration based on the folder name suffix _arm or _link
 string(LENGTH ${CMAKE_BINARY_DIR} STR_LENGTH)

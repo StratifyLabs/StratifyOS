@@ -79,7 +79,8 @@ typedef struct MCU_PACK {
 	u32 erase_device_time /*! Time in microseconds to erase the device */;
 	u32 bitrate /*! Max bitrate */;
 	u32 page_program_size /*! The maximum number of bytes that can be program as one page */;
-	u32 resd[7];
+	u32 partition_start /*! The starting address of the partition */;
+	u32 resd[6];
 } drive_info_t;
 
 
