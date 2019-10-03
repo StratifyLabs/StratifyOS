@@ -24,7 +24,8 @@
 #include "device/auth.h"
 #include "sos/crypt_api.h"
 
-#include "tinycrypt_sha256.h"
+#include "tinycrypt/constants.h"
+#include "tinycrypt/sha256.h"
 
 int tinycrypt_sha256_init(void ** context){
 	void * c = malloc(sizeof(struct tc_sha256_state_struct));

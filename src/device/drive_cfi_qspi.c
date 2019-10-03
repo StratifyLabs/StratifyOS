@@ -175,6 +175,18 @@ int drive_cfi_qspi_ioctl(const devfs_handle_t * handle, int request, void * ctl)
 
 				if( o_flags & DRIVE_FLAG_ERASE_BLOCKS ){
 					//erase the smallest possible section size
+
+					u32 erase_size = attr->end - attr->start;
+					u8 opcode;
+					if( (erase_size >= config->opcode.sector_erase) &&
+						 (attr->start % config->opcode.sector_erase == 0) ){
+						erase_size = config->info.erase_sector_size;
+						opcode = config->opcode.sector_erase;
+					} else {
+						erase_size = config->info.erase_block_size;
+						opcode = config->opcode.block_erase;
+					}
+
 					drive_cfi_qspi_execute_quick_command(
 								handle,
 								config->opcode.write_enable,
@@ -184,13 +196,13 @@ int drive_cfi_qspi_ioctl(const devfs_handle_t * handle, int request, void * ctl)
 
 					drive_cfi_qspi_execute_quick_command(
 								handle,
-								config->opcode.block_erase,
+								opcode,
 								attr->start + config->info.partition_start,
 								QSPI_FLAG_IS_ADDRESS_WRITE | config->qspi_flags
 								);
 
 					//only one block can be erased at a time
-					return config->info.erase_block_size;
+					return erase_size;
 				}
 
 				if( (config->opcode.device_erase != 0xff) &&

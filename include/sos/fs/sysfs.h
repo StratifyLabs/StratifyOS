@@ -65,37 +65,38 @@ int sysfs_always_mounted(const void *);
 #define SYSFS_NOTSUP_VOID ((void*)sysfs_notsup_void)
 
 typedef struct {
-    const char mount_path[PATH_MAX];
-    const int access;
-    int (*mount)(const void*);
-    int (*unmount)(const void*);
-    int (*ismounted)(const void*);
-    int (*startup)(const void*);
-    int (*mkfs)(const void*);
-    int (*open)(const void*, void**, const char*, int, int);
-    int (*aio)(const void*, void*, struct aiocb*);
-    int (*ioctl)(const void*, void*, int, void*);
-    int (*read)(const void*, void*, int, int, void*, int);
-    int (*write)(const void*, void*, int, int, const void*, int);
-    int (*fsync)(const void*, void*);
-    int (*close)(const void*, void**);
-    int (*fstat)(const void*, void*, struct stat*);
-    int (*rename)(const void*, const char*, const char*);
-    int (*unlink)(const void*, const char*);
-    int (*mkdir)(const void*, const char*, mode_t);
-    int (*rmdir)(const void*, const char*);
-    int (*remove)(const void*, const char*);
-    int (*opendir)(const void*, void**, const char*);
-    int (*closedir)(const void*, void**);
-    int (*readdir_r)(const void*, void*, int, struct dirent*);
-    int (*link)(const void*, const char *, const char*);
-    int (*symlink)(const void*, const char *, const char*);
-    int (*stat)(const void*, const char *, struct stat*);
-    int (*lstat)(const void*, const char *, struct stat*);
-    int (*chmod)(const void*, const char*, int mode);
-    int (*chown)(const void*, const char*, uid_t uid, gid_t gid);
-    void (*unlock)(const void*);
-    const void * config;
+	const char mount_path[PATH_MAX];
+	const int permissions;
+	const int owner;
+	int (*mount)(const void*);
+	int (*unmount)(const void*);
+	int (*ismounted)(const void*);
+	int (*startup)(const void*);
+	int (*mkfs)(const void*);
+	int (*open)(const void*, void**, const char*, int, int);
+	int (*aio)(const void*, void*, struct aiocb*);
+	int (*ioctl)(const void*, void*, int, void*);
+	int (*read)(const void*, void*, int, int, void*, int);
+	int (*write)(const void*, void*, int, int, const void*, int);
+	int (*fsync)(const void*, void*);
+	int (*close)(const void*, void**);
+	int (*fstat)(const void*, void*, struct stat*);
+	int (*rename)(const void*, const char*, const char*);
+	int (*unlink)(const void*, const char*);
+	int (*mkdir)(const void*, const char*, mode_t);
+	int (*rmdir)(const void*, const char*);
+	int (*remove)(const void*, const char*);
+	int (*opendir)(const void*, void**, const char*);
+	int (*closedir)(const void*, void**);
+	int (*readdir_r)(const void*, void*, int, struct dirent*);
+	int (*link)(const void*, const char *, const char*);
+	int (*symlink)(const void*, const char *, const char*);
+	int (*stat)(const void*, const char *, struct stat*);
+	int (*lstat)(const void*, const char *, struct stat*);
+	int (*chmod)(const void*, const char*, int mode);
+	int (*chown)(const void*, const char*, uid_t uid, gid_t gid);
+	void (*unlock)(const void*);
+	const void * config;
 } sysfs_t;
 
 
@@ -108,43 +109,44 @@ int rootfs_closedir(const void* cfg, void ** handle);
 #define SYSFS_READONLY_ACCESS (S_IRUSR|S_IRGRP|S_IROTH|S_IXUSR|S_IXGRP|S_IXOTH)
 #define SYSFS_ALL_ACCESS (0777)
 
-#define SYSFS_MOUNT(mount_loc_name, cfgp, access_mode) { \
-    .mount_path = mount_loc_name, \
-    .access = access_mode, \
-    .mount = rootfs_init, \
-    .unmount = SYSFS_NOTSUP, \
-    .ismounted = sysfs_always_mounted, \
-    .startup = SYSFS_NOTSUP, \
-    .mkfs = SYSFS_NOTSUP, \
-    .open = SYSFS_NOTSUP, \
-    .aio = SYSFS_NOTSUP, \
-    .read = SYSFS_NOTSUP, \
-    .write = SYSFS_NOTSUP, \
-    .ioctl = SYSFS_NOTSUP, \
-    .fsync = SYSFS_NOTSUP, \
-    .close = SYSFS_NOTSUP, \
-    .rename = SYSFS_NOTSUP, \
-    .unlink = SYSFS_NOTSUP, \
-    .mkdir = SYSFS_NOTSUP, \
-    .rmdir = SYSFS_NOTSUP, \
-    .remove = SYSFS_NOTSUP, \
-    .opendir = rootfs_opendir, \
-    .closedir = rootfs_closedir, \
-    .readdir_r = rootfs_readdir_r, \
-    .link = SYSFS_NOTSUP, \
-    .symlink = SYSFS_NOTSUP, \
-    .stat = rootfs_stat, \
-    .lstat = SYSFS_NOTSUP, \
-    .fstat = SYSFS_NOTSUP, \
-    .chmod = SYSFS_NOTSUP, \
-    .chown = SYSFS_NOTSUP, \
-    .unlock = SYSFS_NOTSUP_VOID, \
-    .config = cfgp, \
+#define SYSFS_MOUNT(mount_loc_name, cfgp, permssions_value, owner_value) { \
+	.mount_path = mount_loc_name, \
+	.permissions = permssions_value, \
+	.owner = owner_value, \
+	.mount = rootfs_init, \
+	.unmount = SYSFS_NOTSUP, \
+	.ismounted = sysfs_always_mounted, \
+	.startup = SYSFS_NOTSUP, \
+	.mkfs = SYSFS_NOTSUP, \
+	.open = SYSFS_NOTSUP, \
+	.aio = SYSFS_NOTSUP, \
+	.read = SYSFS_NOTSUP, \
+	.write = SYSFS_NOTSUP, \
+	.ioctl = SYSFS_NOTSUP, \
+	.fsync = SYSFS_NOTSUP, \
+	.close = SYSFS_NOTSUP, \
+	.rename = SYSFS_NOTSUP, \
+	.unlink = SYSFS_NOTSUP, \
+	.mkdir = SYSFS_NOTSUP, \
+	.rmdir = SYSFS_NOTSUP, \
+	.remove = SYSFS_NOTSUP, \
+	.opendir = rootfs_opendir, \
+	.closedir = rootfs_closedir, \
+	.readdir_r = rootfs_readdir_r, \
+	.link = SYSFS_NOTSUP, \
+	.symlink = SYSFS_NOTSUP, \
+	.stat = rootfs_stat, \
+	.lstat = SYSFS_NOTSUP, \
+	.fstat = SYSFS_NOTSUP, \
+	.chmod = SYSFS_NOTSUP, \
+	.chown = SYSFS_NOTSUP, \
+	.unlock = SYSFS_NOTSUP_VOID, \
+	.config = cfgp, \
 }
 
 
 #define SYSFS_TERMINATOR { \
-    .mount = NULL \
+	.mount = NULL \
 }
 
 
@@ -164,10 +166,10 @@ const char * sysfs_get_filename(const char * path);
 
 static inline bool sysfs_isterminator(const sysfs_t * fs);
 bool sysfs_isterminator(const sysfs_t * fs){
-    if ( fs->mount == NULL ){
-        return true;
-    }
-    return false;
+	if ( fs->mount == NULL ){
+		return true;
+	}
+	return false;
 }
 
 void sysfs_unlock();
@@ -185,14 +187,14 @@ int sysfs_file_aio(sysfs_file_t * file, void * aio);
 int sysfs_file_close(sysfs_file_t * file);
 
 typedef struct {
-    sysfs_file_t file;
-    pthread_mutex_t mutex;
+	sysfs_file_t file;
+	pthread_mutex_t mutex;
 } sysfs_shared_state_t;
 
 typedef struct {
-    const sysfs_t * devfs;
-    const char * name;
-    sysfs_shared_state_t * state;
+	const sysfs_t * devfs;
+	const char * name;
+	sysfs_shared_state_t * state;
 } sysfs_shared_config_t;
 
 int sysfs_shared_open(const sysfs_shared_config_t * config);
@@ -204,32 +206,32 @@ int sysfs_shared_aio(const sysfs_shared_config_t * config, void * aio);
 int sysfs_shared_close(const sysfs_shared_config_t * config);
 
 typedef struct {
-    const void * config;
-    void * handle;
-    void * buf;
-    int flags;
-    int loc;
-    int nbyte;
-	 int result;
+	const void * config;
+	void * handle;
+	void * buf;
+	int flags;
+	int loc;
+	int nbyte;
+	int result;
 } sysfs_read_t;
 
 typedef sysfs_read_t sysfs_write_t;
 
 typedef struct {
-    const void * cfg;
-    void * handle;
-    int request;
-    void * ctl;
-	 int result;
+	const void * cfg;
+	void * handle;
+	int request;
+	void * ctl;
+	int result;
 } sysfs_ioctl_t;
 
 typedef struct {
-    struct aiocb * const * list;
-    int nent;
-    bool block_on_all;
-    struct mcu_timeval abs_timeout;
-	 int result;
-    struct sigevent * event;
+	struct aiocb * const * list;
+	int nent;
+	bool block_on_all;
+	struct mcu_timeval abs_timeout;
+	int result;
+	struct sigevent * event;
 } sysfs_aio_suspend_t;
 
 int sysfs_aio_data_transfer_callback(void * context, const mcu_event_t * event);

@@ -33,10 +33,10 @@ typedef union {
 
 
 typedef struct {
-	 void * address /*! The address of the memory as input, converted to RBAR after process starts */;
-    u32 size /*! The size of the memory as input, converted to RASR after task starts */;
-	 u32 rbar;
-	 u32 rasr;
+	void * address /*! The address of the memory as input, converted to RBAR after process starts */;
+	u32 size /*! The size of the memory as input, converted to RASR after task starts */;
+	u32 rbar;
+	u32 rasr;
 } task_memory_t;
 
 
@@ -67,9 +67,9 @@ typedef struct {
 typedef struct MCU_PACK {
 	volatile void * sp /*! The task stack pointer */;
 	int pid /*! The process id */;
-    volatile s8 priority /*! Task priority */;
-    volatile u8 flags /*! Status flags */;
-    volatile u16 parent /*! Parent process ID */;
+	volatile s8 priority /*! Task priority */;
+	volatile u8 flags /*! Status flags */;
+	volatile u16 parent /*! Parent process ID */;
 	volatile task_timer_t timer /*! The task timer */;
 	task_memories_t mem /*! The task memories */;
 	void * global_reent /*! Points to process re-entrancy data */;

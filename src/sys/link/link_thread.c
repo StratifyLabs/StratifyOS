@@ -240,16 +240,20 @@ void link_cmd_ioctl(link_transport_driver_t * driver, link_data_t * args){
 	if( args->op.ioctl.fildes != driver->handle ){
 		if ( _IOCTL_IOCTLRW(args->op.ioctl.request) == 0 ){
 			//This means the third argument is just an integer
-			args->reply.err = ioctl(args->op.ioctl.fildes, args->op.ioctl.request, args->op.ioctl.arg);
+			args->reply.err = ioctl(
+						args->op.ioctl.fildes,
+						args->op.ioctl.request,
+						args->op.ioctl.arg
+						);
 		} else {
 			//This means a read or write is happening and the pointer should be passed
-			if( io_buf != NULL ){
-				args->reply.err = ioctl(args->op.ioctl.fildes, args->op.ioctl.request, io_buf);
-			} else {
-				args->reply.err = -1;
-				args->reply.err_number = ENOMEM;
-			}
+			args->reply.err = ioctl(
+						args->op.ioctl.fildes,
+						args->op.ioctl.request,
+						io_buf
+						);
 		}
+		args->reply.err_number = errno;
 	} else {
 		args->reply.err = -1;
 		args->reply.err_number = EBADF;
@@ -257,7 +261,7 @@ void link_cmd_ioctl(link_transport_driver_t * driver, link_data_t * args){
 
 	//Check to see if this is a read operation and data must be sent back to the host
 	if ( _IOCTL_IOCTLR(args->op.ioctl.request) != 0 ){
-		//If the ioctl function wrote data to the ctl argument, pass the data over the link
+		//If the ioctl function reads data from the ctl argument, pass the data over the link
 		err = link_transport_slavewrite(driver, io_buf, size, NULL, NULL);
 		if ( err == -1 ){
 			mcu_debug_log_error(MCU_DEBUG_LINK, "slave write failed");
@@ -268,7 +272,6 @@ void link_cmd_ioctl(link_transport_driver_t * driver, link_data_t * args){
 
 	if ( args->reply.err < 0 ){
 		mcu_debug_log_error(MCU_DEBUG_LINK, "Failed to ioctl (%d)", errno);
-		args->reply.err_number = errno;
 	}
 
 }

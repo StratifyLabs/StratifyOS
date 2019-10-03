@@ -138,23 +138,22 @@ int process_start(const char *path_arg, char *const envp[], int options){
 	mcu_debug_log_info(MCU_DEBUG_SYS, "process start: code:%p data:%p", (void*)startup.exec.startup,
 							 (void*)startup.exec.ram_start);
 
-	err = scheduler_create_process((void*)startup.exec.startup,
-											 process_path,
-											 &mem,
-											 (void*)startup.exec.ram_start,
-											 parent_id,
-											 is_root);
+	err = scheduler_create_process(
+				(void*)startup.exec.startup,
+				process_path,
+				&mem,
+				(void*)startup.exec.ram_start,
+				parent_id,
+				is_root //ignored if caller is not authenticated
+				);
 
 	if( err < 0 ){
 		_free_r(sos_task_table[0].global_reent, process_path);
 	}
 
 	mcu_debug_log_info(MCU_DEBUG_SYS, "process_start:returned %d", err);
-
 	return err;
 }
-
-
 
 int reent_is_free(struct _reent * reent){
 	int i;

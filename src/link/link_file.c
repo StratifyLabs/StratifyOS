@@ -159,7 +159,14 @@ int link_ioctl(link_transport_mdriver_t * driver, int fildes, int request, ...){
 }
 
 
-int link_ioctl_delay(link_transport_mdriver_t * driver, int fildes, int request, void * argp, int arg, int delay){
+int link_ioctl_delay(
+		link_transport_mdriver_t * driver,
+		int fildes,
+		int request,
+		void * argp,
+		int arg,
+		int delay
+		){
 	int rw_size;
 	link_op_t op;
 	link_reply_t reply;

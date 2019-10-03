@@ -652,4 +652,7 @@
 .global __aeabi_unwind_cpp_pr0; __aeabi_unwind_cpp_pr0 = LINK_ADDR;
 .global __aeabi_unwind_cpp_pr1; __aeabi_unwind_cpp_pr1 = LINK_ADDR;
 .global __cxa_atexit; __cxa_atexit = LINK_ADDR;
-
+.global getuid; getuid = LINK_ADDR;
+.global setuid; setuid = LINK_ADDR;
+.global geteuid; geteuid = LINK_ADDR;
+.global seteuid; seteuid = LINK_ADDR;

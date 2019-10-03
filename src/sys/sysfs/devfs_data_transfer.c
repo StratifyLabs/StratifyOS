@@ -134,12 +134,10 @@ void svcall_device_data_transfer(void * args){
 			return;
 		}
 	} else {
-
 		if( sysfs_is_w_ok(dev->mode, dev->uid, SYSFS_GROUP) == 0 ){
 			p->result = SYSFS_SET_RETURN(EPERM);
 			return;
 		}
-
 	}
 
 

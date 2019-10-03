@@ -136,15 +136,15 @@
  */
 
 typedef struct {
-    sysfs_shared_state_t drive;
-    int list_block;
-    int serialno_killed;
-    int serialno;
-    drive_info_t dattr;
+	sysfs_shared_state_t drive;
+	int list_block;
+	int serialno_killed;
+	int serialno;
+	drive_info_t dattr;
 } sffs_state_t;
 
 typedef struct {
-    sysfs_shared_config_t drive;
+	sysfs_shared_config_t drive;
 } sffs_config_t;
 
 
@@ -170,39 +170,40 @@ int sffs_stat(const void * cfg, const char * path, struct stat * stat);
 int sffs_unmount(const void * cfg);
 int sffs_ismounted(const void * cfg);
 
-#define SFFS_MOUNT(mount_loc_name, cfgp, access_mode) { \
-    .mount_path = mount_loc_name, \
-    .access = access_mode, \
-    .mount = sffs_init, \
-    .unmount = sffs_unmount, \
-    .ismounted = sffs_ismounted, \
-    .startup = SYSFS_NOTSUP, \
-    .mkfs = sffs_mkfs, \
-    .open = sffs_open, \
-    .aio = SYSFS_NOTSUP, \
-    .read = sffs_read, \
-    .write = sffs_write, \
-    .close = sffs_close, \
-    .fsync = SYSFS_NOTSUP, \
-    .ioctl = SYSFS_NOTSUP, \
-    .rename = SYSFS_NOTSUP, \
-    .unlink = sffs_unlink, \
-    .mkdir = SYSFS_NOTSUP, \
-    .rmdir = SYSFS_NOTSUP, \
-    .remove = sffs_remove, \
-    .opendir = sffs_opendir, \
-    .closedir = sffs_closedir, \
-    .readdir_r = sffs_readdir_r, \
-    .link = SYSFS_NOTSUP, \
-    .symlink = SYSFS_NOTSUP, \
-    .stat = sffs_stat, \
-    .lstat = SYSFS_NOTSUP, \
-    .fstat = sffs_fstat, \
-    .chmod = SYSFS_NOTSUP, \
-    .chown = SYSFS_NOTSUP, \
-    .unlock = sffs_unlock, \
-    .config = cfgp, \
-    }
+#define SFFS_MOUNT(mount_loc_name, cfgp, permissions_value, owner_value) { \
+	.mount_path = mount_loc_name, \
+	.permissions = permissions_value, \
+	.owner = owner_value, \
+	.mount = sffs_init, \
+	.unmount = sffs_unmount, \
+	.ismounted = sffs_ismounted, \
+	.startup = SYSFS_NOTSUP, \
+	.mkfs = sffs_mkfs, \
+	.open = sffs_open, \
+	.aio = SYSFS_NOTSUP, \
+	.read = sffs_read, \
+	.write = sffs_write, \
+	.close = sffs_close, \
+	.fsync = SYSFS_NOTSUP, \
+	.ioctl = SYSFS_NOTSUP, \
+	.rename = SYSFS_NOTSUP, \
+	.unlink = sffs_unlink, \
+	.mkdir = SYSFS_NOTSUP, \
+	.rmdir = SYSFS_NOTSUP, \
+	.remove = sffs_remove, \
+	.opendir = sffs_opendir, \
+	.closedir = sffs_closedir, \
+	.readdir_r = sffs_readdir_r, \
+	.link = SYSFS_NOTSUP, \
+	.symlink = SYSFS_NOTSUP, \
+	.stat = sffs_stat, \
+	.lstat = SYSFS_NOTSUP, \
+	.fstat = sffs_fstat, \
+	.chmod = SYSFS_NOTSUP, \
+	.chown = SYSFS_NOTSUP, \
+	.unlock = sffs_unlock, \
+	.config = cfgp, \
+	}
 
 
 #endif /* SFFS_LITE_H_ */

@@ -48,11 +48,24 @@ typedef struct {
 static void svcall_activate_thread(svcall_activate_thread_t * args) MCU_ROOT_EXEC_CODE;
 static void activate_thread(int id, void * mem_addr, const pthread_attr_t * attr);
 
-int scheduler_create_thread(void *(*p)(void*), void * arg, void * mem_addr, int mem_size, const pthread_attr_t * attr){
+int scheduler_create_thread(
+		void *(*p)(void*),
+		void * arg,
+		void * mem_addr,
+		int mem_size,
+		const pthread_attr_t * attr
+		){
 	int id;
 
 	//start a new thread
-	id = task_create_thread(p, cleanup_thread, arg, mem_addr, mem_size, task_get_pid( task_get_current() ) );
+	id = task_create_thread(
+				p,
+				cleanup_thread,
+				arg,
+				mem_addr,
+				mem_size,
+				task_get_pid( task_get_current() )
+				);
 
 
 	if ( id > 0 ){
@@ -114,6 +127,15 @@ void svcall_activate_thread(svcall_activate_thread_t * args){
 	sos_sched_table[id].wake.tv_usec = 0;
 	scheduler_root_assert_active(id, 0);
 	scheduler_root_assert_inuse(id);
+	if( scheduler_authenticated_asserted(task_get_current()) ){
+		scheduler_root_assert_authenticated(id);
+	}
+
+	if( (sos_board_config.o_sys_flags & SYS_FLAG_IS_FIRST_THREAD_ROOT) &&
+		 (id == 1) ){
+		scheduler_root_assert_authenticated(1);
+	}
+
 
 	if( task_root_set_stackguard(id, args->stackguard, SCHED_DEFAULT_STACKGUARD_SIZE) < 0 ){
 		mcu_debug_log_warning(MCU_DEBUG_SCHEDULER, "Failed to activate stack guard");

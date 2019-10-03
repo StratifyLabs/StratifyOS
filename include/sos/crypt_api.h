@@ -6,8 +6,7 @@
 typedef struct {
 	int (*init)(void ** context);
 	void (*deinit)(void ** context);
-	int (*set_encryption_key)(void * context, const unsigned char * key, u32 keybits);
-	int (*set_decryption_key)(void * context, const unsigned char * key, u32 keybits);
+	int (*set_key)(void * context, const unsigned char * key, u32 keybits);
 
 	int (*encrypt_ecb)(void * context,
 							  const unsigned char input[16],
@@ -90,8 +89,11 @@ typedef struct {
 #define CRYPT_SHA256_API_REQUEST MCU_API_REQUEST_CODE('s','2','5','6')
 #define CRYPT_SHA512_API_REQUEST MCU_API_REQUEST_CODE('s','5','1','2')
 #define CRYPT_RANDOM_API_REQUEST MCU_API_REQUEST_CODE('r','a','n','d')
+#define CRYPT_AES_API_REQUEST MCU_API_REQUEST_CODE('a','e','s','!')
 #endif
 
 extern const crypt_hash_api_t tinycrypt_sha256_hash_api;
+extern const crypt_hash_api_t device_sha256_hash_api;
+extern const crypt_aes_api_t device_aes_api;
 
 #endif // CRYPT_API_H

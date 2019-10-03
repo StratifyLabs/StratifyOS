@@ -58,7 +58,12 @@ int assetfs_open(const void* cfg, void ** handle, const char * path, int flags, 
 	if( flags != O_RDONLY ){ return SYSFS_SET_RETURN(EINVAL); }
 
 	int ino;
-	const assetfs_dirent_t * directory_entry = find_file(cfg, path, &ino);
+	const assetfs_dirent_t * directory_entry =
+			find_file(cfg, path, &ino);
+
+	if( sysfs_is_r_ok(directory_entry->mode, directory_entry->uid, SYSFS_GROUP) == 0 ){
+		return SYSFS_SET_RETURN(EPERM);
+	}
 
 	assetfs_handle_t * h = malloc(sizeof(assetfs_handle_t));
 	if( h == 0 ){
@@ -91,7 +96,12 @@ int assetfs_read(const void * cfg, void * handle, int flags, int loc, void * buf
 
 }
 
-int assetfs_ioctl(const void * cfg, void * handle, int request, void * ctl){
+int assetfs_ioctl(
+		const void * cfg,
+		void * handle,
+		int request,
+		void * ctl
+		){
 	MCU_UNUSED_ARGUMENT(cfg);
 	MCU_UNUSED_ARGUMENT(handle);
 	MCU_UNUSED_ARGUMENT(request);
@@ -152,7 +162,7 @@ int assetfs_opendir(const void* cfg, void ** handle, const char * path){
 	if ( strncmp(path, "", PATH_MAX) == 0 ){
 		*handle = VALID_DIR_HANDLE;
 	} else {
-		  return SYSFS_SET_RETURN(ENOENT);
+		return SYSFS_SET_RETURN(ENOENT);
 	}
 	return 0;
 }

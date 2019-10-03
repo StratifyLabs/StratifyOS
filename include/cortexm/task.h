@@ -48,8 +48,7 @@ int task_create_process(void (*p)(char*) /*! The function to execute for the pro
 								const char * path_arg /*! The path and arguments */,
 								task_memories_t * mem /*! The new processes memories */,
 								void * reent_ptr /*! A pointer to the reentrancy memory structure */,
-								int parent_id /*! Task ID to be assigned as the parent */,
-								int is_root /*! Process is creating as root (calling process must be root) */);
+								int parent_id /*! Task ID to be assigned as the parent */);
 
 
 int task_create_thread(void *(*p)(void*)  /*! The function to execute for the task */,

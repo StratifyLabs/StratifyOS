@@ -18,6 +18,8 @@
  */
 
 #include <fcntl.h>
+#include <unistd.h>
+#include "mcu/debug.h"
 #include "sos/fs/sysfs.h"
 
 extern int devfs_open(const void * cfg, void ** handle, const char * path, int flags, int mode);
@@ -27,6 +29,19 @@ int sysfs_file_open(sysfs_file_t * file, const char * name, int mode){
     int ret;
     struct stat st;
     const sysfs_t * fs = file->fs;
+
+	 int access_mode = sysfs_getamode(mode);
+	 //check fs level permissions
+	 if( sysfs_access(
+			  fs->permissions,
+			  fs->owner,
+			  SYSFS_GROUP,
+			  access_mode
+			  ) < 0 ){
+		 errno = EPERM;
+		 return -1*__LINE__;
+	 }
+
     ret = fs->open(fs->config, &(file->handle), name, file->flags, mode);
     if( ret >= 0 ){
         if( fs->open == devfs_open ){

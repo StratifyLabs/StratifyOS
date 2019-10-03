@@ -34,7 +34,12 @@ set(SOURCES_PREFIX ${CMAKE_SOURCE_DIR}/src/boot)
 add_subdirectory(src/boot)
 set(BOOT_SOURCELIST ${SOURCES} ${HEADER_FILES})
 
-set(SOS_INCLUDE_DIRECTORIES src include include/posix)
+set(SOS_INCLUDE_DIRECTORIES
+	src
+	include
+	include/posix
+	src/sys/auth/tinycrypt/lib/include
+	)
 
 if(BUILD_SYS OR BUILD_ALL)
 set(SOS_OPTION sys)

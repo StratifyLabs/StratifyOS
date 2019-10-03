@@ -154,7 +154,39 @@ if( ${SOS_BUILD_CONFIG} STREQUAL arm )
 			${SOURCES_PREFIX}/auth/prng.c
 			${SOURCES_PREFIX}/auth/prng.h
 			${SOURCES_PREFIX}/auth/tinycrypt_sha256_api.c
-			${SOURCES_PREFIX}/auth/tinycrypt_sha256.c
-			${SOURCES_PREFIX}/auth/tinycrypt_sha256.h
+			${SOURCES_PREFIX}/auth/device_sha256_api.c
+			${SOURCES_PREFIX}/auth/device_aes_api.c
+			#${SOURCES_PREFIX}/auth/tinycrypt_sha256.c
+			#${SOURCES_PREFIX}/auth/tinycrypt_sha256.h
+			${SOURCES_PREFIX}/auth/tinycrypt/lib/include/tinycrypt/aes.h
+			${SOURCES_PREFIX}/auth/tinycrypt/lib/include/tinycrypt/constants.h
+			${SOURCES_PREFIX}/auth/tinycrypt/lib/include/tinycrypt/cbc_mode.h
+			${SOURCES_PREFIX}/auth/tinycrypt/lib/include/tinycrypt/ccm_mode.h
+			${SOURCES_PREFIX}/auth/tinycrypt/lib/include/tinycrypt/cmac_mode.h
+			${SOURCES_PREFIX}/auth/tinycrypt/lib/include/tinycrypt/ctr_mode.h
+			${SOURCES_PREFIX}/auth/tinycrypt/lib/include/tinycrypt/ctr_prng.h
+			${SOURCES_PREFIX}/auth/tinycrypt/lib/include/tinycrypt/ecc_dh.h
+			${SOURCES_PREFIX}/auth/tinycrypt/lib/include/tinycrypt/ecc_dsa.h
+			${SOURCES_PREFIX}/auth/tinycrypt/lib/include/tinycrypt/ecc_platform_specific.h
+			${SOURCES_PREFIX}/auth/tinycrypt/lib/include/tinycrypt/ecc.h
+			${SOURCES_PREFIX}/auth/tinycrypt/lib/include/tinycrypt/hmac_prng.h
+			${SOURCES_PREFIX}/auth/tinycrypt/lib/include/tinycrypt/hmac.h
+			${SOURCES_PREFIX}/auth/tinycrypt/lib/include/tinycrypt/sha256.h
+			${SOURCES_PREFIX}/auth/tinycrypt/lib/include/tinycrypt/utils.h
+			${SOURCES_PREFIX}/auth/tinycrypt/lib/source/aes_decrypt.c
+			${SOURCES_PREFIX}/auth/tinycrypt/lib/source/aes_encrypt.c
+			${SOURCES_PREFIX}/auth/tinycrypt/lib/source/cbc_mode.c
+			${SOURCES_PREFIX}/auth/tinycrypt/lib/source/ccm_mode.c
+			${SOURCES_PREFIX}/auth/tinycrypt/lib/source/cmac_mode.c
+			${SOURCES_PREFIX}/auth/tinycrypt/lib/source/ctr_mode.c
+			${SOURCES_PREFIX}/auth/tinycrypt/lib/source/ctr_prng.c
+			${SOURCES_PREFIX}/auth/tinycrypt/lib/source/ecc_dh.c
+			${SOURCES_PREFIX}/auth/tinycrypt/lib/source/ecc_dsa.c
+			${SOURCES_PREFIX}/auth/tinycrypt/lib/source/ecc_platform_specific.c
+			${SOURCES_PREFIX}/auth/tinycrypt/lib/source/ecc.c
+			${SOURCES_PREFIX}/auth/tinycrypt/lib/source/hmac_prng.c
+			${SOURCES_PREFIX}/auth/tinycrypt/lib/source/hmac.c
+			${SOURCES_PREFIX}/auth/tinycrypt/lib/source/sha256.c
+			${SOURCES_PREFIX}/auth/tinycrypt/lib/source/utils.c
 			PARENT_SCOPE)
   endif()

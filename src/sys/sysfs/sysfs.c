@@ -27,10 +27,15 @@
 #include <errno.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include "mcu/debug.h"
 #include "sos/fs/sysfs.h"
 
-const char sysfs_validset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_./";
-const char sysfs_whitespace[] = " \t\r\n";
+#define OR_ALLOW_GROUP 0
+
+const char sysfs_validset[] =
+		"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_./";
+const char sysfs_whitespace[] =
+		" \t\r\n";
 
 int mkfs(const char * path){
 	const sysfs_t * fs;
@@ -143,7 +148,10 @@ const char * sysfs_stripmountpath(const sysfs_t * fs, const char * path){
 	return path;
 }
 
-static bool isinvalid(const char * path, int max){
+static bool isinvalid(
+		const char * path,
+		int max
+		){
 	int len;
 	int tmp;
 	const char * p;
@@ -181,7 +189,12 @@ bool sysfs_ispathinvalid(const char * path){
 }
 
 bool sysfs_isvalidset(const char * path){
-	if ( strlen(path) == strspn(path, sysfs_validset)){
+	int len = strnlen(path, PATH_MAX);
+	if( len == PATH_MAX ){
+		return false;
+	}
+
+	if ( len == strspn(path, sysfs_validset)){
 		return true;
 	}
 	return false;
@@ -212,26 +225,36 @@ int sysfs_getamode(int flags){
 int sysfs_is_r_ok(int file_mode, int file_uid, int file_gid){
 	if ( file_mode & S_IROTH ){
 		return 1;
-	} else if ( (file_mode & S_IRUSR)  && (file_uid == geteuid() || geteuid() == SYSFS_ROOT) ){
+	} else if ( (file_mode & S_IRUSR)  && (file_uid == getuid() || getuid() == SYSFS_ROOT) ){
 		//Check to see if s.st_uid matches current user id
 		return 1;
-	} else if ( (file_mode & S_IRGRP) && ( file_gid == getegid()) ){
+	}
+#if OR_ALLOW_GROUP
+	else if ( (file_mode & S_IRGRP) && ( file_gid == getgid()) ){
 		//Check to see if gid matches current group id
 		return 1;
 	}
+#else
+	MCU_UNUSED_ARGUMENT(file_gid);
+#endif
 	return 0;
 }
 
 int sysfs_is_w_ok(int file_mode, int file_uid, int file_gid){
 	if ( file_mode & S_IWOTH ){
 		return 1;
-	} else if ( (file_mode & S_IWUSR) && (file_uid == geteuid() || geteuid() == SYSFS_ROOT) ){
+	} else if ( (file_mode & S_IWUSR) && (file_uid == getuid() || getuid() == SYSFS_ROOT) ){
 		//Check to see if user id matches file_uid
 		return 1;
-	} else if ( (file_mode & S_IWGRP) && ( file_gid == getegid()) ){
+	}
+#if OR_ALLOW_GROUP
+	else if ( (file_mode & S_IWGRP) && ( file_gid == getgid()) ){
 		//Check to see if gid matches current group id
 		return 1;
 	}
+#else
+	MCU_UNUSED_ARGUMENT(file_gid);
+#endif
 	return 0;
 }
 
@@ -239,27 +262,34 @@ int sysfs_is_rw_ok(int file_mode, int file_uid, int file_gid){
 	int is_ok = 0;
 	if ( file_mode & S_IWOTH ){
 		is_ok = W_OK;
-	} else if ( (file_mode & S_IWUSR) && (file_uid == geteuid() || geteuid() == SYSFS_ROOT) ){
+	} else if ( (file_mode & S_IWUSR) && (file_uid == getuid() || getuid() == SYSFS_ROOT) ){
 		//Check to see if user id matches file_uid
 		is_ok = W_OK;
-	} else if ( (file_mode & S_IWGRP) && ( file_gid == getegid()) ){
+	}
+#if OR_ALLOW_GROUP
+	else if ( (file_mode & S_IWGRP) && ( file_gid == getgid()) ){
 		//Check to see if gid matches current group id
 		is_ok = W_OK;
 	}
+#else
+	MCU_UNUSED_ARGUMENT(file_gid);
+#endif
 
 	if( is_ok == W_OK ){
 		if ( file_mode & S_IROTH ){
 			return 1;
-		} else if ( (file_mode & S_IRUSR)  && (file_uid == geteuid() || geteuid() == SYSFS_ROOT) ){
+		} else if ( (file_mode & S_IRUSR) &&
+						(file_uid == getuid() || getuid() == SYSFS_ROOT) ){
 			//Check to see if s.st_uid matches current user id
 			return 1;
-		} else if ( (file_mode & S_IRGRP) && ( file_gid == getegid()) ){
+		}
+#if OR_ALLOW_GROUP
+		else if ( (file_mode & S_IRGRP) && ( file_gid == getgid()) ){
 			//Check to see if gid matches current group id
 			return 1;
 		}
+#endif
 	}
-
-
 	return 0;
 }
 
@@ -267,13 +297,16 @@ int sysfs_is_rw_ok(int file_mode, int file_uid, int file_gid){
 int sysfs_is_x_ok(int file_mode, int file_uid, int file_gid){
 	if ( file_mode & S_IXOTH ){
 		return 1;
-	} else if ( (file_mode & S_IXUSR) && (file_uid == geteuid() || geteuid() == SYSFS_ROOT)  ){
+	} else if ( (file_mode & S_IXUSR) && (file_uid == getuid() || getuid() == SYSFS_ROOT)  ){
 		//Check to see if s.st_uid matches current user id
 		return 1;
-	} else if ( (file_mode & S_IXGRP) && ( file_gid == getegid()) ){
+	}
+#if OR_ALLOW_GROUP
+	else if ( (file_mode & S_IXGRP) && ( file_gid == getgid()) ){
 		//Check to see if gid matches current group id
 		return 1;
 	}
+#endif
 	return 0;
 }
 

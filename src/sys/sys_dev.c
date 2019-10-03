@@ -88,10 +88,10 @@ int sys_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 					 !task_thread_asserted(i)
 					 ){
 					int result = signal_root_send(task_get_current(),
-										  i,
-										  killattr->si_signo,
-										  killattr->si_sigcode,
-										  killattr->si_sigvalue, 1);
+															i,
+															killattr->si_signo,
+															killattr->si_sigcode,
+															killattr->si_sigvalue, 1);
 					return result;
 				}
 			}
@@ -103,11 +103,27 @@ int sys_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 											killattr->si_sigcode,
 											killattr->si_sigvalue, 1);
 		case I_SYS_GETBOARDCONFIG:
+
 			memcpy(ctl, &sos_board_config, sizeof(sos_board_config));
 			return 0;
 
+
+		case I_SYS_GETMCUBOARDCONFIG:
+			{
+				mcu_board_config_t * config = ctl;
+				memcpy(config, &mcu_board_config, sizeof(mcu_board_config));
+				//dont' provide any security info to non-root callers
+				if( scheduler_authenticated_asserted( task_get_current() ) == 0 ){
+					config->secret_key_address = (void*)-1;
+					config->secret_key_size = 0;
+				}
+				return 0;
+			}
+
+
 		case I_SYS_SETATTR:
 			return sys_setattr(handle, ctl);
+
 
 
 		default:

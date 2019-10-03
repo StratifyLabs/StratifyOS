@@ -155,6 +155,25 @@ enum {
 	MCU_BOARD_CONFIG_EVENT_TOTAL
 };
 
+#define MCU_DECLARE_SECRET_KEY_32(x) void x(){ \
+asm volatile("NOP"); \
+asm volatile("NOP"); \
+asm volatile("NOP"); \
+asm volatile("NOP"); \
+asm volatile("NOP"); \
+asm volatile("NOP"); \
+asm volatile("NOP"); \
+asm volatile("NOP"); \
+asm volatile("NOP"); \
+asm volatile("NOP"); \
+asm volatile("NOP"); \
+asm volatile("NOP"); \
+asm volatile("NOP"); \
+asm volatile("NOP"); \
+asm volatile("NOP"); \
+asm volatile("NOP"); \
+}
+
 
 /*! \brief MCU Board Configuration Type
  * \details The MCU Board configuration gives data

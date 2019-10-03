@@ -353,7 +353,10 @@ int start_first_thread(){
 											&attr);
 
 	if ( !err ){
-		mcu_debug_log_error(MCU_DEBUG_SCHEDULER, "Failed to create thread\n");
+		mcu_debug_log_error(
+					MCU_DEBUG_SCHEDULER,
+					"Failed to create thread\n"
+					);
 		return -1;
 	}
 

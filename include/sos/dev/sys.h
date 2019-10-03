@@ -34,6 +34,7 @@
 #define SOS_DEV_SYS_H_
 
 #include "mcu/types.h"
+#include "mcu/mcu.h"
 #include "sos/link/types.h"
 
 
@@ -46,10 +47,12 @@ extern "C" {
 #define SYS_IOC_CHAR 's'
 
 /*! \details SYS flags used with
- * sys_attr_t.o_flags and I_SYS_SETATTR.
+ * o_flags in sos_board_config_t.
+ *
+ *
  *
  */
-enum sys_flags {
+enum sys_board_config_flags {
 	SYS_FLAG_IS_STDIO_FIFO /*! Indicates STDIO are independent FIFOs (board config flag) */ = (1<<0),
 	SYS_FLAG_IS_STDIO_VCP /*! Deprecated (board config flag) */ = (1<<1),
 	SYS_FLAG_IS_WDT_DISABLED /*! Disables the WDT (board config flag) */ = (1<<2),
@@ -60,6 +63,7 @@ enum sys_flags {
 	SYS_FLAG_IS_ACTIVE_ON_IDLE /*! Don't stop the CPU when the system is idle (board config flag) */ = (1<<7),
 	SYS_FLAG_IS_KEYED /*! Binary has a 256-bit secret key appended to the end (before HASH if present).*/ = (1<<8),
 	SYS_FLAG_IS_HASHED /*! Binary has a 256-bit SHA256 hash appended to the end (after secret key if present) */ = (1<<9),
+	SYS_FLAG_IS_FIRST_THREAD_ROOT /*! First thread is started as a root enabled thread */ = (1<<10)
 };
 
 enum sys_memory_flags {
@@ -184,14 +188,6 @@ typedef struct MCU_PACK {
 } sys_process_t;
 
 
-/*! \brief Data structure to unlock the security word features.
- * \details This data structure is used with I_SYS_UNLOCK.  A successful
- * request will unlock the security features (see \a security in sys_info_t) of the device giving access
- * to certain parts of the device.
- */
-typedef struct MCU_PACK {
-	u8 key[32] /*! \brief Used to pass values back and forth */;
-} sys_auth_t;
 
 #define I_SYS_GETVERSION _IOCTL(SYS_IOC_IDENT_CHAR, I_MCU_GETVERSION)
 #define I_SYS_GETINFO _IOCTLR(SYS_IOC_CHAR, I_MCU_GETINFO, sys_info_t)
@@ -258,32 +254,22 @@ typedef struct MCU_PACK {
 #define I_SYS_GETBOARDCONFIG _IOCTLR(SYS_IOC_CHAR, I_MCU_TOTAL+6, sos_board_config_t)
 
 /*! \brief See below for details.
- * \details This gets a 256-bit random
- * number that can be used with I_SYS_AUTH
- * to authenticate the calling thread.
+ * \details This gets the MCU
+ * board configuration data. If
+ * the caller is not privileged,
+ * the secret key information
+ * will be zero'd.
  *
  */
-#define I_SYS_GETRANDOM _IOCTLR(SYS_IOC_CHAR, I_MCU_TOTAL+7, sys_auth_t)
+#define I_SYS_GETMCUBOARDCONFIG _IOCTLR(SYS_IOC_CHAR, I_MCU_TOTAL+7, mcu_board_config_t)
+
 
 /*! \brief See below for details.
- * \details This sends a challenge based on a shared
- * secret key and a random number. It also reads the
- * response so that the challenger can also validate
- * that the system is authentic.
- *
- * Once the calling thread is authenticated, it will
- * be placed in root access mode.
- *
- * Executing I_SYS_AUTH with an invalid value will
- * remove root access mode from the calling thread.
- *
- * The system must have a kernel API for CRYPT_ROOT_SHA256_API_REQUEST
- * and set the SYS_FLAG_IS_KEYED flag and appened a secret key to
- * the end of the binary. Without both of these, all calls
- * to I_SYS_AUTH will result in the calling thread having root access.
+ * \details Returns 1 if the caller
+ * has root access. Returns zero otherwise.
  *
  */
-#define I_SYS_AUTH _IOCTLRW(SYS_IOC_CHAR, I_MCU_TOTAL+7, sys_auth_t)
+#define I_SYS_ISROOT _IOCTL(SYS_IOC_CHAR, I_MCU_TOTAL+8)
 
 
 #define I_SYS_TOTAL 7

@@ -494,14 +494,20 @@ int appfs_stat(const void* cfg, const char * path, struct stat * st){
 
 void svcall_read(void * args){
 	CORTEXM_SVCALL_ENTER();
-	sysfs_read_t * p = args;
-
+	sysfs_read_t * p;
 	devfs_async_t async;
 	const devfs_device_t * dev;
 	appfs_handle_t * h;
 
+	//validate args?
+	p = args;
 	h = p->handle;
 	dev = p->config;
+
+	if( sysfs_is_r_ok(dev->mode, dev->uid, SYSFS_GROUP) == 0 ){
+		p->result = SYSFS_SET_RETURN(EPERM);
+		return;
+	}
 
 	memset(&async, 0, sizeof(async));
 	async.tid = task_get_current();
@@ -510,7 +516,13 @@ void svcall_read(void * args){
 	async.flags = p->flags;
 	async.loc = p->loc;
 
-	if( h->type.reg.mode == 0444 ){
+	//destination memory must be with accessible program
+	if( task_validate_memory(async.buf, async.nbyte) < 0 ){
+		p->result = SYSFS_SET_RETURN(EPERM);
+	}
+
+	//the header is not part of the file for non-execs
+	if( (h->type.reg.mode & 0111) == 0 ){
 		async.loc += sizeof(appfs_file_t);
 	}
 
@@ -593,12 +605,19 @@ void svcall_ioctl(void * args){
 	int request = a->request;
 	appfs_installattr_t * attr;
 	const appfs_file_t * f;
+	const devfs_device_t * dev = a->cfg;
 
 	appfs_info_t * info;
 	void * ctl = a->ctl;
 	a->result = -1;
 
 	mcu_wdt_reset();
+
+	//check permissions on this device - IOCTL needs read/write access
+	if( sysfs_is_rw_ok(dev->mode, dev->uid, SYSFS_GROUP) == 0 ){
+		a->result = SYSFS_SET_RETURN(EPERM);
+		return;
+	}
 
 	info = ctl;
 	attr = ctl;

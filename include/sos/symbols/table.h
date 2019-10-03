@@ -29,6 +29,8 @@
 #define SYMBOLS_TABLE_WEAK
 #endif
 
+extern int seteuid(uid_t uid);
+
 u32 const symbols_table[] SYMBOLS_TABLE_WEAK;
 u32 const symbols_table[] = {
 	//The first position is the signature
@@ -671,6 +673,10 @@ u32 const symbols_table[] = {
 	(u32)__aeabi_unwind_cpp_pr0,
 	(u32)__aeabi_unwind_cpp_pr1,
 	(u32)__cxa_atexit,
+	(u32)getuid,
+	(u32)setuid,
+	(u32)geteuid,
+	(u32)seteuid,
 	1
 };
 

@@ -207,10 +207,8 @@ void task_svcall_new_task(new_task_t * task){
 			sos_task_table[i].pid = task->pid;
 			sos_task_table[i].parent = task->parent;
 			sos_task_table[i].flags = task->flags;
-			//calling process must be root for new process to be created as root
-			if( !task_root_asserted(task_get_current()) ){
-				sos_task_table[i].flags &= ~TASK_FLAGS_ROOT;
-			}
+			//never start a task with root set -- call seteuid() to make root
+			sos_task_table[i].flags &= ~TASK_FLAGS_ROOT;
 			sos_task_table[i].sp = task->stackaddr - sizeof(hw_stack_frame_t) - sizeof(sw_stack_frame_t);
 			sos_task_table[i].reent = task->reent;
 			sos_task_table[i].global_reent = task->global_reent;

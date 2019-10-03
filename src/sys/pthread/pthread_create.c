@@ -75,10 +75,12 @@ static void svcall_join_thread(void * args) MCU_ROOT_EXEC_CODE;
  *
  *
  */
-int pthread_create(pthread_t * thread /*! If not null, the thread id is written here */,
-						 const pthread_attr_t * attr /*! Sets the thread attributes (defaults are used if this is NULL) */,
-						 void *(*start_routine)(void *) /*! A pointer to the start routine */,
-						 void *arg /*! A pointer to the start routine's single argument */){
+int pthread_create(
+		pthread_t * thread /*! If not null, the thread id is written here */,
+		const pthread_attr_t * attr /*! Sets the thread attributes (defaults are used if this is NULL) */,
+		void *(*start_routine)(void *) /*! A pointer to the start routine */,
+		void *arg /*! A pointer to the start routine's single argument */
+		){
 
 	int id;
 	pthread_attr_t attrs;
@@ -105,11 +107,13 @@ int pthread_create(pthread_t * thread /*! If not null, the thread id is written 
 	attrs.stackaddr = stack_addr;
 	memset(stack_addr, 0, mem_size); //nullify memory space
 
-	id = scheduler_create_thread(start_routine,
-										  arg,
-										  stack_addr,
-										  attrs.stacksize,
-										  &attrs);
+	id = scheduler_create_thread(
+				start_routine,
+				arg,
+				stack_addr,
+				attrs.stacksize,
+				&attrs
+				);
 
 	if ( id ){
 		if ( thread ){

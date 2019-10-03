@@ -70,6 +70,8 @@ typedef struct {
 	u32 num_write_blocks;
 	u32 erase_block_size;
 	u32 erase_block_time;
+	u32 erase_sector_size;
+	u32 erase_sector_time;
 	u32 erase_device_time;
 	u32 bitrate;
 	u32 partition_start;
@@ -79,6 +81,7 @@ typedef struct {
 	u8 write_enable;
 	u8 page_program;
 	u8 block_erase;
+	u8 sector_erase;
 	u8 device_erase;
 	u8 fast_read;
 	u8 power_up;
