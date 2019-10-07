@@ -35,8 +35,6 @@ int event_write_complete(void * context, const mcu_event_t * event){
 	stream_ffifo_state_t * state = handle->state;
 	ffifo_state_t * ffifo_state = &state->tx.ffifo;
 
-	mcu_debug_printf("w\n");
-
 	if(state->tx.async.nbyte < 0){
 		state->tx.error = state->tx.async.nbyte;
 		mcu_debug_log_error(MCU_DEBUG_DEVICE, "error: %s():%d", __FUNCTION__, __LINE__);

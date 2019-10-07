@@ -150,7 +150,12 @@ int appfs_mem_getpageinfo(const devfs_handle_t * handle, void * ctl){
 		//return 0;
 	}
 
-	if( get_page_info(config, pageinfo->num, pageinfo->o_flags, pageinfo) < 0 ){
+	if( get_page_info(
+			 config,
+			 pageinfo->num,
+			 pageinfo->o_flags,
+			 pageinfo
+			 ) < 0 ){
 		return SYSFS_SET_RETURN(EINVAL);
 	}
 
@@ -265,9 +270,21 @@ u32 get_memory_size(const appfs_mem_config_t * config, u32 type){
 	return size;
 }
 
-int get_page_info(const appfs_mem_config_t * config, u32 page, u32 type, mem_pageinfo_t * info){
+int get_page_info(
+		const appfs_mem_config_t * config,
+		u32 page,
+		u32 type,
+		mem_pageinfo_t * info
+		){
 	u32 offset;
-	const appfs_mem_section_t * section = get_page_section_info(config, page, type, &offset);
+	const appfs_mem_section_t * section =
+			get_page_section_info(
+				config,
+				page,
+				type,
+				&offset
+				);
+
 	if( section == 0 ){ return -1; }
 	info->num = page;
 	info->addr = section->address + offset * section->page_size;

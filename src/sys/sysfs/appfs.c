@@ -393,7 +393,11 @@ int appfs_unlink(const void* cfg, const char * path){
 }
 
 
-int appfs_fstat(const void* cfg, void * handle, struct stat * st){
+int appfs_fstat(
+		const void* cfg,
+		void * handle,
+		struct stat * st
+		){
 	appfs_handle_t * h = handle;
 	const devfs_device_t * device = cfg;
 
@@ -410,10 +414,16 @@ int appfs_fstat(const void* cfg, void * handle, struct stat * st){
 	get_fileinfo_args.device = device;
 	get_fileinfo_args.page = h->type.reg.page;
 	get_fileinfo_args.type = h->type.reg.o_flags;
-	cortexm_svcall(appfs_util_svcall_get_fileinfo, &get_fileinfo_args);
+	cortexm_svcall(
+				appfs_util_svcall_get_fileinfo,
+				&get_fileinfo_args
+				);
 
-	if( get_fileinfo_args.result < 0 ){ return -1; }
+	if( get_fileinfo_args.result < 0 ){
+		return SYSFS_SET_RETURN(EIO);
+	}
 
+	st->st_dev = h->type.reg.o_flags;
 	st->st_ino = h->type.reg.page;
 	st->st_blksize = MCU_RAM_PAGE_SIZE;
 	if( get_fileinfo_args.file_info.hdr.mode == 0444 ){ //this is a read only data file -- peel off the header from the size
@@ -438,7 +448,11 @@ int appfs_stat(const void* cfg, const char * path, struct stat * st){
 	appfs_file_t file_info;
 	mem_pageinfo_t page_info;
 
-	if ( (path_type = analyze_path(path, &name, &mem_type)) < 0 ){
+	if ( (path_type = analyze_path(
+				path,
+				&name,
+				&mem_type
+				)) < 0 ){
 		return SYSFS_SET_RETURN(ENOENT);
 	}
 
@@ -644,7 +658,7 @@ void svcall_ioctl(void * args){
 			//These calls work with the specific applications
 		case I_APPFS_FREE_RAM:
 			if( h->is_install ){
-				a->result = SYSFS_SET_RETURN(ENOTSUP);
+				a->result = SYSFS_SET_RETURN(ENOSYS);
 			} else {
 				a->result =  appfs_util_root_free_ram(a->cfg, h);
 			}
@@ -652,7 +666,7 @@ void svcall_ioctl(void * args){
 
 		case I_APPFS_RECLAIM_RAM:
 			if( h->is_install ){
-				a->result = SYSFS_SET_RETURN(ENOTSUP);
+				a->result = SYSFS_SET_RETURN(ENOSYS);
 			} else {
 				a->result = appfs_util_root_reclaim_ram(a->cfg, h);
 			}
@@ -660,8 +674,10 @@ void svcall_ioctl(void * args){
 
 		case I_APPFS_GETINFO:
 			if( h->is_install ){
-				a->result = SYSFS_SET_RETURN(ENOTSUP);
+				a->result = SYSFS_SET_RETURN(ENOSYS);
 			} else {
+				//this works for applications
+				//what about data and system files
 				f = appfs_util_getfile(h);
 				info->mode = f->hdr.mode;
 				info->o_flags = f->exec.o_flags;
@@ -678,7 +694,6 @@ void svcall_ioctl(void * args){
 			a->result = SYSFS_SET_RETURN(EINVAL);
 			break;
 	}
-
 }
 
 int appfs_ioctl(const void * cfg, void * handle, int request, void * ctl){

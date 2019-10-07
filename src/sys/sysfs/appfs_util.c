@@ -82,8 +82,15 @@ int appfs_util_root_erase_pages(const devfs_device_t * dev, int start_page, int 
 	return 0;
 }
 
-int appfs_util_root_get_pageinfo(const devfs_device_t * dev, mem_pageinfo_t * pageinfo){
-	return dev->driver.ioctl(&(dev->handle), I_MEM_GETPAGEINFO, pageinfo);
+int appfs_util_root_get_pageinfo(
+		const devfs_device_t * dev,
+		mem_pageinfo_t * pageinfo
+		){
+	return dev->driver.ioctl(
+				&(dev->handle),
+				I_MEM_GETPAGEINFO,
+				pageinfo
+				);
 }
 
 int appfs_util_root_get_meminfo(const devfs_device_t * device, mem_info_t * mem_info){

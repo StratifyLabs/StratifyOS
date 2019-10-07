@@ -80,7 +80,7 @@ typedef struct {
 typedef struct {
 	int (*init)(void ** context);
 	void (*deinit)(void ** context);
-	int (*seed)(void * context, unsigned char * data, u32 data_len);
+	int (*seed)(void * context, const unsigned char * data, u32 data_len);
 	int (*random)(void * context, unsigned char * output, u32 output_length);
 } crypt_random_api_t;
 

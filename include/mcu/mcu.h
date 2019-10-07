@@ -155,7 +155,7 @@ enum {
 	MCU_BOARD_CONFIG_EVENT_TOTAL
 };
 
-#define MCU_DECLARE_SECRET_KEY_32(x) void x(){ \
+#define MCU_DECLARE_SECRET_KEY_32(x) static void x() MCU_ALIGN(32); void x(){ \
 asm volatile("NOP"); \
 asm volatile("NOP"); \
 asm volatile("NOP"); \
@@ -186,22 +186,31 @@ typedef struct MCU_PACK {
 	u32 core_periph_freq;
 	u32 usb_max_packet_zero;
 	u32 o_flags /*! MCU flags such as MCU_BOARD_CONFIG_FLAG_LED_ACTIVE_HIGH */;
+#if defined __link
+	u32 event_handler /*! A callback to an event handler that gets, for example, MCU_BOARD_CONFIG_EVENT_FATAL on a fatal event */;
+	u32 arch_config /*! A pointer to MCU architecture specific data, for example, stm32_arch_config_t */;
+	u32 secret_key_address /*! A pointer to the secret cryptographic keys to be protected from application access. */;
+#else
 	void (*event_handler)(int, void*) /*! A callback to an event handler that gets, for example, MCU_BOARD_CONFIG_EVENT_FATAL on a fatal event */;
+	const void * arch_config /*! A pointer to MCU architecture specific data, for example, stm32_arch_config_t */;
+	const void * secret_key_address /*! A pointer to the secret cryptographic keys to be protected from application access. */;
+#endif
+	u32 secret_key_size /*! The size in bytes of the secret key region (must be MPU compatible). */;
+	u32 o_mcu_debug /*! Debugging flags (only used when linking to debug libraries */;
+	u32 os_mpu_text_mask /*! Mask to apply to _text when setting the kernel memory protection 0x0000ffff to ignore bottom 16-bits */;
 	mcu_pin_t led /*! A pin on the board that drives an LED. Use {0xff, 0xff} if not available. */;
 	u8 debug_uart_port /*! The port used for the UART debugger. This is only used for _debug builds */;
 	u8 resd;
 	uart_attr_t debug_uart_attr /*! The UART attributes for the UART debugger. */;
-	const void * arch_config /*! A pointer to MCU architecture specific data, for example, stm32_arch_config_t */;
-	u32 o_mcu_debug /*! Debugging flags (only used when linking to debug libraries */;
-	u32 os_mpu_text_mask /*! Mask to apply to _text when setting the kernel memory protection 0x0000ffff to ignore bottom 16-bits */;
-	const void * secret_key_address /*! A pointer to the secret cryptographic keys to be protected from application access. */;
-	u32 secret_key_size /*! The size in bytes of the secret key region (must be MPU compatible). */;
 } mcu_board_config_t;
 
+
+#if !defined __link
 /*! \brief MCU Board configuration variable
  * \details This variable must be provided by the board support package.
  */
 extern const mcu_board_config_t mcu_board_config;
+#endif
 
 
 
