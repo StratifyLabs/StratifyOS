@@ -23,6 +23,7 @@
 
 #include "sos/sos.h"
 #include "cortexm/task.h"
+#include "cortexm/cortexm.h"
 #include "mcu/mcu.h"
 #include "../scheduler/scheduler_flags.h"
 
