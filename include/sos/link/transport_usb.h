@@ -108,9 +108,11 @@ extern usbfifo_state_t sos_link_transport_usb_fifo_state MCU_SYS_MEM;
 
 //replace these to customize the USB device descriptors
 extern const usbd_device_descriptor_t sos_link_transport_usb_dev_desc MCU_WEAK;
+extern const usbd_qualifier_descriptor_t sos_link_transfer_usb_qualifer_desc MCU_WEAK;
 extern const sos_link_transport_usb_configuration_descriptor_t sos_link_transport_usb_cfg_desc MCU_WEAK;
 extern const struct sos_link_transport_usb_string_t sos_link_transport_usb_string_desc MCU_WEAK;
 extern const usbd_control_constants_t sos_link_transport_usb_constants;
+
 
 link_transport_phy_t boot_link_transport_usb_open(const char * name,
 		usbd_control_t * context,

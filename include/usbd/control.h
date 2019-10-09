@@ -40,6 +40,7 @@
 typedef struct {
 	const devfs_handle_t handle;
 	const void * const device;
+	const void * const qualifier;
 	const void * const config;
 	const void * const string;
 	int (* const class_event_handler)(void * context, const mcu_event_t * event);

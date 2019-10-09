@@ -501,7 +501,14 @@ u32 usbd_standard_request_get_descriptor(usbd_control_t * context) {
 				break;
 
 			case USBD_DESCRIPTOR_TYPE_QUALIFIER:
-				return 0;
+				//this has to do with operating in full/high speed mode
+				context->data.dptr = (u8 * const)context->constants->qualifier;
+				if( context->data.dptr != 0 ){
+					len = sizeof(usbd_device_descriptor_t);
+				} else {
+					return 0;
+				}
+				break;
 
 			default:
 				return 0;
