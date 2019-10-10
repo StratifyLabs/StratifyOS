@@ -61,7 +61,11 @@ int assetfs_open(const void* cfg, void ** handle, const char * path, int flags, 
 	const assetfs_dirent_t * directory_entry =
 			find_file(cfg, path, &ino);
 
-	if( sysfs_is_r_ok(directory_entry->mode, directory_entry->uid, SYSFS_GROUP) == 0 ){
+	if( sysfs_is_r_ok(
+			 directory_entry->mode,
+			 directory_entry->uid,
+			 SYSFS_GROUP
+			 ) == 0 ){
 		return SYSFS_SET_RETURN(EPERM);
 	}
 

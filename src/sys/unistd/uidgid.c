@@ -22,6 +22,7 @@
 #include <errno.h>
 
 #include "sos/sos.h"
+#include "cortexm/cortexm.h"
 #include "cortexm/task.h"
 #include "mcu/mcu.h"
 #include "../scheduler/scheduler_flags.h"
