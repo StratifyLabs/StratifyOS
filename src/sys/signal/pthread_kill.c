@@ -48,12 +48,19 @@ static void signal_forward_handler(int send_tid, int signo, int sigcode, int sig
 
 //this checks to see if sending a signal will cause a stack/heap collision in the target thread
 static void svcall_check_signal_stack(void * args) MCU_ROOT_EXEC_CODE;
+static void root_check_signal_stack(void * args) MCU_ROOT_CODE;
+
 void svcall_check_signal_stack(void * args){
 	CORTEXM_SVCALL_ENTER();
-	int * arg = (int*)args;
-	int tid = *arg;
-	int ret = 0;
-	uint32_t sp;
+	root_check_signal_stack(args);
+}
+
+void root_check_signal_stack(void * args){
+	int * result = (int*)args;
+	int tid = *result;
+	u32 sp;
+
+	*result = 0;
 
 	//Check to see if stacking an interrupt handler will cause a stack heap collision
 	if( tid != task_get_current() ){
@@ -64,12 +71,12 @@ void svcall_check_signal_stack(void * args){
 		cortexm_get_thread_stack_ptr((void**)&sp);
 	}
 
-	if( (sp - task_interrupt_stacksize() - (2*SCHED_DEFAULT_STACKGUARD_SIZE)) < //stackguard * 2 gives the handler a little bit of memory
+	//stackguard * 2 gives the handler a little bit of memory
+	if( (sp - task_interrupt_stacksize() -
+		  (2*SCHED_DEFAULT_STACKGUARD_SIZE)) <
 		 (u32)(sos_task_table[tid].mem.stackguard.address) ){
-		ret = -1;
+		*result = -1;
 	}
-
-	*arg = ret;
 }
 
 int devfs_signal_callback(void * context, const mcu_event_t * data){
@@ -91,12 +98,12 @@ int signal_root_forward(int send_tid, int tid, int si_signo, int si_sigcode, int
 	int check_stack;
 
 	//make sure the task id is valid
-	if ( (uint32_t)tid < task_get_total() ){
+	if ( (u32)tid < task_get_total() ){
 		if ( si_signo != 0 ){
 			if ( si_signo < SCHEDULER_NUM_SIGNALS ){
 
 				check_stack = tid;
-				svcall_check_signal_stack(&check_stack);
+				root_check_signal_stack(&check_stack);
 				if( check_stack < 0 ){
 					errno = ENOMEM;
 					return -1;
@@ -134,7 +141,7 @@ int signal_root_send(int send_tid, int tid, int si_signo, int si_sigcode, int si
 	}
 
 	//make sure the task id is valid
-	if ( (uint32_t)tid < task_get_total() ){
+	if ( (u32)tid < task_get_total() ){
 		if ( si_signo != 0 ){
 			if ( si_signo < SCHEDULER_NUM_SIGNALS ){
 
@@ -146,8 +153,10 @@ int signal_root_send(int send_tid, int tid, int si_signo, int si_sigcode, int si
 
 
 				intr.tid = tid;
-				intr.handler = (task_interrupt_handler_t)signal_handler;
-				intr.sync_callback = (cortexm_svcall_t)signal_root_activate;
+				intr.handler =
+						(task_interrupt_handler_t)signal_handler;
+				intr.sync_callback =
+						(cortexm_svcall_t)signal_root_activate;
 				intr.sync_callback_arg = &tid;
 				intr.arg[0] = send_tid;
 				intr.arg[1] = si_signo;
@@ -196,8 +205,7 @@ int signal_send(int tid, int si_signo, int si_sigcode, int sig_value){
 			check_stack = tid;
 			cortexm_svcall(svcall_check_signal_stack, &check_stack);
 			if( check_stack < 0 ){
-				errno = ENOMEM;
-				return -1;
+				return SYSFS_SET_RETURN(ENOMEM);
 			}
 
 			intr.tid = tid;

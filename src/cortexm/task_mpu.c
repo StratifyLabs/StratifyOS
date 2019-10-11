@@ -107,7 +107,11 @@ typedef struct {
 static void svcall_setstackguard(void * arg){
 	CORTEXM_SVCALL_ENTER();
 	root_setstackguard_t * p = arg;
-	p->tid = task_root_set_stackguard(p->tid, p->stackaddr, p->stacksize);
+	p->tid = task_root_set_stackguard(
+				p->tid,
+				p->stackaddr,
+				p->stacksize
+				);
 }
 
 int task_setstackguard(int tid, void * stackaddr, int stacksize){
@@ -149,6 +153,8 @@ int task_root_set_stackguard(int tid, void * stackaddr, int stacksize){
 		return -1;
 	}
 
+	sos_task_table[tid].mem.stackguard.address = (void*)newaddr;
+	sos_task_table[tid].mem.stackguard.size = stacksize;
 	sos_task_table[tid].mem.stackguard.rbar = rbar;
 	sos_task_table[tid].mem.stackguard.rasr = rasr;
 
