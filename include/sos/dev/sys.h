@@ -94,7 +94,8 @@ typedef struct MCU_PACK {
 	char sos_git_hash[16] /*! Git Hash for the SOS build */;
 	char mcu_git_hash[16] /*! Git Hash for the linked MCU library */;
 	u32 o_mcu_board_config_flags /*! Flags set by mcu board configuration*/;
-	u32 resd[19];
+	char team_id[LINK_NAME_MAX] /*!  Globally unique Cloud Team ID value */;
+	u32 resd[13];
 } sys_info_t;
 
 /*! \details This structure defines the system attributes.

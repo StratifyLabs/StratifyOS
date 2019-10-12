@@ -248,6 +248,7 @@ struct mcu_timeval {
 
 #define MCU_API_REQUEST_CODE(a,b,c,d) (a<<24|b<<16|c<<8|d)
 
+#define MCU_PI_FLOAT (3.14159265358979323846f)
 
 
 #ifdef __cplusplus

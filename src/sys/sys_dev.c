@@ -65,6 +65,7 @@ int sys_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 			strncpy(info->stdin_name, sos_board_config.stdin_dev, NAME_MAX-1);
 			strncpy(info->stdout_name, sos_board_config.stdout_dev, NAME_MAX-1);
 			strncpy(info->name, sos_board_config.sys_name, NAME_MAX-1);
+			strncpy(info->team_id, sos_board_config.team_id, NAME_MAX-1);
 			strncpy(info->trace_name, sos_board_config.trace_dev, NAME_MAX-1);
 			if( sos_board_config.git_hash ){
 				strncpy(info->bsp_git_hash, sos_board_config.git_hash, 15);

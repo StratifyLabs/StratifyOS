@@ -568,6 +568,7 @@ typedef struct MCU_PACK {
 	const char * sys_name /*! System (or board) name */;
 	const char * sys_version /*! System (or board) version (distinct from kernel version) */;
 	const char * sys_id /*! System ID (globally unique cloud identifier for board) */;
+	const char * team_id /*! Team ID (globally unique cloud identifier for team) */;
 	int sys_memory_size /*! Memory size reserved for the system */;
 	int o_sys_flags /*! System flags */;
 	void * (*start)(void*) /*! The start routine (when in doubt use sos_default_thread()) */;

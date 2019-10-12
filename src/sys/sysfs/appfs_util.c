@@ -76,6 +76,7 @@ int appfs_util_root_erase_pages(const devfs_device_t * dev, int start_page, int 
 	int i;
 	for(i=start_page; i <= end_page; i++){
 		mcu_wdt_reset();
+		mcu_debug_printf("erase page %d -> %d -> %d\n", start_page, i, end_page);
 		result = dev->driver.ioctl(&(dev->handle), I_MEM_ERASE_PAGE, (void*)i);
 		if( result < 0 ){ return result; }
 	}
@@ -112,7 +113,12 @@ void appfs_util_svcall_get_pageinfo(void * args){
 void appfs_util_svcall_erase_pages(void * args){
 	CORTEXM_SVCALL_ENTER();
 	appfs_erase_pages_t * p = args;
-	p->result = appfs_util_root_erase_pages(p->device, p->start_page, p->end_page);
+	p->result = appfs_util_root_erase_pages(
+				p->device,
+				p->start_page,
+				p->end_page
+				);
+
 }
 
 

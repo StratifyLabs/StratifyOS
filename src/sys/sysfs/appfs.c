@@ -347,9 +347,19 @@ int appfs_unlink(const void* cfg, const char * path){
 		erase_pages_args.start_page = start_page;
 		erase_pages_args.end_page = end_page;
 
-		cortexm_svcall(appfs_util_svcall_erase_pages, &erase_pages_args);
+		cortexm_svcall(
+					appfs_util_svcall_erase_pages,
+					&erase_pages_args
+					);
 
 		if( erase_pages_args.result < 0 ){
+			mcu_debug_printf(
+						"%s %d %d %d\n",
+						path,
+						__LINE__,
+						SYSFS_GET_RETURN(erase_pages_args.result),
+						SYSFS_GET_RETURN_ERRNO(erase_pages_args.result)
+						);
 			return erase_pages_args.result;
 		}
 
