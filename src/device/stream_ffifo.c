@@ -37,7 +37,12 @@ int event_write_complete(void * context, const mcu_event_t * event){
 
 	if(state->tx.async.nbyte < 0){
 		state->tx.error = state->tx.async.nbyte;
-		mcu_debug_log_error(MCU_DEBUG_DEVICE, "error: %s():%d", __FUNCTION__, __LINE__);
+		mcu_debug_log_error(
+					MCU_DEBUG_DEVICE,
+					"error: %s():%d",
+					__FUNCTION__,
+					__LINE__
+					);
 		return 0;
 	}
 
@@ -84,7 +89,12 @@ int event_write_complete(void * context, const mcu_event_t * event){
 	if( (state->o_flags & STREAM_FFIFO_FLAG_STOP) &&
 		 (event->o_events & MCU_EVENT_FLAG_HIGH) ){
 		state->o_flags = 0;
-		mcu_debug_log_info(MCU_DEBUG_DEVICE, "%s():%d stopped", __FUNCTION__, __LINE__);
+		mcu_debug_log_info(
+					MCU_DEBUG_DEVICE,
+					"%s():%d stopped",
+					__FUNCTION__,
+					__LINE__
+					);
 		return 0; //tells the interrupt handler to stop the stream
 	}
 
@@ -101,7 +111,12 @@ int event_data_ready(void * context, const mcu_event_t * event){
 	//check for errors or abort
 	if( (state->rx.async.nbyte < 0) || (o_events & MCU_EVENT_FLAG_CANCELED) ){
 		state->rx.error = state->rx.async.nbyte;
-		mcu_debug_log_error(MCU_DEBUG_DEVICE, "%s:%d", __FUNCTION__, __LINE__);
+		mcu_debug_log_error(
+					MCU_DEBUG_DEVICE,
+					"%s:%d",
+					__FUNCTION__,
+					__LINE__
+					);
 		//tell ffifo there won't be any data coming?
 		return 0;
 	}

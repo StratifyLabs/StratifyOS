@@ -26,6 +26,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <errno.h>
 
 #if defined __win32
 #define posix_open _open
@@ -94,7 +95,9 @@ int link_open(link_transport_mdriver_t * driver, const char * path, int flags, .
 	}
 
 	if( driver == 0 ){
-		return posix_open(path, convert_flags(flags) | POSIX_OPEN_FLAGS, mode);
+		int result = posix_open(path, convert_flags(flags) | POSIX_OPEN_FLAGS, mode);
+		link_errno = errno;
+		return result;
 	}
 
 	link_debug(LINK_DEBUG_MESSAGE, "open %s 0%o 0x%X using %p", path, mode, flags, driver->phy_driver.handle);
@@ -261,7 +264,9 @@ int link_read(link_transport_mdriver_t * driver, int fildes, void * buf, int nby
 	int err;
 
 	if( driver == 0 ){
-		return posix_read(fildes, buf, nbyte);
+		int result = posix_read(fildes, buf, nbyte);
+		link_errno = errno;
+		return result;
 	}
 
 	op.read.cmd = LINK_CMD_READ;
@@ -304,7 +309,9 @@ int link_write(link_transport_mdriver_t * driver, int fildes, const void * buf, 
 	int err;
 
 	if ( driver == NULL ){
-		return posix_write(fildes, buf, nbyte);
+		int result = posix_write(fildes, buf, nbyte);
+		link_errno = errno;
+		return result;
 	}
 
 	op.write.cmd = LINK_CMD_WRITE;
@@ -341,7 +348,9 @@ int link_write(link_transport_mdriver_t * driver, int fildes, const void * buf, 
 
 int link_close(link_transport_mdriver_t * driver, int fildes){
 	if ( driver == NULL ){
-		return posix_close(fildes);
+		int result = posix_close(fildes);
+		link_errno = errno;
+		return result;
 	}
 
 	link_op_t op;
@@ -419,7 +428,9 @@ int link_symlink(link_transport_mdriver_t * driver, const char * old_path, const
 
 int link_unlink(link_transport_mdriver_t * driver, const char * path){
 	if ( driver == NULL ){
-		return unlink(path);
+		int result = unlink(path);
+		link_errno = errno;
+		return result;
 	}
 
 	link_op_t op;
@@ -468,7 +479,9 @@ int link_lseek(link_transport_mdriver_t * driver, int fildes, s32 offset, int wh
 
 	if ( driver == 0 ){
 		//operate on local file
-		return posix_lseek(fildes, offset, whence);
+		int result = posix_lseek(fildes, offset, whence);
+		link_errno = errno;
+		return result;
 	}
 
 	link_op_t op;
@@ -506,6 +519,7 @@ int link_stat(link_transport_mdriver_t * driver, const char * path, struct link_
 	if ( driver == NULL ){
 		struct posix_stat output;
 		int result = posix_stat(path, &output);
+		link_errno = errno;
 		if( result < 0 ){
 			return result;
 		}
@@ -569,7 +583,7 @@ int link_fstat(link_transport_mdriver_t * driver, int fildes, struct link_stat *
 	if ( driver == NULL ){
 		struct posix_stat output;
 		int result = posix_fstat(fildes, &output);
-
+		link_errno = errno;
 		if( result < 0 ){ return result; }
 
 		//translate output to buf

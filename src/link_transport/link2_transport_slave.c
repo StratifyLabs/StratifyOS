@@ -139,7 +139,6 @@ int link2_transport_slavewrite(
 				 pkt.size + LINK2_PACKET_HEADER_SIZE
 				 ) != (pkt.size + LINK2_PACKET_HEADER_SIZE)
 			 ){
-			MCU_DEBUG_LINE_TRACE();
 			return -1;
 		}
 

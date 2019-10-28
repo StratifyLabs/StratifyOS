@@ -30,7 +30,9 @@ int drive_cfi_qspi_open(const devfs_handle_t * handle){
 	const drive_cfi_config_t * config = handle->config;
 
 	result = config->serial_device->driver.open(&config->serial_device->handle);
-	if( result < 0 ){ return result; }
+	if( result < 0 ){
+		return result;
+	}
 
 	//initialize if not yet initialized
 
@@ -50,7 +52,9 @@ int drive_initialize(const devfs_handle_t * handle){
 					I_QSPI_SETATTR,
 					0);
 
-		if( result < 0 ){ return result; }
+		if( result < 0 ){
+			return result;
+		}
 
 
 		if( config->qspi_flags & QSPI_FLAG_IS_OPCODE_QUAD ){
@@ -80,7 +84,6 @@ int drive_initialize(const devfs_handle_t * handle){
 		}
 	}
 	state->is_initialized++;
-
 	return 0;
 }
 
@@ -178,8 +181,9 @@ int drive_cfi_qspi_ioctl(const devfs_handle_t * handle, int request, void * ctl)
 
 					u32 erase_size = attr->end - attr->start;
 					u8 opcode;
-					if( (erase_size >= config->opcode.sector_erase) &&
-						 (attr->start % config->opcode.sector_erase == 0) ){
+
+					if( (erase_size >= config->info.erase_sector_size) &&
+						 (attr->start % config->info.erase_sector_size == 0) ){
 						erase_size = config->info.erase_sector_size;
 						opcode = config->opcode.sector_erase;
 					} else {
@@ -218,7 +222,6 @@ int drive_cfi_qspi_ioctl(const devfs_handle_t * handle, int request, void * ctl)
 								config->opcode.device_erase,
 								0,
 								config->qspi_flags);
-
 				}
 
 			}

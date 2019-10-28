@@ -82,6 +82,7 @@ int rootfs_opendir(const void* cfg, void ** handle, const char * path){
 	if ( strcmp(path, "") != 0 ){
         return SYSFS_SET_RETURN(ENOENT);
 	}
+
 	//assign the handle value
 	*handle = NULL;
 	return 0;

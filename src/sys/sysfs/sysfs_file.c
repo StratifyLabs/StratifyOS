@@ -30,14 +30,14 @@ int sysfs_file_open(sysfs_file_t * file, const char * name, int mode){
     struct stat st;
     const sysfs_t * fs = file->fs;
 
-	 int access_mode = sysfs_getamode(mode);
 	 //check fs level permissions
 	 if( sysfs_access(
 			  fs->permissions,
 			  fs->owner,
 			  SYSFS_GROUP,
-			  access_mode
+			  X_OK //is caller allowed to enter the directory
 			  ) < 0 ){
+		 //SYSFS_SET_RETURN(EPERM)
 		 errno = EPERM;
 		 return -1*__LINE__;
 	 }

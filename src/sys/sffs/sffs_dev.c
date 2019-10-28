@@ -76,13 +76,26 @@ int wait_busy(const void * cfg, u32 delay){
 int sffs_dev_open(const void * cfg){
 	int result;
 	result = sysfs_shared_open(SFFS_DRIVE(cfg));
-	if( result < 0 ){ return result; }
+	if( result < 0 ){
+		mcu_debug_log_warning(
+					MCU_DEBUG_FILESYSTEM,
+					"failed to open drive (%d, %d)",
+					result,
+					errno
+					);
+		return result;
+	}
 
 	drive_attr_t drive_attr;
 	drive_attr.o_flags = DRIVE_FLAG_INIT;
 	result = sysfs_shared_ioctl(SFFS_DRIVE(cfg), I_DRIVE_SETATTR, &drive_attr);
 	if( result < 0 ){
-		mcu_debug_printf("failed to init drive (%d, %d)\n", result, errno);
+		mcu_debug_log_warning(
+					MCU_DEBUG_FILESYSTEM,
+					"failed to init drive (%d, %d)",
+					result,
+					errno
+					);
 		return result;
 	}
 
@@ -114,23 +127,35 @@ int sffs_dev_read(const void * cfg, int loc, void * buf, int nbyte){
 
 int sffs_dev_erase(const void * cfg){
 	drive_info_t info;
+	int result;
 
-	if( sysfs_shared_ioctl(
+	if( (result = sysfs_shared_ioctl(
 				SFFS_DRIVE(cfg),
 				I_DRIVE_GETINFO,
 				&info
-				) < 0 ){
+				)) < 0 ){
+		mcu_debug_log_error(
+					MCU_DEBUG_FILESYSTEM,
+					"failed to get drive info (%d, %d)",
+					result,
+					errno
+					);
 		return -1;
 	}
 
 	if( info.o_flags & DRIVE_FLAG_ERASE_DEVICE ){
-
 		drive_attr_t attr;
 		attr.o_flags = DRIVE_FLAG_ERASE_DEVICE;
-		if( sysfs_shared_ioctl(
+		if( (result = sysfs_shared_ioctl(
 				 SFFS_DRIVE(cfg),
 				 I_DRIVE_SETATTR,
-				 &attr) < 0 ){
+				 &attr)) < 0 ){
+			mcu_debug_log_error(
+						MCU_DEBUG_FILESYSTEM,
+						"failed to erase device (%d, %d)",
+						result,
+						errno
+						);
 			return -1;
 		}
 
@@ -147,10 +172,17 @@ int sffs_dev_erase(const void * cfg){
 			 u32 i = 0;
 			 i < info.num_write_blocks;
 			 i += info.erase_block_size){
-			if( sffs_dev_erasesection(
+			if( (result = sffs_dev_erasesection(
 						cfg,
 						i
-						) < 0 ){
+						)) < 0 ){
+				mcu_debug_log_error(
+							MCU_DEBUG_FILESYSTEM,
+							"failed to erase section at %ld (%d, %d)",
+							i,
+							result,
+							errno
+							);
 				return -1;
 			}
 		}
