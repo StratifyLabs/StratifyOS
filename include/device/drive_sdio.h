@@ -36,7 +36,7 @@ typedef struct {
 } drive_sdio_state_t;
 
 typedef struct {
-    sdio_config_t sdio;
+	sdio_config_t sdio;
 } drive_sdio_config_t;
 
 

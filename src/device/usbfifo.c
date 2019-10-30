@@ -80,8 +80,9 @@ static int data_received(void * context, const mcu_event_t * data){
 
 			if( result < 0 ){
 				//fire an error -- set this as an error condition
-				mcu_debug_printf(
-							"failed to read USB (%d, %d)\n",
+				mcu_debug_log_error(
+							MCU_DEBUG_DEVICE,
+							"failed to read USB (%d, %d)",
 							SYSFS_GET_RETURN(result),
 							SYSFS_GET_RETURN_ERRNO(result)
 							);

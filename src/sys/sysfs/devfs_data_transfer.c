@@ -30,14 +30,14 @@
 #include "sos/fs/sysfs.h"
 #include "devfs_local.h"
 
-#define ARGS_READ_WRITE 0
-#define ARGS_READ_READ 1
-#define ARGS_READ_DONE 2
+#define ARGS_TRANFER_WRITE 0
+#define ARGS_TRANSFER_READ 1
+#define ARGS_TRANSFER_DONE 2
 
 typedef struct {
 	const void * device;
 	devfs_async_t async;
-	volatile int is_read;
+	volatile int transfer_type;
 	int result;
 } svcall_device_data_transfer_t;
 
@@ -65,15 +65,20 @@ int root_data_transfer_callback(void * context, const mcu_event_t * event){
 			}
 		}
 
-		if ( scheduler_inuse_asserted(args->async.tid) && !task_stopped_asserted(args->async.tid) ){ //check to see if the process terminated or stopped
+		if ( scheduler_inuse_asserted(args->async.tid) &&
+			  !task_stopped_asserted(args->async.tid) ){ //check to see if the process terminated or stopped
 			new_priority = task_get_priority( args->async.tid );
+
+			//remove the loop below and just use this line?
+			scheduler_root_assert_active(args->async.tid, SCHEDULER_UNBLOCK_TRANSFER);
+
 		}
 	}
 
 	//check to see if any tasks are waiting for this device -- is this even possible? Issue #148
 	for(i = 1; i < task_get_total(); i++){
 		if ( task_enabled(i) && scheduler_inuse_asserted(i) ){
-			if ( sos_sched_table[i].block_object == (args->device + args->is_read) ){
+			if ( sos_sched_table[i].block_object == (args->device + args->transfer_type) ){
 				scheduler_root_assert_active(i, SCHEDULER_UNBLOCK_TRANSFER);
 				if( !task_stopped_asserted(i) && (task_get_priority(i) > new_priority) ){
 					new_priority = task_get_priority(i);
@@ -82,12 +87,8 @@ int root_data_transfer_callback(void * context, const mcu_event_t * event){
 		}
 	}
 
-	if( args->is_read == ARGS_READ_READ ){
-		args->is_read = ARGS_READ_DONE;
-	}
-
+	args->transfer_type = ARGS_TRANSFER_DONE;
 	scheduler_root_update_on_wake(-1, new_priority);
-
 	return 0;
 }
 
@@ -101,23 +102,26 @@ void svcall_check_op_complete(void * args){
 void root_check_op_complete(void * args){
 	svcall_device_data_transfer_t * p = (svcall_device_data_transfer_t*)args;
 
-	if( p->is_read != ARGS_READ_DONE ){
+	if( p->transfer_type != ARGS_TRANSFER_DONE ){
 		if ( p->result == 0 ){
 			if ( p->async.nbyte >= 0 ){ //wait for the operation to complete or for data to arrive
-
 				//checking the block object and sleeping have to happen atomically (driver could interrupt if it has a higher priority)
 				cortexm_disable_interrupts();
 				//Block waiting for the operation to complete or new data to be ready
 				//if the interrupt has already fired the block_object will be zero already
 				if( sos_sched_table[ task_get_current() ].block_object != 0 ){;
 					//switch tasks until a signal becomes available
-					scheduler_root_update_on_sleep();
+					if( (SCB->ICSR & (1<<28)) == 0 ){
+						//mcu_debug_printf("sp\n");
+						scheduler_root_update_on_sleep();
+					}
 				}
 				cortexm_enable_interrupts();
 			}
 		} else {
+			//operation happened sychronously -- no need to block
 			sos_sched_table[ task_get_current() ].block_object = 0;
-			p->is_read = ARGS_READ_DONE;
+			p->transfer_type = ARGS_TRANSFER_DONE;
 		}
 	}
 }
@@ -128,7 +132,7 @@ void svcall_device_data_transfer(void * args){
 	const devfs_device_t * dev = p->device;
 
 	//check permissions on this device - IOCTL needs read/write access
-	if( p->is_read ){
+	if( p->transfer_type ){
 		if( sysfs_is_r_ok(dev->mode, dev->uid, SYSFS_GROUP) == 0 ){
 			p->result = SYSFS_SET_RETURN(EPERM);
 			return;
@@ -147,10 +151,9 @@ void svcall_device_data_transfer(void * args){
 		p->result = SYSFS_SET_RETURN(EPERM);
 	} else {
 		//assume the operation is going to block
-		sos_sched_table[ task_get_current() ].block_object = (void*)p->device + p->is_read;
+		sos_sched_table[ task_get_current() ].block_object = (void*)p->device + p->transfer_type;
 
-		if ( p->is_read != 0 ){
-			//Read operation
+		if ( p->transfer_type != ARGS_TRANFER_WRITE ){
 			p->result = dev->driver.read(&(dev->handle), &(p->async));
 		} else {
 			p->result = dev->driver.write(&(dev->handle), &(p->async));
@@ -182,9 +185,9 @@ int devfs_data_transfer(const void * config, const devfs_device_t * device, int 
 
 	args.device = device;
 	if( is_read ){
-		args.is_read = ARGS_READ_READ;
+		args.transfer_type = ARGS_TRANSFER_READ;
 	} else {
-		args.is_read = ARGS_READ_WRITE;
+		args.transfer_type = ARGS_TRANFER_WRITE;
 	}
 	args.async.loc = loc;
 	args.async.flags = flags;
@@ -203,14 +206,16 @@ int devfs_data_transfer(const void * config, const devfs_device_t * device, int 
 		//This transfers the data
 		cortexm_svcall(svcall_device_data_transfer, (void*)&args);
 
-		//We arrive here if the data is done transferring or there is no data to transfer and O_NONBLOCK is set
-		//or if there was an error
+		//We arrive here if
+		//the data is done transferring
+		//OR there is no data to transfer and O_NONBLOCK is set
+		//OR if there was an error
 		while( (scheduler_unblock_type(task_get_current()) == SCHEDULER_UNBLOCK_SIGNAL)
-				 && ((volatile int)args.is_read != ARGS_READ_DONE) ){
+				 && ((volatile int)args.transfer_type != ARGS_TRANSFER_DONE) ){
 
 			if( args.result == 0 ){
 				//no data was transferred -- operation was interrupted by a signal
-				clear_device_action(config, device, loc, args.is_read);
+				clear_device_action(config, device, loc, args.transfer_type);
 				return SYSFS_SET_RETURN(EINTR);
 			}
 

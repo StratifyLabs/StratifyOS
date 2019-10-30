@@ -99,6 +99,7 @@ int drive_sdio_ioctl(const devfs_handle_t * handle, int request, void * ctl){
         info->erase_device_time = 0;
         info->num_write_blocks = sdio_info.block_count;
         info->write_block_size = sdio_info.block_size;
+		  info->page_program_size = sdio_info.block_size;
         break;
 
     default:

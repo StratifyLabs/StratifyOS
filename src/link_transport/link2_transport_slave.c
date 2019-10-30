@@ -34,20 +34,21 @@ int link2_transport_slaveread(
 		if( (err = link2_transport_wait_start(driver, &pkt, driver->timeout)) < 0 ){
 			driver->flush(driver->handle);
 			send_ack(driver, LINK2_PACKET_NACK, 0);
-			return -1;
+			return -1 * __LINE__;
 		}
 
 		if( (err = link2_transport_wait_packet(driver, &pkt, driver->timeout)) < 0 ){
 			driver->flush(driver->handle);
 			send_ack(driver, LINK2_PACKET_NACK, 0);
-			return -2;
+			return -1 * __LINE__;
 		}
+
 
 		if( pkt.start != LINK2_PACKET_START ){
 			//if packet does not start with the start byte then it is not a packet
 			driver->flush(driver->handle);
 			send_ack(driver, LINK2_PACKET_NACK, 0);
-			return -3;
+			return -1 * __LINE__;
 		}
 
 		//a packet has arrived -- checksum it
@@ -57,7 +58,7 @@ int link2_transport_slaveread(
 				//bad checksum on packet -- treat as a non-packet
 				driver->flush(driver->handle);
 				send_ack(driver, LINK2_PACKET_NACK, checksum);
-				return -4;
+				return -1 * __LINE__;
 			}
 		} else {
 			checksum = 0;
@@ -77,7 +78,7 @@ int link2_transport_slaveread(
 			} else {
 				bytes += pkt.size;
 				if( send_ack(driver, LINK2_PACKET_ACK, checksum) < 0 ){
-					return -6;
+					return -1 * __LINE__;
 				}
 			}
 		}
@@ -139,7 +140,7 @@ int link2_transport_slavewrite(
 				 pkt.size + LINK2_PACKET_HEADER_SIZE
 				 ) != (pkt.size + LINK2_PACKET_HEADER_SIZE)
 			 ){
-			return -1;
+			return -1 * __LINE__;
 		}
 
 		bytes += pkt.size;
