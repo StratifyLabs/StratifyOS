@@ -113,33 +113,18 @@ void sos_trace_event_addr_tid(
 
 		clock_gettime(CLOCK_REALTIME, &spec);
 
-		sos_trace_build_event(&event, event_id, data_ptr, data_len, addr, tid, &spec);
-
-
-		/*
-		event.header.size = sizeof(link_trace_event_t);
-		event.header.id = LINK_NOTIFY_ID_POSIX_TRACE_EVENT;
-		event.posix_trace_event.posix_event_id = event_id;
-		event.posix_trace_event.posix_pid = task_get_pid( tid );
-		event.posix_trace_event.posix_prog_address = addr; //grab the value of the caller
-		event.posix_trace_event.posix_thread_id = tid;
-
-		if( data_len > LINK_POSIX_TRACE_DATA_SIZE-1  ){
-			data_len = LINK_POSIX_TRACE_DATA_SIZE-1;
-			event.posix_trace_event.posix_truncation_status = 1;
-		} else {
-			event.posix_trace_event.posix_truncation_status = 0;
-		}
-
-		memset(event.posix_trace_event.data, 0, LINK_POSIX_TRACE_DATA_SIZE);
-		memcpy(event.posix_trace_event.data, data_ptr, data_len);
-		event.posix_trace_event.posix_timestamp_tv_sec = spec.tv_sec;
-		event.posix_trace_event.posix_timestamp_tv_nsec = spec.tv_nsec;
-
-		cortexm_assign_zero_sum32(&event, CORTEXM_ZERO_SUM32_COUNT(event));
-		*/
+		sos_trace_build_event(
+					&event,
+					event_id,
+					data_ptr,
+					data_len,
+					addr,
+					tid,
+					&spec
+					);
 
 		cortexm_svcall(svcall_trace_event, &event);
+
 	}
 
 }

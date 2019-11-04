@@ -69,7 +69,7 @@ static int try_read(const devfs_handle_t * handle, int first);
 static int continue_spi_read(void * handle, const mcu_event_t * ignore);
 static int continue_spi_write(void * handle, const mcu_event_t * ignore);
 
-static void deassert_cs(const devfs_handle_t * handle){
+static void deassert_chip_select(const devfs_handle_t * handle){
 	const drive_sdspi_config_t * config = handle->config;
 	devfs_handle_t pio_handle;
 	pio_handle.port = config->cs.port;
@@ -78,7 +78,7 @@ static void deassert_cs(const devfs_handle_t * handle){
 	mcu_pio_setmask(&pio_handle, (void*)(ssize_t)(1<<config->cs.pin));
 }
 
-static void assert_cs(const devfs_handle_t * handle){
+static void assert_chip_select(const devfs_handle_t * handle){
 	const drive_sdspi_config_t * config = handle->config;
 	devfs_handle_t pio_handle;
 	pio_handle.port = config->cs.port;
@@ -107,7 +107,7 @@ int drive_sdspi_open(const devfs_handle_t * handle){
 		return err;
 	}
 
-	deassert_cs(handle);
+	deassert_chip_select(handle);
 	attr.o_pinmask = (1<<config->cs.pin);
 	attr.o_flags = PIO_FLAG_SET_OUTPUT | PIO_FLAG_IS_DIRONLY;
 	mcu_pio_setattr(&pio_handle, &attr);
@@ -142,7 +142,7 @@ int continue_spi_read(void * handle, const mcu_event_t * ignore){
 		state->timeout++;
 		if( state->timeout > 5000 ){
 			//failed to read the data
-			deassert_cs(handle);
+			deassert_chip_select(handle);
 			state_callback(handle, EIO, -2);
 			return 0;
 		}
@@ -252,7 +252,7 @@ int drive_sdspi_read(const devfs_handle_t * handle, devfs_async_t * rop){
 		return SYSFS_SET_RETURN(EIO);
 	}
 
-	assert_cs(handle);
+	assert_chip_select(handle);
 	cortexm_delay_us(LONG_DELAY);
 
 
@@ -276,7 +276,7 @@ int continue_spi_write(void * handle, const mcu_event_t * ignore){
 	state->cmd[3] = 0xFF;
 	state->cmd[4] = 0xFF;
 	spi_transfer(handle, state->cmd, state->cmd, 5); //send dummy CRC
-	deassert_cs(handle);
+	deassert_chip_select(handle);
 
 
 	if( (state->cmd[2] & 0x1F) == 0x05 ){
@@ -330,7 +330,7 @@ int drive_sdspi_write(const devfs_handle_t * handle, devfs_async_t * wop){
 	state->cmd[0] = 0xFF;  //busy byte
 	state->cmd[1] = SDSPI_START_BLOCK_TOKEN;
 
-	assert_cs(handle);
+	assert_chip_select(handle);
 	cortexm_delay_us(LONG_DELAY);
 	spi_transfer(handle, state->cmd, 0, 2);
 
@@ -400,7 +400,7 @@ int drive_sdspi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 				//init sequence
 				//apply at least 74 init clocks with DI and CS high
 				for(u32 i=0; i < 5; i++){
-					deassert_cs(handle);
+					deassert_chip_select(handle);
 					cortexm_delay_us(LONG_DELAY*i);
 					spi_transfer(handle, 0, 0, CMD_FRAME_SIZE*12);
 					cortexm_delay_us(LONG_DELAY*i);
@@ -483,10 +483,10 @@ int drive_sdspi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 					return SYSFS_SET_RETURN(EIO);
 				}
 
-				assert_cs(handle);
+				assert_chip_select(handle);
 				cortexm_delay_us(LONG_DELAY);
 				spi_transfer(handle, 0, 0, CMD_FRAME_SIZE);
-				deassert_cs(handle);
+				deassert_chip_select(handle);
 
 				mcu_debug_printf("SD_SPI: INIT SUCCESS 0x%lX\n", state->flags);
 
@@ -506,10 +506,10 @@ int drive_sdspi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 				return SYSFS_SET_RETURN(EBUSY);
 			}
 
-			assert_cs(handle);
+			assert_chip_select(handle);
 			cortexm_delay_us(LONG_DELAY);
 			spi_transfer(handle, 0, 0, CMD_FRAME_SIZE);
-			deassert_cs(handle);
+			deassert_chip_select(handle);
 
 			info->o_flags = DRIVE_FLAG_ERASE_BLOCKS|DRIVE_FLAG_INIT;
 
@@ -602,10 +602,10 @@ int erase_blocks(const devfs_handle_t * handle, uint32_t block_num, uint32_t end
 
 int is_busy(const devfs_handle_t * handle){
 	uint8_t c;
-	assert_cs(handle);
+	assert_chip_select(handle);
 	cortexm_delay_us(LONG_DELAY);
 	c = mcu_spi_swap(handle, (void*)0xFF);
-	deassert_cs(handle);
+	deassert_chip_select(handle);
 	return (c == 0x00);
 }
 
@@ -672,11 +672,11 @@ int send_cmd(const devfs_handle_t * handle, uint8_t cmd, uint32_t arg, uint8_t *
 	retries = 0;
 	do {
 		//read the response
-		assert_cs(handle);
+		assert_chip_select(handle);
 		cortexm_delay_us(LONG_DELAY);
 		spi_transfer(handle, buffer, response, CMD_FRAME_SIZE);
 		cortexm_delay_us(LONG_DELAY);
-		deassert_cs(handle);
+		deassert_chip_select(handle);
 
 		ret = 0;
 		if( response != 0 ){
@@ -724,7 +724,7 @@ int read_data(const devfs_handle_t * handle, void * data, int nbyte, uint8_t tok
 
 	timeout = 0;
 	while( count < nbyte ){
-		assert_cs(handle);
+		assert_chip_select(handle);
 		cortexm_delay_us(LONG_DELAY);
 		if( count >= 0 ){
 			spi_transfer(handle, 0, (uint8_t*)data + count, nbyte - count);
@@ -733,7 +733,7 @@ int read_data(const devfs_handle_t * handle, void * data, int nbyte, uint8_t tok
 			spi_transfer(handle, 0, response, CMD_FRAME_SIZE);
 			count = parse_data((uint8_t*)data, nbyte, count, token, response);
 		}
-		deassert_cs(handle);
+		deassert_chip_select(handle);
 
 
 		timeout++;
@@ -742,10 +742,10 @@ int read_data(const devfs_handle_t * handle, void * data, int nbyte, uint8_t tok
 		}
 	}
 
-	assert_cs(handle);
+	assert_chip_select(handle);
 	cortexm_delay_us(LONG_DELAY);
 	spi_transfer(handle, 0, response, CMD_FRAME_SIZE); //gobble up any checksum
-	deassert_cs(handle);
+	deassert_chip_select(handle);
 
 	//verify the checksum on data read
 

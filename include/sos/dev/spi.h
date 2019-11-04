@@ -126,9 +126,11 @@ typedef enum {
 	SPI_FLAG_IS_MODE3 /*! SPI Mode 3 */ = (1<<6),
 	SPI_FLAG_SET_MASTER /*! SPI Master */ = (1<<7),
 	SPI_FLAG_SET_SLAVE /*! SPI Slave */ = (1<<8),
-	SPI_FLAG_IS_FULL_DUPLEX /*! Full duplex mode (data must be read async when written syncronously) */ = (1<<9),
-	SPI_FLAG_IS_HALF_DUPLEX /*! Half duplex mode (default mode - will be used if SPI_FLAG_IS_FULL_DUPLEX not set) */ = (1<<10),
-	SPI_FLAG_IS_LSB_FIRST /*! LSB first (non-standard) */ = (1<<11)
+	SPI_FLAG_IS_FULL_DUPLEX /* Use SPI_FLAG_SET_FULL_DUPLEX */ = (1<<9),
+	SPI_FLAG_SET_FULL_DUPLEX /*! Set Full duplex mode but don't change any other settings */ = (1<<9),
+	SPI_FLAG_IS_HALF_DUPLEX /* Use SPI_FLAG_SET_HALF_DUPLEX */ = (1<<10),
+	SPI_FLAG_SET_HALF_DUPLEX /*! Set Half duplex mode but don't change any other settings */ = (1<<10),
+	SPI_FLAG_IS_LSB_FIRST /*! LSB first (non-standard) */ = (1<<11),
 } spi_flag_t;
 
 typedef struct MCU_PACK {
