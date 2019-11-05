@@ -20,6 +20,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <stddef.h>
+#include "cortexm/task.h"
 #include "cortexm/cortexm.h"
 #include "mcu/debug.h"
 #include "sos/dev/ffifo.h"
@@ -205,8 +206,18 @@ int ffifo_getinfo(ffifo_info_t * info, const ffifo_config_t * config, ffifo_stat
 void ffifo_data_received(const ffifo_config_t * handle, ffifo_state_t * state){
 	int bytes_read;
 	if( state->transfer_handler.read != NULL ){
-		if( (bytes_read = ffifo_read_buffer(handle, state, state->transfer_handler.read->buf, state->transfer_handler.read->nbyte)) > 0 ){
-			devfs_execute_read_handler(&state->transfer_handler, 0, bytes_read, MCU_EVENT_FLAG_DATA_READY);
+		if( (bytes_read = ffifo_read_buffer(
+				  handle,
+				  state,
+				  state->transfer_handler.read->buf,
+				  state->transfer_handler.read->nbyte
+				  )) > 0 ){
+			devfs_execute_read_handler(
+						&state->transfer_handler,
+						0,
+						bytes_read,
+						MCU_EVENT_FLAG_DATA_READY
+						);
 		}
 	}
 }
@@ -346,8 +357,6 @@ int ffifo_read_local(const ffifo_config_t * config, ffifo_state_t * state, devfs
 		if ( bytes_read == 0 ){
 			if( (async->flags & O_NONBLOCK) || (state->atomic_position.access.tail == config->frame_count) ){
 				bytes_read = SYSFS_SET_RETURN(EAGAIN);
-			} else {
-				state->transfer_handler.read = async;
 			}
 		} else if( (bytes_read > 0) && allow_callback ){
 			//see if anything needs to write the FIFO
@@ -377,8 +386,6 @@ int ffifo_write_local(const ffifo_config_t * config, ffifo_state_t * state, devf
 		if ( bytes_written == 0 ){
 			if( async->flags & O_NONBLOCK ){
 				bytes_written = SYSFS_SET_RETURN(EAGAIN);
-			} else {
-				state->transfer_handler.write = async;
 			}
 		} else if( (bytes_written > 0) && allow_callback ){
 			ffifo_data_received(config, state);

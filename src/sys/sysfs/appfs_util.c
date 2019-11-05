@@ -76,7 +76,6 @@ int appfs_util_root_erase_pages(const devfs_device_t * dev, int start_page, int 
 	int i;
 	for(i=start_page; i <= end_page; i++){
 		mcu_wdt_reset();
-		mcu_debug_printf("erase page %d -> %d -> %d\n", start_page, i, end_page);
 		result = dev->driver.ioctl(&(dev->handle), I_MEM_ERASE_PAGE, (void*)i);
 		if( result < 0 ){ return result; }
 	}
