@@ -677,6 +677,7 @@ u32 const symbols_table[] = {
 	(u32)setuid,
 	(u32)geteuid,
 	(u32)seteuid,
+	(u32)sos_trace_stack,
 	1
 };
 

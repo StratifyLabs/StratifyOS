@@ -95,11 +95,21 @@ link_transport_phy_t boot_link_transport_usb_open(const char * name,
 
 int boot_link_transport_usb_write(link_transport_phy_t handle, const void * buf, int nbyte){
 	int ret;
-	ret = mcu_sync_io(m_context->handle, mcu_usb_write, SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT_IN, buf, nbyte, O_RDWR);
+	ret = mcu_sync_io(
+				m_context->handle,
+				mcu_usb_write,
+				SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT_IN,
+				buf,
+				nbyte,
+				O_RDWR
+				);
 	return ret;
 }
 
-static int read_buffer(char * dest, int nbyte){
+static int read_buffer(
+		char * dest,
+		int nbyte
+		){
 	int i;
 	for(i=0; i < nbyte; i++){
 		if ( m_read_head == m_read_tail ){ //check for data in the fifo buffer
@@ -116,7 +126,10 @@ static int read_buffer(char * dest, int nbyte){
 	return i; //number of bytes read
 }
 
-static int write_buffer(const char * src, int nbyte){
+static int write_buffer(
+		const char * src,
+		int nbyte
+		){
 	int i;
 	for(i=0; i < nbyte; i++){
 		if( ((m_read_head+1) == m_read_tail) ||
@@ -133,7 +146,11 @@ static int write_buffer(const char * src, int nbyte){
 	return i; //number of bytes written
 }
 
-int boot_link_transport_usb_read(link_transport_phy_t handle, void * buf, int nbyte){
+int boot_link_transport_usb_read(
+		link_transport_phy_t handle,
+		void * buf,
+		int nbyte
+		){
 	int ret;
 	int bytes_read;
 	char buffer[SOS_LINK_TRANSPORT_ENDPOINT_SIZE];
@@ -143,6 +160,7 @@ int boot_link_transport_usb_read(link_transport_phy_t handle, void * buf, int nb
 
 	while( bytes_read < nbyte ){
 		//need more data to service request
+
 		ret = mcu_sync_io(
 					m_context->handle,
 					mcu_usb_read,

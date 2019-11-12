@@ -156,6 +156,8 @@ void malloc_free_task_r(struct _reent * reent_ptr, int task_id){
 
 
 
+
+
 void _free_r(struct _reent * reent_ptr, void * addr){
 	int tmp;
 
@@ -185,12 +187,25 @@ void _free_r(struct _reent * reent_ptr, void * addr){
 	b = &(reent_ptr->procmem_base->base);
 	//sanity check for chunk that is not in proc mem (low side)
 	if( addr < b ){
-		mcu_debug_log_warning(MCU_DEBUG_MALLOC, "Free addr below heap");
+		mcu_debug_log_warning(
+					MCU_DEBUG_MALLOC,
+					"Free addr below heap %p < %p (id:%d)",
+					addr,
+					b,
+					task_get_current()
+					);
+		//mcu_debug_trace_stack();
 		return;
 	}
 
 	if( (u32)addr > (u32)b + reent_ptr->procmem_base->size ){
-		mcu_debug_log_warning(MCU_DEBUG_MALLOC, "Free addr above heap");
+		mcu_debug_log_warning(
+					MCU_DEBUG_MALLOC,
+					"Free addr above heap %p > %p (id:%d)",
+					addr,
+					b,
+					task_get_current()
+					);
 		return;
 	}
 
@@ -260,7 +275,7 @@ int get_more_memory(struct _reent * reent_ptr, u32 size, int is_new_heap){
 			chunk = new_heap - MALLOC_SBRK_JUMP_SIZE;
 		}
 		malloc_set_chunk_free(chunk, jump_size / MALLOC_CHUNK_SIZE);
-		set_last_chunk(chunk + chunk->header.num_chunks); //mark the last block (heap should have extra room for this)		
+		set_last_chunk(chunk + chunk->header.num_chunks); //mark the last block (heap should have extra room for this)
 	}
 	return 0;
 }
@@ -276,7 +291,7 @@ void * _malloc_r(struct _reent * reent_ptr, size_t size){
 
 	if ( reent_ptr == NULL ){
 		errno = EINVAL;
-		mcu_debug_log_info(MCU_DEBUG_MALLOC, "%s():%d<-", __FUNCTION__, __LINE__);
+		mcu_debug_log_info(MCU_DEBUG_MALLOC, "EINVAL %s():%d<-", __FUNCTION__, __LINE__);
 		return NULL;
 	}
 
@@ -289,7 +304,7 @@ void * _malloc_r(struct _reent * reent_ptr, size_t size){
 		if ( get_more_memory(reent_ptr, size, 1) < 0 ){
 			__malloc_unlock(reent_ptr);
 			errno = ENOMEM;
-			mcu_debug_log_info(MCU_DEBUG_MALLOC, "%s():%d<-", __FUNCTION__, __LINE__);
+			mcu_debug_log_info(MCU_DEBUG_MALLOC, "ENOMEM %s():%d<-", __FUNCTION__, __LINE__);
 			return NULL;
 		}
 	}
@@ -307,7 +322,7 @@ void * _malloc_r(struct _reent * reent_ptr, size_t size){
 				__malloc_unlock(reent_ptr); //unlock in case it is shared memory
 				malloc_process_fault(reent_ptr); //this will exit the process
 				errno = ENOMEM;
-				mcu_debug_log_info(MCU_DEBUG_MALLOC, "%s():%d<-", __FUNCTION__, __LINE__);
+				mcu_debug_log_info(MCU_DEBUG_MALLOC, "ENOMEM %s():%d<-", __FUNCTION__, __LINE__);
 				return NULL;
 			}
 
@@ -316,7 +331,7 @@ void * _malloc_r(struct _reent * reent_ptr, size_t size){
 				cleanup_memory(reent_ptr, 0); //give memory back to stack
 				__malloc_unlock(reent_ptr);
 				errno = ENOMEM;
-				mcu_debug_log_info(MCU_DEBUG_MALLOC, "%s():%d<-", __FUNCTION__, __LINE__);
+				mcu_debug_log_info(MCU_DEBUG_MALLOC, "ENOMEM %s():%d<-", __FUNCTION__, __LINE__);
 				return NULL;
 			}
 
@@ -332,7 +347,7 @@ void * _malloc_r(struct _reent * reent_ptr, size_t size){
 			} else if ( chunk->header.num_chunks < num_chunks ){
 				__malloc_unlock(reent_ptr);
 				errno = ENOMEM;
-				mcu_debug_log_info(MCU_DEBUG_MALLOC, "%s():%d<-", __FUNCTION__, __LINE__);
+				mcu_debug_log_info(MCU_DEBUG_MALLOC, "ENOMEM %s():%d<-", __FUNCTION__, __LINE__);
 				return NULL;
 			}
 			malloc_set_chunk_used(reent_ptr, chunk, num_chunks, size);
@@ -342,7 +357,7 @@ void * _malloc_r(struct _reent * reent_ptr, size_t size){
 
 	__malloc_unlock(reent_ptr);
 
-	mcu_debug_log_info(MCU_DEBUG_MALLOC, "a:%d,%d %p %d (%d) %p %p", getpid(), task_get_current(), alloc, size, num_chunks*MALLOC_CHUNK_SIZE, reent_ptr, _GLOBAL_REENT);
+	mcu_debug_log_info(MCU_DEBUG_MALLOC, "a:%d,%d %p %d (%d) %p %p<-", getpid(), task_get_current(), alloc, size, num_chunks*MALLOC_CHUNK_SIZE, reent_ptr, _GLOBAL_REENT);
 
 
 	return alloc;

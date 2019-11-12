@@ -92,6 +92,8 @@ s8 task_get_current_priority();
 void task_root_set_current_priority(s8 value);
 void task_root_elevate_current_priority(s8 value);
 
+u32 task_reverse_memory_lookup(u32 input);
+
 //higher numbers take precedence over lower numbers
 #define TASK_SYSTEM_SECRET_KEY_REGION 7
 #define TASK_SYSTEM_STACK_MPU_REGION 6

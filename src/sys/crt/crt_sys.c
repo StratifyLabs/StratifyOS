@@ -92,7 +92,9 @@ char ** const crt_import_argv(char * path_arg, int * argc){
 	arg_buffer = malloc(len);
 	if( arg_buffer == 0 ){
 		//since we couldn't allocate memory in the application, free the memory allocated on global
-		_free_r(sos_task_table[0].global_reent, path_arg);
+		if( path_arg ){
+			_free_r(sos_task_table[0].global_reent, path_arg);
+		}
 		return 0;
 	}
 
@@ -122,6 +124,7 @@ char ** const crt_import_argv(char * path_arg, int * argc){
 	}
 
 	*argc = count;
+
 	return argv;
 }
 

@@ -521,6 +521,7 @@ typedef struct {
 #define SOS_TRACE_FATAL(msg) sos_trace_event(LINK_POSIX_TRACE_FATAL, msg, strnlen(msg, LINK_POSIX_TRACE_DATA_SIZE))
 
 void sos_trace_event(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len);
+void sos_trace_stack();
 void sos_trace_event_addr_tid(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len, u32 addr, int tid);
 void sos_trace_root_trace_event(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len);
 

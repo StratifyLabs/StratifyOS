@@ -217,6 +217,7 @@ void task_svcall_new_task(new_task_t * task){
 			memcpy((void*)&(sos_task_table[i].mem), task->mem, sizeof(task_memories_t));
 #if __FPU_USED != 0
 			sos_task_table[i].fpscr = FPU->FPDSCR;
+			memset((void*)sos_task_table[i].fp, 0, sizeof(sos_task_table[i].fp));
 #endif
 			break;
 		}
@@ -330,7 +331,6 @@ u64 task_gettime(int tid){
 }
 
 void switch_contexts(){
-	int i;
 	//Save the PSP to the current task's stack pointer
 	asm volatile ("MRS %0, psp\n\t" : "=r" (sos_task_table[m_task_current].sp) );
 
@@ -356,6 +356,7 @@ void switch_contexts(){
 			}
 
 			//see if all tasks have used up their RR time
+			int i;
 			for(i=1; i < task_get_total(); i++){
 				if ( task_exec_asserted(i) && (sos_task_table[i].rr_time >= SYSTICK_MIN_CYCLES) ){
 					break;
@@ -576,5 +577,6 @@ int task_interrupt(task_interrupt_t * intr){
 	}
 	return -1;
 }
+
 
 

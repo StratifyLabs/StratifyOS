@@ -30,6 +30,8 @@
 static void sos_trace_event_addr(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len, u32 addr);
 static void sos_trace_build_event(link_trace_event_t * event, link_trace_event_id_t event_id, const void * data_ptr, size_t data_len, u32 addr, int tid, const struct timespec * spec);
 static void svcall_trace_event(void * args);
+static void svcall_get_stack_pointer(void * args);
+static u32 lookup_caller_adddress(u32 input);
 
 void sos_trace_root_trace_event(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len){
 	register u32 lr asm("lr");
@@ -127,6 +129,65 @@ void sos_trace_event_addr_tid(
 
 	}
 
+}
+
+void svcall_get_stack_pointer(void * args){
+	CORTEXM_SVCALL_ENTER();
+	cortexm_get_thread_stack_ptr(args);
+}
+
+u32 lookup_caller_adddress(u32 input){
+
+	if( (input & 0x01) == 0 ){
+		return 0; //don't trace non-callers
+	}
+
+	//check if input is a caller for the kernel
+	if( (input >= (u32)&_text) &&
+		 (input < (u32)&_etext)
+		 ){
+		return input;
+	}
+
+	//check if input is a caller for the application
+	const u8 tid = task_get_current();
+	if( (input >= (u32)sos_task_table[tid].mem.code.address) &&
+		 (input <
+		  (u32)sos_task_table[tid].mem.code.address +
+		  sos_task_table[tid].mem.code.size) ){
+		return input -
+				(u32)sos_task_table[tid].mem.code.address +
+				0xDE000000;
+	}
+	return 0;
+}
+
+void sos_trace_stack(){
+	void * sp;
+	cortexm_svcall(svcall_get_stack_pointer, &sp);
+	u32 count =
+			(u32)(sos_task_table[task_get_current()].mem.data.address +
+			sos_task_table[task_get_current()].mem.data.size)
+			- (u32)sp;
+
+	u32 * stack = (u32*)sp;
+	char message[17];
+	int len;
+	strncpy(message, "stackTrace", 16);
+	len = strnlen(message, 16);
+
+	u32 address;
+	count = count/sizeof(u32);
+	for(int i=count-1; i >= 0; i--){
+		address = lookup_caller_adddress(stack[i]);
+		sos_trace_event_addr(
+					LINK_POSIX_TRACE_MESSAGE,
+					message,
+					len,
+					address
+					);
+
+	}
 }
 
 

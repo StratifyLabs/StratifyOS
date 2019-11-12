@@ -656,3 +656,4 @@
 .global setuid; setuid = LINK_ADDR;
 .global geteuid; geteuid = LINK_ADDR;
 .global seteuid; seteuid = LINK_ADDR;
+.global sos_trace_stack; sos_trace_stack = LINK_ADDR;

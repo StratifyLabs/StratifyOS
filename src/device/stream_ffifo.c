@@ -39,9 +39,11 @@ int event_write_complete(void * context, const mcu_event_t * event){
 		state->tx.error = state->tx.async.nbyte;
 		mcu_debug_log_error(
 					MCU_DEBUG_DEVICE,
-					"error: %s():%d",
+					"error: %s():%d (%d,%d)",
 					__FUNCTION__,
-					__LINE__
+					__LINE__,
+					SYSFS_GET_RETURN(state->tx.async.nbyte),
+					SYSFS_GET_RETURN_ERRNO(state->tx.async.nbyte)
 					);
 		return 0;
 	}
