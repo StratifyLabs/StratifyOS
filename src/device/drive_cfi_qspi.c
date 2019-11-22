@@ -352,7 +352,7 @@ int drive_cfi_qspi_close(const devfs_handle_t * handle){
 	if( state->is_initialized ){
 		state->is_initialized--;
 		if( state->is_initialized == 0 ){
-			return config->serial_device->driver.write(&config->serial_device->handle);
+			return config->serial_device->driver.close(&config->serial_device->handle);
 		}
 	}
 	return 0;
