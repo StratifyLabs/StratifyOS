@@ -149,7 +149,6 @@ int drive_cfi_spi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 
 				if( o_flags & DRIVE_FLAG_POWERUP ){
 					drive_cfi_spi_write_instruction_with_cs(handle, config->opcode.power_up, 0, 0);
-
 				}
 
 				if( o_flags & DRIVE_FLAG_POWERDOWN ){
@@ -322,8 +321,13 @@ int drive_cfi_spi_write(const devfs_handle_t * handle, devfs_async_t * async){
 
 int drive_cfi_spi_close(const devfs_handle_t * handle){
 	drive_cfi_state_t * state = handle->state;
-	if( state->is_initialized ){ state->is_initialized--; }
-	return mcu_spi_close(handle);
+	if( state->is_initialized ){
+		state->is_initialized--;
+		if( state->is_initialized == 0 ){
+			return mcu_spi_close(handle);
+		}
+	}
+	return 0;
 }
 
 void drive_cfi_spi_initialize_cs(const devfs_handle_t * handle){

@@ -347,9 +347,15 @@ int drive_cfi_qspi_write(const devfs_handle_t * handle, devfs_async_t * async){
 }
 
 int drive_cfi_qspi_close(const devfs_handle_t * handle){
+	const drive_cfi_config_t * config = handle->config;
 	drive_cfi_state_t * state = handle->state;
-	if( state->is_initialized ){ state->is_initialized--; }
-	return mcu_qspi_close(handle);
+	if( state->is_initialized ){
+		state->is_initialized--;
+		if( state->is_initialized == 0 ){
+			return config->serial_device->driver.write(&config->serial_device->handle);
+		}
+	}
+	return 0;
 }
 
 
