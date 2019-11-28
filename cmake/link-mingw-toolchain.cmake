@@ -1,7 +1,7 @@
 
 # the name of the target operating system
 
-message(STATUS "Set GCC toolchaing to i686-w64-mingw32")
+message(STATUS "Set GCC toolchain to i686-w64-mingw32")
 if(TOOLCHAIN_HOST)
     message(STATUS "Toolchain host " ${TOOLCHAIN_HOST})
 else()
@@ -10,7 +10,7 @@ endif()
 if(TOOLCHAIN_DIR)
     message(STATUS "Toolchain directory " ${TOOLCHAIN_DIR})
 else()
-    set(TOOLCHAIN_DIR "C:/Qt-5.12/Tools/mingw530_32")
+    set(TOOLCHAIN_DIR C:/StratifyLabs-SDK/Tools/mingw530_32)
 endif()
 set(TOOLCHAIN_EXEC_SUFFIX .exe)
 
