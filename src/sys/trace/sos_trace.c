@@ -155,17 +155,17 @@ u32 lookup_caller_adddress(u32 input){
 		 (input <
 		  (u32)sos_task_table[tid].mem.code.address +
 		  sos_task_table[tid].mem.code.size) ){
-		return input -
-				(u32)sos_task_table[tid].mem.code.address +
-				0xDE000000;
+		return input;
 	}
 	return 0;
 }
 
-void sos_trace_stack(){
+void sos_trace_stack(u32 count){
 	void * sp;
 	cortexm_svcall(svcall_get_stack_pointer, &sp);
-	u32 count =
+
+	sp	= (void*)((u32)sp & ~0x03);
+	u32 stack_count =
 			(u32)(sos_task_table[task_get_current()].mem.data.address +
 			sos_task_table[task_get_current()].mem.data.size)
 			- (u32)sp;
@@ -177,15 +177,22 @@ void sos_trace_stack(){
 	len = strnlen(message, 16);
 
 	u32 address;
-	count = count/sizeof(u32);
-	for(int i=count-1; i >= 0; i--){
+	stack_count = stack_count/sizeof(u32);
+	u32 push_count = 0;
+	for(int i=stack_count-1; i >= 0; i--){
 		address = lookup_caller_adddress(stack[i]);
-		sos_trace_event_addr(
-					LINK_POSIX_TRACE_MESSAGE,
-					message,
-					len,
-					address
-					);
+		if( address != 0 ){
+			sos_trace_event_addr(
+						LINK_POSIX_TRACE_MESSAGE,
+						message,
+						len,
+						address
+						);
+			push_count++;
+			if( push_count == count ){
+				return;
+			}
+		}
 
 	}
 }
