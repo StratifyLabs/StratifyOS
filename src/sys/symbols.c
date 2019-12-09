@@ -2,7 +2,6 @@
 #include "sos/symbols.h"
 #include "sos/symbols/table.h"
 
-
 void __cxa_pure_virtual(){}
 
 void __div0(){

@@ -54,7 +54,7 @@ SECTIONS {
          *(.global_reent)
          *(.data)
          *(.data.*)
-            . = ALIGN(4);
+						. = ALIGN(8);
          } >ram AT>flash
   _edata = .;
   _bss = .;
@@ -62,7 +62,7 @@ SECTIONS {
          *(.bss)
          *(.bss.*)
          } >ram
-   . = ALIGN(4);
+	 . = ALIGN(8);
    _ebss = .;
 }
 

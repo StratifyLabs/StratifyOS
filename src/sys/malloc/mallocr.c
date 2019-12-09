@@ -166,6 +166,11 @@ void _free_r(struct _reent * reent_ptr, void * addr){
 	proc_mem_t * base;
 	void * b;
 
+	if( addr == NULL ){
+		//take no action if addr is null
+		return;
+	}
+
 	if ( reent_ptr->procmem_base == NULL ){
 		return;
 	}
@@ -187,6 +192,7 @@ void _free_r(struct _reent * reent_ptr, void * addr){
 	b = &(reent_ptr->procmem_base->base);
 	//sanity check for chunk that is not in proc mem (low side)
 	if( addr < b ){
+		sos_trace_stack(32);
 		mcu_debug_log_warning(
 					MCU_DEBUG_MALLOC,
 					"Free addr below heap %p < %p (id:%d)",

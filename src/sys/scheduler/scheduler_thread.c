@@ -57,16 +57,23 @@ int scheduler_create_thread(
 		){
 	int id;
 
+	//align the stack to 8 bytes
+	u32 align_memory = (u32)mem_addr & ~0x07;
+	u32 align_memory_size = mem_size & ~0x07;
+	if( align_memory < (u32)mem_addr ){
+		align_memory += 8;
+		align_memory_size -= 8;
+	}
+
 	//start a new thread
 	id = task_create_thread(
 				p,
 				cleanup_thread,
 				arg,
-				mem_addr,
-				mem_size,
+				(void*)align_memory,
+				align_memory_size,
 				task_get_pid( task_get_current() )
 				);
-
 
 	if ( id > 0 ){
 		activate_thread(id, mem_addr, attr);

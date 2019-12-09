@@ -35,7 +35,6 @@
 #include "cortexm/task.h"
 
 
-
 typedef struct MCU_PACK {
 	u16 task_id;
 	u16 num_chunks;

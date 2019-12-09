@@ -143,7 +143,6 @@ void * link_update(void * arg){
 		}
 
 		if ( data.op.cmd < LINK_CMD_TOTAL ){
-			mcu_debug_printf("Exec:%d\n", data.op.cmd);
 			link_cmd_func_table[data.op.cmd](driver, &data);
 		} else {
 			data.reply.err = -1;
@@ -152,15 +151,13 @@ void * link_update(void * arg){
 
 		//send the reply
 		if( data.op.cmd != 0 ){
-			mcu_debug_printf("wrote reply %d\n",
 			link_transport_slavewrite(
 						driver,
 						&data.reply,
 						sizeof(data.reply),
 						NULL,
 						NULL
-						)
-								  );
+						);
 			data.op.cmd = 0;
 		}
 

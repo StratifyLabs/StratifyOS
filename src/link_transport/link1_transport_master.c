@@ -181,7 +181,7 @@ int wait_ack(
 
 #endif
 			count+=1;
-			if( count >= timeout*10 ){
+			if( count >= timeout ){
 				return LINK_TIMEOUT_ERROR;
 			}
 		}
