@@ -40,10 +40,10 @@ void link_transport_mastersettimeout(link_transport_mdriver_t * driver, int t){
 }
 
 int link_transport_masterread(link_transport_mdriver_t * driver, void * buf, int nbyte){
-
-	if( resolve_protocol(driver) < 0 ){
-		link_error("failed to resolve protocol");
-		return LINK_PROT_ERROR;
+	int result;
+	if( (result = resolve_protocol(driver)) < 0 ){
+		link_error("failed to resolve protocol with %d", result);
+		return result;
 	}
 
 	if( driver->transport_version == 1 ){
@@ -59,9 +59,10 @@ int link_transport_masterread(link_transport_mdriver_t * driver, void * buf, int
 }
 
 int link_transport_masterwrite(link_transport_mdriver_t * driver, const void * buf, int nbyte){
-	if( resolve_protocol(driver) < 0 ){
-		link_error("failed to resolve protocol");
-		return LINK_PROT_ERROR;
+	int result;
+	if( (result = resolve_protocol(driver)) < 0 ){
+		link_error("failed to resolve protocol with %d", result);
+		return result;
 	}
 
 	if( driver->transport_version == 1 ){
@@ -77,6 +78,12 @@ int link_transport_masterwrite(link_transport_mdriver_t * driver, const void * b
 }
 
 int resolve_protocol(link_transport_mdriver_t * driver){
+
+	if( (driver == 0) || (driver->phy_driver.handle == 0) ){
+		link_debug(LINK_DEBUG_WARNING, "driver is null -- phy error");
+		return LINK_PHY_ERROR;
+	}
+
 	if( driver->transport_version == 0 ){
 		//need to do protocol resolution starting with link1
 		int result = link1_transport_masterwrite(driver, 0, 0);
@@ -90,14 +97,14 @@ int resolve_protocol(link_transport_mdriver_t * driver){
 				driver->transport_version = 2;
 			} else {
 				//printf("------------------- Not Resolved -------------------\n");
-				return -1;
+				return LINK_PROT_ERROR;
 			}
 		}
 	}
 
 	if( driver->transport_version > 2 ){
 		driver->transport_version = 0;
-		return -1;
+		return LINK_PROT_ERROR;
 	}
 
 	return driver->transport_version;

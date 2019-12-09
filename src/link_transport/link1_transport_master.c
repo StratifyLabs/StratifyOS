@@ -36,20 +36,28 @@ int link1_transport_masterread(link_transport_mdriver_t * driver, void * buf, in
 
 	bytes = 0;
 	p = buf;
+	link_debug(LINK_DEBUG_MESSAGE, "link1 transport master read %d bytes", nbyte);
 	do {
 
 		if( (err = link1_transport_wait_start(&driver->phy_driver, &pkt, driver->phy_driver.timeout)) < 0 ){
 			driver->phy_driver.flush(driver->phy_driver.handle);
+			link_debug(LINK_DEBUG_MESSAGE, "wait start failed %d, flushed", err);
 			return err;
 		}
 
 		if( (err = link1_transport_wait_packet(&driver->phy_driver, &pkt, driver->phy_driver.timeout)) < 0 ){
 			driver->phy_driver.flush(driver->phy_driver.handle);
+			link_debug(LINK_DEBUG_MESSAGE, "wait packet failed %d, flushed", err);
 			return err;
 		}
 
 		//a packet has arrived -- checksum it
 		if( link1_transport_checksum_isok(&pkt) == false ){
+			driver->phy_driver.flush(driver->phy_driver.handle);
+			link_debug(
+						LINK_DEBUG_MESSAGE,
+						"bad checksum on packet"
+						);
 			return LINK_PROT_ERROR;
 		}
 
@@ -68,7 +76,11 @@ int link1_transport_masterread(link_transport_mdriver_t * driver, void * buf, in
 	return bytes;
 }
 
-int link1_transport_masterwrite(link_transport_mdriver_t * driver, const void * buf, int nbyte){
+int link1_transport_masterwrite(
+		link_transport_mdriver_t * driver,
+		const void * buf,
+		int nbyte
+		){
 	link_pkt_t pkt;
 	char * p;
 	int bytes;
@@ -80,6 +92,7 @@ int link1_transport_masterwrite(link_transport_mdriver_t * driver, const void * 
 
 	bytes = 0;
 	p = (void*)buf;
+	link_debug(LINK_DEBUG_DEBUG, "link1 transport master write %d bytes", nbyte);
 	pkt.start = LINK_PACKET_START;
 	do {
 
@@ -94,8 +107,17 @@ int link1_transport_masterwrite(link_transport_mdriver_t * driver, const void * 
 		link1_transport_insert_checksum(&pkt);
 
 		//send packet
-		if( driver->phy_driver.write(driver->phy_driver.handle, &pkt, pkt.size + LINK_PACKET_HEADER_SIZE) != (pkt.size + LINK_PACKET_HEADER_SIZE) ){
-			link_error("phy write error to %p", driver->phy_driver.handle);
+		if( (err = driver->phy_driver.write(
+				 driver->phy_driver.handle,
+				 &pkt, pkt.size + LINK_PACKET_HEADER_SIZE)) != (pkt.size + LINK_PACKET_HEADER_SIZE)
+			 ){
+			link_debug(
+						LINK_DEBUG_MESSAGE,
+						"phy write error to %p (%d)",
+						driver->phy_driver.handle,
+						err
+						);
+
 			return LINK_PHY_ERROR;
 		}
 
@@ -106,12 +128,15 @@ int link1_transport_masterwrite(link_transport_mdriver_t * driver, const void * 
 				  driver->phy_driver.timeout
 				  )) < 0 ){
 			driver->phy_driver.flush(driver->phy_driver.handle);
-			link_error("wait ack error %d", err);
+			link_debug(LINK_DEBUG_MESSAGE,
+						"wait ack error %d on timeout %d",
+						err,
+						driver->phy_driver.timeout);
 			return err;
 		}
 
 		if( err != LINK_PACKET_ACK ){
-			link_error("wrong ack value %d", err);
+			link_debug(LINK_DEBUG_MESSAGE, "wrong ack value %d", err);
 			return SYSFS_SET_RETURN(err);
 		}
 
@@ -124,7 +149,11 @@ int link1_transport_masterwrite(link_transport_mdriver_t * driver, const void * 
 }
 
 
-int wait_ack(link_transport_mdriver_t * driver, uint8_t checksum, int timeout){
+int wait_ack(
+		link_transport_mdriver_t * driver,
+		uint8_t checksum,
+		int timeout
+		){
 	link_ack_t ack;
 	char * p;
 	int count;
@@ -152,14 +181,14 @@ int wait_ack(link_transport_mdriver_t * driver, uint8_t checksum, int timeout){
 
 #endif
 			count+=1;
-			if( count >= timeout ){
+			if( count >= timeout*10 ){
 				return LINK_TIMEOUT_ERROR;
 			}
 		}
 	} while(bytes_read < sizeof(ack));
 
 	if( ack.checksum != checksum ){
-		link_error("checksum mismatch 0x%X != 0x%X",
+		link_debug(LINK_DEBUG_MESSAGE, "checksum mismatch 0x%X != 0x%X",
 					  ack.checksum, checksum);
 		return LINK_PROT_ERROR;
 	}

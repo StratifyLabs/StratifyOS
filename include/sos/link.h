@@ -84,8 +84,11 @@ void link_set_debug(int debug_level);
 enum {
 	LINK_DEBUG_FATAL,
 	LINK_DEBUG_CRITICAL,
+	LINK_DEBUG_ERROR,
 	LINK_DEBUG_WARNING,
-	LINK_DEBUG_MESSAGE
+	LINK_DEBUG_INFO,
+	LINK_DEBUG_MESSAGE,
+	LINK_DEBUG_DEBUG
 };
 
 typedef struct {

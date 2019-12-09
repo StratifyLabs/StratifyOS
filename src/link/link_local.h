@@ -22,6 +22,7 @@
 #define LINK_LOCAL_H_
 
 #include <stdio.h>
+#include <stdarg.h>
 #include "sos/link.h"
 
 #ifdef __cplusplus
@@ -36,9 +37,7 @@ extern "C" {
 
 #define LINK_DEVICE_PRESENT_BUT_NOT_BOOTLOADER (-8183650)
 
-
 int link_handle_err(link_transport_mdriver_t * driver, int err);
-
 int link_ioctl_delay(link_transport_mdriver_t * driver, int fildes, int request, void * argp, int arg, int delay);
 
 
@@ -50,11 +49,15 @@ int link_rd_err(link_transport_phy_t dev);
 #define GET_PORT(fd_port) (fd_port >> 8)
 
 #ifdef __link
-extern int link_debug_level;
-link_debug_context_t link_debug_context;
-void link_write_debug_message(link_debug_context_t * context);
-#define link_debug(x, ...) do { link_debug_context.type = x; sprintf(link_debug_context.function, "%s(): %d", __FUNCTION__, __LINE__); sprintf(link_debug_context.file, "%s():", __FILE__ ); link_debug_context.line = __LINE__; sprintf(link_debug_context.msg, __VA_ARGS__); link_write_debug_message(&link_debug_context);  } while(0)
-#define link_error(...) link_debug(LINK_DEBUG_CRITICAL, __VA_ARGS__)
+int link_debug_printf(
+      int x,
+      const char * function,
+      int line,
+      const char * fmt,
+      ...);
+
+#define link_debug(x, ...) link_debug_printf(x, __FUNCTION__, __LINE__, __VA_ARGS__)
+#define link_error(...) link_debug_printf(LINK_DEBUG_ERROR, __FUNCTION__, __LINE__, __VA_ARGS__)
 #else
 #define link_debug(x, ...)
 #define link_error(...)

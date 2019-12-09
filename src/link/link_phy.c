@@ -135,10 +135,11 @@ link_transport_phy_t link_phy_open(const char * name, const void * options){
 	memset(handle->name, 0, MAX_DEVICE_PATH);
 	strncpy(handle->name, name, MAX_DEVICE_PATH-1);
 
-	link_debug(LINK_DEBUG_MESSAGE, "Open device %s", name);
+	link_debug(LINK_DEBUG_INFO, "Open device %s", name);
 	handle->handle = CreateFile(name, GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
 	if( handle->handle == INVALID_HANDLE_VALUE ){
 		free(handle);
+		link_debug(LINK_DEBUG_INFO, "failed to open %s", name);
 		return LINK_PHY_OPEN_ERROR;
 	}
 
@@ -349,7 +350,11 @@ int link_phy_getname(char * dest, const char * last, int len){
 }
 
 
-link_transport_phy_t link_phy_open(const char * name, const void * s_options){
+link_transport_phy_t link_phy_open(
+		const char * name,
+		const void * s_options
+		){
+
 	link_transport_phy_t phy;
 	int fd;
 	struct termios options;
@@ -358,7 +363,6 @@ link_transport_phy_t link_phy_open(const char * name, const void * s_options){
 	if( strnlen(name, MAX_DEVICE_PATH) >= MAX_DEVICE_PATH ){
 		return LINK_PHY_OPEN_ERROR;
 	}
-
 
 	//open serial port
 	fd = open(name, O_RDWR | O_NOCTTY | O_NONBLOCK);
@@ -378,7 +382,7 @@ link_transport_phy_t link_phy_open(const char * name, const void * s_options){
 	//make the buffer raw
 	cfmakeraw(&options); //raw with no buffering
 
-	link_debug(LINK_DEBUG_MESSAGE, "Open %s at %d bps no parity", name, BAUDRATE);
+	link_debug(LINK_DEBUG_INFO, "Open %s at %d bps no parity", name, BAUDRATE);
 	cfsetspeed(&options, BAUDRATE);
 	//even parity
 	//8 bit data
@@ -395,8 +399,11 @@ link_transport_phy_t link_phy_open(const char * name, const void * s_options){
 	const link_transport_serial_options_t * serial_options = s_options;
 
 	if( serial_options ){
-		link_debug(LINK_DEBUG_MESSAGE, "Use custom serial port settings %dbps, %d stop bits, %d parity",
-					  serial_options->baudrate, serial_options->stop_bits, serial_options->parity);
+		link_debug(LINK_DEBUG_MESSAGE,
+					  "Use custom serial port settings %dbps, %d stop bits, %d parity",
+					  serial_options->baudrate,
+					  serial_options->stop_bits,
+					  serial_options->parity);
 		cfsetspeed(&options, serial_options->baudrate);
 		if( serial_options->stop_bits == 2 ){
 			options.c_cflag |= CSTOPB; //two stop bits
@@ -415,7 +422,10 @@ link_transport_phy_t link_phy_open(const char * name, const void * s_options){
 			options.c_cflag &= ~PARENB; //parity off
 		}
 	} else {
-		link_debug(LINK_DEBUG_MESSAGE, "Use default serial port settings 460800bps, 1 stop bits, 0 parity");
+		link_debug(
+					LINK_DEBUG_MESSAGE,
+					"Use default serial port settings 460800bps, 1 stop bits, 0 parity"
+					);
 	}
 
 	if( tcflush(fd, TCIFLUSH) < 0 ){
@@ -504,7 +514,7 @@ int link_phy_write(link_transport_phy_t handle, const void * buf, int nbyte){
 
 	} while( bytes_written < nbyte);
 
-	link_debug(LINK_DEBUG_MESSAGE, "Tx'd %d bytes", ret);
+	link_debug(LINK_DEBUG_DEBUG, "Tx'd %d bytes", ret);
 	return nbyte;
 }
 
@@ -533,7 +543,7 @@ int link_phy_read(link_transport_phy_t handle, void * buf, int nbyte){
 	}
 
 	if( ret != 0 ){
-		link_debug(LINK_DEBUG_MESSAGE, "Rx'd %d bytes", ret);
+		link_debug(LINK_DEBUG_DEBUG, "Rx'd %d bytes", ret);
 	}
 	return ret;
 }

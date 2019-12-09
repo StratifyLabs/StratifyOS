@@ -54,7 +54,6 @@ static int data_received(void * context, const mcu_event_t * data){
 
 		if( result > 0 ){
 
-			//mcu_debug_printf("a%d\n", result);
 
 			//write the new bytes to the buffer
 			for(i=0; i < result; i++){

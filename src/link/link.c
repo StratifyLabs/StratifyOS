@@ -45,7 +45,7 @@ const link_transport_mdriver_t link_default_driver = {
 int link_errno;
 
 void link_load_default_driver(link_transport_mdriver_t * driver){
-	link_debug(LINK_DEBUG_MESSAGE, "Load default read driver");
+	link_debug(LINK_DEBUG_INFO, "Load default read driver");
 	memcpy(driver, &link_default_driver, sizeof(link_transport_mdriver_t));
 }
 
@@ -86,7 +86,7 @@ int link_connect(link_transport_mdriver_t * driver, const char * sn){
 		strcpy(serialno, "NONE");
 	}
 
-	link_debug(LINK_DEBUG_MESSAGE, "Connect to %s", serialno);
+	link_debug(LINK_DEBUG_INFO, "Connect to %s", serialno);
 
 
 	while( (err = driver->getname(name, last, LINK_PHY_NAME_MAX)) == 0 ){
@@ -94,7 +94,7 @@ int link_connect(link_transport_mdriver_t * driver, const char * sn){
 		driver->transport_version = 0;
 		driver->phy_driver.handle = driver->phy_driver.open(name, driver->options);
 		if( driver->phy_driver.handle != LINK_PHY_OPEN_ERROR ){
-			link_debug(LINK_DEBUG_MESSAGE, "Read serial number for %s", name);
+			link_debug(LINK_DEBUG_INFO, "Read serial number for %s", name);
 			if( link_readserialno(driver, serialno, LINK_MAX_SN_SIZE) == 0 ){
 				//check for NULL sn, zero length sn or matching sn
 
@@ -152,7 +152,7 @@ int link_readserialno(link_transport_mdriver_t * driver, char * serialno, int le
 
 	op.cmd = LINK_CMD_READSERIALNO;
 
-	link_debug(LINK_DEBUG_MESSAGE, "Send command (%d) to read serial number on %p", op.cmd, driver->phy_driver.handle);
+	link_debug(LINK_DEBUG_INFO, "Send command (%d) to read serial number on %p", op.cmd, driver->phy_driver.handle);
 	err = link_transport_masterwrite(driver, &op, sizeof(link_cmd_t));
 	if ( err < 0 ){
 		link_error("failed to write op");
@@ -201,7 +201,7 @@ int link_ping(link_transport_mdriver_t * driver, const char * name, int is_keep_
 	driver->transport_version = 0;
 	driver->phy_driver.handle = driver->phy_driver.open(name, driver->options);
 	if( driver->phy_driver.handle != LINK_PHY_OPEN_ERROR ){
-		link_debug(LINK_DEBUG_MESSAGE, "Look for bootloader or device on %s", name);
+		link_debug(LINK_DEBUG_INFO, "Look for bootloader or device on %s", name);
 
 		link_transport_mastersettimeout(driver, 25);
 
@@ -378,7 +378,7 @@ int link_handle_err(link_transport_mdriver_t * driver, int err){
 	driver->phy_driver.flush(driver->phy_driver.handle);
 	switch(err){
 		case LINK_TIMEOUT_ERROR:
-			link_error("TIMEOUT Error");
+			link_error("TIMEOUT Error - promote to PHY error");
 			return LINK_PHY_ERROR;
 		case LINK_PHY_ERROR:
 			break;

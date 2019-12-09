@@ -92,7 +92,6 @@ int link1_transport_wait_packet(link_transport_driver_t * driver, link_pkt_t * p
 			return LINK_PHY_ERROR;
 		}
 
-
 		if( bytes_read > 0 ){
 			if( pkt->size > LINK_PACKET_DATA_SIZE ){
 				//this is erroneous data

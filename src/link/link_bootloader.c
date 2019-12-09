@@ -59,6 +59,12 @@ int link_bootloader_attr_legacy(link_transport_mdriver_t * driver, bootloader_at
 
 int link_isbootloader_legacy(link_transport_mdriver_t * driver){
 	bootloader_attr_t attr;
+
+	link_debug(LINK_DEBUG_INFO,
+				  "call with driver %p",
+				  driver->phy_driver.handle
+				  );
+
 	int ret = link_bootloader_attr_legacy(driver, &attr, 0);
 	if( ret == LINK_DEVICE_PRESENT_BUT_NOT_BOOTLOADER ){
 		return 0;
@@ -71,6 +77,11 @@ int link_isbootloader_legacy(link_transport_mdriver_t * driver){
 int link_isbootloader(link_transport_mdriver_t * driver){
 	bootloader_attr_t attr;
 	int ret;
+
+	link_debug(LINK_DEBUG_INFO,
+				  "call with driver %p",
+				  driver->phy_driver.handle
+				  );
 
 	ret = link_bootloader_attr(driver, &attr, 0);
 

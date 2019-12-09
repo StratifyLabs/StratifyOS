@@ -100,7 +100,13 @@ int link_open(link_transport_mdriver_t * driver, const char * path, int flags, .
 		return result;
 	}
 
-	link_debug(LINK_DEBUG_MESSAGE, "open %s 0%o 0x%X using %p", path, mode, flags, driver->phy_driver.handle);
+	link_debug(LINK_DEBUG_INFO,
+				  "call with (%s, 0x%X, %o) and handle %p",
+				  path,
+				  mode,
+				  flags,
+				  driver->phy_driver.handle
+				  );
 
 
 	op.open.cmd = LINK_CMD_OPEN;
@@ -109,7 +115,12 @@ int link_open(link_transport_mdriver_t * driver, const char * path, int flags, .
 	op.open.mode = mode;
 
 	link_debug(LINK_DEBUG_MESSAGE, "Write open op (%p)", driver->phy_driver.handle);
-	err = link_transport_masterwrite(driver, &op, sizeof(link_open_t));
+	err = link_transport_masterwrite(
+				driver,
+				&op,
+				sizeof(link_open_t)
+				);
+
 	if ( err < 0 ){
 		link_error("failed to write open op with handle %p", driver->phy_driver.handle);
 		return link_handle_err(driver, err);
@@ -180,7 +191,15 @@ int link_ioctl_delay(
 		return -1;
 	}
 
-	link_debug(LINK_DEBUG_MESSAGE, "Request is 0x%X", (unsigned int)request);
+	link_debug(LINK_DEBUG_INFO,
+				  "call with (%d, %d, %p/%d) and handle %p and delay %d",
+				  fildes,
+				  request,
+				  argp,
+				  arg,
+				  driver->phy_driver.handle,
+				  delay
+				  );
 
 	rw_size = _IOCTL_SIZE(request);
 
@@ -273,6 +292,13 @@ int link_read(link_transport_mdriver_t * driver, int fildes, void * buf, int nby
 	op.read.fildes = fildes;
 	op.read.nbyte = nbyte;
 
+	link_debug(LINK_DEBUG_INFO,
+				  "call with (%d, %p, %d) and handle %p",
+				  fildes,
+				  buf,
+				  nbyte,
+				  driver->phy_driver.handle
+				  );
 
 	link_debug(LINK_DEBUG_MESSAGE, "write read op");
 	err = link_transport_masterwrite(driver, &op, sizeof(link_read_t));
@@ -303,7 +329,13 @@ int link_read(link_transport_mdriver_t * driver, int fildes, void * buf, int nby
 	return reply.err;
 }
 
-int link_write(link_transport_mdriver_t * driver, int fildes, const void * buf, int nbyte){
+int link_write(
+		link_transport_mdriver_t * driver,
+		int fildes,
+		const void * buf,
+		int nbyte
+		){
+
 	link_op_t op;
 	link_reply_t reply;
 	int err;
@@ -318,7 +350,14 @@ int link_write(link_transport_mdriver_t * driver, int fildes, const void * buf, 
 	op.write.fildes = fildes;
 	op.write.nbyte = nbyte;
 
-	link_debug(LINK_DEBUG_MESSAGE, "Send op (fildes %d nbyte %d)", op.write.fildes, op.write.nbyte);
+	link_debug(LINK_DEBUG_INFO,
+				  "call with (%d, %p, %d) and handle %p",
+				  fildes,
+				  buf,
+				  nbyte,
+				  driver->phy_driver.handle
+				  );
+
 	err = link_transport_masterwrite(driver, &op, sizeof(link_write_t));
 	if ( err < 0 ){
 		link_error("failed to write op");
@@ -359,7 +398,13 @@ int link_close(link_transport_mdriver_t * driver, int fildes){
 
 	op.close.cmd = LINK_CMD_CLOSE;
 	op.close.fildes = fildes;
-	link_debug(LINK_DEBUG_MESSAGE, "Send Op to close fildes:%d", fildes);
+
+	link_debug(LINK_DEBUG_INFO,
+				  "call with (%d) and handle %p",
+				  fildes,
+				  driver->phy_driver.handle
+				  );
+
 	err = link_transport_masterwrite(driver, &op, sizeof(link_close_t));
 	if ( err < 0 ){
 		link_error("failed to write op");
@@ -383,7 +428,10 @@ int link_close(link_transport_mdriver_t * driver, int fildes){
 	return reply.err;
 }
 
-int link_symlink(link_transport_mdriver_t * driver, const char * old_path, const char * new_path){
+int link_symlink(
+		link_transport_mdriver_t * driver,
+		const char * old_path,
+		const char * new_path){
 	link_op_t op;
 	link_reply_t reply;
 	int len;
@@ -395,7 +443,13 @@ int link_symlink(link_transport_mdriver_t * driver, const char * old_path, const
 	op.symlink.path_size_old = strlen(old_path) + 1;
 	op.symlink.path_size_new = strlen(new_path) + 1;
 
-	link_debug(LINK_DEBUG_MESSAGE, "Write link op (0x%lX)", (long unsigned int)driver->phy_driver.handle);
+	link_debug(LINK_DEBUG_INFO,
+				  "call with (%s, %s) and handle %p",
+				  old_path,
+				  new_path,
+				  driver->phy_driver.handle
+				  );
+
 	err = link_transport_masterwrite(driver, &op, sizeof(link_symlink_t));
 	if ( err < 0 ){
 		return err;
@@ -438,7 +492,11 @@ int link_unlink(link_transport_mdriver_t * driver, const char * path){
 	int len;
 	int err;
 
-	link_debug(LINK_DEBUG_MESSAGE, "unlink %s", path);
+	link_debug(LINK_DEBUG_INFO,
+				  "call with (%s) and handle %p",
+				  path,
+				  driver->phy_driver.handle
+				  );
 
 	op.unlink.cmd = LINK_CMD_UNLINK;
 	op.unlink.path_size = strlen(path) + 1;
@@ -475,7 +533,11 @@ int link_unlink(link_transport_mdriver_t * driver, const char * path){
 }
 
 
-int link_lseek(link_transport_mdriver_t * driver, int fildes, s32 offset, int whence){
+int link_lseek(
+		link_transport_mdriver_t * driver,
+		int fildes,
+		s32 offset,
+		int whence){
 
 	if ( driver == 0 ){
 		//operate on local file
@@ -494,7 +556,14 @@ int link_lseek(link_transport_mdriver_t * driver, int fildes, s32 offset, int wh
 	op.lseek.whence = whence;
 
 	link_errno = 0;
-	link_debug(LINK_DEBUG_MESSAGE, "seek command 0x%X (0x%lX)", fildes, (long unsigned int)driver->phy_driver.handle);
+
+	link_debug(LINK_DEBUG_INFO,
+				  "call with (%d, %d, %d) and handle %p",
+				  fildes,
+				  offset,
+				  whence,
+				  driver->phy_driver.handle
+				  );
 
 	err = link_transport_masterwrite(driver, &op, sizeof(link_lseek_t));
 	if ( err < 0 ){
@@ -515,7 +584,12 @@ int link_lseek(link_transport_mdriver_t * driver, int fildes, s32 offset, int wh
 	return reply.err;
 }
 
-int link_stat(link_transport_mdriver_t * driver, const char * path, struct link_stat * buf){
+int link_stat(
+		link_transport_mdriver_t * driver,
+		const char * path,
+		struct link_stat * buf
+		){
+
 	if ( driver == NULL ){
 		struct posix_stat output;
 		int result = posix_stat(path, &output);
@@ -536,7 +610,12 @@ int link_stat(link_transport_mdriver_t * driver, const char * path, struct link_
 	int len;
 	int err;
 
-	link_debug(LINK_DEBUG_MESSAGE, "stat %s", path);
+	link_debug(LINK_DEBUG_INFO,
+				  "call with (%s, %p) and handle %p",
+				  path,
+				  buf,
+				  driver->phy_driver.handle
+				  );
 
 	op.stat.cmd = LINK_CMD_STAT;
 	op.stat.path_size = strlen(path) + 1;
@@ -599,6 +678,13 @@ int link_fstat(link_transport_mdriver_t * driver, int fildes, struct link_stat *
 	op.fstat.cmd = LINK_CMD_FSTAT;
 	op.fstat.fildes = fildes;
 
+	link_debug(LINK_DEBUG_INFO,
+				  "call with (%d, %p) and handle %p",
+				  fildes,
+				  buf,
+				  driver->phy_driver.handle
+				  );
+
 	err = link_transport_masterwrite(driver, &op, sizeof(link_fstat_t));
 	if ( err < 0 ){
 		return err;
@@ -634,7 +720,12 @@ int link_rename(link_transport_mdriver_t * driver, const char * old_path, const 
 		return LINK_TRANSFER_ERR;
 	}
 
-	link_debug(LINK_DEBUG_MESSAGE, "rename %s to %s", old_path, new_path);
+	link_debug(LINK_DEBUG_INFO,
+				  "call with (%s, %s) and handle %p",
+				  old_path,
+				  new_path,
+				  driver->phy_driver.handle
+				  );
 
 	op.rename.cmd = LINK_CMD_RENAME;
 	op.rename.old_size = strlen(old_path) + 1;
@@ -680,7 +771,13 @@ int link_chown(link_transport_mdriver_t * driver, const char * path, int owner, 
 		return LINK_TRANSFER_ERR;
 	}
 
-	link_debug(LINK_DEBUG_MESSAGE, "chown %s %d %d", path, owner, group);
+	link_debug(LINK_DEBUG_INFO,
+				  "call with (%s, %d, %d) and handle %p",
+				  path,
+				  owner,
+				  group,
+				  driver->phy_driver.handle
+				  );
 
 	op.chown.cmd = LINK_CMD_CHOWN;
 	op.chown.path_size = strlen(path) + 1;
@@ -710,7 +807,11 @@ int link_chown(link_transport_mdriver_t * driver, const char * path, int owner, 
 	return reply.err;
 }
 
-int link_chmod(link_transport_mdriver_t * driver, const char * path, int mode){
+int link_chmod(
+		link_transport_mdriver_t * driver,
+		const char * path,
+		int mode){
+
 	link_op_t op;
 	link_reply_t reply;
 	int len;
@@ -720,7 +821,12 @@ int link_chmod(link_transport_mdriver_t * driver, const char * path, int mode){
 		return -1;
 	}
 
-	link_debug(LINK_DEBUG_MESSAGE, "chmod %s %d", path, mode);
+	link_debug(LINK_DEBUG_INFO,
+				  "call with (%s, %o) and handle %p",
+				  path,
+				  mode,
+				  driver->phy_driver.handle
+				  );
 
 	op.chmod.cmd = LINK_CMD_CHMOD;
 	op.chmod.path_size = strlen(path) + 1;

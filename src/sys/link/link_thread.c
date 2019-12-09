@@ -122,7 +122,13 @@ void * link_update(void * arg){
 		//Wait for data to arrive on the link transport device
 		while( 1 ){
 
-			if ( (err = link_transport_slaveread(driver, &data.op, sizeof(data.op), NULL, NULL)) <= 0 ){
+			if ( (err = link_transport_slaveread(
+						driver,
+						&data.op,
+						sizeof(data.op),
+						NULL,
+						NULL
+						)) <= 0 ){
 				memset(&data.op, 0, sizeof(data.op));
 				mcu_debug_log_warning(MCU_DEBUG_LINK, "slave read error %d", err);
 				continue;
@@ -137,6 +143,7 @@ void * link_update(void * arg){
 		}
 
 		if ( data.op.cmd < LINK_CMD_TOTAL ){
+			mcu_debug_printf("Exec:%d\n", data.op.cmd);
 			link_cmd_func_table[data.op.cmd](driver, &data);
 		} else {
 			data.reply.err = -1;
@@ -145,7 +152,15 @@ void * link_update(void * arg){
 
 		//send the reply
 		if( data.op.cmd != 0 ){
-			link_transport_slavewrite(driver, &data.reply, sizeof(data.reply), NULL, NULL);
+			mcu_debug_printf("wrote reply %d\n",
+			link_transport_slavewrite(
+						driver,
+						&data.reply,
+						sizeof(data.reply),
+						NULL,
+						NULL
+						)
+								  );
 			data.op.cmd = 0;
 		}
 
@@ -202,7 +217,12 @@ void link_cmd_open(link_transport_driver_t * driver, link_data_t * args){
 	args->reply.err = link_transport_slaveread(driver, path, args->op.open.path_size, NULL, NULL);
 	args->reply.err = open(path, args->op.open.flags, args->op.open.mode);
 	if ( args->reply.err < 0 ){
-		mcu_debug_log_error(MCU_DEBUG_LINK, "Failed to open %s (%d)", path, errno);
+		mcu_debug_log_error(
+					MCU_DEBUG_LINK,
+					"Failed to open %s (%d)",
+					path,
+					errno
+					);
 		args->reply.err_number = errno;
 	}
 }
@@ -252,6 +272,7 @@ void link_cmd_ioctl(link_transport_driver_t * driver, link_data_t * args){
 						args->op.ioctl.request,
 						io_buf
 						);
+			//mcu_debug_printf("ioctl buf was %d \n", args->reply.err);
 		}
 		args->reply.err_number = errno;
 	} else {
@@ -271,7 +292,13 @@ void link_cmd_ioctl(link_transport_driver_t * driver, link_data_t * args){
 	}
 
 	if ( args->reply.err < 0 ){
-		mcu_debug_log_error(MCU_DEBUG_LINK, "Failed to ioctl (%d)", errno);
+		if( args->op.ioctl.fildes != LINK_BOOTLOADER_FILDES ){
+			mcu_debug_log_error(
+						MCU_DEBUG_LINK,
+						"Failed to ioctl (%d)",
+						errno
+						);
+		}
 	}
 
 }
