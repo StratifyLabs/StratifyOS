@@ -39,6 +39,17 @@ function(sos_sdk_pull PROJECT_PATH)
 	endif()
 endfunction()
 
+function(sos_sdk_add_subdirectory INPUT_LIST DIRECTORY)
+	add_subdirectory(${DIRECTORY})
+	set(INPUT_SOURCES ${${INPUT_LIST}})
+	set(TEMP_SOURCES "")
+	foreach(entry ${SOURCES})
+		list(APPEND TEMP_SOURCES ${DIRECTORY}/${entry})
+	endforeach()
+	list(APPEND TEMP_SOURCES ${INPUT_SOURCES})
+	set(${INPUT_LIST} ${TEMP_SOURCES} PARENT_SCOPE)
+endfunction()
+
 
 function(sos_sdk_git_status PROJECT_PATH)
 	message(STATUS "GIT STATUS OF " ${PROJECT_PATH})

@@ -52,7 +52,7 @@ int assetfs_closedir(const void* cfg, void ** handle);
 #define ASSETFS_END(name) (&assetfs_incbin_##name##_end)
 
 #define ASSETFS_ENTRY(file_name, object_name, mode_value, uid_value) \
-{ .name = file_name, .start = ASSETFS_START(object_name), .end = ASSETFS_END(object_name), .mode = mode_value, uid = uid_value }
+{ .name = file_name, .start = ASSETFS_START(object_name), .end = ASSETFS_END(object_name), .mode = mode_value, .uid = uid_value }
 
 typedef struct {
 	char name[NAME_MAX];
