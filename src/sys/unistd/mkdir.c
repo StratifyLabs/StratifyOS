@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 /*! \addtogroup unistd
@@ -38,23 +38,23 @@
  *
  */
 int mkdir(const char *path, mode_t mode){
-	const sysfs_t * fs;
-    int ret = -1;
+   const sysfs_t * fs;
+   int ret = -1;
 
-	if ( sysfs_ispathinvalid(path) == true ){
-		return -1;
-	}
+   if ( sysfs_ispathinvalid(path) == true ){
+      return -1;
+   }
 
-	fs = sysfs_find(path, true);
-	if ( fs != NULL ){
-        ret = fs->mkdir(fs->config,
-				sysfs_stripmountpath(fs, path),
-				mode);
-        SYSFS_PROCESS_RETURN(ret);
-        return ret;
-	}
-	errno = ENOENT;
-    return -1;
+   fs = sysfs_find(path, true);
+   if ( fs != NULL ){
+      ret = fs->mkdir(fs->config,
+                      sysfs_stripmountpath(fs, path),
+                      mode);
+      SYSFS_PROCESS_RETURN(ret);
+      return ret;
+   }
+   errno = ENOENT;
+   return -1;
 }
 
 /*! @} */

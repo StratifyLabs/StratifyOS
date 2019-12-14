@@ -57,8 +57,10 @@ int pthread_mutexattr_getprioceiling(const pthread_mutexattr_t *attr /*! Mutex T
  * \return Zero on success or -1 with errno (see \ref errno) set to:
  * - EINVAL: \a attr does not refer to an initialized mutex attribute object
  */
-int pthread_mutexattr_setprioceiling(pthread_mutexattr_t *attr /*! Mutex Thread Attribute Object */,
-		int prio_ceiling /*! The priority ceiling to set */){
+int pthread_mutexattr_setprioceiling(
+		pthread_mutexattr_t *attr /*! Mutex Thread Attribute Object */,
+		int prio_ceiling /*! The priority ceiling to set */
+		){
 	if ( pthread_mutexattr_check_initialized(attr) < 0 ){
 		return -1;
 	}
