@@ -560,10 +560,28 @@ void link_cmd_mkfs(link_transport_driver_t * driver, link_data_t * args){
 	char path[PATH_MAX];
 	memset(path, 0, PATH_MAX);
 	args->reply.err = link_transport_slaveread(driver, path, args->op.exec.path_size, NULL, NULL);
+
+	//send the reply immediately so that the protocol isn't left waiting for a lengthy format
+	args->reply.err = 0;
+	errno = EBUSY;
+	args->reply.err_number = errno;
+
+	link_transport_slavewrite(
+				driver,
+				&args->reply,
+				sizeof(args->reply),
+				NULL,
+				NULL
+				);
+
+	//tells the caller not to send the reply later
+	args->op.cmd = 0;
+
 	args->reply.err = mkfs(path);
 	if ( args->reply.err < 0 ){
-		mcu_debug_log_error(MCU_DEBUG_LINK, "Failed to mkfs %s (%d)", path, errno);
 		args->reply.err_number = errno;
+	} else {
+		errno = 0;
 	}
 }
 

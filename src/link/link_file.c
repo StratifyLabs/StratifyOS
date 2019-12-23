@@ -67,7 +67,7 @@ static void convert_stat(struct link_stat * dest, const struct posix_stat * sour
 static int convert_flags(int link_flags){
 	int result = 0;
 	if( link_flags & LINK_O_CREAT ){ result |= O_CREAT; }
-	if( link_flags & LINK_O_APPEND ){ result |= LINK_O_APPEND; }
+	if( link_flags & LINK_O_APPEND ){ result |= O_APPEND; }
 	if( link_flags & LINK_O_EXCL ){ result |= O_EXCL; }
 	if( link_flags & LINK_O_RDWR ){ result |= O_RDWR; }
 	if( link_flags & LINK_O_RDONLY ){ result |= O_RDONLY; }
@@ -95,7 +95,20 @@ int link_open(link_transport_mdriver_t * driver, const char * path, int flags, .
 	}
 
 	if( driver == 0 ){
+		link_debug(LINK_DEBUG_INFO,
+					  "posix call with (%s, 0x%X, %o)",
+					  path,
+					  flags,
+					  mode
+					  );
+
+		link_debug(LINK_DEBUG_INFO,
+					  "convert flags 0x%X -> 0x%X",
+					  flags,
+					  convert_flags(flags) | POSIX_OPEN_FLAGS
+					  );
 		int result = posix_open(path, convert_flags(flags) | POSIX_OPEN_FLAGS, mode);
+
 		link_errno = errno;
 		return result;
 	}
@@ -145,7 +158,7 @@ int link_open(link_transport_mdriver_t * driver, const char * path, int flags, .
 
 	if ( reply.err < 0 ){
 		link_errno = reply.err_number;
-		link_debug(LINK_DEBUG_WARNING, "Failed to ioctl file (%d)", link_errno);
+		link_debug(LINK_DEBUG_WARNING, "Failed to open file (%d, %d)", reply.err, reply.err_number);
 	} else {
 		link_debug(LINK_DEBUG_MESSAGE, "Opened fildes: %d", reply.err);
 	}
@@ -660,6 +673,12 @@ int link_stat(
 
 int link_fstat(link_transport_mdriver_t * driver, int fildes, struct link_stat * buf){
 	if ( driver == NULL ){
+		link_debug(LINK_DEBUG_INFO,
+					  "posix call with (%d, %p)",
+					  fildes,
+					  buf
+					  );
+
 		struct posix_stat output;
 		int result = posix_fstat(fildes, &output);
 		link_errno = errno;

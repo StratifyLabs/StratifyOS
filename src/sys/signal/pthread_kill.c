@@ -182,7 +182,7 @@ int signal_send(int tid, int si_signo, int si_sigcode, int sig_value){
 	int check_stack;
 	struct timespec abstime;
 
-	//make sure the task id is valid
+	//make sure the task id is valid and enabled
 	if ( scheduler_check_tid(tid) ){
 		errno = ESRCH;
 		return -1;

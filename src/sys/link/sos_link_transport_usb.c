@@ -6,7 +6,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-	 http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -77,12 +77,14 @@ static int open_pio(mcu_pin_t pin, int active_high){
 	return fd;
 }
 
-link_transport_phy_t sos_link_transport_usb_open(const char * name,
-																 usbd_control_t * context,
-																 const usbd_control_constants_t * constants,
-																 const usb_attr_t * usb_attr,
-																 mcu_pin_t usb_up_pin,
-																 int usb_up_active_high){
+link_transport_phy_t sos_link_transport_usb_open(
+		const char * name,
+		usbd_control_t * context,
+		const usbd_control_constants_t * constants,
+		const usb_attr_t * usb_attr,
+		mcu_pin_t usb_up_pin,
+		int usb_up_active_high){
+
 	int fd;
 	int pio_fd;
 	int result;
@@ -94,7 +96,6 @@ link_transport_phy_t sos_link_transport_usb_open(const char * name,
 			mcu_debug_log_error(MCU_DEBUG_USB | MCU_DEBUG_LINK, "Failed to open PIO (%d)\n", errno);
 			return LINK_PHY_ERROR;
 		}
-
 	} else {
 		pio_fd = -1;
 	}

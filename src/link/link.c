@@ -263,7 +263,7 @@ int link_mkfs(link_transport_mdriver_t * driver, const char * path){
 	link_debug(LINK_DEBUG_MESSAGE, "Write mkfs path (%d bytes)", op.exec.path_size);
 	len = link_transport_masterwrite(driver, path, op.exec.path_size);
 	if ( len < 0 ){
-		link_debug(1, "Failed to write bulk output");
+		link_debug(LINK_DEBUG_ERROR, "Failed to write bulk output");
 		return LINK_TRANSFER_ERR;
 	}
 
@@ -272,13 +272,17 @@ int link_mkfs(link_transport_mdriver_t * driver, const char * path){
 	//read the reply to see if the file opened correctly
 	err = link_transport_masterread(driver, &reply, sizeof(reply));
 	if ( err < 0 ){
-		link_debug(1, "Failed to read the reply");
+		link_debug(LINK_DEBUG_ERROR, "Failed to read the reply");
 		return err;
 	}
 
 	link_errno = reply.err_number;
 	if ( reply.err < 0 ){
-		link_debug(1, "Failed to exec file (%d)", link_errno);
+		link_debug(LINK_DEBUG_ERROR, "Failed to exec file (%d)", link_errno);
+	} else {
+		if( link_errno == 16 ){
+			link_debug(LINK_DEBUG_INFO, "Format started but device may be busy while it completes");
+		}
 	}
 	return reply.err;
 
@@ -365,11 +369,11 @@ char * link_new_device_list(link_transport_mdriver_t * driver, int max){
  * created with usbtools_new_device_list().
  */
 void link_del_device_list(char * sn_list){
-	free(sn_list);
+   free(sn_list);
 }
 
 char * link_device_list_entry(char * list, int entry){
-	return &(list[entry*LINK_MAX_SN_SIZE]);
+   return &(list[entry*LINK_MAX_SN_SIZE]);
 }
 
 int link_handle_err(link_transport_mdriver_t * driver, int err){

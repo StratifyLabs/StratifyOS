@@ -157,12 +157,13 @@ int set_systick_interval(int interval){
 }
 
 
-int task_create_thread(void *(*p)(void*),
-							  void (*cleanup)(void*),
-							  void * arg,
-							  void * mem_addr,
-							  int mem_size,
-							  int pid){
+int task_create_thread(
+		void *(*p)(void*),
+		void (*cleanup)(void*),
+		void * arg,
+		void * mem_addr,
+		int mem_size,
+		int pid){
 	int thread_zero;
 	void * stackaddr;
 	new_task_t task;
@@ -251,7 +252,7 @@ void task_root_delete(int id){
 void task_root_resetstack(int id){
 	//set the stack pointer to the original value
 	sos_task_table[id].sp = (void*)((u32)sos_task_table[id].mem.data.address + sos_task_table[id].mem.data.size -
-			(sizeof(hw_stack_frame_t) + sizeof(sw_stack_frame_t)));
+											  (sizeof(hw_stack_frame_t) + sizeof(sw_stack_frame_t)));
 	if( id == task_get_current() ){ //make effective now
 		cortexm_set_thread_stack_ptr((void*)sos_task_table[id].sp);
 	}
