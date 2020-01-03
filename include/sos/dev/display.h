@@ -208,8 +208,21 @@ typedef struct MCU_PACK {
  */
 #define I_DISPLAY_GETPALETTE _IOCTLR(DISPLAY_IOC_CHAR, I_MCU_TOTAL+3, display_palette_t)
 
+/*! \details Sets the palette attributes of the display.
+ *
+ * Example:
+ * \code
+ * display_palette_t palette;
+ * //populate palette with colors
+ * ioctl(fildes, I_DISPLAY_SETPALETTE, &palette);
+ * \endcode
+ * \hideinitializer
+ */
 
-#define I_DISPLAY_TOTAL (I_MCU_TOTAL+4)
+#define I_DISPLAY_SETPALETTE _IOCTLW(DISPLAY_IOC_CHAR, I_MCU_TOTAL+4, display_palette_t)
+
+
+#define I_DISPLAY_TOTAL (I_MCU_TOTAL+5)
 
 /*! @} */
 

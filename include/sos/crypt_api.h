@@ -1,5 +1,5 @@
-#ifndef CRYPT_API_H
-#define CRYPT_API_H
+#ifndef SOS_CRYPT_API_H
+#define SOS_CRYPT_API_H
 
 #include "mcu/types.h"
 
@@ -96,4 +96,4 @@ extern const crypt_hash_api_t tinycrypt_sha256_hash_api;
 extern const crypt_hash_api_t device_sha256_hash_api;
 extern const crypt_aes_api_t device_aes_api;
 
-#endif // CRYPT_API_H
+#endif // SOS_CRYPT_API_H
