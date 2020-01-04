@@ -216,7 +216,9 @@ int link_ioctl_delay(
 
 	rw_size = _IOCTL_SIZE(request);
 
-	link_debug(LINK_DEBUG_MESSAGE, "Sending IOCTL request %c %d r:%X w:%X", _IOCTL_IDENT(request),
+	link_debug(LINK_DEBUG_MESSAGE,
+				  "Sending IOCTL request %c %d r:%X w:%X",
+				  _IOCTL_IDENT(request),
 				  _IOCTL_SIZE(request),
 				  _IOCTL_IOCTLR(request) != 0,
 				  _IOCTL_IOCTLW(request) != 0);
@@ -243,6 +245,8 @@ int link_ioctl_delay(
 	}
 
 	if( delay > 0 ){
+		//some IOCTL operations (like erasing flash, can take awhile)
+		//we don't want to bother the MCU during these times
 		link_debug(LINK_DEBUG_MESSAGE, "Delay for %dms", delay);
 		driver->phy_driver.wait(delay);
 		driver->phy_driver.wait(delay);

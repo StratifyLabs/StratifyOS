@@ -42,6 +42,15 @@
 
 #define SERIAL_NUM_WIDTH 3
 
+/* The IMXRT USB driver is having problems
+ * when writing two times in a row quickly.
+ * This delay is inserted between consecutive writes.
+ * It happens rarely so it has only
+ * a negligible impact on performance for any platform.
+ *
+ */
+#define BETWEEN_LINK_WRITE_DELAY() usleep(1000)
+
 static int read_device(link_transport_driver_t * driver, int fildes, int size);
 static int write_device(link_transport_driver_t * driver, int fildes, int size);
 static int read_device_callback(void * context, void * buf, int nbyte);
@@ -201,6 +210,7 @@ void link_cmd_readserialno(link_transport_driver_t * driver, link_data_t * args)
 		return;
 	}
 
+	BETWEEN_LINK_WRITE_DELAY();
 	if( link_transport_slavewrite(driver, serialno, args->reply.err, NULL, NULL) < 0 ){
 		return;
 	}
@@ -247,7 +257,13 @@ void link_cmd_ioctl(link_transport_driver_t * driver, link_data_t * args){
 	size = _IOCTL_SIZE(args->op.ioctl.request);
 	char io_buf[size];
 	if ( _IOCTL_IOCTLW(args->op.ioctl.request) != 0 ){ //this means data is being sent over the bulk interrupt
-		if( link_transport_slaveread(driver, io_buf, size, NULL, NULL) < 0 ){
+		if( (err = link_transport_slaveread(
+				  driver,
+				  io_buf,
+				  size,
+				  NULL,
+				  NULL
+				  )) < 0 ){
 			args->op.cmd = 0;
 			args->reply.err = -1;
 			return;
@@ -286,6 +302,7 @@ void link_cmd_ioctl(link_transport_driver_t * driver, link_data_t * args){
 			args->op.cmd = 0;
 			args->reply.err = -1;
 		}
+		BETWEEN_LINK_WRITE_DELAY();
 	}
 
 	if ( args->reply.err < 0 ){
@@ -393,6 +410,7 @@ void link_cmd_stat(link_transport_driver_t * driver, link_data_t * args){
 	}
 
 	//now send the data
+	BETWEEN_LINK_WRITE_DELAY();
 	err = link_transport_slavewrite(driver, &lst, sizeof(struct link_stat), NULL, NULL);
 	if ( err < -1 ){
 		return;
@@ -420,6 +438,7 @@ void link_cmd_fstat(link_transport_driver_t * driver, link_data_t * args){
 
 
 	//now send the data
+	BETWEEN_LINK_WRITE_DELAY();
 	err = link_transport_slavewrite(driver, &lst, sizeof(struct link_stat), NULL, NULL);
 	if ( err < -1 ){
 		return;
@@ -484,6 +503,7 @@ void link_cmd_readdir(link_transport_driver_t * driver, link_data_t * args){
 		return;
 	}
 
+	BETWEEN_LINK_WRITE_DELAY();
 	link_transport_slavewrite(driver, &lde, sizeof(struct link_dirent), NULL, NULL);
 }
 
