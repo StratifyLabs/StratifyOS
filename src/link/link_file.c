@@ -37,6 +37,7 @@
 #define posix_stat _stat
 #define posix_fstat _fstat
 #define POSIX_OPEN_FLAGS (O_BINARY)
+#define posix_nbyte_t unsigned int
 #else
 #define posix_open open
 #define posix_close close
@@ -46,6 +47,7 @@
 #define posix_stat stat
 #define posix_fstat fstat
 #define POSIX_OPEN_FLAGS (0)
+#define posix_nbyte_t int
 #endif
 
 
@@ -56,12 +58,12 @@ static void convert_stat(struct link_stat * dest, const struct posix_stat * sour
 	dest->st_dev=source->st_dev;
 	dest->st_ino=source->st_ino;
 	dest->st_mode=source->st_mode;
-	dest->st_uid=source->st_uid;
-	dest->st_gid=source->st_gid;
+	dest->st_uid=(u16)source->st_uid;
+	dest->st_gid=(u16)source->st_gid;
 	dest->st_rdev=source->st_rdev;
-	dest->st_size=source->st_size;
-	dest->st_mtime_=source->st_mtime;
-	dest->st_ctime_=source->st_ctime;
+	dest->st_size=(u32)source->st_size;
+	dest->st_mtime_=(u32)source->st_mtime;
+	dest->st_ctime_=(u32)source->st_ctime;
 }
 
 static int convert_flags(int link_flags){
@@ -70,7 +72,6 @@ static int convert_flags(int link_flags){
 	if( link_flags & LINK_O_APPEND ){ result |= O_APPEND; }
 	if( link_flags & LINK_O_EXCL ){ result |= O_EXCL; }
 	if( link_flags & LINK_O_RDWR ){ result |= O_RDWR; }
-	if( link_flags & LINK_O_RDONLY ){ result |= O_RDONLY; }
 #if defined O_NONBLOCK
 	if( link_flags & LINK_O_NONBLOCK ){ result |= O_NONBLOCK; }
 #endif
@@ -79,7 +80,12 @@ static int convert_flags(int link_flags){
 	return result;
 }
 
-int link_open(link_transport_mdriver_t * driver, const char * path, int flags, ...){
+int link_open(
+		link_transport_mdriver_t * driver,
+		const char * path,
+		int flags,
+		...
+		){
 	link_op_t op;
 	link_reply_t reply;
 	link_mode_t mode;
@@ -109,6 +115,11 @@ int link_open(link_transport_mdriver_t * driver, const char * path, int flags, .
 					  );
 		int result = posix_open(path, convert_flags(flags) | POSIX_OPEN_FLAGS, mode);
 
+		link_debug(LINK_DEBUG_MESSAGE,
+						"opened with file number: %d",
+					  result
+					  );
+
 		link_errno = errno;
 		return result;
 	}
@@ -124,7 +135,7 @@ int link_open(link_transport_mdriver_t * driver, const char * path, int flags, .
 
 	op.open.cmd = LINK_CMD_OPEN;
 	op.open.path_size = strlen(path) + 1;
-	op.open.flags = flags;
+	op.open.flags = (u32)flags;
 	op.open.mode = mode;
 
 	link_debug(LINK_DEBUG_MESSAGE, "Write open op (%p)", driver->phy_driver.handle);
@@ -141,7 +152,7 @@ int link_open(link_transport_mdriver_t * driver, const char * path, int flags, .
 
 	//Send the path on the bulk out endpoint
 	link_debug(LINK_DEBUG_MESSAGE, "Write open path (%d bytes)", op.open.path_size);
-	err = link_transport_masterwrite(driver, path, op.open.path_size);
+	err = link_transport_masterwrite(driver, path, (int)op.open.path_size);
 	if ( err < 0 ){
 		link_error("failed to write path");
 		return link_handle_err(driver, err);
@@ -227,7 +238,7 @@ int link_ioctl_delay(
 	op.ioctl.fildes = fildes;
 	op.ioctl.cmd = LINK_CMD_IOCTL;
 	op.ioctl.request = request;
-	op.ioctl.arg = arg;
+	op.ioctl.arg = (u32)arg;
 	err = link_transport_masterwrite(driver, &op, sizeof(link_ioctl_t));
 	if ( err < 0 ){
 		link_error("failed to write op");
@@ -294,20 +305,31 @@ int link_ioctl_delay(
 }
 
 
-int link_read(link_transport_mdriver_t * driver, int fildes, void * buf, int nbyte){
+int link_read(
+		link_transport_mdriver_t * driver,
+		int fildes,
+		void * buf,
+		int nbyte
+		){
 	link_op_t op;
 	link_reply_t reply;
 	int err;
 
 	if( driver == 0 ){
-		int result = posix_read(fildes, buf, nbyte);
+		link_debug(
+					LINK_DEBUG_DEBUG,
+					"reading up to %d bytes from fileno:%d",
+					nbyte,
+					fildes
+					);
+		int result = posix_read(fildes, buf, (posix_nbyte_t)nbyte);
 		link_errno = errno;
 		return result;
 	}
 
 	op.read.cmd = LINK_CMD_READ;
 	op.read.fildes = fildes;
-	op.read.nbyte = nbyte;
+	op.read.nbyte = (u32)nbyte;
 
 	link_debug(LINK_DEBUG_INFO,
 				  "call with (%d, %p, %d) and handle %p",
@@ -358,14 +380,23 @@ int link_write(
 	int err;
 
 	if ( driver == NULL ){
-		int result = posix_write(fildes, buf, nbyte);
+		link_debug(
+					LINK_DEBUG_DEBUG,
+					"writing up to %d bytes to fileno:%d",
+					nbyte,
+					fildes
+					);
+		int result = posix_write(fildes, buf, (posix_nbyte_t)nbyte);
+		if( result < 0 ){
+			link_error("failed to write posix file with errno %d", errno);
+		}
 		link_errno = errno;
 		return result;
 	}
 
 	op.write.cmd = LINK_CMD_WRITE;
 	op.write.fildes = fildes;
-	op.write.nbyte = nbyte;
+	op.write.nbyte = (u32)nbyte;
 
 	link_debug(LINK_DEBUG_INFO,
 				  "call with (%d, %p, %d) and handle %p",
@@ -402,8 +433,16 @@ int link_write(
 	return reply.err;
 }
 
-int link_close(link_transport_mdriver_t * driver, int fildes){
+int link_close(
+		link_transport_mdriver_t * driver,
+		int fildes
+		){
 	if ( driver == NULL ){
+		link_debug(
+					LINK_DEBUG_DEBUG,
+					"closing fileno:%d",
+					fildes
+					);
 		int result = posix_close(fildes);
 		link_errno = errno;
 		return result;
