@@ -37,7 +37,7 @@ extern "C" {
 #define TASK_FLAGS_FIFO (1<<4) //Task is executed in FIFO rather than Round Robin mode
 #define TASK_FLAGS_STOPPED (1<<5) //Task has been stopped by a signal
 #define TASK_FLAGS_ROOT (1<<6) //Task has root privileges
-#define TASK_FLAGS_YIELD (1<<7) //current task wants to yield the processor
+#define TASK_FLAGS_YIELD (1<<7) //current task wants to yield the processor -- also used internally by context switcher to track SVCALL
 
 extern volatile task_t sos_task_table[];
 

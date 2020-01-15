@@ -268,7 +268,6 @@ int devfs_data_transfer(
 				if( retry < 5 ){
 					retry++;
 					args.result = 0;
-					mcu_debug_printf("the weird one\n");
 					mcu_debug_log_warning(
 								MCU_DEBUG_DEVFS,
 								"-101010 error on %s",

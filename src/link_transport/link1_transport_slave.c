@@ -29,7 +29,6 @@ int link1_transport_slaveread(link_transport_driver_t * driver, void * buf, int 
          send_ack(driver, LINK_PACKET_NACK, 0);
          driver->wait(driver->timeout);
          driver->flush(driver->handle);
-         MCU_DEBUG_LINE_TRACE();
          return -1;
       }
 
@@ -37,7 +36,6 @@ int link1_transport_slaveread(link_transport_driver_t * driver, void * buf, int 
          send_ack(driver, LINK_PACKET_NACK, 0);
          driver->wait(driver->timeout);
          driver->flush(driver->handle);
-         MCU_DEBUG_LINE_TRACE();
          return -2;
       }
 
@@ -46,7 +44,6 @@ int link1_transport_slaveread(link_transport_driver_t * driver, void * buf, int 
          send_ack(driver, LINK_PACKET_NACK, 0);
          driver->wait(driver->timeout*5);
          driver->flush(driver->handle);
-         MCU_DEBUG_LINE_TRACE();
          return -3;
       }
 
@@ -57,7 +54,6 @@ int link1_transport_slaveread(link_transport_driver_t * driver, void * buf, int 
          send_ack(driver, LINK_PACKET_NACK, checksum);
          driver->wait(driver->timeout);
          driver->flush(driver->handle);
-         MCU_DEBUG_LINE_TRACE();
          return -4;
       }
 
@@ -76,7 +72,6 @@ int link1_transport_slaveread(link_transport_driver_t * driver, void * buf, int 
          } else {
             bytes += pkt.size;
             if( send_ack(driver, LINK_PACKET_ACK, checksum) < 0 ){
-               MCU_DEBUG_LINE_TRACE();
                return -6;
             }
          }
@@ -86,11 +81,13 @@ int link1_transport_slaveread(link_transport_driver_t * driver, void * buf, int 
 
    if( bytes == 0 ){
       driver->flush(driver->handle);
+#if 0
       mcu_debug_log_warning(
                MCU_DEBUG_LINK,
                "Flushed (%d)",
                pkt.size
                );
+#endif
    }
 
    return bytes;

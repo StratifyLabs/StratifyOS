@@ -77,11 +77,6 @@ void cortexm_wdtfault_handler(void * stack);
 
 //This is used to ensure that privileged code executes from start to finish (argument validation cannot be bypassed)
 extern cortexm_svcall_t cortexm_svcall_validation MCU_SYS_MEM;
-static void cortexm_enter_privileged(cortexm_svcall_t call) MCU_UNUSED;
-void cortexm_enter_privileged(cortexm_svcall_t call){
-	cortexm_svcall_validation = call;
-}
-
 #define CORTEXM_SVCALL_ENTER() (cortexm_svcall_validation = (cortexm_svcall_t)__FUNCTION__)
 
 

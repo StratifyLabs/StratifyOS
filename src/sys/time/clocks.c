@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 
@@ -62,8 +62,7 @@ int clock_getcpuclockid(pid_t pid, clockid_t *clock_id){
  */
 int clock_gettime(clockid_t id, struct timespec * tp){
 	u64 task_timer;
-	div_t d;
-	struct mcu_timeval sched_time;
+	struct mcu_timeval sched_time = {0};
 	int pid;
 	int i;
 
@@ -73,36 +72,35 @@ int clock_gettime(clockid_t id, struct timespec * tp){
 	}
 
 	switch(id){
-	case CLOCK_MONOTONIC:
-	case CLOCK_REALTIME:
-		cortexm_svcall((cortexm_svcall_t)scheduler_timing_svcall_get_realtime, &sched_time);
-		d = div(sched_time.tv_usec, 1000000);
-		tp->tv_sec = sched_time.tv_sec * SCHEDULER_TIMEVAL_SECONDS + d.quot;
-		tp->tv_nsec = d.rem * 1000;
-		break;
+		case CLOCK_MONOTONIC:
+		case CLOCK_REALTIME:
+			cortexm_svcall(scheduler_timing_svcall_get_realtime, &sched_time);
+			tp->tv_sec = sched_time.tv_sec * SCHEDULER_TIMEVAL_SECONDS + sched_time.tv_usec / 1000000UL;
+			tp->tv_nsec = (sched_time.tv_usec % 1000000UL) * 1000UL;
+			break;
 
-	case CLOCK_PROCESS_CPUTIME_ID:
-		//Sum the task timers for the calling process
-		pid = task_get_pid( task_get_current() );
-		task_timer = 0;
-		for(i=0; i < task_get_total(); i++){
-			if ( task_get_pid(i) == pid ){
-				task_timer += task_gettime(i);
+		case CLOCK_PROCESS_CPUTIME_ID:
+			//Sum the task timers for the calling process
+			pid = task_get_pid( task_get_current() );
+			task_timer = 0;
+			for(i=0; i < task_get_total(); i++){
+				if ( task_get_pid(i) == pid ){
+					task_timer += task_gettime(i);
+				}
 			}
-		}
-		task_timer_to_timespec(tp, task_timer);
-		break;
+			task_timer_to_timespec(tp, task_timer);
+			break;
 
-	case CLOCK_THREAD_CPUTIME_ID:
-		//The current task timer value
-		//! \todo This should be an uninterruptable read
-		task_timer = task_gettime( task_get_current() );
-		task_timer_to_timespec(tp, task_timer);
-		break;
+		case CLOCK_THREAD_CPUTIME_ID:
+			//The current task timer value
+			//! \todo This should be an uninterruptable read
+			task_timer = task_gettime( task_get_current() );
+			task_timer_to_timespec(tp, task_timer);
+			break;
 
-	default:
-		errno = EINVAL;
-		return -1;
+		default:
+			errno = EINVAL;
+			return -1;
 	}
 	return 0;
 }
@@ -125,24 +123,24 @@ int clock_getres(clockid_t id, struct timespec * res){
 	}
 
 	switch(id){
-	case CLOCK_MONOTONIC:
-	case CLOCK_REALTIME:
-		//1 second
-		res->tv_sec = 0;
-		res->tv_nsec = 1000;
-		break;
+		case CLOCK_MONOTONIC:
+		case CLOCK_REALTIME:
+			//1 second
+			res->tv_sec = 0;
+			res->tv_nsec = 1000;
+			break;
 
-	case CLOCK_PROCESS_CPUTIME_ID:
-	case CLOCK_THREAD_CPUTIME_ID:
-		//One clock tick
-		res->tv_sec = 0;
-		res->tv_nsec = convert_clocks_to_nanoseconds(1);
-		break;
+		case CLOCK_PROCESS_CPUTIME_ID:
+		case CLOCK_THREAD_CPUTIME_ID:
+			//One clock tick
+			res->tv_sec = 0;
+			res->tv_nsec = convert_clocks_to_nanoseconds(1);
+			break;
 
 
-	default:
-		errno = EINVAL;
-		return -1;
+		default:
+			errno = EINVAL;
+			return -1;
 	}
 	return 0;
 }

@@ -104,7 +104,7 @@ int task_init(int interval,
 
 	mcu_core_set_nvic_priority(SysTick_IRQn, mcu_config.irq_middle_prio*2-1); //must be same priority as microsecond timer
 	mcu_core_set_nvic_priority(PendSV_IRQn, mcu_config.irq_middle_prio*2-1);
-	mcu_core_set_nvic_priority(SVCall_IRQn, mcu_config.irq_middle_prio*2-1); //elevate this so it isn't interrupted by peripheral hardware
+	mcu_core_set_nvic_priority(SVCall_IRQn, mcu_config.irq_middle_prio*2-1);
 #if !defined MCU_NO_HARD_FAULT
 	mcu_core_set_nvic_priority(HardFault_IRQn, 2);
 #endif
@@ -335,6 +335,23 @@ void switch_contexts(){
 	//Save the PSP to the current task's stack pointer
 	asm volatile ("MRS %0, psp\n\t" : "=r" (sos_task_table[m_task_current].sp) );
 
+	if( SCB->SHCSR & (1<<15) ){
+		/*
+		 * This means the SVCall instruction happened at
+		 * the same time as the context switching exception.
+		 *
+		 * But the SVCall handler was not executed because it
+		 * has a lower priority.
+		 *
+		 * Save the status of the SVCall interrupt so that
+		 * the SVCall doesn't execute in the wrong context.
+		 *
+		 *
+		 */
+		task_assert_yield(task_get_current());
+		SCB->SHCSR &= ~(1<<15);
+	}
+
 #if __FPU_USED == 1
 	volatile void * fpu_stack;
 	if( m_task_current != 0 ){
@@ -432,6 +449,12 @@ void switch_contexts(){
 	}
 #endif
 
+	if( task_yield_asserted(task_get_current()) ){
+		//this means the SYSTICK excepted at the same time as the SVC instruction
+		SCB->SHCSR |= (1<<15);
+		task_deassert_yield(task_get_current());
+	}
+
 	//write the new task's stack pointer to the PSP
 	asm volatile ("MSR psp, %0\n\t" : : "r" (sos_task_table[m_task_current].sp) );
 }
@@ -443,10 +466,13 @@ void task_root_switch_context(){
 
 void task_check_count_flag(){
 	if ( SysTick->CTRL & (1<<16) ){ //check the countflag
+
 		sos_task_table[m_task_current].rr_time = 0;
 		switch_contexts();
 	}
 }
+
+extern void mcu_core_svcall_handler();
 
 void mcu_core_systick_handler() MCU_NAKED MCU_WEAK;
 void mcu_core_systick_handler(){

@@ -180,8 +180,6 @@ int appfs_mem_writepage(const devfs_handle_t * handle, void * ctl){
 	result = get_page(config, (u32)write_page_info->addr, (u32)write_page_info->nbyte, &type);
 
 	if( type == 0 ){
-		mcu_debug_printf("type for %p is 0x%X on page %d\n",
-							  write_page_info->addr, type, result);
 		return SYSFS_SET_RETURN(EINVAL);
 	}
 

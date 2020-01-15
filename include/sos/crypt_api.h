@@ -6,7 +6,12 @@
 typedef struct {
 	int (*init)(void ** context);
 	void (*deinit)(void ** context);
-	int (*set_key)(void * context, const unsigned char * key, u32 keybits);
+	int (*set_key)(
+			void * context,
+			const unsigned char * key,
+			u32 keybits,
+			u32 bits_per_word
+			);
 
 	int (*encrypt_ecb)(void * context,
 							  const unsigned char input[16],

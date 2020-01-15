@@ -225,6 +225,10 @@ int link_ioctl_delay(
 				  delay
 				  );
 
+	if( fildes == LINK_BOOTLOADER_FILDES ){
+		link_debug(LINK_DEBUG_INFO, "call is using the designated bootloader fildes");
+	}
+
 	rw_size = _IOCTL_SIZE(request);
 
 	link_debug(LINK_DEBUG_MESSAGE,

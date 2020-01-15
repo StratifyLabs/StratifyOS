@@ -69,7 +69,8 @@ void device_aes_deinit(void ** context){
 int device_aes_set_key(
 		void * context,
 		const unsigned char * key,
-		u32 keybits
+		u32 keybits,
+		u32 bits_per_word
 		){
 	if( context == 0 ){
 		errno= EINVAL;
@@ -81,6 +82,18 @@ int device_aes_set_key(
 		errno = EINVAL;
 		return -1*__LINE__;
 	}
+
+	c->o_flags &= ~(
+				CRYPT_FLAG_IS_DATA_1 |
+				CRYPT_FLAG_IS_DATA_8 |
+				CRYPT_FLAG_IS_DATA_16 |
+				CRYPT_FLAG_IS_DATA_32
+				);
+
+	if( bits_per_word == 1 ){	c->o_flags = CRYPT_FLAG_IS_DATA_1; }
+	else if( bits_per_word == 8 ){	c->o_flags = CRYPT_FLAG_IS_DATA_8; }
+	else if( bits_per_word == 16 ){	c->o_flags = CRYPT_FLAG_IS_DATA_16; }
+	else {	c->o_flags = CRYPT_FLAG_IS_DATA_32; }
 
 	c->key_bits = keybits;
 	memcpy(c->key, key, keybits/8);
@@ -97,6 +110,8 @@ unsigned char output[16]
 			CRYPT_FLAG_IS_ENCRYPT;
 	device_aes_context_t * c = context;
 	if( (c->o_flags & mode) != mode ){
+		crypt_attr_t attributes;
+		attributes.o_flags = c->o_flags;
 
 	}
 	return -1;
