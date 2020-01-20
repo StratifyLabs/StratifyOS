@@ -219,7 +219,6 @@ int sffs_stat(const void * cfg, const char * path, struct stat * stat){
 	CL_TP(CL_PROB_RARE);
 
 	lock_sffs(cfg);
-	mcu_debug_log_info(MCU_DEBUG_FILESYSTEM, "path:%s", path);
 	ret = sffs_dir_exists(cfg, path, &entry, R_OK);
 	if ( ret < 0 ){
 		mcu_debug_log_error(MCU_DEBUG_FILESYSTEM, "failed to check existence");
@@ -497,7 +496,6 @@ int sffs_readdir_r(const void * cfg, void * handle, int loc, struct dirent * ent
 
 	lock_sffs(cfg);
 
-	mcu_debug_log_info(MCU_DEBUG_FILESYSTEM, "initialize list");
 	if ( cl_snlist_init(cfg, &sn_list, sffs_serialno_getlistblock(cfg) ) < 0 ){
 		ret = SYSFS_SET_RETURN(EIO);
 		goto sffs_readdir_unlock;

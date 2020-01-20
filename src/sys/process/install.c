@@ -34,11 +34,11 @@
 static u8 launch_count = 0;
 
 int install(const char * path,
-				char * exec_path,
-				int options,
-				int ram_size,
-				int (*update_progress)(const void *, int, int),
-				const void * update_context){
+						char * exec_path,
+						int options,
+						int ram_size,
+						int (*update_progress)(const void *, int, int),
+						const void * update_context){
 
 	int install_fd;
 	int image_fd;
@@ -52,10 +52,11 @@ int install(const char * path,
 	int len;
 	int needs_install = 0;
 
-	if( stat(path, &st) < 0 ){
+	if( access(path, R_OK) < 0 ){
 		mcu_debug_log_error(MCU_DEBUG_SYS, "Can't find path %s", path);
 		return -1;
 	}
+
 
 	strncpy(name, sysfs_getfilename(path,0), NAME_MAX-1);
 	if( options & APPFS_FLAG_IS_FLASH ){
@@ -64,7 +65,6 @@ int install(const char * path,
 		strncpy(target_path, "/app/ram/", PATH_MAX-1);
 	}
 	strncat(target_path, name, PATH_MAX-1);
-
 
 	//does the image already exist at the target location
 	if( access(target_path, R_OK) == 0 ){

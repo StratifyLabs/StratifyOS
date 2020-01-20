@@ -87,6 +87,7 @@ enum mcu_debug_flags {
 #define mcu_debug_log_warning(o_flags, format, ...)
 #define mcu_debug_log_error(o_flags, format, ...)
 #define mcu_debug_log_fatal(o_flags, format, ...)
+#define mcu_debug_trace_corrupt_memory()
 #else
 #define MCU_DEBUG 1
 int mcu_debug_init();
@@ -98,6 +99,9 @@ int mcu_debug_vprintf(const char * format, va_list args);
 
 #define mcu_debug_root_printf mcu_debug_printf
 #define mcu_debug_user_printf mcu_debug_printf
+
+extern int malloc_is_memory_corrupt(struct _reent * reent);
+#define mcu_debug_trace_corrupt_memory() do { mcu_debug_printf("%s():%d Memory ", __FUNCTION__, __LINE__); if( malloc_is_memory_corrupt(0) ){ mcu_debug_printf("Corrupt\n", __FUNCTION__, __LINE__); } else	{ mcu_debug_printf("OK\n", __FUNCTION__, __LINE__); } } while(0)
 
 void mcu_debug_log_info(u32 o_flags, const char * format, ...);
 void mcu_debug_log_warning(u32 o_flags, const char * format, ...);

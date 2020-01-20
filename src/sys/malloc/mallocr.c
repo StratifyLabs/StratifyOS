@@ -286,6 +286,26 @@ int get_more_memory(struct _reent * reent_ptr, u32 size, int is_new_heap){
 	return 0;
 }
 
+int malloc_is_memory_corrupt(struct _reent * reent_ptr){
+	int is_free;
+	if( reent_ptr == NULL ){
+		reent_ptr = _REENT;
+	}
+
+	malloc_chunk_t * chunk = (malloc_chunk_t *) &(reent_ptr->procmem_base->base);
+
+	while( chunk->header.num_chunks != 0 ){
+		is_free = malloc_chunk_is_free(chunk);
+		if ( is_free == -1 ){
+			return 1;
+		}
+		chunk = chunk + chunk->header.num_chunks;
+	}
+
+	//No block found to fit size
+	return 0;
+}
+
 void * _malloc_r(struct _reent * reent_ptr, size_t size){
 	void * alloc;
 	u16 num_chunks;

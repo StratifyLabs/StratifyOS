@@ -180,9 +180,7 @@ int sffs_serialno_init(const void * cfg, cl_snlist_item_t * bad_serialno_item){
 	}
 
 	//ensure each list is valid
-	sffs_debug(DEBUG_LEVEL, "SN list block is %d\n", sn_list_block);
 	if ( cl_snlist_init(cfg, &list, sn_list_block) < 0) {
-		sffs_error("failed to initialize list\n");
 		return -1;
 	}
 	//assign sn to the highest number in the serial number list

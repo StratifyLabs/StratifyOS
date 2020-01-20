@@ -42,7 +42,6 @@ int sffs_dir_lookup(const void * cfg, const char * path, sffs_dir_lookup_t * des
 	sffs_list_t sn_list;
 	cl_snlist_item_t item;
 
-	sffs_debug(DEBUG_LEVEL, "initialize list\n");
 	if ( cl_snlist_init(cfg, &sn_list, sffs_serialno_getlistblock(cfg) ) < 0 ){
 		return -1;
 	}
