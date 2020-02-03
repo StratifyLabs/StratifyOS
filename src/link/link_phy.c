@@ -93,7 +93,7 @@ int link_phy_getname(char * dest, const char * last, int len){
 	}
 
 
-	strncpy(dest, buffer, len);
+	strncpy(dest, buffer, (u32)len);
 	return 0;
 }
 
@@ -123,6 +123,7 @@ link_transport_phy_t link_phy_open(const char * name, const void * options){
 	link_phy_container_t * handle;
 	DCB params;
 
+
 	if( check_name_length(name) < 0 ){
 		return LINK_PHY_OPEN_ERROR;
 	}
@@ -136,6 +137,7 @@ link_transport_phy_t link_phy_open(const char * name, const void * options){
 	strncpy(handle->name, name, MAX_DEVICE_PATH-1);
 
 	link_debug(LINK_DEBUG_INFO, "Open device %s", name);
+
 	handle->handle = CreateFile(name, GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
 	if( handle->handle == INVALID_HANDLE_VALUE ){
 		free(handle);
@@ -158,7 +160,6 @@ link_transport_phy_t link_phy_open(const char * name, const void * options){
 		return LINK_PHY_OPEN_ERROR;
 	}
 
-
 	if( !GetCommState(handle->handle, &params) ){
 		CloseHandle(handle->handle);
 		free(handle);
@@ -168,6 +169,7 @@ link_transport_phy_t link_phy_open(const char * name, const void * options){
 	const link_transport_serial_options_t * serial_options = options;
 
 	//assign defaults
+	memset(&params, 0, sizeof(params));
 	params.BaudRate = 460800;
 	params.ByteSize = 8;
 	params.StopBits = ONESTOPBIT;
@@ -177,8 +179,8 @@ link_transport_phy_t link_phy_open(const char * name, const void * options){
 
 	if( serial_options ){
 		link_debug(LINK_DEBUG_MESSAGE, "Use custom serial port settings %dbps, %d stop bits, %d parity",
-					  serial_options->baudrate, serial_options->stop_bits, serial_options->parity);
-		params.BaudRate = serial_options->baudrate;
+							 serial_options->baudrate, serial_options->stop_bits, serial_options->parity);
+		params.BaudRate = (DWORD)serial_options->baudrate;
 		if( serial_options->stop_bits == 2 ){
 			params.StopBits = TWOSTOPBITS;
 		} else {
@@ -203,12 +205,15 @@ link_transport_phy_t link_phy_open(const char * name, const void * options){
 	if ( !SetCommState(handle->handle, &params)){
 		CloseHandle(handle->handle);
 		free(handle);
-		link_error("Failed set COMM state %d\n", GetLastError());
-		//return LINK_PHY_OPEN_ERROR;
+		link_error(
+					"Failed set COMM state with error %d for %s",
+					GetLastError(),
+					name
+					);
+		return LINK_PHY_OPEN_ERROR;
 	}
 
 	//SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
-
 	return handle;
 }
 
@@ -224,11 +229,11 @@ int link_phy_write(link_transport_phy_t handle, const void * buf, int nbyte){
 		return LINK_PHY_ERROR;
 	}
 
-	if( !WriteFile(phy->handle, buf, nbyte, &bytes_written, NULL) ){
+	if( !WriteFile(phy->handle, buf, (DWORD)nbyte, &bytes_written, NULL) ){
 		link_error("Failed to write %d bytes from handle:%d\n", nbyte, (int)handle);
 		return LINK_PHY_ERROR;
 	}
-	return bytes_written;
+	return (int)bytes_written;
 }
 
 int link_phy_read(link_transport_phy_t handle, void * buf, int nbyte){
@@ -243,11 +248,11 @@ int link_phy_read(link_transport_phy_t handle, void * buf, int nbyte){
 		return LINK_PHY_ERROR;
 	}
 
-	if( !ReadFile(phy->handle, buf, nbyte, &bytes_read, NULL) ){
+	if( !ReadFile(phy->handle, buf, (DWORD)nbyte, &bytes_read, NULL) ){
 		link_error("Failed to read %d bytes from handle:%d\n", nbyte, (int)handle);
 		return LINK_PHY_ERROR;
 	}
-	return bytes_read;
+	return (int)bytes_read;
 }
 
 int link_phy_close(link_transport_phy_t * handle){
@@ -259,20 +264,20 @@ int link_phy_close(link_transport_phy_t * handle){
 
 	*handle = LINK_PHY_OPEN_ERROR;
 	if( CloseHandle(phy->handle) == 0 ){
-		link_error("Failed to close handle\n");
+		link_error("Failed to close handle (last error %d)", GetLastError());
 	}
 	free(phy);
 	return 0;
 }
 
 void link_phy_wait(int msec){
-	SleepEx(msec, true);
+	SleepEx((DWORD)msec, true);
 }
 
 void link_phy_flush(link_transport_phy_t handle){
 	char c;
 	while( link_phy_read(handle, &c, 1) == 1 ){
-		;
+
 	}
 }
 #endif
@@ -400,10 +405,10 @@ link_transport_phy_t link_phy_open(
 
 	if( serial_options ){
 		link_debug(LINK_DEBUG_MESSAGE,
-					  "Use custom serial port settings %dbps, %d stop bits, %d parity",
-					  serial_options->baudrate,
-					  serial_options->stop_bits,
-					  serial_options->parity);
+							 "Use custom serial port settings %dbps, %d stop bits, %d parity",
+							 serial_options->baudrate,
+							 serial_options->stop_bits,
+							 serial_options->parity);
 		cfsetspeed(&options, serial_options->baudrate);
 		if( serial_options->stop_bits == 2 ){
 			options.c_cflag |= CSTOPB; //two stop bits
