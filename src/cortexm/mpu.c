@@ -210,11 +210,9 @@ u32 mpu_calc_region(int region,
 		case MPU_MEMORY_FLASH:
 			*rasr |= (1<<17); //Outer and Inner Write-Back, no Write-Allocate
 			break;
+		case MPU_MEMORY_LCD:
 		case MPU_MEMORY_PERIPHERALS:
 			*rasr |= ((1<<16)|(1<<18)); //shareable, not cacheable
-			break;
-		case MPU_MEMORY_LCD:
-			*rasr |= (1<<18)|(1<<16);
 			break;
 	}
 
@@ -241,7 +239,16 @@ int mpu_enable_region(int region,
 		return -1;
 	}
 
-	err = mpu_calc_region(region, addr, size, access, type, executable, &rbar, &rasr);
+	err = mpu_calc_region(
+				region,
+				addr,
+				size,
+				access,
+				type,
+				executable,
+				&rbar,
+				&rasr
+				);
 	if ( err == 0 ){
 		return -1;
 	}

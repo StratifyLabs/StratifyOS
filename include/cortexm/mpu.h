@@ -127,21 +127,25 @@ mpu_size_t mpu_calc_size(uint32_t size /*! The size of the memory in bytes */) M
 /*! \details This function enables the memory protection region.
  *
  */
-int mpu_enable_region(int region /*! The region to enable */,
+int mpu_enable_region(
+		int region /*! The region to enable */,
 		const void * addr /*! The starting address */,
 		u32 size /*! The size of the region */,
 		mpu_access_t access /*! MPU Access value */,
 		mpu_memory_t type /*! MPU memory type */,
-		int executable /*! Non-zero to mark code as executable */) MCU_ROOT_CODE;
+		int executable /*! Non-zero to mark code as executable */
+		) MCU_ROOT_CODE;
 
-u32 mpu_calc_region(int region,
+u32 mpu_calc_region(
+		int region,
 		const void * addr,
 		u32 size,
 		mpu_access_t access,
 		mpu_memory_t type,
 		int executable,
 		uint32_t * rbar,
-		uint32_t * rasr) MCU_ROOT_CODE;
+		uint32_t * rasr
+		) MCU_ROOT_CODE;
 
 int mpu_getnextpowerof2(int size) MCU_ROOT_CODE;
 
