@@ -118,9 +118,9 @@ typedef struct MCU_PACK {
 	devfs_async_t * op /*! a pointer to the current operation */;
 	int bytes_left /*! the number of bytes read/written so far */;
 	int size /*! The size of the file */;
-	uint8_t amode /*! The open mode */;
-	uint16_t segment /*! The segment of the file */;
-	uint32_t mtime /*! The time of the last modification */;
+	u8 amode /*! The open mode */;
+	u16 segment /*! The segment of the file */;
+	u32 mtime /*! The time of the last modification */;
 	sffs_block_data_t segment_data; /*! The RAM buffer for the segment */;
 } cl_handle_t;
 
