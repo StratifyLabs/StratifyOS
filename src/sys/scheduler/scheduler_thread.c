@@ -76,7 +76,7 @@ int scheduler_create_thread(
 				);
 
 	if ( id > 0 ){
-		activate_thread(id, mem_addr, attr);
+		activate_thread(id, (void*)align_memory, attr);
 	}
 
 	return id;
@@ -103,7 +103,6 @@ void activate_thread(int id, void * mem_addr, const pthread_attr_t * attr){
 	args.stackguard = (void*)((uint32_t)mem_addr + sizeof(struct _reent));
 
 	cortexm_svcall((cortexm_svcall_t)svcall_activate_thread, &args);
-
 }
 
 

@@ -68,7 +68,6 @@ void start_filesystem(void){
 }
 
 void * sos_default_thread(void * arg){
-
 	mcu_debug_log_info(MCU_DEBUG_SYS, "Enter default thread");
 
 	check_reset_source();

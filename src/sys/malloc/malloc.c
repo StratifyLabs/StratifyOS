@@ -219,7 +219,7 @@ void
 _DEFUN (free, (aptr),
 	_PTR aptr)
 {
-  _free_r (_REENT, aptr);
+	_free_r (_GLOBAL_REENT, aptr);
 }
 
 #endif

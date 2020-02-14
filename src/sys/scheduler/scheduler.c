@@ -334,7 +334,7 @@ int start_first_thread(){
 	attr.stacksize = sos_board_config.start_stack_size;
 	attr.stackaddr = malloc(attr.stacksize);
 	if ( attr.stackaddr == NULL ){
-		mcu_debug_log_error(MCU_DEBUG_SCHEDULER, "No memory\n");
+		mcu_debug_log_error(MCU_DEBUG_SCHEDULER, "No memory");
 		errno = ENOMEM;
 		return -1;
 	}

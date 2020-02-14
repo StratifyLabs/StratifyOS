@@ -20,12 +20,14 @@ int link2_transport_slaveread(
 		int (*callback)(void*,void*,int),
 		void * context
 		){
+	char * p = 0;
+	int bytes = 0;
+	u16 checksum = 0;
+	int err = 0;
+	int ret = 0;
 	link2_pkt_t pkt;
-	char * p;
-	int bytes;
-	u16 checksum;
-	int err;
-	int ret;
+	memset(&pkt, 0, sizeof(pkt));
+
 
 	bytes = 0;
 	p = buf;
@@ -99,10 +101,11 @@ int link2_transport_slavewrite(
 		int (*callback)(void*,void*,int),
 		void * context
 		){
+	char * p = 0;
+	int bytes = 0;
+	int ret = 0;
 	link2_pkt_t pkt;
-	char * p;
-	int bytes;
-	int ret;
+	memset(&pkt, 0, sizeof(pkt));
 
 	bytes = 0;
 	p = (void*)buf;

@@ -172,6 +172,7 @@ void _free_r(struct _reent * reent_ptr, void * addr){
 	}
 
 	if ( reent_ptr->procmem_base == NULL ){
+		mcu_debug_printf("can't free %p %p %p==%p\n", _GLOBAL_REENT, _GLOBAL_REENT->procmem_base, reent_ptr, _REENT);
 		return;
 	}
 
@@ -383,7 +384,7 @@ void * _malloc_r(struct _reent * reent_ptr, size_t size){
 
 	__malloc_unlock(reent_ptr);
 
-	mcu_debug_log_info(MCU_DEBUG_MALLOC, "a:%d,%d %p %d (%d) %p %p<-", getpid(), task_get_current(), alloc, size, num_chunks*MALLOC_CHUNK_SIZE, reent_ptr, _GLOBAL_REENT);
+	mcu_debug_log_info(MCU_DEBUG_MALLOC, "a:%d,%d %p %d (%d) %p %p<-", getpid(), task_get_current(), alloc, size, num_chunks*MALLOC_CHUNK_SIZE, _GLOBAL_REENT->procmem_base, _GLOBAL_REENT);
 
 
 	return alloc;

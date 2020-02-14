@@ -197,6 +197,8 @@ int sffs_fstat(const void * cfg, void * handle, struct stat * stat){
 		mcu_debug_log_error(MCU_DEBUG_FILESYSTEM, "failed to load header block");
 		ret = SYSFS_SET_RETURN(EIO);
 	} else {
+		stat->st_gid = 0;
+		stat->st_uid = 0;
 		stat->st_ino = (ino_t)h->segment_data.hdr.serialno;
 		stat->st_size = h->size;
 		stat->st_blocks = ((h->size + BLOCK_DATA_SIZE - 1) / BLOCK_DATA_SIZE);
