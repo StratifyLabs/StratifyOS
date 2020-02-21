@@ -122,7 +122,10 @@ int hibernate(int seconds){
 	if ( seconds > 0 ){
 		set_alarm(seconds);
 	}
-	mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_HIBERNATE, &seconds);
+	mcu_board_execute_event_handler(
+				MCU_BOARD_CONFIG_EVENT_HIBERNATE,
+				&seconds
+				);
 	cortexm_svcall(svcall_hibernate, &seconds);
 	mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_WAKEUP_FROM_HIBERNATE, &seconds);
 	return 0;
@@ -133,7 +136,10 @@ void powerdown(int seconds){
 	if ( seconds > 0 ){
 		set_alarm(seconds);
 	}
-	mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_POWERDOWN, &seconds);
+	mcu_board_execute_event_handler(
+				MCU_BOARD_CONFIG_EVENT_POWERDOWN,
+				&seconds
+				);
 	cortexm_svcall(svcall_powerdown, NULL);
 	//device will reset after a powerdown event
 }
