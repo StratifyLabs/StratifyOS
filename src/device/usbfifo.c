@@ -189,6 +189,6 @@ int usbfifo_write(const devfs_handle_t * handle, devfs_async_t * async){
 
 int usbfifo_close(const devfs_handle_t * handle){
 	//use I_FIFO_EXIT to close the USB
-	return 0;
+	return mcu_usb_close(handle);
 }
 
