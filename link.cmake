@@ -1,11 +1,12 @@
 
 
-#Add sources to the project
-set(SOURCES_PREFIX ${CMAKE_SOURCE_DIR}/src)
-add_subdirectory(src)
+# Globs
 file(GLOB_RECURSE HEADERS ${CMAKE_SOURCE_DIR}/include/*)
 file(GLOB_RECURSE CMAKE_FILES ${CMAKE_SOURCE_DIR}/cmake/*)
-list(APPEND SOS_SOURCELIST ${SOURCES} ${HEADERS} ${CMAKE_FILES})
+
+#Add sources to the project
+sos_sdk_add_subdirectory(SOS_SOURCELIST src)
+list(APPEND SOS_SOURCELIST ${HEADERS} ${CMAKE_FILES})
 
 set(SOS_CONFIG release)
 set(SOS_OPTION link)

@@ -4,6 +4,7 @@ set(SOS_TOOLCHAIN_CMAKE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 include(${SOS_TOOLCHAIN_CMAKE_PATH}/sos-resolve-build-config.cmake)
 include(${SOS_TOOLCHAIN_CMAKE_PATH}/sos-variables.cmake)
+include(${SOS_TOOLCHAIN_CMAKE_PATH}/sos-sdk.cmake)
 
 
 if( ${SOS_BUILD_CONFIG} STREQUAL arm )

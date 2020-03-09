@@ -1,44 +1,15 @@
 
-
-set(SRC_SOURCES_PREFIX ${SOURCES_PREFIX})
-
 if( ${SOS_BUILD_CONFIG} STREQUAL arm )
-  set(SOURCES_PREFIX ${SRC_SOURCES_PREFIX}/cortexm)
-  add_subdirectory(cortexm)
-  list(APPEND SOURCELIST ${SOURCES})
-
+	sos_sdk_add_subdirectory(SOURCELIST cortexm)
   list(APPEND SOURCELIST ${SRC_SOURCES_PREFIX}/config.h)
-
-  set(SOURCES_PREFIX ${SRC_SOURCES_PREFIX}/device)
-  add_subdirectory(device)
-  list(APPEND SOURCELIST ${SOURCES})
-
-	set(SOURCES_PREFIX ${SRC_SOURCES_PREFIX}/link_transport)
-	add_subdirectory(link_transport)
-  list(APPEND SOURCELIST ${SOURCES})
-
-  set(SOURCES_PREFIX ${SRC_SOURCES_PREFIX}/mcu)
-  add_subdirectory(mcu)
-  list(APPEND SOURCELIST ${SOURCES})
-
-  set(SOURCES_PREFIX ${SRC_SOURCES_PREFIX}/sys)
-  add_subdirectory(sys)
-  list(APPEND SOURCELIST ${SOURCES})
-
-  set(SOURCES_PREFIX ${SRC_SOURCES_PREFIX}/usbd)
-  add_subdirectory(usbd)
-  list(APPEND SOURCELIST ${SOURCES})
-
+	sos_sdk_add_subdirectory(SOURCELIST device)
+	sos_sdk_add_subdirectory(SOURCELIST link_transport)
+	sos_sdk_add_subdirectory(SOURCELIST mcu)
+	sos_sdk_add_subdirectory(SOURCELIST sys)
+	sos_sdk_add_subdirectory(SOURCELIST usbd)
 else()
-
-  set(SOURCES_PREFIX ${SRC_SOURCES_PREFIX}/link)
-  add_subdirectory(link)
-  list(APPEND SOURCELIST ${SOURCES})
-
-	set(SOURCES_PREFIX ${SRC_SOURCES_PREFIX}/link_transport)
-	add_subdirectory(link_transport)
-  list(APPEND SOURCELIST ${SOURCES})
-
+	sos_sdk_add_subdirectory(SOURCELIST link_transport)
+	sos_sdk_add_subdirectory(SOURCELIST link)
 endif()
 
 set(SOURCES ${SOURCELIST} PARENT_SCOPE)
