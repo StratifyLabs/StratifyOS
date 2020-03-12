@@ -25,7 +25,7 @@
 #include <unistd.h>
 #include "sos/dev/hash.h"
 #include "device/auth.h"
-#include "sos/crypt_api.h"
+#include "sos/api/crypt_api.h"
 
 
 typedef struct {
@@ -96,6 +96,11 @@ int device_sha256_finish(void * context, unsigned char * output, u32 size){
 }
 
 const crypt_hash_api_t device_sha256_hash_api = {
+	.sos_api = {
+		.name = "device_sha256_hash",
+		.version = 0x0001,
+		.git_hash = SOS_GIT_HASH
+	},
 	.init = device_sha256_init,
 	.deinit = device_sha256_deinit,
 	.start = device_sha256_start,

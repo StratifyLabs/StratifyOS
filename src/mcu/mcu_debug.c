@@ -33,7 +33,7 @@
 
 #if MCU_DEBUG
 
-static const char * flag_names[32] = {
+static const char * const flag_names[32] = {
 	"SYS", //0
 	"SYS",
 	"SYS", //2

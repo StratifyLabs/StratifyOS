@@ -152,6 +152,7 @@ enum {
 	MCU_BOARD_CONFIG_EVENT_ROOT_WDT_TIMEOUT /*! MCU had a WDT timeout */,
 	MCU_BOARD_CONFIG_EVENT_SCHEDULER_IDLE /*! All tasks are idle (this can implement an alternate sleep implementation) */,
 	MCU_BOARD_CONFIG_EVENT_ROOT_DEBUG_INITIALIZED /*! All tasks are idle (this can implement an alternate sleep implementation) */,
+	MCU_BOARD_CONFIG_EVENT_SYSTEM_ASSERT /*! Software assert() called on process 0 */,
 	MCU_BOARD_CONFIG_EVENT_TOTAL
 };
 

@@ -24,7 +24,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include "sos/dev/crypt.h"
-#include "sos/crypt_api.h"
+#include "sos/api/crypt_api.h"
 
 
 typedef struct {
@@ -115,7 +115,6 @@ unsigned char output[16]
 
 	}
 	return -1;
-
 }
 
 int device_aes_decrypt_ecb(
@@ -187,6 +186,11 @@ unsigned char *output){
 }
 
 const crypt_aes_api_t device_aes_api = {
+	.sos_api = {
+		.name = "device_aes",
+		.version = 0x0001,
+		.git_hash = SOS_GIT_HASH
+	},
 	.init = device_aes_init,
 	.deinit = device_aes_deinit,
 	.set_key = device_aes_set_key,

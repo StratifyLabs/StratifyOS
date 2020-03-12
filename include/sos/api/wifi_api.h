@@ -1,9 +1,10 @@
-#ifndef SOS_WIFI_API_H
-#define SOS_WIFI_API_H
+#ifndef SOS_API_WIFI_API_H
+#define SOS_API_WIFI_API_H
 
-#include "mcu/types.h"
+#include "sos_api.h"
 
 typedef struct {
+	sos_api_t sos_api;
 	int (*init)(void ** context);
 	void (*deinit)(void ** context);
 
@@ -26,4 +27,4 @@ typedef struct {
 #define WIFI_API_REQUEST MCU_API_REQUEST_CODE('w','i','f','i')
 #endif
 
-#endif // SOS_WIFI_API_H
+#endif // SOS_API_WIFI_API_H
