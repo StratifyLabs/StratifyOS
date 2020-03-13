@@ -1,11 +1,11 @@
 
 
 if( ${SOS_BUILD_CONFIG} STREQUAL arm )
-    set(SOURCES ${SOURCES}
-      ${SOURCES_PREFIX}/crt_common.c
-      ${SOURCES_PREFIX}/crt_common.h
-      ${SOURCES_PREFIX}/crt_symbols.S
-      ${SOURCES_PREFIX}/crt.c
-      ${SOURCES_PREFIX}/operator.cpp
-      PARENT_SCOPE)
-  endif()
+	set(SOURCES
+		crt_common.c
+		crt_common.h
+		crt_symbols.S
+		crt.c
+		operator.cpp
+		PARENT_SCOPE)
+endif()

@@ -22,7 +22,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include "device/auth.h"
-#include "sos/crypt_api.h"
+#include "sos/api/crypt_api.h"
 
 #include "tinycrypt/constants.h"
 #include "tinycrypt/sha256.h"
@@ -70,6 +70,11 @@ int tinycrypt_sha256_finish(void * context, unsigned char * output, u32 size){
 }
 
 const crypt_hash_api_t tinycrypt_sha256_hash_api = {
+	.sos_api = {
+		.name = "tinycrypt_sha256_hash",
+		.version = 0x0001,
+		.git_hash = SOS_GIT_HASH
+	},
 	.init = tinycrypt_sha256_init,
 	.deinit = tinycrypt_sha256_deinit,
 	.start = tinycrypt_sha256_start,

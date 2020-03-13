@@ -168,7 +168,7 @@ typedef struct MCU_PACK {
  * For example:
  * \code
  * u32 value;
- * value = ioctl(tmr_fd, I_TMR_GET);
+ * ioctl(tmr_fd, I_TMR_GET, &value);
  * \endcode
  * \hideinitializer
  */

@@ -13,26 +13,22 @@ if(NOT HAVE_LWIP_SOCKETS_H)
 	set(SOS_DEFINITIONS SOS_BOOTSTRAP_SOCKETS=1)
 endif()
 
-#Add sys sources
+# Grab GLOB files
+file(GLOB_RECURSE HEADER_FILES ${CMAKE_SOURCE_DIR}/include/* )
 file(GLOB CMAKE_SOURCES ${CMAKE_SOURCE_DIR}/cmake/*)
 file(GLOB LDSCRIPT_SOURCES ${CMAKE_SOURCE_DIR}/ldscript/*)
-set(SOURCES "")
-set(SOURCES_PREFIX ${CMAKE_SOURCE_DIR}/src)
-add_subdirectory(src)
-file(GLOB_RECURSE HEADER_FILES ${CMAKE_SOURCE_DIR}/include/* )
-set(SYS_SOURCELIST ${SOURCES} ${CMAKE_SOURCES} ${LDSCRIPT_SOURCES} ${HEADER_FILES} doxyfile)
 
 #Add sys sources
-set(SOURCES "")
-set(SOURCES_PREFIX ${CMAKE_SOURCE_DIR}/src/crt)
-add_subdirectory(src/crt)
-set(CRT_SOURCELIST ${SOURCES} ${HEADER_FILES})
+sos_sdk_add_subdirectory(SYS_SOURCELIST src)
+list(APPEND SYS_SOURCELIST ${CMAKE_SOURCES} ${LDSCRIPT_SOURCES} ${HEADER_FILES} doxyfile)
+
+#Add sys sources
+sos_sdk_add_subdirectory(CRT_SOURCELIST src/crt)
+list(APPEND CRT_SOURCELIST ${HEADER_FILES})
 
 #Add bootloader sources
-set(SOURCES "")
-set(SOURCES_PREFIX ${CMAKE_SOURCE_DIR}/src/boot)
-add_subdirectory(src/boot)
-set(BOOT_SOURCELIST ${SOURCES} ${HEADER_FILES})
+sos_sdk_add_subdirectory(BOOT_SOURCELIST src/boot)
+list(APPEND BOOT_SOURCELIST ${HEADER_FILES})
 
 set(SOS_INCLUDE_DIRECTORIES
 	src
@@ -73,7 +69,6 @@ set(SOS_CONFIG debug)
 set(SOS_SOURCELIST ${BOOT_SOURCELIST})
 include(${SOS_TOOLCHAIN_CMAKE_PATH}/sos-lib-std.cmake)
 endif()
-
 
 install(DIRECTORY include/cortexm include/device include/mcu include/sos include/usbd DESTINATION include)
 install(DIRECTORY include/posix/ DESTINATION include)

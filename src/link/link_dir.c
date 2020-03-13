@@ -32,7 +32,12 @@ int link_mkdir(link_transport_mdriver_t * driver, const char * path, link_mode_t
 	int len;
 	int err;
 
-	link_debug(LINK_DEBUG_MESSAGE, "mkdir %s 0%o", path, mode);
+	link_debug(LINK_DEBUG_INFO,
+						 "call with (%s, 0%o) and handle %p",
+						 path,
+						 mode,
+						 driver->phy_driver.handle
+						 );
 
 	op.mkdir.cmd = LINK_CMD_MKDIR;
 	op.mkdir.mode = mode;
@@ -77,25 +82,35 @@ int link_rmdir(link_transport_mdriver_t * driver, const char * path){
 		return LINK_TRANSFER_ERR;
 	}
 
-	link_debug(LINK_DEBUG_MESSAGE, "rmdir %s", path);
+	link_debug(LINK_DEBUG_INFO,
+						 "call with (%s) and handle %p",
+						 path,
+						 driver->phy_driver.handle
+						 );
 
 	op.rmdir.cmd = LINK_CMD_RMDIR;
 	op.rmdir.path_size = strlen(path) + 1;
 
+	link_debug(LINK_DEBUG_MESSAGE, "Write op");
 	err = link_transport_masterwrite(driver, &op, sizeof(op));
 	if ( err < 0 ){
+		link_error("Failed to write op");
 		return err;
 	}
 
 	//Send the path on the bulk out endpoint
+	link_debug(LINK_DEBUG_MESSAGE, "Write path");
 	len = link_transport_masterwrite(driver, path, op.rmdir.path_size);
 	if ( len < 0 ){
+		link_error("Failed to write path");
 		return LINK_TRANSFER_ERR;
 	}
 
 	//read the reply to see if the file opened correctly
+	link_debug(LINK_DEBUG_MESSAGE, "read reply");
 	err = link_transport_masterread(driver, &reply, sizeof(reply));
 	if ( err < 0 ){
+		link_error("Failed to read reply");
 		return err;
 	}
 
@@ -117,6 +132,12 @@ int link_opendir(link_transport_mdriver_t * driver, const char * dirname){
 		link_error("No device");
 		return 0;
 	}
+
+	link_debug(LINK_DEBUG_INFO,
+						 "call with (%s) and handle %p",
+						 dirname,
+						 driver->phy_driver.handle
+						 );
 
 	op.opendir.cmd = LINK_CMD_OPENDIR;
 	op.opendir.path_size = strlen(dirname) + 1;
@@ -152,8 +173,12 @@ int link_opendir(link_transport_mdriver_t * driver, const char * dirname){
 	if( reply.err < 0 ){
 		link_errno = reply.err_number;
 		link_debug(LINK_DEBUG_WARNING, "Failed to opendir (%d)", link_errno);
+	} else {
+		link_debug(LINK_DEBUG_INFO,
+							 "new dirp is 0x%X",
+							 reply.err
+							 );
 	}
-
 	return reply.err;
 }
 
@@ -165,6 +190,14 @@ int link_readdir_r(link_transport_mdriver_t * driver, int dirp, struct link_dire
 	if ( driver == NULL ){ return -1; }
 	if ( result != NULL ){ *result = NULL; }
 
+
+	link_debug(LINK_DEBUG_INFO,
+						 "call with (0x%X, %p) and handle %p",
+						 dirp,
+						 entry,
+						 driver->phy_driver.handle
+						 );
+
 	op.readdir.cmd = LINK_CMD_READDIR;
 	op.readdir.dirp = dirp;
 
@@ -175,7 +208,7 @@ int link_readdir_r(link_transport_mdriver_t * driver, int dirp, struct link_dire
 
 	reply.err = 0;
 	reply.err_number = 0;
-	link_debug(LINK_DEBUG_MESSAGE, "Read reply %ld", sizeof(reply));
+	link_debug(LINK_DEBUG_MESSAGE, "Read reply size=%ld", sizeof(reply));
 	if (link_transport_masterread(driver, &reply, sizeof(reply)) < 0){
 		return -1;
 	}
@@ -211,18 +244,26 @@ int link_closedir(link_transport_mdriver_t * driver, int dirp){
 		return LINK_TRANSFER_ERR;
 	}
 
+	link_debug(LINK_DEBUG_INFO,
+						 "call with (0x%X) and handle %p",
+						 dirp,
+						 driver->phy_driver.handle
+						 );
+
 	op.closedir.cmd = LINK_CMD_CLOSEDIR;
 	op.closedir.dirp = dirp;
 
-	link_debug(LINK_DEBUG_MESSAGE, "Send op");
+	link_debug(LINK_DEBUG_MESSAGE, "Write op");
 	err = link_transport_masterwrite(driver, &op, sizeof(link_closedir_t));
 	if ( err < 0 ){
+		link_error("Failed to write op");
 		return err;
 	}
 
-	link_debug(LINK_DEBUG_MESSAGE, "Get Reply");
+	link_debug(LINK_DEBUG_MESSAGE, "Read Reply");
 	err = link_transport_masterread(driver, &reply, sizeof(reply));
 	if ( err < 0 ){
+		link_error("Failed to read reply");
 		return err;
 	}
 

@@ -16,6 +16,7 @@
 #ifndef SOS_SYMBOLS_TABLE_H_
 #define SOS_SYMBOLS_TABLE_H_
 
+#include <assert.h>
 #include "mcu/types.h"
 #include "mcu/arch.h"
 #include "sos/sos.h"
@@ -678,6 +679,7 @@ u32 const symbols_table[] = {
 	(u32)geteuid,
 	(u32)seteuid,
 	(u32)sos_trace_stack,
+	(u32)__assert_func,
 	1
 };
 
