@@ -70,7 +70,6 @@ set(SOS_SOURCELIST ${BOOT_SOURCELIST})
 include(${SOS_TOOLCHAIN_CMAKE_PATH}/sos-lib-std.cmake)
 endif()
 
-
 install(DIRECTORY include/cortexm include/device include/mcu include/sos include/usbd DESTINATION include)
 install(DIRECTORY include/posix/ DESTINATION include)
 install(DIRECTORY ldscript/ DESTINATION lib/ldscripts)

@@ -29,10 +29,59 @@
 
 typedef struct {
 	int fd;
-	u32 o_flags;
+	u32 o_key_flags;
+	u32 mode;
 	u8 key[32];
+	u8 iv[16];
 	u8 key_bits;
 } device_aes_context_t;
+
+static int update_mode(
+		device_aes_context_t * context,
+		u32 mode,
+		const unsigned char * iv
+		){
+	if( context->mode != mode ){
+		context->mode	= mode;
+
+		crypt_attr_t attributes;
+		if( iv != 0 ){
+			memcpy(context->iv, iv, 16);
+		}
+
+		attributes.iv = context->iv;
+		attributes.key = context->key;
+		attributes.header_size = 0;
+		attributes.o_flags =
+				CRYPT_FLAG_SET_CIPHER |
+				CRYPT_FLAG_SET_MODE |
+				context->o_key_flags |
+				mode;
+
+		return ioctl(
+					context->fd,
+					I_CRYPT_SETATTR,
+					&attributes
+					);
+	}
+	return 0;
+}
+
+static int crypto_transaction(
+		device_aes_context_t * context,
+		const void * source,
+		u8 * destination,
+		u32 length
+		){
+	struct aiocb aio_operation;
+	aio_operation.aio_buf = destination;
+	aio_operation.aio_fildes = context->fd;
+	aio_operation.aio_nbytes = length;
+	aio_operation.aio_lio_opcode = LIO_READ;
+	aio_operation.aio_offset = 0;
+	aio_read(&aio_operation);
+	return write(context->fd, source, length);
+}
 
 int device_aes_init(void ** context){
 	int fd = open("/dev/crypt0", O_RDWR);
@@ -40,14 +89,14 @@ int device_aes_init(void ** context){
 		return -1;
 	}
 
-	void * c = malloc(sizeof(device_aes_context_t));
+	device_aes_context_t * c = malloc(sizeof(device_aes_context_t));
 	if( c == 0 ){
 		close(fd);
 		return -1;
 	}
 
-	((device_aes_context_t*)c)->fd = fd;
-	((device_aes_context_t*)c)->o_flags = 0;
+	memset(c, 0, sizeof(device_aes_context_t));
+	c->fd = fd;
 
 	*context = c;
 	return 0;
@@ -83,19 +132,28 @@ int device_aes_set_key(
 		return -1*__LINE__;
 	}
 
-	c->o_flags &= ~(
-				CRYPT_FLAG_IS_DATA_1 |
-				CRYPT_FLAG_IS_DATA_8 |
-				CRYPT_FLAG_IS_DATA_16 |
-				CRYPT_FLAG_IS_DATA_32
-				);
-
-	if( bits_per_word == 1 ){	c->o_flags = CRYPT_FLAG_IS_DATA_1; }
-	else if( bits_per_word == 8 ){	c->o_flags = CRYPT_FLAG_IS_DATA_8; }
-	else if( bits_per_word == 16 ){	c->o_flags = CRYPT_FLAG_IS_DATA_16; }
-	else {	c->o_flags = CRYPT_FLAG_IS_DATA_32; }
+	c->o_key_flags = 0;
+	if( bits_per_word == 1 ){
+		c->o_key_flags = CRYPT_FLAG_IS_DATA_1;
+	} else if( bits_per_word == 8 ){
+		c->o_key_flags = CRYPT_FLAG_IS_DATA_8;
+	} else if( bits_per_word == 16 ){
+		c->o_key_flags = CRYPT_FLAG_IS_DATA_16;
+	} else {
+		c->o_key_flags = CRYPT_FLAG_IS_DATA_32;
+	}
 
 	c->key_bits = keybits;
+	if( keybits == 256 ){
+		c->o_key_flags |= CRYPT_FLAG_IS_AES_256;
+	} else if( keybits == 192 ){
+		c->o_key_flags |= CRYPT_FLAG_IS_AES_192;
+	} else {
+		c->key_bits = 128;
+		c->o_key_flags |= CRYPT_FLAG_IS_AES_128;
+	}
+
+	memset(c->key, 0, 32);
 	memcpy(c->key, key, keybits/8);
 	return 0;
 }
@@ -105,30 +163,42 @@ int device_aes_encrypt_ecb(
 		const unsigned char input[16],
 unsigned char output[16]
 ){
-	u32 mode =
-			CRYPT_FLAG_IS_AES_ECB |
-			CRYPT_FLAG_IS_ENCRYPT;
-	device_aes_context_t * c = context;
-	if( (c->o_flags & mode) != mode ){
-		crypt_attr_t attributes;
-		attributes.o_flags = c->o_flags;
-
+	if( update_mode(
+				context,
+				CRYPT_FLAG_IS_AES_ECB |
+				CRYPT_FLAG_IS_ENCRYPT,
+				0
+				) < 0 ){
+		return -1;
 	}
-	return -1;
+
+	return crypto_transaction(
+				context,
+				input,
+				output,
+				16
+				);
 }
 
 int device_aes_decrypt_ecb(
 		void * context,
 		const unsigned char input[16],
 unsigned char output[16]){
-	u32 mode =
-			CRYPT_FLAG_IS_AES_ECB |
-			CRYPT_FLAG_IS_DECRYPT;
-	device_aes_context_t * c = context;
-	if( (c->o_flags & mode) != mode ){
-
+	if( update_mode(
+				context,
+				CRYPT_FLAG_IS_AES_ECB |
+				CRYPT_FLAG_IS_DECRYPT,
+				0
+				) < 0 ){
+		return -1;
 	}
-	return -1;
+
+	return crypto_transaction(
+				context,
+				input,
+				output,
+				16
+				);
 }
 
 int device_aes_encrypt_cbc(
@@ -137,14 +207,24 @@ int device_aes_encrypt_cbc(
 		unsigned char iv[16],
 const unsigned char *input,
 unsigned char *output ){
-	u32 mode =
-			CRYPT_FLAG_IS_AES_CBC |
-			CRYPT_FLAG_IS_ENCRYPT;
-	device_aes_context_t * c = context;
-	if( (c->o_flags & mode) != mode ){
 
+	if( update_mode(
+				context,
+				CRYPT_FLAG_IS_AES_CBC |
+				CRYPT_FLAG_IS_ENCRYPT,
+				iv
+				) < 0 ){
+		return -1;
 	}
-	return -1;
+
+	return crypto_transaction(
+				context,
+				input,
+				output,
+				length
+				);
+
+	return 0;
 }
 
 int device_aes_decrypt_cbc(
@@ -153,14 +233,24 @@ int device_aes_decrypt_cbc(
 		unsigned char iv[16],
 const unsigned char *input,
 unsigned char *output ){
-	u32 mode =
-			CRYPT_FLAG_IS_AES_CBC |
-			CRYPT_FLAG_IS_DECRYPT;
-	device_aes_context_t * c = context;
-	if( (c->o_flags & mode) != mode ){
 
+	if( update_mode(
+				context,
+				CRYPT_FLAG_IS_AES_CBC |
+				CRYPT_FLAG_IS_DECRYPT,
+				iv
+				) < 0 ){
+		return -1;
 	}
-	return -1;
+
+	return crypto_transaction(
+				context,
+				input,
+				output,
+				length
+				);
+
+	return 0;
 }
 
 int device_aes_encrypt_ctr(
@@ -187,7 +277,7 @@ unsigned char *output){
 
 const crypt_aes_api_t device_aes_api = {
 	.sos_api = {
-		.name = "device_aes",
+		.name = "crypt_aes_device",
 		.version = 0x0001,
 		.git_hash = SOS_GIT_HASH
 	},

@@ -104,5 +104,6 @@ typedef struct {
 extern const crypt_hash_api_t tinycrypt_sha256_hash_api;
 extern const crypt_hash_api_t device_sha256_hash_api;
 extern const crypt_aes_api_t device_aes_api;
+extern const crypt_random_api_t device_random_api;
 
 #endif // SOS_API_CRYPT_API_H

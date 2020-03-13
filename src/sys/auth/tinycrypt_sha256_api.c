@@ -27,8 +27,6 @@
 #include "tinycrypt/constants.h"
 #include "tinycrypt/sha256.h"
 
-#define VERSION "0.1"
-
 int tinycrypt_sha256_init(void ** context){
 	void * c = malloc(sizeof(struct tc_sha256_state_struct));
 	if( c == 0 ){

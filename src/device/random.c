@@ -45,14 +45,21 @@ int random_ioctl(const devfs_handle_t * handle, int request, void * ctl){
         return RANDOM_VERSION;
 
     case I_RANDOM_SETATTR:
-        if( attr->o_flags & RANDOM_FLAG_SET_SEED ){
+				if( attr->o_flags & (RANDOM_FLAG_ENABLE | RANDOM_FLAG_DISABLE) ){
+					return 0;
+				}
+
+				if( attr->o_flags & RANDOM_FLAG_SET_SEED ){
             //set the seed
             state->clfsr = attr->seed;
             return 0;
         }
         break;
+
     case I_RANDOM_GETINFO:
-        info->o_flags = RANDOM_FLAG_SET_SEED;
+				info->o_flags =
+						RANDOM_FLAG_SET_SEED |
+						RANDOM_FLAG_IS_PSEUDO;
         return 0;
     }
 

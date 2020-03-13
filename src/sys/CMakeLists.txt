@@ -157,6 +157,7 @@ if( ${SOS_BUILD_CONFIG} STREQUAL arm )
 		auth/tinycrypt_sha256_api.c
 		auth/device_sha256_api.c
 		auth/device_aes_api.c
+		auth/device_random_api.c
 		#auth/tinycrypt_sha256.c
 		#auth/tinycrypt_sha256.h
 		auth/tinycrypt/lib/include/tinycrypt/aes.h
