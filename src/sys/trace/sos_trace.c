@@ -27,13 +27,42 @@
 #include "sos/link.h"
 #include "cortexm/mpu.h"
 
-static void sos_trace_event_addr(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len, u32 addr);
-static void sos_trace_build_event(link_trace_event_t * event, link_trace_event_id_t event_id, const void * data_ptr, size_t data_len, u32 addr, int tid, const struct timespec * spec);
+#define OLD_WAY_STACK_TRACE 0
+
+static void sos_trace_event_addr(
+		link_trace_event_id_t event_id,
+		const void * data_ptr,
+		size_t data_len,
+		u32 addr
+		);
+static void sos_trace_build_event(
+		link_trace_event_t * event,
+		link_trace_event_id_t event_id,
+		const void * data_ptr,
+		size_t data_len,
+		u32 addr,
+		int tid,
+		const struct timespec * spec
+		);
 static void svcall_trace_event(void * args);
 static void svcall_get_stack_pointer(void * args);
-static u32 lookup_caller_adddress(u32 input);
 
-void sos_trace_root_trace_event(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len){
+#if OLD_WAY_STACK_TRACE == 0
+static u16 decode_stack_modifier_opcodes(u16 * machine_code, u32 * stack_jump);
+static u16 * scan_code_for_push(u32 link_address, u32* stack_jump);
+static u32 decode_push_opcode(u16* opcode);
+static u32 decode_store_on_stack_opcode(u16* opcode);
+static u32 decode_subtract_stack_opcode(u16* opcode);
+#else
+static u32 lookup_caller_adddress(u32 input);
+#endif
+
+
+void sos_trace_root_trace_event(
+		link_trace_event_id_t event_id,
+		const void * data_ptr,
+		size_t data_len
+		){
 	register u32 lr asm("lr");
 	link_trace_event_t event;
 	if( sos_board_config.trace_event ){
@@ -77,12 +106,21 @@ void sos_trace_build_event(
 	cortexm_assign_zero_sum32(&event, CORTEXM_ZERO_SUM32_COUNT(event));
 }
 
-void sos_trace_event(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len){
+void sos_trace_event(
+		link_trace_event_id_t event_id,
+		const void * data_ptr,
+		size_t data_len
+		){
 	register u32 lr asm("lr");
 	sos_trace_event_addr(event_id, data_ptr, data_len, lr);
 }
 
-void sos_trace_event_addr(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len, u32 addr){
+void sos_trace_event_addr(
+		link_trace_event_id_t event_id,
+		const void * data_ptr,
+		size_t data_len,
+		u32 addr
+		){
 	sos_trace_event_addr_tid(event_id, data_ptr, data_len, addr, task_get_current());
 }
 
@@ -136,6 +174,8 @@ void svcall_get_stack_pointer(void * args){
 	cortexm_get_thread_stack_ptr(args);
 }
 
+
+#if OLD_WAY_STACK_TRACE
 u32 lookup_caller_adddress(u32 input){
 
 	if( (input & 0x01) == 0 ){
@@ -144,26 +184,88 @@ u32 lookup_caller_adddress(u32 input){
 
 	//check if input is a caller for the kernel
 	if( (input >= (u32)&_text) &&
-		 (input < (u32)&_etext)
-		 ){
+			(input < (u32)&_etext)
+			){
 		return input;
 	}
 
 	//check if input is a caller for the application
 	const u8 tid = task_get_current();
 	if( (input >= (u32)sos_task_table[tid].mem.code.address) &&
-		 (input <
-		  (u32)sos_task_table[tid].mem.code.address +
-		  sos_task_table[tid].mem.code.size) ){
+			(input <
+			 (u32)sos_task_table[tid].mem.code.address +
+			 sos_task_table[tid].mem.code.size) ){
 		return input;
 	}
 	return 0;
 }
+#endif
 
-void sos_trace_stack(u32 count){
-	void * sp;
+int sos_trace_stack(u32 count){
+	u32 * sp;
 	cortexm_svcall(svcall_get_stack_pointer, &sp);
 
+	/*
+	 * cortexm_svcall() reads the PSP in handler mode. So
+	 * the PSP has a hardware stack from on top of it when it
+	 * is calculated. This needs to be adjusted for.
+	 *
+	 * The hardware stack frame as 8 registers
+	 *
+	 */
+	sp += 8;
+
+#if OLD_WAY_STACK_TRACE == 0
+	CORTEXM_DECLARE_LINK_REGISTER(first_link_register);
+	char message[20] = {0};
+	int len;
+	strncpy(message, "stackTrace", 16);
+	len = strnlen(message, 16);
+
+	u32 stack_top = (u32)(sos_task_table[task_get_current()].mem.data.address +
+									 sos_task_table[task_get_current()].mem.data.size);
+
+	u32 next_link_register = first_link_register & ~0x01;
+
+	u16 * code_pointer;
+	u32 push_count = 0;
+
+	u32 stack_jump = 0;
+	do {
+		code_pointer = scan_code_for_push(next_link_register, &stack_jump);
+		//code points near the entrance of the function
+
+		for(int i=0; i < stack_jump; i++){
+			mcu_debug_printf(
+						"stack preview %d:%x -> %08x\n",
+						i,
+						sp + i,
+						sp[i]
+						);
+		}
+
+		sp += (stack_jump);
+		mcu_debug_printf("Pushed %p < %p registers\n", sp, stack_top);
+
+
+		next_link_register = sp[-1]  & ~0x01;
+		mcu_debug_printf("Next link is %08x\n", next_link_register);
+
+		sos_trace_event_addr(
+					LINK_POSIX_TRACE_MESSAGE,
+					message,
+					len,
+					((u32)code_pointer)+1
+					);
+
+		push_count++;
+
+	} while( ((u32)sp < stack_top) &&
+					 (push_count < count) );
+
+	return push_count;
+
+#else
 	sp	= (void*)((u32)sp & ~0x03);
 	u32 stack_count =
 			(u32)(sos_task_table[task_get_current()].mem.data.address +
@@ -190,12 +292,101 @@ void sos_trace_stack(u32 count){
 						);
 			push_count++;
 			if( push_count == count ){
-				return;
+				return push_count;
 			}
 		}
-
 	}
+	return push_count;
+#endif
 }
 
+#if OLD_WAY_STACK_TRACE == 0
+u16 * scan_code_for_push(u32 link_address, u32 * stack_jump){
+	u16 * code_pointer = (u16*)link_address;
+
+	/*
+	 * push is encoded as b5xx: xx is the register mask -- can be a 16-bit instruction
+	 * stmdb is encoded as e92d xxxx: xxxx is the register mask
+	 * subtract from sp as 0xb08x: x is subtraction / 4
+	 *
+	 *
+	 */
+
+	mcu_debug_printf("scan starting at %p\n", link_address);
+	*stack_jump = 0;
+	while( (code_pointer != 0) &&
+				 ((decode_stack_modifier_opcodes(code_pointer, stack_jump)) == 0)  ){
+
+		if( (*code_pointer & 0xe000) == 0xe000 ){
+			code_pointer--;
+		}
+		code_pointer--;
+	}
+
+	mcu_debug_printf("push at %p\n", code_pointer);
+
+	return code_pointer;
+}
+
+u32 decode_push_opcode(u16 * opcode){
+	u32 count = 0;
+	if( (*opcode & 0xff00) == 0xb500 ){
+		u8 register_mask = *opcode & 0xff;
+		count++;
+		for(u32 i=0; i < 8; i++){
+			if( (1<<i) & register_mask ){
+				count++;
+			}
+		}
+	}
+	return count;
+}
+
+
+u32 decode_store_on_stack_opcode(u16 * opcode){
+	u32 count = 0;
+	if( *opcode == 0xe92d ){
+		u16 register_mask = *(opcode+1);
+		for(u32 i=0; i < 16; i++){
+			if( (1<<i) & register_mask ){
+				count++;
+			}
+		}
+	}
+	return count;
+}
+
+u32 decode_subtract_stack_opcode(u16 * opcode){
+	if( (*opcode & 0xff80) == 0xb080 ){
+		return *opcode & 0x007f;
+	}
+	return 0;
+}
+
+u16 decode_stack_modifier_opcodes(u16 * machine_code, u32* stack_jump){
+	u32 jump = decode_subtract_stack_opcode(machine_code);
+	if( jump ){
+		*stack_jump += jump;
+		mcu_debug_printf("subtract %d opcode: %04x %08x\n", jump, *machine_code, machine_code);
+		return 0;
+	}
+
+	jump = decode_store_on_stack_opcode(machine_code);
+	if( jump ){
+		*stack_jump += jump;
+		mcu_debug_printf("store %d opcode: %04x %08x\n", jump, *machine_code, machine_code);
+		return 1;
+	}
+
+	jump = decode_push_opcode(machine_code);
+	if( jump ){
+		*stack_jump += jump;
+		mcu_debug_printf("push %d opcode: %04x %08x\n", jump, *machine_code, machine_code);
+		return 1;
+	}
+
+	return 0;
+}
+#endif
 
 

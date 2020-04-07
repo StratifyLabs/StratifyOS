@@ -80,7 +80,7 @@ extern cortexm_svcall_t cortexm_svcall_validation MCU_SYS_MEM;
 #define CORTEXM_SVCALL_ENTER() (cortexm_svcall_validation = (cortexm_svcall_t)__FUNCTION__)
 
 
-#define r(x) register long x asm("lr")
+#define CORTEXM_DECLARE_LINK_REGISTER(x) register long x asm("lr")
 
 #endif
 

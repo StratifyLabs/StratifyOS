@@ -31,11 +31,6 @@ void scheduler_svcall_set_delaymutex(void * args){
 	sos_sched_table[ task_get_current() ].signal_delay_mutex = args;
 }
 
-void scheduler_root_assert_sync(void * args){
-	//verify the calling PC is correct?
-
-	sos_sched_table[task_get_current()].flags |= (1<< SCHEDULER_TASK_FLAG_ROOT_SYNC);
-}
 
 void scheduler_root_set_trace_id(int tid, trace_id_t id){
 	sos_sched_table[tid].trace_id = id;

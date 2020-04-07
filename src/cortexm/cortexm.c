@@ -220,10 +220,9 @@ void cortexm_svcall_get_thread_stack_ptr(void * ptr){
 }
 
 void cortexm_get_thread_stack_ptr(void ** ptr){
-	void ** ptrp = ptr;
 	void * result=NULL;
 	asm volatile ("MRS %0, psp\n\t" : "=r" (result) );
-	*ptrp = result;
+	*ptr = result;
 }
 
 void cortexm_set_thread_stack_ptr(void * ptr){
