@@ -61,7 +61,8 @@ enum {
  */
 typedef struct MCU_PACK {
 	u32 o_flags /*! Bitwise flags */;
-	u8 max_header_size;
+	u8 iv[16] /*! Current IV */;
+	u32 max_header_size;
 	u32 resd[8];
 } crypt_info_t;
 
@@ -70,8 +71,8 @@ typedef struct MCU_PACK {
 typedef struct MCU_PACK {
 	u32 o_flags /*! Bitwise flags */;
 	u8 * key /*! encryption key up to 256 bits */;
-	u8 * iv /*! 16 bytes (128-bit) initialization vector */;
-	u8 header_size;
+	u8 iv[16] /*! 16 bytes (128-bit) initialization vector */;
+	u32 header_size;
 	u32 resd[8];
 } crypt_attr_t;
 

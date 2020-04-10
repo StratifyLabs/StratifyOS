@@ -49,7 +49,7 @@ static int update_mode(
 			memcpy(context->iv, iv, 16);
 		}
 
-		attributes.iv = context->iv;
+		memcpy(attributes.iv, context->iv, 16);
 		attributes.key = context->key;
 		attributes.header_size = 0;
 		attributes.o_flags =
@@ -80,7 +80,16 @@ static int crypto_transaction(
 	aio_operation.aio_lio_opcode = LIO_READ;
 	aio_operation.aio_offset = 0;
 	aio_read(&aio_operation);
-	return write(context->fd, source, length);
+	int result = write(context->fd, source, length);
+
+	if( result > 0 ){
+		crypt_info_t info;
+		if( ioctl(context->fd, I_CRYPT_GETINFO, &info) == 0 ){
+			memcpy(context->iv, &info.iv, 16);
+		}
+	}
+
+	return result;
 }
 
 int device_aes_init(void ** context){
