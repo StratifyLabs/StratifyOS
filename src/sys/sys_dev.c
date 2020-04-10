@@ -137,7 +137,7 @@ int sys_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 						mcu_board_config.secret_key_size > sizeof(sys_secret_key_t) ?
 							sizeof(sys_secret_key_t) :
 							mcu_board_config.secret_key_size;
-				memcpy(key->data, mcu_board_config.secret_key_address, size);
+				memcpy(key->data, mcu_board_config.secret_key_address-1, size);
 				return 0;
 			}
 			return SYSFS_SET_RETURN(EPERM);
