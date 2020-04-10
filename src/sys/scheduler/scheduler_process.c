@@ -93,7 +93,8 @@ void svcall_init_sched_task(init_sched_task_t * task){
 	PTHREAD_ATTR_SET_DETACH_STATE((&(sos_sched_table[id].attr)), PTHREAD_CREATE_DETACHED);
 
 	if( task->is_authenticated &&
-		 scheduler_authenticated_asserted(task_get_current()) ){
+			scheduler_authenticated_asserted(task_get_current())
+			){
 		scheduler_root_assert_authenticated(id);
 	}
 

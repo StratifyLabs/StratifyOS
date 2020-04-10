@@ -75,7 +75,7 @@ typedef struct MCU_PACK {
  * Storing the secret key inside an unencrypted application
  * binary is a big security risk.
  *
- * They key and randome number are passed. The final token is returned.
+ * They key and random number are passed. The final token is returned.
  *
  *
  *

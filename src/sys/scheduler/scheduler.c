@@ -124,10 +124,10 @@ int check_faults(){
 		buffer[LINK_POSIX_TRACE_DATA_SIZE] = 0;
 
 		snprintf(buffer,
-					LINK_POSIX_TRACE_DATA_SIZE,
-					"fault:%d",
-					m_scheduler_fault.fault.num
-					);
+						 LINK_POSIX_TRACE_DATA_SIZE,
+						 "fault:%d",
+						 m_scheduler_fault.fault.num
+						 );
 		sos_trace_event_addr_tid(
 					POSIX_TRACE_FATAL,
 					buffer,
@@ -139,10 +139,10 @@ int check_faults(){
 		mcu_debug_log_error(MCU_DEBUG_SYS, "%s", buffer);
 
 		snprintf(buffer,
-					LINK_POSIX_TRACE_DATA_SIZE-1,
-					"addr:%p",
-					m_scheduler_fault.fault.addr
-					);
+						 LINK_POSIX_TRACE_DATA_SIZE-1,
+						 "addr:%p",
+						 m_scheduler_fault.fault.addr
+						 );
 
 		sos_trace_event_addr_tid(
 					POSIX_TRACE_FATAL,
@@ -166,10 +166,10 @@ int check_faults(){
 		usleep(2000);
 
 		snprintf(buffer,
-					LINK_POSIX_TRACE_DATA_SIZE-1,
-					"stack:%ld",
-					m_scheduler_fault.free_stack_size
-					);
+						 LINK_POSIX_TRACE_DATA_SIZE-1,
+						 "stack:%ld",
+						 m_scheduler_fault.free_stack_size
+						 );
 
 		sos_trace_event_addr_tid(
 					POSIX_TRACE_MESSAGE,
@@ -181,10 +181,10 @@ int check_faults(){
 		usleep(2000);
 
 		snprintf(buffer,
-					LINK_POSIX_TRACE_DATA_SIZE-1,
-					"heap:%ld",
-					m_scheduler_fault.free_heap_size
-					);
+						 LINK_POSIX_TRACE_DATA_SIZE-1,
+						 "heap:%ld",
+						 m_scheduler_fault.free_heap_size
+						 );
 
 		sos_trace_event_addr_tid(
 					POSIX_TRACE_MESSAGE,
@@ -232,7 +232,7 @@ void scheduler_root_update_on_stopped(){
 	for(i=1; i < task_get_total(); i++){
 		//Find the highest priority of all active tasks
 		if( task_enabled_active_not_stopped(i) &&
-			 (task_get_priority(i) > next_priority) ){
+				(task_get_priority(i) > next_priority) ){
 			next_priority = task_get_priority(i);
 		}
 	}
@@ -346,11 +346,13 @@ int start_first_thread(){
 	PTHREAD_ATTR_SET_SCHED_POLICY((&attr), SCHED_RR);
 	attr.schedparam.sched_priority = 21; //not the default priority
 
-	err = scheduler_create_thread(init,
-											sos_board_config.start_args,
-											attr.stackaddr,
-											attr.stacksize,
-											&attr);
+	err = scheduler_create_thread(
+				init,
+				sos_board_config.start_args,
+				attr.stackaddr,
+				attr.stacksize,
+				&attr
+				);
 
 	if ( !err ){
 		mcu_debug_log_error(
@@ -367,8 +369,8 @@ int start_first_thread(){
 
 u32 scheduler_calculate_heap_end(u32 task_id){
 	if( (task_id < task_get_total()) &&
-		 (task_thread_asserted(task_id) == 0) &&
-		 (sos_task_table[task_id].reent != NULL) ){
+			(task_thread_asserted(task_id) == 0) &&
+			(sos_task_table[task_id].reent != NULL) ){
 
 		return (u32)&(((struct _reent*)sos_task_table[task_id].reent)->procmem_base->base) +
 				((struct _reent*)sos_task_table[task_id].reent)->procmem_base->size;

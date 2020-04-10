@@ -61,10 +61,12 @@ enum sys_board_config_flags {
 	SYS_FLAG_IS_STDIO_CFIFO /*! STDIO is a with channels 0:stdout 1:stdin 2: stderr (board config flag) */ = (1<<5),
 	SYS_FLAG_IS_STDIO_CFIFO_SHARE_OUTERR /*! Used with SYS_FLAG_IS_STDIO_CFIFO to indicate stderr and stdout are the same channel (0) (board config flag) */ = (1<<6),
 	SYS_FLAG_IS_ACTIVE_ON_IDLE /*! Don't stop the CPU when the system is idle (board config flag) */ = (1<<7),
-	SYS_FLAG_IS_KEYED /*! Binary has a 256-bit secret key appended to the end (before HASH if present).*/ = (1<<8),
+	SYS_FLAG_IS_KEYED /*! Binary has a 256-bit secret inserted in the binary (before HASH if present).*/ = (1<<8),
 	SYS_FLAG_IS_HASHED /*! Binary has a 256-bit SHA256 hash appended to the end (after secret key if present) */ = (1<<9),
-	SYS_FLAG_IS_FIRST_THREAD_ROOT /*! First thread is started as a root enabled thread */ = (1<<10)
+	SYS_FLAG_IS_FIRST_THREAD_AUTHENTICATED /*! First thread is started as a root enabled thread */ = (1<<10)
 };
+
+#define SYS_FLAG_IS_FIRST_THREAD_ROOT SYS_FLAG_IS_FIRST_THREAD_AUTHENTICATED
 
 enum sys_memory_flags {
 	SYS_FLAG_SET_MEMORY_REGION = (1<<0),
@@ -189,6 +191,9 @@ typedef struct MCU_PACK {
 } sys_process_t;
 
 
+typedef struct MCU_PACK {
+	u8 data[32];
+} sys_secret_key_t;
 
 #define I_SYS_GETVERSION _IOCTL(SYS_IOC_IDENT_CHAR, I_MCU_GETVERSION)
 #define I_SYS_GETINFO _IOCTLR(SYS_IOC_CHAR, I_MCU_GETINFO, sys_info_t)
@@ -270,11 +275,12 @@ typedef struct MCU_PACK {
  * has root access. Returns zero otherwise.
  *
  */
-#define I_SYS_ISROOT _IOCTL(SYS_IOC_CHAR, I_MCU_TOTAL+8)
+#define I_SYS_ISAUTHENTICATED _IOCTL(SYS_IOC_CHAR, I_MCU_TOTAL+8)
 
 
-#define I_SYS_TOTAL 7
+#define I_SYS_GETSECRETKEY _IOCTLR(SYS_IOC_CHAR, I_MCU_TOTAL+9, sys_secret_key_t)
 
+#define I_SYS_TOTAL 10
 
 
 #ifdef __cplusplus

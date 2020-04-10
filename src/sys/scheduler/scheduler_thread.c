@@ -137,8 +137,9 @@ void svcall_activate_thread(svcall_activate_thread_t * args){
 		scheduler_root_assert_authenticated(id);
 	}
 
-	if( (sos_board_config.o_sys_flags & SYS_FLAG_IS_FIRST_THREAD_ROOT) &&
-		 (id == 1) ){
+	if( (id ==1) &&
+			(sos_board_config.o_sys_flags & SYS_FLAG_IS_FIRST_THREAD_AUTHENTICATED) ){
+		mcu_debug_log_info(MCU_DEBUG_SYS, "First thread is authenticated");
 		scheduler_root_assert_authenticated(1);
 	}
 

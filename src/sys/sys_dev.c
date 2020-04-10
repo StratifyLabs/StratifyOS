@@ -77,12 +77,14 @@ int sys_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 			mcu_core_getserialno(&(info->serial));
 			info->hardware_id = *((u32*)(&_text + BOOTLOADER_HARDWARE_ID_OFFSET/sizeof(u32)));
 			return 0;
+
 		case I_SYS_GETTASK:
 			return read_task(ctl);
 
 		case I_SYS_GETID:
 			memcpy(id->id, sos_board_config.sys_id, PATH_MAX-1);
 			return 0;
+
 		case I_SYS_KILL:
 			for(i = 1; i < task_get_total(); i++){
 				if( (task_get_pid(i) == killattr->id) && task_enabled(i) &&
@@ -97,6 +99,7 @@ int sys_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 				}
 			}
 			return SYSFS_SET_RETURN(EINVAL);
+
 		case I_SYS_PTHREADKILL:
 			return signal_root_send(task_get_current(),
 											killattr->id,
@@ -125,7 +128,23 @@ int sys_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 		case I_SYS_SETATTR:
 			return sys_setattr(handle, ctl);
 
+		case I_SYS_GETSECRETKEY:
+		{
+			sys_secret_key_t * key = ctl;
+			memset(key, 0, sizeof(sys_secret_key_t));
+			if( scheduler_authenticated_asserted( task_get_current() ) ){
+				u32 size =
+						mcu_board_config.secret_key_size > sizeof(sys_secret_key_t) ?
+							sizeof(sys_secret_key_t) :
+							mcu_board_config.secret_key_size;
+				memcpy(key->data, mcu_board_config.secret_key_address-1, size);
+				return 0;
+			}
+			return SYSFS_SET_RETURN(EPERM);
+		}
 
+		case I_SYS_ISAUTHENTICATED:
+			return scheduler_authenticated_asserted( task_get_current() ) != 0;
 
 		default:
 			break;
