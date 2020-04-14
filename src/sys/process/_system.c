@@ -49,7 +49,7 @@ int _system(const char * s){
 	}
 
 	//Start the new process
-	err = process_start(s, NULL, 0);
+	err = process_start(s, NULL);
 	if ( err < 0 ){
 		//Process failed to start
 		status = -1;

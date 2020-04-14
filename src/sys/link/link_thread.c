@@ -569,7 +569,7 @@ void link_cmd_exec(link_transport_driver_t * driver, link_data_t * args){
 	char path[LINK_PATH_ARG_MAX];
 	memset(path, 0, LINK_PATH_ARG_MAX);
 	args->reply.err = link_transport_slaveread(driver, path, args->op.exec.path_size, NULL, NULL);
-	args->reply.err = process_start(path, NULL, 0);
+	args->reply.err = process_start(path, NULL);
 	if ( args->reply.err < 0 ){
 		mcu_debug_log_error(MCU_DEBUG_LINK, "Failed to exec %s (%d)", path, errno);
 		args->reply.err_number = errno;

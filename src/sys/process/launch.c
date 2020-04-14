@@ -32,14 +32,16 @@
 
 #define PATH_ARG_MAX LINK_PATH_ARG_MAX
 
-int launch(const char * path,
-			  char * exec_dest,
-			  const char * args,
-			  int options,
-			  int ram_size,
-			  int (*update_progress)(const void *, int, int),
-			  const void * update_context,
-			  char *const envp[]){
+int launch(
+		const char * path,
+		char * exec_dest,
+		const char * args,
+		int options,
+		int ram_size,
+		int (*update_progress)(const void *, int, int),
+		const void * update_context,
+		char *const envp[]
+		){
 
 	char exec_path[PATH_ARG_MAX];
 
@@ -83,5 +85,5 @@ int launch(const char * path,
 		strncat(exec_path, args, PATH_ARG_MAX-1);
 	}
 
-	return process_start(exec_path, envp, options);
+	return process_start(exec_path, envp);
 }
