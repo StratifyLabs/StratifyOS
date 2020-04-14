@@ -32,7 +32,6 @@ typedef struct {
 	u32 o_key_flags;
 	u32 mode;
 	u8 key[32];
-	u8 iv[16];
 	u8 key_bits;
 } device_aes_context_t;
 
@@ -46,10 +45,9 @@ static int update_mode(
 
 		crypt_attr_t attributes;
 		if( iv != 0 ){
-			memcpy(context->iv, iv, 16);
+			memcpy(attributes.iv, iv, 16);
 		}
 
-		memcpy(attributes.iv, context->iv, 16);
 		attributes.key = context->key;
 		attributes.header_size = 0;
 		attributes.o_flags =
@@ -71,7 +69,8 @@ static int crypto_transaction(
 		device_aes_context_t * context,
 		const void * source,
 		u8 * destination,
-		u32 length
+		u32 length,
+		unsigned char * iv
 		){
 	struct aiocb aio_operation;
 	aio_operation.aio_buf = destination;
@@ -82,11 +81,9 @@ static int crypto_transaction(
 	aio_read(&aio_operation);
 	int result = write(context->fd, source, length);
 
-	if( result > 0 ){
-		crypt_info_t info;
-		if( ioctl(context->fd, I_CRYPT_GETINFO, &info) == 0 ){
-			memcpy(context->iv, &info.iv, 16);
-		}
+	if( iv &&
+			(result > 0) ){
+		ioctl(context->fd, I_CRYPT_GETIV, iv);
 	}
 
 	return result;
@@ -185,7 +182,8 @@ unsigned char output[16]
 				context,
 				input,
 				output,
-				16
+				16,
+				NULL
 				);
 }
 
@@ -206,7 +204,8 @@ unsigned char output[16]){
 				context,
 				input,
 				output,
-				16
+				16,
+				NULL
 				);
 }
 
@@ -230,7 +229,8 @@ unsigned char *output ){
 				context,
 				input,
 				output,
-				length
+				length,
+				iv
 				);
 
 	return 0;
@@ -256,7 +256,8 @@ unsigned char *output ){
 				context,
 				input,
 				output,
-				length
+				length,
+				iv
 				);
 
 	return 0;

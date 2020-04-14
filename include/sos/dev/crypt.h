@@ -54,14 +54,13 @@ enum {
 	CRYPT_FLAG_IS_DATA_32 /*! Sets the data size to a 32-bits */ = (1<<13),
 	CRYPT_FLAG_SET_MODE /*! Sets the cipher to encryption mode for use with CRYPT_FLAG_IS_ENCRYPT or CRYPT_FLAG_IS_DECRYPT */ = (1<<14),
 	CRYPT_FLAG_IS_ENCRYPT /*! Sets the cipher to encryption mode for use with CRYPT_FLAG_SET_MODE */ = (1<<15),
-	CRYPT_FLAG_IS_DECRYPT /*! Sets the cipher to decryption mode for use with CRYPT_FLAG_SET_MODE */ = (1<<16),
+	CRYPT_FLAG_IS_DECRYPT /*! Sets the cipher to decryption mode for use with CRYPT_FLAG_SET_MODE */ = (1<<16)
 };
 
 /*! \brief Random info
  */
 typedef struct MCU_PACK {
 	u32 o_flags /*! Bitwise flags */;
-	u8 iv[16] /*! Current IV */;
 	u32 max_header_size;
 	u32 resd[8];
 } crypt_info_t;
@@ -76,10 +75,14 @@ typedef struct MCU_PACK {
 	u32 resd[8];
 } crypt_attr_t;
 
+typedef struct MCU_PACK {
+	u8 data[16];
+} crypt_iv_t;
+
 #define I_CRYPT_GETVERSION _IOCTL(CRYPT_IOC_CHAR, I_MCU_GETVERSION)
 
 
-/*! \details This request reads the random generator information.
+/*! \details This request reads the cryptographic information.
  *
  * Example:
  * \code
@@ -90,7 +93,7 @@ typedef struct MCU_PACK {
  */
 #define I_CRYPT_GETINFO _IOCTLR(CRYPT_IOC_CHAR, I_MCU_GETINFO, crypt_info_t)
 
-/*! \details Requests the hardware to write the random generator attributes.
+/*! \details Requests the hardware to write the cryptographic attributes.
  *
  * Example:
  * \code
@@ -103,6 +106,18 @@ typedef struct MCU_PACK {
  */
 #define I_CRYPT_SETATTR _IOCTLW(CRYPT_IOC_CHAR, I_MCU_SETATTR, crypt_attr_t)
 
+/*! \details This request reads the current IV for CBC encryption/decryption.
+ *
+ * Example:
+ * \code
+ * char iv[16];
+ * ioctl(fildes, I_CRYPT_GETIV, iv);
+ * \endcode
+ * \hideinitializer
+ */
+#define I_CRYPT_GETIV _IOCTLR(CRYPT_IOC_CHAR, I_MCU_TOTAL + 0, crypt_iv_t)
+
+#define I_CRYPT_TOTAL (1)
 
 #endif /* SOS_DEV_CRYPT_H_ */
 

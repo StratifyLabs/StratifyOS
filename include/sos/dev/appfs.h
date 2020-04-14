@@ -30,7 +30,7 @@
 enum appfs_flags {
 	APPFS_FLAG_IS_FLASH /*! Application is stored in flash */ = (1<<0),
 	APPFS_FLAG_IS_STARTUP /*! Application stored in flash runs at startup */ = (1<<1),
-	APPFS_FLAG_IS_ROOT /*! Application runs as root */ = (1<<3),
+	APPFS_FLAG_IS_AUTHENTICATED /*! Application runs as root */ = (1<<3),
 	APPFS_FLAG_IS_REPLACE /*! Application will replace an existing application (default is to duplicate) */ = (1<<4),
 	APPFS_FLAG_IS_ORPHAN /*! Application runs as an orphan (parent doesn't need to wait()). */ = (1<<5),
 	APPFS_FLAG_IS_UNIQUE /*! Application will run with a unique name by appending a counter value */ = (1<<6),

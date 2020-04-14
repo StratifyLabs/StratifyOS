@@ -30,7 +30,8 @@ extern "C" {
 #define MCU_CRYPT_IOCTL_REQUEST_DECLARATION(driver_name) \
 	DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, getinfo); \
 	DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, setattr); \
-	DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, setaction)
+	DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, setaction); \
+	DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, getiv)
 
 #define MCU_CRYPT_DRIVER_DECLARATION(variant) \
 	DEVFS_DRIVER_DECLARTION(variant); \

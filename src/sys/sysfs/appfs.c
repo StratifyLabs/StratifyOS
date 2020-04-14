@@ -197,7 +197,7 @@ int appfs_startup(const void * cfg){
 			mem.data.size = get_fileinfo_args.file_info.exec.ram_size;
 			int is_root = 0;
 
-			if( get_fileinfo_args.file_info.exec.o_flags & APPFS_FLAG_IS_ROOT ){
+			if( get_fileinfo_args.file_info.exec.o_flags & APPFS_FLAG_IS_AUTHENTICATED ){
 				is_root = 1;
 			}
 

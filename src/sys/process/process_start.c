@@ -41,7 +41,10 @@ static uint8_t launch_count = 0;
 #endif
 
 
-int process_start(const char *path_arg, char *const envp[], int options){
+int process_start(
+		const char *path_arg,
+		char *const envp[]
+		){
 	int fd;
 	int err;
 	appfs_file_t startup;
@@ -113,7 +116,6 @@ int process_start(const char *path_arg, char *const envp[], int options){
 	//The program is loaded and ready to execute
 	close(fd);
 
-
 	//this gets freed in crt_sys.c by the process that is launched
 	process_path = _malloc_r(sos_task_table[0].global_reent, len+1);
 	if( process_path == 0 ){
@@ -125,14 +127,15 @@ int process_start(const char *path_arg, char *const envp[], int options){
 	mcu_debug_log_info(MCU_DEBUG_SYS, "process start: execute %s", process_path);
 
 	int parent_id = task_get_current();
-	int is_root = 0;
+	int is_authenticated = 0;
+	u32 options = startup.exec.o_flags;
 
 	if( options & APPFS_FLAG_IS_ORPHAN ){
 		parent_id = 0;
 	}
 
-	if( options & APPFS_FLAG_IS_ROOT ){
-		is_root = 1;
+	if( options & APPFS_FLAG_IS_AUTHENTICATED ){
+		is_authenticated = 1;
 	}
 
 	mcu_debug_log_info(MCU_DEBUG_SYS, "process start: code:%p data:%p", (void*)startup.exec.startup,
@@ -144,7 +147,7 @@ int process_start(const char *path_arg, char *const envp[], int options){
 				&mem,
 				(void*)startup.exec.ram_start,
 				parent_id,
-				is_root //ignored if caller is not authenticated
+				is_authenticated //ignored if caller is not authenticated
 				);
 
 	if( err < 0 ){

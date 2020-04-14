@@ -59,7 +59,7 @@ int stream_ffifo_close(const devfs_handle_t * handle);
     count_value, \
     device_value, \
     loc_value) \
-    char name##_rx_buffer[count_value*frame_size_value] MCU_ALIGN(4); \
+		char name##_rx_buffer[count_value*frame_size_value] MCU_ALIGN(32); \
     stream_ffifo_state_t name##_state MCU_SYS_MEM; \
     stream_ffifo_config_t name##_config = { \
     .device = device_value, \
@@ -74,7 +74,7 @@ int stream_ffifo_close(const devfs_handle_t * handle);
     count_value, \
     device_value, \
     loc_value) \
-    char name##_tx_buffer[count_value*frame_size_value] MCU_ALIGN(4); \
+		char name##_tx_buffer[count_value*frame_size_value] MCU_ALIGN(32); \
     stream_ffifo_state_t name##_state MCU_SYS_MEM; \
     stream_ffifo_config_t name##_config = { \
     .device = device_value, \
@@ -89,8 +89,8 @@ int stream_ffifo_close(const devfs_handle_t * handle);
     count_value, \
     device_value, \
     tx_loc_value, rx_loc_value ) \
-    char name##_rx_buffer[count_value*frame_size_value] MCU_ALIGN(4); \
-    char name##_tx_buffer[count_value*frame_size_value] MCU_ALIGN(4); \
+		char name##_rx_buffer[count_value*frame_size_value] MCU_ALIGN(32); \
+		char name##_tx_buffer[count_value*frame_size_value] MCU_ALIGN(32); \
     stream_ffifo_state_t name##_state MCU_SYS_MEM; \
     stream_ffifo_config_t name##_config = { \
     .device = device_value, \
