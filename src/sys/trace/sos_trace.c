@@ -28,6 +28,7 @@
 #include "cortexm/mpu.h"
 
 #define OLD_WAY_STACK_TRACE 0
+#define PRINT_DEBUG 0
 
 extern void task_restore();
 
@@ -50,7 +51,6 @@ static void svcall_trace_event(void * args);
 static void svcall_get_stack_pointer(void * args);
 
 #if OLD_WAY_STACK_TRACE == 0
-static u16 decode_stack_modifier_opcodes(u16 * machine_code, u32 * stack_jump);
 static u16 * scan_code_for_push(
 		u32 link_address,
 		u32* stack_jump,
@@ -247,6 +247,7 @@ int sos_trace_stack(u32 count){
 
 		//code points near the entrance of the function
 
+#if PRINT_DEBUG
 		int preview = stack_jump;
 		if( preview < 8 ){
 			preview += 8;
@@ -259,21 +260,30 @@ int sos_trace_stack(u32 count){
 						sp[i]
 						);
 		}
+#endif
 
 		sp += (stack_jump);
+#if PRINT_DEBUG
 		mcu_debug_printf("Pushed %p < %p registers %d jump: %d\n", sp, stack_top, link_register_offset, stack_jump);
+#endif
 
 		next_link_register = sp[-1]  & ~0x01;
+#if PRINT_DEBUG
 		mcu_debug_printf("Next link is %08x (%08x)\n", next_link_register, (((u32)task_restore) & ~0x01));
+#endif
 		if( next_link_register == (((u32)task_restore) & ~0x01) ){
+#if PRINT_DEBUG
 			mcu_debug_printf("task restore operation\n");
+#endif
 			for(int i=0; i < 16; i++){
+#if PRINT_DEBUG
 				mcu_debug_printf(
 							"--stack preview %d:%x -> %08x\n",
 							i,
 							sp + i,
 							sp[i]
 							);
+#endif
 			}
 			//special treatment -- doesn't return HW stack is inserted
 			sp += (16);
@@ -281,7 +291,9 @@ int sos_trace_stack(u32 count){
 		}
 
 		if( lookup_caller_adddress(next_link_register+1) == 0 ){
+#if PRINT_DEBUG
 			mcu_debug_printf("failed to fully trace stack\n");
+#endif
 			return push_count;
 		}
 
@@ -350,19 +362,16 @@ u16 * scan_code_for_push(
 	 *
 	 */
 
-	mcu_debug_printf("scan starting at %p\n", link_address);
 	u32 jump;
 	int lr_jump = 0;
 	u32 stack_jump = 0;
 	u32 result = 0;
 	do {
 
-		mcu_debug_printf("scan instruction %04x at %p\n", *code_pointer, code_pointer);
 		jump = decode_subtract_stack_opcode(code_pointer);
 		if( jump ){
 			stack_jump += jump;
 			lr_jump += jump;
-			mcu_debug_printf("subtract %d opcode: %04x %08x\n", jump, *code_pointer, code_pointer);
 			result = 0;
 		}
 
@@ -370,7 +379,6 @@ u16 * scan_code_for_push(
 		if( jump ){
 			stack_jump += jump;
 			lr_jump += jump;
-			mcu_debug_printf("store %d opcode: %04x %08x\n", jump, *code_pointer, code_pointer);
 			result = 1;
 		}
 
@@ -379,10 +387,8 @@ u16 * scan_code_for_push(
 			stack_jump += jump;
 			lr_jump += jump;
 			result = 1;
-			mcu_debug_printf("push %d opcode: %04x %08x\n", jump, *code_pointer, code_pointer);
 			jump = decode_push_opcode(code_pointer-1);
 			if( jump > 0 ){
-				mcu_debug_printf("another push %d opcode: %04x %08x\n", jump, *(code_pointer-1), code_pointer);
 				code_pointer--;
 				stack_jump += jump;
 			}
@@ -400,8 +406,6 @@ u16 * scan_code_for_push(
 
 	*stack_jump_result = stack_jump;
 	*link_register_offset = stack_jump - lr_jump;
-
-	mcu_debug_printf("push at %p\n", code_pointer);
 
 	return code_pointer;
 }
@@ -454,41 +458,6 @@ u32 decode_subtract_stack_opcode(u16 * opcode){
 	return 0;
 }
 
-u16 decode_stack_modifier_opcodes(u16 * machine_code, u32* stack_jump){
-	u32 jump = decode_subtract_stack_opcode(machine_code);
-	if( jump ){
-		*stack_jump += jump;
-		mcu_debug_printf("subtract %d opcode: %04x %08x\n", jump, *machine_code, machine_code);
-		return 0;
-	}
-
-	jump = decode_store_on_stack_opcode(machine_code);
-	if( jump ){
-		*stack_jump += jump;
-		mcu_debug_printf("store %d opcode: %04x %08x\n", jump, *machine_code, machine_code);
-		return 1;
-	}
-
-	jump = decode_push_with_lr_opcode(machine_code);
-	if( jump ){
-		*stack_jump += jump;
-		mcu_debug_printf("push %d opcode: %04x %08x\n", jump, *machine_code, machine_code);
-		jump = decode_push_opcode(machine_code-1);
-		if( jump > 0 ){
-			return 0;
-		}
-		return 1;
-	}
-
-	jump = decode_push_opcode(machine_code);
-	if( jump ){
-		*stack_jump += jump;
-		mcu_debug_printf("another push %d opcode: %04x\n", jump, *(machine_code-1));
-		return 1;
-	}
-
-	return 0;
-}
 #endif
 
 

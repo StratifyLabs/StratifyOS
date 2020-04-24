@@ -130,9 +130,8 @@ int usbfifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 			break;
 		case I_USB_SETATTR:
 			fifo_flush(&(state->fifo));
-			state->fifo.transfer_handler.read = 0;
+			fifo_cancel_async_read(&(state->fifo));
 			//setup the device to write to the fifo when data arrives
-
 			result = mcu_usb_setattr(handle, ctl);
 			if( result < 0 ){ return result; }
 			/* no break */
