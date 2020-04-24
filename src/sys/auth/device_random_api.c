@@ -73,8 +73,6 @@ int device_random_init(void ** context){
 				c,
 				RANDOM_FLAG_ENABLE,
 				0);
-
-	return 0;
 }
 
 void device_random_deinit(void ** context){
