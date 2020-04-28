@@ -372,7 +372,7 @@ link_transport_phy_t link_phy_open(
 	//open serial port
 	fd = open(name, O_RDWR | O_NOCTTY | O_NONBLOCK);
 	if( fd < 0 ){
-		link_error("Failed to open %s %d", name, errno);
+		link_error("Failed to open '%s' %d", name, errno);
 		return LINK_PHY_OPEN_ERROR;
 	}
 

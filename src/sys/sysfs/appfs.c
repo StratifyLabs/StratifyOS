@@ -340,7 +340,7 @@ int appfs_unlink(const void* cfg, const char * path){
 			get_pageinfo_args.page_info.num++;
 		}
 
-		end_page = get_pageinfo_args.page_info.num;
+		end_page = get_pageinfo_args.page_info.num-1;
 
 		appfs_erase_pages_t erase_pages_args;
 		erase_pages_args.device = device;
