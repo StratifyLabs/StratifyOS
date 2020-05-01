@@ -54,9 +54,11 @@ const void * mcu_select_attr(const devfs_handle_t * handle, void * ctl){
 	return ctl;
 }
 
-const void * mcu_select_pin_assignment(const void * attr_pin_assignment,
-													const void * config_pin_assignment,
-													int count){
+const void * mcu_select_pin_assignment(
+		const void * attr_pin_assignment,
+		const void * config_pin_assignment,
+		int count
+		){
 	int i;
 	int is_default = 1;
 	const void * pin_assignment;
@@ -106,7 +108,7 @@ int mcu_set_pin_assignment(
 			if( post_configure_pin ){
 				post_configure_pin(pin,arg);
 			}
-        }
+		}
 	}
 	return 0;
 }
