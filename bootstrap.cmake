@@ -11,6 +11,8 @@ if(CLONE)
     file(REMOVE_RECURSE ../StratifyOS-mbedtls)
     file(REMOVE_RECURSE ../StratifyOS-jansson)
     file(REMOVE_RECURSE ../StratifyAPI)
+    file(REMOVE_RECURSE ../UsbAPI)
+    file(REMOVE_RECURSE ../StratifyOS-libusb)
     file(REMOVE_RECURSE ../CloudServiceAPI)
     file(REMOVE_RECURSE ../sl)
 
