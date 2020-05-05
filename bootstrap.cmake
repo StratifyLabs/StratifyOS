@@ -19,6 +19,7 @@ if(CLONE)
     sos_sdk_clone(https://github.com/StratifyLabs/StratifyOS-jansson.git ..)
     sos_sdk_clone(https://github.com/StratifyLabs/StratifyAPI.git ..)
     sos_sdk_clone(ssh://git@github.com/tyler-gilbert/CloudServiceAPI.git ..)
+    sos_sdk_clone(ssh://git@github.com/tyler-gilbert/StratifyOS-libusb.git ..)
     sos_sdk_clone(ssh://git@github.com/tyler-gilbert/sl.git ..)
 endif()
 
