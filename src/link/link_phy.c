@@ -369,6 +369,13 @@ link_transport_phy_t link_phy_open(
 		return LINK_PHY_OPEN_ERROR;
 	}
 
+	const char * serial_prefix = "serial@";
+	if( strncmp(name, serial_prefix, strlen(serial_prefix)) == 0 ){
+		name = name + strlen(serial_prefix);
+		link_debug(LINK_DEBUG_MESSAGE,
+							 "stripping serial@ from beginning of name: %s", name);
+	}
+
 	//open serial port
 	fd = open(name, O_RDWR | O_NOCTTY | O_NONBLOCK);
 	if( fd < 0 ){
