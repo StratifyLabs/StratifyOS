@@ -44,8 +44,9 @@ int link2_transport_wait_start(link_transport_driver_t * driver, link2_pkt_t * p
 	int bytes_read;
 	int count;
 	count = 0;
-
+	u64 start_time, stop_time;
 	do {
+		start_time = link_transport_gettime();
 		bytes_read = driver->read(driver->handle, pkt, 1);
 		if( bytes_read < 0 ){
 			return LINK_PHY_ERROR;
@@ -55,13 +56,9 @@ int link2_transport_wait_start(link_transport_driver_t * driver, link2_pkt_t * p
 				return LINK2_PACKET_START;
 			}
 		} else {
-#if defined __win32
-			//windows waits too long with Sleep, so delay is built into comm
-#else
-			driver->wait(1);
-#endif
-			count++;
-			if( count == timeout ){
+			stop_time = link_transport_gettime();
+			count+= (stop_time - start_time)/1000UL;
+			if( count >= timeout ){
 				return LINK_TIMEOUT_ERROR;
 			}
 		}
@@ -82,8 +79,9 @@ int link2_transport_wait_packet(link_transport_driver_t * driver, link2_pkt_t * 
 	count = 0;
 	bytes = 0;
 	pkt->size = 0;
-
+	u64 start_time, stop_time;
 	do {
+		start_time = link_transport_gettime();
 
 		if( bytes == 0 ){
 			page_size = 1;
@@ -96,7 +94,6 @@ int link2_transport_wait_packet(link_transport_driver_t * driver, link2_pkt_t * 
 			return LINK_PHY_ERROR;
 		}
 
-
 		if( bytes_read > 0 ){
 			if( pkt->size > LINK2_PACKET_DATA_SIZE ){
 				//this is erroneous data
@@ -107,13 +104,9 @@ int link2_transport_wait_packet(link_transport_driver_t * driver, link2_pkt_t * 
 			p += bytes_read;
 			count = 0;
 		} else {
-#if defined __win32
-			//windows wait is built into comm
-#else
-			driver->wait(1);
-#endif
-			count++;
-			if( count == timeout ){
+			stop_time = link_transport_gettime();
+			count+= (stop_time - start_time)/1000UL;
+			if( count >= timeout ){
 				return LINK_TIMEOUT_ERROR;
 			}
 		}

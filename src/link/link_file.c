@@ -584,7 +584,6 @@ int link_unlink(link_transport_mdriver_t * driver, const char * path){
 	//restore the timeout to the default
 	link_transport_mastersettimeout(driver, 0);
 
-
 	if ( reply.err < 0 ){
 		link_errno = reply.err_number;
 		link_debug(LINK_DEBUG_WARNING, "Failed to unlink file (%d)", link_errno);

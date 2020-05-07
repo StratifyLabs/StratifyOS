@@ -40,3 +40,8 @@ int link_transport_slavewrite(
 	return driver->transport_write(driver, buf, nbyte, callback, context);
 }
 
+u64 link_transport_gettime(){
+	//the slave using blocking calls to read() so there is not need to manage timing
+	return 0;
+}
+
