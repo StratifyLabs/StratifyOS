@@ -109,3 +109,11 @@ int resolve_protocol(link_transport_mdriver_t * driver){
 
 	return driver->transport_version;
 }
+
+
+u64 link_transport_gettime(){
+	struct timespec ts;
+	clock_gettime(CLOCK_REALTIME, &ts);
+	u64 result = (u64)ts.tv_sec * 1000000UL + (u64)ts.tv_nsec / 1000UL;
+	return result;
+}

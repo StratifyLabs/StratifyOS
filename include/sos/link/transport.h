@@ -134,6 +134,8 @@ int link_transport_slavewrite(link_transport_driver_t * driver, const void * buf
 int link_transport_slaveread(link_transport_driver_t * driver, void * buf, int nbyte, int (*callback)(void*,void*,int), void * context);
 
 
+u64 link_transport_gettime();
+
 void link1_transport_mastersettimeout(link_transport_mdriver_t * driver, int t);
 int link1_transport_masterwrite(link_transport_mdriver_t * driver, const void * buf, int nbyte);
 int link1_transport_masterread(link_transport_mdriver_t * driver, void * buf, int nbyte);

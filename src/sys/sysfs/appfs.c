@@ -327,7 +327,7 @@ int appfs_unlink(const void* cfg, const char * path){
 	//executable files are deleted based on the header file
 	if ( mem_type == MEM_FLAG_IS_FLASH ){
 		start_page = get_pageinfo_args.page_info.num;
-		size_deleted = get_pageinfo_args.page_info.size;  //start with the first page
+		size_deleted = 0;  //start with the first page
 		//need to read the size of each consecutive page until the size is met
 		while(size_deleted < (file_info.exec.code_size + file_info.exec.data_size) ){
 

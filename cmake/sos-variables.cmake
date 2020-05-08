@@ -35,19 +35,5 @@ set(SOS_BUILD_CXX_FLAGS "-fno-exceptions -fno-unwind-tables -fno-rtti" CACHE STR
 set(SOS_BUILD_ASM_FLAGS "-mthumb" CACHE STRING "ASM build flags | Application, OS Package, Library")
 
 
-#Resolve the build configuration based on the folder name suffix _arm or _link
-string(LENGTH ${CMAKE_BINARY_DIR} STR_LENGTH)
-string(FIND ${CMAKE_BINARY_DIR} "_link" LINK_POS REVERSE)
-string(FIND ${CMAKE_BINARY_DIR} "_arm" ARM_POS)
+include(${SOS_TOOLCHAIN_CMAKE_PATH}/sos-resolve-build-config.cmake)
 
-math(EXPR IS_LINK "${STR_LENGTH} - ${LINK_POS}")
-math(EXPR IS_ARM "${STR_LENGTH} - ${ARM_POS}")
-
-if( ${IS_LINK} STREQUAL 5 )
-	set(SOS_BUILD_CONFIG link CACHE INTERNAL "sos build config is link")
-	message( STATUS "Set build config to link" )
-elseif( ${IS_ARM} STREQUAL 4 )
-	set(SOS_BUILD_CONFIG arm CACHE INTERNAL "sos build config is link")
-else()
-	message( FATAL_ERROR "No Configuration available build in *_link or *_arm directory or say -DSOS_BUILD_CONFIG:STRING=<arm|link>")
-endif()
