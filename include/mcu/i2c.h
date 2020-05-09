@@ -66,7 +66,7 @@ int mcu_i2c_setaction(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
 	i2c_attr_freq, \
 	i2c_attr_sda_port, i2c_attr_sda_pin, \
 	i2c_attr_scl_port, i2c_attr_scl_pin) \
-	i2c_config_t i2c_name##_config = { \
+	const i2c_config_t i2c_name##_config = { \
 	.attr = { I2C_DEFINE_ATTR_MASTER(i2c_attr_flags, i2c_attr_freq, i2c_attr_sda_port, i2c_attr_sda_pin, i2c_attr_scl_port, i2c_attr_scl_pin) } \
 }
 
