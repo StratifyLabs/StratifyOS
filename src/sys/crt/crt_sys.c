@@ -89,17 +89,6 @@ char ** const crt_import_argv(char * path_arg, int * argc){
 	//this needs to be strnlen -- security
 	len = strlen(path_arg) + 1;
 
-	arg_buffer = malloc(len);
-	if( arg_buffer == 0 ){
-		//since we couldn't allocate memory in the application, free the memory allocated on global
-		if( path_arg ){
-			_free_r(sos_task_table[0].global_reent, path_arg);
-		}
-		return 0;
-	}
-
-	strcpy(arg_buffer, path_arg);
-
 	count = 0;
 	next = strtok_r(path_arg, sysfs_whitespace, &p);
 	while( next ){
@@ -107,20 +96,35 @@ char ** const crt_import_argv(char * path_arg, int * argc){
 		count++;
 	}
 
-	//free the path_arg passed from shared system memory
-	_free_r(sos_task_table[0].global_reent, path_arg);
-
-	argv = malloc(sizeof(char*)*count);
+	argv = malloc(sizeof(char*)*(count+1) + len);
 	if( argv == 0 ){
-		free(arg_buffer);
+		//since we couldn't allocate memory in the application, free the memory allocated on global
+		if( path_arg ){
+			_free_r(sos_task_table[0].global_reent, path_arg);
+		}
 		return 0;
 	}
 
+	arg_buffer = ((void*)argv) + sizeof(char*)*(count+1);
+	memcpy(arg_buffer, path_arg, len);
+	arg_buffer[len] = 0;
+
+	//free the path_arg passed from shared system memory
+	_free_r(sos_task_table[0].global_reent, path_arg);
+
 	count = 0;
-	argv[0] = strtok_r(arg_buffer, sysfs_whitespace, &p);
-	while(argv[count] != 0 ){
-		count++;
-		argv[count] = strtok_r(0, sysfs_whitespace, &p);
+	argv[count++] = arg_buffer;
+	int is_next = 0;
+	for(u32 i=0; i < len-1; i++){
+		if( isspace(arg_buffer[i]) ){
+			arg_buffer[i] = 0;
+		}
+		if( arg_buffer[i] == 0 ){
+			is_next = 1;
+		} else if( is_next && arg_buffer[i] ){
+			argv[count++] = arg_buffer + i;
+			is_next = 0;
+		}
 	}
 
 	*argc = count;

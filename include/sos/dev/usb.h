@@ -93,7 +93,7 @@ typedef struct MCU_PACK {
 	mcu_pin_t vbus;
 } usb_pin_assignment_t;
 
-#define USB_TX_FIFO_WORD_SIZE_COUNT 6
+#define USB_TX_FIFO_WORD_SIZE_COUNT 9
 
 /*! \brief USB Attribute Data Structure
  * \details This defines the USB IOCTL data structure.
