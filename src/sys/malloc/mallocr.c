@@ -370,7 +370,6 @@ void * _malloc_r(struct _reent * reent_ptr, size_t size){
 			int diff_chunks = chunk->header.num_chunks - num_chunks;
 			if ( diff_chunks ){
 				malloc_set_chunk_free(chunk + num_chunks, diff_chunks);
-				malloc_chunk_t * next = chunk+num_chunks;
 			} else if ( chunk->header.num_chunks < num_chunks ){
 				__malloc_unlock(reent_ptr);
 				errno = ENOMEM;
