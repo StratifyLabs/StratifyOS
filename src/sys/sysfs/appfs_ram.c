@@ -55,7 +55,6 @@ void appfs_ram_svcall_set(void * args){
 	mem_info_t info;
 	appfs_ram_t * p = args;
 	p->device->driver.ioctl(&p->device->handle, I_MEM_GETINFO, &info);
-	p->size = (u32)mpu_getnextpowerof2((int)p->size);
 
 	pages = (p->size + MCU_RAM_PAGE_SIZE - 1) / MCU_RAM_PAGE_SIZE;
 

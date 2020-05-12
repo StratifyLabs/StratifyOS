@@ -67,6 +67,7 @@ malloc_chunk_t * find_free_chunk(struct _reent * reent_ptr, u32 num_chunks){
 		}
 		loop_count++;
 		chunk = chunk + chunk->header.num_chunks;
+
 	}
 
 	//No block found to fit size
@@ -172,7 +173,6 @@ void _free_r(struct _reent * reent_ptr, void * addr){
 	}
 
 	if ( reent_ptr->procmem_base == NULL ){
-		mcu_debug_printf("can't free %p %p %p==%p\n", _GLOBAL_REENT, _GLOBAL_REENT->procmem_base, reent_ptr, _REENT);
 		return;
 	}
 
@@ -311,7 +311,6 @@ void * _malloc_r(struct _reent * reent_ptr, size_t size){
 	void * alloc;
 	u16 num_chunks;
 	malloc_chunk_t * chunk;
-	malloc_chunk_t * next;
 	alloc = NULL;
 
 	mcu_debug_log_info(MCU_DEBUG_MALLOC, "%s():%d->", __FUNCTION__, __LINE__);
@@ -368,9 +367,9 @@ void * _malloc_r(struct _reent * reent_ptr, size_t size){
 		} else {
 
 			//See if the memory will fit in this chunk
-			if ( chunk->header.num_chunks > num_chunks ){
-				next = chunk + (num_chunks);
-				malloc_set_chunk_free(next, (chunk->header.num_chunks) - num_chunks);
+			int diff_chunks = chunk->header.num_chunks - num_chunks;
+			if ( diff_chunks ){
+				malloc_set_chunk_free(chunk + num_chunks, diff_chunks);
 			} else if ( chunk->header.num_chunks < num_chunks ){
 				__malloc_unlock(reent_ptr);
 				errno = ENOMEM;
@@ -385,7 +384,6 @@ void * _malloc_r(struct _reent * reent_ptr, size_t size){
 	__malloc_unlock(reent_ptr);
 
 	mcu_debug_log_info(MCU_DEBUG_MALLOC, "a:%d,%d %p %d (%d) %p %p<-", getpid(), task_get_current(), alloc, size, num_chunks*MALLOC_CHUNK_SIZE, _GLOBAL_REENT->procmem_base, _GLOBAL_REENT);
-
 
 	return alloc;
 }

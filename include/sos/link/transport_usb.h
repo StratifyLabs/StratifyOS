@@ -23,6 +23,13 @@ limitations under the License.
 #include "usbd/control.h"
 #include "usbd/cdc.h"
 
+typedef struct MCU_PACK {
+	usbd_interface_descriptor_t interface_data /* The interface descriptor */;
+	usbd_endpoint_descriptor_t data_out /* Endpoint:  Bulk out */;
+	usbd_endpoint_descriptor_t data_in /* Endpoint:  Bulk in */;
+} sos_link_interface_configuration_descriptor_t;
+
+
 /* \details This structure defines the USB descriptors.  This
  * value is read over the control channel by the host to configure
  * the device.
@@ -42,16 +49,20 @@ typedef struct MCU_PACK {
 
 
 #define SOS_LINK_TRANSPORT_USB_DESC_MANUFACTURER_SIZE 13
-#define SOS_LINK_TRANSPORT_USB_DESC_PRODUCT_SIZE 10
+#define SOS_LINK_TRANSPORT_USB_DESC_PRODUCT_SIZE 11
 #define SOS_LINK_TRANSPORT_USB_DESC_SERIAL_SIZE 16
 #define SOS_LINK_TRANSPORT_USB_DESC_MANUFACTURER_STRING 'S','t','r','a','t','i','f','y',' ','L','a','b','s'
-#define SOS_LINK_TRANSPORT_USB_DESC_PRODUCT_STRING 'S','t','r','a','t','i','f','y','O','S'
+#define SOS_LINK_TRANSPORT_USB_DESC_PRODUCT_STRING 'S','t','r','a','t','i','f','y',' ','O','S'
 #define SOS_LINK_TRANSPORT_USB_DESC_SERIAL_STRING '0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0'
 
-#define SOS_LINK_TRANSPORT_USB_DESC_VCP_0_SIZE 20
-#define SOS_LINK_TRANSPORT_USB_DESC_VCP_1_SIZE 22
-#define SOS_LINK_TRANSPORT_USB_DESC_VCP_0 'S','t','r','a','t','i','f','y','O','S',' ','L','i','n','k',' ','P','o','r','t'
-#define SOS_LINK_TRANSPORT_USB_DESC_VCP_1 'S','t','r','a','t','i','f','y','O','S',' ','N','o','t','i','f','y',' ','P','o','r','t'
+
+#define SOS_LINK_TRANSPORT_USB_DESCRIPTOR_SOS_LINK_SIZE 11
+#define SOS_LINK_TRANSPORT_USB_DESCRIPTOR_SOS_LINK 'S','t','r','a','t','i','f','y',' ','O','S'
+
+#define SOS_LINK_TRANSPORT_USB_DESC_VCP_0_SIZE 11
+#define SOS_LINK_TRANSPORT_USB_DESC_VCP_1_SIZE 11
+#define SOS_LINK_TRANSPORT_USB_DESC_VCP_0 'S','t','r','a','t','i','f','y',' ','O','S'
+#define SOS_LINK_TRANSPORT_USB_DESC_VCP_1 'S','e','r','i','a','l',' ','P','o','r','t'
 
 
 #define SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT (0x2)
@@ -129,5 +140,34 @@ void boot_link_transport_usb_flush(link_transport_phy_t handle);
 extern const usbfifo_config_t sos_link_transport_usb_fifo_cfg;
 extern usbfifo_state_t sos_link_transport_usb_fifo_state MCU_SYS_MEM;
 
+
+#define SOS_LINK_TRANSPORT_USB_DECLARE_INTERFACE_CONFIGURATION_DESCRIPTOR(interface_string,interface_number,endpoint_number,endpoint_size) \
+	.interface_data = { \
+		.bLength = sizeof(usbd_interface_descriptor_t), \
+		.bDescriptorType = USBD_DESCRIPTOR_TYPE_INTERFACE, \
+		.bInterfaceNumber = interface_number, \
+		.bAlternateSetting = 0x00, \
+		.bNumEndpoints = 0x02, \
+		.bInterfaceClass = 0xff, \
+		.bInterfaceSubClass = 0xff, \
+		.bInterfaceProtocol = 0xff, \
+		.iInterface = interface_string \
+	}, \
+	.data_out = { \
+		.bLength= sizeof(usbd_endpoint_descriptor_t), \
+		.bDescriptorType=USBD_DESCRIPTOR_TYPE_ENDPOINT, \
+		.bEndpointAddress=endpoint_number, \
+		.bmAttributes=USBD_ENDPOINT_ATTRIBUTES_TYPE_BULK, \
+		.wMaxPacketSize=endpoint_size, \
+		.bInterval=1 \
+	}, \
+	.data_in = { \
+		.bLength= sizeof(usbd_endpoint_descriptor_t), \
+		.bDescriptorType=USBD_DESCRIPTOR_TYPE_ENDPOINT, \
+		.bEndpointAddress=(endpoint_number)|0x80, \
+		.bmAttributes=USBD_ENDPOINT_ATTRIBUTES_TYPE_BULK, \
+		.wMaxPacketSize=endpoint_size, \
+		.bInterval=1 \
+	}
 
 #endif /* SOS_LINK_TRANSPORT_USB_H_ */

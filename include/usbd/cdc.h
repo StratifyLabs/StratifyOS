@@ -322,6 +322,95 @@ typedef struct MCU_PACK {
     u8 width;
 } usbd_cdc_line_coding_request_t;
 
+#define USBD_CDC_DECLARE_CONFIGURATION_DESCRIPTOR(control_interface_string,data_interface_string,control_interface_number,data_interface_number,interrupt_endpoint_number,interrupt_endpoint_size,bulk_endpoint_number,bulk_endpoint_size) \
+	.interface_association = { \
+		.bLength = sizeof(usbd_interface_assocation_t), \
+		.bDescriptorType = USBD_DESCRIPTOR_TYPE_INTERFACE_ASSOCIATION, \
+		.bFirstInterface = control_interface_number, \
+		.bInterfaceCount = 2, \
+		.bFunctionClass = USBD_INTERFACE_CLASS_COMMUNICATIONS, \
+		.bFunctionSubClass = USBD_CDC_INTERFACE_SUBCLASS_ACM, \
+		.bFunctionProtocol = USBD_CDC_INTERFACE_PROTOCOL_V25TER, \
+		.iFunction = 0x04, \
+	}, \
+	.interface_control = { \
+	.bLength = sizeof(usbd_interface_descriptor_t), \
+	.bDescriptorType = USBD_DESCRIPTOR_TYPE_INTERFACE, \
+	.bInterfaceNumber = control_interface_number, \
+	.bAlternateSetting = 0x00, \
+	.bNumEndpoints = 0x01, \
+	.bInterfaceClass = USBD_INTERFACE_CLASS_COMMUNICATIONS, \
+	.bInterfaceSubClass = USBD_CDC_INTERFACE_SUBCLASS_ACM, \
+	.bInterfaceProtocol = USBD_CDC_INTERFACE_PROTOCOL_V25TER, \
+	.iInterface = control_interface_string \
+	}, \
+	.interface_control = { \
+	.bLength = sizeof(usbd_interface_descriptor_t), \
+	.bDescriptorType = USBD_DESCRIPTOR_TYPE_INTERFACE, \
+	.bInterfaceNumber = control_interface_number, \
+	.bAlternateSetting = 0x00, \
+	.bNumEndpoints = 0x01, \
+	.bInterfaceClass = USBD_INTERFACE_CLASS_COMMUNICATIONS, \
+	.bInterfaceSubClass = USBD_CDC_INTERFACE_SUBCLASS_ACM, \
+	.bInterfaceProtocol = USBD_CDC_INTERFACE_PROTOCOL_V25TER, \
+	.iInterface = control_interface_string \
+	}, \
+	.acm = { \
+	.header.bFunctionLength = sizeof(usbd_cdc_header_functional_descriptor_t), \
+	.header.bDescriptorType = 0x24, \
+	.header.bDescriptorSubType = 0x00, \
+	.header.bcdCDC = 0x0110, \
+	.acm.bFunctionLength = sizeof(usbd_cdc_abstract_control_model_functional_descriptor_t), \
+	.acm.bDescriptorType = 0x24, \
+	.acm.bDescriptorSubType = 0x02,  \
+	.acm.bmCapabilities = 0x06,  \
+	.union_descriptor.bFunctionLength = sizeof(usbd_cdc_union_functional_descriptor_t), \
+	.union_descriptor.bDescriptorType = 0x24, \
+	.union_descriptor.bDescriptorSubType = 0x06,  \
+	.union_descriptor.bMasterInterface = 0x02, \
+	.union_descriptor.bSlaveInterface = data_interface_number,  \
+	.call_management.bFunctionLength = sizeof(usbd_cdc_call_management_functional_descriptor_t), \
+	.call_management.bDescriptorType = 0x24, \
+	.call_management.bDescriptorSubType = 0x01,  \
+	.call_management.bmCapabilities = 0x03,  \
+	.call_management.bDataInterface = data_interface_number  \
+	},  \
+	.control = { \
+	.bLength= sizeof(usbd_endpoint_descriptor_t), \
+	.bDescriptorType=USBD_DESCRIPTOR_TYPE_ENDPOINT, \
+	.bEndpointAddress=((interrupt_endpoint_number)|0x80), \
+	.bmAttributes=USBD_ENDPOINT_ATTRIBUTES_TYPE_INTERRUPT, \
+	.wMaxPacketSize=interrupt_endpoint_size, \
+	.bInterval=1 \
+	}, \
+	.interface_data = { \
+	.bLength = sizeof(usbd_interface_descriptor_t), \
+	.bDescriptorType = USBD_DESCRIPTOR_TYPE_INTERFACE, \
+	.bInterfaceNumber = data_interface_number, \
+	.bAlternateSetting = 0x00, \
+	.bNumEndpoints = 0x02, \
+	.bInterfaceClass = USBD_INTERFACE_CLASS_COMMUNICATIONS_DATA, \
+	.bInterfaceSubClass = USBD_CDC_INTERFACE_SUBCLASS_ACM, \
+	.bInterfaceProtocol = USBD_CDC_INTERFACE_PROTOCOL_V25TER, \
+	.iInterface = data_interface_string \
+	}, \
+	.data_out = { \
+	.bLength= sizeof(usbd_endpoint_descriptor_t), \
+	.bDescriptorType=USBD_DESCRIPTOR_TYPE_ENDPOINT, \
+	.bEndpointAddress=bulk_endpoint_number, \
+	.bmAttributes=USBD_ENDPOINT_ATTRIBUTES_TYPE_BULK, \
+	.wMaxPacketSize=bulk_endpoint_size, \
+	.bInterval=1 \
+	}, \
+	.data_in = { \
+	.bLength= sizeof(usbd_endpoint_descriptor_t), \
+	.bDescriptorType=USBD_DESCRIPTOR_TYPE_ENDPOINT, \
+	.bEndpointAddress= ((bulk_endpoint_number)|0x80), \
+	.bmAttributes=USBD_ENDPOINT_ATTRIBUTES_TYPE_BULK, \
+	.wMaxPacketSize=bulk_endpoint_size, \
+	.bInterval=1 \
+	}
+
 
 #endif /* USBD_CDC_H_ */
 

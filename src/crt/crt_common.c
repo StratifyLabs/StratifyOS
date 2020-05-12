@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 #include "crt_common.h"
@@ -38,6 +38,8 @@ extern int main(int argc, char * const argv[]);
 static void constructors();
 static void destructors();
 
+static siginfo_t signal_info[32];
+
 int crt_common(char * path_arg, int * ret, const char * name){
 	task_setstackguard(pthread_self(), &_ebss + sizeof(proc_mem_t), SCHED_DEFAULT_STACKGUARD_SIZE);
 	int argc;
@@ -45,9 +47,9 @@ int crt_common(char * path_arg, int * ret, const char * name){
 
 	//Zero out the BSS section
 	memset(&_bss,
-			0,
-			(uint32_t)((char*)&_ebss - (char*)&_bss)
-	);
+				 0,
+				 (uint32_t)((char*)&_ebss - (char*)&_bss)
+				 );
 
 	_REENT->procmem_base = (proc_mem_t*)&_ebss;
 	_REENT->procmem_base->proc_name = name;
@@ -67,11 +69,11 @@ int crt_common(char * path_arg, int * ret, const char * name){
 	//import argv in to the process memory
 	argv = crt_import_argv(path_arg, &argc);
 
-	_REENT->procmem_base->siginfos = malloc(sizeof(siginfo_t)*32);
+	_REENT->procmem_base->siginfos = &signal_info;
 
 	//Initialize STDIO
-    __sinit(_GLOBAL_REENT);
-    write(stdout->_file, 0, 0); //forces stdin, stdout, and stderr to open
+	__sinit(_GLOBAL_REENT);
+	write(stdout->_file, 0, 0); //forces stdin, stdout, and stderr to open
 
 	//Execute main
 	constructors();

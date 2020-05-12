@@ -78,7 +78,7 @@ MCU_SPI_DRIVER_DECLARATION(mcu_ssp);
 	attr_mosi_port, attr_mosi_pin, \
 	attr_sck_port, attr_sck_pin, \
 	attr_cs_port, attr_cs_pin) \
-	spi_config_t name##_config = { \
+	const spi_config_t name##_config = { \
 	.attr = { SPI_DEFINE_ATTR(attr_flags, \
 	attr_freq, \
 	attr_width, \

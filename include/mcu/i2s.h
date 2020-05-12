@@ -110,7 +110,7 @@ MCU_I2S_DRIVER_DECLARATION(mcu_sai_dma);
 	attr_sdout_port, attr_sdout_pin, \
 	attr_sdin_port, attr_sdin_pin, \
 	attr_mck_port, attr_mck_pin) \
-	i2s_config_t name##_config = { \
+	const i2s_config_t name##_config = { \
 	.attr = { I2S_DEFINE_ATTR(attr_flags, \
 	attr_freq, \
 	attr_mck_mult, \
