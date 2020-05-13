@@ -64,7 +64,11 @@ typedef struct MCU_PACK {
 
 #if defined __link
 typedef void * link_transport_phy_t;
+#if defined __cplusplus
+#define LINK_PHY_OPEN_ERROR (static_cast<void*>(nullptr))
+#else
 #define LINK_PHY_OPEN_ERROR ((void*)0)
+#endif
 #else
 typedef int link_transport_phy_t;
 #define LINK_PHY_OPEN_ERROR (-1)
