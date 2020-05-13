@@ -299,10 +299,23 @@ typedef struct {
 //This is the mac osx prefix -- this needs to be in a list so it can also check bluetooth
 #ifdef __macosx
 #define TTY_DEV_PREFIX "tty.usbmodem"
+#define READDIR(a,b,c) readdir_r(a,b,c)
 #endif
 
 #ifdef __linux
 #define TTY_DEV_PREFIX "ttyACM"
+#define READDIR(a,b,c) read_directory(a,b,c)
+
+int read_directory(DIR *dirp, struct dirent * entry, struct dirent ** result){
+	*result = readdir(dirp);
+	if( *result != 0 ){
+		memcpy(entry, *result, sizeof(struct dirent));
+		return 0;
+	}
+	return -1;
+}
+
+
 #endif
 
 int link_phy_getname(char * dest, const char * last, int len){
@@ -327,7 +340,7 @@ int link_phy_getname(char * dest, const char * last, int len){
 		past_last = true;
 	}
 
-	while( (readdir_r(dirp, &entry, &result) == 0) && (result != NULL) ){
+	while( (READDIR(dirp, &entry, &result) == 0) && (result != NULL) ){
 		if( strncmp(TTY_DEV_PREFIX, entry.d_name, pre_len) == 0 ){
 			//the entry matches the prefix
 
@@ -367,6 +380,13 @@ link_transport_phy_t link_phy_open(
 
 	if( strnlen(name, MAX_DEVICE_PATH) >= MAX_DEVICE_PATH ){
 		return LINK_PHY_OPEN_ERROR;
+	}
+
+	const char * serial_prefix = "serial@";
+	if( strncmp(name, serial_prefix, strlen(serial_prefix)) == 0 ){
+		name = name + strlen(serial_prefix);
+		link_debug(LINK_DEBUG_MESSAGE,
+							 "stripping serial@ from beginning of name: %s", name);
 	}
 
 	//open serial port
@@ -542,6 +562,7 @@ int link_phy_read(link_transport_phy_t handle, void * buf, int nbyte){
 	if( ret < 0 ){
 		if ( errno == EAGAIN ){
 			errno = tmp;
+			link_phy_wait(1);
 			return 0;
 		}
 		return LINK_PHY_ERROR;
@@ -549,6 +570,8 @@ int link_phy_read(link_transport_phy_t handle, void * buf, int nbyte){
 
 	if( ret != 0 ){
 		link_debug(LINK_DEBUG_DEBUG, "Rx'd %d bytes", ret);
+	} else {
+		link_phy_wait(1);
 	}
 	return ret;
 }

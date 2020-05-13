@@ -77,7 +77,7 @@ MCU_UART_DRIVER_DECLARATION(mcu_uart_dma);
 	uart_attr_rx_port, uart_attr_rx_pin, \
 	uart_attr_rts_port, uart_attr_rts_pin, \
 	uart_attr_cts_port, uart_attr_cts_pin) \
-	uart_config_t uart_name##config = { .attr = \
+	const uart_config_t uart_name##config = { .attr = \
 { UART_DEFINE_ATTR( uart_attr_flags, \
 	uart_attr_width, \
 	uart_attr_freq, \

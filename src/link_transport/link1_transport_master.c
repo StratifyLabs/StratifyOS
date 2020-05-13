@@ -159,11 +159,13 @@ int wait_ack(
 	int count;
 	int bytes_read;
 	int ret;
+	u64 start_time, stop_time;
 
 	count = 0;
 	p = (char*)&ack;
 	bytes_read = 0;
 	do {
+		start_time = link_transport_gettime();
 		ret = driver->phy_driver.read(driver->phy_driver.handle, p, sizeof(ack) - bytes_read);
 		if( ret < 0 ){
 			return LINK_PHY_ERROR;
@@ -174,13 +176,8 @@ int wait_ack(
 			p += ret;
 			count = 0;
 		} else {
-#if defined __win32
-			//windows waits too long with Sleep, so delay is built into comm
-#else
-			driver->phy_driver.wait(1);
-
-#endif
-			count+=1;
+			stop_time = link_transport_gettime();
+			count += (stop_time - start_time)/1000UL;
 			if( count >= timeout ){
 				return LINK_TIMEOUT_ERROR;
 			}
