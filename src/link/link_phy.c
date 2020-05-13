@@ -45,21 +45,24 @@ typedef struct {
 } link_phy_container_t;
 
 
+#define API_COM_PREFIX "serial@"
+#define API_COM_PORT_NAME "serial@COM"
 #define COM_PORT_NAME "\\\\.\\COM"
 #define COM_PORT_MAX 500
 
 
 int link_phy_getname(char * dest, const char * last, int len){
 	int com_port = 0;
-	char buffer[24];
+	char windows_name[24]; //\\\\.\\COM
+	char api_name[24]; //serial@COM4
 	int does_not_exist;
 
 	//first find the last port
 	if( strlen(last) > 0 ){
 		do {
-			buffer[23] = 0;
-			snprintf(buffer, 23, "%s%d", COM_PORT_NAME, com_port++);
-			if( strncmp(buffer, last, 23) == 0 ){
+			api_name[23] = 0;
+			snprintf(api_name, 23, "%s%d", API_COM_PORT_NAME, com_port++);
+			if( strncmp(api_name, last, 23) == 0 ){
 				break;
 			}
 		} while(com_port < COM_PORT_MAX);
@@ -67,12 +70,13 @@ int link_phy_getname(char * dest, const char * last, int len){
 
 	does_not_exist = 1;
 	while((com_port < COM_PORT_MAX) && does_not_exist) {
-		snprintf(buffer, 23, "%s%d", COM_PORT_NAME, com_port);
+		snprintf(windows_name, 23, "%s%d", COM_PORT_NAME, com_port);
+		snprintf(api_name, 23, "%s%d", API_COM_PORT_NAME, com_port);
 
 		HANDLE test_handle;
 		DWORD err;
 
-		test_handle = CreateFile(buffer, GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+		test_handle = CreateFile(windows_name, GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
 		if( test_handle == INVALID_HANDLE_VALUE ){
 			err = GetLastError();
 			if( err == 5 ){ //busy
@@ -93,7 +97,7 @@ int link_phy_getname(char * dest, const char * last, int len){
 	}
 
 
-	strncpy(dest, buffer, (u32)len);
+	strncpy(dest, api_name, (u32)len);
 	return 0;
 }
 
@@ -123,8 +127,20 @@ link_transport_phy_t link_phy_open(const char * name, const void * options){
 	link_phy_container_t * handle;
 	DCB params;
 
+	//convert from serial@ to \\.\COM
 
-	if( check_name_length(name) < 0 ){
+	char windows_name[64];
+
+	const int len = strlen(API_COM_PREFIX);
+	if( strncmp(name, API_COM_PREFIX, len) == 0 ){
+		snprintf(windows_name, 62, "\\\\.\\%s", name + len);
+	} else if( strncmp(name, "COM", 3) == 0 ){
+		snprintf(windows_name, 62, "\\\\.\\%s", name);
+	} else {
+		strncpy(windows_name, name, 63);
+	}
+
+	if( check_name_length(windows_name) < 0 ){
 		return LINK_PHY_OPEN_ERROR;
 	}
 
@@ -134,18 +150,19 @@ link_transport_phy_t link_phy_open(const char * name, const void * options){
 	}
 
 	memset(handle->name, 0, MAX_DEVICE_PATH);
-	strncpy(handle->name, name, MAX_DEVICE_PATH-1);
+	strncpy(handle->name, windows_name, MAX_DEVICE_PATH-1);
 
-	link_debug(LINK_DEBUG_INFO, "Open device %s", name);
+	link_debug(LINK_DEBUG_INFO, "Open device %s as %s", name, windows_name);
 
-	handle->handle = CreateFile(name, GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+
+	handle->handle = CreateFile(windows_name, GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
 	if( handle->handle == INVALID_HANDLE_VALUE ){
 		free(handle);
-		link_debug(LINK_DEBUG_INFO, "failed to open %s", name);
+		link_debug(LINK_DEBUG_INFO, "failed to open %s", windows_name);
 		return LINK_PHY_OPEN_ERROR;
 	}
 
-	link_debug(LINK_DEBUG_MESSAGE, "Set timeouts for %s", name);
+	link_debug(LINK_DEBUG_MESSAGE, "Set timeouts for %s", windows_name);
 	COMMTIMEOUTS timeouts={0};
 	timeouts.ReadIntervalTimeout=1;
 	timeouts.ReadTotalTimeoutConstant=1;
@@ -208,7 +225,7 @@ link_transport_phy_t link_phy_open(const char * name, const void * options){
 		link_error(
 					"Failed set COMM state with error %d for %s",
 					GetLastError(),
-					name
+					windows_name
 					);
 		return LINK_PHY_OPEN_ERROR;
 	}
@@ -222,10 +239,12 @@ int link_phy_write(link_transport_phy_t handle, const void * buf, int nbyte){
 	link_phy_container_t * phy = handle;
 
 	if( handle == LINK_PHY_OPEN_ERROR){
+		link_error("bad handle");
 		return LINK_PHY_ERROR;
 	}
 
 	if( link_phy_status(handle) < 0 ){
+		link_error("bad handle status");
 		return LINK_PHY_ERROR;
 	}
 
@@ -606,9 +625,11 @@ void link_phy_flush(link_transport_phy_t handle){
 #endif
 
 int link_phy_lock(link_transport_phy_t phy){
+	MCU_UNUSED_ARGUMENT(phy);
 	return 0;
 }
 
 int link_phy_unlock(link_transport_phy_t phy){
+	MCU_UNUSED_ARGUMENT(phy);
 	return 0;
 }
