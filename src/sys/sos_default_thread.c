@@ -96,8 +96,9 @@ int init_fs(){
 	while( sysfs_isterminator(&sysfs_list[i]) == false ){
 		SOS_TRACE_MESSAGE(sysfs_list[i].mount_path);
 		mcu_debug_log_info(MCU_DEBUG_SYS, "init %s", sysfs_list[i].mount_path);
-		if ( sysfs_list[i].mount( sysfs_list[i].config ) < 0 ){
-			mcu_debug_log_error(MCU_DEBUG_SYS, "failed to init");
+		int result;
+		if ( (result = sysfs_list[i].mount( sysfs_list[i].config )) < 0 ){
+			mcu_debug_log_error(MCU_DEBUG_SYS, "failed to init %d, %d", SYSFS_GET_RETURN(result), SYSFS_GET_RETURN_ERRNO(result));
 			SOS_TRACE_CRITICAL(sysfs_list[i].mount_path);
 		}
 		i++;

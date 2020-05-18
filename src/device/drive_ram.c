@@ -58,6 +58,9 @@ int drive_ram_read(const devfs_handle_t * handle, devfs_async_t * async){
 
 int drive_ram_write(const devfs_handle_t * handle, devfs_async_t * async){
 	const drive_ram_config_t * config = handle->config;
+	if(config->o_flags & DRIVE_RAM_CONFIG_FLAG_IS_READ_ONLY ){
+		return SYSFS_SET_RETURN(ENOTSUP);
+	}
 	int size = calculate_transaction_size(handle, async);
 	if( size > 0 ){
 		memcpy(config->memory + async->loc, async->buf, size);

@@ -72,6 +72,7 @@ typedef enum {
 	QSPI_FLAG_IS_ADDRESS_WRITE /*! Write the address as part of the command */ = (1<<15),
 	QSPI_FLAG_IS_ADDRESS_DUAL /*! Use 2 lines for address (default is 1 line) */ = (1<<16),
 	QSPI_FLAG_IS_ADDRESS_QUAD /*! Use 4 lines for address (default is 1 line) */ = (1<<17),
+	QSPI_FLAG_IS_MEMORY_MAPPED /*! Set master in memory mapped mode */ = (1<<18),
 } qspi_flag_t;
 
 typedef struct MCU_PACK {
@@ -105,7 +106,10 @@ typedef struct MCU_PACK {
 	u32 o_flags /*! Flag bitmask */;
 	qspi_pin_assignment_t pin_assignment /*! Pin Assignment */;
 	u32 freq /*! Target operating frequency */;
-	u32 resd[8];/*! */
+	u8 memory_mapped_read_instruction;
+	u8 memory_mapped_read_dummy_cycles;
+	u8 resd2[2];
+	u32 resd[7];/*! */
 } qspi_attr_t;
 
 
