@@ -23,9 +23,14 @@
 #include "sos/fs/devfs.h"
 #include "sos/dev/drive.h"
 
+enum {
+	DRIVE_RAM_CONFIG_FLAG_IS_READ_ONLY = (1<<0)
+};
+
 typedef struct {
 	void * memory;
 	u32 size;
+	u32 o_flags;
 } drive_ram_config_t;
 
 
