@@ -249,6 +249,14 @@ void signal_root_activate(int * thread){
  *
  */
 int pthread_kill(pthread_t thread, int signo){
+	if( thread == pthread_self() && signo == SIGABRT ){
+		mcu_debug_printf("trace the stack from abort\n");
+		//this is called by abort() --> calls raise(SIGABRT) --> pthread_kill(pthread_self(), sig);
+		//trace here rather in the signal handler because stack tracing is more reliable
+		sos_trace_stack((u32)-1);
+	}
+	mcu_debug_printf("getting pthread Kill %d, %d\n", thread, signo);
+
 	return signal_send(thread, signo, SI_USER, 0);
 }
 

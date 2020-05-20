@@ -183,7 +183,7 @@ void svcall_get_stack_pointer(void * args){
 }
 
 
-u32 lookup_caller_adddress(u32 input){
+u32 lookup_caller_address(u32 input){
 
 	if( (input & 0x01) == 0 ){
 		return 0; //don't trace non-callers
@@ -208,6 +208,37 @@ u32 lookup_caller_adddress(u32 input){
 }
 
 
+/*
+ * -mpoke-function-name adds the function name to the text section -- prevents need to parse lst file
+ * -fomit-frame-pointer is used and makes it more difficult to trace back the stack
+ *
+ * if there is a
+ *
+ * push {lr}
+ * sub sp
+ *
+ * then the stack jump won't point at the
+ *
+ * gcc "throw" functions use no return and then destory the stack
+ *
+ * there may be a way to override the throw functions with just abort()
+ * then the stack trace will zero in
+ *
+ * namespace std
+ * {
+ *
+ * void __throw_out_of_range(char const*)
+ * {
+ * 	abort();
+ * }
+ *
+ * }
+ *
+ * arm-none-eabi-objcopy can be used to remove symbols (search for gcc-hard for an example)
+ * -W makes the symbols weak -- use -W _ZSt24__throw_out_of_range_fmtPKcz
+ *
+ */
+
 int sos_trace_stack(u32 count){
 	u32 * sp;
 	cortexm_svcall(svcall_get_stack_pointer, &sp);
@@ -217,7 +248,7 @@ int sos_trace_stack(u32 count){
 	 * the PSP has a hardware stack from on top of it when it
 	 * is calculated. This needs to be adjusted for.
 	 *
-	 * The hardware stack frame as 8 registers
+	 * The hardware stack frame has 8 registers
 	 *
 	 */
 	sp += 8;
@@ -247,12 +278,12 @@ int sos_trace_stack(u32 count){
 
 		//code points near the entrance of the function
 
-#if PRINT_DEBUG
+#if 0
 		int preview = stack_jump;
 		if( preview < 8 ){
 			preview += 8;
 		}
-		for(int i=-1*preview; i < preview; i++){
+		for(int i=0; i < preview; i++){
 			mcu_debug_printf(
 						"stack preview %d:%x -> %08x\n",
 						i,
@@ -269,7 +300,7 @@ int sos_trace_stack(u32 count){
 
 		next_link_register = sp[-1]  & ~0x01;
 #if PRINT_DEBUG
-		mcu_debug_printf("Next link is %08x (%08x)\n", next_link_register, (((u32)task_restore) & ~0x01));
+		mcu_debug_printf("Next link is %08x\n", next_link_register);
 #endif
 		if( next_link_register == (((u32)task_restore) & ~0x01) ){
 #if PRINT_DEBUG
@@ -290,21 +321,29 @@ int sos_trace_stack(u32 count){
 			next_link_register = sp[-3]  & ~0x01;
 		}
 
-		if( lookup_caller_adddress(next_link_register+1) == 0 ){
-#if PRINT_DEBUG
-			mcu_debug_printf("failed to fully trace stack\n");
-#endif
-			return push_count;
+		if( push_count ){ //first one is always sos_stack_trace()
+			sos_trace_event_addr(
+						LINK_POSIX_TRACE_MESSAGE,
+						message,
+						len,
+						((u32)code_pointer)+1
+						);
 		}
 
-		sos_trace_event_addr(
-					LINK_POSIX_TRACE_MESSAGE,
-					message,
-					len,
-					((u32)code_pointer)+1
-					);
-
 		push_count++;
+
+		if( lookup_caller_address(next_link_register+1) == 0 ){
+#if PRINT_DEBUG
+			mcu_debug_printf("failed to fully trace stack %p\n", next_link_register);
+#endif
+			sos_trace_event_addr(
+						LINK_POSIX_TRACE_ERROR,
+						"traceFailed",
+						sizeof("traceFailed"),
+						next_link_register
+						);
+			return push_count;
+		}
 
 	} while( ((u32)sp < stack_top) &&
 					 (push_count < count) );

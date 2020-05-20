@@ -193,7 +193,7 @@ void _free_r(struct _reent * reent_ptr, void * addr){
 	b = &(reent_ptr->procmem_base->base);
 	//sanity check for chunk that is not in proc mem (low side)
 	if( addr < b ){
-		sos_trace_stack(32);
+		sos_trace_stack((u32)-1);
 		mcu_debug_log_warning(
 					MCU_DEBUG_MALLOC,
 					"Free addr below heap %p < %p (id:%d)",
@@ -439,6 +439,7 @@ void malloc_process_fault(void * loc){
 				task_get_current()
 				);
 
+	sos_trace_stack((u32)-1);
 	if( task_get_pid(task_get_current()) > 0 ){
 		//free the heap and reset the stack
 		_exit(1);

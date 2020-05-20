@@ -48,6 +48,11 @@ int _kill(pid_t pid, int signo){
 		}
 	}
 
+	if( (pid == task_get_pid( task_get_current() )) && (signo == SIGABRT) ){
+		sos_trace_event(LINK_POSIX_TRACE_FATAL, "sigabrt", sizeof("sigabrt"));
+		sos_trace_stack((u32)-1);
+	}
+
 	//! \todo Add permission error checking
 	return signal_send(tid, signo, SI_USER, 0);
 }

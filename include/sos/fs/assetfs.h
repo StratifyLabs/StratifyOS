@@ -18,6 +18,7 @@
 #define SOS_FS_ASSETFS_H_
 
 #include "mcu/types.h"
+#include "../link/types.h"
 
 int assetfs_init(const void* cfg);
 int assetfs_startup(const void* cfg);
@@ -54,10 +55,12 @@ int assetfs_closedir(const void* cfg, void ** handle);
 #define ASSETFS_ENTRY(file_name, object_name, mode_value, uid_value) \
 { .name = file_name, .start = ASSETFS_START(object_name), .end = ASSETFS_END(object_name), .mode = mode_value, .uid = uid_value }
 
-typedef struct {
-	char name[NAME_MAX];
-	const void * start;
-	const void * end;
+#define ASSETFS_COUNT_ADDRESS_IS_RELATIVE (1<<31)
+
+typedef struct MCU_PACK {
+	char name[LINK_NAME_MAX];
+	u32 start;
+	u32 end;
 	u16 uid;
 	u16 mode;
 } assetfs_dirent_t;
