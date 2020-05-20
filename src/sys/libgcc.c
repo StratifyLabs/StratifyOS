@@ -23,6 +23,10 @@
 #if __FPU_USED == 1
 #if 1
 /*
+ * -W weakens the symbols -- doesn't remove them. It is OK to just do libgcc.a libgcc.a instead of libgcc-hard.a and then link to libgcc rather than libgcc-hard
+ *
+ *
+
 export PATH=$PATH:/Applications/StratifyLabs-SDK/Tools/gcc/bin
 export CMD="arm-none-eabi-objcopy -W __aeabi_fmul -W __aeabi_dmul -W __aeabi_fdiv -W __aeabi_ddiv -W __aeabi_dadd -W __adddf3 -W __aeabi_fadd -W __addsf3 -W __divdc3 -W __divsc3 -W __muldc3 libgcc.a libgcc-hard.a"
 cd /Applications/StratifyLabs-SDK/Tools/gcc/lib/gcc/arm-none-eabi/6.3.1/thumb/v7e-m/fpv4-sp/hard
