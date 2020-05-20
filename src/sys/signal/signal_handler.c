@@ -160,7 +160,6 @@ void abort_action(int signo, int flags){
 	//Exit the program
 	char hex_buffer[9];
 	char str[32];
-	sos_trace_stack((u32)-1);
 	strcpy(str, "ABORT:");
 	htoa(hex_buffer, signo);
 	strcat(str, hex_buffer);

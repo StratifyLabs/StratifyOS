@@ -74,15 +74,20 @@ int assetfs_open(const void* cfg, void ** handle, const char * path, int flags, 
 		return -1;
 	}
 
+	u32 offset= 0;
+	const assetfs_config_t * config = cfg;
+	if( config->count & ASSETFS_COUNT_ADDRESS_IS_RELATIVE ){
+		offset = (u32)config;
+	}
+
 	h->ino = ino;
-	h->data = directory_entry->start;
+	h->data = (const void*)(directory_entry->start + offset);
 	h->size = directory_entry->end - directory_entry->start;
 	cortexm_assign_zero_sum32(h, sizeof(assetfs_handle_t) / sizeof(u32));
 
 	*handle = h;
 	return 0;
 }
-
 int assetfs_read(const void * cfg, void * handle, int flags, int loc, void * buf, int nbyte){
 	MCU_UNUSED_ARGUMENT(cfg);
 	if( flags != O_RDONLY ){ return SYSFS_SET_RETURN(EINVAL); }
@@ -95,9 +100,9 @@ int assetfs_read(const void * cfg, void * handle, int flags, int loc, void * buf
 	if( bytes_ready > nbyte ){ bytes_ready = nbyte; }
 	if( bytes_ready <= 0 ){ return 0; }
 	//don't read past the end of the file
+
 	memcpy(buf, h->data + loc, bytes_ready);
 	return bytes_ready;
-
 }
 
 int assetfs_ioctl(
@@ -159,7 +164,7 @@ void assign_stat(int ino, const assetfs_dirent_t * entry, struct stat * st){
 	st->st_size = entry->end - entry->start;
 	st->st_ino = ino;
 	st->st_mode = entry->mode | S_IFREG;
-	st->st_uid = SOS_USER_ROOT;
+	st->st_uid = entry->uid;
 }
 
 int assetfs_opendir(const void* cfg, void ** handle, const char * path){
@@ -208,8 +213,9 @@ const assetfs_dirent_t * find_file(const void * cfg, const char * path, int * in
 
 int get_directory_entry(const void * cfg, int loc, const assetfs_dirent_t ** entry){
 	const assetfs_config_t * config = cfg;
+	u32 count = config->count & ~ASSETFS_COUNT_ADDRESS_IS_RELATIVE;
 	if( loc < 0 ){ return SYSFS_SET_RETURN(EINVAL);	}
-	if( loc >= config->count ){ return SYSFS_SET_RETURN(ENOENT); }
+	if( loc >= count ){ return SYSFS_SET_RETURN(ENOENT); }
 	*entry = config->entries + loc;
 	return 0;
 

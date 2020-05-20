@@ -87,7 +87,7 @@ char ** const crt_import_argv(char * path_arg, int * argc){
 	}
 
 	//this needs to be strnlen -- security
-	len = strlen(path_arg) + 1;
+	len = strnlen(path_arg,255) + 1;
 
 	count = 0;
 	next = strtok_r(path_arg, sysfs_whitespace, &p);
@@ -96,7 +96,8 @@ char ** const crt_import_argv(char * path_arg, int * argc){
 		count++;
 	}
 
-	argv = malloc(sizeof(char*)*(count+1) + len);
+	u32 argv_size = sizeof(char*)*(count+1);
+	argv = malloc(argv_size + len);
 	if( argv == 0 ){
 		//since we couldn't allocate memory in the application, free the memory allocated on global
 		if( path_arg ){
@@ -105,9 +106,9 @@ char ** const crt_import_argv(char * path_arg, int * argc){
 		return 0;
 	}
 
-	arg_buffer = ((void*)argv) + sizeof(char*)*(count+1);
+	arg_buffer = ((char*)argv) + argv_size;
 	memcpy(arg_buffer, path_arg, len);
-	arg_buffer[len] = 0;
+	arg_buffer[len-1]=0; //len includes the zero terminator -- need to zero terminate just in case
 
 	//free the path_arg passed from shared system memory
 	_free_r(sos_task_table[0].global_reent, path_arg);
