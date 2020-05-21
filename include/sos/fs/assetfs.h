@@ -55,8 +55,6 @@ int assetfs_closedir(const void* cfg, void ** handle);
 #define ASSETFS_ENTRY(file_name, object_name, mode_value, uid_value) \
 { .name = file_name, .start = ASSETFS_START(object_name), .end = ASSETFS_END(object_name), .mode = mode_value, .uid = uid_value }
 
-#define ASSETFS_COUNT_ADDRESS_IS_RELATIVE (1<<31)
-
 typedef struct MCU_PACK {
 	char name[LINK_NAME_MAX];
 	u32 start;

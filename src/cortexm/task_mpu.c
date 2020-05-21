@@ -203,7 +203,7 @@ int init_os_memory_protection(task_memories_t * os_mem){
 	}
 
 
-	//Make the OS flash executable and readable -- region 3
+	//Make the OS flash executable and readable
 	err = mpu_enable_region(
 				TASK_SYSTEM_CODE_MPU_REGION,
 				os_mem->code.address,
@@ -217,7 +217,7 @@ int init_os_memory_protection(task_memories_t * os_mem){
 		return err;
 	}
 
-	//Make the OS shared memory R/W -- region 5
+	//Make the OS shared memory R/W
 	err = mpu_enable_region(
 				TASK_SYSTEM_DATA_MPU_REGION,
 				os_mem->data.address,
