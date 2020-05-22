@@ -43,15 +43,18 @@ typedef struct MCU_PACK {
 	u16 mode;
 } drive_assetfs_dirent_t;
 
-typedef struct {
-	sysfs_shared_config_t drive;
-	u32 offset;
-} drive_assetfs_config_t;
 
 typedef struct {
 	u32 count;
 	const drive_assetfs_dirent_t entries[];
 } drive_assetfs_header_t;
+
+
+#if !defined __link
+typedef struct {
+	sysfs_shared_config_t drive;
+	u32 offset;
+} drive_assetfs_config_t;
 
 typedef struct {
 	sysfs_shared_state_t drive;
@@ -92,6 +95,8 @@ typedef struct {
 	.unlock = SYSFS_NOTSUP_VOID, \
 	.config = cfgp, \
 	}
+
+#endif
 
 
 #endif /* SOS_FS_DRIVE_ASSETFS_H_ */

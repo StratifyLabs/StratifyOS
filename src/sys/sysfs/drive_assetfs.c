@@ -32,7 +32,7 @@
 
 typedef struct {
 	int ino;
-	const void * data;
+	u32 data;
 	u32 size;
 	u32 checksum;
 } drive_assetfs_handle_t;
@@ -100,6 +100,7 @@ int drive_assetfs_open(const void* cfg, void ** handle, const char * path, int f
 	drive_assetfs_dirent_t directory_entry;
 
 	if( find_file(cfg, path, &ino, &directory_entry) < 0 ){
+		MCU_DEBUG_LINE_TRACE();
 		return SYSFS_SET_RETURN(ENOENT);
 	}
 
@@ -108,17 +109,19 @@ int drive_assetfs_open(const void* cfg, void ** handle, const char * path, int f
 			 directory_entry.uid,
 			 SYSFS_GROUP
 			 ) == 0 ){
+		MCU_DEBUG_LINE_TRACE();
 		return SYSFS_SET_RETURN(EPERM);
 	}
 
 	drive_assetfs_handle_t * h = malloc(sizeof(drive_assetfs_handle_t));
 	if( h == 0 ){
-		return -1;
+		return SYSFS_SET_RETURN(ENOMEM);
 	}
 
 	h->ino = ino;
-	h->data = (const void*)(directory_entry.start);
+	h->data = directory_entry.start;
 	h->size = directory_entry.size;
+
 	cortexm_assign_zero_sum32(h, sizeof(drive_assetfs_handle_t) / sizeof(u32));
 
 	*handle = h;
@@ -137,7 +140,7 @@ int drive_assetfs_read(const void * cfg, void * handle, int flags, int loc, void
 	if( bytes_ready <= 0 ){ return 0; }
 
 	//don't read past the end of the file
-	return read_drive(cfg, loc, buf, bytes_ready);
+	return read_drive(cfg, h->data + loc, buf, bytes_ready);
 }
 
 int drive_assetfs_ioctl(
@@ -202,10 +205,9 @@ void assign_stat(int ino, const drive_assetfs_dirent_t * entry, struct stat * st
 int drive_assetfs_opendir(const void* cfg, void ** handle, const char * path){
 	if ( strncmp(path, "", PATH_MAX) == 0 ){
 		*handle = VALID_DIR_HANDLE;
-	} else {
-		return SYSFS_SET_RETURN(ENOENT);
+		return 0;
 	}
-	return 0;
+	return SYSFS_SET_RETURN(ENOENT);
 }
 
 int drive_assetfs_readdir_r(const void* cfg, void * handle, int loc, struct dirent * entry){

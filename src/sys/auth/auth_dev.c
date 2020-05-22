@@ -64,9 +64,9 @@ int auth_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 		case I_AUTH_FINISH:
 			result = authenticate(handle, ctl);
 			if( result == SYSFS_RETURN_SUCCESS ){
-				task_assert_root( task_get_current() );
+				scheduler_root_assert_authenticated( task_get_current() );
 			} else {
-				task_deassert_root( task_get_current() );
+				scheduler_root_deassert_authenticated( task_get_current() );
 			}
 			return result;
 

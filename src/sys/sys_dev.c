@@ -146,6 +146,13 @@ int sys_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 		case I_SYS_ISAUTHENTICATED:
 			return scheduler_authenticated_asserted( task_get_current() ) != 0;
 
+		case I_SYS_DEAUTHENTICATE:
+			if( scheduler_authenticated_asserted( task_get_current() ) ){
+				scheduler_root_deassert_authenticated( task_get_current() );
+				return 0;
+			}
+			return SYSFS_SET_RETURN(EPERM);
+
 		default:
 			break;
 	}
