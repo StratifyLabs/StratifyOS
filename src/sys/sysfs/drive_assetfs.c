@@ -100,7 +100,6 @@ int drive_assetfs_open(const void* cfg, void ** handle, const char * path, int f
 	drive_assetfs_dirent_t directory_entry;
 
 	if( find_file(cfg, path, &ino, &directory_entry) < 0 ){
-		MCU_DEBUG_LINE_TRACE();
 		return SYSFS_SET_RETURN(ENOENT);
 	}
 
@@ -109,7 +108,6 @@ int drive_assetfs_open(const void* cfg, void ** handle, const char * path, int f
 			 directory_entry.uid,
 			 SYSFS_GROUP
 			 ) == 0 ){
-		MCU_DEBUG_LINE_TRACE();
 		return SYSFS_SET_RETURN(EPERM);
 	}
 

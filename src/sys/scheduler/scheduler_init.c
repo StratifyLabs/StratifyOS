@@ -68,36 +68,35 @@ int scheduler_start(void * (*init)(void*)){
 }
 
 
-int scheduler_prepare(){
-
-#if 1
-	if ( mcu_debug_init() < 0 ){
-		cortexm_disable_interrupts();
-		mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_FATAL, (void*)"dbgi");
-	}
-#endif
-
-	mcu_debug_log_info(MCU_DEBUG_SYS, "MCU Debug start");
-	mcu_debug_log_info(MCU_DEBUG_SCHEDULER, "Init Timing");
-
-#if SCHED_USECOND_TMR_SLEEP_OC > -1
-	if ( scheduler_timing_init() ){
-		return -1;
-	}
-#endif
-
-	mcu_debug_log_info(MCU_DEBUG_SCHEDULER, "Load MCU Faults");
-
-	//Load any possible faults from the last reset
-	mcu_fault_load((fault_t*)&m_scheduler_fault.fault);
-
+static void svcall_prepare(void*args){
 	mcu_debug_log_info(MCU_DEBUG_SCHEDULER, "Init MPU");
 	if ( task_init_mpu(&_data, sos_board_config.sys_memory_size) < 0 ){
 		mcu_debug_log_info(MCU_DEBUG_SCHEDULER, "Failed to initialize memory protection");
 		mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_FATAL, (void*)"tski");
 	}
-
 	mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_DEBUG_INITIALIZED, 0);
+}
+
+int scheduler_prepare(){
+
+	mcu_debug_log_info(MCU_DEBUG_SCHEDULER, "Load MCU Faults");
+	//Load any possible faults from the last reset
+	mcu_fault_load((fault_t*)&m_scheduler_fault.fault);
+
+	if ( mcu_debug_init() < 0 ){
+		cortexm_disable_interrupts();
+		mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_FATAL, (void*)"dbgi");
+	}
+	mcu_debug_log_info(MCU_DEBUG_SYS, "MCU Debug started");
+
+	cortexm_svcall(svcall_prepare, NULL);
+
+	mcu_debug_log_info(MCU_DEBUG_SCHEDULER, "Init Timing");
+#if SCHED_USECOND_TMR_SLEEP_OC > -1
+	if ( scheduler_timing_init() ){
+		return -1;
+	}
+#endif
 
 	cortexm_set_unprivileged_mode(); //Enter unpriv mode
 	return 0;

@@ -284,7 +284,9 @@ void posix_trace_event_addr_tid(trace_event_id_t event_id, const void * data_ptr
 
 	//convert the address using the task memory location
 	//check if addr is part of kernel or app
-	if( (addr > (uint32_t)&_text) && (addr < (uint32_t)&_etext) ){
+	if( ((addr > (uint32_t)&_text) && (addr < (uint32_t)&_etext)) ||
+			((addr > (uint32_t)&_tcim) && (addr < (uint32_t)&_etcim))
+			){
 		//kernel
 		addr = addr - 1;
 	} else {

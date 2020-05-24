@@ -72,6 +72,8 @@ extern "C" {
 extern u32 _top_of_stack;
 extern u32 _text;
 extern u32 _etext;
+extern u32 _tcim;
+extern u32 _etcim;
 extern u32 _data;
 extern u32 _edata;
 extern u32 _bss;
@@ -153,6 +155,7 @@ enum {
 	MCU_BOARD_CONFIG_EVENT_SCHEDULER_IDLE /*! All tasks are idle (this can implement an alternate sleep implementation) */,
 	MCU_BOARD_CONFIG_EVENT_ROOT_DEBUG_INITIALIZED /*! All tasks are idle (this can implement an alternate sleep implementation) */,
 	MCU_BOARD_CONFIG_EVENT_SYSTEM_ASSERT /*! Software assert() called on process 0 */,
+	MCU_BOARD_CONFIG_EVENT_ROOT_CONFIGURE_MPU /*! System MPU has been setup (may be updated by application) */,
 	MCU_BOARD_CONFIG_EVENT_TOTAL
 };
 

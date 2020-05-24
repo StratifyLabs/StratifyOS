@@ -70,6 +70,8 @@ int task_init_mpu(void * system_memory, int system_memory_size){
 	//Calculate the device specific memory protection regions
 	//mpu_dev_init();
 
+	//Turn the MPU On
+	mpu_enable();
 
 	u32 text_start = (u32)&_text & ~mcu_board_config.os_mpu_text_mask;
 
@@ -90,8 +92,7 @@ int task_init_mpu(void * system_memory, int system_memory_size){
 	}
 	memcpy((void*)&(sos_task_table[0].mem), &os_mem, sizeof(os_mem));  //Copy the OS mem to the task table
 
-	//Turn the MPU On
-	mpu_enable();
+	mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_CONFIGURE_MPU, NULL);
 
 	mcu_core_enable_cache();
 
@@ -158,7 +159,7 @@ int task_root_set_stackguard(int tid, void * stackaddr, int stacksize){
 	sos_task_table[tid].mem.stackguard.rbar = rbar;
 	sos_task_table[tid].mem.stackguard.rasr = rasr;
 
-	if ( tid == task_get_current() ){
+	if( tid == task_get_current() ){
 		//make the settings effective now if the task is currently active
 		MPU->RBAR = rbar;
 		MPU->RASR = rasr;
@@ -178,7 +179,7 @@ int init_os_memory_protection(task_memories_t * os_mem){
 	}
 #endif
 
-	if( mcu_board_config.secret_key_address != 0 ){
+	if( mcu_board_config.secret_key_size > 0 ){
 		err = mpu_enable_region(
 					TASK_SYSTEM_SECRET_KEY_REGION,
 					mcu_board_config.secret_key_address,
@@ -230,7 +231,6 @@ int init_os_memory_protection(task_memories_t * os_mem){
 		mcu_debug_log_error(MCU_DEBUG_SYS, "Failed to init shared mem 0x%lX -> 0x%lX bytes (%d)", (u32)os_mem->data.address, (u32)os_mem->data.size, err);
 		return err;
 	}
-
 
 	return 0;
 

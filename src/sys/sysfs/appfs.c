@@ -130,7 +130,7 @@ void svcall_init(void * args){
 	//now scan each flash page to see what RAM is used by applications
 	for(i=0; i < info.flash_pages; i++){
 		if ( (appfs_util_root_get_fileinfo(device, &appfs_file, i, MEM_FLAG_IS_FLASH, NULL) == APPFS_MEMPAGETYPE_USER) &&
-			  (appfs_util_is_executable(&appfs_file) ) ){
+				 (appfs_util_is_executable(&appfs_file) ) ){
 
 			mem_pageinfo_t page_info;
 			page_info.o_flags = MEM_FLAG_IS_QUERY;
@@ -149,9 +149,9 @@ void svcall_init(void * args){
 #endif
 
 			appfs_ram_root_set(device,
-									 page_info.num,
-									 appfs_file.exec.ram_size,
-									 APPFS_MEMPAGETYPE_SYS);
+												 page_info.num,
+												 appfs_file.exec.ram_size,
+												 APPFS_MEMPAGETYPE_SYS);
 		}
 	}
 }
@@ -187,8 +187,8 @@ int appfs_startup(const void * cfg){
 		cortexm_svcall(appfs_util_svcall_get_fileinfo, &get_fileinfo_args);
 
 		if( (get_fileinfo_args.result == APPFS_MEMPAGETYPE_USER) &&
-			 appfs_util_is_executable(&get_fileinfo_args.file_info) &&
-			 (get_fileinfo_args.file_info.exec.o_flags & APPFS_FLAG_IS_STARTUP) ){
+				appfs_util_is_executable(&get_fileinfo_args.file_info) &&
+				(get_fileinfo_args.file_info.exec.o_flags & APPFS_FLAG_IS_STARTUP) ){
 
 			//start the process
 			mem.code.address = (void*)get_fileinfo_args.file_info.exec.code_start;
@@ -202,11 +202,11 @@ int appfs_startup(const void * cfg){
 			}
 
 			if ( scheduler_create_process((void*)get_fileinfo_args.file_info.exec.startup,
-													0,
-													&mem,
-													(void*)get_fileinfo_args.file_info.exec.ram_start,
-													0,
-													is_root) >= 0 ){
+																		0,
+																		&mem,
+																		(void*)get_fileinfo_args.file_info.exec.ram_start,
+																		0,
+																		is_root) >= 0 ){
 				started++;
 				mcu_debug_log_info(MCU_DEBUG_APPFS, "Started %s", get_fileinfo_args.file_info.hdr.name);
 			} else {
@@ -369,10 +369,12 @@ int appfs_unlink(const void* cfg, const char * path){
 		ram.page = get_pageinfo_args.page_info.num;
 
 		//the actual amount is not stored anywhere so it needs to be calculated again using the MPU
-		ram.size = mpu_calc_region(0,
-											(void*)get_pageinfo_args.page_info.addr,
-											file_info.exec.code_size + file_info.exec.data_size,
-											0, 0, 0, &rbar, &rasr);
+		ram.size = mpu_calc_region(
+					0,
+					(void*)get_pageinfo_args.page_info.addr,
+					file_info.exec.code_size + file_info.exec.data_size,
+					0, 0, 0, &rbar, &rasr
+					);
 		//The Ram size is the code size + the data size round up to the next power of 2 to account for memory protection
 		cortexm_svcall(appfs_ram_svcall_set, &ram);
 	}
@@ -459,10 +461,10 @@ int appfs_stat(const void* cfg, const char * path, struct stat * st){
 	mem_pageinfo_t page_info;
 
 	if ( (path_type = analyze_path(
-				path,
-				&name,
-				&mem_type
-				)) < 0 ){
+					path,
+					&name,
+					&mem_type
+					)) < 0 ){
 		return SYSFS_SET_RETURN(ENOENT);
 	}
 

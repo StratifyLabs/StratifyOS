@@ -201,7 +201,6 @@ void task_svcall_new_task(new_task_t * task){
 	hw_stack_frame_t * frame;
 
 	//validate arguments
-
 	for(i=1; i < task_get_total(); i++){
 		if ( !task_used_asserted(i) ){
 			//initialize the process stack pointer

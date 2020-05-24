@@ -160,7 +160,9 @@ void mcu_core_svcall_handler(){
 	call = (cortexm_svcall_t)frame[0];
 	args = (void*)(frame[1]);
 	//verify call is located secure kernel region ROOT_EXEC ONLY
-	if( ((u32)call >= (u32)&_text) && ((u32)call < (u32)&_etext) ){
+	if( (((u32)call >= (u32)&_text) && ((u32)call < (u32)&_etext)) ||
+			(((u32)call >= (u32)&_tcim) && ((u32)call < (u32)&_etcim))
+			){
 		//args must point to kernel RAM or kernel flash -- can't be SYS MEM or registers or anything like that
 		call(args);
 	} else {
@@ -177,7 +179,9 @@ void mcu_core_svcall_handler(){
 
 int cortexm_validate_callback(mcu_callback_t callback){
 	// \todo callbacks need to be in ROOT_EXEC_ONLY
-	if( ((u32)callback >= (u32)&_text) && ((u32)callback < (u32)&_etext) ){
+	if( (((u32)callback >= (u32)&_text) && ((u32)callback < (u32)&_etext)) ||
+			(((u32)callback >= (u32)&_tcim) && ((u32)callback < (u32)&_etcim))
+			){
 		return 0;
 	}
 	return -1;
@@ -204,10 +208,9 @@ void cortexm_enable_interrupts(){
 }
 
 void cortexm_get_stack_ptr(void ** ptr){
-	void ** ptrp = ptr;
 	void * result=NULL;
-	asm volatile ("MRS %0, msp\n\t" : "=r" (ptr) );
-	*ptrp = result;
+	asm volatile ("MRS %0, msp\n\t" : "=r" (result) );
+	*ptr = result;
 }
 
 void cortexm_set_stack_ptr(void * ptr){
@@ -255,10 +258,13 @@ int cortexm_set_irq_priority(int irq, int prio, u32 o_events){
 }
 
 void cortexm_set_vector_table_addr(void * addr){
-#if defined SCB
 	SCB->VTOR = (uint32_t)addr;
 	__DSB();
-#endif
+}
+
+u32 cortexm_get_vector_table_addr(){
+	__DSB();
+	return SCB->VTOR;
 }
 
 u32 cortexm_get_systick_value(){
