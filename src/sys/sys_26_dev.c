@@ -30,8 +30,6 @@
 #include "device/sys.h"
 #include "symbols.h"
 
-extern void mcu_core_hardware_id();
-
 static int read_task(sys_taskattr_t * task);
 
 uint8_t sys_euid MCU_SYS_MEM;

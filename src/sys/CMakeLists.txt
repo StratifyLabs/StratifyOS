@@ -92,6 +92,7 @@ if( ${SOS_BUILD_CONFIG} STREQUAL arm )
 		sysfs/appfs_mem_dev.c
 		sysfs/appfs.c
 		sysfs/assetfs.c
+		sysfs/drive_assetfs.c
 		sysfs/devfs_aio.c
 		sysfs/devfs_data_transfer.c
 		sysfs/devfs.c

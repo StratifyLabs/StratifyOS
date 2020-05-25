@@ -33,8 +33,6 @@
 #include "device/sys.h"
 #include "symbols.h"
 
-extern void mcu_core_hardware_id();
-
 static int read_task(sys_taskattr_t * task);
 static int sys_setattr(const devfs_handle_t * handle, void * ctl);
 
@@ -75,7 +73,7 @@ int sys_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 				strncpy(info->mcu_git_hash, mcu_config.git_hash, 15);
 			}
 			mcu_core_getserialno(&(info->serial));
-			info->hardware_id = *((u32*)(&_text + BOOTLOADER_HARDWARE_ID_OFFSET/sizeof(u32)));
+			info->hardware_id = *(((u32*)cortexm_get_vector_table_addr()) + BOOTLOADER_HARDWARE_ID_OFFSET/sizeof(u32));
 			return 0;
 
 		case I_SYS_GETTASK:
@@ -145,6 +143,13 @@ int sys_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 
 		case I_SYS_ISAUTHENTICATED:
 			return scheduler_authenticated_asserted( task_get_current() ) != 0;
+
+		case I_SYS_DEAUTHENTICATE:
+			if( scheduler_authenticated_asserted( task_get_current() ) ){
+				scheduler_root_deassert_authenticated( task_get_current() );
+				return 0;
+			}
+			return SYSFS_SET_RETURN(EPERM);
 
 		default:
 			break;

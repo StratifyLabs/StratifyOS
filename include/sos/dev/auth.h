@@ -111,7 +111,7 @@ typedef struct MCU_PACK {
  *
  *   //populate token.data[0 to 15] with random bits
  *
- *   ioctl(fdm, I_AUTH_START, &auth);
+ *   ioctl(fdm, I_AUTH_START, &token);
  *
  *   //all 256 bits of auth.token are now populated
  *   //This token can be sent to an external program to populate next auth token

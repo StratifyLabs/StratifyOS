@@ -72,6 +72,7 @@ void cortexm_delay_ms(u32 ms);
 void cortexm_delay_systick(u32 ticks);
 
 void cortexm_set_vector_table_addr(void * addr);
+u32 cortexm_get_vector_table_addr();
 
 void cortexm_wdtfault_handler(void * stack);
 

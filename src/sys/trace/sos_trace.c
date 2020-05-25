@@ -151,7 +151,9 @@ void sos_trace_event_addr_tid(
 	if( sos_board_config.trace_event ){
 		//convert the address using the task memory location
 		//check if addr is part of kernel or app
-		if( ((addr >= (u32)&_text) && (addr < (u32)&_etext)) || (addr == 1) ){
+		if( ((addr >= (u32)&_text) && (addr < (u32)&_etext)) ||
+				((addr > (uint32_t)&_tcim) && (addr < (uint32_t)&_etcim))
+				|| (addr == 1) ){
 			//kernel
 			addr = addr - 1;
 		} else {

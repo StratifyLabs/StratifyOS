@@ -59,14 +59,15 @@ int auth_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 				memset(key_token, 0, sizeof(auth_key_token_t) );
 				return SYSFS_SET_RETURN(EIO);
 			}
+
 			return 0;
 
 		case I_AUTH_FINISH:
 			result = authenticate(handle, ctl);
 			if( result == SYSFS_RETURN_SUCCESS ){
-				task_assert_root( task_get_current() );
+				scheduler_root_assert_authenticated( task_get_current() );
 			} else {
-				task_deassert_root( task_get_current() );
+				scheduler_root_deassert_authenticated( task_get_current() );
 			}
 			return result;
 
@@ -122,7 +123,7 @@ int get_random(const devfs_handle_t * handle, auth_token_t * auth){
 }
 
 const void * secret_key(){
-	return mcu_board_config.secret_key_address;
+	return mcu_board_config.secret_key_address-1;
 }
 
 int calculate(auth_token_t * dest, const auth_token_t * input0, const auth_token_t * input1){
@@ -142,8 +143,12 @@ int authenticate(const devfs_handle_t * handle, auth_token_t * auth){
 	auth_token_t output;
 	int result;
 
-	if( auth == 0 || secret_key() == 0 ){
+	if( secret_key() == NULL ){
 		return SYSFS_RETURN_SUCCESS;
+	}
+
+	if( auth == NULL ){
+		return SYSFS_SET_RETURN(EINVAL);
 	}
 
 	if( calculate(&output, secret_key(), &m_auth_state.random_token) < 0 ){
@@ -156,6 +161,7 @@ int authenticate(const devfs_handle_t * handle, auth_token_t * auth){
 		return SYSFS_SET_RETURN(EINVAL);
 	}
 
+	//allow the caller to authenticate the auth dev has the secret key
 	if( calculate(auth, &m_auth_state.random_token, secret_key()) < 0 ){
 		memset(auth, 0, sizeof(auth_token_t));
 		return SYSFS_SET_RETURN(EIO);

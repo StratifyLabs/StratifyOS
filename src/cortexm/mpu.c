@@ -57,25 +57,6 @@ mpu_size_t mpu_calc_size(u32 size){
 	return (mpu_size_t)(shift-1);
 }
 
-
-int mpu_set_region_access(int region, mpu_access_t access_type){
-	u32 rasr;
-	u8 valid_regions;
-
-	//check if the region is valid
-	valid_regions = ((MPU->TYPE >> 8) & 0xFF);
-	if ( region >= valid_regions ){
-		return -1;
-	}
-
-	MPU->RNR = (region & 0xFF);  //Set the region register
-	rasr = MPU->RASR; //Get the access settings
-	rasr &= ~(0x7<<24); //clear the current access
-	rasr |= (access_type << 24);
-	MPU->RASR = rasr;
-	return 0;
-}
-
 int mpu_disable_region(int region){
 	u32 rasr;
 	u8 valid_regions;
@@ -108,14 +89,22 @@ int mpu_getnextpowerof2(int size){
 }
 
 
-u32 mpu_calc_region(int region,
-						  const void * addr,
-						  u32 size,
-						  mpu_access_t access,
-						  mpu_memory_t type,
-						  int executable,
-						  u32 * rbar,
-						  u32 * rasr){
+u32 mpu_calc_region(
+		int region,
+		const void * addr,
+		u32 size,
+		mpu_access_t access,
+		mpu_memory_t type,
+		int executable,
+		u32 * rbar,
+		u32 * rasr
+		){
+
+	u32 rbar_value = (1<<4) | region;
+	u32 rasr_value = 0;
+
+	*rbar	= rbar_value;
+	*rasr = rasr_value;
 
 	const u32 target_address = (u32)addr;
 	u32 aligned_address = target_address;
@@ -185,10 +174,10 @@ u32 mpu_calc_region(int region,
 		subregion_disable_mask &= ~(1<<(subregion_offset + i));
 	}
 
-	*rasr = (mpu_size << 1)|(1<<0)|(access<<24)|(subregion_disable_mask<<8);
+	rasr_value = (mpu_size << 1)|(1<<0)|(access<<24)|(subregion_disable_mask<<8);
 
 	if ( !executable ){
-		*rasr |= (1<<28);
+		rasr_value |= (1<<28);
 	}
 
 
@@ -202,36 +191,39 @@ u32 mpu_calc_region(int region,
 	 */
 	switch(type){
 		case MPU_MEMORY_EXTERNAL_SRAM:
-			*rasr |= (1<<17); //Outer and Inner Write-Back, no Write-Allocate
+			rasr_value |= (1<<17); //Outer and Inner Write-Back, no Write-Allocate
 			break;
 		case MPU_MEMORY_SRAM:
-			*rasr |= (1<<17); //Outer and Inner Write-Back, no Write-Allocate
+			rasr_value |= (1<<17); //Outer and Inner Write-Back, no Write-Allocate
 			break;
 		case MPU_MEMORY_FLASH:
-			*rasr |= (1<<17); //Outer and Inner Write-Back, no Write-Allocate
+			rasr_value |= (1<<17); //Outer and Inner Write-Back, no Write-Allocate
 			break;
 		case MPU_MEMORY_LCD:
 		case MPU_MEMORY_PERIPHERALS:
-			*rasr |= ((1<<16)|(1<<18)); //shareable, not cacheable
+			rasr_value |= ((1<<16)|(1<<18)); //shareable, not cacheable
 			break;
 	}
 
-	*rbar = (u32)aligned_address|((1<<4)|region);
+	rbar_value = ((u32)aligned_address)|(1<<4)|region;
+	*rasr = rasr_value;
+	*rbar = rbar_value;
 
 	return subregion_size*subregion_count;
 }
 
-int mpu_enable_region(int region,
-							 const void * addr,
-							 u32 size,
-							 mpu_access_t access,
-							 mpu_memory_t type,
-							 int executable){
+int mpu_enable_region(
+		int region,
+		const void * addr,
+		u32 size,
+		mpu_access_t access,
+		mpu_memory_t type,
+		int executable
+		){
 	int err;
 	u32 rasr;
 	u32 rbar;
 	u8 valid_regions;
-
 
 	//check if the region is valid
 	valid_regions = ((MPU->TYPE >> 8) & 0xFF);
@@ -254,10 +246,10 @@ int mpu_enable_region(int region,
 	}
 
 
-	MPU->RNR = rbar & 0x07;
-	MPU->RASR = 0;
-	MPU->RBAR = rbar & ~(0x1F);
+	__DSB();
+	MPU->RBAR = rbar;
 	MPU->RASR = rasr;
+	MPU->RNR = 15;
 
 	return 0;
 }

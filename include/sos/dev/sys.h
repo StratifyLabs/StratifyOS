@@ -272,7 +272,7 @@ typedef struct MCU_PACK {
 
 /*! \brief See below for details.
  * \details Returns 1 if the caller
- * has root access. Returns zero otherwise.
+ * is authenticated access. Returns zero otherwise.
  *
  */
 #define I_SYS_ISAUTHENTICATED _IOCTL(SYS_IOC_CHAR, I_MCU_TOTAL+8)
@@ -280,7 +280,16 @@ typedef struct MCU_PACK {
 
 #define I_SYS_GETSECRETKEY _IOCTLR(SYS_IOC_CHAR, I_MCU_TOTAL+9, sys_secret_key_t)
 
-#define I_SYS_TOTAL 10
+/*! \brief See below for details.
+ * \details If the caller is authenticated,
+ * returns 0 and deauthenticates. If the
+ * caller is not authenticated, returns
+ *  less than zero with errno set to EPERM.
+ *
+ */
+#define I_SYS_DEAUTHENTICATE _IOCTL(SYS_IOC_CHAR, I_MCU_TOTAL+10)
+
+#define I_SYS_TOTAL 11
 
 
 #ifdef __cplusplus

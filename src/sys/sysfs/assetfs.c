@@ -74,14 +74,8 @@ int assetfs_open(const void* cfg, void ** handle, const char * path, int flags, 
 		return -1;
 	}
 
-	u32 offset= 0;
-	const assetfs_config_t * config = cfg;
-	if( config->count & ASSETFS_COUNT_ADDRESS_IS_RELATIVE ){
-		offset = (u32)config;
-	}
-
 	h->ino = ino;
-	h->data = (const void*)(directory_entry->start + offset);
+	h->data = (const void*)(directory_entry->start);
 	h->size = directory_entry->end - directory_entry->start;
 	cortexm_assign_zero_sum32(h, sizeof(assetfs_handle_t) / sizeof(u32));
 
@@ -213,7 +207,7 @@ const assetfs_dirent_t * find_file(const void * cfg, const char * path, int * in
 
 int get_directory_entry(const void * cfg, int loc, const assetfs_dirent_t ** entry){
 	const assetfs_config_t * config = cfg;
-	u32 count = config->count & ~ASSETFS_COUNT_ADDRESS_IS_RELATIVE;
+	u32 count = config->count;
 	if( loc < 0 ){ return SYSFS_SET_RETURN(EINVAL);	}
 	if( loc >= count ){ return SYSFS_SET_RETURN(ENOENT); }
 	*entry = config->entries + loc;
