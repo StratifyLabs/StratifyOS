@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 /*! \addtogroup USBDEFS USB Definitions
@@ -139,16 +139,11 @@ typedef struct MCU_PACK {
 } usbd_interface_assocation_t;
 
 
-
-/*! \details This macro function allows the user to declare a USB string
- * data structure.
- */
-#define usbd_declare_string(len) struct \
-		MCU_PACK { \
+#define USBD_DECLARE_STRING(length_value) struct MCU_PACK { \
 	u8 bLength; \
 	u8 bDescriptorType; \
-	u16 string[len]; \
-}
+	u16 string[length_value]; \
+	}
 
 /*! \details This macro function allows the user to assign values to a USB
  * string using comma separated characters.
@@ -156,10 +151,10 @@ typedef struct MCU_PACK {
  * \param len The number of characters in the string.
  * \param ... Comma separated characters (e.g. 'E','x','a','m','p','l','e')
  */
-#define usbd_assign_string(len, ...) { \
-		.bLength = len*2+2, \
-		.bDescriptorType = USBD_DESCRIPTOR_TYPE_STRING, \
-		.string = { __VA_ARGS__ } }
+#define USBD_ASSIGN_STRING(len, ...) { \
+	.bLength = len*2+2, \
+	.bDescriptorType = USBD_DESCRIPTOR_TYPE_STRING, \
+	.string = { __VA_ARGS__ } }
 
 
 #endif /* USBD_TYPES_H_ */

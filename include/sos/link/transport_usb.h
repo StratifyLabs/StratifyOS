@@ -6,7 +6,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+		http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -23,29 +23,61 @@ limitations under the License.
 #include "usbd/control.h"
 #include "usbd/cdc.h"
 
-typedef struct MCU_PACK {
-	usbd_interface_descriptor_t interface_data /* The interface descriptor */;
-	usbd_endpoint_descriptor_t data_out /* Endpoint:  Bulk out */;
-	usbd_endpoint_descriptor_t data_in /* Endpoint:  Bulk in */;
-} sos_link_interface_configuration_descriptor_t;
+#define SOS_USBD_VID 0x20A0
+#define SOS_USBD_PID 0x41D5
+
+#define SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT 2
+#define SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT_SIZE 2
+#define SOS_LINK_TRANSPORT_USB_PORT 0
+
+#define SOS_LINK_TRANSPORT_USB_EXTERN_CONST(name) \
+	extern const usbd_device_descriptor_t sos_link_transport_usb_##name##_device_descriptor MCU_WEAK; \
+	extern const usbd_qualifier_descriptor_t sos_link_transfer_usb_##name##_qualifier_descriptor MCU_WEAK; \
+	extern const sos_link_transport_usb_##name##_configuration_descriptor_t sos_link_transport_usb_##name##_configuration_descriptor MCU_WEAK; \
+	extern const struct sos_link_transport_usb_##name##_string_descriptor_t sos_link_transport_usb_##name##_string_descriptor MCU_WEAK; \
+	extern const usbd_control_constants_t sos_link_transport_usb_##name##_constants
 
 
-/* \details This structure defines the USB descriptors.  This
- * value is read over the control channel by the host to configure
- * the device.
- */
-typedef struct MCU_PACK {
-	usbd_configuration_descriptor_t cfg /* The configuration descriptor */;
-	usbd_cdc_configuration_descriptor_t vcp0;
-	usbd_cdc_configuration_descriptor_t vcp1;
-	u8 terminator  /* A null terminator used by the driver (required) */;
-} sos_link_transport_usb_dual_vcp_configuration_descriptor_t;
+#define SOS_LINK_TRANSPORT_USB_CONST(name,port_value,config_value,state_value,class_event_handler_value) \
+	const usbd_control_constants_t sos_link_transport_usb_##name##_constants = { \
+	.handle.port = port_value, \
+	.handle.config = config_value, \
+	.handle.state = state_value, \
+	.device =  &sos_link_transport_usb_##name##_device_descriptor, \
+	.config = &sos_link_transport_usb_##name##_configuration_descriptor, \
+	.qualifier = &sos_link_transfer_usb_##name##_qualifier_descriptor, \
+	.string = &sos_link_transport_usb_##name##_string_descriptor, \
+	.class_event_handler = class_event_handler_value \
+	};
 
-typedef struct MCU_PACK {
-	usbd_configuration_descriptor_t cfg /* The configuration descriptor */;
-	usbd_cdc_configuration_descriptor_t vcp0;
-	u8 terminator  /* A null terminator used by the driver (required) */;
-} sos_link_transport_usb_configuration_descriptor_t;
+#define SOS_LINK_TRANSPORT_USB_DEVICE_DESCRIPTOR(name,class_value,sub_class_value,protocol_value) \
+	const usbd_device_descriptor_t sos_link_transport_usb_##name##_device_descriptor MCU_WEAK = { \
+	.bLength = sizeof(usbd_device_descriptor_t), \
+	.bDescriptorType = USBD_DESCRIPTOR_TYPE_DEVICE, \
+	.bcdUSB = 0x0200, \
+	.bDeviceClass = class_value, \
+	.bDeviceSubClass = sub_class_value, \
+	.bDeviceProtocol = protocol_value, \
+	.bMaxPacketSize = MCU_CORE_USB_MAX_PACKET_ZERO_VALUE, \
+	.idVendor = SOS_USBD_VID, \
+	.idProduct = SOS_USBD_PID, \
+	.bcdDevice = BCD_VERSION, \
+	.iManufacturer = 1, \
+	.iProduct = 2, \
+	.iSerialNumber = 3, \
+	.bNumConfigurations = 1 \
+	}; \
+	const usbd_qualifier_descriptor_t sos_link_transfer_##name##_usb_qualifer_descriptor MCU_WEAK = {  \
+	.bLength = sizeof(usbd_device_descriptor_t), \
+	.bDescriptorType = USBD_DESCRIPTOR_TYPE_DEVICE, \
+	.bcdUSB = 0x0200, \
+	.bDeviceClass = class_value, \
+	.bDeviceSubClass = sub_class_value, \
+	.bDeviceProtocol = protocol_value, \
+	.bMaxPacketSize = MCU_CORE_USB_MAX_PACKET_ZERO_VALUE, \
+	.bReserved = 0 \
+	};
+
 
 
 #define SOS_LINK_TRANSPORT_USB_DESC_MANUFACTURER_SIZE 13
@@ -56,81 +88,34 @@ typedef struct MCU_PACK {
 #define SOS_LINK_TRANSPORT_USB_DESC_SERIAL_STRING '0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0'
 
 
-#define SOS_LINK_TRANSPORT_USB_DESCRIPTOR_SOS_LINK_SIZE 11
-#define SOS_LINK_TRANSPORT_USB_DESCRIPTOR_SOS_LINK 'S','t','r','a','t','i','f','y',' ','O','S'
-
-#define SOS_LINK_TRANSPORT_USB_DESC_VCP_0_SIZE 11
-#define SOS_LINK_TRANSPORT_USB_DESC_VCP_1_SIZE 11
-#define SOS_LINK_TRANSPORT_USB_DESC_VCP_0 'S','t','r','a','t','i','f','y',' ','O','S'
-#define SOS_LINK_TRANSPORT_USB_DESC_VCP_1 'S','e','r','i','a','l',' ','P','o','r','t'
-
-
-#define SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT (0x2)
-#define SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT_ALT (0x5)
-#define SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT_SIZE (LINK_BULK_ENDPOINT_SIZE)
-#define SOS_LINK_TRANSPORT_USB_PORT 0
-#define SOS_LINK_TRANSPORT_USB_INTIN 0x81
-#define SOS_LINK_TRANSPORT_USB_INTIN_ALT 0x84
-#define SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT_IN (0x80|SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT)
-#define SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT_OUT (SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT)
-#define SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT_IN_ALT (0x80|SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT_ALT)
-#define SOS_LINK_TRANSPORT_USB_BULKOUT_ALT (SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT_ALT)
-#define SOS_LINK_TRANSPORT_ENDPOINT_SIZE SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT_SIZE
-
-/*! \brief USB Link String Data
- * \details This structure defines the USB strings structure which includes
- * a string for the manufacturer, product, and serial number.
- */
-struct MCU_PACK sos_link_transport_usb_string_t {
-	u8 bLength;
-	u8 bDescriptorType;
-	u16 wLANGID;
-	usbd_declare_string(SOS_LINK_TRANSPORT_USB_DESC_MANUFACTURER_SIZE) manufacturer;
-	usbd_declare_string(SOS_LINK_TRANSPORT_USB_DESC_PRODUCT_SIZE) product;
-	usbd_declare_string(SOS_LINK_TRANSPORT_USB_DESC_SERIAL_SIZE) serial;
-	usbd_declare_string(SOS_LINK_TRANSPORT_USB_DESC_VCP_0_SIZE) vcp0;
-	usbd_declare_string(SOS_LINK_TRANSPORT_USB_DESC_VCP_1_SIZE) vcp1;
-};
-
-//replace these to customize the USB device descriptors
-extern const usbd_device_descriptor_t sos_link_transport_usb_dual_vcp_dev_desc MCU_WEAK;
-extern const sos_link_transport_usb_dual_vcp_configuration_descriptor_t sos_link_transport_usb_dual_vcp_cfg_desc MCU_WEAK;
-extern const struct sos_link_transport_usb_string_t sos_link_transport_usb_dual_vcp_string_desc MCU_WEAK;
-extern const usbd_control_constants_t sos_link_transport_usb_dual_vcp_constants;
-
-link_transport_phy_t sos_link_transport_usb_open(const char * name,
+link_transport_phy_t sos_link_transport_usb_open(
+		const char * name,
 		usbd_control_t * context,
 		const usbd_control_constants_t * constants,
 		const usb_attr_t * usb_attr,
 		mcu_pin_t usb_up_pin,
-		int usb_up_active_high);
+		int usb_up_active_high
+		);
 int sos_link_transport_usb_read(link_transport_phy_t, void * buf, int nbyte);
 int sos_link_transport_usb_write(link_transport_phy_t, const void * buf, int nbyte);
 int sos_link_transport_usb_close(link_transport_phy_t * handle);
 void sos_link_transport_usb_wait(int msec);
 void sos_link_transport_usb_flush(link_transport_phy_t handle);
 
-int sos_link_usbd_cdc_event_handler(void * context, const mcu_event_t * event);
-
 //provided for the link device fifo
 //DEVFS_DEVICE("link-phy-usb", 0, &sos_link_transport_usb_fifo_cfg, &sos_link_transport_usb_fifo_state, 0666, USER_ROOT, GROUP_ROOT),
 extern const usbfifo_config_t sos_link_transport_usb_fifo_cfg;
 extern usbfifo_state_t sos_link_transport_usb_fifo_state MCU_SYS_MEM;
 
-//replace these to customize the USB device descriptors
-extern const usbd_device_descriptor_t sos_link_transport_usb_dev_desc MCU_WEAK;
-extern const usbd_qualifier_descriptor_t sos_link_transfer_usb_qualifer_desc MCU_WEAK;
-extern const sos_link_transport_usb_configuration_descriptor_t sos_link_transport_usb_cfg_desc MCU_WEAK;
-extern const struct sos_link_transport_usb_string_t sos_link_transport_usb_string_desc MCU_WEAK;
-extern const usbd_control_constants_t sos_link_transport_usb_constants;
 
-
-link_transport_phy_t boot_link_transport_usb_open(const char * name,
+link_transport_phy_t boot_link_transport_usb_open(
+		const char * name,
 		usbd_control_t * context,
 		const usbd_control_constants_t * constants,
 		const usb_attr_t * usb_attr,
 		mcu_pin_t usb_up_pin,
-		int usb_up_active_high);
+		int usb_up_active_high
+		);
 int boot_link_transport_usb_read(link_transport_phy_t, void * buf, int nbyte);
 int boot_link_transport_usb_write(link_transport_phy_t, const void * buf, int nbyte);
 int boot_link_transport_usb_close(link_transport_phy_t * handle);
@@ -140,34 +125,5 @@ void boot_link_transport_usb_flush(link_transport_phy_t handle);
 extern const usbfifo_config_t sos_link_transport_usb_fifo_cfg;
 extern usbfifo_state_t sos_link_transport_usb_fifo_state MCU_SYS_MEM;
 
-
-#define SOS_LINK_TRANSPORT_USB_DECLARE_INTERFACE_CONFIGURATION_DESCRIPTOR(interface_string,interface_number,endpoint_number,endpoint_size) \
-	.interface_data = { \
-		.bLength = sizeof(usbd_interface_descriptor_t), \
-		.bDescriptorType = USBD_DESCRIPTOR_TYPE_INTERFACE, \
-		.bInterfaceNumber = interface_number, \
-		.bAlternateSetting = 0x00, \
-		.bNumEndpoints = 0x02, \
-		.bInterfaceClass = 0xff, \
-		.bInterfaceSubClass = 0xff, \
-		.bInterfaceProtocol = 0xff, \
-		.iInterface = interface_string \
-	}, \
-	.data_out = { \
-		.bLength= sizeof(usbd_endpoint_descriptor_t), \
-		.bDescriptorType=USBD_DESCRIPTOR_TYPE_ENDPOINT, \
-		.bEndpointAddress=endpoint_number, \
-		.bmAttributes=USBD_ENDPOINT_ATTRIBUTES_TYPE_BULK, \
-		.wMaxPacketSize=endpoint_size, \
-		.bInterval=1 \
-	}, \
-	.data_in = { \
-		.bLength= sizeof(usbd_endpoint_descriptor_t), \
-		.bDescriptorType=USBD_DESCRIPTOR_TYPE_ENDPOINT, \
-		.bEndpointAddress=(endpoint_number)|0x80, \
-		.bmAttributes=USBD_ENDPOINT_ATTRIBUTES_TYPE_BULK, \
-		.wMaxPacketSize=endpoint_size, \
-		.bInterval=1 \
-	}
 
 #endif /* SOS_LINK_TRANSPORT_USB_H_ */
