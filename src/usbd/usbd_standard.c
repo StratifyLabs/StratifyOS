@@ -24,8 +24,24 @@
 #include "mcu/boot_debug.h"
 #include "mcu/debug.h"
 #include "usbd/control.h"
+#include "usbd/msft.h"
 
 #define USBD_EP_MASK (USBD_ENDPOINT_ADDRESS_IN|(mcu_config.usb_logical_endpoint_count-1))
+
+const msft_string_t msft_string = USBD_ASSIGN_STRING(
+			USBD_MSFT_STRING_LENGTH,
+			'M','S','F','T','1','0','0',USBD_MSFT_VENDOR_CODE_BYTE
+			);
+
+const usbd_msft_compatible_id_feature_descriptor_t msft_compatible_id_feature_descriptor =
+{
+	.length = sizeof(usbd_msft_compatible_id_feature_descriptor_t),
+	.bcd = 0x0100,
+	.compatible_id_index = 0x0004,
+	.section_count[0] = 1,
+	.interface_number = 0,
+	.compatible_id = {0x57, 0x49, 0x4E, 0x55, 0x53, 0x42, 0x00, 0x00}, //WINUSB\0\0
+};
 
 static int usb_dev_decode_ep(usbd_control_t * context, int ep){
 	MCU_UNUSED_ARGUMENT(context);
@@ -73,6 +89,19 @@ char htoc(int nibble){
 
 int usbd_standard_request_handle_setup(usbd_control_t * context){
 	switch(context->setup_packet.bRequest) {
+
+
+		case USBD_MSFT_VENDOR_CODE_BYTE:
+			if( context->setup_packet.wIndex.w == 0x0004 ){
+				u16 len =	 sizeof(msft_compatible_id_feature_descriptor);
+				context->data.dptr = (u8*)&msft_compatible_id_feature_descriptor;
+				if (context->data.nbyte > len) {
+					context->data.nbyte = len;
+				}
+				usbd_control_datain_stage(context);
+				return 1;
+			}
+			break;
 
 		case USBD_REQUEST_STANDARD_GET_STATUS:
 			if ( usbd_standard_request_get_status(context) ) {
@@ -445,6 +474,7 @@ u32 usbd_standard_request_get_descriptor(usbd_control_t * context) {
 
 	u32 len = 0;
 	u32 i;
+	u8 string_index_value;
 
 
 	if( context->setup_packet.bmRequestType.bitmap_t.recipient == USBD_REQUEST_TYPE_RECIPIENT_DEVICE) {
@@ -474,9 +504,17 @@ u32 usbd_standard_request_get_descriptor(usbd_control_t * context) {
 			case USBD_DESCRIPTOR_TYPE_STRING:
 				//give the string
 				ptr.cstr = context->constants->string;
-				for (i = 0; i != context->setup_packet.wValue.b[0]; i++) {
-					if (ptr.cstr->bLength != 0) {
-						ptr.b += ptr.cstr->bLength;
+				string_index_value = context->setup_packet.wValue.b[0];
+				if( string_index_value == 0xee ){
+					//this is windows asking -- tell it we have OS descriptors
+					ptr.b = (u8*)(const usbd_string_descriptor_t*)&msft_string;
+					ptr.str->bLength = ptr.cstr->bLength;
+				} else {
+
+					for (i = 0; i != string_index_value; i++) {
+						if (ptr.cstr->bLength != 0) {
+							ptr.b += ptr.cstr->bLength;
+						}
 					}
 				}
 

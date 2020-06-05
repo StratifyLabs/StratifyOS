@@ -28,64 +28,49 @@
 #include "mcu/debug.h"
 #include "device/sys.h"
 
-#include "sos/link/transport_usb_dual_vcp.h"
+#include "sos/link/transport_usb_vcp.h"
 
 
 #define SOS_REQUIRED_CURRENT 500
 
 #define VCP0_INTERFACE 0
 #define VCP0_INTERFACE_STRING 4
-#define VCP1_INTERFACE 2
-#define VCP1_INTERFACE_STRING 5
 
-static int cdc_event_handler(void * context, const mcu_event_t * event);
+static int usbd_cdc_event_handler(void * context, const mcu_event_t * event);
+static int cdc_event_handler(usbd_control_t * context, const mcu_event_t * event);
 
-SOS_LINK_TRANSPORT_USB_CONST(dual_vcp,SOS_LINK_TRANSPORT_USB_PORT,0,0,cdc_event_handler)
+SOS_LINK_TRANSPORT_USB_CONST(vcp,SOS_LINK_TRANSPORT_USB_PORT,0,0,usbd_cdc_event_handler)
 
-SOS_LINK_TRANSPORT_USB_DEVICE_DESCRIPTOR(dual_vcp,USBD_DEVICE_CLASS_RESERVED,0,0)
+SOS_LINK_TRANSPORT_USB_DEVICE_DESCRIPTOR(vcp,USBD_DEVICE_CLASS_COMMUNICATIONS,0,0)
 
 
-const sos_link_transport_usb_dual_vcp_configuration_descriptor_t sos_link_transport_usb_dual_vcp_configuration_descriptor MCU_WEAK = {
+const sos_link_transport_usb_vcp_configuration_descriptor_t sos_link_transport_usb_vcp_configuration_descriptor MCU_WEAK = {
 
-		.cfg = {
+	.cfg = {
 		.bLength = sizeof(usbd_configuration_descriptor_t),
 		.bDescriptorType = USBD_DESCRIPTOR_TYPE_CONFIGURATION,
-		.wTotalLength = sizeof(sos_link_transport_usb_dual_vcp_configuration_descriptor_t)-1, //exclude the zero terminator
+		.wTotalLength = sizeof(sos_link_transport_usb_vcp_configuration_descriptor_t)-1, //exclude the zero terminator
 		.bNumInterfaces = 0x02,
 		.bConfigurationValue = 0x01,
 		.iConfiguration = 0x03,
 		.bmAttributes = USBD_CONFIGURATION_ATTRIBUTES_BUS_POWERED,
 		.bMaxPower = USBD_CONFIGURATION_MAX_POWER_MA( SOS_REQUIRED_CURRENT )
-		},
+	},
 
-		.vcp0 = {
+	.vcp = {
 		USBD_CDC_DECLARE_CONFIGURATION_DESCRIPTOR(
-			VCP0_INTERFACE_STRING,
-			VCP0_INTERFACE_STRING,
-			VCP0_INTERFACE,
-			VCP0_INTERFACE+1,
-			SOS_LINK_TRANSPORT_USB_DUAL_VCP0_INTERRUPT_ENDPOINT,
-			SOS_LINK_TRANSPORT_USB_DUAL_VCP0_INTERRUPT_ENDPOINT_SIZE,
-			SOS_LINK_TRANSPORT_USB_DUAL_VCP0_BULK_ENDPOINT,
-			SOS_LINK_TRANSPORT_USB_DUAL_VCP0_BULK_ENDPOINT_SIZE
-			)
-		},
-
-		.vcp1 = {
-		USBD_CDC_DECLARE_CONFIGURATION_DESCRIPTOR(
-			VCP1_INTERFACE_STRING,
-			VCP1_INTERFACE_STRING,
-			VCP1_INTERFACE,
-			VCP1_INTERFACE+1,
-			SOS_LINK_TRANSPORT_USB_DUAL_VCP1_INTERRUPT_ENDPOINT,
-			SOS_LINK_TRANSPORT_USB_DUAL_VCP1_INTERRUPT_ENDPOINT_SIZE,
-			SOS_LINK_TRANSPORT_USB_DUAL_VCP1_BULK_ENDPOINT,
-			SOS_LINK_TRANSPORT_USB_DUAL_VCP1_BULK_ENDPOINT_SIZE
-			)
-		},
-
-		.terminator = 0
-		};
+		VCP0_INTERFACE_STRING,
+		VCP0_INTERFACE_STRING,
+		VCP0_INTERFACE,
+		VCP0_INTERFACE+1,
+		SOS_LINK_TRANSPORT_USB_VCP_INTERRUPT_ENDPOINT,
+		SOS_LINK_TRANSPORT_USB_VCP_INTERRUPT_ENDPOINT_SIZE,
+		SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT,
+		SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT_SIZE
+		)
+	},
+	.terminator = 0
+};
 
 
 
@@ -98,18 +83,17 @@ const sos_link_transport_usb_dual_vcp_configuration_descriptor_t sos_link_transp
  * is the file \a devices.c.
  *
  */
-const struct sos_link_transport_usb_dual_vcp_string_descriptor_t sos_link_transport_usb_dual_vcp_string_descriptor MCU_WEAK = {
-	.bLength = 5,
+const struct sos_link_transport_usb_vcp_string_descriptor_t sos_link_transport_usb_vcp_string_descriptor MCU_WEAK = {
+	.bLength = 4,
 	.bDescriptorType = USBD_DESCRIPTOR_TYPE_STRING,
 	.wLANGID = 0x0409, //English
 	.manufacturer = USBD_ASSIGN_STRING(SOS_LINK_TRANSPORT_USB_DESC_MANUFACTURER_SIZE, SOS_LINK_TRANSPORT_USB_DESC_MANUFACTURER_STRING),
 	.product = USBD_ASSIGN_STRING(SOS_LINK_TRANSPORT_USB_DESC_PRODUCT_SIZE, SOS_LINK_TRANSPORT_USB_DESC_PRODUCT_STRING),
 	.serial = USBD_ASSIGN_STRING(SOS_LINK_TRANSPORT_USB_DESC_SERIAL_SIZE, 0), //dynamically load SN based on silicon
-	.vcp0 = USBD_ASSIGN_STRING(SOS_LINK_TRANSPORT_USB_DESC_VCP_0_SIZE, SOS_LINK_TRANSPORT_USB_DESC_VCP_0),
-	.vcp1 = USBD_ASSIGN_STRING(SOS_LINK_TRANSPORT_USB_DESC_VCP_1_SIZE, SOS_LINK_TRANSPORT_USB_DESC_VCP_1),
+	.vcp = USBD_ASSIGN_STRING(SOS_LINK_TRANSPORT_USB_DESC_VCP_SIZE, SOS_LINK_TRANSPORT_USB_DESC_VCP),
 };
 
-int sos_link_usbd_cdc_event_handler(void * object, const mcu_event_t * event){
+int usbd_cdc_event_handler(void * object, const mcu_event_t * event){
 	usbd_control_t * context = object;
 
 	//if this is a class request check the CDC interfaces
@@ -121,14 +105,13 @@ int sos_link_usbd_cdc_event_handler(void * object, const mcu_event_t * event){
 }
 
 
-int cdc_event_handler(void * ctx, const mcu_event_t * event){
+int cdc_event_handler(usbd_control_t * context, const mcu_event_t * event){
 	u32 rate = 12000000;
 	u32 o_events = event->o_events;
-	usbd_control_t * context = ctx;
 	int iface = usbd_control_setup_interface(context);
 
-	if( (iface == VCP0_INTERFACE) || (iface == VCP0_INTERFACE+1) ||
-			(iface == VCP1_INTERFACE) || (iface == VCP1_INTERFACE+1) ){
+	if( (iface == VCP0_INTERFACE) || (iface == VCP0_INTERFACE+1) ){
+
 		if ( (o_events & MCU_EVENT_FLAG_SETUP) ){
 			switch(context->setup_packet.bRequest){
 				case USBD_CDC_REQUEST_SEND_ENCAPSULATED_COMMAND:

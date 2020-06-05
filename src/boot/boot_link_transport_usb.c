@@ -28,12 +28,16 @@ static int m_read_head;
 
 static  usbd_control_t * m_context;
 
-link_transport_phy_t boot_link_transport_usb_open(const char * name,
-																  usbd_control_t * context,
-																  const usbd_control_constants_t * constants,
-																  const usb_attr_t * usb_attr,
-																  mcu_pin_t usb_up_pin,
-																  int usb_up_active_high){
+link_transport_phy_t boot_link_transport_usb_open(
+		const char * name,
+		usbd_control_t * context,
+		const usbd_control_constants_t * constants,
+		const usb_attr_t * usb_attr,
+		mcu_pin_t usb_up_pin,
+		int usb_up_active_high
+		){
+
+	MCU_UNUSED_ARGUMENT(name);
 
 	pio_attr_t pio_attr;
 	devfs_handle_t pio_handle;
@@ -98,7 +102,7 @@ int boot_link_transport_usb_write(link_transport_phy_t handle, const void * buf,
 	ret = mcu_sync_io(
 				m_context->handle,
 				mcu_usb_write,
-				SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT_IN,
+				SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT | 0x80,
 				buf,
 				nbyte,
 				O_RDWR
@@ -133,7 +137,7 @@ static int write_buffer(
 	int i;
 	for(i=0; i < nbyte; i++){
 		if( ((m_read_head+1) == m_read_tail) ||
-			 ((m_read_tail == 0) && (m_read_head == (BUF_SIZE-1))) ){
+				((m_read_tail == 0) && (m_read_head == (BUF_SIZE-1))) ){
 			break; //no more room
 		}
 
@@ -153,7 +157,7 @@ int boot_link_transport_usb_read(
 		){
 	int ret;
 	int bytes_read;
-	char buffer[SOS_LINK_TRANSPORT_ENDPOINT_SIZE];
+	char buffer[SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT_SIZE];
 	bytes_read = 0;
 	ret = read_buffer(buf, nbyte);
 	bytes_read += ret;
@@ -164,9 +168,9 @@ int boot_link_transport_usb_read(
 		ret = mcu_sync_io(
 					m_context->handle,
 					mcu_usb_read,
-					SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT_OUT,
+					SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT,
 					buffer,
-					SOS_LINK_TRANSPORT_ENDPOINT_SIZE,
+					SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT_SIZE,
 					O_RDWR | MCU_SYNC_IO_FLAG_READ
 					);
 
