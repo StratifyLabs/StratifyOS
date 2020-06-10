@@ -23,8 +23,6 @@ limitations under the License.
 #include "usbd/control.h"
 #include "usbd/cdc.h"
 
-#define SOS_USE_VCP 0
-
 typedef struct MCU_PACK {
 	usbd_interface_descriptor_t interface_data /* The interface descriptor */;
 	usbd_endpoint_descriptor_t data_out /* Endpoint:  Bulk out */;
