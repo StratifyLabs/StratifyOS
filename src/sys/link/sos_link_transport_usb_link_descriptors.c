@@ -39,10 +39,36 @@
 #define INTERFACE_NUMBER 0
 #define INTERFACE_STRING 4
 
+static const usbd_msft_compatible_id_feature_descriptor_t msft_compatible_id_feature_descriptor =
+{
+	.header = {
+		.length = sizeof(usbd_msft_compatible_id_feature_descriptor_t),
+		.bcd = 0x0100,
+		.compatible_id_index = 0x0004,
+		.section_count[0] = 1,
+	},
+	.interface_feature = {
+		.interface_number = 0,
+		.compatible_id = {'W', 'I', 'N', 'U', 'S', 'B', 0x00, 0x00}, //WINUSB\0\0
+	}
+};
 
-SOS_LINK_TRANSPORT_USB_DEVICE_DESCRIPTOR(link,USBD_DEVICE_CLASS_VENDOR_SPECIFIC,0,0)
 
-SOS_LINK_TRANSPORT_USB_CONST(link,SOS_LINK_TRANSPORT_USB_PORT,0,0,NULL)
+
+SOS_LINK_TRANSPORT_USB_DEVICE_DESCRIPTOR(link,USBD_DEVICE_CLASS_VENDOR_SPECIFIC,0,0,BCD_VERSION | 0)
+
+SOS_LINK_TRANSPORT_USB_CONST(
+		link,
+		SOS_LINK_TRANSPORT_USB_PORT,
+		0,
+		0,
+		NULL,
+		&sos_link_transport_usb_msft_string,
+		&msft_compatible_id_feature_descriptor,
+		sizeof(msft_compatible_id_feature_descriptor)
+		)
+
+
 
 const sos_link_transport_usb_link_configuration_descriptor_t
 sos_link_transport_usb_link_configuration_descriptor MCU_WEAK = {
