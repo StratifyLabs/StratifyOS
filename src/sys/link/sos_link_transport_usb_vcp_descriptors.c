@@ -38,11 +38,9 @@
 
 static int cdc_event_handler(usbd_control_t * context, const mcu_event_t * event);
 
+SOS_LINK_TRANSPORT_USB_CONST(vcp,SOS_LINK_TRANSPORT_USB_PORT,0,0,usbd_cdc_event_handler,NULL,0,0)
 
-SOS_LINK_TRANSPORT_USB_DEVICE_DESCRIPTOR(vcp,USBD_DEVICE_CLASS_COMMUNICATIONS,0,0)
-
-SOS_LINK_TRANSPORT_USB_CONST(vcp,SOS_LINK_TRANSPORT_USB_PORT,0,0,usbd_cdc_event_handler)
-
+SOS_LINK_TRANSPORT_USB_DEVICE_DESCRIPTOR(vcp,USBD_DEVICE_CLASS_COMMUNICATIONS,0,0,BCD_VERSION | 1)
 
 const sos_link_transport_usb_vcp_configuration_descriptor_t sos_link_transport_usb_vcp_configuration_descriptor MCU_WEAK = {
 

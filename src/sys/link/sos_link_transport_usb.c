@@ -31,6 +31,13 @@ limitations under the License.
 #include "device/sys.h"
 #include "sos/link/transport_usb.h"
 
+#include "usbd/msft.h"
+
+
+const msft_string_t sos_link_transport_usb_msft_string = USBD_ASSIGN_STRING(
+			USBD_MSFT_STRING_LENGTH,
+			'M','S','F','T','1','0','0',USBD_MSFT_VENDOR_CODE_BYTE
+			);
 
 #define USB0_DEVFIFO_BUFFER_SIZE 64
 static char usb0_fifo_buffer[USB0_DEVFIFO_BUFFER_SIZE] MCU_SYS_MEM;

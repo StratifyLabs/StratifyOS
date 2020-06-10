@@ -20,6 +20,7 @@ limitations under the License.
 
 #include "transport.h"
 #include "device/usbfifo.h"
+#include "usbd/msft.h"
 #include "usbd/control.h"
 #include "usbd/cdc.h"
 
@@ -38,19 +39,22 @@ limitations under the License.
 	extern const usbd_control_constants_t sos_link_transport_usb_##name##_constants
 
 
-#define SOS_LINK_TRANSPORT_USB_CONST(name,port_value,config_value,state_value,class_event_handler_value) \
+#define SOS_LINK_TRANSPORT_USB_CONST(name,port_value,config_value,state_value,class_event_handler_value,msft_string_value,msft_compatibility_id_feature_descriptor_value,msft_compatibility_id_feature_descriptor_size_value) \
 	const usbd_control_constants_t sos_link_transport_usb_##name##_constants = { \
 	.handle.port = port_value, \
 	.handle.config = config_value, \
 	.handle.state = state_value, \
 	.device =  &sos_link_transport_usb_##name##_device_descriptor, \
 	.config = &sos_link_transport_usb_##name##_configuration_descriptor, \
-	.qualifier = &sos_link_transport_usb_##name##_qualifer_descriptor, \
+	.qualifier = &sos_link_transport_usb_##name##_qualifier_descriptor, \
 	.string = &sos_link_transport_usb_##name##_string_descriptor, \
-	.class_event_handler = class_event_handler_value \
+	.class_event_handler = class_event_handler_value, \
+	.msft_string = msft_string_value, \
+	.msft_compatibility_id_feature_descriptor = msft_compatibility_id_feature_descriptor_value, \
+	.msft_compatibility_id_feature_descriptor_size = msft_compatibility_id_feature_descriptor_size_value \
 	};
 
-#define SOS_LINK_TRANSPORT_USB_DEVICE_DESCRIPTOR(name,class_value,sub_class_value,protocol_value) \
+#define SOS_LINK_TRANSPORT_USB_DEVICE_DESCRIPTOR(name,class_value,sub_class_value,protocol_value,version_value) \
 	const usbd_device_descriptor_t sos_link_transport_usb_##name##_device_descriptor = { \
 	.bLength = sizeof(usbd_device_descriptor_t), \
 	.bDescriptorType = USBD_DESCRIPTOR_TYPE_DEVICE, \
@@ -61,7 +65,7 @@ limitations under the License.
 	.bMaxPacketSize = MCU_CORE_USB_MAX_PACKET_ZERO_VALUE, \
 	.idVendor = SOS_USBD_VID, \
 	.idProduct = SOS_USBD_PID, \
-	.bcdDevice = BCD_VERSION, \
+	.bcdDevice = version_value, \
 	.iManufacturer = 1, \
 	.iProduct = 2, \
 	.iSerialNumber = 3, \
@@ -125,5 +129,6 @@ void boot_link_transport_usb_flush(link_transport_phy_t handle);
 extern const usbfifo_config_t sos_link_transport_usb_fifo_cfg;
 extern usbfifo_state_t sos_link_transport_usb_fifo_state MCU_SYS_MEM;
 
+extern const msft_string_t sos_link_transport_usb_msft_string;
 
 #endif /* SOS_LINK_TRANSPORT_USB_H_ */
