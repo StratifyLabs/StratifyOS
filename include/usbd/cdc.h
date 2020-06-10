@@ -322,16 +322,16 @@ typedef struct MCU_PACK {
     u8 width;
 } usbd_cdc_line_coding_request_t;
 
-#define USBD_CDC_DECLARE_CONFIGURATION_DESCRIPTOR_ALT_CLASS(class_value,sub_class_value,protocol_value,control_interface_string,data_interface_string,control_interface_number,data_interface_number,interrupt_endpoint_number,interrupt_endpoint_size,bulk_endpoint_number,bulk_endpoint_size) \
+#define USBD_CDC_DECLARE_CONFIGURATION_DESCRIPTOR_ALT_CLASS(control_class_value,data_class_value,sub_class_value,protocol_value,control_interface_string,data_interface_string,control_interface_number,data_interface_number,interrupt_endpoint_number,interrupt_endpoint_size,bulk_endpoint_number,bulk_endpoint_size) \
 	.interface_association = { \
 		.bLength = sizeof(usbd_interface_assocation_t), \
 		.bDescriptorType = USBD_DESCRIPTOR_TYPE_INTERFACE_ASSOCIATION, \
 		.bFirstInterface = control_interface_number, \
 		.bInterfaceCount = 2, \
-		.bFunctionClass = class_value, \
+		.bFunctionClass = control_class_value, \
 		.bFunctionSubClass = sub_class_value, \
 		.bFunctionProtocol = protocol_value, \
-		.iFunction = 0x04, \
+		.iFunction = control_interface_string, \
 	}, \
 	.interface_control = { \
 	.bLength = sizeof(usbd_interface_descriptor_t), \
@@ -339,18 +339,7 @@ typedef struct MCU_PACK {
 	.bInterfaceNumber = control_interface_number, \
 	.bAlternateSetting = 0x00, \
 	.bNumEndpoints = 0x01, \
-	.bInterfaceClass = class_value, \
-	.bInterfaceSubClass = sub_class_value, \
-	.bInterfaceProtocol = protocol_value, \
-	.iInterface = control_interface_string \
-	}, \
-	.interface_control = { \
-	.bLength = sizeof(usbd_interface_descriptor_t), \
-	.bDescriptorType = USBD_DESCRIPTOR_TYPE_INTERFACE, \
-	.bInterfaceNumber = control_interface_number, \
-	.bAlternateSetting = 0x00, \
-	.bNumEndpoints = 0x01, \
-	.bInterfaceClass = class_value, \
+	.bInterfaceClass = control_class_value, \
 	.bInterfaceSubClass = sub_class_value, \
 	.bInterfaceProtocol = protocol_value, \
 	.iInterface = control_interface_string \
@@ -389,9 +378,9 @@ typedef struct MCU_PACK {
 	.bInterfaceNumber = data_interface_number, \
 	.bAlternateSetting = 0x00, \
 	.bNumEndpoints = 0x02, \
-	.bInterfaceClass = class_value, \
-	.bInterfaceSubClass = sub_class_value, \
-	.bInterfaceProtocol = protocol_value, \
+	.bInterfaceClass = data_class_value, \
+	.bInterfaceSubClass = 0, \
+	.bInterfaceProtocol = 0, \
 	.iInterface = data_interface_string \
 	}, \
 	.data_out = { \
@@ -400,7 +389,7 @@ typedef struct MCU_PACK {
 	.bEndpointAddress=bulk_endpoint_number, \
 	.bmAttributes=USBD_ENDPOINT_ATTRIBUTES_TYPE_BULK, \
 	.wMaxPacketSize=bulk_endpoint_size, \
-	.bInterval=1 \
+	.bInterval=0 \
 	}, \
 	.data_in = { \
 	.bLength= sizeof(usbd_endpoint_descriptor_t), \
@@ -408,11 +397,11 @@ typedef struct MCU_PACK {
 	.bEndpointAddress= ((bulk_endpoint_number)|0x80), \
 	.bmAttributes=USBD_ENDPOINT_ATTRIBUTES_TYPE_BULK, \
 	.wMaxPacketSize=bulk_endpoint_size, \
-	.bInterval=1 \
+	.bInterval=0 \
 	}
 
 #define USBD_CDC_DECLARE_CONFIGURATION_DESCRIPTOR(control_interface_string,data_interface_string,control_interface_number,data_interface_number,interrupt_endpoint_number,interrupt_endpoint_size,bulk_endpoint_number,bulk_endpoint_size) \
-	USBD_CDC_DECLARE_CONFIGURATION_DESCRIPTOR_ALT_CLASS(USBD_INTERFACE_CLASS_COMMUNICATIONS_DATA,USBD_CDC_INTERFACE_SUBCLASS_ACM,USBD_CDC_INTERFACE_PROTOCOL_V25TER,control_interface_string,data_interface_string,control_interface_number,data_interface_number,interrupt_endpoint_number,interrupt_endpoint_size,bulk_endpoint_number,bulk_endpoint_size)
+	USBD_CDC_DECLARE_CONFIGURATION_DESCRIPTOR_ALT_CLASS(USBD_INTERFACE_CLASS_COMMUNICATIONS,USBD_INTERFACE_CLASS_COMMUNICATIONS_DATA,USBD_CDC_INTERFACE_SUBCLASS_ACM,USBD_CDC_INTERFACE_PROTOCOL_V25TER,control_interface_string,data_interface_string,control_interface_number,data_interface_number,interrupt_endpoint_number,interrupt_endpoint_size,bulk_endpoint_number,bulk_endpoint_size)
 
 #endif /* USBD_CDC_H_ */
 

@@ -53,7 +53,7 @@ const sos_link_transport_usb_dual_vcp_configuration_descriptor_t sos_link_transp
 		.wTotalLength = sizeof(sos_link_transport_usb_dual_vcp_configuration_descriptor_t)-1, //exclude the zero terminator
 		.bNumInterfaces = 0x02,
 		.bConfigurationValue = 0x01,
-		.iConfiguration = 0x03,
+		.iConfiguration = 2,
 		.bmAttributes = USBD_CONFIGURATION_ATTRIBUTES_BUS_POWERED,
 		.bMaxPower = USBD_CONFIGURATION_MAX_POWER_MA( SOS_REQUIRED_CURRENT )
 		},

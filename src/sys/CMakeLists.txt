@@ -7,6 +7,7 @@ if( ${SOS_BUILD_CONFIG} STREQUAL arm )
 		dirent/dirent.c
 		link/link_thread.c
 		link/sos_link_transport_usb_link_descriptors.c
+		link/sos_link_transport_usb_link_vcp_descriptors.c
 		link/sos_link_transport_usb_vcp_descriptors.c
 		link/sos_link_transport_usb_dual_vcp_descriptors.c
 		link/sos_link_transport_usb.c
