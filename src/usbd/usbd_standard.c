@@ -92,7 +92,9 @@ int usbd_standard_request_handle_setup(usbd_control_t * context){
 
 
 		case USBD_MSFT_VENDOR_CODE_BYTE:
+			mcu_debug_printf("vendor byte code request\n");
 			if( context->setup_packet.wIndex.w == 0x0004 ){
+				mcu_debug_printf("msft features %d\n", context->setup_packet.bmRequestType.bitmap_t.recipient);
 				u16 len =	 sizeof(msft_compatible_id_feature_descriptor);
 				context->data.dptr = (u8*)&msft_compatible_id_feature_descriptor;
 				if (context->data.nbyte > len) {
@@ -505,7 +507,11 @@ u32 usbd_standard_request_get_descriptor(usbd_control_t * context) {
 				//give the string
 				ptr.cstr = context->constants->string;
 				string_index_value = context->setup_packet.wValue.b[0];
+				mcu_debug_printf("get string 0x%x\n", string_index_value);
 				if( string_index_value == 0xee ){
+					mcu_debug_printf("get msft string\n");
+					return 0;
+
 					//this is windows asking -- tell it we have OS descriptors
 					ptr.b = (u8*)(const usbd_string_descriptor_t*)&msft_string;
 					ptr.str->bLength = ptr.cstr->bLength;
@@ -543,7 +549,9 @@ u32 usbd_standard_request_get_descriptor(usbd_control_t * context) {
 				context->data.dptr = (u8 * const)context->constants->qualifier;
 				if( context->data.dptr != 0 ){
 					len = sizeof(usbd_device_descriptor_t);
+					mcu_debug_printf("qual:%d\n", len);
 				} else {
+					mcu_debug_printf("No type qualifier\n");
 					return 0;
 				}
 				break;

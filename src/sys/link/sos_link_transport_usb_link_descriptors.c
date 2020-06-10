@@ -39,10 +39,10 @@
 #define INTERFACE_NUMBER 0
 #define INTERFACE_STRING 4
 
-SOS_LINK_TRANSPORT_USB_CONST(link,SOS_LINK_TRANSPORT_USB_PORT,0,0,NULL)
 
 SOS_LINK_TRANSPORT_USB_DEVICE_DESCRIPTOR(link,USBD_DEVICE_CLASS_VENDOR_SPECIFIC,0,0)
 
+SOS_LINK_TRANSPORT_USB_CONST(link,SOS_LINK_TRANSPORT_USB_PORT,0,0,NULL)
 
 const sos_link_transport_usb_link_configuration_descriptor_t
 sos_link_transport_usb_link_configuration_descriptor MCU_WEAK = {
