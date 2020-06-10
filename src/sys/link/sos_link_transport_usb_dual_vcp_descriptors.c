@@ -40,10 +40,10 @@
 
 static int cdc_event_handler(void * context, const mcu_event_t * event);
 
-SOS_LINK_TRANSPORT_USB_CONST(dual_vcp,SOS_LINK_TRANSPORT_USB_PORT,0,0,cdc_event_handler)
 
 SOS_LINK_TRANSPORT_USB_DEVICE_DESCRIPTOR(dual_vcp,USBD_DEVICE_CLASS_RESERVED,0,0)
 
+SOS_LINK_TRANSPORT_USB_CONST(dual_vcp,SOS_LINK_TRANSPORT_USB_PORT,0,0,cdc_event_handler)
 
 const sos_link_transport_usb_dual_vcp_configuration_descriptor_t sos_link_transport_usb_dual_vcp_configuration_descriptor MCU_WEAK = {
 

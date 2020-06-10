@@ -43,9 +43,9 @@
 #define VCP0_INTERFACE 1
 #define VCP0_INTERFACE_STRING 5
 
-SOS_LINK_TRANSPORT_USB_CONST(link_vcp,SOS_LINK_TRANSPORT_USB_PORT,0,0,usbd_cdc_event_handler)
+SOS_LINK_TRANSPORT_USB_DEVICE_DESCRIPTOR(link_vcp,239,2,1)
 
-SOS_LINK_TRANSPORT_USB_DEVICE_DESCRIPTOR(link_vcp,0,0,0)
+SOS_LINK_TRANSPORT_USB_CONST(link_vcp,SOS_LINK_TRANSPORT_USB_PORT,0,0,usbd_cdc_event_handler)
 
 const sos_link_transport_usb_link_vcp_configuration_descriptor_t
 sos_link_transport_usb_link_vcp_configuration_descriptor MCU_WEAK = {

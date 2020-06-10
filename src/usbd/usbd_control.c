@@ -77,7 +77,13 @@ int usbd_control_handler(void * context_object, const mcu_event_t * usb_event /*
 	}
 
 	if ( o_events & MCU_EVENT_FLAG_SETUP ){
+		mcu_debug_printf(
+					"request:0x%X:0x%X:0x%X\n",
+					context->setup_packet.bRequest,
+					context->setup_packet.wValue.b[1],
+				context->setup_packet.wValue.b[0]);
 		ret = usbd_standard_request_handle_setup(context);
+		mcu_debug_printf("Response %d\n", ret);
 
 		//allow the class handler handle the standard request if the request was handled with usbd_standard_request_handle_setup(), no need to stall
 		if( (execute_class_handler(context, usb_event) == 0) &&
@@ -87,16 +93,16 @@ int usbd_control_handler(void * context_object, const mcu_event_t * usb_event /*
 
 	} else if ( o_events & MCU_EVENT_FLAG_DATA_READY ){ //Data out stage
 		if (
-			 usbd_control_setup_request_direction(context) ==
-			 USBD_REQUEST_TYPE_DIRECTION_HOST_TO_DEVICE
-			 ) {
+				usbd_control_setup_request_direction(context) ==
+				USBD_REQUEST_TYPE_DIRECTION_HOST_TO_DEVICE
+				) {
 			if( context->data.nbyte ){
 				usbd_control_dataout_stage(context);
 				if (context->data.nbyte == 0){
 					if (
-						 usbd_control_setup_request_type(context) ==
-						 USBD_REQUEST_STANDARD
-						 ){
+							usbd_control_setup_request_type(context) ==
+							USBD_REQUEST_STANDARD
+							){
 						stall(context);
 					} else if( execute_class_handler(context, usb_event) == 0 ){
 						stall(context);
@@ -146,8 +152,8 @@ void usbd_control_datain_stage(usbd_control_t * context) {
 	}
 
 	if( (nbyte > 0) ||
-		 (context->data.is_zlp) //need to send a ZLP to mark the end
-		 ){
+			(context->data.is_zlp) //need to send a ZLP to mark the end
+			){
 		mcu_usb_root_write_endpoint(context->handle, 0x80, context->data.dptr, nbyte);
 		context->data.dptr += nbyte;
 		context->data.nbyte -= nbyte;
