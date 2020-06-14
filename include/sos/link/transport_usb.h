@@ -31,6 +31,10 @@ limitations under the License.
 #define SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT_SIZE 64
 #define SOS_LINK_TRANSPORT_USB_PORT 0
 
+
+//next valid 3FC
+#define SOS_LINK_TRANSPORT_USB_BCD_VERSION 0x0028
+
 #define SOS_LINK_TRANSPORT_USB_EXTERN_CONST(name) \
 	extern const usbd_device_descriptor_t sos_link_transport_usb_##name##_device_descriptor MCU_WEAK; \
 	extern const usbd_qualifier_descriptor_t sos_link_transport_usb_##name##_qualifier_descriptor MCU_WEAK; \

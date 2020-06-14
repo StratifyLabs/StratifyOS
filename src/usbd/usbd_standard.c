@@ -78,8 +78,9 @@ int usbd_standard_request_handle_setup(usbd_control_t * context){
 			mcu_debug_printf("vendor byte code request\n");
 			if( context->setup_packet.wIndex.w == 0x0004 ){
 				mcu_debug_printf("msft features %d\n", context->setup_packet.bmRequestType.bitmap_t.recipient);
-				u16 len =	 context->constants->msft_compatibility_id_feature_descriptor_size;
+				u16 len =	context->constants->msft_compatibility_id_feature_descriptor_size;
 				if( len == 0 ){
+					mcu_debug_printf("MSFT compatible ID string not available\n");
 					return 0;
 				}
 				context->data.dptr = (u8*)context->constants->msft_compatibility_id_feature_descriptor;
@@ -502,6 +503,7 @@ u32 usbd_standard_request_get_descriptor(usbd_control_t * context) {
 					if( msft_string ){
 						ptr.cstr = msft_string;
 					} else {
+						mcu_debug_printf("MSFT 0xEE string not available\n");
 						return 0;
 					}
 				} else {
@@ -557,7 +559,7 @@ u32 usbd_standard_request_get_descriptor(usbd_control_t * context) {
 	if (context->data.nbyte > len) {
 		context->data.nbyte = len;
 	}
-
+	mcu_debug_printf("len is %d\n", len);
 
 
 	return 1;
