@@ -56,7 +56,7 @@ const sos_link_transport_usb_dual_vcp_configuration_descriptor_t sos_link_transp
 		.bLength = sizeof(usbd_configuration_descriptor_t),
 		.bDescriptorType = USBD_DESCRIPTOR_TYPE_CONFIGURATION,
 		.wTotalLength = sizeof(sos_link_transport_usb_dual_vcp_configuration_descriptor_t)-1, //exclude the zero terminator
-		.bNumInterfaces = 0x02,
+		.bNumInterfaces = 0x04,
 		.bConfigurationValue = 0x01,
 		.iConfiguration = 2,
 		.bmAttributes = USBD_CONFIGURATION_ATTRIBUTES_BUS_POWERED,
