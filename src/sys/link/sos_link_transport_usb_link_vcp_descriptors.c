@@ -155,7 +155,7 @@ int link_vcp_class_handler(void * object, const mcu_event_t * event){
 	return 0;
 }
 
-SOS_LINK_TRANSPORT_USB_DEVICE_DESCRIPTOR(link_vcp,0,0,0,SOS_LINK_TRANSPORT_USB_BCD_VERSION | 2)
+SOS_LINK_TRANSPORT_USB_DEVICE_DESCRIPTOR(link_vcp,239,2,1,SOS_LINK_TRANSPORT_USB_BCD_VERSION | 2)
 
 SOS_LINK_TRANSPORT_USB_CONST(
 		link_vcp,
