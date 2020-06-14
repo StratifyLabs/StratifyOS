@@ -74,6 +74,28 @@ static const compatible_id_feature_descriptor_t msft_os2_compatible_id_feature_d
 	}
 };
 
+int link_class_handler(void * object, const mcu_event_t * event){
+	usbd_control_t * context = object;
+	u32 o_events = event->o_events;
+
+	if( sos_link_transport_usb_msft_string_event(object,event) ){
+		return 1;
+	}
+
+	if( (o_events & MCU_EVENT_FLAG_SETUP)
+			&& (context->setup_packet.bRequest == USBD_MSFT_VENDOR_CODE_BYTE)
+			&& (context->setup_packet.wIndex.w == 0x0004)){
+
+		u16 len = sizeof(msft_compatible_id_feature_descriptor);
+		context->data.dptr = (u8*)&msft_compatible_id_feature_descriptor;
+		if (context->data.nbyte > len) {
+			context->data.nbyte = len;
+		}
+		usbd_control_datain_stage(context);
+		return 1;
+	}
+	return 0;
+}
 
 
 SOS_LINK_TRANSPORT_USB_DEVICE_DESCRIPTOR(link,USBD_DEVICE_CLASS_VENDOR_SPECIFIC,0,0,SOS_LINK_TRANSPORT_USB_BCD_VERSION | 0)
@@ -83,7 +105,7 @@ SOS_LINK_TRANSPORT_USB_CONST(
 		SOS_LINK_TRANSPORT_USB_PORT,
 		0,
 		0,
-		NULL
+		link_class_handler
 		)
 
 

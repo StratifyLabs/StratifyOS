@@ -118,7 +118,8 @@ int sos_link_usbd_cdc_event_handler(void * object, const mcu_event_t * event){
 	usbd_control_t * context = object;
 
 	//if this is a class request check the CDC interfaces
-	if ( usbd_control_setup_request_type(context) == USBD_REQUEST_TYPE_CLASS ){
+	if( (event->o_events & MCU_EVENT_FLAG_SETUP)
+			&& (usbd_control_setup_request_type(context) == USBD_REQUEST_TYPE_CLASS) ){
 		return cdc_event_handler(context, event);
 	}
 
@@ -128,7 +129,7 @@ int sos_link_usbd_cdc_event_handler(void * object, const mcu_event_t * event){
 
 int cdc_event_handler(void * ctx, const mcu_event_t * event){
 	u32 rate = 12000000;
-	u32 o_events = event->o_events;
+	const u32 o_events = event->o_events;
 	usbd_control_t * context = ctx;
 	int iface = usbd_control_setup_interface(context);
 
