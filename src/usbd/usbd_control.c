@@ -66,7 +66,7 @@ void usbd_control_root_init(void * args){
 	}
 }
 
-int usbd_control_handler(void * context_object, const mcu_event_t * usb_event /*! Callback data */){
+int usbd_control_handler(void * context_object, const mcu_event_t * usb_event){
 	u32 o_events = usb_event->o_events;
 	usbd_control_t * context = context_object;
 	int ret;
