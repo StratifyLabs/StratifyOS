@@ -49,13 +49,34 @@ static const usbd_msft_compatible_id_feature_descriptor_t msft_compatible_id_fea
 	},
 	.interface_feature = {
 		.interface_number = 0,
+		.resd0 = 0x01,
 		.compatible_id = {'W', 'I', 'N', 'U', 'S', 'B', 0x00, 0x00}, //WINUSB\0\0
+	}
+};
+
+typedef struct MCU_PACK {
+	usbd_msft_os2_descriptor_set_header_t header_descriptor;
+	usbd_msft_os2_compatible_id_t compatible_id_descriptor;
+} compatible_id_feature_descriptor_t;
+
+static const compatible_id_feature_descriptor_t msft_os2_compatible_id_feature_descriptor =
+{
+	.header_descriptor = {
+		.wLength = sizeof(usbd_msft_os2_descriptor_set_header_t),
+		.wDescriptorType = USBD_MSFT_OS2_SET_HEADER_DESCRIPTOR,
+		.dwWindowsVersion = 0x06030000, //windows 8.1
+		.wTotalLength= sizeof(compatible_id_feature_descriptor_t),
+	},
+	.compatible_id_descriptor = {
+		.wLength = sizeof(usbd_msft_os2_compatible_id_t),
+		.wDescriptorType = USBD_MSFT_OS2_FEATURE_COMPATIBLE_ID,
+		.CompatibleID = {'W', 'I', 'N', 'U', 'S', 'B', 0x00, 0x00}, //WINUSB\0\0
 	}
 };
 
 
 
-SOS_LINK_TRANSPORT_USB_DEVICE_DESCRIPTOR(link,USBD_DEVICE_CLASS_VENDOR_SPECIFIC,0,0,BCD_VERSION | 0)
+SOS_LINK_TRANSPORT_USB_DEVICE_DESCRIPTOR(link,USBD_DEVICE_CLASS_VENDOR_SPECIFIC,0,0,SOS_LINK_TRANSPORT_USB_BCD_VERSION | 0)
 
 SOS_LINK_TRANSPORT_USB_CONST(
 		link,
