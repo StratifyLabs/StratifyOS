@@ -83,10 +83,7 @@ SOS_LINK_TRANSPORT_USB_CONST(
 		SOS_LINK_TRANSPORT_USB_PORT,
 		0,
 		0,
-		NULL,
-		&sos_link_transport_usb_msft_string,
-		&msft_compatible_id_feature_descriptor,
-		sizeof(msft_compatible_id_feature_descriptor)
+		NULL
 		)
 
 

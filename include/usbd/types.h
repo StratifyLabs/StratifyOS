@@ -118,6 +118,13 @@ typedef struct MCU_PACK {
 typedef struct MCU_PACK {
 	u8 bLength;
 	u8 bDescriptorType;
+	u16 wTotalLength;
+	u8 bNumDeviceCaps;
+} usbd_bos_descriptor_t;
+
+typedef struct MCU_PACK {
+	u8 bLength;
+	u8 bDescriptorType;
 	u16 * bString;
 } usbd_string_descriptor_t;
 

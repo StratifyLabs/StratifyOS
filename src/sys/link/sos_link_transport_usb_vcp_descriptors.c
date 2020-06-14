@@ -38,7 +38,7 @@
 
 static int cdc_event_handler(usbd_control_t * context, const mcu_event_t * event);
 
-SOS_LINK_TRANSPORT_USB_CONST(vcp,SOS_LINK_TRANSPORT_USB_PORT,0,0,usbd_cdc_event_handler,NULL,0,0)
+SOS_LINK_TRANSPORT_USB_CONST(vcp,SOS_LINK_TRANSPORT_USB_PORT,0,0,usbd_cdc_event_handler)
 
 SOS_LINK_TRANSPORT_USB_DEVICE_DESCRIPTOR(vcp,USBD_DEVICE_CLASS_COMMUNICATIONS,0,0,SOS_LINK_TRANSPORT_USB_BCD_VERSION | 1)
 
