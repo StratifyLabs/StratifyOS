@@ -44,30 +44,51 @@
 #define VCP0_INTERFACE_STRING 5
 
 typedef struct MCU_PACK {
-	usbd_msft_compatible_id_header_feature_descriptor_t header;
-	usbd_msft_compatible_id_interface_feature_descriptor_t interface_feature[3];
+	usbd_msft_os2_function_subset_header_t header_descriptor;
+	usbd_msft_os2_compatible_id_t compatible_id_descriptor;
+} interface_descriptor_t;
+
+
+typedef struct MCU_PACK {
+	usbd_msft_os2_configuration_subset_header_t header_descriptor;
+	interface_descriptor_t interface_descriptor;
+} configuration_descriptor_t;
+
+
+typedef struct MCU_PACK {
+	usbd_msft_os2_descriptor_set_header_t header_descriptor;
+	configuration_descriptor_t configuration_descriptor;
 } compatible_id_feature_descriptor_t;
 
 static const compatible_id_feature_descriptor_t msft_compatible_id_feature_descriptor =
 {
-	.header = {
-		.length = sizeof(compatible_id_feature_descriptor_t),
-		.bcd = 0x0100,
-		.compatible_id_index = 0x0004,
-		.section_count[0] = 1,
+	.header_descriptor = {
+		.wLength = sizeof(usbd_msft_os2_descriptor_set_header_t),
+		.wDescriptorType = USBD_MSFT_OS2_SET_HEADER_DESCRIPTOR,
+		.dwWindowsVersion = 0x06030000, //windows 8.1
+		.wTotalLength= sizeof(compatible_id_feature_descriptor_t),
 	},
-	.interface_feature[0] = {
-		.interface_number = 0,
-		.compatible_id = {'W', 'I', 'N', 'U', 'S', 'B', 0x00, 0x00}, //WINUSB\0\0
-	},
-	//nothig is specified for VCP interfaces -- let windows load USBSER driver
-	.interface_feature[1] = {
-		.interface_number = 1,
-	},
-	.interface_feature[2] = {
-		.interface_number = 2,
+	.configuration_descriptor = {
+		.header_descriptor = {
+			.wLength = sizeof(usbd_msft_os2_configuration_subset_header_t),
+			.wDescriptorType = USBD_MSFT_OS2_SUBSET_HEADER_CONFIGURATION,
+			.bConfigurationIndex = 0,
+			.wTotalLength = sizeof(configuration_descriptor_t)
+		},
+		.interface_descriptor = {
+			.header_descriptor = {
+				.wLength = sizeof(usbd_msft_os2_function_subset_header_t),
+				.wDescriptorType = USBD_MSFT_OS2_SUBSET_HEADER_CONFIGURATION,
+				.bFirstInterface = 0,
+				.wSubsetLength = sizeof(interface_descriptor_t)
+			},
+			.compatible_id_descriptor = {
+				.wLength = sizeof(usbd_msft_os2_compatible_id_t),
+				.wDescriptorType = USBD_MSFT_OS2_FEATURE_COMPATIBLE_ID,
+				.CompatibleID = {'W', 'I', 'N', 'U', 'S', 'B', 0x00, 0x00}, //WINUSB\0\0
+			}
+		}
 	}
-
 };
 
 
