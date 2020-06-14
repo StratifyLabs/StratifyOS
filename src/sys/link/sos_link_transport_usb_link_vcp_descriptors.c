@@ -44,6 +44,36 @@
 #define VCP0_INTERFACE_STRING 5
 
 typedef struct MCU_PACK {
+	usbd_msft_compatible_id_header_feature_descriptor_t header;
+	usbd_msft_compatible_id_interface_feature_descriptor_t interface_feature0;
+	usbd_msft_compatible_id_interface_feature_descriptor_t interface_feature1;
+	usbd_msft_compatible_id_interface_feature_descriptor_t interface_feature2;
+} msft_os1_compatible_id_feature_descriptor_t;
+
+static const msft_os1_compatible_id_feature_descriptor_t msft_os1_compatible_id_feature_descriptor =
+{
+	.header = {
+		.length = sizeof(msft_os1_compatible_id_feature_descriptor_t),
+		.bcd = 0x0100,
+		.compatible_id_index = 0x0004,
+		.section_count[0] = 3,
+	},
+	.interface_feature0 = {
+		.interface_number = 0,
+		.resd0 = 0x01,
+		.compatible_id = {'W', 'I', 'N', 'U', 'S', 'B', 0x00, 0x00}, //WINUSB\0\0
+	},
+	.interface_feature1 = {
+		.interface_number = 1,
+		.resd0 = 0x01
+	},
+	.interface_feature2 = {
+		.interface_number = 2,
+		.resd0 = 0x01
+	}
+};
+
+typedef struct MCU_PACK {
 	usbd_msft_os2_function_subset_header_t header_descriptor;
 	usbd_msft_os2_compatible_id_t compatible_id_descriptor;
 } interface_descriptor_t;
@@ -92,7 +122,7 @@ static const compatible_id_feature_descriptor_t msft_compatible_id_feature_descr
 };
 
 
-SOS_LINK_TRANSPORT_USB_DEVICE_DESCRIPTOR(link_vcp,239,2,1,BCD_VERSION | 2)
+SOS_LINK_TRANSPORT_USB_DEVICE_DESCRIPTOR(link_vcp,0,0,0,SOS_LINK_TRANSPORT_USB_BCD_VERSION | 2)
 
 SOS_LINK_TRANSPORT_USB_CONST(
 		link_vcp,
@@ -101,8 +131,8 @@ SOS_LINK_TRANSPORT_USB_CONST(
 		0,
 		usbd_cdc_event_handler,
 		&sos_link_transport_usb_msft_string,
-		&msft_compatible_id_feature_descriptor,
-		sizeof(msft_compatible_id_feature_descriptor)
+		&msft_os1_compatible_id_feature_descriptor,
+		sizeof(msft_os1_compatible_id_feature_descriptor)
 		)
 
 
