@@ -77,6 +77,18 @@ typedef struct MCU_PACK {
 	//PropertyData variable size
 } usbd_msft_os2_registry_property_descriptor_header_t;
 
+typedef struct MCU_PACK {
+		u8 bLength;
+		u8 bDescriptorType;
+		u8 bDevCapabilityType;
+		u8 bReserved;
+		u8 PlatformCapabilityUUID[16];
+		u32 dwWindowsVersion;
+		u16 wMSOSDescriptorSetTotalLength;
+		u8 bMS_VendorCode;
+		u8 bAltEnumCode;
+} usbd_msft_bos_descriptor_t;
+
 extern const usbd_string_descriptor_t * usbd_extern_get_msft_string_descriptor();
 
 #endif // SOS_USBD_MSFT_H
