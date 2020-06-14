@@ -132,6 +132,6 @@ void boot_link_transport_usb_flush(link_transport_phy_t handle);
 extern const usbfifo_config_t sos_link_transport_usb_fifo_cfg;
 extern usbfifo_state_t sos_link_transport_usb_fifo_state MCU_SYS_MEM;
 
-extern const msft_string_t sos_link_transport_usb_msft_string;
+int sos_link_transport_usb_msft_string_event(void * context_object, const mcu_event_t * usb_event);
 
 #endif /* SOS_LINK_TRANSPORT_USB_H_ */

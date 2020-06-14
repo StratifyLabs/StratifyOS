@@ -73,22 +73,6 @@ char htoc(int nibble){
 int usbd_standard_request_handle_setup(usbd_control_t * context){
 	switch(context->setup_packet.bRequest) {
 
-#if 0
-		case USBD_MSFT_VENDOR_CODE_BYTE:
-			if( context->setup_packet.wIndex.w == 0x0004 ){
-				u16 len =	context->constants->msft_compatibility_id_feature_descriptor_size;
-				if( len == 0 ){
-					return 0;
-				}
-				context->data.dptr = (u8*)context->constants->msft_compatibility_id_feature_descriptor;
-				if (context->data.nbyte > len) {
-					context->data.nbyte = len;
-				}
-				usbd_control_datain_stage(context);
-				return 1;
-			}
-			break;
-#endif
 
 		case USBD_REQUEST_STANDARD_GET_STATUS:
 			if ( usbd_standard_request_get_status(context) ) {

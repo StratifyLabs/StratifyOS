@@ -56,6 +56,19 @@ const usbfifo_config_t sos_link_transport_usb_fifo_cfg = {
 int sos_link_transport_usb_msft_string_event(void * context_object, const mcu_event_t * usb_event){
 	u32 o_events = usb_event->o_events;
 	usbd_control_t * context = context_object;
+	if( (o_events & MCU_EVENT_FLAG_SETUP)
+			&& (context->setup_packet.bRequest == USBD_REQUEST_STANDARD_GET_DESCRIPTOR)
+			&& (context->setup_packet.wValue.b[1] == USBD_DESCRIPTOR_TYPE_STRING)
+			&& (context->setup_packet.wValue.b[0] == 0xee) ) {
+		context->data.dptr = (u8*)&sos_link_transport_usb_msft_string;
+		u16 len = sos_link_transport_usb_msft_string.bLength;
+		if( context->data.nbyte > len ){
+			context->data.nbyte = len;
+		}
+		usbd_control_datain_stage(context);
+		return 1;
+	}
+	return 0;
 }
 
 

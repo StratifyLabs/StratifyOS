@@ -44,6 +44,36 @@
 #define VCP0_INTERFACE_STRING 5
 
 typedef struct MCU_PACK {
+	usbd_msft_compatible_id_header_feature_descriptor_t header;
+	usbd_msft_compatible_id_interface_feature_descriptor_t interface_feature0;
+	usbd_msft_compatible_id_interface_feature_descriptor_t interface_feature1;
+	usbd_msft_compatible_id_interface_feature_descriptor_t interface_feature2;
+} msft_os1_compatible_id_feature_descriptor_t;
+
+static const msft_os1_compatible_id_feature_descriptor_t msft_os1_compatible_id_feature_descriptor =
+{
+	.header = {
+		.length = sizeof(msft_os1_compatible_id_feature_descriptor_t),
+		.bcd = 0x0100,
+		.compatible_id_index = 0x0004,
+		.section_count[0] = 3,
+	},
+	.interface_feature0 = {
+		.interface_number = 0,
+		.resd0 = 0x01,
+		.compatible_id = {'W', 'I', 'N', 'U', 'S', 'B', 0x00, 0x00}, //WINUSB\0\0
+	},
+	.interface_feature1 = {
+		.interface_number = 1,
+		.resd0 = 0x01
+	},
+	.interface_feature2 = {
+		.interface_number = 2,
+		.resd0 = 0x01
+	}
+};
+
+typedef struct MCU_PACK {
 	usbd_msft_os2_function_subset_header_t header_descriptor;
 	usbd_msft_os2_compatible_id_t compatible_id_descriptor;
 } interface_descriptor_t;
@@ -118,8 +148,25 @@ int link_vcp_class_handler(void * object, const mcu_event_t * event){
 	usbd_control_t * context = object;
 	u32 o_events = event->o_events;
 
-	if( o_events & MCU_EVENT_FLAG_SETUP ){
+	if( sos_link_transport_usb_msft_string_event(object,event) ){
+		return 1;
+	}
 
+	if( (o_events & MCU_EVENT_FLAG_SETUP)
+			&& (context->setup_packet.bRequest == USBD_MSFT_VENDOR_CODE_BYTE)
+			&& (context->setup_packet.wIndex.w == 0x0004)){
+
+		u16 len = sizeof(msft_os1_compatible_id_feature_descriptor);
+		context->data.dptr = (u8*)&msft_os1_compatible_id_feature_descriptor;
+		if (context->data.nbyte > len) {
+			context->data.nbyte = len;
+		}
+		usbd_control_datain_stage(context);
+		return 1;
+
+
+
+#if 0
 		mcu_debug_printf("link vcp class handler %d %d\n",
 										 context->setup_packet.bRequest,
 										 context->setup_packet.wValue.b[1]);
@@ -150,9 +197,10 @@ int link_vcp_class_handler(void * object, const mcu_event_t * event){
 			//tell caller this is handled
 			return 1;
 		}
-		return sos_link_usbd_cdc_event_handler(object, event);
+#endif
 	}
-	return 0;
+
+	return sos_link_usbd_cdc_event_handler(object, event);
 }
 
 SOS_LINK_TRANSPORT_USB_DEVICE_DESCRIPTOR(link_vcp,239,2,1,SOS_LINK_TRANSPORT_USB_BCD_VERSION | 2)
