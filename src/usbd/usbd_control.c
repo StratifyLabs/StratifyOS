@@ -77,13 +77,7 @@ int usbd_control_handler(void * context_object, const mcu_event_t * usb_event){
 	}
 
 	if ( o_events & MCU_EVENT_FLAG_SETUP ){
-		mcu_debug_printf(
-					"request:0x%X:0x%X:0x%X\n",
-					context->setup_packet.bRequest,
-					context->setup_packet.wValue.b[1],
-				context->setup_packet.wValue.b[0]);
 		ret = usbd_standard_request_handle_setup(context);
-		mcu_debug_printf("Response %d\n", ret);
 
 		//allow the class handler handle the standard request if the request was handled with usbd_standard_request_handle_setup(), no need to stall
 		if( (ret == 0)
