@@ -75,12 +75,9 @@ int usbd_standard_request_handle_setup(usbd_control_t * context){
 
 #if 0
 		case USBD_MSFT_VENDOR_CODE_BYTE:
-			mcu_debug_printf("vendor byte code request\n");
 			if( context->setup_packet.wIndex.w == 0x0004 ){
-				mcu_debug_printf("msft features %d\n", context->setup_packet.bmRequestType.bitmap_t.recipient);
 				u16 len =	context->constants->msft_compatibility_id_feature_descriptor_size;
 				if( len == 0 ){
-					mcu_debug_printf("MSFT compatible ID string not available\n");
 					return 0;
 				}
 				context->data.dptr = (u8*)context->constants->msft_compatibility_id_feature_descriptor;
@@ -495,18 +492,15 @@ u32 usbd_standard_request_get_descriptor(usbd_control_t * context) {
 				//give the string
 				ptr.cstr = context->constants->string;
 				string_index_value = context->setup_packet.wValue.b[0];
-				mcu_debug_printf("get string 0x%x\n", string_index_value);
 				if( string_index_value == 0xee ){
 					return 0;
 #if 0
-					mcu_debug_printf("get msft string\n");
 					const void * msft_string
 							= context->constants->msft_string;
 
 					if( msft_string ){
 						ptr.cstr = msft_string;
 					} else {
-						mcu_debug_printf("MSFT 0xEE string not available\n");
 						return 0;
 					}
 #endif
@@ -544,7 +538,7 @@ u32 usbd_standard_request_get_descriptor(usbd_control_t * context) {
 				context->data.dptr = (u8 * const)context->constants->qualifier;
 				if( context->data.dptr != 0 ){
 					len = sizeof(usbd_device_descriptor_t);
-					mcu_debug_printf("qual:%d\n", len);
+					//mcu_debug_printf("qual:%d\n", len);
 				} else {
 					mcu_debug_printf("No type qualifier\n");
 					return 0;
@@ -563,8 +557,6 @@ u32 usbd_standard_request_get_descriptor(usbd_control_t * context) {
 	if (context->data.nbyte > len) {
 		context->data.nbyte = len;
 	}
-	mcu_debug_printf("len is %d\n", len);
-
 
 	return 1;
 }
