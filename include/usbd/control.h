@@ -44,9 +44,6 @@ typedef struct {
 	const void * const config;
 	const void * const string;
 	int (* const class_event_handler)(void * context, const mcu_event_t * event);
-	const void * msft_string;
-	const void * msft_compatibility_id_feature_descriptor;
-	u32 msft_compatibility_id_feature_descriptor_size;
 } usbd_control_constants_t;
 
 #define MCU_CORE_USB_MAX_PACKET_ZERO_VALUE 64

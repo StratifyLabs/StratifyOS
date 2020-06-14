@@ -73,7 +73,7 @@ char htoc(int nibble){
 int usbd_standard_request_handle_setup(usbd_control_t * context){
 	switch(context->setup_packet.bRequest) {
 
-
+#if 0
 		case USBD_MSFT_VENDOR_CODE_BYTE:
 			mcu_debug_printf("vendor byte code request\n");
 			if( context->setup_packet.wIndex.w == 0x0004 ){
@@ -91,6 +91,7 @@ int usbd_standard_request_handle_setup(usbd_control_t * context){
 				return 1;
 			}
 			break;
+#endif
 
 		case USBD_REQUEST_STANDARD_GET_STATUS:
 			if ( usbd_standard_request_get_status(context) ) {
@@ -496,6 +497,8 @@ u32 usbd_standard_request_get_descriptor(usbd_control_t * context) {
 				string_index_value = context->setup_packet.wValue.b[0];
 				mcu_debug_printf("get string 0x%x\n", string_index_value);
 				if( string_index_value == 0xee ){
+					return 0;
+#if 0
 					mcu_debug_printf("get msft string\n");
 					const void * msft_string
 							= context->constants->msft_string;
@@ -506,6 +509,7 @@ u32 usbd_standard_request_get_descriptor(usbd_control_t * context) {
 						mcu_debug_printf("MSFT 0xEE string not available\n");
 						return 0;
 					}
+#endif
 				} else {
 
 					for (i = 0; i != string_index_value; i++) {

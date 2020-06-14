@@ -32,6 +32,8 @@ limitations under the License.
 #define SOS_LINK_TRANSPORT_USB_PORT 0
 
 
+#define SOS_LINK_TRANSPORT_MSFT_VENDOR_CODE 'S'
+
 //next valid 3FC
 #define SOS_LINK_TRANSPORT_USB_BCD_VERSION 0x0028
 
@@ -43,7 +45,7 @@ limitations under the License.
 	extern const usbd_control_constants_t sos_link_transport_usb_##name##_constants
 
 
-#define SOS_LINK_TRANSPORT_USB_CONST(name,port_value,config_value,state_value,class_event_handler_value,msft_string_value,msft_compatibility_id_feature_descriptor_value,msft_compatibility_id_feature_descriptor_size_value) \
+#define SOS_LINK_TRANSPORT_USB_CONST(name,port_value,config_value,state_value,class_event_handler_value) \
 	const usbd_control_constants_t sos_link_transport_usb_##name##_constants = { \
 	.handle.port = port_value, \
 	.handle.config = config_value, \
@@ -52,10 +54,7 @@ limitations under the License.
 	.config = &sos_link_transport_usb_##name##_configuration_descriptor, \
 	.qualifier = &sos_link_transport_usb_##name##_qualifier_descriptor, \
 	.string = &sos_link_transport_usb_##name##_string_descriptor, \
-	.class_event_handler = class_event_handler_value, \
-	.msft_string = msft_string_value, \
-	.msft_compatibility_id_feature_descriptor = msft_compatibility_id_feature_descriptor_value, \
-	.msft_compatibility_id_feature_descriptor_size = msft_compatibility_id_feature_descriptor_size_value \
+	.class_event_handler = class_event_handler_value \
 	};
 
 #define SOS_LINK_TRANSPORT_USB_DEVICE_DESCRIPTOR(name,class_value,sub_class_value,protocol_value,version_value) \

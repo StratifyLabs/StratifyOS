@@ -44,36 +44,6 @@
 #define VCP0_INTERFACE_STRING 5
 
 typedef struct MCU_PACK {
-	usbd_msft_compatible_id_header_feature_descriptor_t header;
-	usbd_msft_compatible_id_interface_feature_descriptor_t interface_feature0;
-	usbd_msft_compatible_id_interface_feature_descriptor_t interface_feature1;
-	usbd_msft_compatible_id_interface_feature_descriptor_t interface_feature2;
-} msft_os1_compatible_id_feature_descriptor_t;
-
-static const msft_os1_compatible_id_feature_descriptor_t msft_os1_compatible_id_feature_descriptor =
-{
-	.header = {
-		.length = sizeof(msft_os1_compatible_id_feature_descriptor_t),
-		.bcd = 0x0100,
-		.compatible_id_index = 0x0004,
-		.section_count[0] = 3,
-	},
-	.interface_feature0 = {
-		.interface_number = 0,
-		.resd0 = 0x01,
-		.compatible_id = {'W', 'I', 'N', 'U', 'S', 'B', 0x00, 0x00}, //WINUSB\0\0
-	},
-	.interface_feature1 = {
-		.interface_number = 1,
-		.resd0 = 0x01
-	},
-	.interface_feature2 = {
-		.interface_number = 2,
-		.resd0 = 0x01
-	}
-};
-
-typedef struct MCU_PACK {
 	usbd_msft_os2_function_subset_header_t header_descriptor;
 	usbd_msft_os2_compatible_id_t compatible_id_descriptor;
 } interface_descriptor_t;
@@ -121,6 +91,69 @@ static const compatible_id_feature_descriptor_t msft_compatible_id_feature_descr
 	}
 };
 
+const usbd_msft_bos_descriptor_t bos_descriptor = {
+	.bos_descriptor = {
+		.bLength = sizeof(usbd_bos_descriptor_t),
+		.bDescriptorType = USBD_DESCRIPTOR_TYPE_BOS,
+		.wTotalLength = sizeof(usbd_msft_bos_descriptor_t),
+		.bNumDeviceCaps = 1
+	},
+	.bLength = sizeof(usbd_msft_bos_descriptor_t) - sizeof(usbd_bos_descriptor_t),
+	.bDescriptorType = 0x10,
+	.bDevCapabilityType = 0x05,
+	.bReserved = 0,
+	.PlatformCapabilityUUID = {
+		0xDF, 0x60, 0xDD, 0xD8,
+		0x89, 0x45, 0xC7, 0x4C,
+		0x9C, 0xD2, 0x65, 0x9D,
+		0x9E, 0x64, 0x8A, 0x9F
+	},
+	.dwWindowsVersion = 0x06030000,
+	.wMSOSDescriptorSetTotalLength = sizeof(compatible_id_feature_descriptor_t),
+	.bMS_VendorCode = SOS_LINK_TRANSPORT_MSFT_VENDOR_CODE,
+	.bAltEnumCode = 0
+};
+
+int link_vcp_class_handler(void * object, const mcu_event_t * event){
+	usbd_control_t * context = object;
+	u32 o_events = event->o_events;
+
+	if( o_events & MCU_EVENT_FLAG_SETUP ){
+
+		mcu_debug_printf("link vcp class handler %d %d\n",
+										 context->setup_packet.bRequest,
+										 context->setup_packet.wValue.b[1]);
+		if( context->setup_packet.bRequest == SOS_LINK_TRANSPORT_MSFT_VENDOR_CODE ){
+			//respond to SOS_LINK_TRANSPORT_MSFT_VENDOR_CODE request
+			context->data.dptr = (u8 * const)&msft_compatible_id_feature_descriptor;
+			if (context->data.nbyte > sizeof(msft_compatible_id_feature_descriptor)) {
+				context->data.nbyte = sizeof(msft_compatible_id_feature_descriptor);
+			}
+			usbd_control_datain_stage(context);
+			return 1;
+
+		} else if(
+							(context->setup_packet.bRequest == USBD_REQUEST_STANDARD_GET_DESCRIPTOR)
+							&& (context->setup_packet.wValue.b[1] == USBD_DESCRIPTOR_TYPE_BOS )
+							){
+			mcu_debug_printf(
+						"get bos %d bytes (%d)\n",
+						sizeof(bos_descriptor),
+						context->data.nbyte);
+			//respond to GET DESCRIPTOR for BOS
+			context->data.dptr = (u8 * const)&bos_descriptor;
+			if (context->data.nbyte > sizeof(bos_descriptor)) {
+				context->data.nbyte = sizeof(bos_descriptor);
+			}
+			usbd_control_datain_stage(context);
+
+			//tell caller this is handled
+			return 1;
+		}
+		return sos_link_usbd_cdc_event_handler(object, event);
+	}
+	return 0;
+}
 
 SOS_LINK_TRANSPORT_USB_DEVICE_DESCRIPTOR(link_vcp,0,0,0,SOS_LINK_TRANSPORT_USB_BCD_VERSION | 2)
 
@@ -129,10 +162,7 @@ SOS_LINK_TRANSPORT_USB_CONST(
 		SOS_LINK_TRANSPORT_USB_PORT,
 		0,
 		0,
-		usbd_cdc_event_handler,
-		&sos_link_transport_usb_msft_string,
-		&msft_os1_compatible_id_feature_descriptor,
-		sizeof(msft_os1_compatible_id_feature_descriptor)
+		link_vcp_class_handler
 		)
 
 
@@ -143,7 +173,7 @@ sos_link_transport_usb_link_vcp_configuration_descriptor MCU_WEAK = {
 		.bLength = sizeof(usbd_configuration_descriptor_t),
 		.bDescriptorType = USBD_DESCRIPTOR_TYPE_CONFIGURATION,
 		.wTotalLength = sizeof(sos_link_transport_usb_link_vcp_configuration_descriptor_t)-1, //exclude the zero terminator
-		.bNumInterfaces = 2,
+		.bNumInterfaces = 3,
 		.bConfigurationValue = 0x01,
 		.iConfiguration = 2,
 		.bmAttributes = USBD_CONFIGURATION_ATTRIBUTES_BUS_POWERED,
