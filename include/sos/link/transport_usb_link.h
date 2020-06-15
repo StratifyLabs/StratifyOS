@@ -63,8 +63,8 @@ SOS_LINK_TRANSPORT_USB_EXTERN_CONST(link);
 		.bAlternateSetting = 0x00, \
 		.bNumEndpoints = 0x02, \
 		.bInterfaceClass = 0xff, \
-		.bInterfaceSubClass = 0xff, \
-		.bInterfaceProtocol = 0xff, \
+		.bInterfaceSubClass = 0x50, \
+		.bInterfaceProtocol = 0x51, \
 		.iInterface = interface_string \
 	}, \
 	.data_out = { \

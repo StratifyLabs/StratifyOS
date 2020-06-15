@@ -47,7 +47,7 @@ typedef struct MCU_PACK {
 	usbd_msft_compatible_id_header_feature_descriptor_t header;
 	usbd_msft_compatible_id_interface_feature_descriptor_t interface_feature0;
 	usbd_msft_compatible_id_interface_feature_descriptor_t interface_feature1;
-	usbd_msft_compatible_id_interface_feature_descriptor_t interface_feature2;
+	//usbd_msft_compatible_id_interface_feature_descriptor_t interface_feature2;
 } msft_os1_compatible_id_feature_descriptor_t;
 
 static const msft_os1_compatible_id_feature_descriptor_t msft_os1_compatible_id_feature_descriptor =
@@ -56,21 +56,25 @@ static const msft_os1_compatible_id_feature_descriptor_t msft_os1_compatible_id_
 		.length = sizeof(msft_os1_compatible_id_feature_descriptor_t),
 		.bcd = 0x0100,
 		.compatible_id_index = 0x0004,
-		.section_count[0] = 3,
+		.section_count[0] = 1,
 	},
 	.interface_feature0 = {
 		.interface_number = 0,
 		.resd0 = 0x01,
 		.compatible_id = {'W', 'I', 'N', 'U', 'S', 'B', 0x00, 0x00}, //WINUSB\0\0
-	},
+	}
+	,
 	.interface_feature1 = {
 		.interface_number = 1,
 		.resd0 = 0x01
-	},
+	}
+		#if 0
+	,
 	.interface_feature2 = {
 		.interface_number = 2,
 		.resd0 = 0x01
 	}
+		#endif
 };
 
 typedef struct MCU_PACK {
@@ -149,6 +153,7 @@ int link_vcp_class_handler(void * object, const mcu_event_t * event){
 	u32 o_events = event->o_events;
 
 	if( sos_link_transport_usb_msft_string_event(object,event) ){
+		mcu_debug_printf("send MSFT100\n");
 		return 1;
 	}
 
@@ -156,11 +161,18 @@ int link_vcp_class_handler(void * object, const mcu_event_t * event){
 			&& (context->setup_packet.bRequest == USBD_MSFT_VENDOR_CODE_BYTE)
 			&& (context->setup_packet.wIndex.w == 0x0004)){
 
+
+		mcu_debug_printf("request 0x%X 0x%X 0x%X\n",
+										 context->setup_packet.bmRequestType,
+										 context->setup_packet.bRequest,
+										 context->setup_packet.wValue.w);
+
 		u16 len = sizeof(msft_os1_compatible_id_feature_descriptor);
 		context->data.dptr = (u8*)&msft_os1_compatible_id_feature_descriptor;
 		if (context->data.nbyte > len) {
 			context->data.nbyte = len;
 		}
+		mcu_debug_printf("send OS descriptors %d\n", len);
 		usbd_control_datain_stage(context);
 		return 1;
 
