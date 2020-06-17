@@ -189,6 +189,10 @@ int usbfifo_write(const devfs_handle_t * handle, devfs_async_t * async){
 	const usbfifo_config_t * config = handle->config;
 	async->loc = 0x80 | config->endpoint;
 	//Writing to the USB FIFO is not buffered, it just writes the USB HW directly
+	if( mcu_usb_isconnected(handle, NULL) == 0 ){
+		return SYSFS_SET_RETURN(ENODEV);
+	}
+
 	return mcu_usb_write(handle, async);
 }
 
