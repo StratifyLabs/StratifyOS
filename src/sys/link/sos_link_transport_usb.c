@@ -169,14 +169,12 @@ link_transport_phy_t sos_link_transport_usb_open(
 int sos_link_transport_usb_write(link_transport_phy_t handle, const void * buf, int nbyte){
 	int ret;
 	ret = write(handle, buf, nbyte);
-	//mcu_debug_printf("%d bytes written\n", ret);
 	return ret;
 }
 
 int sos_link_transport_usb_read(link_transport_phy_t handle, void * buf, int nbyte){
 	int ret;
 	ret = read(handle, buf, nbyte);
-	//mcu_debug_printf("%d bytes arrived\n", ret);
 	return ret;
 }
 

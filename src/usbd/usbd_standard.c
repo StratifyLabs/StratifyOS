@@ -522,9 +522,7 @@ u32 usbd_standard_request_get_descriptor(usbd_control_t * context) {
 				context->data.dptr = (u8 * const)context->constants->qualifier;
 				if( context->data.dptr != 0 ){
 					len = sizeof(usbd_device_descriptor_t);
-					//mcu_debug_printf("qual:%d\n", len);
 				} else {
-					mcu_debug_printf("No type qualifier\n");
 					return 0;
 				}
 				break;

@@ -165,11 +165,7 @@ int link_vcp_class_handler(void * object, const mcu_event_t * event){
 		return 1;
 
 
-
 #if 0
-		mcu_debug_printf("link vcp class handler %d %d\n",
-										 context->setup_packet.bRequest,
-										 context->setup_packet.wValue.b[1]);
 		if( context->setup_packet.bRequest == SOS_LINK_TRANSPORT_MSFT_VENDOR_CODE ){
 			//respond to SOS_LINK_TRANSPORT_MSFT_VENDOR_CODE request
 			context->data.dptr = (u8 * const)&msft_compatible_id_feature_descriptor;
@@ -183,10 +179,6 @@ int link_vcp_class_handler(void * object, const mcu_event_t * event){
 							(context->setup_packet.bRequest == USBD_REQUEST_STANDARD_GET_DESCRIPTOR)
 							&& (context->setup_packet.wValue.b[1] == USBD_DESCRIPTOR_TYPE_BOS )
 							){
-			mcu_debug_printf(
-						"get bos %d bytes (%d)\n",
-						sizeof(bos_descriptor),
-						context->data.nbyte);
 			//respond to GET DESCRIPTOR for BOS
 			context->data.dptr = (u8 * const)&bos_descriptor;
 			if (context->data.nbyte > sizeof(bos_descriptor)) {
