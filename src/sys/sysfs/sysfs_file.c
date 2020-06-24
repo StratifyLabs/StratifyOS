@@ -133,6 +133,14 @@ int sysfs_shared_read(const sysfs_shared_config_t * config, int loc, void * buf,
 	 return sysfs_file_read(&(config->state->file), buf, nbyte);
 }
 
+int sysfs_shared_lock(const sysfs_shared_config_t * config){
+	return pthread_mutex_lock(&config->state->mutex);
+}
+
+int sysfs_shared_unlock(const sysfs_shared_config_t * config){
+	return pthread_mutex_unlock(&config->state->mutex);
+}
+
 int sysfs_shared_write(const sysfs_shared_config_t * config, int loc, const void * buf, int nbyte){
     if( config->state->file.fs == 0 ){ return SYSFS_SET_RETURN(ENODEV); }
     config->state->file.loc = loc;
