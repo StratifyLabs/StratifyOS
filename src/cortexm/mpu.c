@@ -74,10 +74,10 @@ int mpu_disable_region(int region){
 
 }
 
-int mpu_getnextpowerof2(int size){
+int mpu_getnextpowerof2(u32 size){
 	int i;
 	for(i=31; i > 0; i--){
-		if ( size & (1<<i) ){
+		if ( size & (1<<i) ){ //cppcheck-suppress[shiftTooManyBitsSigned]
 			if ( size == (1<<i) ){
 				return (1<<i);
 			} else {

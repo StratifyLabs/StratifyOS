@@ -70,7 +70,6 @@ int link2_transport_wait_start(link_transport_driver_t * driver, link2_pkt_t * p
 
 int link2_transport_wait_packet(link_transport_driver_t * driver, link2_pkt_t * pkt, int timeout){
 	char * p;
-	int bytes_read;
 	int bytes;
 	int count;
 	int page_size;
@@ -81,6 +80,7 @@ int link2_transport_wait_packet(link_transport_driver_t * driver, link2_pkt_t * 
 	pkt->size = 0;
 	u64 start_time, stop_time;
 	do {
+		int bytes_read;
 		start_time = link_transport_gettime();
 
 		if( bytes == 0 ){

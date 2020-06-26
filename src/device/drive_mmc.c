@@ -48,7 +48,7 @@ int drive_mmc_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 	drive_attr_t * attr = ctl;
 	u32 o_flags;
 	mmc_info_t mmc_info;
-	mmc_info_t mmc_attr;
+	mmc_attr_t mmc_attr;
 	int result;
 
 	switch(request){
@@ -57,7 +57,6 @@ int drive_mmc_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 			if( o_flags & (DRIVE_FLAG_ERASE_BLOCKS | DRIVE_FLAG_ERASE_DEVICE) ){
 
 				if( o_flags & DRIVE_FLAG_ERASE_BLOCKS ){
-					mmc_attr_t mmc_attr;
 					mmc_attr.o_flags = MMC_FLAG_ERASE_BLOCKS;
 					mmc_attr.start = attr->start;
 					mmc_attr.end = attr->end;
@@ -76,7 +75,6 @@ int drive_mmc_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 			}
 
 			if( o_flags & DRIVE_FLAG_RESET ){
-				mmc_attr_t mmc_attr;
 				mmc_attr.o_flags = MMC_FLAG_RESET;
 				return mcu_mmc_setattr(handle, &mmc_attr);
 			}

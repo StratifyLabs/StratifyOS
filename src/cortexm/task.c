@@ -69,9 +69,9 @@ int task_init(int interval,
 		system_memory = &_data;
 	}
 
-	system_stack = system_memory + system_memory_size;
+	system_stack = (u8*)system_memory + system_memory_size;
 
-	sos_task_table[0].sp = system_stack - sizeof(hw_stack_frame_t);
+	sos_task_table[0].sp = (u8*)system_stack - sizeof(hw_stack_frame_t);
 	sos_task_table[0].flags = TASK_FLAGS_EXEC | TASK_FLAGS_USED | TASK_FLAGS_ROOT;
 	sos_task_table[0].parent = 0;
 	sos_task_table[0].priority = 0;
@@ -170,7 +170,7 @@ int task_create_thread(
 
 	//valid validity of pid and stack
 	thread_zero = task_get_thread_zero(pid);
-	stackaddr = mem_addr + mem_size;
+	stackaddr = (u8*)mem_addr + mem_size;
 	if ( (thread_zero < 0) || ((u32)stackaddr & 0x03) ){
 		//pid doesn't exist or stackaddr is misaligned
 		return 0;
@@ -198,7 +198,6 @@ int task_create_thread(
 void task_svcall_new_task(new_task_t * task){
 	CORTEXM_SVCALL_ENTER();
 	int i;
-	hw_stack_frame_t * frame;
 
 	//validate arguments
 	for(i=1; i < task_get_total(); i++){
@@ -209,7 +208,7 @@ void task_svcall_new_task(new_task_t * task){
 			sos_task_table[i].flags = task->flags;
 			//never start a task with root set -- call seteuid() to make root
 			sos_task_table[i].flags &= ~TASK_FLAGS_ROOT;
-			sos_task_table[i].sp = task->stackaddr - sizeof(hw_stack_frame_t) - sizeof(sw_stack_frame_t);
+			sos_task_table[i].sp = (u8*)task->stackaddr - sizeof(hw_stack_frame_t) - sizeof(sw_stack_frame_t);
 			sos_task_table[i].reent = task->reent;
 			sos_task_table[i].global_reent = task->global_reent;
 			sos_task_table[i].timer.t = 0;
@@ -222,11 +221,13 @@ void task_svcall_new_task(new_task_t * task){
 			break;
 		}
 	}
+
 	if ( i == task_get_total() ){
 		task->tid = 0;
 	} else {
 		//Initialize the stack frame
-		frame = (hw_stack_frame_t *)(task->stackaddr - sizeof(hw_stack_frame_t));
+		hw_stack_frame_t * frame;
+		frame = (hw_stack_frame_t *)((u8*)task->stackaddr - sizeof(hw_stack_frame_t));
 		frame->r0 = task->r0;
 		frame->r1 = task->r1;
 		frame->r2 = 0;
@@ -259,9 +260,8 @@ void task_root_resetstack(int id){
 }
 
 void * task_get_sbrk_stack_ptr(struct _reent * reent_ptr){
-	int i;
-	void * stackaddr;
 	if ( sos_task_table != NULL ){
+		int i;
 		for(i=0; i < task_get_total(); i++){
 
 			//If the reent and global reent are the same then this is the main thread
@@ -270,6 +270,7 @@ void * task_get_sbrk_stack_ptr(struct _reent * reent_ptr){
 				//If the main thread is not in use, the stack is not valid
 				if ( task_used_asserted(i) ){
 					if ( (i == task_get_current()) ){
+						void * stackaddr;
 						//If the main thread is the current thread return the current stack
 						//security? can set stackaddr to any value -- only write valid locations
 						cortexm_svcall(cortexm_svcall_get_thread_stack_ptr, &stackaddr);
@@ -304,7 +305,7 @@ int task_get_thread_zero(int pid){
 
 static void svcall_read_rr_timer(u32 * val){
 	CORTEXM_SVCALL_ENTER();
-	*val = m_task_rr_reload - SysTick->VAL;
+	*val = m_task_rr_reload - SysTick->VAL; //cppcheck-suppress[ConfigurationNotChecked]
 }
 
 
@@ -431,8 +432,8 @@ void switch_contexts(){
 		cortexm_disable_systick_irq();
 	} else {
 		//init sys tick to the amount of time remaining
-		SysTick->LOAD = sos_task_table[m_task_current].rr_time;
-		SysTick->VAL = 0; //force a reload
+		SysTick->LOAD = sos_task_table[m_task_current].rr_time; //cppcheck-suppress[ConfigurationNotChecked]
+		SysTick->VAL = 0; //cppcheck-suppress[ConfigurationNotChecked] force a reload
 		//enable the systick interrupt
 		cortexm_enable_systick_irq();
 	}
@@ -459,13 +460,12 @@ void switch_contexts(){
 }
 
 void task_root_switch_context(){
-	sos_task_table[task_get_current()].rr_time = SysTick->VAL; //save the RR time from the SYSTICK
+	sos_task_table[task_get_current()].rr_time = SysTick->VAL; //cppcheck-suppress[ConfigurationNotChecked] save the RR time from the SYSTICK
 	SCB->ICSR |= (1<<28); //set the pend SV interrupt pending -- causes mcu_core_pendsv_handler() to execute when current interrupt exits
 }
 
 void task_check_count_flag(){
-	if ( SysTick->CTRL & (1<<16) ){ //check the countflag
-
+	if ( SysTick->CTRL & (1<<16) ){ //cppcheck-suppress[ConfigurationNotChecked] check the countflag
 		sos_task_table[m_task_current].rr_time = 0;
 		switch_contexts();
 	}
@@ -544,9 +544,9 @@ void task_restore(){
 int task_root_interrupt_call(void * args){
 	u32 pstack;
 	task_interrupt_t * intr = (task_interrupt_t*)args;
-	hw_stack_frame_t * hw_frame;
 
 	if ( task_enabled(intr->tid) ){
+		hw_stack_frame_t * hw_frame;
 		if ( intr->tid == task_get_current() ){
 			pstack = __get_PSP();
 			__set_PSP(pstack - sizeof(hw_stack_frame_t));

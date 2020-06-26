@@ -57,7 +57,6 @@ int task_create_process(void (*p)(char*),
 	task.global_reent = task.reent;
 
 	task.flags = TASK_FLAGS_USED;
-	task.parent = task_get_current();
 	task.priority = 0;
 	task.parent = parent_id;
 

@@ -42,9 +42,9 @@ int drive_cfi_qspi_open(const devfs_handle_t * handle){
 int drive_initialize(const devfs_handle_t * handle){
 	const drive_cfi_config_t * config = handle->config;
 	drive_cfi_state_t * state = handle->state;
-	int result;
 
 	if( state->is_initialized == 0 ){
+		int result;
 		//init the CS pin if it is available
 		//set serial driver attributes to defaults
 		result = config->serial_device->driver.ioctl(
@@ -91,7 +91,6 @@ int drive_cfi_qspi_ioctl(const devfs_handle_t * handle, int request, void * ctl)
 	const drive_cfi_config_t * config = handle->config;
 	drive_attr_t * attr = ctl;
 	drive_info_t * info = ctl;
-	int result;
 	u8 status;
 
 	switch(request){
@@ -103,7 +102,7 @@ int drive_cfi_qspi_ioctl(const devfs_handle_t * handle, int request, void * ctl)
 				u32 o_flags = attr->o_flags;
 
 				if( o_flags & DRIVE_FLAG_INIT ){
-
+					int result;
 					//set serial driver attributes to defaults
 					result = drive_initialize(handle);
 					if( result < 0 ){ return result; }
@@ -237,11 +236,10 @@ int drive_cfi_qspi_ioctl(const devfs_handle_t * handle, int request, void * ctl)
 					DRIVE_FLAG_POWERDOWN |
 					0;
 
+			info->o_events = MCU_EVENT_FLAG_WRITE_COMPLETE | MCU_EVENT_FLAG_DATA_READY;
 			if( config->opcode.device_erase != 0xff ){
 				info->o_events |= DRIVE_FLAG_ERASE_DEVICE;
 			}
-
-			info->o_events = MCU_EVENT_FLAG_WRITE_COMPLETE | MCU_EVENT_FLAG_DATA_READY;
 			info->addressable_size = config->info.addressable_size; //one byte for each address location
 			info->write_block_size = config->info.write_block_size; //can write one byte at a time
 			info->num_write_blocks = config->info.num_write_blocks;
