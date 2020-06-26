@@ -182,7 +182,7 @@ int init_os_memory_protection(task_memories_t * os_mem){
 	if( mcu_board_config.secret_key_size > 0 ){
 		err = mpu_enable_region(
 					TASK_SYSTEM_SECRET_KEY_REGION,
-					mcu_board_config.secret_key_address,
+					(void*)((u32)mcu_board_config.secret_key_address & ~0x01),
 					mcu_board_config.secret_key_size,
 					MPU_ACCESS_PR,
 					MPU_MEMORY_FLASH,
