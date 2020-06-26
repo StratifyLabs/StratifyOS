@@ -31,7 +31,7 @@ void cortexm_delay_systick(u32 ticks){
 	u32 value;
 	u32 end;
 
-	if( SysTick->CTRL & 0x01 ){
+	if( SysTick->CTRL & 0x01 ){ //cppcheck-suppress[ConfigurationNotChecked]
 		if( countdown > cortexm_get_systick_reload()/2){
 			countdown = cortexm_get_systick_reload()/2;
 		}
@@ -160,8 +160,8 @@ void mcu_core_svcall_handler(){
 	call = (cortexm_svcall_t)frame[0];
 	args = (void*)(frame[1]);
 	//verify call is located secure kernel region ROOT_EXEC ONLY
-	if( (((u32)call >= (u32)&_text) && ((u32)call < (u32)&_etext)) ||
-			(((u32)call >= (u32)&_tcim) && ((u32)call < (u32)&_etcim))
+	if( (((u32)call >= (u32)&_text) && ((u32)call < (u32)&_etext)) //cppcheck-suppress[clarifyCondition]
+			|| (((u32)call >= (u32)&_tcim) && ((u32)call < (u32)&_etcim)) //cppcheck-suppress[clarifyCondition]
 			){
 		//args must point to kernel RAM or kernel flash -- can't be SYS MEM or registers or anything like that
 		call(args);
@@ -179,8 +179,8 @@ void mcu_core_svcall_handler(){
 
 int cortexm_validate_callback(mcu_callback_t callback){
 	// \todo callbacks need to be in ROOT_EXEC_ONLY
-	if( (((u32)callback >= (u32)&_text) && ((u32)callback < (u32)&_etext)) ||
-			(((u32)callback >= (u32)&_tcim) && ((u32)callback < (u32)&_etcim))
+	if( (((u32)callback >= (u32)&_text) && ((u32)callback < (u32)&_etext)) //cppcheck-suppress[clarifyCondition]
+			|| (((u32)callback >= (u32)&_tcim) && ((u32)callback < (u32)&_etcim)) //cppcheck-suppress[clarifyCondition]
 			){
 		return 0;
 	}
@@ -268,18 +268,18 @@ u32 cortexm_get_vector_table_addr(){
 }
 
 u32 cortexm_get_systick_value(){
-	return SysTick->VAL;
+	return SysTick->VAL; //cppcheck-suppress[ConfigurationNotChecked]
 }
 
 u32 cortexm_get_systick_reload(){
-	return SysTick->LOAD;
+	return SysTick->LOAD; //cppcheck-suppress[ConfigurationNotChecked]
 }
 
 void cortexm_set_systick_reload(u32 value){
-	SysTick->LOAD = value;
+	SysTick->LOAD = value; //cppcheck-suppress[ConfigurationNotChecked]
 }
 
 void cortexm_start_systick(){
-	SysTick->CTRL = (1<<0) | (1<<2); //Internal Clock CPU and enable the timer
+	SysTick->CTRL = (1<<0) | (1<<2); //cppcheck-suppress[ConfigurationNotChecked] Internal Clock CPU and enable the timer
 }
 

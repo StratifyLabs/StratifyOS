@@ -132,10 +132,10 @@ void state_callback(const devfs_handle_t * handle, int err, int nbyte){
 
 int continue_spi_read(void * handle, const mcu_event_t * ignore){
 	//data has been read -- complete the operation
-	int err = 0;
 	drive_sdspi_state_t * state = ((const devfs_handle_t*)handle)->state;
 	u16 checksum;
 	u16 checksum_calc;
+	int err = 0;
 
 	if( state->count < 0 ){
 

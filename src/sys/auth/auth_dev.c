@@ -98,7 +98,7 @@ u8 generate_pseudo_random(){
 	for(u32 i=0; i < 32; i++){
 		scheduler_timing_root_get_realtime(&tval);
 		result = tval.tv_usec;
-		cortexm_delay_us(result ^ result);
+		cortexm_delay_us(result & 0x0fff);
 	}
 	scheduler_timing_root_get_realtime(&tval);
 	return tval.tv_usec;

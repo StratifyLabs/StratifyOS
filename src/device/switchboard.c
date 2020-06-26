@@ -364,8 +364,8 @@ int close_terminal(const switchboard_state_terminal_t * state_terminal){
 }
 
 int get_terminal(const switchboard_config_t * config,
-					  const switchboard_state_terminal_t * state_terminal,
-					  switchboard_terminal_t * terminal){
+								 const switchboard_state_terminal_t * state_terminal,
+								 switchboard_terminal_t * terminal){
 	terminal->loc = state_terminal->async.loc;
 	terminal->bytes_transferred = state_terminal->bytes_transferred;
 	return devfs_lookup_name(config->devfs_list, state_terminal->device, terminal->name);
@@ -475,7 +475,6 @@ void complete_write(switchboard_state_t * state){
 int write_to_device(switchboard_state_t * state){
 	//start writing the output device
 	int ret = 0;
-	int errno_value;
 
 	if( is_ready_to_write_device(state) ){ //is there a buffer with data that needs to be written?
 		ret = state->output.device->driver.write(&state->output.device->handle, &state->output.async);
@@ -486,6 +485,7 @@ int write_to_device(switchboard_state_t * state){
 			//buffer is free
 			complete_write(state);
 		} else {
+			int errno_value;
 			errno_value = SYSFS_GET_RETURN_ERRNO(ret);
 			if( errno_value == EAGAIN ){
 				//write device is set up in non-blocking mode -- just ignore the error and keep the connection going
@@ -501,7 +501,6 @@ int write_to_device(switchboard_state_t * state){
 int read_from_device(switchboard_state_t * state){
 	//start writing the output device
 	int ret = 0;
-	int errno_value;
 
 	if( is_ready_to_read_device(state) ){ //is there a buffer available
 		ret = state->input.device->driver.read(&state->input.device->handle, &state->input.async);
@@ -513,8 +512,8 @@ int read_from_device(switchboard_state_t * state){
 			complete_read(state, ret);
 		} else {
 			//there was an error reading the device
+			int errno_value;
 			errno_value = SYSFS_GET_RETURN_ERRNO(ret);
-			int i;
 			if( errno_value == EAGAIN ){
 				//read device is set up in non-blocking mode
 				if( state->o_flags & SWITCHBOARD_FLAG_IS_FILL_ZERO ){
@@ -523,28 +522,28 @@ int read_from_device(switchboard_state_t * state){
 					int count = state->input.async.nbyte-1;
 					u8 * ptr = state->input.async.buf;
 					u8 value = ptr[count];
-					for(i=0; i < count; i++){
+					for(int i=0; i < count; i++){
 						ptr[i] = value;
 					}
 				} else if( state->o_flags & SWITCHBOARD_FLAG_IS_FILL_LAST_16 ){
 					int count = state->input.async.nbyte/sizeof(u16)-1;
 					u16 * ptr = state->input.async.buf;
 					u16 value = ptr[count];
-					for(i=0; i < count; i++){
+					for(int i=0; i < count; i++){
 						ptr[i] = value;
 					}
 				} else if( state->o_flags & SWITCHBOARD_FLAG_IS_FILL_LAST_32 ){
 					int count = state->input.async.nbyte/sizeof(u32)-1;
 					u32 * ptr = state->input.async.buf;
 					u32 value = ptr[count];
-					for(i=0; i < count; i++){
+					for(int i=0; i < count; i++){
 						ptr[i] = value;
 					}
 				} else if( state->o_flags & SWITCHBOARD_FLAG_IS_FILL_LAST_64 ){
 					int count = state->input.async.nbyte/sizeof(u64)-1;
 					u64 * ptr = state->input.async.buf;
 					u64 value = ptr[count];
-					for(i=0; i < count; i++){
+					for(int i=0; i < count; i++){
 						ptr[i] = value;
 					}
 				} else {
@@ -553,10 +552,10 @@ int read_from_device(switchboard_state_t * state){
 
 
 				if( state->o_flags | (SWITCHBOARD_FLAG_IS_FILL_ZERO |
-											 SWITCHBOARD_FLAG_IS_FILL_LAST_8 |
-											 SWITCHBOARD_FLAG_IS_FILL_LAST_16 |
-											 SWITCHBOARD_FLAG_IS_FILL_LAST_32 |
-											 SWITCHBOARD_FLAG_IS_FILL_LAST_64)){
+															SWITCHBOARD_FLAG_IS_FILL_LAST_8 |
+															SWITCHBOARD_FLAG_IS_FILL_LAST_16 |
+															SWITCHBOARD_FLAG_IS_FILL_LAST_32 |
+															SWITCHBOARD_FLAG_IS_FILL_LAST_64)){
 					ret = state->input.async.nbyte;
 					complete_read(state, ret);
 				}

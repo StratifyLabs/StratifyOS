@@ -98,7 +98,7 @@ int fifo_read_buffer(const fifo_config_t * config, fifo_state_t * state, char * 
 	for(i=0; i < nbyte; i++){
 
 		state->o_flags |= FIFO_FLAG_IS_READ_BUSY;
-		atomic_position.atomic_access = state->atomic_position.atomic_access;
+		atomic_position.atomic_access = state->atomic_position.atomic_access; //cppcheck-suppress[unreadVariable] read as union
 
 		if( atomic_position.access.head != atomic_position.access.tail ){
 			if( atomic_position.access.tail == size ){
@@ -167,7 +167,7 @@ void fifo_getinfo(fifo_info_t * info, const fifo_config_t * config, fifo_state_t
 
 	fifo_atomic_position_t atomic_position;
 	//grab head and tail atomically in case the operation is interrupted
-	atomic_position.atomic_access = state->atomic_position.atomic_access;
+	atomic_position.atomic_access = state->atomic_position.atomic_access; //cppcheck-suppress[unreadVariable]
 
 	if( atomic_position.access.tail == config->size ){ //check to see if buffer is full
 		info->size_ready = config->size;
@@ -206,8 +206,8 @@ void fifo_cancel_async_write(fifo_state_t * state){
 }
 
 int fifo_data_transmitted(const fifo_config_t * cfgp, fifo_state_t * state){
-	int bytes_written;
 	if( state->transfer_handler.write != NULL ){
+		int bytes_written;
 		if( (bytes_written = fifo_write_buffer(cfgp, state,
 																					 state->transfer_handler.write->buf_const,
 																					 state->transfer_handler.write->nbyte,

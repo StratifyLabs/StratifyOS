@@ -69,7 +69,6 @@ void (* const boot_link_cmd_func_table[LINK_BOOTLOADER_CMD_TOTAL])(link_transpor
 		};
 
 void * boot_link_update(void * arg){
-	int err;
 
 	link_transport_driver_t * driver = arg;
 	link_data_t data;
@@ -79,17 +78,16 @@ void * boot_link_update(void * arg){
 	}
 
 	data.op.cmd = 0;
-	err = 0;
 
 	dstr("Enter update loop\n");
 	while(1){
 		//Wait for data to arrive on the USB
 		while( 1 ){
+			int err;
 
 			if ( (err = link_transport_slaveread(driver, &data.op, sizeof(link_op_t), NULL, NULL)) < 0 ){
 				dstr("e:"); dint(err); dstr("\n");
 				continue;
-				mcu_core_reset(0, 0);
 			}
 
 			if( err > 0 ){
@@ -258,7 +256,6 @@ void erase_flash(link_transport_driver_t * driver){
 	int result;
 	boot_event_flash_t args;
 	args.abort = 0;
-	args.bytes = -1;
 	args.total = -1;
 	args.increment = -1;
 

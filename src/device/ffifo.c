@@ -53,7 +53,7 @@ void ffifo_inc_head(ffifo_state_t * state, u16 count){
 int ffifo_is_write_ok(ffifo_state_t * state, u16 count, int writeblock){
 	int ret = 1;
 	fifo_atomic_position_t atomic_postion;
-	atomic_postion.atomic_access = state->atomic_position.atomic_access;
+	atomic_postion.atomic_access = state->atomic_position.atomic_access; //cppcheck-suppress[unreadVariable]
 	if( atomic_postion.access.tail == count ){
 		if( writeblock ){
 			//cannot write anymore data at this time
@@ -114,7 +114,7 @@ int ffifo_read_buffer(const ffifo_config_t * config, ffifo_state_t * state, char
 	for(i=0; i < len; i += frame_size){
 
 		state->o_flags |= FIFO_FLAG_IS_READ_BUSY;
-		atomic_position.atomic_access = state->atomic_position.atomic_access;
+		atomic_position.atomic_access = state->atomic_position.atomic_access; //cppcheck-suppress[unreadVariable]
 
 		if ( atomic_position.access.head != atomic_position.access.tail ){
 
@@ -184,11 +184,10 @@ void ffifo_flush(ffifo_state_t * state){
 }
 
 int ffifo_getinfo(ffifo_info_t * info, const ffifo_config_t * config, ffifo_state_t * state){
-	info->o_flags = FIFO_FLAG_SET_WRITEBLOCK | FIFO_FLAG_IS_OVERFLOW;
 	info->frame_count = config->frame_count;
 	info->frame_size = config->frame_size;
 	fifo_atomic_position_t atomic_position;
-	atomic_position.atomic_access = state->atomic_position.atomic_access;
+	atomic_position.atomic_access = state->atomic_position.atomic_access;//cppcheck-suppress[unreadVariable]
 
 	if( atomic_position.access.tail == config->frame_count ){
 		info->frame_count_ready = info->frame_count;
@@ -199,13 +198,13 @@ int ffifo_getinfo(ffifo_info_t * info, const ffifo_config_t * config, ffifo_stat
 	}
 
 	info->o_flags = state->o_flags;
-	state->o_flags &= ~FIFO_FLAG_IS_OVERFLOW;
+	state->o_flags &= ~FIFO_FLAG_IS_OVERFLOW; //clear the overflow since it has been read
 	return 0;
 }
 
 void ffifo_data_received(const ffifo_config_t * handle, ffifo_state_t * state){
-	int bytes_read;
 	if( state->transfer_handler.read != NULL ){
+		int bytes_read;
 		if( (bytes_read = ffifo_read_buffer(
 				  handle,
 				  state,
@@ -242,8 +241,8 @@ void ffifo_cancel_async_write(ffifo_state_t * state){
 
 
 void ffifo_data_transmitted(const ffifo_config_t * config, ffifo_state_t * state){
-	int bytes_written;
 	if( state->transfer_handler.write != NULL ){
+		int bytes_written;
 		if( (bytes_written = ffifo_write_buffer(config, state, state->transfer_handler.write->buf_const, state->transfer_handler.write->nbyte)) > 0 ){
 			devfs_execute_write_handler(
 						&state->transfer_handler,

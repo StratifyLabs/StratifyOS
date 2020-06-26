@@ -22,9 +22,7 @@ int link2_transport_slaveread(
 		){
 	char * p = 0;
 	int bytes = 0;
-	u16 checksum = 0;
-	int err = 0;
-	int ret = 0;
+	u16 checksum;
 	link2_pkt_t pkt;
 	memset(&pkt, 0, sizeof(pkt));
 
@@ -33,13 +31,13 @@ int link2_transport_slaveread(
 	p = buf;
 	do {
 
-		if( (err = link2_transport_wait_start(driver, &pkt, driver->timeout)) < 0 ){
+		if( link2_transport_wait_start(driver, &pkt, driver->timeout) < 0 ){
 			driver->flush(driver->handle);
 			send_ack(driver, LINK2_PACKET_NACK, 0);
 			return -1 * __LINE__;
 		}
 
-		if( (err = link2_transport_wait_packet(driver, &pkt, driver->timeout)) < 0 ){
+		if( link2_transport_wait_packet(driver, &pkt, driver->timeout) < 0 ){
 			driver->flush(driver->handle);
 			send_ack(driver, LINK2_PACKET_NACK, 0);
 			return -1 * __LINE__;
@@ -74,9 +72,10 @@ int link2_transport_slaveread(
 			p += pkt.size;
 			send_ack(driver, LINK2_PACKET_ACK, checksum);
 		} else {
-			if( (ret = callback(context, pkt.data, pkt.size)) < 0 ){
+			int result;
+			if( (result = callback(context, pkt.data, pkt.size)) < 0 ){
 				send_ack(driver, LINK2_PACKET_NACK, checksum);
-				return ret;
+				return result;
 			} else {
 				bytes += pkt.size;
 				if( send_ack(driver, LINK2_PACKET_ACK, checksum) < 0 ){
@@ -138,11 +137,11 @@ int link2_transport_slavewrite(
 
 		//send packet
 		if( driver->write(
-				 driver->handle,
-				 &pkt,
-				 pkt.size + LINK2_PACKET_HEADER_SIZE
-				 ) != (pkt.size + LINK2_PACKET_HEADER_SIZE)
-			 ){
+					driver->handle,
+					&pkt,
+					pkt.size + LINK2_PACKET_HEADER_SIZE
+					) != (pkt.size + LINK2_PACKET_HEADER_SIZE)
+				){
 			return -1 * __LINE__;
 		}
 
