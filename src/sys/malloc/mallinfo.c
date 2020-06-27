@@ -29,7 +29,6 @@ struct mallinfo _mallinfo_r(struct _reent * reent_ptr){
 	int total_chunks;
 	int total_used_memory;
 	int total_free_chunks;
-	int chunk_free;
 	struct mallinfo mi;
 	malloc_chunk_t * chunk;
 	proc_mem_t * procmem_base;
@@ -50,7 +49,7 @@ struct mallinfo _mallinfo_r(struct _reent * reent_ptr){
 	total_free_chunks = 0;
 
 	while( chunk->header.num_chunks != 0 ){
-		chunk_free = malloc_chunk_is_free(chunk);
+		int chunk_free = malloc_chunk_is_free(chunk);
 		if ( chunk_free == -1 ){
 			return mi;
 		}

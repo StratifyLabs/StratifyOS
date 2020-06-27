@@ -82,7 +82,6 @@ static void (* const default_handlers[SCHEDULER_NUM_SIGNALS])(int,int) = {
 
 
 void signal_handler(int tid, int si_signo, int si_sigcode, union sigval sig_value){
-	struct sigaction * sa;
 	siginfo_t siginfo;
 
 	siginfo.si_signo = si_signo;
@@ -91,7 +90,7 @@ void signal_handler(int tid, int si_signo, int si_sigcode, union sigval sig_valu
 	siginfo.si_value = sig_value;
 
 	if ( si_signo < SCHEDULER_NUM_SIGNALS ){
-
+		struct sigaction * sa;
 		if( si_sigcode == SI_TIMER ){
 			scheduler_timing_process_unqueue_timer(tid, si_signo, sig_value);
 		}
@@ -199,7 +198,6 @@ void svcall_stoppid(void * args){
 void svcall_contpid(void * args){
 	CORTEXM_SVCALL_ENTER();
 	int highest_prio = 0;
-	int prio;
 	int pid = task_get_pid( task_get_current() );
 	int i;
 
@@ -212,7 +210,7 @@ void svcall_contpid(void * args){
 		for(i=1; i < task_get_total(); i++){
 			if( task_get_pid(i) == pid ){
 				scheduler_root_deassert_stopped(i);
-				prio = scheduler_priority(i);
+				int prio = scheduler_priority(i);
 				if( prio > highest_prio ){
 					highest_prio = prio;
 				}

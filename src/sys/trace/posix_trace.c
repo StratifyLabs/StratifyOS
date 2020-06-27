@@ -38,9 +38,8 @@ static trace_list_t * trace_first = 0;
 
 static void trace_cleanup(){
 	trace_list_t * entry;
-	int tid;
 	for(entry = trace_first; entry != 0; entry = entry->next){
-		tid = entry->trace.tid;
+		int tid = entry->trace.tid;
 		if( (task_enabled(tid) == 0) ||
 				(task_get_pid(tid) != entry->trace.pid) ){
 			//delete the trace
@@ -184,7 +183,6 @@ int posix_trace_create(pid_t pid, const trace_attr_t * attr, trace_id_t * id){
 	size_t msg_size;
 	root_trace_id_t args;
 	trace_attr_t tmp_attr;
-	int oflag;
 	//create a new trace stream for pid -- create a new message queue and tell the target pid it is being traced
 
 
@@ -212,12 +210,12 @@ int posix_trace_create(pid_t pid, const trace_attr_t * attr, trace_id_t * id){
 	posix_trace_attr_getmaxsystemeventsize(&tmp_attr, &msg_size);
 	mattr.mq_msgsize = msg_size;
 
-	oflag = O_CREAT | O_EXCL | O_RDWR | O_NONBLOCK;
+	int oflag = O_CREAT | O_EXCL | O_RDWR | O_NONBLOCK;
 	if( tmp_attr.stream_policy == POSIX_TRACE_LOOP ){
 		oflag |= MQ_FLAGS_LOOP;
 	}
 
-	trace_handle.mq = mq_open(tmp_attr.name, O_CREAT | O_EXCL | O_RDWR | O_NONBLOCK, 0666, &mattr);
+	trace_handle.mq = mq_open(tmp_attr.name, oflag, 0666, &mattr);
 	if( trace_handle.mq < 0 ){
 		return -1;
 	}

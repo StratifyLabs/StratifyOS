@@ -101,7 +101,6 @@ void svcall_hibernate(void * args){
 int set_alarm(int seconds){
 	int fd;
 	rtc_attr_t attr;
-	int ret;
 
 	fd = open("/dev/rtc", O_RDWR);
 	if ( fd >= 0 ){
@@ -111,7 +110,7 @@ int set_alarm(int seconds){
 		attr.o_flags = RTC_FLAG_IS_ALARM_ONCE | RTC_FLAG_ENABLE_ALARM;
 
 		//set the alarm for "seconds" from now
-		ret = ioctl(fd, I_RTC_SETATTR, &attr);
+		int ret = ioctl(fd, I_RTC_SETATTR, &attr);
 		close(fd);
 		return ret;
 	}

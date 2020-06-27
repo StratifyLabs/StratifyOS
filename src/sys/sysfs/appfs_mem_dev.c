@@ -185,7 +185,6 @@ int appfs_mem_writepage(const devfs_handle_t * handle, void * ctl){
 
 	if( type & MEM_FLAG_IS_RAM ){
 		//check to see if the memcpy fits in RAM
-		mem_writepage_t * write_page_info = ctl;
 		memcpy((void*)write_page_info->addr, write_page_info->buf, write_page_info->nbyte);
 		result = write_page_info->nbyte;
 	} else {

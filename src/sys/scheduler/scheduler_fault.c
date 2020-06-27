@@ -86,9 +86,9 @@ void scheduler_fault_build_string(char * dest, const char * term){
 }
 
 void htoa(char * dest, int num){
-	char nibble;
 	int i;
 	for(i=0; i < 8; i++){
+		char nibble;
 		nibble = num & 0xF;
 		num >>= 4;
 		dest[7 - i] = htoc(nibble);

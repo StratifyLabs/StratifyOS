@@ -175,14 +175,14 @@ void svcall_settime(void * args){
 	svcall_settime_t * p = args;
 	struct mcu_timeval abs_time;
 
-
-
 	volatile sos_process_timer_t * timer = scheduler_timing_process_timer(p->timer_id);
 	if( timer == 0 ){
 		errno = EINVAL;
 		p->result = -1;
 		return;
 	}
+
+	scheduler_timing_root_get_realtime(&abs_time);
 
 	if( timer->value.tv_sec == SCHEDULER_TIMEVAL_SEC_INVALID ){
 		p->o_value->tv_sec = 0;
@@ -192,7 +192,6 @@ void svcall_settime(void * args){
 		*p->o_value = scheduler_timing_subtract_mcu_timeval((struct mcu_timeval*)&timer->value, &abs_time);
 	}
 
-	scheduler_timing_root_get_realtime(&abs_time);
 	if( (p->flags & TIMER_ABSTIME) == 0 ){
 		//value is a relative time -- convert to absolute time
 		timer->value = scheduler_timing_add_mcu_timeval(&abs_time, p->value);
@@ -204,8 +203,8 @@ void svcall_settime(void * args){
 	*p->o_interval = timer->interval;
 	timer->interval = *p->interval;
 	if( (timer->interval.tv_sec == 0) &&
-		 (timer->interval.tv_usec > 0) &&
-		 (timer->interval.tv_usec < SCHED_USECOND_TMR_MINIMUM_PROCESS_TIMER_INTERVAL) ){
+			(timer->interval.tv_usec > 0) &&
+			(timer->interval.tv_usec < SCHED_USECOND_TMR_MINIMUM_PROCESS_TIMER_INTERVAL) ){
 		timer->interval.tv_usec = SCHED_USECOND_TMR_MINIMUM_PROCESS_TIMER_INTERVAL;
 	}
 
@@ -216,11 +215,12 @@ void svcall_settime(void * args){
 	p->result = 0;
 }
 
-int scheduler_timing_process_set_timer(timer_t timerid, int flags,
-													const struct mcu_timeval * value,
-													const struct mcu_timeval * interval,
-													struct mcu_timeval * o_value,
-													struct mcu_timeval * o_interval){
+int scheduler_timing_process_set_timer(
+		timer_t timerid, int flags,
+		const struct mcu_timeval * value,
+		const struct mcu_timeval * interval,
+		struct mcu_timeval * o_value,
+		struct mcu_timeval * o_interval){
 	svcall_settime_t args;
 	args.timer_id = timerid;
 	args.flags = flags;
@@ -290,12 +290,12 @@ void update_tmr_for_process_timer_match(volatile sos_process_timer_t * timer){
 	mcu_channel_t chan_req;
 	u32 now;
 	devfs_handle_t tmr_handle;
-	int is_time_to_send = 1;
 	tmr_handle.port = sos_board_config.clk_usecond_tmr;
 
 	//Initialization
 
 	if (timer->value.tv_sec >= sched_usecond_counter){
+		int is_time_to_send = 1;
 
 		if(timer->value.tv_sec == sched_usecond_counter){
 
@@ -312,7 +312,7 @@ void update_tmr_for_process_timer_match(volatile sos_process_timer_t * timer){
 			}
 
 			if( (timer->value.tv_usec > now) && //needs to be enough in the future to allow the OC to be set before the timer passes it
-				 (chan_req.value == timer->value.tv_usec) ){
+					(chan_req.value == timer->value.tv_usec) ){
 				mcu_tmr_setchannel(&tmr_handle, &chan_req);
 				is_time_to_send = 0;
 			}
@@ -330,13 +330,7 @@ void update_tmr_for_process_timer_match(volatile sos_process_timer_t * timer){
 			}
 
 		}
-
-	} else {
-		//signal happens in the future
-		is_time_to_send = 0;
 	}
-
-
 }
 
 typedef struct {
@@ -352,7 +346,7 @@ static void svcall_unqueue_timer(void * args){
 		timer_id = SCHEDULER_TIMING_PROCESS_TIMER(task_get_current(), j);
 		volatile sos_process_timer_t * timer = scheduler_timing_process_timer(timer_id);
 		if( (timer->sigevent.sigev_signo == p->si_signo) &&
-			 (timer->sigevent.sigev_value.sival_int == p->sig_value)){
+				(timer->sigevent.sigev_value.sival_int == p->sig_value)){
 			//unqueue this timer
 			timer->o_flags &= ~SCHEDULER_TIMING_PROCESS_TIMER_FLAG_IS_QUEUED;
 		}
@@ -361,8 +355,8 @@ static void svcall_unqueue_timer(void * args){
 }
 
 void scheduler_timing_process_unqueue_timer(int tid,
-														  int si_signo,
-														  union sigval sig_value){
+																						int si_signo,
+																						union sigval sig_value){
 	svcall_unqueue_timer_t args;
 	args.si_signo = si_signo;
 	args.sig_value = sig_value.sival_int;
@@ -374,11 +368,11 @@ int send_and_reload_timer(volatile sos_process_timer_t * timer, u8 task_id, u32 
 	//check to see if a signal has already been queued
 	if( ((timer->o_flags & SCHEDULER_TIMING_PROCESS_TIMER_FLAG_IS_QUEUED) == 0) && (timer->sigevent.sigev_notify == SIGEV_SIGNAL) ){
 		int result = signal_root_send(0,
-												task_id,
-												timer->sigevent.sigev_signo,
-												SI_TIMER,
-												timer->sigevent.sigev_value.sival_int,
-												task_get_current() == task_id);
+																	task_id,
+																	timer->sigevent.sigev_signo,
+																	SI_TIMER,
+																	timer->sigevent.sigev_value.sival_int,
+																	task_get_current() == task_id);
 		if( result < 0 ){
 			mcu_debug_log_error(MCU_DEBUG_SCHEDULER, "failed to fire %d", SYSFS_GET_RETURN(result));
 		} else {
@@ -453,12 +447,11 @@ void scheduler_timing_root_timedblock(void * block_object, struct mcu_timeval * 
 }
 
 void scheduler_timing_convert_timespec(struct mcu_timeval * tv, const struct timespec * ts){
-	div_t d;
 	if ( ts == NULL ){
 		tv->tv_sec = SCHEDULER_TIMEVAL_SEC_INVALID;
 		tv->tv_usec = 0;
 	} else {
-		d = div(ts->tv_sec, SOS_SCHEDULER_TIMEVAL_SECONDS);
+		div_t d = div(ts->tv_sec, SOS_SCHEDULER_TIMEVAL_SECONDS);
 		tv->tv_sec = d.quot;
 		tv->tv_usec = d.rem * 1000000UL + (ts->tv_nsec + 999UL) / 1000UL;
 	}
@@ -562,8 +555,8 @@ int root_handle_usecond_match_event(void * context, const mcu_event_t * data){
 
 			//compare the current clock to the wake time
 			if ( (sos_sched_table[i].wake.tv_sec < sched_usecond_counter) ||
-				  ( (sos_sched_table[i].wake.tv_sec == sched_usecond_counter) && (tmp <= now) )
-				  ){
+					 ( (sos_sched_table[i].wake.tv_sec == sched_usecond_counter) && (tmp <= now) )
+					 ){
 				//wake this task
 				scheduler_root_assert_active(i, SCHEDULER_UNBLOCK_SLEEP);
 				if( !task_stopped_asserted(i) && (scheduler_priority(i) > new_priority) ){
@@ -620,8 +613,8 @@ int root_handle_usecond_process_timer_match_event(void * context, const mcu_even
 				if( timer->o_flags & SCHEDULER_TIMING_PROCESS_TIMER_FLAG_IS_INITIALIZED ){
 					tmp = timer->value.tv_usec;
 					if ( (timer->value.tv_sec < sched_usecond_counter) ||
-						  ( (timer->value.tv_sec == sched_usecond_counter) && (tmp <= now) )
-						  ){
+							 ( (timer->value.tv_sec == sched_usecond_counter) && (tmp <= now) )
+							 ){
 
 						//reload the timer if interval is valid
 						send_and_reload_timer(timer, i, now);

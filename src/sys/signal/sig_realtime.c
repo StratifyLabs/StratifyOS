@@ -78,8 +78,8 @@ int sigqueue(pid_t pid, int signo, const union sigval value){
  *
  */
 int sigwait(const sigset_t * set, int * sig){
-	int tmp;
 	do {
+		int tmp;
 		if ( (tmp = check_pending_set(set)) ){
 			*sig = tmp;
 			return 0;
@@ -112,11 +112,11 @@ int sigtimedwait(const sigset_t * set,
 		siginfo_t * info,
 		const struct timespec * timeout){
 	struct mcu_timeval abs_timeout;
-	int sig;
 
 	scheduler_timing_convert_timespec(&abs_timeout, timeout);
 
 	do {
+		int sig;
 		if ( (sig = check_pending_set(set)) ){
 			if ( GLOBAL_SIGINFOS != NULL ){
 				*info = GLOBAL_SIGINFO(sig);
@@ -159,8 +159,8 @@ int sigtimedwait(const sigset_t * set,
  *
  */
 int sigwaitinfo(const sigset_t *set, siginfo_t *info){
-	int sig;
 	do {
+		int sig;
 		if ( (sig = check_pending_set(set)) ){
 			if ( GLOBAL_SIGINFOS != NULL ){
 				*info = GLOBAL_SIGINFO(sig);
@@ -184,11 +184,10 @@ int sigwaitinfo(const sigset_t *set, siginfo_t *info){
 /*! \cond */
 int check_pending_set(const sigset_t * set){
 	sigset_t mask;
-	int i;
 	mask = THREAD_SIGPENDING & *set;
 	if ( mask ){
-		for(i = 0; i < SCHEDULER_NUM_SIGNALS; i++){
-			if ( mask & (1<<i) ){
+		for(int i = 0; i < SCHEDULER_NUM_SIGNALS; i++){
+			if ( mask & (1<<i) ){ //cppcheck-suppress[shiftTooManyBitsSigned]
 				THREAD_SIGPENDING &= ~(1<<i); //clear the pending signal
 				//execute the handler
 
