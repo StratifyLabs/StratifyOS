@@ -217,7 +217,6 @@ int read_task(sys_taskattr_t * task){
 }
 
 int sys_setattr(const devfs_handle_t * handle, void * ctl){
-	int result;
 	const sys_attr_t * attr = ctl;
 
 	if( attr == 0 ){ return SYSFS_SET_RETURN(EINVAL); }
@@ -244,7 +243,7 @@ int sys_setattr(const devfs_handle_t * handle, void * ctl){
 			}
 
 
-			result = mpu_enable_region(
+			int result = mpu_enable_region(
 						attr->region,
 						(void*)attr->address,
 						attr->size,

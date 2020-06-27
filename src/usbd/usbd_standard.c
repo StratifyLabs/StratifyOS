@@ -257,12 +257,11 @@ u32 usbd_standard_request_get_config (usbd_control_t * context) {
 u32 usbd_standard_request_set_config (usbd_control_t * context) {
 	u32 i;
 	u32 j;
-	usbd_common_descriptor_t *dptr;
 	u8 alt_setting = 0;
 
 	if(context->setup_packet.bmRequestType.bitmap_t.recipient == USBD_REQUEST_TYPE_RECIPIENT_DEVICE){
 		if ( context->setup_packet.wValue.b[0] ) {
-			dptr = (usbd_common_descriptor_t*)context->constants->config;
+			usbd_common_descriptor_t * dptr = (usbd_common_descriptor_t*)context->constants->config;
 			while(dptr->bLength) {
 
 				switch(dptr->bDescriptorType) {
@@ -366,7 +365,6 @@ u32 usbd_standard_request_set_interface(usbd_control_t * context){
 	u32 i;
 	u32 j;
 	u32 ret;
-	usbd_common_descriptor_t *dptr;
 
 	if (context->setup_packet.bmRequestType.bitmap_t.recipient == USBD_REQUEST_TYPE_RECIPIENT_INTERFACE) {
 
@@ -376,7 +374,7 @@ u32 usbd_standard_request_set_interface(usbd_control_t * context){
 		}
 
 		ret = 0;
-		dptr  = (usbd_common_descriptor_t *)context->constants->config;
+		usbd_common_descriptor_t *dptr  = (usbd_common_descriptor_t *)context->constants->config;
 
 		while (dptr->bLength) {
 			switch (dptr->bDescriptorType) {

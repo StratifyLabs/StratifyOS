@@ -112,7 +112,6 @@ int _open(const char * name, int flags, ...) {
 	int tmp;
 	int ret;
 	int fildes;
-	va_list ap;
 	int mode;
 	const sysfs_t * fs;
 
@@ -147,7 +146,7 @@ int _open(const char * name, int flags, ...) {
 	}
 
 	if ( flags & O_CREAT ){
-
+		va_list ap;
 		va_start(ap, flags);
 		mode = va_arg(ap, mode_t);
 		va_end(ap);

@@ -117,7 +117,6 @@ void * link_update(void * arg){
 	link_transport_driver_t * driver = arg;
 	link_data_t data;
 	data.op.cmd = 0;
-	err = 0;
 
 	mcu_debug_log_info(MCU_DEBUG_LINK, "Open link driver");
 	if( (driver->handle = driver->open(NULL, 0)) == LINK_PHY_ERROR){
@@ -236,13 +235,12 @@ void link_cmd_open(link_transport_driver_t * driver, link_data_t * args){
 
 void link_cmd_link(link_transport_driver_t * driver, link_data_t * args){
 	char path[PATH_MAX];
-	char path_new[PATH_MAX];
 	args->reply.err = link_transport_slaveread(driver, path, args->op.symlink.path_size_old, NULL, NULL); //send final ack
 
 	if ( args->reply.err == args->op.symlink.path_size_old ){
+		char path_new[PATH_MAX];
 		args->reply.err = link_transport_slaveread(driver, path_new, args->op.symlink.path_size_new, NULL, NULL); //don't send final ack
 		args->reply.err = link(path, path_new);
-		args->reply.err = 0;
 		if ( args->reply.err < 0 ){
 			mcu_debug_log_error(MCU_DEBUG_LINK, "Failed to link %s (%d)", path, errno);
 			args->reply.err_number = errno;
@@ -251,19 +249,18 @@ void link_cmd_link(link_transport_driver_t * driver, link_data_t * args){
 }
 
 void link_cmd_ioctl(link_transport_driver_t * driver, link_data_t * args){
-	int err;
 	u16 size;
 	errno = 0;
 	size = _IOCTL_SIZE(args->op.ioctl.request);
 	char io_buf[size];
 	if ( _IOCTL_IOCTLW(args->op.ioctl.request) != 0 ){ //this means data is being sent over the bulk interrupt
-		if( (err = link_transport_slaveread(
+		if( link_transport_slaveread(
 				  driver,
 				  io_buf,
 				  size,
 				  NULL,
 				  NULL
-				  )) < 0 ){
+					) < 0 ){
 			args->op.cmd = 0;
 			args->reply.err = -1;
 			return;
@@ -296,8 +293,7 @@ void link_cmd_ioctl(link_transport_driver_t * driver, link_data_t * args){
 	//Check to see if this is a read operation and data must be sent back to the host
 	if ( _IOCTL_IOCTLR(args->op.ioctl.request) != 0 ){
 		//If the ioctl function reads data from the ctl argument, pass the data over the link
-		err = link_transport_slavewrite(driver, io_buf, size, NULL, NULL);
-		if ( err == -1 ){
+		if ( link_transport_slavewrite(driver, io_buf, size, NULL, NULL) < 0 ){
 			mcu_debug_log_error(MCU_DEBUG_LINK, "slave write failed");
 			args->op.cmd = 0;
 			args->reply.err = -1;

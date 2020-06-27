@@ -42,16 +42,12 @@ int install(
 		const void * update_context
 		){
 
-	int install_fd;
-	int image_fd;
-	int bytes_read;
-	int bytes_cumm;
-	appfs_file_t * hdr;
+	//appfs_file_t * hdr;
 	appfs_installattr_t attr;
 	struct stat st;
 	char name[NAME_MAX];
 	char target_path[PATH_MAX];
-	int len;
+	//int len;
 	int needs_install = 0;
 
 	if( access(path, R_OK) < 0 ){
@@ -84,13 +80,13 @@ int install(
 	if( needs_install ){
 
 		//first install the file using appfs/.install
-		image_fd = open(path, O_RDONLY);
+		int image_fd = open(path, O_RDONLY);
 		if( image_fd < 0 ){
 			mcu_debug_log_error(MCU_DEBUG_SYS, "Failed to open %s (%d)", path, errno);
 			return -1;
 		}
 
-		install_fd = open("/app/.install", O_WRONLY);
+		int install_fd = open("/app/.install", O_WRONLY);
 		if( install_fd < 0 ){
 			close(image_fd);
 			mcu_debug_log_error(MCU_DEBUG_SYS, "Failed to open /app/.install %d", errno);
@@ -98,7 +94,8 @@ int install(
 		}
 
 		attr.loc = 0;
-		bytes_cumm = 0;
+		int bytes_cumm = 0;
+		int bytes_read;
 
 		do {
 			//check the image
@@ -109,11 +106,11 @@ int install(
 				bytes_cumm += attr.nbyte;
 
 				if( attr.loc == 0 ){
-					hdr = (appfs_file_t*)attr.buffer;
+					appfs_file_t * hdr = (appfs_file_t*)attr.buffer;
 					//update the header for the image to be installed
 					if( options & APPFS_FLAG_IS_UNIQUE ){
 						strncpy(hdr->hdr.name, name, NAME_MAX-1);
-						len = strnlen(hdr->hdr.name, NAME_MAX-2);
+						int len = strnlen(hdr->hdr.name, NAME_MAX-2);
 						hdr->hdr.name[len] = (launch_count % 10) + '0';
 						hdr->hdr.name[len+1] = 0;
 						launch_count++;

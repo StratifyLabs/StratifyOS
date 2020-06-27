@@ -61,7 +61,7 @@ void * _sbrk_r(struct _reent * reent_ptr, ptrdiff_t incr){
 	cortexm_svcall(svcall_update_guard, base + size + incr);
 
 	reent_ptr->procmem_base->size += incr;
-	return (caddr_t)(base + size);
+	return base + size;
 }
 
 void svcall_update_guard(void * args){

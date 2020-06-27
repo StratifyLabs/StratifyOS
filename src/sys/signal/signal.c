@@ -233,9 +233,9 @@ int sigrelse(int sig){
 
 /*! \cond */
 int alloc_sigactions(){
-	int tmp;
 	void * mem;
 	if( GLOBAL_SIGACTIONS == NULL ){
+		int tmp;
 		tmp = sizeof(struct sigaction*) * SCHEDULER_NUM_SIGNALS;
 		mem = malloc(tmp);
 		if( mem == NULL ){
@@ -249,9 +249,9 @@ int alloc_sigactions(){
 }
 
 int alloc_sigaction(int sig){
-	int tmp;
 	void * mem;
 	if ( GLOBAL_SIGACTION(sig) == NULL ){
+		int tmp;
 		tmp = sizeof(struct sigaction);
 		mem = malloc(tmp);
 		if ( mem == NULL ) {

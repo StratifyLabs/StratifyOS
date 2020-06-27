@@ -119,12 +119,11 @@ int devfs_init(const void * cfg){
 }
 
 int devfs_opendir(const void * cfg, void ** handle, const char * path){
-	const devfs_device_t * dev;
 	const devfs_device_t * list = (const devfs_device_t*)cfg;
 
 	if ( strncmp(path, "", PATH_MAX) != 0 ){
 		//there is only one valid folder (the top)
-		dev = devfs_lookup_device(list, path);
+		const devfs_device_t * dev = devfs_lookup_device(list, path);
 		if ( dev == 0 ){
 			return SYSFS_SET_RETURN(ENOENT);
 		} else {

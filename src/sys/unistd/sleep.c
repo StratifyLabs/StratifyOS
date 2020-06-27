@@ -36,13 +36,12 @@ static void svcall_sleep(void * args) MCU_ROOT_EXEC_CODE;
  */
 unsigned int sleep(unsigned int seconds /*! The number of seconds to sleep */){
 	struct mcu_timeval interval;
-	div_t d;
 	if ( task_get_current() != 0 ){
 		if ( seconds < SCHEDULER_TIMEVAL_SECONDS ){
 			interval.tv_sec = 0;
 			interval.tv_usec = seconds * 1000000;
 		} else {
-			d = div(seconds, SCHEDULER_TIMEVAL_SECONDS);
+			div_t d = div(seconds, SCHEDULER_TIMEVAL_SECONDS);
 			interval.tv_sec = d.quot;
 			interval.tv_usec = d.rem;
 		}

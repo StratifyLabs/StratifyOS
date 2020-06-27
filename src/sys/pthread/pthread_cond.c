@@ -65,7 +65,7 @@ int pthread_cond_init(pthread_cond_t *cond, const pthread_condattr_t *attr){
 
 	*cond = getpid() | (1<<INIT_FLAG);
 	if ( attr->process_shared != 0 ){
-		*cond |= (1<<PSHARED_FLAG);
+		*cond |= (1<<PSHARED_FLAG); //cppcheck-suppress[shiftTooManyBitsSigned]
 	}
 	return 0;
 }
@@ -82,7 +82,7 @@ int pthread_cond_destroy(pthread_cond_t *cond){
 	}
 
 	if ( (*cond & (1<<INIT_FLAG)) == 0 ){
-		return EINVAL;
+		errno = EINVAL;
 		return -1;
 	}
 
@@ -140,7 +140,7 @@ int pthread_cond_signal(pthread_cond_t *cond){
 	}
 
 	if ( (*cond & (1<<INIT_FLAG)) == 0 ){
-		return EINVAL;
+		errno = EINVAL;
 		return -1;
 	}
 
@@ -172,13 +172,13 @@ int pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex){
 	}
 
 	if ( (*cond & (1<<INIT_FLAG)) == 0 ){
-		return EINVAL;
+		errno = EINVAL;
 		return -1;
 	}
 
 	pid = *cond & PID_MASK;
 
-	if ( (*cond & (1<<PSHARED_FLAG)) == 0 ){
+	if ( (*cond & (1<<PSHARED_FLAG)) == 0 ){ //cppcheck-suppress[shiftTooManyBitsSigned]
 		if ( pid != getpid() ){ //This is a different process with a not pshared cond
 			errno = EACCES;
 			return -1;
@@ -237,13 +237,13 @@ int pthread_cond_timedwait(pthread_cond_t *cond, pthread_mutex_t *mutex, const s
 	}
 
 	if ( (*cond & (1<<INIT_FLAG)) == 0 ){
-		return EINVAL;
+		errno = EINVAL;
 		return -1;
 	}
 
 	pid = *cond & PID_MASK;
 
-	if ( (*cond & (1<<PSHARED_FLAG)) == 0 ){
+	if ( (*cond & (1<<PSHARED_FLAG)) == 0 ){ //cppcheck-suppress[shiftTooManyBitsSigned]
 		if ( pid != getpid() ){ //This is a different process with a not pshared cond
 			errno = EACCES;
 			return -1;

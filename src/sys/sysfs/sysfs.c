@@ -120,12 +120,11 @@ const char * sysfs_get_filename(const char * path){
 const sysfs_t * sysfs_find(const char * path, bool needs_parent){
 	int i;
 	int pathlen;
-	int mountlen;
 	pathlen = strlen(path);
 
 	i = 0;
 	while( sysfs_isterminator(&(sysfs_list[i])) == false ){
-		mountlen = strlen(sysfs_list[i].mount_path);
+		int mountlen = strlen(sysfs_list[i].mount_path);
 		if( strncmp(path, sysfs_list[i].mount_path, mountlen) == 0 ){
 			if ( needs_parent == true ){
 				if ( (pathlen > (mountlen+1)) || (pathlen == 1) ){

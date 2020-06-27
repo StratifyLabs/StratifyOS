@@ -43,7 +43,6 @@ extern void mcu_core_pendsv_handler();
 extern void sos_root_trace_event(void * info);
 
 void mcu_fault_event_handler(fault_t * fault){
-	int i;
 	int pid;
 
 	pid = task_get_pid( task_get_current() );
@@ -128,7 +127,7 @@ void mcu_fault_event_handler(fault_t * fault){
 		}
 #endif
 		//send a signal to kill the task
-		for(i=1; i < task_get_total(); i++){
+		for(int i=1; i < task_get_total(); i++){
 			if ( task_get_pid(i) == pid ){
 				//stop running the task
 				task_root_delete(i);

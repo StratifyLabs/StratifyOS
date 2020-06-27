@@ -93,13 +93,12 @@ int rootfs_readdir_r(const void* cfg, void * handle, int loc, struct dirent * en
 	const sysfs_t * list;
 	list = (const sysfs_t*)cfg;
 	//this loads the loc mounted filesystem
-	int i, j;
 
 	//count the total entries
 	total = get_entries(list);
 	if ( loc < total ){
-		i = 0;
-		j = 0;
+		int i = 0;
+		int j = 0;
 		while( j < loc ){
 			if( list[i].ismounted( list[i].config) ){
 				j++;

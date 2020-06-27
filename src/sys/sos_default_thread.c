@@ -110,10 +110,9 @@ int startup_fs(){
 	int i;
 	i = 0;
 	int started;
-	int ret;
 	started = 0;
 	while( sysfs_isterminator(&sysfs_list[i]) == false ){
-		ret = sysfs_list[i].startup( sysfs_list[i].config );
+		int ret = sysfs_list[i].startup( sysfs_list[i].config );
 		if ( ret > 0){
 			started += ret;
 		}

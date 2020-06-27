@@ -69,15 +69,12 @@ void usbd_control_root_init(void * args){
 int usbd_control_handler(void * context_object, const mcu_event_t * usb_event){
 	u32 o_events = usb_event->o_events;
 	usbd_control_t * context = context_object;
-	int ret;
 
 	if ( o_events & MCU_EVENT_FLAG_SETUP ){
 		//read the setup packet
 		usbd_control_handler_setup_stage(context);
-	}
 
-	if ( o_events & MCU_EVENT_FLAG_SETUP ){
-		ret = usbd_standard_request_handle_setup(context);
+		int ret = usbd_standard_request_handle_setup(context);
 
 		//allow the class handler handle the standard request if the request was handled with usbd_standard_request_handle_setup(), no need to stall
 		if( (ret == 0)

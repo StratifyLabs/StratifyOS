@@ -52,11 +52,10 @@ u16 malloc_calc_num_chunks(u32 size){
 
 malloc_chunk_t * find_free_chunk(struct _reent * reent_ptr, u32 num_chunks){
 	int loop_count = 0;
-	int is_free;
 	malloc_chunk_t * chunk = (malloc_chunk_t *) &(reent_ptr->procmem_base->base);
 
 	while( chunk->header.num_chunks != 0 ){
-		is_free = malloc_chunk_is_free(chunk);
+		int is_free = malloc_chunk_is_free(chunk);
 
 		if ( is_free == -1 ){
 			return NULL;
@@ -76,11 +75,10 @@ malloc_chunk_t * find_free_chunk(struct _reent * reent_ptr, u32 num_chunks){
 
 
 int is_memory_corrupt(struct _reent * reent_ptr){
-	int is_free;
 	malloc_chunk_t * chunk = (malloc_chunk_t *)&(reent_ptr->procmem_base->base);
 
 	while( chunk->header.num_chunks != 0 ){
-		is_free = malloc_chunk_is_free(chunk);
+		int is_free = malloc_chunk_is_free(chunk);
 		if ( is_free == -1 ){
 			return -1;
 		}
@@ -92,15 +90,13 @@ int is_memory_corrupt(struct _reent * reent_ptr){
 void cleanup_memory(struct _reent * reent_ptr, int release_extra_memory){
 	malloc_chunk_t * current;
 	malloc_chunk_t * next;
-	int next_free;
-	int current_free;
 	malloc_chunk_t * last_chunk_if_free = 0;
 	current = (malloc_chunk_t*)&(reent_ptr->procmem_base->base);
 	next = current + (current->header.num_chunks);
 	//if num_chunks is zero -- that is the last chunk
 	while( next->header.num_chunks != 0 ){
-		current_free = malloc_chunk_is_free(current);
-		next_free = malloc_chunk_is_free(next);
+		int current_free = malloc_chunk_is_free(current);
+		int next_free = malloc_chunk_is_free(next);
 
 		if( next_free ){
 			last_chunk_if_free = next;
@@ -254,7 +250,6 @@ void _free_r(struct _reent * reent_ptr, void * addr){
 
 
 int get_more_memory(struct _reent * reent_ptr, u32 size, int is_new_heap){
-	malloc_chunk_t * chunk;
 	void * new_heap = 0;
 	int extra_bytes = 0;
 
@@ -269,6 +264,7 @@ int get_more_memory(struct _reent * reent_ptr, u32 size, int is_new_heap){
 		//this means _sbrk_r was unable to allocate the requested memory due to a potential collision with the stack
 		return -1;
 	} else {
+		malloc_chunk_t * chunk;
 		if( is_new_heap ){
 			chunk = new_heap;
 		} else {
@@ -288,7 +284,6 @@ int get_more_memory(struct _reent * reent_ptr, u32 size, int is_new_heap){
 }
 
 int malloc_is_memory_corrupt(struct _reent * reent_ptr){
-	int is_free;
 	if( reent_ptr == NULL ){
 		reent_ptr = _REENT;
 	}
@@ -296,7 +291,7 @@ int malloc_is_memory_corrupt(struct _reent * reent_ptr){
 	malloc_chunk_t * chunk = (malloc_chunk_t *) &(reent_ptr->procmem_base->base);
 
 	while( chunk->header.num_chunks != 0 ){
-		is_free = malloc_chunk_is_free(chunk);
+		int is_free = malloc_chunk_is_free(chunk);
 		if ( is_free == -1 ){
 			return 1;
 		}
@@ -419,7 +414,7 @@ int malloc_chunk_is_free(malloc_chunk_t * chunk){
 		//This chunk is corrupt
 		mcu_debug_log_error(MCU_DEBUG_MALLOC, "Corrupt Chunk 0x%lX", (u32)chunk);
 		SOS_TRACE_CRITICAL("Heap Corrupt");
-		malloc_process_fault(((void*)chunk) + 1);
+		malloc_process_fault(((u8*)chunk) + 1);
 		return -1;
 	}
 
