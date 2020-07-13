@@ -657,3 +657,6 @@
 .global geteuid; geteuid = LINK_ADDR;
 .global seteuid; seteuid = LINK_ADDR;
 .global sos_trace_stack; sos_trace_stack = LINK_ADDR;
+.global __assert_func; __assert_func = LINK_ADDR;
+.global setenv; setenv = LINK_ADDR;
+

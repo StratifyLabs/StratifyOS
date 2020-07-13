@@ -1,15 +1,4 @@
----
-date: "2019-06-27"
-layout: post
-title: Understanding Filesystems on Stratify OS
-katex: true
-categories: Guides
-slug: Guide-Filesystems
-menu:
-  sidebar:
-    name: Filesystems
-    parent: Guides
----
+# Filesystems Guide
 
 Stratify OS supports any number and type of filesystem. 
 
@@ -26,9 +15,9 @@ The filesystem simply needs to provide a table of function calls that integrate 
 
 All filesystems on Stratify OS are accessed using the POSIX API.
 
-- [Unix Standard File Access](../StratifyOS/unistd/)
+- Unix Standard File Access
     - `open()`, `close()`, `read()`, `write()`, `ioctl()`, `fcntl()`, `fstat()`, `isatty()`, `lseek()`, `lstat()`, `rename()`, `stat()`, `mkdir()`, `rmdir()`
-- [Directory Handling](../StratifyOS/directory/)
+- Directory Handling
     - `opendir()`, `readdir_r()`, `closedir()`, `rewinddir()`, `seekdir()`, `telldir()`
 
 A filesystem implementation consists of configuration, state, and implement the functions in the <a href="https://github.com/StratifyLabs/StratifyOS/blob/master/include/sos/fs/sysfs.h" target="_blank">sysfs_t</a> table.

@@ -519,6 +519,25 @@
 #define sendto 0
 #define socket 0
 #define select 0
+#define gethostbyname 0
+#define gethostbyname_r 0
+#define freeaddrinfo 0
+#define getaddrinfo 0
+#define inet_addr 0
+#define inet_ntoa 0
+#define inet_ntop 0
+#define inet_pton 0
+#define htonl 0
+#define ntohl 0
+#define ntohs 0
+#endif
+
+#if SYMBOLS_IGNORE_TIMER != 0
+#define timer_create 0
+#define timer_delete 0
+#define timer_gettime 0
+#define timer_settime 0
+#define timer_getoverrun 0
 #endif
 
 #if SYMBOLS_IGNORE_TIME != 0
@@ -548,6 +567,11 @@
 #if SYMBOLS_IGNORE_RAND != 0
 #define rand 0
 #define srand 0
+#endif
+
+#if SYMBOLS_IGNORE_ENV != 0
+#define getenv 0
+#define setenv 0
 #endif
 
 #if SYMBOLS_USE_IPRINTF != 0
