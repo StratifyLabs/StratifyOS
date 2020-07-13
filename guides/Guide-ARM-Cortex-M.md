@@ -1,15 +1,4 @@
----
-date: "2019-06-27"
-layout: post
-title: Understanding Stratify OS on the ARM Cortex M
-katex: true
-categories: Guides
-slug: Guide-ARM-Cortex-M
-menu:
-  sidebar:
-    name: ARM Cortex M
-    parent: Guides
----
+# Stratify OS on the ARM Cortex M
 
 Stratify OS was designed specifically to take advantage of the powerful hardware features introduced with the ARM Cortex M architecture.
 
@@ -79,11 +68,5 @@ y = sinf(0.5f); //Good: this will use float
 Because Stratify OS builds the kernel independent of the applications, it enables developers to take full advantage of the L1 cache introduced as part of the Cortex M7 architecture. The cache enables the chip to execute code from external memories at performance levels that are close to internal flash and SRAM speeds.
 
 With Stratify OS, you can install applications in external memory and execute them at near optimal performance. The cache combined with Stratify OS's application based approach allows your firmware to easily scale with the complexity of both the hardware and product requirements.
-
-## That's a Wrap
-
-Stratify OS fully integrates the powerful ARM Cortex M hardware features such that application developers don't even know they are there. Just code away.
-
-
 
 

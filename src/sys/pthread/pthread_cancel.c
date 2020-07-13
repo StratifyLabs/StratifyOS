@@ -78,8 +78,10 @@ void svcall_cancel_update(void * args){
 }
 
 
-/*! \details This function is not supported.
- * \return -1 with errno equal to ENOTSUP
+/*! \details This function cancels the specified thread.
+ * \return Zero on success or -1 with errno set.
+ *
+ *
  */
 int pthread_cancel(pthread_t thread){
 	int pid = task_get_pid( task_get_current() );

@@ -1,18 +1,6 @@
----
-date: "2019-06-27"
-layout: post
-title: Understanding Stratify OS
-slug: Guide-Stratify-OS
-katex: true
-menu:
-  sidebar:
-    name: Stratify OS
-    parent: Guides
----
+# Stratify OS Overview
 
-![Stratify OS Overview](/images/Stratify-OS-Overview.png)
-
-Stratify OS is not like any other microcontroller operating system you have ever used. [It was built from the ground up for the ARM Cortex M architecture](../Guide-ARM-Cortex-M/) to solve the challenge of increasingly complex hardware designs and expanding software requirements. 
+Stratify OS is not like any other microcontroller operating system you have ever used. [It was built from the ground up for the ARM Cortex M architecture](Guide-ARM-Cortex-M.md) to solve the challenge of increasingly complex hardware designs and expanding software requirements. 
 
 It does this by:
 
@@ -58,12 +46,12 @@ For a custom OS package, you just have to change a few configuration tables whic
 
 The Stratify OS library includes code that is developed for the ARM Cortex M architecture to accomplish context switching, filesystem abstraction, mutexes, threads, etc. The OS functionality is accessible via a [POSIX API](../api/) including:
 
-- unistd: e.g., open(), close(), read(), write(), ioctl(), and usleep()
-- pthreads: e.g., pthread_create()
+- unistd: e.g., `open()`, `close()`, `read()`, `write()`, `ioctl()`, and `usleep()`
+- pthreads: e.g., `pthread_create()`
 - Semaphores
 - Mutexes
 - Message queues
-- Signals: e.g., kill()
+- Signals: e.g., `kill()`
 
 The Stratify OS library is built per instruction set architecture and ABI:
 

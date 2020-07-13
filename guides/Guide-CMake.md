@@ -1,15 +1,4 @@
----
-date: "2019-06-27"
-layout: post
-title: Understanding Stratify OS cmake Projects
-katex: true
-categories: Guides
-slug: Guide-CMake
-menu:
-  sidebar:
-    name: CMake
-    parent: Guides
----
+# CMake Guide
 
 Stratify OS includes a suite of cmake scripts that can be used to create:
 
