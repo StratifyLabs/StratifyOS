@@ -17,3 +17,11 @@ project(${SOS_NAME} CXX C ASM)
 set(SOS_INCLUDE_DIRECTORIES include)
 include( ${CMAKE_SOURCE_DIR}/${SOS_BUILD_CONFIG}.cmake )
 
+message(STATUS "format ${SOS_SOURCELIST}")
+add_custom_target(
+  format
+  COMMAND /usr/local/bin/clang-format
+  -i
+  ${SOS_SOURCELIST}
+)
+
