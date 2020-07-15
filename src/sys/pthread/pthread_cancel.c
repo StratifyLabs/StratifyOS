@@ -31,6 +31,7 @@
 
 #include "cortexm/task.h"
 #include "../scheduler/scheduler_flags.h"
+#include "../scheduler/scheduler_local.h"
 
 typedef struct {
 	int tid;
@@ -58,7 +59,7 @@ void svcall_cancel_update(void * args){
 		p->old_state = PTHREAD_CANCEL_DISABLE;
 	}
 
-	if( p->cancel > 0 ){
+	if( (p->cancel > 0) && scheduler_cancel_enable_asserted(tid) ){
 		scheduler_root_assert_cancel(tid);
 	} else if( p->cancel < 0 ){
 		scheduler_root_deassert_cancel(tid);
@@ -89,7 +90,7 @@ int pthread_cancel(pthread_t thread){
 
 	if( ((u8)thread >= task_get_total()) ||
 		 (pid != thread_pid) ||
-			thread == task_get_thread_zero( pid ) ||
+			(task_thread_asserted(thread) == 0) ||
 			(task_enabled(thread) == 0)
 			){
 		errno = ESRCH;
@@ -98,8 +99,10 @@ int pthread_cancel(pthread_t thread){
 
 	svcall_cancel_update_t update = {0};
 	update.tid = thread;
+	update.cancel = 1;
+	cortexm_svcall(svcall_cancel_update, &update);
 
-	return -1;
+	return 0;
 }
 
 /*! \details This function is not supported.
@@ -110,9 +113,9 @@ int pthread_setcancelstate(int state, int *oldstate){
 	svcall_cancel_update_t update = {0};
 	update.tid = task_get_current();
 	if( state == PTHREAD_CANCEL_ENABLE ){
-		update.cancel = 1;
+		update.enable = 1;
 	} else if( state == PTHREAD_CANCEL_DISABLE ){
-		update.cancel = -1;
+		update.enable = -1;
 	} else {
 		errno = EINVAL;
 		return -1;
@@ -150,12 +153,7 @@ int pthread_setcanceltype(int type, int *oldtype){
 }
 
 void pthread_testcancel(){
-	if( scheduler_cancel_enable_asserted(task_get_current()) &&
-		 scheduler_cancel_asserted(task_get_current()) ){
-
-		//cleanup the thread
-
-	}
+	scheduler_check_cancellation();
 }
 
 /*! @} */

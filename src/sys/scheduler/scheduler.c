@@ -378,6 +378,14 @@ u32 scheduler_calculate_heap_end(u32 task_id){
 	return 0;
 }
 
+void scheduler_check_cancellation(){
+	if( scheduler_cancel_asserted(task_get_current())
+			&& task_thread_asserted(task_get_current()) ){
+		//cancel this thread
+		scheduler_thread_cleanup(NULL);
+	}
+}
+
 
 /*! @} */
 

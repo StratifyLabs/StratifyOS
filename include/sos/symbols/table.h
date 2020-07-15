@@ -681,6 +681,8 @@ u32 const symbols_table[] = {
 	(u32)sos_trace_stack,
 	(u32)__assert_func,
 	(u32)setenv,
+	(u32)pthread_exit,
+	(u32)pthread_testcancel,
 	1
 };
 

@@ -247,8 +247,8 @@ void signal_root_activate(int * thread){
  *
  */
 int pthread_kill(pthread_t thread, int signo){
-	if( thread == pthread_self() && signo == SIGABRT ){
-		//this is called by abort() --> calls raise(SIGABRT) --> pthread_kill(pthread_self(), sig);
+	if( (thread == pthread_self()) && (signo == SIGABRT) ){
+		//abort() --> calls raise(SIGABRT) --> pthread_kill(pthread_self(), sig);
 		//trace here rather in the signal handler because stack tracing is more reliable
 		sos_trace_stack((u32)-1);
 	}

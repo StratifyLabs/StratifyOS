@@ -162,7 +162,8 @@ void abort_action(int signo, int flags){
 	strcpy(str, "ABORT:");
 	htoa(hex_buffer, signo);
 	strcat(str, hex_buffer);
-	sos_trace_event(POSIX_TRACE_FATAL, str, strlen(str));	_exit(signo<<8);
+	sos_trace_event(POSIX_TRACE_FATAL, str, strlen(str));
+	_exit(signo<<8);
 }
 
 void terminate_action(int signo, int flags){

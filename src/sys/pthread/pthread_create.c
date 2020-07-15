@@ -177,6 +177,10 @@ int pthread_join(pthread_t thread, void ** value_ptr){
 	return -1;
 }
 
+void pthread_exit(void *value_ptr){
+	scheduler_thread_cleanup(value_ptr);
+}
+
 /*! \cond */
 void svcall_join_thread(void * args){
 	CORTEXM_SVCALL_ENTER();
