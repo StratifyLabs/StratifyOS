@@ -94,6 +94,7 @@ typedef struct MCU_PACK {
 	configuration_descriptor_t configuration_descriptor;
 } compatible_id_feature_descriptor_t;
 
+#if 0
 static const compatible_id_feature_descriptor_t msft_compatible_id_feature_descriptor =
 {
 	.header_descriptor = {
@@ -124,6 +125,7 @@ static const compatible_id_feature_descriptor_t msft_compatible_id_feature_descr
 		}
 	}
 };
+#endif
 
 const usbd_msft_bos_descriptor_t bos_descriptor = {
 	.bos_descriptor = {

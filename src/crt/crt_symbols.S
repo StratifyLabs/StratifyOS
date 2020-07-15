@@ -659,4 +659,6 @@
 .global sos_trace_stack; sos_trace_stack = LINK_ADDR;
 .global __assert_func; __assert_func = LINK_ADDR;
 .global setenv; setenv = LINK_ADDR;
+.global pthread_exit; pthread_exit = LINK_ADDR;
+.global pthread_testcancel; pthread_testcancel = LINK_ADDR;
 

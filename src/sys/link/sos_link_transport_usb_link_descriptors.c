@@ -59,6 +59,7 @@ typedef struct MCU_PACK {
 	usbd_msft_os2_compatible_id_t compatible_id_descriptor;
 } compatible_id_feature_descriptor_t;
 
+#if 0
 static const compatible_id_feature_descriptor_t msft_os2_compatible_id_feature_descriptor =
 {
 	.header_descriptor = {
@@ -73,6 +74,7 @@ static const compatible_id_feature_descriptor_t msft_os2_compatible_id_feature_d
 		.CompatibleID = {'W', 'I', 'N', 'U', 'S', 'B', 0x00, 0x00}, //WINUSB\0\0
 	}
 };
+#endif
 
 int link_class_handler(void * object, const mcu_event_t * event){
 	usbd_control_t * context = object;
