@@ -153,9 +153,9 @@ void scheduler_thread_cleanup(void * status){
 	svcall_wait_joined_t args;
 
 	//null these so they aren't cleaned up because they are shared with other threads in the process
-	stdin = 0;
-	stdout = 0;
-	stderr = 0;
+	stdin = NULL;
+	stdout = NULL;
+	stderr = NULL;
 
 	//This will close any other open files
 	if ( _REENT->__cleanup ){

@@ -46,6 +46,9 @@ static void svcall_get_usecond_tmr(void * args);
  * - EINVAL: \a useconds is greater than 1 million.
  */
 int usleep(useconds_t useconds){
+	if( task_get_current() ){
+		scheduler_check_cancellation();
+	}
 	if ( useconds == 0 ){ return 0; }
 	if ( useconds <= 1000000UL ){
 		u32 clocks =  scheduler_timing_useconds_to_clocks(useconds);

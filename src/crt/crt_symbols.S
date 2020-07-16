@@ -661,4 +661,6 @@
 .global setenv; setenv = LINK_ADDR;
 .global pthread_exit; pthread_exit = LINK_ADDR;
 .global pthread_testcancel; pthread_testcancel = LINK_ADDR;
+.global pthread_setcancelstate; pthread_setcancelstate = LINK_ADDR;
+.global pthread_setcanceltype; pthread_setcanceltype = LINK_ADDR;
 
