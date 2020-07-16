@@ -683,6 +683,8 @@ u32 const symbols_table[] = {
 	(u32)setenv,
 	(u32)pthread_exit,
 	(u32)pthread_testcancel,
+	(u32)pthread_setcancelstate,
+	(u32)pthread_setcanceltype,
 	1
 };
 

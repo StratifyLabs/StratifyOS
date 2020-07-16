@@ -382,7 +382,14 @@ void scheduler_check_cancellation(){
 	if( scheduler_cancel_asserted(task_get_current())
 			&& task_thread_asserted(task_get_current()) ){
 		//cancel this thread
+		mcu_debug_printf("cancel thread %d\n", task_get_current());
 		scheduler_thread_cleanup(NULL);
+	} else {
+		mcu_debug_printf("%d cancel %d thread %d\n",
+										 task_get_current(),
+										 scheduler_cancel_asserted(task_get_current()) != 0,
+										 task_thread_asserted(task_get_current())  != 0
+				);
 	}
 }
 

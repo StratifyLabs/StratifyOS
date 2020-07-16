@@ -125,6 +125,11 @@ int pthread_setcancelstate(int state, int *oldstate){
 	if( oldstate != 0 ){
 		*oldstate = update.old_state;
 	}
+
+	if( state == PTHREAD_CANCEL_ENABLE ){
+		scheduler_check_cancellation();
+	}
+
 	return 0;
 }
 
@@ -133,10 +138,14 @@ int pthread_setcancelstate(int state, int *oldstate){
  */
 int pthread_setcanceltype(int type, int *oldtype){
 	//PTHREAD_CANCEL_DEFERRED or PTHREAD_CANCEL_ASYNCHRONOUS
+
 	svcall_cancel_update_t update = {0};
 	update.tid = task_get_current();
 	if( type == PTHREAD_CANCEL_ASYNCHRONOUS ){
-		update.asynchronous = 1;
+		//update.asynchronous = 1;
+		//for now don't support this -- too many problems
+		errno = EINVAL;
+		return -1;
 	} else if( type == PTHREAD_CANCEL_DEFERRED ){
 		update.asynchronous = -1;
 	} else {
@@ -145,7 +154,7 @@ int pthread_setcanceltype(int type, int *oldtype){
 	}
 
 	cortexm_svcall(svcall_cancel_update, &update);
-	if( oldtype != 0 ){
+	if( oldtype != NULL ){
 		*oldtype = update.old_type;
 	}
 
@@ -153,6 +162,8 @@ int pthread_setcanceltype(int type, int *oldtype){
 }
 
 void pthread_testcancel(){
+	//TODO check if thread is asynchronous cancellable
+
 	scheduler_check_cancellation();
 }
 
