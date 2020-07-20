@@ -1,0 +1,21 @@
+name: Build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: [self-hosted, linux, ARM64]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: prepare
+      run: mkdir cmake_link && cd cmake_link
+    - name: configure
+      run: cmake ..
+    - name: make
+      run: make -j4
