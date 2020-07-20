@@ -14,8 +14,11 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: prepare
-      run: mkdir cmake_link && cd cmake_link
+      run: mkdir cmake_link
     - name: configure
       run: cmake ..
+      working-directory: cmake_link
     - name: make
       run: make -j4
+      working-directory: cmake_link
+
