@@ -9,7 +9,6 @@ Stratify OS is a fully featured microcontroller operating system designed specif
 - [POSIX Style Filesystems](guides/Filesystems.md)
 - [Complete Hardware Abstraction](guides/Device-Drivers.md)
 
-
 ## Getting Started
 
 Getting started on Stratify OS is easy with the Stratify Labs cloud/command line tool called `sl`.
