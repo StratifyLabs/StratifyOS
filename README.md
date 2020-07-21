@@ -1,5 +1,7 @@
 # StratifyOS
 
+![Build](https://github.com/StratifyLabs/StratifyOS/workflows/Build/badge.svg)
+
 Stratify OS is a fully featured microcontroller operating system designed specifically for the ARM Cortex M architecture. It features:
 
 - [Decoupled System and Application Binaries](guides/Stratify-OS.md)
