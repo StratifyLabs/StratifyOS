@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <sos/fs/sysfs.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "../scheduler/scheduler_local.h"
 #include "mcu/core.h"
