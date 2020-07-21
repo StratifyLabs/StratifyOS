@@ -13,6 +13,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+      with:
+        ref: 'development'
     - name: prepare
       run: mkdir cmake_link
     - name: configure
