@@ -76,6 +76,3 @@ install(DIRECTORY ldscript/ DESTINATION lib/ldscripts)
 
 option(SOS_SKIP_CMAKE "Dont install the cmake files" OFF)
 
-if(NOT SOS_SKIP_CMAKE)
-	install(DIRECTORY cmake/ DESTINATION cmake)
-endif()
