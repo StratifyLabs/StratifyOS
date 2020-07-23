@@ -22,6 +22,16 @@ echo 'export PATH=/C/StratifyLabs-SDK/Tools/gcc/bin:$PATH' >> ~/.bash_profile
 source ~/.bash_profile
 ```
 
+**Install on Linux x86_64 (experimental)**
+
+```
+mkdir -p /StratifyLabs-SDK/Tools/gcc/bin # create /StratifyLabs-SDK as publicly accessible
+curl -L -o /StratifyLabs-SDK/Tools/gcc/bin/sl 'https://stratifylabs.page.link/sllinuxx86_64'
+chmod 755 /StratifyLabs-SDK/Tools/gcc/bin/sl
+echo 'export PATH=/StratifyLabs-SDK/Tools/gcc/bin:$PATH' >> ~/.profile
+source ~/.profile
+```
+
 **Install on Linux**
 
 Coming Soon!
