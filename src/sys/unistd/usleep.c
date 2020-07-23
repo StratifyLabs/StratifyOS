@@ -46,12 +46,13 @@ static void svcall_get_usecond_tmr(void * args);
  * - EINVAL: \a useconds is greater than 1 million.
  */
 int usleep(useconds_t useconds){
-	uint32_t clocks;
-	uint32_t tmp;
+	if( task_get_current() ){
+		scheduler_check_cancellation();
+	}
 	if ( useconds == 0 ){ return 0; }
 	if ( useconds <= 1000000UL ){
-		clocks =  scheduler_timing_useconds_to_clocks(useconds);
-		tmp = scheduler_timing_useconds_to_clocks(1);
+		u32 clocks =  scheduler_timing_useconds_to_clocks(useconds);
+		u32 tmp = scheduler_timing_useconds_to_clocks(1);
 		if( (task_get_current() == 0) || (clocks < 8000) ){
 
 			//Issue #61 -- read the microsecond timer so that the delay is more accurate

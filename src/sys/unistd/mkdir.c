@@ -39,7 +39,6 @@
  */
 int mkdir(const char *path, mode_t mode){
    const sysfs_t * fs;
-   int ret = -1;
 
    if ( sysfs_ispathinvalid(path) == true ){
       return -1;
@@ -47,7 +46,7 @@ int mkdir(const char *path, mode_t mode){
 
    fs = sysfs_find(path, true);
    if ( fs != NULL ){
-      ret = fs->mkdir(fs->config,
+			int ret = fs->mkdir(fs->config,
                       sysfs_stripmountpath(fs, path),
                       mode);
       SYSFS_PROCESS_RETURN(ret);

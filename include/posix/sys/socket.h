@@ -37,6 +37,9 @@ typedef u32 fd_set;
 struct sockaddr;
 struct msghdr;
 struct iovec;
+struct in_addr {
+	int dummy;
+};
 #endif //SOS_BOOTSTRAP_SOCKETS
 
 #include "arpa/inet.h"

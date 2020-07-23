@@ -48,7 +48,7 @@ int crt_common(char * path_arg, int * ret, const char * name){
 	//Zero out the BSS section
 	memset(&_bss,
 				 0,
-				 (uint32_t)((char*)&_ebss - (char*)&_bss)
+				 (uint32_t)((char*)&_ebss - (char*)&_bss) //cppcheck-suppress[comparePointers]
 				 );
 
 	_REENT->procmem_base = (proc_mem_t*)&_ebss;

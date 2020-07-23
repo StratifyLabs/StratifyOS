@@ -143,12 +143,12 @@ int cfifo_close(const devfs_handle_t * handle){
 u32 get_ready_channels(const cfifo_config_t * config, cfifo_state_t * state){
 	u32 o_ready;
 	fifo_info_t info;
-	fifo_state_t * fifo_state;
-	const fifo_config_t * fifo_config;
 	int i;
 
 	o_ready = 0;
 	for(i=0; i < config->count; i++){
+		fifo_state_t * fifo_state;
+		const fifo_config_t * fifo_config;
 		fifo_config = config->fifo_config_array + i;
 		fifo_state = state->fifo_state_array + i;
 		fifo_getinfo(&info, fifo_config, fifo_state);

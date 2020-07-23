@@ -151,8 +151,8 @@ void sos_trace_event_addr_tid(
 	if( sos_board_config.trace_event ){
 		//convert the address using the task memory location
 		//check if addr is part of kernel or app
-		if( ((addr >= (u32)&_text) && (addr < (u32)&_etext)) ||
-				((addr > (uint32_t)&_tcim) && (addr < (uint32_t)&_etcim))
+		if( ((addr >= (u32)&_text) && (addr < (u32)&_etext))
+				|| ((addr > (uint32_t)&_tcim) && (addr < (uint32_t)&_etcim))
 				|| (addr == 1) ){
 			//kernel
 			addr = addr - 1;
@@ -267,12 +267,11 @@ int sos_trace_stack(u32 count){
 
 	u32 next_link_register = first_link_register & ~0x01;
 
-	u16 * code_pointer;
 	u32 push_count = 0;
 	u32 stack_jump = 0;
 	int link_register_offset = 0;
 	do {
-		code_pointer = scan_code_for_push(
+		u16 * code_pointer = scan_code_for_push(
 					next_link_register,
 					&stack_jump,
 					&link_register_offset

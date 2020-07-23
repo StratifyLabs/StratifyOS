@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <sos/fs/sysfs.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "../scheduler/scheduler_local.h"
 #include "mcu/core.h"
@@ -59,7 +60,7 @@ void svcall_load_data(void * args){
 	dest_addr = sos_task_table[ task_get_current() ].mem.data.address;
 	code_addr = sos_task_table[ task_get_current() ].mem.code.address;
 	code_size = p->code_size;
-	src_addr = code_addr + code_size;
+	src_addr = (u8*)code_addr + code_size;
 	memcpy(dest_addr, src_addr, size);
 }
 

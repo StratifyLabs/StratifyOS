@@ -21,7 +21,7 @@ set(SDK_DIR C:/StratifyLabs-SDK/Tools/gcc)
 
 include(${CMAKE_CURRENT_LIST_DIR}/sos-gcc-toolchain.cmake)
 
-set(TOOLCHAIN_C_FLAGS "-D__win32 -mno-ms-bitfields" CACHE INTERNAL "MINGW C FLAGS")
+set(TOOLCHAIN_C_FLAGS "-D__win32 -mno-ms-bitfields -D__processor_${CMAKE_HOST_SYSTEM_PROCESSOR}" CACHE INTERNAL "MINGW C FLAGS")
 set(TOOLCHAIN_CXX_FLAGS "${TOOLCHAIN_C_FLAGS} -std=c++11" CACHE INTERNAL "MINGW CXX FLAGS")
 
 set(CMAKE_INSTALL_PREFIX ${SDK_DIR})

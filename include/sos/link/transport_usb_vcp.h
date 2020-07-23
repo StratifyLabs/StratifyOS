@@ -51,6 +51,7 @@ struct MCU_PACK sos_link_transport_usb_vcp_string_descriptor_t {
 };
 
 int sos_link_usbd_cdc_event_handler(void * context, const mcu_event_t * event);
+int usbd_cdc_event_handler(void * context, const mcu_event_t * event);
 
 SOS_LINK_TRANSPORT_USB_EXTERN_CONST(vcp);
 

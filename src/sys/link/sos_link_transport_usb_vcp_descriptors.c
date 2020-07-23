@@ -36,13 +36,11 @@
 #define VCP0_INTERFACE 0
 #define VCP0_INTERFACE_STRING 4
 
-static int usbd_cdc_event_handler(void * context, const mcu_event_t * event);
 static int cdc_event_handler(usbd_control_t * context, const mcu_event_t * event);
 
 SOS_LINK_TRANSPORT_USB_CONST(vcp,SOS_LINK_TRANSPORT_USB_PORT,0,0,usbd_cdc_event_handler)
 
-SOS_LINK_TRANSPORT_USB_DEVICE_DESCRIPTOR(vcp,USBD_DEVICE_CLASS_COMMUNICATIONS,0,0)
-
+SOS_LINK_TRANSPORT_USB_DEVICE_DESCRIPTOR(vcp,USBD_DEVICE_CLASS_COMMUNICATIONS,0,0,SOS_LINK_TRANSPORT_USB_BCD_VERSION | 1)
 
 const sos_link_transport_usb_vcp_configuration_descriptor_t sos_link_transport_usb_vcp_configuration_descriptor MCU_WEAK = {
 
@@ -52,7 +50,7 @@ const sos_link_transport_usb_vcp_configuration_descriptor_t sos_link_transport_u
 		.wTotalLength = sizeof(sos_link_transport_usb_vcp_configuration_descriptor_t)-1, //exclude the zero terminator
 		.bNumInterfaces = 0x02,
 		.bConfigurationValue = 0x01,
-		.iConfiguration = 0x03,
+		.iConfiguration = 2,
 		.bmAttributes = USBD_CONFIGURATION_ATTRIBUTES_BUS_POWERED,
 		.bMaxPower = USBD_CONFIGURATION_MAX_POWER_MA( SOS_REQUIRED_CURRENT )
 	},

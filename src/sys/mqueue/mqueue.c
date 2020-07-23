@@ -186,7 +186,7 @@ static ssize_t mq_cur_msgs(const mq_t * mq){
 
 static void * mq_message_data(struct message * msg){
 	void * ptr = msg;
-	return ptr + sizeof(struct message);
+	return (u8*)ptr + sizeof(struct message);
 }
 
 static mq_t * mq_find_free(){
@@ -317,10 +317,7 @@ typedef struct {
 
 typedef struct {
 	mq_t * mq;
-	size_t msg_len;
 	int size;
-	int entry_size;
-	struct message * new_msg;
 } root_send_receive_t;
 /*! \endcond */
 
@@ -549,7 +546,6 @@ mqd_t mq_open(const char * name /*! the full path to the message queue */,
 int mq_close(mqd_t mqdes /*! the message queue handler */){
 	mq_t * mq;
 
-	mq = mq_get_ptr(mqdes);
 	if ( mqdes == 0 ){
 		return -1;
 	}
@@ -858,8 +854,6 @@ int mq_timedsend(mqd_t mqdes /*! see \ref mq_send() */,
 					  const struct timespec * abs_timeout /*! the absolute timeout value */){
 
 	mq_t * mq;
-	int size;
-	struct message * new_msg;
 
 	mq = mq_get_ptr(mqdes);
 	if( mq == 0 ){
@@ -875,6 +869,7 @@ int mq_timedsend(mqd_t mqdes /*! see \ref mq_send() */,
 			return -1;
 		}
 
+		int size;
 		do {
 
 			if( pthread_mutex_lock(&(mq->mutex)) < 0 ){
@@ -884,7 +879,7 @@ int mq_timedsend(mqd_t mqdes /*! see \ref mq_send() */,
 			//if this stays 0, there is no room for a message
 			size = 0;
 
-			new_msg = mq_find_free_msg(mq);
+			struct message * new_msg = mq_find_free_msg(mq);
 
 			if( new_msg != 0 ){
 				size = msg_len;

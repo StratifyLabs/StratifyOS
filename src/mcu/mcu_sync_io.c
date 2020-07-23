@@ -55,7 +55,7 @@ int mcu_sync_io(const devfs_handle_t * handle,
 
 	if( ret == 0 ){
 
-		while( done != 1234567 ){
+		while( done != 1234567 ){ //cppcheck-suppress[knownConditionTrueFalse]
 			;
 		}
 		return op.nbyte;

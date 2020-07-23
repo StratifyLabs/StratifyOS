@@ -178,7 +178,7 @@ int boot_link_transport_usb_read(
 			write_buffer(buffer, ret);
 		}
 
-		ret = read_buffer(buf + bytes_read, nbyte - bytes_read);
+		ret = read_buffer((char*)buf + bytes_read, nbyte - bytes_read);
 		bytes_read += ret;
 	}
 	return nbyte;

@@ -60,6 +60,7 @@ int scheduler_create_thread(void *(*p)(void*)  /*! The function to execute for t
 		int mem_size /*! The heap/stack size in bytes */,
 		const pthread_attr_t * attr);
 
+void scheduler_thread_cleanup(void * status);
 
 int scheduler_create_process(void (*p)(char *),
 		const char * path_arg,
@@ -70,5 +71,7 @@ int scheduler_switch_context(void * args);
 int scheduler_get_highest_priority_blocked(void * block_object);
 
 u32 scheduler_calculate_heap_end(u32 task_id);
+
+void scheduler_check_cancellation();
 
 #endif /* SCHED_FLAGS_H_ */

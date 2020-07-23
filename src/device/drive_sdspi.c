@@ -132,7 +132,6 @@ void state_callback(const devfs_handle_t * handle, int err, int nbyte){
 
 int continue_spi_read(void * handle, const mcu_event_t * ignore){
 	//data has been read -- complete the operation
-	int err = 0;
 	drive_sdspi_state_t * state = ((const devfs_handle_t*)handle)->state;
 	u16 checksum;
 	u16 checksum_calc;
@@ -152,6 +151,7 @@ int continue_spi_read(void * handle, const mcu_event_t * ignore){
 
 	} else {
 		//the read is complete
+		int err = 0;
 		spi_transfer(handle, 0, state->cmd, CMD_FRAME_SIZE); //gobble up the CRC
 		checksum = (state->cmd[0] << 8) + state->cmd[1];
 		checksum_calc = mcu_calc_crc16(0x0000, 0x1021, (const uint8_t *)state->buf, (size_t)*(state->nbyte));
@@ -351,7 +351,6 @@ int drive_sdspi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 	drive_attr_t * attr = ctl;
 	drive_sdspi_r_t resp;
 	u32 o_flags;
-	int timeout;
 
 	char spi_config[config->spi_config_size];
 	spi_attr_t * spi_attr_p = ( spi_attr_t *)spi_config;
@@ -450,8 +449,7 @@ int drive_sdspi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 					return SYSFS_SET_RETURN(EIO);
 				}
 
-				timeout = 0;
-
+				int timeout = 0;
 				const int timeout_value = 2000;
 
 				do {
@@ -522,14 +520,12 @@ int drive_sdspi_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 				return SYSFS_SET_RETURN(EIO);
 			}
 
-			uint32_t block_len;
-			uint32_t c_size;
-			uint32_t c_mult;
+			u32 c_size;
 
 			if( is_sdsc(handle) ){
 				c_size = (((buffer[6] & 0x03) << 10) + (buffer[7] << 2) + (buffer[8] >> 6));
-				c_mult = 1<<(((buffer[9] & 0x03) << 1) + (buffer[10] >> 7) + 2);
-				block_len = 1 << (buffer[5] & 0x0F);
+				u32 c_mult = 1<<(((buffer[9] & 0x03) << 1) + (buffer[10] >> 7) + 2);
+				u32 block_len = 1 << (buffer[5] & 0x0F);
 				info->num_write_blocks = (c_size+1) * c_mult * block_len / BLOCK_SIZE;
 			} else {
 				c_size = (((buffer[7] & 63) << 16) + (buffer[8] << 8) + buffer[9] );

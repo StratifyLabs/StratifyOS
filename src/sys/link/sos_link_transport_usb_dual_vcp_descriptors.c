@@ -40,10 +40,15 @@
 
 static int cdc_event_handler(void * context, const mcu_event_t * event);
 
+
+SOS_LINK_TRANSPORT_USB_DEVICE_DESCRIPTOR(dual_vcp,USBD_DEVICE_CLASS_RESERVED,0,0,SOS_LINK_TRANSPORT_USB_BCD_VERSION | 3)
+
 SOS_LINK_TRANSPORT_USB_CONST(dual_vcp,SOS_LINK_TRANSPORT_USB_PORT,0,0,cdc_event_handler)
 
-SOS_LINK_TRANSPORT_USB_DEVICE_DESCRIPTOR(dual_vcp,USBD_DEVICE_CLASS_RESERVED,0,0)
 
+const usbd_string_descriptor_t * usbd_extern_get_msft_string_descriptor(){
+	return NULL;
+}
 
 const sos_link_transport_usb_dual_vcp_configuration_descriptor_t sos_link_transport_usb_dual_vcp_configuration_descriptor MCU_WEAK = {
 
@@ -51,9 +56,9 @@ const sos_link_transport_usb_dual_vcp_configuration_descriptor_t sos_link_transp
 		.bLength = sizeof(usbd_configuration_descriptor_t),
 		.bDescriptorType = USBD_DESCRIPTOR_TYPE_CONFIGURATION,
 		.wTotalLength = sizeof(sos_link_transport_usb_dual_vcp_configuration_descriptor_t)-1, //exclude the zero terminator
-		.bNumInterfaces = 0x02,
+		.bNumInterfaces = 0x04,
 		.bConfigurationValue = 0x01,
-		.iConfiguration = 0x03,
+		.iConfiguration = 2,
 		.bmAttributes = USBD_CONFIGURATION_ATTRIBUTES_BUS_POWERED,
 		.bMaxPower = USBD_CONFIGURATION_MAX_POWER_MA( SOS_REQUIRED_CURRENT )
 		},
@@ -113,7 +118,8 @@ int sos_link_usbd_cdc_event_handler(void * object, const mcu_event_t * event){
 	usbd_control_t * context = object;
 
 	//if this is a class request check the CDC interfaces
-	if ( usbd_control_setup_request_type(context) == USBD_REQUEST_TYPE_CLASS ){
+	if( (event->o_events & MCU_EVENT_FLAG_SETUP)
+			&& (usbd_control_setup_request_type(context) == USBD_REQUEST_TYPE_CLASS) ){
 		return cdc_event_handler(context, event);
 	}
 
@@ -123,7 +129,7 @@ int sos_link_usbd_cdc_event_handler(void * object, const mcu_event_t * event){
 
 int cdc_event_handler(void * ctx, const mcu_event_t * event){
 	u32 rate = 12000000;
-	u32 o_events = event->o_events;
+	const u32 o_events = event->o_events;
 	usbd_control_t * context = ctx;
 	int iface = usbd_control_setup_interface(context);
 

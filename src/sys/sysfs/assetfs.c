@@ -95,7 +95,7 @@ int assetfs_read(const void * cfg, void * handle, int flags, int loc, void * buf
 	if( bytes_ready <= 0 ){ return 0; }
 	//don't read past the end of the file
 
-	memcpy(buf, h->data + loc, bytes_ready);
+	memcpy(buf, (u8*)h->data + loc, bytes_ready);
 	return bytes_ready;
 }
 

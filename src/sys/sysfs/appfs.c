@@ -295,9 +295,6 @@ int appfs_unlink(const void* cfg, const char * path){
 	const devfs_device_t * device = cfg;
 	appfs_file_t file_info;
 	mem_pageinfo_t page_info;
-	int start_page;
-	int end_page;
-	int size_deleted;
 	const char * name;
 	int mem_type;
 
@@ -326,8 +323,8 @@ int appfs_unlink(const void* cfg, const char * path){
 
 	//executable files are deleted based on the header file
 	if ( mem_type == MEM_FLAG_IS_FLASH ){
-		start_page = get_pageinfo_args.page_info.num;
-		size_deleted = 0;  //start with the first page
+		int start_page = get_pageinfo_args.page_info.num;
+		int size_deleted = 0;  //start with the first page
 		//need to read the size of each consecutive page until the size is met
 		while(size_deleted < (file_info.exec.code_size + file_info.exec.data_size) ){
 
@@ -340,7 +337,7 @@ int appfs_unlink(const void* cfg, const char * path){
 			get_pageinfo_args.page_info.num++;
 		}
 
-		end_page = get_pageinfo_args.page_info.num-1;
+		int end_page = get_pageinfo_args.page_info.num-1;
 
 		appfs_erase_pages_t erase_pages_args;
 		erase_pages_args.device = device;
@@ -351,18 +348,6 @@ int appfs_unlink(const void* cfg, const char * path){
 					appfs_util_svcall_erase_pages,
 					&erase_pages_args
 					);
-
-		if( erase_pages_args.result < 0 ){
-			mcu_debug_printf(
-						"%s %d %d %d\n",
-						path,
-						__LINE__,
-						SYSFS_GET_RETURN(erase_pages_args.result),
-						SYSFS_GET_RETURN_ERRNO(erase_pages_args.result)
-						);
-			return erase_pages_args.result;
-		}
-
 
 	} else {
 		u32 rasr, rbar;
@@ -385,7 +370,6 @@ int appfs_unlink(const void* cfg, const char * path){
 		//get_pageinfo_args.mem_page_info.addr = (int)file_info.exec.ram_start;
 		//get_pageinfo_args.mem_page_info.o_flags = MEM_FLAG_IS_QUERY;
 
-		appfs_get_pageinfo_t get_pageinfo_args;
 		get_pageinfo_args.device = device;
 		get_pageinfo_args.page_info.addr = file_info.exec.ram_start;
 		get_pageinfo_args.page_info.o_flags = MEM_FLAG_IS_QUERY;
@@ -412,8 +396,6 @@ int appfs_fstat(
 		){
 	appfs_handle_t * h = handle;
 	const devfs_device_t * device = cfg;
-
-	h = handle;
 
 	memset(st, 0, sizeof(struct stat));
 

@@ -30,8 +30,6 @@
 #include "mcu/debug.h"
 #include "scheduler_local.h"
 
-static void cleanup_thread(void * status);
-
 typedef struct {
 	int joined;
 	int status;
@@ -68,7 +66,7 @@ int scheduler_create_thread(
 	//start a new thread
 	id = task_create_thread(
 				p,
-				cleanup_thread,
+				scheduler_thread_cleanup,
 				arg,
 				(void*)align_memory,
 				align_memory_size,
@@ -150,14 +148,14 @@ void svcall_activate_thread(svcall_activate_thread_t * args){
 	scheduler_root_update_on_wake(id, task_get_priority(id));
 }
 
-void cleanup_thread(void * status){
+void scheduler_thread_cleanup(void * status){
 	int detach_state;
 	svcall_wait_joined_t args;
 
 	//null these so they aren't cleaned up because they are shared with other threads in the process
-	stdin = 0;
-	stdout = 0;
-	stderr = 0;
+	stdin = NULL;
+	stdout = NULL;
+	stderr = NULL;
 
 	//This will close any other open files
 	if ( _REENT->__cleanup ){

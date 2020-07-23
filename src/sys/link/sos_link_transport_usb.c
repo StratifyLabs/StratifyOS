@@ -6,7 +6,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+		http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -31,6 +31,13 @@ limitations under the License.
 #include "device/sys.h"
 #include "sos/link/transport_usb.h"
 
+#include "usbd/msft.h"
+
+
+const msft_string_t sos_link_transport_usb_msft_string = USBD_ASSIGN_STRING(
+			USBD_MSFT_STRING_LENGTH,
+			'M','S','F','T','1','0','0',USBD_MSFT_VENDOR_CODE_BYTE
+			);
 
 #define USB0_DEVFIFO_BUFFER_SIZE 64
 static char usb0_fifo_buffer[USB0_DEVFIFO_BUFFER_SIZE] MCU_SYS_MEM;
@@ -44,6 +51,25 @@ const usbfifo_config_t sos_link_transport_usb_fifo_cfg = {
 		.size = USB0_DEVFIFO_BUFFER_SIZE
 	}
 };
+
+
+int sos_link_transport_usb_msft_string_event(void * context_object, const mcu_event_t * usb_event){
+	u32 o_events = usb_event->o_events;
+	usbd_control_t * context = context_object;
+	if( (o_events & MCU_EVENT_FLAG_SETUP)
+			&& (context->setup_packet.bRequest == USBD_REQUEST_STANDARD_GET_DESCRIPTOR)
+			&& (context->setup_packet.wValue.b[1] == USBD_DESCRIPTOR_TYPE_STRING)
+			&& (context->setup_packet.wValue.b[0] == 0xee) ) {
+		context->data.dptr = (u8*)&sos_link_transport_usb_msft_string;
+		u16 len = sos_link_transport_usb_msft_string.bLength;
+		if( context->data.nbyte > len ){
+			context->data.nbyte = len;
+		}
+		usbd_control_datain_stage(context);
+		return 1;
+	}
+	return 0;
+}
 
 
 usbfifo_state_t sos_link_transport_usb_fifo_state MCU_SYS_MEM;
@@ -143,14 +169,12 @@ link_transport_phy_t sos_link_transport_usb_open(
 int sos_link_transport_usb_write(link_transport_phy_t handle, const void * buf, int nbyte){
 	int ret;
 	ret = write(handle, buf, nbyte);
-	//mcu_debug_printf("%d bytes written\n", ret);
 	return ret;
 }
 
 int sos_link_transport_usb_read(link_transport_phy_t handle, void * buf, int nbyte){
 	int ret;
 	ret = read(handle, buf, nbyte);
-	//mcu_debug_printf("%d bytes arrived\n", ret);
 	return ret;
 }
 

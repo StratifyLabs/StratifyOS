@@ -74,7 +74,6 @@ static int read_buffer(const devfifo_config_t * cfgp, devfifo_state_t * state, d
 
 static int data_received(void * context, const mcu_event_t * data){
 	char c;
-	int bytes_read;
 	const devfs_handle_t * handle;
     handle = context;
     const devfifo_config_t * cfgp = handle->config;
@@ -87,6 +86,7 @@ static int data_received(void * context, const mcu_event_t * data){
 	}
 
 	if( state->rop != NULL ){
+		int bytes_read;
 		if( (bytes_read = read_buffer(cfgp, state, state->rop)) > 0 ){
 			state->rop->nbyte = bytes_read;
 			if ( state->rop->handler.callback(state->rop->handler.context, NULL) == 0 ){

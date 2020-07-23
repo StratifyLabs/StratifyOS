@@ -37,15 +37,8 @@
 
 /*! \cond */
 static void svcall_suspend(void * args) MCU_ROOT_EXEC_CODE;
-static int suspend(struct aiocb *const list[], int nent, const struct timespec * timeout, bool block_on_all);
+static int suspend(struct aiocb *const list[], int nent, const struct timespec * timeout, u8 block_on_all);
 static int data_transfer(struct aiocb * aiocbp);
-
-typedef struct {
-	const devfs_device_t * device;
-	struct aiocb * aiocbp;
-	int read;
-	int result;
-} root_aio_transfer_t;
 /*! \endcond */
 
 
@@ -127,7 +120,7 @@ ssize_t aio_return(struct aiocb * aiocbp /*! a pointer to the AIO data struture 
 
 
 
-int suspend(struct aiocb *const list[], int nent, const struct timespec * timeout, bool block_on_all){
+int suspend(struct aiocb *const list[], int nent, const struct timespec * timeout, u8 block_on_all){
 	sysfs_aio_suspend_t args;
 
 	//suspend until an AIO operation completes or until timeout is exceeded
@@ -165,7 +158,7 @@ int suspend(struct aiocb *const list[], int nent, const struct timespec * timeou
 int aio_suspend(struct aiocb *const list[] /*! a list of AIO transfer structures */,
 					 int nent /*! the number of transfer in \a list */,
 					 const struct timespec * timeout /*! the absolute timeout value */){
-	return suspend(list, nent, timeout, false);
+	return suspend(list, nent, timeout, 0);
 }
 
 /*! \details This function initiates a list of asynchronous transfers.
@@ -213,7 +206,7 @@ int lio_listio(int mode /*! The mode:  \a LIO_WAIT or \a LIO_NOWAIT */,
 	}
 
 	if ( mode == LIO_WAIT ){
-		return suspend(list, nent, NULL, true);
+		return suspend(list, nent, NULL, 1);
 	}
 
 	return 0;
@@ -239,34 +232,34 @@ int data_transfer(struct aiocb * aiocbp){
 void svcall_suspend(void * args){
 	CORTEXM_SVCALL_ENTER();
 	int i;
-	bool suspend;
+	u8 is_suspend;
 	sysfs_aio_suspend_t * p = (sysfs_aio_suspend_t*)args;
 	//disable interrupts
 	//! \todo See if an operation is in progress
-	if ( p->block_on_all == false ){
-		suspend = true;
+	if ( p->block_on_all == 0 ){
+		is_suspend = 1;
 	} else {
-		suspend = false;
+		is_suspend = 0;
 	}
 	cortexm_disable_interrupts(); //no switching until the transfer is started
 	for(i = 0; i < p->nent; i++ ){
 		if (p->list[i] != NULL ){
 
 			//first check to see if we block on aio suspend (if anything is complete don't block)
-			if ( (p->list[i]->async.buf == NULL) && (p->block_on_all == false) ){ //if op.buf is NULL the operation is complete
-				suspend = false;
+			if ( (p->list[i]->async.buf == NULL) && (p->block_on_all == 0) ){ //if op.buf is NULL the operation is complete
+				is_suspend = 0;
 				break;
 			}
 
 			//now check to see if we block on listio suspend (if anything is incomplete block)
-			if ( (p->list[i]->async.buf != NULL) && (p->block_on_all == true) ){
-				suspend = true;
+			if ( (p->list[i]->async.buf != NULL) && (p->block_on_all == 1) ){
+				is_suspend = 1;
 			}
 
 		}
 	}
 
-	if ( suspend == true ){
+	if ( is_suspend == 1 ){
 		scheduler_root_assert_aiosuspend(task_get_current());
 		scheduler_timing_root_timedblock(args, &p->abs_timeout);
 	} else {
@@ -281,10 +274,7 @@ void svcall_suspend(void * args){
 int sysfs_aio_data_transfer_callback(void * context, const mcu_event_t * event){
 	struct aiocb * aiocbp;
 	unsigned int tid;
-	int i;
-	bool wakeup;
 	aiocbp = context;
-	sysfs_aio_suspend_t * p;
 	aiocbp->aio_nbytes = aiocbp->async.nbyte;
 	aiocbp->async.buf = NULL;
 	if( aiocbp->async.nbyte < 0 ){
@@ -302,10 +292,10 @@ int sysfs_aio_data_transfer_callback(void * context, const mcu_event_t * event){
 
 	if( task_enabled(tid) ){ //if task is no longer enabled (don't do anything)
 		if ( scheduler_aiosuspend_asserted(tid) ){
-			p = (sysfs_aio_suspend_t*)sos_sched_table[tid].block_object;
+			sysfs_aio_suspend_t * p = (sysfs_aio_suspend_t*)sos_sched_table[tid].block_object;
 
-			if ( p->block_on_all == false ){
-				for(i=0; i < p->nent; i++){
+			if ( p->block_on_all == 0 ){
+				for(int i=0; i < p->nent; i++){
 					if ( aiocbp == p->list[i] ){ //If this is true the thread is blocked on the operation that is currently completing
 						scheduler_root_assert_active(tid, SCHEDULER_UNBLOCK_AIO);
 						scheduler_root_update_on_wake(tid, task_get_priority(tid) );
@@ -313,15 +303,15 @@ int sysfs_aio_data_transfer_callback(void * context, const mcu_event_t * event){
 					}
 				}
 			} else {
-				wakeup = true;
-				for(i=0; i < p->nent; i++){
+				u8 wakeup = 1;
+				for(int i=0; i < p->nent; i++){
 					if ( p->list[i]->async.buf != NULL ){ //operation is not complete
 						//don't wakeup because this operation is not complete
-						wakeup = false;
+						wakeup = 0;
 					}
 				}
 
-				if( wakeup == true ){
+				if( wakeup ){
 					scheduler_root_assert_active(tid, SCHEDULER_UNBLOCK_AIO);
 					scheduler_root_update_on_wake(tid, task_get_priority(tid));
 				}

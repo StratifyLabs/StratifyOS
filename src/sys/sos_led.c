@@ -23,12 +23,10 @@
 #include "cortexm/cortexm.h"
 
 void sos_led_startup(){
-	int i;
-	int duty;
 	const int factor = 10;
-	duty = 0;
 	if( mcu_board_config.led.port != 255 ){
-		for(i=0; i < 100; i++){
+		int duty;
+		for(int i=0; i < 100; i++){
 			duty = i*factor;
 			cortexm_svcall(sos_led_svcall_enable, 0);
 			usleep(duty);
@@ -36,7 +34,7 @@ void sos_led_startup(){
 			usleep(100*factor - duty);
 		}
 
-		for(i=0; i < 100; i++){
+		for(int i=0; i < 100; i++){
 			duty = i*factor;
 			cortexm_svcall(sos_led_svcall_enable, 0);
 			usleep(100*factor - duty);

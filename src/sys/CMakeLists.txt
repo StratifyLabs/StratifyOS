@@ -7,6 +7,7 @@ if( ${SOS_BUILD_CONFIG} STREQUAL arm )
 		dirent/dirent.c
 		link/link_thread.c
 		link/sos_link_transport_usb_link_descriptors.c
+		link/sos_link_transport_usb_link_vcp_descriptors.c
 		link/sos_link_transport_usb_vcp_descriptors.c
 		link/sos_link_transport_usb_dual_vcp_descriptors.c
 		link/sos_link_transport_usb.c
@@ -58,26 +59,6 @@ if( ${SOS_BUILD_CONFIG} STREQUAL arm )
 		scheduler/scheduler.c
 		scheduler/scheduler_local.h
 		semaphore/sem.c
-		sffs/sffs_block.c
-		sffs/sffs_block.h
-		sffs/sffs_dev.c
-		sffs/sffs_dev.h
-		sffs/sffs_dir.c
-		sffs/sffs_dir.h
-		sffs/sffs_file.c
-		sffs/sffs_file.h
-		sffs/sffs_filelist.c
-		sffs/sffs_filelist.h
-		sffs/sffs_list.c
-		sffs/sffs_list.h
-		sffs/sffs_local.h
-		sffs/sffs_scratch.c
-		sffs/sffs_scratch.h
-		sffs/sffs_serialno.c
-		sffs/sffs_serialno.h
-		sffs/sffs_tp.c
-		sffs/sffs_tp.h
-		sffs/sffs.c
 		signal/_kill.c
 		signal/_wait.c
 		signal/pthread_kill.c

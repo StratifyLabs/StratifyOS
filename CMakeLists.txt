@@ -17,3 +17,14 @@ project(${SOS_NAME} CXX C ASM)
 set(SOS_INCLUDE_DIRECTORIES include)
 include( ${CMAKE_SOURCE_DIR}/${SOS_BUILD_CONFIG}.cmake )
 
+if(NOT SOS_SKIP_CMAKE)
+	install(DIRECTORY cmake/ DESTINATION cmake)
+endif()
+
+add_custom_target(
+  format
+  COMMAND /usr/local/bin/clang-format
+  -i
+  ${SOS_SOURCELIST}
+)
+

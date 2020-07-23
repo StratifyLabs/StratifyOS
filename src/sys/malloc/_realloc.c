@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 #include <sys/malloc/malloc_local.h>
@@ -48,13 +48,9 @@ void * _realloc_r(struct _reent * reent_ptr, void * addr, size_t size){
 
 	//Check to see if there is memory allocated already
 	if ( reent_ptr->procmem_base->size == 0 ){
-
-		if ( addr != NULL ){ //since base has not been initialized, this cannot be valid
-			__malloc_unlock(reent_ptr);
-			errno = ENOMEM;
-			return NULL;
-		}
-
+		__malloc_unlock(reent_ptr);
+		errno = ENOMEM;
+		return NULL;
 	} else {
 
 		num_chunks = malloc_calc_num_chunks(size);

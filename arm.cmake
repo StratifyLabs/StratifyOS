@@ -14,7 +14,7 @@ if(NOT HAVE_LWIP_SOCKETS_H)
 endif()
 
 # Grab GLOB files
-file(GLOB_RECURSE HEADER_FILES ${CMAKE_SOURCE_DIR}/include/* )
+file(GLOB_RECURSE HEADER_FILES ${CMAKE_SOURCE_DIR}/include/*.h )
 file(GLOB CMAKE_SOURCES ${CMAKE_SOURCE_DIR}/cmake/*)
 file(GLOB LDSCRIPT_SOURCES ${CMAKE_SOURCE_DIR}/ldscript/*)
 
@@ -76,6 +76,3 @@ install(DIRECTORY ldscript/ DESTINATION lib/ldscripts)
 
 option(SOS_SKIP_CMAKE "Dont install the cmake files" OFF)
 
-if(NOT SOS_SKIP_CMAKE)
-	install(DIRECTORY cmake/ DESTINATION cmake)
-endif()

@@ -148,13 +148,13 @@ static void assert_delay(){
 int continue_spi_write(void * context, const mcu_event_t * event){
 	const devfs_handle_t * handle = context;
 	sst25vf_state_t * state = (sst25vf_state_t *)handle->state;
-	int tmp;
 	//should be called 10 us after complete_spi_write() executes
 
 	sst25vf_share_deassert_cs(handle);
 
 
 	if( state->nbyte > 0 ){
+		int tmp;
 		state->cmd[0] = SST25VF_INS_SEQ_PROGRAM;
 		state->cmd[1] = state->buf[0];
 		if ( state->nbyte > 1 ){

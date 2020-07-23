@@ -124,7 +124,7 @@ void svcall_device_data_transfer(void * args){
 	}
 
 	//assume the operation is going to block
-	sos_sched_table[ task_get_current() ].block_object = (void*)p->device + p->transfer_type;
+	sos_sched_table[ task_get_current() ].block_object = (u8*)p->device + p->transfer_type;
 	if ( p->transfer_type == ARGS_TRANSFER_READ ){
 		p->result = dev->driver.read(&(dev->handle), &(p->async));
 	} else {

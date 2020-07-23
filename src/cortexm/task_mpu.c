@@ -126,12 +126,12 @@ int task_setstackguard(int tid, void * stackaddr, int stacksize){
 }
 
 int task_root_set_stackguard(int tid, void * stackaddr, int stacksize){
-	int err;
 	u32 newaddr;
 	u32 rbar;
 	u32 rasr;
 
 	if ( (u32)tid < task_get_total() ){
+		int err;
 
 		newaddr = (u32)stackaddr;
 		newaddr = (newaddr & ~(stacksize - 1)) + stacksize; //align to the size of the guard
@@ -182,11 +182,20 @@ int init_os_memory_protection(task_memories_t * os_mem){
 	if( mcu_board_config.secret_key_size > 0 ){
 		err = mpu_enable_region(
 					TASK_SYSTEM_SECRET_KEY_REGION,
-					mcu_board_config.secret_key_address,
+					(void*)((u32)mcu_board_config.secret_key_address & ~0x01),
 					mcu_board_config.secret_key_size,
 					MPU_ACCESS_PR,
 					MPU_MEMORY_FLASH,
 					0);
+		if ( err < 0 ){
+			mcu_debug_log_error(
+						MCU_DEBUG_SYS,
+						"Failed to init OS secret key region 0x%lX to 0x%lX (%d)",
+						mcu_board_config.secret_key_address,
+						mcu_board_config.secret_key_size,
+						err);
+			return err;
+		}
 	}
 
 	//Make OS System memory read-only -- region 0 -- highest priority

@@ -178,7 +178,6 @@ int signal_root_send(int send_tid, int tid, int si_signo, int si_sigcode, int si
 
 int signal_send(int tid, int si_signo, int si_sigcode, int sig_value){
 	task_interrupt_t intr;
-	pthread_mutex_t * delay_mutex;
 	int check_stack;
 	struct timespec abstime;
 
@@ -189,8 +188,7 @@ int signal_send(int tid, int si_signo, int si_sigcode, int sig_value){
 	}
 
 	if ( si_signo != 0 ){
-
-		delay_mutex = sos_sched_table[tid].signal_delay_mutex;
+		pthread_mutex_t * delay_mutex	= sos_sched_table[tid].signal_delay_mutex;
 		//check for the signal delay mutex
 		if( delay_mutex != NULL ){
 			//this means the target task is doing critical work (like modifying the filesystem)
@@ -249,8 +247,8 @@ void signal_root_activate(int * thread){
  *
  */
 int pthread_kill(pthread_t thread, int signo){
-	if( thread == pthread_self() && signo == SIGABRT ){
-		//this is called by abort() --> calls raise(SIGABRT) --> pthread_kill(pthread_self(), sig);
+	if( (thread == pthread_self()) && (signo == SIGABRT) ){
+		//abort() --> calls raise(SIGABRT) --> pthread_kill(pthread_self(), sig);
 		//trace here rather in the signal handler because stack tracing is more reliable
 		sos_trace_stack((u32)-1);
 	}

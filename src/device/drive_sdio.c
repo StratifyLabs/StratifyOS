@@ -48,7 +48,7 @@ int drive_sdio_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 	drive_attr_t * attr = ctl;
 	u32 o_flags;
 	sdio_info_t sdio_info;
-	sdio_info_t sdio_attr;
+	sdio_attr_t sdio_attr;
 	int result;
 
 	switch(request){
@@ -58,11 +58,10 @@ int drive_sdio_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 
 				if( o_flags & DRIVE_FLAG_ERASE_BLOCKS ){
 
-					sdio_attr_t sdio_attr;
 					sdio_attr.o_flags = SDIO_FLAG_ERASE_BLOCKS;
 					sdio_attr.start = attr->start;
 					sdio_attr.end = attr->end;
-					int result = mcu_sdio_setattr(handle, &sdio_attr);
+					result = mcu_sdio_setattr(handle, &sdio_attr);
 					if( result < 0 ){
 						return result;
 					}

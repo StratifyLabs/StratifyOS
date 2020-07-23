@@ -204,6 +204,8 @@ int sysfs_shared_read(const sysfs_shared_config_t * config, int loc, void * buf,
 int sysfs_shared_write(const sysfs_shared_config_t * config, int loc, const void * buf, int nbyte);
 int sysfs_shared_aio(const sysfs_shared_config_t * config, void * aio);
 int sysfs_shared_close(const sysfs_shared_config_t * config);
+int sysfs_shared_lock(const sysfs_shared_config_t * config);
+int sysfs_shared_unlock(const sysfs_shared_config_t * config);
 
 typedef struct {
 	const void * config;

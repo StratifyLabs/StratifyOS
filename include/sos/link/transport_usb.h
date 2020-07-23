@@ -20,6 +20,7 @@ limitations under the License.
 
 #include "transport.h"
 #include "device/usbfifo.h"
+#include "usbd/msft.h"
 #include "usbd/control.h"
 #include "usbd/cdc.h"
 
@@ -30,9 +31,15 @@ limitations under the License.
 #define SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT_SIZE 64
 #define SOS_LINK_TRANSPORT_USB_PORT 0
 
+
+#define SOS_LINK_TRANSPORT_MSFT_VENDOR_CODE 'S'
+
+//next valid 3FC
+#define SOS_LINK_TRANSPORT_USB_BCD_VERSION 0x004C
+
 #define SOS_LINK_TRANSPORT_USB_EXTERN_CONST(name) \
 	extern const usbd_device_descriptor_t sos_link_transport_usb_##name##_device_descriptor MCU_WEAK; \
-	extern const usbd_qualifier_descriptor_t sos_link_transfer_usb_##name##_qualifier_descriptor MCU_WEAK; \
+	extern const usbd_qualifier_descriptor_t sos_link_transport_usb_##name##_qualifier_descriptor MCU_WEAK; \
 	extern const sos_link_transport_usb_##name##_configuration_descriptor_t sos_link_transport_usb_##name##_configuration_descriptor MCU_WEAK; \
 	extern const struct sos_link_transport_usb_##name##_string_descriptor_t sos_link_transport_usb_##name##_string_descriptor MCU_WEAK; \
 	extern const usbd_control_constants_t sos_link_transport_usb_##name##_constants
@@ -45,13 +52,13 @@ limitations under the License.
 	.handle.state = state_value, \
 	.device =  &sos_link_transport_usb_##name##_device_descriptor, \
 	.config = &sos_link_transport_usb_##name##_configuration_descriptor, \
-	.qualifier = &sos_link_transfer_usb_##name##_qualifier_descriptor, \
+	.qualifier = &sos_link_transport_usb_##name##_qualifier_descriptor, \
 	.string = &sos_link_transport_usb_##name##_string_descriptor, \
 	.class_event_handler = class_event_handler_value \
 	};
 
-#define SOS_LINK_TRANSPORT_USB_DEVICE_DESCRIPTOR(name,class_value,sub_class_value,protocol_value) \
-	const usbd_device_descriptor_t sos_link_transport_usb_##name##_device_descriptor MCU_WEAK = { \
+#define SOS_LINK_TRANSPORT_USB_DEVICE_DESCRIPTOR(name,class_value,sub_class_value,protocol_value,version_value) \
+	const usbd_device_descriptor_t sos_link_transport_usb_##name##_device_descriptor = { \
 	.bLength = sizeof(usbd_device_descriptor_t), \
 	.bDescriptorType = USBD_DESCRIPTOR_TYPE_DEVICE, \
 	.bcdUSB = 0x0200, \
@@ -61,13 +68,13 @@ limitations under the License.
 	.bMaxPacketSize = MCU_CORE_USB_MAX_PACKET_ZERO_VALUE, \
 	.idVendor = SOS_USBD_VID, \
 	.idProduct = SOS_USBD_PID, \
-	.bcdDevice = BCD_VERSION, \
+	.bcdDevice = version_value, \
 	.iManufacturer = 1, \
 	.iProduct = 2, \
 	.iSerialNumber = 3, \
 	.bNumConfigurations = 1 \
 	}; \
-	const usbd_qualifier_descriptor_t sos_link_transfer_##name##_usb_qualifer_descriptor MCU_WEAK = {  \
+	const usbd_qualifier_descriptor_t sos_link_transport_usb_##name##_qualifer_descriptor = {  \
 	.bLength = sizeof(usbd_device_descriptor_t), \
 	.bDescriptorType = USBD_DESCRIPTOR_TYPE_DEVICE, \
 	.bcdUSB = 0x0200, \
@@ -125,5 +132,6 @@ void boot_link_transport_usb_flush(link_transport_phy_t handle);
 extern const usbfifo_config_t sos_link_transport_usb_fifo_cfg;
 extern usbfifo_state_t sos_link_transport_usb_fifo_state MCU_SYS_MEM;
 
+int sos_link_transport_usb_msft_string_event(void * context_object, const mcu_event_t * usb_event);
 
 #endif /* SOS_LINK_TRANSPORT_USB_H_ */
