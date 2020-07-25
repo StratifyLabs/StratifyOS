@@ -1,12 +1,23 @@
 
-
 if(TOOLCHAIN_DIR)
-message(STATUS "User provided toolchain directory" ${TOOLCHAIN_DIR})
+	message(STATUS "User provided toolchain directory: " ${TOOLCHAIN_DIR})
 else()
-set(TOOLCHAIN_DIR "/StratifyLabs-SDK/Tools/gcc")
+	if(DEFINED SOS_SDK_PATH)
+		set(TOOLCHAIN_DIR ${SOS_SDK_PATH}/Tools/gcc)
+		message(STATUS "Using SOS_SDK_PATH defined toolchain directory " ${TOOLCHAIN_DIR})
+	elseif(DEFINED ENV{SOS_SDK_PATH})
+		set(TOOLCHAIN_DIR $ENV{SOS_SDK_PATH}/Tools/gcc)
+		set(SOS_SDK_PATH $ENV{SOS_SDK_PATH})
+		message(STATUS "Using environment defined toolchain directory " ${TOOLCHAIN_DIR})
+	else()
+		set(TOOLCHAIN_DIR "/StratifyLabs-SDK/Tools/gcc")
+		message(STATUS "Linux provided toolchain directory " ${TOOLCHAIN_DIR})
+		set(TOOLCHAIN_EXEC_SUFFIX "")
+	endif()
+endif()
+
 set(TOOLCHAIN_LIB_DIR "${TOOLCHAIN_DIR}/lib" CACHE INTERNAL "GCC TOOLCHAIN LIBRARY DIR")
 set(SOS_SDK_LIB_DIR "${TOOLCHAIN_DIR}/lib")
-endif()
 
 message(STATUS "Use Clang toolchain install dir: " ${TOOLCHAIN_DIR})
 set(CMAKE_INSTALL_PREFIX ${TOOLCHAIN_DIR} CACHE INTERNAL "CLANG INSTALL PREFIX")

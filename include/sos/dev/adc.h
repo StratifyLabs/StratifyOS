@@ -86,8 +86,11 @@ typedef struct MCU_PACK {
 	u32 reference_mv /*! The reference voltage in millivolts */;
 	u8 resolution /*! The number of bits supported by the ADC */;
 	u8 bytes_per_sample /*! The number of bytes in each sample */;
-	u8 resd_align[2];
-	u32 resd[8];
+	u8 internal_vref_channel;
+	u8 internal_temperature_channel;
+	u8 internal_vbat_channel;
+	u8 resd8[3];
+	u32 resd[7];
 } adc_info_t;
 
 
