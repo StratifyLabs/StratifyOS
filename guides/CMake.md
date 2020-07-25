@@ -1,10 +1,34 @@
 # CMake Guide
 
+Please see the [Getting Started Guide](Getting-Started.md) to install the necessary tools to build projects using Stratify OS.
+
 Stratify OS includes a suite of cmake scripts that can be used to create:
 
 - Applications
 - Libraries
 - OS Packages
+
+Projects are cross compilered by running `cmake .. && make` in the `cmake_arm` folder within a project. For example, to build Stratify OS:
+
+```
+git clone https://github.com/StratifyLabs/StratifyOS.git
+cd StratifyOS
+mkdir cmake_arm
+cd cmake_arm
+cmake ..
+make
+```
+
+# Specifying the SDK Path
+
+You can specify the SDK path by setting the environment variable `SOS_SDK_PATH` or defining `SOS_SDK_PATH` when invoking `cmake`. The folder `${SOS_SDK_PATH}/Tools` should exist.
+
+```
+export SOS_SDK_PATH=~/StratifyLabs-SDK
+# OR when invoking cmake
+cmake -DSOS_SDK_PATH=~/StratifyLabs-SDK ..
+```
+
 
 # Building Applications
 
@@ -13,12 +37,26 @@ The HelloWorld project has a CMakeLists.txt file that looks like the following. 
 ```
 cmake_minimum_required (VERSION 3.6) # required by cmake so it knows the version
 
-# this checks for mac or windows and sets up the location of the StratifyOS SDK
-if( ${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Darwin" )
-	set(SOS_TOOLCHAIN_CMAKE_PATH /Applications/StratifyLabs-SDK/Tools/gcc/arm-none-eabi/cmake)
-elseif( ${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows" )
-	set(SOS_TOOLCHAIN_CMAKE_PATH C:/StratifyLabs-SDK/Tools/gcc/arm-none-eabi/cmake)
+# Grab the SDK location
+if(NOT DEFINED SOS_SDK_PATH)
+	if(DEFINED ENV{SOS_SDK_PATH})
+		set(SOS_SDK_PATH $ENV{SOS_SDK_PATH})
+	elseif( ${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Darwin" )
+		message(WARNING "default SDK locations are deprecated")
+		set(SOS_SDK_PATH /Applications/StratifyLabs-SDK)
+	elseif( ${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows" )
+		message(WARNING "default SDK locations are deprecated")
+		set(SOS_SDK_PATH C:/StratifyLabs-SDK)
+	elseif( ${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Linux" )
+		message(WARNING "default SDK locations are deprecated")
+		set(SOS_SDK_PATH /StratifyLabs-SDK)
+	endif()
 endif()
+
+if(NOT DEFINED SOS_SDK_PATH)
+	message(FATAL_ERROR "Please set environment variable STRATIFYLABS_SDK to location of the StratifyLabs-SDK directory")
+endif()
+set(SOS_TOOLCHAIN_CMAKE_PATH ${SOS_SDK_PATH}/Tools/gcc/arm-none-eabi/cmake)
 
 # Don't try to override any variables above this
 # This includes the variables listed in the docs below
@@ -67,13 +105,33 @@ Builing libraries is a bit more advanced especially if you want them to use them
 ```
 cmake_minimum_required (VERSION 3.6)
 
-if( ${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Darwin" )
-  set(SOS_TOOLCHAIN_CMAKE_PATH /Applications/StratifyLabs-SDK/Tools/gcc/arm-none-eabi/cmake)
+# Grab the SDK location
+if(NOT DEFINED SOS_SDK_PATH)
+	if(DEFINED ENV{SOS_SDK_PATH})
+		set(SOS_SDK_PATH $ENV{SOS_SDK_PATH})
+	elseif( ${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Darwin" )
+		message(WARNING "default SDK locations are deprecated")
+		set(SOS_SDK_PATH /Applications/StratifyLabs-SDK)
+	elseif( ${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows" )
+		message(WARNING "default SDK locations are deprecated")
+		set(SOS_SDK_PATH C:/StratifyLabs-SDK)
+	elseif( ${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Linux" )
+		message(WARNING "default SDK locations are deprecated")
+		set(SOS_SDK_PATH /StratifyLabs-SDK)
+	endif()
 endif()
-if( ${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows" )
-  set(SOS_TOOLCHAIN_CMAKE_PATH C:/StratifyLabs-SDK/Tools/gcc/arm-none-eabi/cmake)
+
+if(NOT DEFINED SOS_SDK_PATH)
+	message(FATAL_ERROR "Please set environment variable STRATIFYLABS_SDK to location of the StratifyLabs-SDK directory")
 endif()
-set(CMAKE_TOOLCHAIN_FILE ${SOS_TOOLCHAIN_CMAKE_PATH}/sos-lib-toolchain.cmake)
+set(SOS_TOOLCHAIN_CMAKE_PATH ${SOS_SDK_PATH}/Tools/gcc/arm-none-eabi/cmake)
+
+if( ${SOS_BUILD_CONFIG} STREQUAL arm )
+	set(CMAKE_TOOLCHAIN_FILE ${SOS_TOOLCHAIN_CMAKE_PATH}/sos-lib-toolchain.cmake)
+elseif( ${SOS_BUILD_CONFIG} STREQUAL link )
+	set(CMAKE_TOOLCHAIN_FILE ${SOS_TOOLCHAIN_CMAKE_PATH}/link-toolchain.cmake)
+endif()
+
 get_filename_component(SOS_NAME ${CMAKE_SOURCE_DIR} NAME)
 
 include(${SOS_TOOLCHAIN_CMAKE_PATH}/sos-variables.cmake)
@@ -99,12 +157,26 @@ The mbedLPC1768 OS package builds configurations that can be used with both the 
 ```
 cmake_minimum_required (VERSION 3.6)
 
-if( ${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Darwin" )
-  set(SOS_TOOLCHAIN_CMAKE_PATH /Applications/StratifyLabs-SDK/Tools/gcc/arm-none-eabi/cmake)
+# Grab the SDK location
+if(NOT DEFINED SOS_SDK_PATH)
+	if(DEFINED ENV{SOS_SDK_PATH})
+		set(SOS_SDK_PATH $ENV{SOS_SDK_PATH})
+	elseif( ${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Darwin" )
+		message(WARNING "default SDK locations are deprecated")
+		set(SOS_SDK_PATH /Applications/StratifyLabs-SDK)
+	elseif( ${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows" )
+		message(WARNING "default SDK locations are deprecated")
+		set(SOS_SDK_PATH C:/StratifyLabs-SDK)
+	elseif( ${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Linux" )
+		message(WARNING "default SDK locations are deprecated")
+		set(SOS_SDK_PATH /StratifyLabs-SDK)
+	endif()
 endif()
-if( ${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows" )
-  set(SOS_TOOLCHAIN_CMAKE_PATH C:/StratifyLabs-SDK/Tools/gcc/arm-none-eabi/lib/ldscripts)
+
+if(NOT DEFINED SOS_SDK_PATH)
+	message(FATAL_ERROR "Please set environment variable STRATIFYLABS_SDK to location of the StratifyLabs-SDK directory")
 endif()
+set(SOS_TOOLCHAIN_CMAKE_PATH ${SOS_SDK_PATH}/Tools/gcc/arm-none-eabi/cmake)
 
 include(${SOS_TOOLCHAIN_CMAKE_PATH}/sos-variables.cmake)
 
