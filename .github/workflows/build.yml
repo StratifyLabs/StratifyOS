@@ -18,13 +18,13 @@ jobs:
     - name: prepare
       run: mkdir cmake_link && mkdir cmake_arm
     - name: configure-link
-      run: cmake ..
+      run: cmake -DSOS_SDK_PATH=/StratifyLabs-SDK ..
       working-directory: cmake_link
     - name: make-link
       run: make -j3
       working-directory: cmake_link
     - name: configure
-      run: cmake ..
+      run: cmake -DSOS_SDK_PATH=/StratifyLabs-SDK ..
       working-directory: cmake_arm
     - name: make
       run: make -j3
