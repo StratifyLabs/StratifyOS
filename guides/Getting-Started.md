@@ -7,6 +7,9 @@ You can start developing with Stratify OS by install the `sl` command line tool.
 ```
 export INSTALL_DIRECTORY=~/StratifyLabs-SDK
 export SL_LINK=https://stratifylabs.page.link/sl_$(uname)_$(uname -m)
+export PROFILE=~/.bash_profile # windows and mac
+export PROFILE=~/.profile # linux
+
 
 mkdir -p $INSTALL_DIRECTORY
 chmod 777 -R $INSTALL_DIRECTORY # if needed to make public
