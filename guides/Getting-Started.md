@@ -16,9 +16,9 @@ chmod 777 -R $INSTALL_DIRECTORY # if needed to make public
 mkdir -p $INSTALL_DIRECTORY/Tools/gcc/bin
 curl -L -o $INSTALL_DIRECTORY/Tools/gcc/bin/sl $SL_LINK
 chmod 755 $INSTALL_DIRECTORY/Tools/gcc/bin/sl
-echo 'export PATH=$INSTALL_DIRECTORY/Tools/gcc/bin:$PATH' >> ~/.bash_profile
-echo 'export SOS_SDK_PATH=$INSTALL_DIRECTORY' >> ~/.bash_profile
-source ~/.bash_profile
+echo 'export PATH=$INSTALL_DIRECTORY/Tools/gcc/bin:$PATH' >> $PROFILE
+echo 'export SOS_SDK_PATH=$INSTALL_DIRECTORY' >> $PROFILE
+source $PROFILE
 ```
 
 **Linux USB Permissions**
