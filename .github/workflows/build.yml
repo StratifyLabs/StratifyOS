@@ -28,7 +28,7 @@ jobs:
       run: make -j3
       working-directory: cmake_arm
   buildMacOS:
-    runs-on: [self-hosted, macOS, ARM]
+    runs-on: [self-hosted, macOS, X64]
     steps:
     - uses: actions/checkout@v2
       with:
