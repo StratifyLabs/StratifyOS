@@ -7,10 +7,28 @@ on:
     branches: [ development ]
 
 jobs:
-  build:
-
+  buildLinuxArm32:
     runs-on: [self-hosted, linux, ARM]
-
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        ref: 'development'
+    - name: prepare
+      run: mkdir cmake_link && mkdir cmake_arm
+    - name: configure-link
+      run: cmake ..
+      working-directory: cmake_link
+    - name: make-link
+      run: make -j3
+      working-directory: cmake_link
+    - name: configure
+      run: cmake ..
+      working-directory: cmake_arm
+    - name: make
+      run: make -j3
+      working-directory: cmake_arm
+  buildMacOS:
+    runs-on: [self-hosted, macOS, ARM]
     steps:
     - uses: actions/checkout@v2
       with:
