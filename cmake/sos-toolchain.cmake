@@ -1,8 +1,4 @@
 
-if( ${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows" )
-	set(CMAKE_MAKE_PROGRAM "C:/StratifyLabs-SDK/Tools/gcc/bin/make.exe")
-	set(CMAKE_SET_GENERATOR "MinGW Makefiles" CACHE INTERNAL "cmake generator mingw makefiles")
-endif()
 
 set(CMAKE_SYSTEM_NAME Generic)
 set(CMAKE_SYSTEM_PROCESSOR arm)
@@ -31,6 +27,12 @@ else()
 		set(TOOLCHAIN_EXEC_SUFFIX "")
 	endif()
 endif()
+
+if( ${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows" )
+  set(CMAKE_MAKE_PROGRAM "${SOS_SDK_PATH}/Tools/gcc/bin/make.exe")
+  set(TOOLCHAIN_EXEC_SUFFIX ".exe")
+endif()
+
 
 if(TOOLCHAIN_HOST)               # <--- Use 'BOOST_DIR', not 'DEFINED ${BOOST_DIR}'
 	MESSAGE(STATUS "User provided toolchain directory " ${TOOLCHAIN_HOST})
