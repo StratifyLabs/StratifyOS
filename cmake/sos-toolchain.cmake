@@ -34,7 +34,7 @@ if( ${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows" )
 endif()
 
 
-if(TOOLCHAIN_HOST)               # <--- Use 'BOOST_DIR', not 'DEFINED ${BOOST_DIR}'
+if(TOOLCHAIN_HOST)              
 	MESSAGE(STATUS "User provided toolchain directory " ${TOOLCHAIN_HOST})
 else()
 	set(TOOLCHAIN_HOST "arm-none-eabi" CACHE INTERNAL "TOOLCHAIN HOST ARM-NONE-EABI")
