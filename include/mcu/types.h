@@ -151,6 +151,7 @@ typedef struct {
  * \endcode
  */
 #define MCU_SYS_MEM __attribute__((section(".sysmem"))) MCU_ALIGN(4)
+#define MCU_BACKUP_MEM __attribute__((section(".backup"))) MCU_ALIGN(4)
 
 #ifdef __link
 #define MCU_ROOT_CODE

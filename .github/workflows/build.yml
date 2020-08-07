@@ -7,10 +7,8 @@ on:
     branches: [ development ]
 
 jobs:
-  build:
-
+  buildLinuxArm32:
     runs-on: [self-hosted, linux, ARM]
-
     steps:
     - uses: actions/checkout@v2
       with:
@@ -25,6 +23,26 @@ jobs:
       working-directory: cmake_link
     - name: configure
       run: cmake -DSOS_SDK_PATH=/StratifyLabs-SDK ..
+      working-directory: cmake_arm
+    - name: make
+      run: make -j3
+      working-directory: cmake_arm
+  buildMacOS:
+    runs-on: [self-hosted, macOS, X64]
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        ref: 'development'
+    - name: prepare
+      run: mkdir cmake_link && mkdir cmake_arm
+    - name: configure-link
+      run: cmake -DSOS_SDK_PATH=/Applications/StratifyLabs-SDK ..
+      working-directory: cmake_link
+    - name: make-link
+      run: make -j3
+      working-directory: cmake_link
+    - name: configure
+      run: cmake -DSOS_SDK_PATH=/Applications/StratifyLabs-SDK ..
       working-directory: cmake_arm
     - name: make
       run: make -j3

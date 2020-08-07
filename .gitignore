@@ -1,14 +1,8 @@
 *.a
 *.d
 *.o
-
-
 *.user
-<<<<<<< HEAD
-/build_release_link/
-=======
 cmake_*
-
 *.gch
->>>>>>> eefabcccff6c59ba4387d6756ffa955d1f9328ab
 *.8-pre1
+.vscode/
