@@ -1,15 +1,40 @@
 # Getting Started Guide
 
-You can start developing with Stratify OS by install the `sl` command line tool. With `sl` you can install the SDK and other tools as well as build and install Stratify OS kernel images and applications.
+You can start developing with Stratify OS by installing the `sl` command line tool. With `sl`, you can install the SDK and other tools as well as build and install Stratify OS kernel images and applications.
 
 **Installing sl**
 
-```
-export INSTALL_DIRECTORY=~/StratifyLabs-SDK
-export SL_LINK=https://stratifylabs.page.link/sl_$(uname)_$(uname -m)
-export PROFILE=~/.bash_profile # windows and mac
-export PROFILE=~/.profile # linux
+First set your OS specific variables:
 
+Windows x86_64
+
+```
+export SL_LINK=https://stratifylabs.page.link/sl_windows_x86_64
+```
+
+Linux x86_64
+
+```
+export SL_LINK=https://stratifylabs.page.link/sl_linux_x86_64
+```
+
+Linux arm32
+
+```
+export SL_LINK=https://stratifylabs.page.link/sl_linux_arm32
+```
+
+MacOS x86_64
+
+```
+export SL_LINK=https://stratifylabs.page.link/sl_darwin_x86_64
+```
+
+Now, use the following commands to download and install `sl`.
+
+```
+export INSTALL_DIRECTORY=~/StratifyLabs-SDK # or another directory of your choosing
+export PROFILE=~/.bash_profile
 
 mkdir -p $INSTALL_DIRECTORY
 chmod 777 -R $INSTALL_DIRECTORY # if needed to make public
