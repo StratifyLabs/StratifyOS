@@ -33,7 +33,7 @@ void svcall_device_data_transfer(void * args){
 	CORTEXM_SVCALL_ENTER();
 	root_aio_transfer_t * p = (root_aio_transfer_t*)args;
 
-    cortexm_disable_interrupts(); //no switching until the transfer is started -- does Issue #130 change this
+	cortexm_disable_interrupts(); //no switching until the transfer is started -- does Issue #130 change this
 	//set the device callback for the read/write op
 	if ( p->read == 1 ){
 		//Read operation
@@ -44,7 +44,7 @@ void svcall_device_data_transfer(void * args){
 
 	sos_sched_table[task_get_current()].block_object = NULL;
 
-    cortexm_enable_interrupts();
+	cortexm_enable_interrupts();
 
 	if ( p->result == 0 ){
 		if( p->aiocbp->async.nbyte > 0 ){
@@ -52,7 +52,6 @@ void svcall_device_data_transfer(void * args){
 		}
 	} else if ( p->result < 0 ){
 		//AIO was not started -- errno is set by the driver
-        //p->ret = -1;
 	} else if ( p->result > 0 ){
 		//The transfer happened synchronously -- call the callback manually
 		sysfs_aio_data_transfer_callback(p->aiocbp, 0);
@@ -70,7 +69,7 @@ int devfs_aio_data_transfer(const devfs_device_t * device, struct aiocb * aiocbp
 		args.read = 0;
 	}
 	args.aiocbp->async.loc = aiocbp->aio_offset;
-	args.aiocbp->async.flags = 0; //this is never a blocking call
+	args.aiocbp->async.flags = 0; //never uses NON BLOCK because we are async
 	args.aiocbp->async.nbyte = aiocbp->aio_nbytes;
 	args.aiocbp->async.buf = (void*)aiocbp->aio_buf;
 	args.aiocbp->async.tid = task_get_current();
