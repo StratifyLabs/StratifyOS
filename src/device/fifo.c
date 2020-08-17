@@ -187,7 +187,7 @@ void fifo_data_received(const fifo_config_t * config, fifo_state_t * state){
 					 config,
 					 state,
 					 state->transfer_handler.read->buf,
-					 state->transfer_handler.read->nbyte)) > 0 ){
+					 state->transfer_handler.read->nbyte)) >= 0 ){
 			devfs_execute_read_handler(
 						&state->transfer_handler,
 						0,
@@ -211,7 +211,7 @@ int fifo_data_transmitted(const fifo_config_t * cfgp, fifo_state_t * state){
 		if( (bytes_written = fifo_write_buffer(cfgp, state,
 																					 state->transfer_handler.write->buf_const,
 																					 state->transfer_handler.write->nbyte,
-																					 0)) > 0 ){
+																					 0)) >= 0 ){
 			devfs_execute_write_handler(
 						&state->transfer_handler,
 						0,
