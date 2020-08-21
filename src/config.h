@@ -6,9 +6,9 @@
 #include "mcu/debug.h"
 
 #if MCU_DEBUG
-#define VERSION "3.15.5d"
+#define VERSION "3.16.0d"
 #else
-#define VERSION "3.15.5"
+#define VERSION "3.16.0"
 #endif
 
 
