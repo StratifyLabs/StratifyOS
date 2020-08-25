@@ -283,7 +283,6 @@ int sysfs_aio_data_transfer_callback(void * context, const mcu_event_t * event){
 		aiocbp->async.nbyte = 0;
 	}
 
-	//Check to see if the thread is suspended on aio -- the block object is a list of aiocb -- check if aiocbp is in list
 	tid = aiocbp->async.tid;
 	if( tid >= task_get_total() ){
 		//This is not a valid task id
@@ -291,10 +290,12 @@ int sysfs_aio_data_transfer_callback(void * context, const mcu_event_t * event){
 	}
 
 	if( task_enabled(tid) ){ //if task is no longer enabled (don't do anything)
+
+		//Check to see if the thread is suspended on aio -- the block object is a list of aiocb -- check if aiocbp is in list
 		if ( scheduler_aiosuspend_asserted(tid) ){
 			sysfs_aio_suspend_t * p = (sysfs_aio_suspend_t*)sos_sched_table[tid].block_object;
 
-			if ( p->block_on_all == 0 ){
+			if ( p->block_on_all == 0 ){ //don't block on all -- unblock on any
 				for(int i=0; i < p->nent; i++){
 					if ( aiocbp == p->list[i] ){ //If this is true the thread is blocked on the operation that is currently completing
 						scheduler_root_assert_active(tid, SCHEDULER_UNBLOCK_AIO);

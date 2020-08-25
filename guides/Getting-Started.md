@@ -15,19 +15,19 @@ export SL_LINK=https://stratifylabs.page.link/sl_windows_x86_64
 Linux x86_64
 
 ```
-export SL_LINK=https://stratifylabs.page.link/sl_linux_x86_64
+export SL_LINK=https://stratifylabs.page.link/sl_Linux_x86_64
 ```
 
 Linux arm32
 
 ```
-export SL_LINK=https://stratifylabs.page.link/sl_linux_arm32
+export SL_LINK=https://stratifylabs.page.link/sl_Linux_arm32
 ```
 
 MacOS x86_64
 
 ```
-export SL_LINK=https://stratifylabs.page.link/sl_darwin_x86_64
+export SL_LINK=https://stratifylabs.page.link/sl_Darwin_x86_64
 ```
 
 Now, use the following commands to download and install `sl`.
