@@ -70,9 +70,13 @@ int drive_sdio_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 			}
 
 			if( o_flags & DRIVE_FLAG_INIT ){
-
 				//this will init the SD card with the default settings
 				return mcu_sdio_setattr(handle, 0);
+			}
+
+			if( o_flags & DRIVE_FLAG_RESET ){
+				sdio_attr.o_flags = SDIO_FLAG_RESET;
+				return mcu_sdio_setattr(handle, &sdio_attr);
 			}
 
 			break;
