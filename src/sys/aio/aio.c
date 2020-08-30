@@ -144,7 +144,7 @@ int suspend(struct aiocb *const list[], int nent, const struct timespec * timeou
 		return -1;
 	}
 
-	return args.result;
+	return 0;
 }
 
 /*! \details This function will suspend the currently executing thread until an AIO operation
@@ -277,6 +277,7 @@ int sysfs_aio_data_transfer_callback(void * context, const mcu_event_t * event){
 	aiocbp = context;
 	aiocbp->aio_nbytes = aiocbp->async.nbyte;
 	aiocbp->async.buf = NULL;
+
 	if( aiocbp->async.nbyte < 0 ){
 		aiocbp->async.nbyte = SYSFS_GET_RETURN_ERRNO(aiocbp->async.nbyte);
 	} else {
@@ -284,6 +285,7 @@ int sysfs_aio_data_transfer_callback(void * context, const mcu_event_t * event){
 	}
 
 	tid = aiocbp->async.tid;
+
 	if( tid >= task_get_total() ){
 		//This is not a valid task id
 		return 0;
@@ -331,7 +333,6 @@ int sysfs_aio_data_transfer_callback(void * context, const mcu_event_t * event){
 		}
 
 		//This needs to check if all operations in a list have complete and then use SIGEV_NONE, SIGEV_SIGNAL, or SIGEV_THREAD to notify
-		return 0;
 	}
 
 	return 0;

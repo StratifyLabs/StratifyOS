@@ -54,6 +54,7 @@ void svcall_device_data_transfer(void * args){
 		//AIO was not started -- errno is set by the driver
 	} else if ( p->result > 0 ){
 		//The transfer happened synchronously -- call the callback manually
+		p->aiocbp->async.nbyte = p->result;
 		sysfs_aio_data_transfer_callback(p->aiocbp, 0);
 		p->result = 0;
 	}

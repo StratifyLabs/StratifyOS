@@ -133,7 +133,10 @@ static u32 translate_value(
 	*loc = 0;
 	if ( (addr & APPFS_REWRITE_MASK) == mask ){ //matches Text or Data
 		ret = addr & ~(APPFS_REWRITE_MASK|APPFS_REWRITE_RAM_MASK);
-		if( (addr & APPFS_REWRITE_KERNEL_ADDR) == APPFS_REWRITE_KERNEL_ADDR ){
+		if(
+			 ((addr & APPFS_REWRITE_KERNEL_ADDR) == APPFS_REWRITE_KERNEL_ADDR)
+			 && ((addr - 1) % 4 == 0) //if the value is not aligned, it shouldn't be translated
+			 ){
 			//This is a kernel value
 			ret = (addr & APPFS_REWRITE_KERNEL_ADDR_MASK)>>2; //convert the address to a table index value
 			if( ret < total ){
