@@ -35,21 +35,34 @@
 #define SOS_DEV_NETIF_H_
 
 #include "mcu/types.h"
+#include "sos/link/types.h"
 
-#define NETIF_VERSION (0x030000)
+#define NETIF_VERSION (0x030100)
 #define NETIF_IOC_CHAR 'N'
+
+#define NETIF_MAX_MAC_ADDRESS_SIZE 16
 
 enum {
 	NETIF_FLAG_INIT /*! When setting attributes, initializes the interface */ = (1<<0),
 	NETIF_FLAG_DEINIT /*! When setting attributes, de-initialies the interface */ = (1<<1),
 	NETIF_FLAG_IS_LINK_UP /*! When settings attributes, ioctl() return 1 if link is up */ = (1<<2),
 	NETIF_FLAG_SET_LINK_UP /*! When setting attributes, sets the link as up */ = (1<<3),
-	NETIF_FLAG_SET_LINK_DOWN /*! When setting attributes, sets the link as down */ = (1<<4)
+	NETIF_FLAG_SET_LINK_DOWN /*! When setting attributes, sets the link as down */ = (1<<4),
+	NETIF_FLAG_SET_MAC_ADDRESS /*! Sets the MAC address populated by I_NETIF_GETINFO */ = (1<<5),
+	NETIF_FLAG_IS_BROADCAST = (1<<6),
+	NETIF_FLAG_IS_ETHERNET = (1<<7),
+	NETIF_FLAG_IS_ETHERNET_ARP = (1<<8),
+	NETIF_FLAG_IS_IGMP = (1<<9),
+	NETIF_FLAG_IS_MLD6 = (1<<10),
 };
 
 typedef struct MCU_PACK {
 	u32 o_flags;
 	u32 o_events;
+	u8 mac_address[NETIF_MAX_MAC_ADDRESS_SIZE];
+	u8 mac_address_length;
+	u8 resd;
+	u16 mtu;
 } netif_info_t;
 
 /*! \brief Network Interface attributes
@@ -57,7 +70,7 @@ typedef struct MCU_PACK {
 typedef struct MCU_PACK {
 	u32 o_flags;
 	u16 mtu;
-	u8 mac_address[10];
+	u8 mac_address[NETIF_MAX_MAC_ADDRESS_SIZE];
 } netif_attr_t;
 
 

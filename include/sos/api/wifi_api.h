@@ -1,6 +1,7 @@
 #ifndef SOS_API_WIFI_API_H
 #define SOS_API_WIFI_API_H
 
+#include "sos/dev/netif.h"
 #include "sos_api.h"
 
 
@@ -60,7 +61,7 @@ typedef struct MCU_PACK {
 	u8 is_connected;
 	u8 resd0;
 	wifi_ip_info_t ip;
-	u8 mac_address[8];
+	u8 mac_address[NETIF_MAX_MAC_ADDRESS_SIZE];
 } wifi_info_t;
 
 //WPS is wifi protected setup
