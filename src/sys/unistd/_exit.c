@@ -56,7 +56,8 @@ void _exit(int __status){
 	// todo close named semaphores
 
 
-	// todo cancel any async IO
+	//tell free to skip actually freeing memory because the app is shutting down anyway
+	_GLOBAL_REENT->procmem_base = NULL;
 
 	//Make sure all open file descriptors are closed
 	for(i=0; i < OPEN_MAX; i++){
