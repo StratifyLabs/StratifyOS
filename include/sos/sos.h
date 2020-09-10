@@ -1,4 +1,4 @@
-/* Copyright 2011-2018 Tyler Gilbert; 
+/* Copyright 2011-2018 Tyler Gilbert;
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -23,26 +23,32 @@
  *
  * \section INTRO Introduction
  *
- * <b>Stratify OS</b> is an RTOS designed to drastically reduce development time.  It does this using these principles:
+ * <b>Stratify OS</b> is an RTOS designed to drastically reduce development time.  It does
+ * this using these principles:
  * - Pre-installed Kernel
  * - Deep hardware integration
  * - Applications are built and installed separate from the kernel
  *
- * We ship hardware <b>pre-installed with Stratify OS</b> (much like many single board computers are pre-installed with Linux).  This means
- * you don't need to do any RTOS code integration.  Just start building your application.
+ * We ship hardware <b>pre-installed with Stratify OS</b> (much like many single board
+ * computers are pre-installed with Linux).  This means you don't need to do any RTOS code
+ * integration.  Just start building your application.
  *
- * Having <b>deep hardware integration</b> means <b>Stratify OS</b> runs on fewer processors but provides drivers for almost
- * all the included hardware.  So no more writing or integrating UART/SPI/I2C drivers.  That is already-ready.
+ * Having <b>deep hardware integration</b> means <b>Stratify OS</b> runs on fewer
+ * processors but provides drivers for almost all the included hardware.  So no more
+ * writing or integrating UART/SPI/I2C drivers.  That is already-ready.
  *
- * Your first step after getting your Stratify enabled board is to <b>write your application</b>.  The application is built
- * and installed independent of the kernel.  Your application is binary compatible with all Stratify boards using the same
- * processor core.  This means you can build a web server and run it on any board with ethernet or wifi.
+ * Your first step after getting your Stratify enabled board is to <b>write your
+ * application</b>.  The application is built and installed independent of the kernel.
+ * Your application is binary compatible with all Stratify boards using the same processor
+ * core.  This means you can build a web server and run it on any board with ethernet or
+ * wifi.
  *
  * \section START Start Coding
  *
- * This section is the kernel documentation.  You only need to read this is you want to tinker with the kernel.  The API used
- * for applications is <a href="../../StratifyAPI/html/"><b>StratifyAPI</b> documentation</a>. If you want finer control,
- * you can use the built-in \ref POSIX and \ref STDC functions.
+ * This section is the kernel documentation.  You only need to read this is you want to
+ * tinker with the kernel.  The API used for applications is <a
+ * href="../../StratifyAPI/html/"><b>StratifyAPI</b> documentation</a>. If you want finer
+ * control, you can use the built-in \ref POSIX and \ref STDC functions.
  *
  */
 
@@ -51,7 +57,8 @@
 /*! \addtogroup StratifyOS Stratify OS
  * @{
  *
- * \details <b>Stratify OS</b> includes two main APIs for users: the \ref STDC and the \ref POSIX API.
+ * \details <b>Stratify OS</b> includes two main APIs for users: the \ref STDC and the
+ * \ref POSIX API.
  *
  */
 
@@ -73,7 +80,8 @@
  *
  * \addtogroup stdc C Standard Library
  * @{
- * \details **Stratify OS** comes pre-installed with the majority of the C Standard library including:
+ * \details **Stratify OS** comes pre-installed with the majority of the C Standard
+ * library including:
  * - assert.h
  * - ctype.h
  * - errno.h
@@ -102,7 +110,8 @@
  * - fenv.h
  *
  * If you need to familiarize yourself with the details of the C Standard Library, try
- * the <a target="_blank" href="http://en.wikipedia.org/wiki/C_standard_library">Wikipedia page</a>.
+ * the <a target="_blank" href="http://en.wikipedia.org/wiki/C_standard_library">Wikipedia
+ * page</a>.
  *
  *
  */
@@ -112,15 +121,15 @@
 /*! \addtogroup POSIX POSIX
  * @{
  *
- * \details The POSIX API contains functions that allow users to create new threads, access files as well as hardware, and
- * perform interprocess communication.
+ * \details The POSIX API contains functions that allow users to create new threads,
+ * access files as well as hardware, and perform interprocess communication.
  */
 
 /*! \addtogroup time Time
  * @{
  *
- * \details Unix style time functions are available in <b>Stratify OS</b> as documented herein.  The C standard library
- * time functions are also available (see \ref STDC).
+ * \details Unix style time functions are available in <b>Stratify OS</b> as documented
+ * herein.  The C standard library time functions are also available (see \ref STDC).
  *
  */
 
@@ -130,7 +139,6 @@
  * @{
  *
  */
-
 
 /*! @} */
 
@@ -181,19 +189,16 @@
  *
  * \details
  *
- * Many functions write the \a errno value to indicate which error has occured.  The list below associates
- * \a errno values to their descriptions.  Alternatively, \a perror() can be used to show the description
- * of the error on the stderr descriptor (normally the same descriptor as the stdout).  For example:
- * \code
- * int fd;
- * fd = open("/noexist", O_RDONLY);
- * if ( fd < 0 ){
- * 	perror("Could not open /noexist");
+ * Many functions write the \a errno value to indicate which error has occured.  The list
+ * below associates \a errno values to their descriptions.  Alternatively, \a perror() can
+ * be used to show the description of the error on the stderr descriptor (normally the
+ * same descriptor as the stdout).  For example: \code int fd; fd = open("/noexist",
+ * O_RDONLY); if ( fd < 0 ){ perror("Could not open /noexist");
  * }
  * \endcode
  *
- * The above code outputs "Could not open /noexist: No such file or directory\n" on the stderr while \a errno is
- * assigned a value of 2.
+ * The above code outputs "Could not open /noexist: No such file or directory\n" on the
+ * stderr while \a errno is assigned a value of 2.
  *
  * - EPERM 1:  Not super-user (Not owner)
  * - ENOENT 2:  No such file or directory
@@ -335,23 +340,23 @@
 #define SOS_VERSION_2_2_0 (0x00020200)
 #define SOS_VERSION (SOS_VERSION_2_2_0)
 
-//Standard libraries
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <time.h>
-#include <pthread.h>
+// Standard libraries
+#include "cortexm/fault.h"
+#include "cortexm/task.h"
 #include "mcu/mcu.h"
 #include "mcu/types.h"
-#include "cortexm/task.h"
-#include "cortexm/fault.h"
+#include <pthread.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
 
 #if defined __link
 #include <posix/trace.h>
 #else
-#include <sys/lock.h>
-#include "trace.h"
 #include "sys/socket.h"
+#include "trace.h"
+#include <sys/lock.h>
 #endif
 #include "sos/fs/devfs.h"
 
@@ -376,42 +381,39 @@ extern "C" {
 int hibernate(int seconds);
 
 /*! \details This function turns the controller off. The RTC
-  * stays on and wakes up the controller after \a seconds has elapsed. When
-  * the controller wakes up from power down, it resets.
-  *
-  * @param seconds Number of seconds to powerdown (zero to powedown indefinitely)
-  *
-  *
-  */
+ * stays on and wakes up the controller after \a seconds has elapsed. When
+ * the controller wakes up from power down, it resets.
+ *
+ * @param seconds Number of seconds to powerdown (zero to powedown indefinitely)
+ *
+ *
+ */
 void powerdown(int seconds);
-
 
 /*! \details This function is weakly bound to code
  * that initializes each filesystem and starts any processes
  * that are designed to auto-run.  It can be completely replaced so
  * that users can customize the startup sequence.
  */
-void * sos_default_thread(void * arg);
+void *sos_default_thread(void *arg);
 
 /*! \details Format the filesystem that is mounted at \a path.
  * \return Zero on success
  *
  */
-int mkfs(const char * path);
-
+int mkfs(const char *path);
 
 /*! \details Mount the filesystem specified at \a path
  * @param path The path to the filesystem (specified at build time)
  * @return Zero on success
  */
-int mount(const char * path);
+int mount(const char *path);
 
 /*! \details Unmount the filesystem specified at \a path
  * @param path The path to the filesystem (specified at build time)
  * @return Zero on success
  */
-int unmount(const char * path);
-
+int unmount(const char *path);
 
 /*! \details Launch an application from a data file system.
  *
@@ -439,25 +441,26 @@ int unmount(const char * path);
  *
  *
  * @param path Path to launch binary
- * @param exec_path The path to store the path where the binary is installed (e.g. /app/flash/0-HelloWorld)
+ * @param exec_path The path to store the path where the binary is installed (e.g.
+ * /app/flash/0-HelloWorld)
  * @param args Pointer to the arguments for launch
  * @param options Install options mask (flash, startup, etc)
- * @param ram_size The amount of RAM that will be allocated to stack/heap (excludes code even if running from RAM), set to zero for default RAM size
+ * @param ram_size The amount of RAM that will be allocated to stack/heap (excludes code
+ * even if running from RAM), set to zero for default RAM size
  * @param update_progress Callback to show progress of install/launch
  * @param update_context Value passed to update_progress() callback
  * @param envp Null for this version
  * @return Zero on success
  */
-int launch(const char * path,
-			  char * exec_path,
-			  const char * args,
-			  int options,
-			  int ram_size,
-			  int (*update_progress)(const void *, int, int),
-			  const void * update_context,
-			  char *const envp[]
-			  );
-
+int launch(
+  const char *path,
+  char *exec_path,
+  const char *args,
+  int options,
+  int ram_size,
+  int (*update_progress)(const void *, int, int),
+  const void *update_context,
+  char *const envp[]);
 
 /*! \brief Install an application
  * \details This function installs an application in flash or RAM
@@ -469,16 +472,16 @@ int launch(const char * path,
  * @param update_context Value passed to update_progress() callback
  * @return Zero on success
  */
-int install(const char * path,
-				char * exec_path,
-				int options,
-				int ram_size,
-				int (*update_progress)(const void *, int, int),
-				const void * update_context);
+int install(
+  const char *path,
+  char *exec_path,
+  int options,
+  int ram_size,
+  int (*update_progress)(const void *, int, int),
+  const void *update_context);
 
-void htoa(char * dest, int num);
+void htoa(char *dest, int num);
 char htoc(int nibble);
-
 
 /*! \brief To be implemented by user. Default returns zero.
  *
@@ -486,7 +489,7 @@ char htoc(int nibble);
  * @param data Single argument to the request
  * @return Returns result of request operation
  */
-int kernel_request(int request, void * data) MCU_WEAK;
+int kernel_request(int request, void *data) MCU_WEAK;
 
 /*! \brief To be implemented by the board support package.
  *
@@ -505,25 +508,41 @@ int kernel_request(int request, void * data) MCU_WEAK;
  *
  *
  */
-const void * kernel_request_api(u32 request) MCU_WEAK;
+const void *kernel_request_api(u32 request) MCU_WEAK;
 
 typedef struct {
-	u32 tid;
-	s32 free_stack_size;
-	s32 free_heap_size;
-	u32 pid;
-	fault_t fault;
+  u32 tid;
+  s32 free_stack_size;
+  s32 free_heap_size;
+  u32 pid;
+  fault_t fault;
 } scheduler_fault_t;
 
-#define SOS_TRACE_MESSAGE(msg) sos_trace_event(LINK_POSIX_TRACE_MESSAGE, msg, strnlen(msg, LINK_POSIX_TRACE_DATA_SIZE))
-#define SOS_TRACE_WARNING(msg) sos_trace_event(LINK_POSIX_TRACE_WARNING, msg, strnlen(msg, LINK_POSIX_TRACE_DATA_SIZE))
-#define SOS_TRACE_CRITICAL(msg) sos_trace_event(LINK_POSIX_TRACE_CRITICAL, msg, strnlen(msg, LINK_POSIX_TRACE_DATA_SIZE))
-#define SOS_TRACE_FATAL(msg) sos_trace_event(LINK_POSIX_TRACE_FATAL, msg, strnlen(msg, LINK_POSIX_TRACE_DATA_SIZE))
+#define SOS_TRACE_MESSAGE(msg)                                                           \
+  sos_trace_event(LINK_POSIX_TRACE_MESSAGE, msg, strnlen(msg, LINK_POSIX_TRACE_DATA_SIZE))
+#define SOS_TRACE_WARNING(msg)                                                           \
+  sos_trace_event(LINK_POSIX_TRACE_WARNING, msg, strnlen(msg, LINK_POSIX_TRACE_DATA_SIZE))
+#define SOS_TRACE_CRITICAL(msg)                                                          \
+  sos_trace_event(                                                                       \
+    LINK_POSIX_TRACE_CRITICAL, msg, strnlen(msg, LINK_POSIX_TRACE_DATA_SIZE))
+#define SOS_TRACE_FATAL(msg)                                                             \
+  sos_trace_event(LINK_POSIX_TRACE_FATAL, msg, strnlen(msg, LINK_POSIX_TRACE_DATA_SIZE))
 
-void sos_trace_event(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len);
+void sos_trace_event(
+  link_trace_event_id_t event_id,
+  const void *data_ptr,
+  size_t data_len);
 int sos_trace_stack(u32 count);
-void sos_trace_event_addr_tid(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len, u32 addr, int tid);
-void sos_trace_root_trace_event(link_trace_event_id_t event_id, const void * data_ptr, size_t data_len);
+void sos_trace_event_addr_tid(
+  link_trace_event_id_t event_id,
+  const void *data_ptr,
+  size_t data_len,
+  u32 addr,
+  int tid);
+void sos_trace_root_trace_event(
+  link_trace_event_id_t event_id,
+  const void *data_ptr,
+  size_t data_len);
 
 #define SOS_SCHEDULER_TIMEVAL_SECONDS 2048
 #define STFY_SCHEDULER_TIMEVAL_SECONDS SOS_SCHEDULER_TIMEVAL_SECONDS
@@ -532,24 +551,25 @@ void sos_trace_root_trace_event(link_trace_event_id_t event_id, const void * dat
 #define SOS_PROCESS_TIMER_COUNT 4
 
 typedef struct {
-	u32 o_flags;
-	struct mcu_timeval value;
-	struct mcu_timeval interval;
-	struct sigevent sigevent;
+  u32 o_flags;
+  struct mcu_timeval value;
+  struct mcu_timeval interval;
+  struct sigevent sigevent;
 } sos_process_timer_t;
 
 typedef struct {
-	pthread_attr_t attr /*! This holds the task's pthread attributes */;
-	volatile void * block_object /*! The blocking object */;
-	union {
-		volatile int exit_status /*! The task's exit status */;
-		void * (*init)(void*) /*! Task 0 init routine */;
-	};
-	pthread_mutex_t * signal_delay_mutex /*! The mutex to lock if the task cannot be interrupted */;
-	volatile struct mcu_timeval wake /*! When to wake the task */;
-	volatile u16 flags /*! This indicates whether the process is active or not */;
-	trace_id_t trace_id /*! Trace ID is PID is being traced (0 otherwise) */;
-	sos_process_timer_t timer[SOS_PROCESS_TIMER_COUNT];
+  pthread_attr_t attr /*! This holds the task's pthread attributes */;
+  volatile void *block_object /*! The blocking object */;
+  union {
+    volatile int exit_status /*! The task's exit status */;
+    void *(*init)(void *)/*! Task 0 init routine */;
+  };
+  pthread_mutex_t
+    *signal_delay_mutex /*! The mutex to lock if the task cannot be interrupted */;
+  volatile struct mcu_timeval wake /*! When to wake the task */;
+  volatile u16 flags /*! This indicates whether the process is active or not */;
+  trace_id_t trace_id /*! Trace ID is PID is being traced (0 otherwise) */;
+  sos_process_timer_t timer[SOS_PROCESS_TIMER_COUNT];
 } sched_task_t;
 
 #if !defined __link
@@ -559,46 +579,52 @@ typedef struct {
  * configuration data.
  */
 typedef struct MCU_PACK {
-	u8 clk_usecond_tmr /*! Hardware timer used for usecond counter */;
-	u8 task_total /*! Total number of supported tasks */;
-	u16 start_stack_size /*! Stack size of the first thread (when in doubt use SOS_DEFAULT_START_STACK_SIZE) */;
-	const char * stdin_dev /*! Device used for standard input */;
-	const char * stdout_dev /*! Device used for standard output */;
-	const char * stderr_dev /*! Device used for standard error */;
-	const char * trace_dev /*! Device used for tracing */;
-	const char * sys_name /*! System (or board) name */;
-	const char * sys_version /*! System (or board) version (distinct from kernel version) */;
-	const char * sys_id /*! System ID (globally unique cloud identifier for board) */;
-	const char * team_id /*! Team ID (globally unique cloud identifier for team) */;
-	int sys_memory_size /*! Memory size reserved for the system */;
-	int o_sys_flags /*! System flags */;
-	void * (*start)(void*) /*! The start routine (when in doubt use sos_default_thread()) */;
-	void * start_args /*! Arguments passed to the start routine (for  sos_default_thread() use a pointer to the link transport driver) */;
-	const sos_socket_api_t * socket_api /*! Socket API (zero if sockets are not supported) */;
-	void (*trace_event)(void * event) /*! This will trace an event (zero if not supported) */;
-	void (*request)(void) /*! Send an interrupt request to the link master (0 if not supported) */;
-	const char * git_hash /*! A pointer to the git hash string */;
+  u8 clk_usecond_tmr /*! Hardware timer used for usecond counter */;
+  u8 task_total /*! Total number of supported tasks */;
+  u16 start_stack_size /*! Stack size of the first thread (when in doubt use
+                          SOS_DEFAULT_START_STACK_SIZE) */
+    ;
+  const char *stdin_dev /*! Device used for standard input */;
+  const char *stdout_dev /*! Device used for standard output */;
+  const char *stderr_dev /*! Device used for standard error */;
+  const char *trace_dev /*! Device used for tracing */;
+  const char *sys_name /*! System (or board) name */;
+  const char *sys_version /*! System (or board) version (distinct from kernel version) */;
+  const char *sys_id /*! System ID (globally unique cloud identifier for board) */;
+  const char *team_id /*! Team ID (globally unique cloud identifier for team) */;
+  int sys_memory_size /*! Memory size reserved for the system */;
+  int o_sys_flags /*! System flags */;
+  void *(*start)(void *)/*! The start routine (when in doubt use sos_default_thread()) */;
+  void *start_args /*! Arguments passed to the start routine (for  sos_default_thread()
+                      use a pointer to the link transport driver) */
+    ;
+  const sos_socket_api_t
+    *socket_api /*! Socket API (zero if sockets are not supported) */;
+  void (*trace_event)(
+    void *event) /*! This will trace an event (zero if not supported) */;
+  void (*request)(
+    void) /*! Send an interrupt request to the link master (0 if not supported) */;
+  const char *git_hash /*! A pointer to the git hash string */;
 } sos_board_config_t;
 
 #define SOS_DEFAULT_START_STACK_SIZE 2048
 
-//must be provided by board support package
+// must be provided by board support package
 extern volatile sched_task_t sos_sched_table[];
 extern volatile task_t sos_task_table[];
 extern const sos_board_config_t sos_board_config;
 
-
-#define SOS_DECLARE_TASK_TABLE(task_count) \
-	volatile sched_task_t sos_sched_table[task_count] MCU_SYS_MEM; \
-	volatile task_t sos_task_table[task_count] MCU_SYS_MEM
+#define SOS_DECLARE_TASK_TABLE(task_count)                                               \
+  volatile sched_task_t sos_sched_table[task_count] MCU_SYS_MEM;                         \
+  volatile task_t sos_task_table[task_count] MCU_SYS_MEM
 
 #define SOS_USER_ROOT 0
 #define SOS_USER 1
 
 void sos_led_startup();
-void sos_led_svcall_enable(void * args);
-void sos_led_svcall_disable(void * args);
-void sos_led_svcall_error(void * args);
+void sos_led_svcall_enable(void *args);
+void sos_led_svcall_disable(void *args);
+void sos_led_svcall_error(void *args);
 
 void sos_led_root_enable();
 void sos_led_root_disable();
