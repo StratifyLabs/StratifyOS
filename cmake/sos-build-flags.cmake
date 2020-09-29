@@ -20,17 +20,19 @@ set(SOS_BUILD_FLOAT_DIR_V7M ".")
 set(SOS_BUILD_FLOAT_DIR_V7EM ".")
 
 string(COMPARE EQUAL "${CMAKE_C_COMPILER_VERSION}" 9.3.1 IS_GCC_9)
-if(IS_GCC_9) #armv7m soft float
+string(COMPARE EQUAL "${CMAKE_C_COMPILER_VERSION}" 8.3.1 IS_GCC_8)
+if(IS_GCC_9 OR IS_GCC_8)
 	set(SOS_BUILD_FLOAT_DIR_V7EM_F4SS "softfp") #single precision soft ABI
 	set(SOS_BUILD_FLOAT_DIR_V7EM_F4SH "hard")   #single precision hard ABI
 	set(SOS_BUILD_FLOAT_DIR_V7EM_F5SS "softfp") #single precision soft ABI
 	set(SOS_BUILD_FLOAT_DIR_V7EM_F5SH "hard")   #single precision hard ABI
 	set(SOS_BUILD_FLOAT_DIR_V7EM_F5DS "softfp")    #double precision soft ABI
 	set(SOS_BUILD_FLOAT_DIR_V7EM_F5DH "hard")      #double precision hard ABI
-	set(SOS_BUILD_INSTALL_DIR_V7M "thumb/v7-m/nofp")
-	set(SOS_BUILD_INSTALL_DIR_V7EM "thumb/v7e-m/nofp")
-	set(SOS_BUILD_INSTALL_DIR_V7EM_DP "thumb/v7e-m+dp")
-	set(SOS_BUILD_INSTALL_DIR_V7EM_FP "thumb/v7e-m+fp")
+	set(SOS_BUILD_INSTALL_DIR_V7M "thumb/v7-m/nofp") #M3 no FP
+	set(SOS_BUILD_INSTALL_DIR_V7EM "thumb/v7e-m/nofp") #M4 no FP
+	set(SOS_BUILD_INSTALL_DIR_V7_FP "thumb/v7-m") #M4 with FP
+	set(SOS_BUILD_INSTALL_DIR_V7EM_DP "thumb/v7e-m+dp") #M7
+	set(SOS_BUILD_INSTALL_DIR_V7EM_FP "thumb/v7e-m+fp") #m7
 else()
 	set(SOS_BUILD_FLOAT_DIR_V7EM_F4SS "fpv4-sp/softfp") #single precision soft ABI
 	set(SOS_BUILD_FLOAT_DIR_V7EM_F4SH "fpv4-sp/hard")   #single precision hard ABI
@@ -40,6 +42,7 @@ else()
 	set(SOS_BUILD_FLOAT_DIR_V7EM_F5DH "fpv5/hard")      #double precision hard ABI
 	set(SOS_BUILD_INSTALL_DIR_V7M "thumb/v7-m")         #thumb ARMV7M
 	set(SOS_BUILD_INSTALL_DIR_V7EM "thumb/v7e-m")       #thumb ARMV7EM
+	set(SOS_BUILD_INSTALL_DIR_V7_FP "thumb/v7e-m")
 	set(SOS_BUILD_INSTALL_DIR_V7EM_DP "thumb/v7e-m")       #thumb ARMV7EM
 	set(SOS_BUILD_INSTALL_DIR_V7EM_FP "thumb/v7e-m")       #thumb ARMV7EM
 endif()
@@ -68,12 +71,12 @@ elseif(IS_V7EM) #armv7em soft float
 	set(SOS_BUILD_FLOAT_OPTIONS ${SOS_BUILD_FLOAT_OPTIONS_V7EM})
 	set(SOS_BUILD_GCC_LIB gcc)
 elseif(IS_V7EM_F4SS) #armv7em fpu4 single precision soft abi
-	set(SOS_BUILD_INSTALL_DIR ${SOS_BUILD_INSTALL_DIR_V7EM_FP})
+	set(SOS_BUILD_INSTALL_DIR ${SOS_BUILD_INSTALL_DIR_V7_FP})
 	set(SOS_BUILD_FLOAT_DIR ${SOS_BUILD_FLOAT_DIR_V7EM_F4SS})
 	set(SOS_BUILD_FLOAT_OPTIONS ${SOS_BUILD_FLOAT_OPTIONS_V7EM_F4SS})
 	set(SOS_BUILD_GCC_LIB gcc)
 elseif(IS_V7EM_F4SH) #armv7em fpu4 single precision hard abi
-	set(SOS_BUILD_INSTALL_DIR ${SOS_BUILD_INSTALL_DIR_V7EM_FP})
+	set(SOS_BUILD_INSTALL_DIR ${SOS_BUILD_INSTALL_DIR_V7_FP})
 	set(SOS_BUILD_FLOAT_DIR ${SOS_BUILD_FLOAT_DIR_V7EM_F4SH})
 	set(SOS_BUILD_FLOAT_OPTIONS ${SOS_BUILD_FLOAT_OPTIONS_V7EM_F4SH})
 	set(SOS_BUILD_GCC_LIB gcc-hard)

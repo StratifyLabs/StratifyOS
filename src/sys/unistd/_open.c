@@ -1,4 +1,4 @@
-/* Copyright 2011-2018 Tyler Gilbert; 
+/* Copyright 2011-2018 Tyler Gilbert;
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -23,55 +23,52 @@
 
 /*! \file */
 
-
+#include <errno.h>
 #include <reent.h>
 #include <stdarg.h>
 #include <sys/stat.h>
-#include <errno.h>
 
-#include "unistd_local.h"
-#include "sos/dev/sys.h"
+#include "../scheduler/scheduler_local.h"
 #include "cortexm/cortexm.h"
 #include "mcu/mcu.h"
+#include "sos/dev/sys.h"
 #include "unistd_fs.h"
-#include "../scheduler/scheduler_local.h"
+#include "unistd_local.h"
 
 /*! \cond */
-void svcall_assign_handle(void * args){
-	CORTEXM_SVCALL_ENTER();
-	int * argp = args;
-	int i;
-	int start = *argp;
-	*argp = -1;
-	for(i = start; i < OPEN_MAX; i++){
-		//can't be interrupted
-		if ( get_handle(i) == NULL ){
-			set_handle(i, (void*)1);
-			*argp = i;
-			return;
-		}
-	}
+void svcall_assign_handle(void *args) {
+  CORTEXM_SVCALL_ENTER();
+  int *argp = args;
+  int i;
+  int start = *argp;
+  *argp = -1;
+  for (i = start; i < OPEN_MAX; i++) {
+    // can't be interrupted
+    if (get_handle(i) == NULL) {
+      set_handle(i, (void *)1);
+      *argp = i;
+      return;
+    }
+  }
 }
 
-int u_new_open_file(int start){
-	int arg = start;
+int u_new_open_file(int start) {
+  int arg = start;
 
-	cortexm_svcall(svcall_assign_handle, &arg);
-	if( arg < 0 ){
-		errno = EMFILE;
-	}
-	return arg;
+  cortexm_svcall(svcall_assign_handle, &arg);
+  if (arg < 0) {
+    errno = EMFILE;
+  }
+  return arg;
 }
 
-void u_reset_fildes(int fildes){
-	set_handle(fildes, NULL);
-}
+void u_reset_fildes(int fildes) { set_handle(fildes, NULL); }
 
-void set_open_file(int fildes, const sysfs_t * fs, void * handle, uint16_t flags){
-	set_fs(fildes, fs);
-	set_handle(fildes, handle);
-	set_loc(fildes, 0);
-	set_flags(fildes, flags);
+void set_open_file(int fildes, const sysfs_t *fs, void *handle, uint16_t flags) {
+  set_fs(fildes, fs);
+  set_handle(fildes, handle);
+  set_loc(fildes, 0);
+  set_flags(fildes, flags);
 }
 /*! \endcond */
 
@@ -105,109 +102,112 @@ void set_open_file(int fildes, const sysfs_t * fs, void * handle, uint16_t flags
  *
  *
  */
-int open(const char * name, int flags, ... );
+int open(const char *name, int flags, ...);
 
 /*! \cond */
-int _open(const char * name, int flags, ...) {
-	int tmp;
-	int ret;
-	int fildes;
-	int mode;
-	const sysfs_t * fs;
+int _open(const char *name, int flags, ...) {
+  int tmp;
+  int ret;
+  int fildes;
+  int mode;
+  const sysfs_t *fs;
 
-	//Check the length of the filename
-	if ( sysfs_ispathinvalid(name) == true ){
-		return -1;
-	}
+  // Check the length of the filename
+  if (sysfs_ispathinvalid(name) == true) {
+    return -1;
+  }
 
-	fs = sysfs_find(name, true); //see which filesystem we are working with first
-	if ( fs == NULL ){ //if no filesystem is found for the path, return no entity
-		errno = ENOENT;
-		return -1;
-	}
+  fs = sysfs_find(name, true); // see which filesystem we are working with first
+  if (fs == NULL) {            // if no filesystem is found for the path, return no entity
+    errno = ENOENT;
+    return -1;
+  }
 
-	fildes = u_new_open_file(0); //get a new file descriptor
-	if ( fildes < 0 ){
-		return -1;
-	}
+  fildes = u_new_open_file(0); // get a new file descriptor
+  if (fildes < 0) {
+    return -1;
+  }
 
-	tmp = 0;
-	//check the access mode
-	switch( (flags & O_ACCMODE) ){
-		case O_RDONLY:
-			tmp = R_OK;
-			break;
-		case O_WRONLY:
-			tmp = W_OK;
-			break;
-		case O_RDWR:
-			tmp = R_OK|W_OK;
-			break;
-	}
+  tmp = 0;
+  // check the access mode
+  switch ((flags & O_ACCMODE)) {
+  case O_RDONLY:
+    tmp = R_OK;
+    break;
+  case O_WRONLY:
+    tmp = W_OK;
+    break;
+  case O_RDWR:
+    tmp = R_OK | W_OK;
+    break;
+  }
 
-	if ( flags & O_CREAT ){
-		va_list ap;
-		va_start(ap, flags);
-		mode = va_arg(ap, mode_t);
-		va_end(ap);
-		tmp = mode & S_IFMT;
-		switch(tmp){
-			case S_IFDIR:
-				//This is not the correct way to create a directory (must use mkdir)
-				errno = EINVAL;
-				return -1;
-			case 0:
-				//If no format is specified then create a regular file
-				mode = mode | S_IFREG;
-				break;
-		}
-	} else {
-		mode = 0;
-	}
+  if (flags & O_CREAT) {
+    va_list ap;
+    va_start(ap, flags);
+    mode = va_arg(ap, mode_t);
+    va_end(ap);
+    tmp = mode & S_IFMT;
+    switch (tmp) {
+    case S_IFDIR:
+      // This is not the correct way to create a directory (must use mkdir)
+      errno = EINVAL;
+      return -1;
+    case 0:
+      // If no format is specified then create a regular file
+      mode = mode | S_IFREG;
+      break;
+    }
+  } else {
+    mode = 0;
+  }
 
-	set_open_file(fildes, fs, (void*)1, flags);
+  set_open_file(fildes, fs, (void *)1, flags);
 
-	if( (ret = sysfs_file_open(get_open_file(fildes), sysfs_stripmountpath(fs, name), mode)) <  0){
-		u_reset_fildes(fildes);
-		return ret;
-	}
+  if (
+    (ret = sysfs_file_open(get_open_file(fildes), sysfs_stripmountpath(fs, name), mode))
+    < 0) {
+    u_reset_fildes(fildes);
+    return ret;
+  }
 
-	if ( flags & O_APPEND ){
-		lseek(fildes, 0, SEEK_END);
-	}
+  if (flags & O_APPEND) {
+    lseek(fildes, 0, SEEK_END);
+  }
 
-	return fildes;
+  return fildes;
 }
 
-int u_fildes_is_bad(int fildes){
-	if ( fildes < 0 ){
-		errno = EBADF;
-		return -1;
-	}
+int u_fildes_is_bad(int fildes) {
+  if (fildes < 0) {
+    errno = EBADF;
+    return -1;
+  }
 
-	if ( fildes < OPEN_MAX ){
-		//since u_new_open_file() assigns handle to 1 temporarily, a handle of 0 or 1 is invalid
-		if ( ((int)get_handle(fildes) & ~(0x01)) != 0 ){
-			return fildes;
-		} else {
-			errno = EBADF;
-			return -1;
-		}
-	}
+  if (fildes < OPEN_MAX) {
+    // since u_new_open_file() assigns handle to 1 temporarily, a handle of 0 or 1 is
+    // invalid
+    if (((int)get_handle(fildes) & ~(0x01)) != 0) {
+      return fildes;
+    } else {
+      errno = EBADF;
+      return -1;
+    }
+  }
 
-	if ( fildes & FILDES_STDIO_FLAG ){
-		fildes = u_init_stdio(fildes);
-	} else {
-		return -1;
-	}
+  if (fildes & FILDES_STDIO_FLAG) {
+    fildes = u_init_stdio(fildes);
+  } else {
+    return -1;
+  }
 
-	return fildes;
+  return fildes;
 }
 
 /*
 typedef struct {
-	int err;
-	const device_t * handle;
+        int err;
+        const device_t * handle;
 } root_open_device_t;
 static void root_open_device(void * args);
 static int open_device(const char * name, int flags, int fildes);
@@ -215,52 +215,48 @@ static void set_open_file(int fildes, void * handle, uint16_t flags);
 
  */
 
-int u_init_stdio(int fildes){
+int u_init_stdio(int fildes) {
 #if USE_STDIO != 0
-	FILE * ptr;
-	switch(fildes){
-		case STDIN_FILENO:
-			ptr = _REENT->_stdin;
-			break;
-		case STDOUT_FILENO:
-			ptr = _REENT->_stdout;
-			break;
-		case STDERR_FILENO:
-			ptr = _REENT->_stderr;
-			break;
-		default:
-			errno = EBADF;
-			return -1;
-	}
+  FILE *ptr;
+  switch (fildes) {
+  case STDIN_FILENO:
+    ptr = _REENT->_stdin;
+    break;
+  case STDOUT_FILENO:
+    ptr = _REENT->_stdout;
+    break;
+  case STDERR_FILENO:
+    ptr = _REENT->_stderr;
+    break;
+  default:
+    errno = EBADF;
+    return -1;
+  }
 
-	//threads should use the already open descriptors of the process
-	if( _GLOBAL_REENT != _REENT ){
-		_REENT->_stdin->_file = _GLOBAL_REENT->_stdin->_file;
-		_REENT->_stdout->_file = _GLOBAL_REENT->_stdout->_file;
-		_REENT->_stderr->_file = _GLOBAL_REENT->_stderr->_file;
-	} else {
+  // threads should use the already open descriptors of the process
+  if (_GLOBAL_REENT != _REENT) {
+    _REENT->_stdin->_file = _GLOBAL_REENT->_stdin->_file;
+    _REENT->_stdout->_file = _GLOBAL_REENT->_stdout->_file;
+    _REENT->_stderr->_file = _GLOBAL_REENT->_stderr->_file;
+  } else {
 
-		if( sos_board_config.o_sys_flags & SYS_FLAG_IS_STDIO_FIFO ){
-			//the main thread needs to open the STDIO directly
-			_REENT->_stdin->_file = _open(sos_board_config.stdin_dev, O_RDWR);
-			_REENT->_stdout->_file = _open(sos_board_config.stdout_dev, O_RDWR);
-			_REENT->_stderr->_file = _open(sos_board_config.stderr_dev, O_RDWR);
-		} else {
-			_REENT->_stdin->_file = _open(sos_board_config.stdin_dev, O_RDWR);
-			_REENT->_stdout->_file = _REENT->_stdin->_file;
-			_REENT->_stderr->_file = _REENT->_stdin->_file;
-		}
-	}
+    if (sos_board_config.o_sys_flags & SYS_FLAG_IS_STDIO_FIFO) {
+      // the main thread needs to open the STDIO directly
+      _REENT->_stdin->_file = _open(sos_board_config.stdin_dev, O_RDWR);
+      _REENT->_stdout->_file = _open(sos_board_config.stdout_dev, O_RDWR);
+      _REENT->_stderr->_file = _open(sos_board_config.stderr_dev, O_RDWR);
+    } else {
+      _REENT->_stdin->_file = _open(sos_board_config.stdin_dev, O_RDWR);
+      _REENT->_stdout->_file = _REENT->_stdin->_file;
+      _REENT->_stderr->_file = _REENT->_stdin->_file;
+    }
+  }
 
-	return ptr->_file;
+  return ptr->_file;
 #else
-	return 0;
+  return 0;
 #endif
 }
 /*! \endcond */
 
-
-
-
 /*! @} */
-

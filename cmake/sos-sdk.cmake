@@ -176,20 +176,30 @@ function(sos_sdk_build_lib PROJECT_PATH IS_INSTALL CONFIG)
 	endif()
 endfunction()
 
-function(sos_get_git_hash)
-		execute_process(
-			COMMAND git log -1 --format=%h
-			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-			OUTPUT_VARIABLE GIT_HASH_OUTPUT_VARIABLE
-			OUTPUT_STRIP_TRAILING_WHITESPACE
-			RESULT_VARIABLE RESULT
-			)
+function(sos_sdk_add_format_target CLANG_COMMAND SOURCE_LIST)
+	add_custom_target(
+		format
+		COMMAND ${CLANG_COMMAND}
+		-i
+		--verbose
+		${SOURCE_LIST}
+		)
+endfunction()
 
-		if(RESULT)
-			set(SOS_GIT_HASH "0000000" PARENT_SCOPE)
-		else()
-			set(SOS_GIT_HASH ${GIT_HASH_OUTPUT_VARIABLE} PARENT_SCOPE)
-		endif()
+function(sos_get_git_hash)
+	execute_process(
+		COMMAND git log -1 --format=%h
+		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+		OUTPUT_VARIABLE GIT_HASH_OUTPUT_VARIABLE
+		OUTPUT_STRIP_TRAILING_WHITESPACE
+		RESULT_VARIABLE RESULT
+		)
+
+	if(RESULT)
+		set(SOS_GIT_HASH "0000000" PARENT_SCOPE)
+	else()
+		set(SOS_GIT_HASH ${GIT_HASH_OUTPUT_VARIABLE} PARENT_SCOPE)
+	endif()
 endfunction()
 
 
