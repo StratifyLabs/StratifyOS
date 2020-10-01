@@ -20,37 +20,28 @@
 #ifndef DEVICE_SDIO_H_
 #define DEVICE_SDIO_H_
 
-#include "sos/fs/devfs.h"
-#include "sos/dev/drive.h"
 #include "mcu/sdio.h"
+#include "sos/dev/drive.h"
+#include "sos/fs/devfs.h"
 
 typedef struct {
-	const char * buf;
-	int * nbyte;
-	int count;
-	int timeout;
-	uint8_t cmd[16];
-	devfs_async_t op;
-	mcu_event_handler_t handler;
-	u32 flags;
+  u32 flags;
 } drive_sdio_state_t;
 
 typedef struct {
-	sdio_config_t sdio;
+  sdio_config_t sdio;
 } drive_sdio_config_t;
 
+int drive_sdio_open(const devfs_handle_t *handle);
+int drive_sdio_ioctl(const devfs_handle_t *handle, int request, void *ctl);
+int drive_sdio_read(const devfs_handle_t *handle, devfs_async_t *rop);
+int drive_sdio_write(const devfs_handle_t *handle, devfs_async_t *wop);
+int drive_sdio_close(const devfs_handle_t *handle);
 
-int drive_sdio_open(const devfs_handle_t * handle);
-int drive_sdio_ioctl(const devfs_handle_t * handle, int request, void * ctl);
-int drive_sdio_read(const devfs_handle_t * handle, devfs_async_t * rop);
-int drive_sdio_write(const devfs_handle_t * handle, devfs_async_t * wop);
-int drive_sdio_close(const devfs_handle_t * handle);
-
-int drive_sdio_dma_open(const devfs_handle_t * handle);
-int drive_sdio_dma_ioctl(const devfs_handle_t * handle, int request, void * ctl);
-int drive_sdio_dma_read(const devfs_handle_t * handle, devfs_async_t * rop);
-int drive_sdio_dma_write(const devfs_handle_t * handle, devfs_async_t * wop);
-int drive_sdio_dma_close(const devfs_handle_t * handle);
-
+int drive_sdio_dma_open(const devfs_handle_t *handle);
+int drive_sdio_dma_ioctl(const devfs_handle_t *handle, int request, void *ctl);
+int drive_sdio_dma_read(const devfs_handle_t *handle, devfs_async_t *rop);
+int drive_sdio_dma_write(const devfs_handle_t *handle, devfs_async_t *wop);
+int drive_sdio_dma_close(const devfs_handle_t *handle);
 
 #endif /* DEVICE_SD_SPI_H_ */
