@@ -1,6 +1,4 @@
 
-option(SOS_VERBOSE "Create verbose makefiles" OFF)
-
 
 set(BUILD_ARCH ${SOS_ARCH})
 include(${SOS_TOOLCHAIN_CMAKE_PATH}/sos-build-flags.cmake)

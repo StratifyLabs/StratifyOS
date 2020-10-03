@@ -20,13 +20,15 @@
 #include "device/sys.h"
 #include "mcu/boot_debug.h"
 #include "mcu/debug.h"
+#include <stdio.h>
+#include <unistd.h>
+
 #include "mcu/mcu.h"
 #include "mcu/usb.h"
 #include "sys/ioctl.h"
 #include "usbd/control.h"
-#include <stdio.h>
-#include <unistd.h>
-#include <usbd/usbd_standard.h>
+
+#include "usbd_standard.h"
 
 static int execute_class_handler(usbd_control_t *context, const mcu_event_t *usb_event) {
   if (context->constants->class_event_handler != 0) {

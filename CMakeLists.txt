@@ -1,25 +1,18 @@
-cmake_minimum_required (VERSION 3.6)
+cmake_minimum_required (VERSION 3.12)
 
-set(SOS_TOOLCHAIN_CMAKE_PATH ${CMAKE_SOURCE_DIR}/cmake)
-
-include(${SOS_TOOLCHAIN_CMAKE_PATH}/sos-variables.cmake)
-include(${SOS_TOOLCHAIN_CMAKE_PATH}/sos-sdk.cmake)
-
-if( ${SOS_BUILD_CONFIG} STREQUAL arm )
-  set(CMAKE_TOOLCHAIN_FILE ${SOS_TOOLCHAIN_CMAKE_PATH}/sos-lib-toolchain.cmake)
-elseif( ${SOS_BUILD_CONFIG} STREQUAL link )
-  set(CMAKE_TOOLCHAIN_FILE ${SOS_TOOLCHAIN_CMAKE_PATH}/link-toolchain.cmake)
+if(DEFINED ENV{SOS_SDK_PATH})
+	set(SOS_SDK_PATH $ENV{SOS_SDK_PATH})
 endif()
+
+set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+set(CMAKE_TOOLCHAIN_FILE ${CMAKE_MODULE_PATH}/sos-toolchain.cmake)
+include(sos-sdk)
 
 set(SOS_NAME sos)
 project(${SOS_NAME} CXX C ASM)
 
 set(SOS_INCLUDE_DIRECTORIES include)
 include( ${CMAKE_SOURCE_DIR}/${SOS_BUILD_CONFIG}.cmake )
-
-if(NOT SOS_SKIP_CMAKE)
-	install(DIRECTORY cmake/ DESTINATION cmake)
-endif()
 
 add_custom_target(
   format

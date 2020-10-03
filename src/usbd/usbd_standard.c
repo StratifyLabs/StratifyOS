@@ -24,7 +24,8 @@
 #include "mcu/usb.h"
 #include "usbd/control.h"
 #include "usbd/msft.h"
-#include <usbd/usbd_standard.h>
+
+#include "usbd_standard.h"
 
 #define USBD_EP_MASK                                                                     \
   (USBD_ENDPOINT_ADDRESS_IN | (mcu_config.usb_logical_endpoint_count - 1))
