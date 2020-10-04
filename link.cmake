@@ -8,20 +8,22 @@ sos_sdk_add_subdirectory(SOS_SOURCELIST ${CMAKE_SOURCE_DIR}/src)
 
 set(SOS_ARCH link)
 
-add_library(StratifyOS_link_release_link STATIC)
-target_sources(StratifyOS_link_release_link
+sos_sdk_library_target_name(BUILD_RELEASE StratifyOS "" release link)
+
+add_library(${BUILD_RELEASE_TARGET} STATIC)
+target_sources(${BUILD_RELEASE_TARGET}
 	PUBLIC
 	${SOS_INTERFACE_SOURCELIST}
 	PRIVATE
 	${SOS_SOURCELIST}
 	)
 
-target_include_directories(StratifyOS_link_release_link
+target_include_directories(${BUILD_RELEASE_TARGET}
 	PRIVATE
 	${CMAKE_SOURCE_DIR}/include
 	)
 
-sos_sdk_library(StratifyOS link release link)
+sos_sdk_library("${BUILD_RELEASE_OPTIONS}")
 
 install(FILES include/mcu/types.h DESTINATION include/mcu)
 install(FILES include/mcu/mcu.h DESTINATION include/mcu)

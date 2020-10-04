@@ -1,5 +1,4 @@
 
-
 option(BUILD_ALL "Build All configurations" ON)
 option(BUILD_SYS "Build Stratify OS System library" OFF)
 option(BUILD_CRT "Build C Runtime library" OFF)
@@ -39,68 +38,55 @@ set(SYS_INCLUDE_DIRECTORIES
 list(APPEND SYS_SOURCELIST ${COMMON_SOURCES})
 
 if(BUILD_SYS OR BUILD_ALL)
-	add_library(StratifyOS_sys_release_v7m STATIC)
-	target_sources(StratifyOS_sys_release_v7m PRIVATE ${SYS_SOURCELIST})
-	target_include_directories(StratifyOS_sys_release_v7m PRIVATE ${SYS_INCLUDE_DIRECTORIES})
-	target_compile_options(StratifyOS_sys_release_v7m PUBLIC -Os)
+	sos_sdk_library_target(SYS_RELEASE StratifyOS sys release v7m)
+	sos_sdk_library_target(SYS_DEBUG StratifyOS sys debug v7m)
 
+	add_library(${SYS_RELEASE_TARGET} STATIC)
+	target_sources(${SYS_RELEASE_TARGET} PRIVATE ${SYS_SOURCELIST})
+	target_include_directories(${SYS_RELEASE_TARGET} PRIVATE ${SYS_INCLUDE_DIRECTORIES})
+	target_compile_options(${SYS_RELEASE_TARGET} PUBLIC -Os)
+	set_property(TARGET ${SYS_RELEASE_TARGET} PROPERTY INTERPROCEDURAL_OPTIMIZATION FALSE)
 
-	add_library(StratifyOS_sys_debug_v7m STATIC)
-	sos_sdk_copy_target(StratifyOS_sys_release_v7m StratifyOS_sys_debug_v7m)
+	add_library(${SYS_DEBUG_TARGET} STATIC)
+	sos_sdk_copy_target(${SYS_RELEASE_TARGET} ${SYS_DEBUG_TARGET})
 
-	sos_sdk_library_add_arm_targets(StratifyOS sys release)
-	sos_sdk_library_add_arm_targets(StratifyOS sys debug)
+	sos_sdk_library_add_arm_targets("${SYS_RELEASE_OPTIONS}")
+	sos_sdk_library_add_arm_targets("${SYS_DEBUG_OPTIONS}")
 endif()
 
 if(BUILD_CRT OR BUILD_ALL)
-	add_library(StratifyOS_crt_release_v7m STATIC)
-	target_sources(StratifyOS_crt_release_v7m PRIVATE ${CRT_SOURCELIST})
-	target_include_directories(StratifyOS_crt_release_v7m PRIVATE ${SYS_INCLUDE_DIRECTORIES})
-	target_compile_options(StratifyOS_crt_release_v7m PUBLIC -mlong-calls -Os)
+	sos_sdk_library_target(CRT_RELEASE StratifyOS crt release v7m)
+	sos_sdk_library_target(CRT_DEBUG StratifyOS crt debug v7m)
 
-	add_library(StratifyOS_crt_debug_v7m STATIC)
-	sos_sdk_copy_target(StratifyOS_crt_release_v7m StratifyOS_crt_debug_v7m)
+	add_library(${CRT_RELEASE_TARGET} STATIC)
+	target_sources(${CRT_RELEASE_TARGET} PRIVATE ${CRT_SOURCELIST})
+	target_include_directories(${CRT_RELEASE_TARGET} PRIVATE ${SYS_INCLUDE_DIRECTORIES})
+	target_compile_options(${CRT_RELEASE_TARGET} PUBLIC -mlong-calls -Os)
+
+	add_library(${CRT_DEBUG_TARGET} STATIC)
+	sos_sdk_copy_target(${CRT_RELEASE_TARGET} ${CRT_DEBUG_TARGET})
 
 	# Create targets for all architectures using above settings
-	sos_sdk_library_add_arm_targets(StratifyOS crt release)
-	sos_sdk_library_add_arm_targets(StratifyOS crt debug)
-endif()
-
-#[[
-if(BUILD_SYS OR BUILD_ALL)
-	set(SOS_OPTION sys)
-	set(SOS_CONFIG release)
-	set(SOS_BUILD_FLAGS "")
-	set(SOS_SOURCELIST ${SYS_SOURCELIST})
-	include(sos-lib-std)
-
-	set(SOS_OPTION sys)
-	set(SOS_CONFIG debug)
-	set(SOS_BUILD_FLAGS "")
-	include(sos-lib-std)
-endif()
-
-if(BUILD_CRT OR BUILD_ALL)
-	set(SOS_OPTION crt)
-	set(SOS_CONFIG release)
-	set(SOS_BUILD_FLAGS -mlong-calls)
-	set(SOS_SOURCELIST ${CRT_SOURCELIST})
-	include(sos-lib-std)
+	sos_sdk_library_add_arm_targets("${CRT_RELEASE_OPTIONS}")
+	sos_sdk_library_add_arm_targets("${CRT_DEBUG_OPTIONS}")
 endif()
 
 if(BUILD_BOOT OR BUILD_ALL)
-	set(SOS_OPTION boot)
-	set(SOS_CONFIG release)
-	set(SOS_BUILD_FLAGS "")
-	set(SOS_SOURCELIST ${BOOT_SOURCELIST} doxyfile)
-	include(sos-lib-std)
+	sos_sdk_library_target(BOOT_RELEASE StratifyOS boot release v7m)
+	sos_sdk_library_target(BOOT_DEBUG StratifyOS boot debug v7m)
 
-	set(SOS_CONFIG debug)
-	set(SOS_SOURCELIST ${BOOT_SOURCELIST})
-	include(sos-lib-std)
+	add_library(${BOOT_RELEASE_TARGET} STATIC)
+	target_sources(${BOOT_RELEASE_TARGET} PRIVATE ${BOOT_SOURCELIST})
+	target_include_directories(${BOOT_RELEASE_TARGET} PRIVATE ${SYS_INCLUDE_DIRECTORIES})
+	target_compile_options(${BOOT_RELEASE_TARGET} PUBLIC -Os)
+
+	add_library(${BOOT_DEBUG_TARGET} STATIC)
+	sos_sdk_copy_target(${BOOT_RELEASE_TARGET} ${BOOT_DEBUG_TARGET})
+
+	# Create targets for all architectures using above settings
+	sos_sdk_library_add_arm_targets("${BOOT_RELEASE_OPTIONS}")
+	sos_sdk_library_add_arm_targets("${BOOT_DEBUG_OPTIONS}")
 endif()
-#]]
-
 
 install(DIRECTORY include/cortexm include/device include/mcu include/sos include/usbd DESTINATION include PATTERN CMakelists.txt EXCLUDE)
 install(DIRECTORY include/posix/ DESTINATION include PATTERN CMakelists.txt EXCLUDE)

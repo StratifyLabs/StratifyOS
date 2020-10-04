@@ -1,90 +1,76 @@
 
+function(sos_sdk_bsp_target OUTPUT BASE_NAME OPTION CONFIG ARCH)
+	build_target_name("${BASE_NAME}" "${OPTION}" "${CONFIG}" "${ARCH}")
+	set(${OUTPUT}_OPTIONS "${BASE_NAME};${OPTION};${CONFIG};${ARCH}" PARENT_SCOPE)
+	set(${OUTPUT}_TARGET ${SOS_SDK_TMP_INSTALL}.elf PARENT_SCOPE)
+endfunction()
 
-set(BUILD_ARCH ${SOS_ARCH})
-include(${SOS_TOOLCHAIN_CMAKE_PATH}/sos-build-flags.cmake)
-include(${SOS_TOOLCHAIN_CMAKE_PATH}/sos-sdk.cmake)
-sos_get_git_hash()
+function(sos_sdk_bsp OPTION_LIST HARDWARE_ID START_ADDRESS)
 
-if(SOS_VERBOSE)
-	set(CMAKE_VERBOSE_MAKEFILE 1)
-endif()
+	list(GET OPTION_LIST 0 BASE_NAME)
+	list(GET OPTION_LIST 1 OPTION)
+	list(GET OPTION_LIST 2 CONFIG)
+	list(GET OPTION_LIST 3 ARCH)
 
+	build_target_name("${BASE_NAME}" "${OPTION}" "${CONFIG}" "${ARCH}")
+	message(STATUS "SOS SDK BSP ${SOS_SDK_TMP_TARGET}")
 
-if( ${SOS_CONFIG} MATCHES "release$" ) # matches if the config ends with "release"
-	set(BUILD_TYPE "")
-	set(BUILD_NAME build_${SOS_CONFIG})
-	set(BUILD_UNDEFINE_SYMBOL symbols_table)
-	set(BUILD_EXTRA_LIBRARIES "")
-elseif( ${SOS_CONFIG} MATCHES "debug$" ) # matches if the config ends with "debug"
-	set(BUILD_TYPE "_debug")
-	set(BUILD_NAME build_${SOS_CONFIG})
-	set(BUILD_UNDEFINE_SYMBOL symbols_table)
-	set(BUILD_EXTRA_LIBRARIES "")
-elseif( ${SOS_CONFIG} MATCHES "release_boot$" ) # matches if the config ends with "release_boot"
-	set(BUILD_TYPE "")
-	set(BUILD_NAME build_${SOS_CONFIG})
-	set(BUILD_EXTRA_LIBRARIES -lsos_boot)
-	set(BUILD_UNDEFINE_SYMBOL _main)
-elseif( ${SOS_CONFIG} MATCHES "debug_boot$" ) # matches if the config ends with "debug_boot"
-	set(BUILD_TYPE "_debug")
-	set(BUILD_NAME build_${SOS_CONFIG})
-	set(BUILD_UNDEFINE_SYMBOL _main)
-	set(BUILD_EXTRA_LIBRARIES -lsos_boot_debug)
-else()
-	set(BUILD_TYPE "")
-	set(BUILD_NAME build_${SOS_CONFIG})
-	set(BUILD_UNDEFINE_SYMBOL symbols_table)
-	set(BUILD_EXTRA_LIBRARIES "")
-endif()
+	set(TARGET_NAME ${SOS_SDK_TMP_INSTALL}.elf)
 
-set(BUILD_HARDWARD_ID ,--defsym=mcu_core_hardware_id=${SOS_HARDWARD_ID})
+	set(BINARY_OUTPUT_DIR ${CMAKE_SOURCE_DIR}/build_${SOS_SDK_TMP_NO_NAME})
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/${BUILD_NAME})
+	set_target_properties(${TARGET_NAME}
+		PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${BINARY_OUTPUT_DIR})
 
-file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+	file(MAKE_DIRECTORY ${BINARY_OUTPUT_DIR})
 
-if(SOS_OPTIMIZATION)
-	set(BUILD_OPTIMIZATION ${SOS_OPTIMIZATION})
-else()
-	set(BUILD_OPTIMIZATION "-Os")
-endif()
+	target_compile_definitions(${TARGET_NAME}
+		PUBLIC
+		__StratifyOS__
+		__${SOS_SDK_TMP_CONFIG}
+		__${SOS_SDK_TMP_OPTION}
+		__${ARCH}
+		__HARDWARE_ID=${HARDWARE_ID}
+		MCU_SOS_GIT_HASH=${SOS_GIT_HASH}
+		)
 
-if(SOS_LINKER_FILE)
-	set(LINKER_FILE ${SOS_LINKER_FILE})
-else()
-	set(LINKER_FILE ldscripts/${SOS_DEVICE}-rom.ld)
-endif()
+	target_include_directories(${TARGET_NAME}
+		PUBLIC
+		${SOS_BUILD_SYSTEM_INCLUDES}
+		)
 
-if(SOS_LIBRARIES)
-	set(BUILD_LIBRARIES "${SOS_LIBRARIES} -lsos_sys${BUILD_TYPE} -lsos_mcu_${SOS_DEVICE_FAMILY}${BUILD_TYPE} -lm -lc -lsos_sys${BUILD_TYPE} -l${SOS_BUILD_GCC_LIB}")
-else()
-	set(BUILD_LIBRARIES "-lsos_sys${BUILD_TYPE} -lsos_mcu_${SOS_DEVICE_FAMILY}${BUILD_TYPE} -lm -lc -lsos_sys${BUILD_TYPE} -lsos_mcu_${SOS_DEVICE_FAMILY}${BUILD_TYPE} -l${SOS_BUILD_GCC_LIB}")
-endif()
-set(BUILD_FLAGS ${SOS_BUILD_FLOAT_OPTIONS} ${BUILD_OPTIMIZATION} ${SOS_BUILD_FLAGS})
-set(LINKER_FLAGS
-	"${SOS_LINKER_FLAGS} -L${TOOLCHAIN_LIB_DIR}/${SOS_BUILD_INSTALL_DIR}/${SOS_BUILD_FLOAT_DIR} -L${TOOLCHAIN_DIR}/lib/gcc/${TOOLCHAIN_HOST}/${CMAKE_CXX_COMPILER_VERSION}/${SOS_BUILD_INSTALL_DIR}/${SOS_BUILD_FLOAT_DIR} -Wl,--print-memory-usage,-Map,${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${SOS_NAME}_${SOS_CONFIG}.map,--gc-sections${BUILD_HARDWARD_ID} -Ttext=${SOS_START_ADDRESS} -T${LINKER_FILE} -nostdlib -u ${BUILD_UNDEFINE_SYMBOL} -u mcu_core_vector_table"
-	)
+	sos_arm_arch(${ARCH})
 
-set(BUILD_TARGET ${SOS_NAME}_${SOS_CONFIG}.elf)
+	target_compile_options(${TARGET_NAME}
+		PUBLIC
+		-mthumb -D__StratifyOS__ -ffunction-sections -fdata-sections -fomit-frame-pointer
+		${SOS_ARM_ARCH_BUILD_FLAGS}
+		${SOS_ARM_ARCH_BUILD_FLOAT_OPTIONS}
+		)
 
-add_executable(${BUILD_TARGET} ${SOS_SOURCELIST})
-add_custom_target(bin_${SOS_NAME}_${SOS_CONFIG} DEPENDS ${BUILD_TARGET} COMMAND ${CMAKE_OBJCOPY} -j .boot_hdr -j .text -j .data -O binary ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${BUILD_TARGET} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${SOS_NAME}.bin)
-add_custom_target(asm_${SOS_NAME}_${SOS_CONFIG} DEPENDS bin_${SOS_NAME}_${SOS_CONFIG} COMMAND ${CMAKE_OBJDUMP} -S -j .boot_hdr -j .tcim -j .text -j .priv_code -j .data -j .bss -j .sysmem -d ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${BUILD_TARGET} > ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${SOS_NAME}.lst)
-add_custom_target(size_${SOS_NAME}_${SOS_CONFIG} DEPENDS asm_${SOS_NAME}_${SOS_CONFIG} COMMAND ${CMAKE_SIZE} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${BUILD_TARGET})
-add_custom_target(${SOS_CONFIG} ALL DEPENDS size_${SOS_NAME}_${SOS_CONFIG})
-add_custom_target(flash_${SOS_NAME}_${SOS_CONFIG}
-	DEPENDS size_${SOS_NAME}_${SOS_CONFIG}
-	COMMAND ${SOS_TOOLCHAIN_CMAKE_PATH}/../../bin/sl os.install:path=${SOS_NAME},build=${SOS_CONFIG}
-	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/../
-	)
+	get_target_property(EXIST_LINK_FLAGS ${TARGET_NAME} LINK_FLAGS)
 
-target_compile_definitions(${BUILD_TARGET} PUBLIC __StratifyOS__ __${BUILD_TYPE} __${BULD_ARCH} __HARDWARE_ID=${SOS_HARDWARD_ID} __${SOS_DEVICE_FAMILY} __${SOS_DEVICE} ${SOS_DEFINITIONS} MCU_SOS_GIT_HASH=${SOS_GIT_HASH})
-target_link_libraries(${BUILD_TARGET} ${BUILD_EXTRA_LIBRARIES} ${BUILD_LIBRARIES})
-set_target_properties(${BUILD_TARGET} PROPERTIES LINK_FLAGS ${LINKER_FLAGS})
-target_compile_options(${BUILD_TARGET} PUBLIC ${BUILD_FLAGS})
+	set(BSP_LINK_FLAGS
+		-L${SOS_SDK_PATH}/Tools/gcc/arm-none-eabi/lib/${SOS_ARM_ARCH_BUILD_INSTALL_DIR}/${SOS_ARM_ARCH_BUILD_FLOAT_DIR}
+		-L${SOS_SDK_PATH}/Tools/gcc/lib/gcc/arm-none-eabi/${CMAKE_CXX_COMPILER_VERSION}/${SOS_ARM_ARCH_BUILD_INSTALL_DIR}/${SOS_ARM_ARCH_BUILD_FLOAT_DIR}
+		-Wl,--print-memory-usage,-Map,${BINARY_OUTPUT_DIR}/${SOS_SDK_TMP_INSTALL}.map,--gc-sections,--defsym=mcu_core_hardware_id=${HARDWARE_ID}
+		-Ttext=${START_ADDRESS}
+		-nostdlib
+		-u mcu_core_vector_table
+		${EXIST_LINK_FLAGS}
+		)
 
-if(SOS_INCLUDE_DIRECTORIES)
-	target_include_directories(${BUILD_TARGET} PUBLIC ${SOS_INCLUDE_DIRECTORIES})
-endif()
+	list(JOIN BSP_LINK_FLAGS " " LINK_FLAGS)
 
-target_include_directories(${BUILD_TARGET} PUBLIC ${SOS_BUILD_SYSTEM_INCLUDES})
+	set_target_properties(${TARGET_NAME}
+		PROPERTIES
+		LINK_FLAGS
+		"${LINK_FLAGS}"
+		)
+
+	add_custom_target(bin_${TARGET_NAME} DEPENDS ${TARGET_NAME} COMMAND ${CMAKE_OBJCOPY} -j .boot_hdr -j .text -j .data -O binary ${BINARY_OUTPUT_DIR}/${TARGET_NAME} ${BINARY_OUTPUT_DIR}/${SOS_SDK_TMP_NO_CONFIG}.bin)
+	add_custom_target(asm_${TARGET_NAME} DEPENDS bin_${TARGET_NAME} COMMAND ${CMAKE_OBJDUMP} -S -j .boot_hdr -j .tcim -j .text -j .priv_code -j .data -j .bss -j .sysmem -d ${BINARY_OUTPUT_DIR}/${TARGET_NAME} > ${BINARY_OUTPUT_DIR}/${SOS_SDK_TMP_INSTALL}.lst)
+	add_custom_target(size_${TARGET_NAME} DEPENDS asm_${TARGET_NAME} COMMAND ${CMAKE_SIZE} ${BINARY_OUTPUT_DIR}/${TARGET_NAME})
+	add_custom_target(all_${TARGET_NAME} ALL DEPENDS size_${TARGET_NAME})
+
+endfunction()

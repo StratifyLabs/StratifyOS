@@ -108,13 +108,17 @@ sos_get_git_hash()
 macro(build_target_name BASE_NAME OPTION_NAME CONFIG_NAME ARCH_NAME)
 	set(SOS_SDK_TMP_TARGET ${BASE_NAME})
 	set(SOS_SDK_TMP_INSTALL ${BASE_NAME})
+	set(SOS_SDK_TMP_NO_CONFIG ${BASE_NAME})
+	set(SOS_SDK_TMP_NO_NAME "")
 
-	string(COMPARE EQUAL "${OPTION_NAME}" "" OPTION_AVAILABLE)
+	string(COMPARE EQUAL "${OPTION_NAME}" "" OPTION_MISSING)
 
-	if(NOT OPTION_AVAILABLE)
+	if(NOT OPTION_MISSING)
 		set(SOS_SDK_TMP_OPTION ${OPTION_NAME})
 		set(SOS_SDK_TMP_TARGET ${SOS_SDK_TMP_TARGET}_${SOS_SDK_TMP_OPTION})
+		set(SOS_SDK_TMP_NO_CONFIG ${SOS_SDK_TMP_NO_CONFIG}_${SOS_SDK_TMP_OPTION})
 		set(SOS_SDK_TMP_INSTALL ${SOS_SDK_TMP_INSTALL}_${SOS_SDK_TMP_OPTION})
+		set(SOS_SDK_TMP_NO_NAME ${OPTION_NAME}_)
 	else()
 		set(SOS_SDK_TMP_OPTION "SOS_SDK_OPTION_EMPTY")
 	endif()
@@ -130,6 +134,7 @@ macro(build_target_name BASE_NAME OPTION_NAME CONFIG_NAME ARCH_NAME)
 	endif()
 
 	set(SOS_SDK_TMP_TARGET ${SOS_SDK_TMP_TARGET}_${SOS_SDK_TMP_CONFIG})
+	set(SOS_SDK_TMP_NO_NAME ${SOS_SDK_TMP_NO_NAME}${SOS_SDK_TMP_CONFIG})
 
 	if(NOT ARCH_NAME STREQUAL "")
 		set(SOS_SDK_TMP_TARGET ${SOS_SDK_TMP_TARGET}_${ARCH_NAME})
@@ -138,8 +143,6 @@ macro(build_target_name BASE_NAME OPTION_NAME CONFIG_NAME ARCH_NAME)
 	endif()
 
 	message(STATUS "SOS SDK Target ${SOS_SDK_TMP_TARGET}")
-	message(STATUS "SOS SDK Install Target ${SOS_SDK_TMP_INSTALL}")
-
 endmacro()
 
 function(sos_sdk_copy_target SOURCE_TARGET DEST_TARGET)
@@ -155,103 +158,41 @@ function(sos_sdk_copy_target SOURCE_TARGET DEST_TARGET)
 	endforeach(PROPERTY)
 endfunction()
 
-
-
 macro(is_arch_enabled ARCH)
 	SET(ARCH_ENABLED OFF)
+	sos_arm_arch(${ARCH})
+
 	if(SOS_ARCH_ARM_ALL)
 		set(ARCH_ENABLED ON)
-	endif()
-	if((ARCH STREQUAL"v7m") AND (SOS_ARCH_ARM_V7M))
-		set(ARCH_ENABLED ON)
-	endif()
-	if((ARCH STREQUAL"v7em") AND (SOS_ARCH_ARM_V7EM))
-		set(ARCH_ENABLED ON)
-	endif()
-	if((ARCH STREQUAL"v7em_f4sh") AND (SOS_ARCH_ARM_V7EM_F4SH))
-		set(ARCH_ENABLED ON)
-	endif()
-	if((ARCH STREQUAL"v7em_f5sh") AND (SOS_ARCH_ARM_V7EM_F5SH))
-		set(ARCH_ENABLED ON)
-	endif()
-	if((ARCH STREQUAL"v7em_f5dh") AND (SOS_ARCH_ARM_V7EM_F5DH))
-		set(ARCH_ENABLED ON)
+	else()
+		if((IS_V7M) AND (SOS_ARCH_ARM_V7M))
+			set(ARCH_ENABLED ON)
+		endif()
+		if((IS_V7EM) AND (SOS_ARCH_ARM_V7EM))
+			set(ARCH_ENABLED ON)
+		endif()
+		if((IS_V7EM_F4SH) AND (SOS_ARCH_ARM_V7EM_F4SH))
+			set(ARCH_ENABLED ON)
+		endif()
+		if((IS_V7EM_F5SH) AND (SOS_ARCH_ARM_V7EM_F5SH))
+			set(ARCH_ENABLED ON)
+		endif()
+		if((IS_V7EM_F5DH) AND (SOS_ARCH_ARM_V7EM_F5DH))
+			set(ARCH_ENABLED ON)
+		endif()
 	endif()
 endmacro()
 
-function(sos_sdk_library_add_arm_targets BASE_NAME OPTION CONFIG)
-	set(ARCH_LIST v7em v7em_f4sh v7em_f5sh v7em_f5dh)
-	foreach (ARCH ${ARCH_LIST})
-		is_arch_enabled(${ARCH})
-		if(ARCH_ENABLED)
-			set(TARGET_NAME ${BASE_NAME})
-			if(NOT OPTION STREQUAL "")
-				set(TARGET_NAME ${TARGET_NAME}_${OPTION})
-			endif()
-			set(TARGET_NAME ${TARGET_NAME}_${CONFIG})
-			add_library(${TARGET_NAME}_${ARCH} STATIC)
-			sos_sdk_copy_target(
-				${TARGET_NAME}_v7m
-				${TARGET_NAME}_${ARCH}
-				)
-			# this applies architecture specific options
-			sos_sdk_library(${BASE_NAME} ${OPTION} ${CONFIG} ${ARCH})
-		endif()
-	endforeach(ARCH)
-	sos_sdk_library(${BASE_NAME} ${OPTION} ${CONFIG} v7m)
-endfunction()
+include(${CMAKE_CURRENT_LIST_DIR}/sos-lib.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/sos-bsp.cmake)
 
-function(sos_sdk_library_target_name OUTPUT BASE_NAME OPTION_NAME CONFIG_NAME ARCH_NAME)
-	build_target_name("${BASE_NAME}" "${OPTION_NAME}" "${CONFIG_NAME}" "${ARCH_NAME}")
-	set(${OUTPUT} ${SOS_SDK_TMP_TARGET} PARENT_SCOPE)
-endfunction()
-
-function(sos_sdk_library BASE_NAME OPTION_NAME CONFIG_NAME ARCH_NAME)
-	message(STATUS "SOS SDK Library ${BASE_NAME}_${OPTION_NAME}_${CONFIG_NAME}_${ARCH_NAME}")
-	build_target_name(${BASE_NAME} ${OPTION_NAME} ${CONFIG_NAME} ${ARCH_NAME})
-
-	target_compile_definitions(${SOS_SDK_TMP_TARGET}
-		PUBLIC
-		__${SOS_SDK_TMP_CONFIG}
-		__${SOS_SDK_TMP_OPTION}
-		__${ARCH_NAME}
-		MCU_SOS_GIT_HASH=${SOS_GIT_HASH}
-		)
-
-	if(NOT ARCH_NAME STREQUAL "link")
-
-		target_include_directories(${SOS_SDK_TMP_TARGET}
-			PUBLIC
-			${SOS_BUILD_SYSTEM_INCLUDES}
-			)
-
-		sos_arm_arch(${ARCH_NAME})
-
-		target_compile_definitions(${SOS_SDK_TMP_TARGET}
-			PUBLIC
-			__StratifyOS__
-			)
-
-		target_compile_options(${SOS_SDK_TMP_TARGET}
-			PUBLIC
-			-mthumb -D__StratifyOS__ -ffunction-sections -fdata-sections -fomit-frame-pointer
-			${SOS_ARM_ARCH_BUILD_FLAGS}
-			${SOS_ARM_ARCH_BUILD_FLOAT_OPTIONS}
-			)
-
-	endif()
-
-	install(FILES ${CMAKE_BINARY_DIR}/lib${SOS_SDK_TMP_TARGET}.a DESTINATION lib/${SOS_ARM_ARCH_BUILD_INSTALL_DIR}/${SOS_ARM_ARCH_BUILD_FLOAT_DIR} RENAME lib${SOS_SDK_TMP_INSTALL}.a)
-
-endfunction()
-
-function(sos_sdk_bsp_target_name OUTPUT BASE_NAME OPTION CONFIG ARCH)
+function(sos_sdk_app_target OUTPUT BASE_NAME OPTION CONFIG ARCH)
 	build_target_name("${BASE_NAME}" "${OPTION}" "${CONFIG}" "${ARCH}")
-	set(${OUTPUT} ${SOS_SDK_TMP_INSTALL}.elf PARENT_SCOPE)
+	set(${OUTPUT}_OPTIONS "${BASE_NAME};${OPTION};${CONFIG};${ARCH}" PARENT_SCOPE)
+	set(${OUTPUT}_TARGET ${SOS_SDK_TMP_INSTALL}.elf PARENT_SCOPE)
 endfunction()
 
-function(sos_sdk_bsp BASE_NAME OPTION CONFIG ARCH HARDWARE_ID START_ADDRESS)
-	message(STATUS "SOS SDK BSP ${BASE_NAME}_${OPTION_NAME}_${CONFIG_NAME}_${ARCH_NAME}")
+function(sos_sdk_app BASE_NAME OPTION CONFIG ARCH HARDWARE_ID START_ADDRESS)
 	build_target_name("${BASE_NAME}" "${OPTION}" "${CONFIG}" "${ARCH}")
 
 	set(TARGET_NAME ${SOS_SDK_TMP_INSTALL}.elf)
@@ -288,12 +229,11 @@ function(sos_sdk_bsp BASE_NAME OPTION CONFIG ARCH HARDWARE_ID START_ADDRESS)
 		)
 
 	get_target_property(EXIST_LINK_FLAGS ${TARGET_NAME} LINK_FLAGS)
-	message("LINK FLAGS ARE ${EXIST_LINK_FLAGS}")
 
 	set(BSP_LINK_FLAGS
 		-L${SOS_SDK_PATH}/Tools/gcc/arm-none-eabi/lib/${SOS_ARM_ARCH_BUILD_INSTALL_DIR}/${SOS_ARM_ARCH_BUILD_FLOAT_DIR}
 		-L${SOS_SDK_PATH}/Tools/gcc/lib/gcc/arm-none-eabi/${CMAKE_CXX_COMPILER_VERSION}/${SOS_ARM_ARCH_BUILD_INSTALL_DIR}/${SOS_ARM_ARCH_BUILD_FLOAT_DIR}
-		-Wl,--print-memory-usage,-Map,${BINARY_OUTPUT_DIR}/${TARGET_NAME}.map,--gc-sections,--defsym=mcu_core_hardware_id=${HARDWARE_ID}
+		-Wl,--print-memory-usage,-Map,${BINARY_OUTPUT_DIR}/${SOS_SDK_TMP_INSTALL}.map,--gc-sections,--defsym=mcu_core_hardware_id=${HARDWARE_ID}
 		-Ttext=${START_ADDRESS}
 		-nostdlib
 		-u mcu_core_vector_table
@@ -308,12 +248,13 @@ function(sos_sdk_bsp BASE_NAME OPTION CONFIG ARCH HARDWARE_ID START_ADDRESS)
 		"${LINK_FLAGS}"
 		)
 
-	add_custom_target(bin_${TARGET_NAME} DEPENDS ${TARGET_NAME} COMMAND ${CMAKE_OBJCOPY} -j .boot_hdr -j .text -j .data -O binary ${BINARY_OUTPUT_DIR}/${TARGET_NAME} ${BINARY_OUTPUT_DIR}/${SOS_SDK_TMP_INSTALL}.bin)
+	add_custom_target(bin_${TARGET_NAME} DEPENDS ${TARGET_NAME} COMMAND ${CMAKE_OBJCOPY} -j .boot_hdr -j .text -j .data -O binary ${BINARY_OUTPUT_DIR}/${TARGET_NAME} ${BINARY_OUTPUT_DIR}/${SOS_SDK_TMP_NO_CONFIG}.bin)
 	add_custom_target(asm_${TARGET_NAME} DEPENDS bin_${TARGET_NAME} COMMAND ${CMAKE_OBJDUMP} -S -j .boot_hdr -j .tcim -j .text -j .priv_code -j .data -j .bss -j .sysmem -d ${BINARY_OUTPUT_DIR}/${TARGET_NAME} > ${BINARY_OUTPUT_DIR}/${SOS_SDK_TMP_INSTALL}.lst)
 	add_custom_target(size_${TARGET_NAME} DEPENDS asm_${TARGET_NAME} COMMAND ${CMAKE_SIZE} ${BINARY_OUTPUT_DIR}/${TARGET_NAME})
 	add_custom_target(${CONFIG} ALL DEPENDS size_${TARGET_NAME})
 
 endfunction()
+
 
 function(sos_sdk_app TARGET_NAME CONFIG ARCH)
 
