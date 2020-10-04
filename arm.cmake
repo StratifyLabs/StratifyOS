@@ -42,6 +42,8 @@ if(BUILD_SYS OR BUILD_ALL)
 	add_library(StratifyOS_sys_release_v7m STATIC)
 	target_sources(StratifyOS_sys_release_v7m PRIVATE ${SYS_SOURCELIST})
 	target_include_directories(StratifyOS_sys_release_v7m PRIVATE ${SYS_INCLUDE_DIRECTORIES})
+	target_compile_options(StratifyOS_sys_release_v7m PUBLIC -Os)
+
 
 	add_library(StratifyOS_sys_debug_v7m STATIC)
 	sos_sdk_copy_target(StratifyOS_sys_release_v7m StratifyOS_sys_debug_v7m)
@@ -54,7 +56,7 @@ if(BUILD_CRT OR BUILD_ALL)
 	add_library(StratifyOS_crt_release_v7m STATIC)
 	target_sources(StratifyOS_crt_release_v7m PRIVATE ${CRT_SOURCELIST})
 	target_include_directories(StratifyOS_crt_release_v7m PRIVATE ${SYS_INCLUDE_DIRECTORIES})
-	target_compile_options(StratifyOS_crt_release_v7m PUBLIC -mlong-calls)
+	target_compile_options(StratifyOS_crt_release_v7m PUBLIC -mlong-calls -Os)
 
 	add_library(StratifyOS_crt_debug_v7m STATIC)
 	sos_sdk_copy_target(StratifyOS_crt_release_v7m StratifyOS_crt_debug_v7m)
@@ -99,13 +101,19 @@ if(BUILD_BOOT OR BUILD_ALL)
 endif()
 #]]
 
+
 install(DIRECTORY include/cortexm include/device include/mcu include/sos include/usbd DESTINATION include PATTERN CMakelists.txt EXCLUDE)
 install(DIRECTORY include/posix/ DESTINATION include PATTERN CMakelists.txt EXCLUDE)
 install(DIRECTORY ldscript/ DESTINATION lib/ldscripts PATTERN CMakelists.txt EXCLUDE)
 
 option(SOS_SKIP_CMAKE "Dont install the cmake files" OFF)
+option(SOS_CREATE_GCC_HARD "Dont install the cmake files" OFF)
 
 if(NOT SOS_SKIP_CMAKE)
 	install(DIRECTORY cmake/ DESTINATION ../cmake)
+endif()
+
+if(SOS_CREATE_GCC_HARD)
+	install(CODE "include(../create-gcc-hard.cmake)")
 endif()
 

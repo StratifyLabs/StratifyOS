@@ -39,24 +39,23 @@
 #define SCHED_FIRST_THREAD_STACK_SIZE 2048
 #define SCHED_DEFAULT_STACKGUARD_SIZE 128
 
+#if defined MCU_ARCH_IMXRT
+#include <mcu/arch/imxrt/imxrt_arch.h>
+#define ARCH_DEFINED
+#endif
 
-#if (defined __lpc17xx) || (defined __lpc177x_8x) || (defined __lpc407x_8x) || (defined __lpc43xx)
-#undef __FPU_USED
-#include "arch/lpc/lpc_arch.h"
+#if defined MCU_ARCH_LPC
+#include <mcu/arch/lpc/lpc_arch.h>
 #define ARCH_DEFINED
-#elif (defined __stm32f446xx) || (defined __stm32f401xc) || (defined __stm32f411xe) \
-	|| (defined __stm32f413xx) || (defined __stm32f417xx) || (defined __stm32f412zx) || (defined __stm32f429xx) \
-	|| (defined __stm32f746xx) || (defined __stm32f722xx) || (defined __stm32f723xx) || (defined __stm32f767xx) \
-	|| (defined __stm32l475xx) || (defined __stm32l432xx) ||(defined __stm32f401xe) \
-	|| (defined __stm32h743xx) || (defined __stm32h750xx) \
-	|| (defined __stm32f205xx)	|| (defined __stm32f207xx)  || (defined __stm32f215xx)  || (defined __stm32f217xx)
-#undef __FPU_USED
-#include "arch/stm32/stm32_arch.h"
+#endif
+
+#if defined MCU_ARCH_STM32
+#include <mcu/arch/stm32/stm32_arch.h>
 #define ARCH_DEFINED
-#elif (defined __imxrt1052)
-#include "arch/imxrt/imxrt_arch.h"
+#endif
+
+#if !defined ARCH_DEFINED
 #define ARCH_DEFINED
-#else
 
 typedef enum IRQn
 {

@@ -9,7 +9,7 @@ set(CMAKE_TOOLCHAIN_FILE ${CMAKE_MODULE_PATH}/sos-toolchain.cmake)
 include(sos-sdk)
 
 set(SOS_NAME sos)
-project(${SOS_NAME} CXX C ASM)
+project(StratifyOS CXX C ASM)
 
 set(SOS_INCLUDE_DIRECTORIES include)
 include( ${CMAKE_SOURCE_DIR}/${SOS_BUILD_CONFIG}.cmake )

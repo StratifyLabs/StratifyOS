@@ -142,27 +142,9 @@ macro(build_target_name BASE_NAME OPTION_NAME CONFIG_NAME ARCH_NAME)
 
 endmacro()
 
-function(sos_sdk_target_library_target OUTPUT BASE_NAME OPTION_NAME CONFIG_NAME ARCH_NAME)
-	build_target_name(${BASE_NAME} ${OPTION_NAME} ${CONFIG_NAME} ${ARCH_NAME})
-	set(OUTPUT ${SOS_SDK_TMP_TARGET} PARENT_SCOPE)
-endfunction()
-
 function(sos_sdk_copy_target SOURCE_TARGET DEST_TARGET)
-
-	#execute_process(COMMAND cmake --help-property-list OUTPUT_VARIABLE CMAKE_PROPERTY_LIST)
-
-	# Convert command output into a CMake list
-	#STRING(REGEX REPLACE ";" "\\\\;" CMAKE_PROPERTY_LIST "${CMAKE_PROPERTY_LIST}")
-	#STRING(REGEX REPLACE "\n" ";" CMAKE_PROPERTY_LIST "${CMAKE_PROPERTY_LIST}")
-
 	foreach (PROPERTY ${SOS_SHARED_PROPERTIES})
 		string(REPLACE "<CONFIG>" "${CMAKE_BUILD_TYPE}" prop ${PROPERTY})
-		# Fix https://stackoverflow.com/questions/32197663/how-can-i-remove-the-the-location-property-may-not-be-read-from-target-error-i
-		#if(prop STREQUAL "LOCATION" OR prop MATCHES "^LOCATION_" OR prop MATCHES "_LOCATION$")
-		#	continue()
-		#endif()
-
-		# message ("Checking ${PROPERTY}")
 		get_property(PROPERTY_VALUE TARGET ${SOURCE_TARGET} PROPERTY ${PROPERTY} SET)
 
 		if (PROPERTY_VALUE)
@@ -171,8 +153,9 @@ function(sos_sdk_copy_target SOURCE_TARGET DEST_TARGET)
 		endif()
 
 	endforeach(PROPERTY)
-
 endfunction()
+
+
 
 macro(is_arch_enabled ARCH)
 	SET(ARCH_ENABLED OFF)
@@ -216,6 +199,11 @@ function(sos_sdk_library_add_arm_targets BASE_NAME OPTION CONFIG)
 		endif()
 	endforeach(ARCH)
 	sos_sdk_library(${BASE_NAME} ${OPTION} ${CONFIG} v7m)
+endfunction()
+
+function(sos_sdk_library_target_name OUTPUT BASE_NAME OPTION_NAME CONFIG_NAME ARCH_NAME)
+	build_target_name("${BASE_NAME}" "${OPTION_NAME}" "${CONFIG_NAME}" "${ARCH_NAME}")
+	set(${OUTPUT} ${SOS_SDK_TMP_TARGET} PARENT_SCOPE)
 endfunction()
 
 function(sos_sdk_library BASE_NAME OPTION_NAME CONFIG_NAME ARCH_NAME)
@@ -262,19 +250,27 @@ function(sos_sdk_bsp_target_name OUTPUT BASE_NAME OPTION CONFIG ARCH)
 	set(${OUTPUT} ${SOS_SDK_TMP_INSTALL}.elf PARENT_SCOPE)
 endfunction()
 
-function(sos_sdk_bsp BASE_NAME OPTION CONFIG ARCH)
+function(sos_sdk_bsp BASE_NAME OPTION CONFIG ARCH HARDWARE_ID START_ADDRESS)
 	message(STATUS "SOS SDK BSP ${BASE_NAME}_${OPTION_NAME}_${CONFIG_NAME}_${ARCH_NAME}")
 	build_target_name("${BASE_NAME}" "${OPTION}" "${CONFIG}" "${ARCH}")
 
 	set(TARGET_NAME ${SOS_SDK_TMP_INSTALL}.elf)
 
+	set(BINARY_OUTPUT_DIR ${CMAKE_SOURCE_DIR}/build_${CONFIG})
+
+	set_target_properties(${TARGET_NAME}
+		PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${BINARY_OUTPUT_DIR})
+
+	file(MAKE_DIRECTORY ${BINARY_OUTPUT_DIR})
+
 	target_compile_definitions(${TARGET_NAME}
 		PUBLIC
+		__StratifyOS__
 		__${SOS_SDK_TMP_CONFIG}
 		__${SOS_SDK_TMP_OPTION}
 		__${ARCH}
+		__HARDWARE_ID=${HARDWARE_ID}
 		MCU_SOS_GIT_HASH=${SOS_GIT_HASH}
-		__StratifyOS__
 		)
 
 	target_include_directories(${TARGET_NAME}
@@ -291,16 +287,31 @@ function(sos_sdk_bsp BASE_NAME OPTION CONFIG ARCH)
 		${SOS_ARM_ARCH_BUILD_FLOAT_OPTIONS}
 		)
 
-	set_target_properties(${TARGET_NAME}
-		PROPERTIES
-		LINK_FLAGS
-		-L${SOS_SDK_PATH}/Tools/gcc/lib/${SOS_ARM_ARCH_BUILD_INSTALL_DIR}/${SOS_ARM_ARCH_BUILD_FLOAT_DIR}
+	get_target_property(EXIST_LINK_FLAGS ${TARGET_NAME} LINK_FLAGS)
+	message("LINK FLAGS ARE ${EXIST_LINK_FLAGS}")
+
+	set(BSP_LINK_FLAGS
+		-L${SOS_SDK_PATH}/Tools/gcc/arm-none-eabi/lib/${SOS_ARM_ARCH_BUILD_INSTALL_DIR}/${SOS_ARM_ARCH_BUILD_FLOAT_DIR}
+		-L${SOS_SDK_PATH}/Tools/gcc/lib/gcc/arm-none-eabi/${CMAKE_CXX_COMPILER_VERSION}/${SOS_ARM_ARCH_BUILD_INSTALL_DIR}/${SOS_ARM_ARCH_BUILD_FLOAT_DIR}
+		-Wl,--print-memory-usage,-Map,${BINARY_OUTPUT_DIR}/${TARGET_NAME}.map,--gc-sections,--defsym=mcu_core_hardware_id=${HARDWARE_ID}
+		-Ttext=${START_ADDRESS}
+		-nostdlib
+		-u mcu_core_vector_table
+		${EXIST_LINK_FLAGS}
 		)
+
+	list(JOIN BSP_LINK_FLAGS " " LINK_FLAGS)
 
 	set_target_properties(${TARGET_NAME}
 		PROPERTIES
 		LINK_FLAGS
-		-L${SOS_SDK_PATH}/Tools/gcc/lib/gcc/arm-none-eabi/${CMAKE_CXX_COMPILER_VERSION}/${SOS_ARM_ARCH_BUILD_INSTALL_DIR}/${SOS_ARM_ARCH_BUILD_FLOAT_DIR})
+		"${LINK_FLAGS}"
+		)
+
+	add_custom_target(bin_${TARGET_NAME} DEPENDS ${TARGET_NAME} COMMAND ${CMAKE_OBJCOPY} -j .boot_hdr -j .text -j .data -O binary ${BINARY_OUTPUT_DIR}/${TARGET_NAME} ${BINARY_OUTPUT_DIR}/${SOS_SDK_TMP_INSTALL}.bin)
+	add_custom_target(asm_${TARGET_NAME} DEPENDS bin_${TARGET_NAME} COMMAND ${CMAKE_OBJDUMP} -S -j .boot_hdr -j .tcim -j .text -j .priv_code -j .data -j .bss -j .sysmem -d ${BINARY_OUTPUT_DIR}/${TARGET_NAME} > ${BINARY_OUTPUT_DIR}/${SOS_SDK_TMP_INSTALL}.lst)
+	add_custom_target(size_${TARGET_NAME} DEPENDS asm_${TARGET_NAME} COMMAND ${CMAKE_SIZE} ${BINARY_OUTPUT_DIR}/${TARGET_NAME})
+	add_custom_target(${CONFIG} ALL DEPENDS size_${TARGET_NAME})
 
 endfunction()
 
