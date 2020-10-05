@@ -1,5 +1,5 @@
 function(sos_sdk_library_target OUTPUT BASE_NAME OPTION CONFIG ARCH)
-	build_target_name("${BASE_NAME}" "${OPTION}" "${CONFIG}" "${ARCH}")
+	sos_sdk_internal_build_target_name("${BASE_NAME}" "${OPTION}" "${CONFIG}" "${ARCH}")
 	set(${OUTPUT}_OPTIONS "${BASE_NAME};${OPTION};${CONFIG};${ARCH}" PARENT_SCOPE)
 	set(${OUTPUT}_TARGET ${SOS_SDK_TMP_TARGET} PARENT_SCOPE)
 endfunction()
@@ -14,7 +14,7 @@ function(sos_sdk_library_add_arm_targets OPTION_LIST)
 	sos_sdk_library_target(BUILD_V7M ${BASE_NAME} "${OPTION}" "${CONFIG}" v7m)
 
 	foreach (ARCH ${ARCH_LIST})
-		is_arch_enabled(${ARCH})
+		sos_sdk_internal_is_arch_enabled(${ARCH})
 		if(ARCH_ENABLED)
 			set(TARGET_NAME ${BASE_NAME})
 			if(NOT OPTION STREQUAL "")
@@ -41,7 +41,9 @@ function(sos_sdk_library OPTION_LIST)
 	list(GET OPTION_LIST 2 CONFIG)
 	list(GET OPTION_LIST 3 ARCH)
 
-	build_target_name(${BASE_NAME} "${OPTION}" "${CONFIG}" ${ARCH})
+	sos_sdk_internal_build_target_name(${BASE_NAME} "${OPTION}" "${CONFIG}" ${ARCH})
+	sos_sdk_internal_arm_arch(${ARCH})
+
 	message(STATUS "SOS SDK Library ${SOS_SDK_TMP_TARGET}")
 
 	target_compile_definitions(${SOS_SDK_TMP_TARGET}
@@ -59,7 +61,7 @@ function(sos_sdk_library OPTION_LIST)
 			${SOS_BUILD_SYSTEM_INCLUDES}
 			)
 
-		sos_arm_arch(${ARCH})
+		sos_sdk_internal_arm_arch(${ARCH})
 
 		target_compile_definitions(${SOS_SDK_TMP_TARGET}
 			PUBLIC
@@ -69,7 +71,6 @@ function(sos_sdk_library OPTION_LIST)
 		target_compile_options(${SOS_SDK_TMP_TARGET}
 			PUBLIC
 			-mthumb -D__StratifyOS__ -ffunction-sections -fdata-sections -fomit-frame-pointer
-			${SOS_ARM_ARCH_BUILD_FLAGS}
 			${SOS_ARM_ARCH_BUILD_FLOAT_OPTIONS}
 			)
 

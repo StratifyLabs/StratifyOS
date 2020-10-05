@@ -1,6 +1,6 @@
 
 function(sos_sdk_bsp_target OUTPUT BASE_NAME OPTION CONFIG ARCH)
-	build_target_name("${BASE_NAME}" "${OPTION}" "${CONFIG}" "${ARCH}")
+	sos_sdk_internal_build_target_name("${BASE_NAME}" "${OPTION}" "${CONFIG}" "${ARCH}")
 	set(${OUTPUT}_OPTIONS "${BASE_NAME};${OPTION};${CONFIG};${ARCH}" PARENT_SCOPE)
 	set(${OUTPUT}_TARGET ${SOS_SDK_TMP_INSTALL}.elf PARENT_SCOPE)
 endfunction()
@@ -12,7 +12,9 @@ function(sos_sdk_bsp OPTION_LIST HARDWARE_ID START_ADDRESS)
 	list(GET OPTION_LIST 2 CONFIG)
 	list(GET OPTION_LIST 3 ARCH)
 
-	build_target_name("${BASE_NAME}" "${OPTION}" "${CONFIG}" "${ARCH}")
+	sos_sdk_internal_build_target_name("${BASE_NAME}" "${OPTION}" "${CONFIG}" "${ARCH}")
+	sos_sdk_internal_arm_arch(${ARCH})
+
 	message(STATUS "SOS SDK BSP ${SOS_SDK_TMP_TARGET}")
 
 	set(TARGET_NAME ${SOS_SDK_TMP_INSTALL}.elf)
@@ -39,18 +41,15 @@ function(sos_sdk_bsp OPTION_LIST HARDWARE_ID START_ADDRESS)
 		${SOS_BUILD_SYSTEM_INCLUDES}
 		)
 
-	sos_arm_arch(${ARCH})
-
 	target_compile_options(${TARGET_NAME}
 		PUBLIC
-		-mthumb -D__StratifyOS__ -ffunction-sections -fdata-sections -fomit-frame-pointer
-		${SOS_ARM_ARCH_BUILD_FLAGS}
+		-mthumb -ffunction-sections -fdata-sections -fomit-frame-pointer
 		${SOS_ARM_ARCH_BUILD_FLOAT_OPTIONS}
 		)
 
 	get_target_property(EXIST_LINK_FLAGS ${TARGET_NAME} LINK_FLAGS)
 
-	set(BSP_LINK_FLAGS
+	set(UPDATED_LINK_FLAGS
 		-L${SOS_SDK_PATH}/Tools/gcc/arm-none-eabi/lib/${SOS_ARM_ARCH_BUILD_INSTALL_DIR}/${SOS_ARM_ARCH_BUILD_FLOAT_DIR}
 		-L${SOS_SDK_PATH}/Tools/gcc/lib/gcc/arm-none-eabi/${CMAKE_CXX_COMPILER_VERSION}/${SOS_ARM_ARCH_BUILD_INSTALL_DIR}/${SOS_ARM_ARCH_BUILD_FLOAT_DIR}
 		-Wl,--print-memory-usage,-Map,${BINARY_OUTPUT_DIR}/${SOS_SDK_TMP_INSTALL}.map,--gc-sections,--defsym=mcu_core_hardware_id=${HARDWARE_ID}
@@ -60,7 +59,7 @@ function(sos_sdk_bsp OPTION_LIST HARDWARE_ID START_ADDRESS)
 		${EXIST_LINK_FLAGS}
 		)
 
-	list(JOIN BSP_LINK_FLAGS " " LINK_FLAGS)
+	list(JOIN UPDATED_LINK_FLAGS " " LINK_FLAGS)
 
 	set_target_properties(${TARGET_NAME}
 		PROPERTIES

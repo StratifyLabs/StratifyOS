@@ -15,7 +15,7 @@ endif()
 sos_sdk_add_subdirectory(SOS_INTERFACE_SOURCELIST ${CMAKE_SOURCE_DIR}/include)
 
 # Grab GLOB files - these don't affect the build so GLOB is OK
-file(GLOB CMAKE_SOURCES ${CMAKE_SOURCE_DIR}/cmake/*)
+file(GLOB_RECURSE CMAKE_SOURCES ${CMAKE_SOURCE_DIR}/cmake/*)
 file(GLOB LDSCRIPT_SOURCES ${CMAKE_SOURCE_DIR}/ldscript/*)
 
 set(COMMON_SOURCES ${CMAKE_SOURCES} ${LDSCRIPT_SOURCES} ${SOS_INTERFACE_SOURCELIST})

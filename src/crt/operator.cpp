@@ -17,15 +17,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-extern "C" void * operator new(size_t size){
-	return malloc(size);
-}
+extern "C" void *operator new(size_t size) { return malloc(size); }
 
-extern "C" void operator delete(void * p){
-	free(p);
-}
+extern "C" void operator delete(void *p) { free(p); }
 
-extern "C" void operator delete(void * p, unsigned int size){
-	free(p);
-}
-
+extern "C" void operator delete(void *p, unsigned int size) { free(p); }

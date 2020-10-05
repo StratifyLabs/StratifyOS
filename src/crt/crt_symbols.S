@@ -1,7 +1,5 @@
 /* Copyright 2011-2020 Tyler Gilbert; All Rights Reserved */
 
-
-
 #if defined __v7m
 #define __CORTEX_M 3
 #elif defined __v7em || defined __v7em_f4sh || defined __v7em_f4ss
@@ -10,8 +8,8 @@
 #define __CORTEX_M 7
 #endif
 
-
-#define LINK_ADDR (0xDEFF8001 + (__LINE__ - 16) * 4)
+// offset must be (__LINE__ - <line number of _signature>) * 4 + 1
+#define LINK_ADDR (0xDFFF8001 + ((__LINE__ - 14) * 4))
 
 .global _signature; _signature = 0x00000380 + __CORTEX_M;
 //.global __cxa_pure_virtual; __cxa_pure_virtual = LINK_ADDR;

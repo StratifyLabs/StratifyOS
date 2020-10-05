@@ -4,6 +4,7 @@ foreach (DIR ${DIRECTORY_LIST})
 	execute_process(COMMAND
 		${COMMAND}
 		WORKING_DIRECTORY
-		${SOS_SDK_PATH}/Tools/gcc/arm-non-eabi/lib/${DIR}
+		# this needs to be the compiler internal lib
+		${SOS_SDK_PATH}/Tools/gcc/lib/8.3.1/arm-non-eabi/lib/${DIR}
 		)
 endforeach(DIR)
