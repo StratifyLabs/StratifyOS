@@ -50,8 +50,8 @@ if(BUILD_SYS OR BUILD_ALL)
 	add_library(${SYS_DEBUG_TARGET} STATIC)
 	sos_sdk_copy_target(${SYS_RELEASE_TARGET} ${SYS_DEBUG_TARGET})
 
-	sos_sdk_library_add_arm_targets("${SYS_RELEASE_OPTIONS}")
-	sos_sdk_library_add_arm_targets("${SYS_DEBUG_OPTIONS}")
+	sos_sdk_library_add_arch_targets("${SYS_RELEASE_OPTIONS}" ${SOS_ARCH})
+	sos_sdk_library_add_arch_targets("${SYS_DEBUG_OPTIONS}" ${SOS_ARCH})
 endif()
 
 if(BUILD_CRT OR BUILD_ALL)
@@ -67,8 +67,8 @@ if(BUILD_CRT OR BUILD_ALL)
 	sos_sdk_copy_target(${CRT_RELEASE_TARGET} ${CRT_DEBUG_TARGET})
 
 	# Create targets for all architectures using above settings
-	sos_sdk_library_add_arm_targets("${CRT_RELEASE_OPTIONS}")
-	sos_sdk_library_add_arm_targets("${CRT_DEBUG_OPTIONS}")
+	sos_sdk_library_add_arch_targets("${CRT_RELEASE_OPTIONS}" ${SOS_ARCH})
+	sos_sdk_library_add_arch_targets("${CRT_DEBUG_OPTIONS}" ${SOS_ARCH})
 endif()
 
 if(BUILD_BOOT OR BUILD_ALL)
@@ -84,8 +84,8 @@ if(BUILD_BOOT OR BUILD_ALL)
 	sos_sdk_copy_target(${BOOT_RELEASE_TARGET} ${BOOT_DEBUG_TARGET})
 
 	# Create targets for all architectures using above settings
-	sos_sdk_library_add_arm_targets("${BOOT_RELEASE_OPTIONS}")
-	sos_sdk_library_add_arm_targets("${BOOT_DEBUG_OPTIONS}")
+	sos_sdk_library_add_arch_targets("${BOOT_RELEASE_OPTIONS}" ${SOS_ARCH})
+	sos_sdk_library_add_arch_targets("${BOOT_DEBUG_OPTIONS}" ${SOS_ARCH})
 endif()
 
 install(DIRECTORY include/cortexm include/device include/mcu include/sos include/usbd DESTINATION include PATTERN CMakelists.txt EXCLUDE)
