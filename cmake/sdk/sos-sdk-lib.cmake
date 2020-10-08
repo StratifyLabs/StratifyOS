@@ -56,7 +56,7 @@ function(sos_sdk_library OPTION_LIST)
 
 	target_compile_definitions(${SOS_SDK_TMP_TARGET}
 		PUBLIC
-		__${SOS_SDK_TMP_CONFIG}
+		___${SOS_SDK_TMP_CONFIG}
 		__${SOS_SDK_TMP_OPTION}
 		__${ARCH}
 		MCU_SOS_GIT_HASH=${SOS_GIT_HASH}
