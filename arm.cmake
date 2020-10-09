@@ -1,7 +1,7 @@
 
-option(BUILD_ALL "Build All configurations" ON)
+option(BUILD_ALL "Build All configurations" OFF)
 option(BUILD_SYS "Build Stratify OS System library" OFF)
-option(BUILD_CRT "Build C Runtime library" OFF)
+option(BUILD_CRT "Build C Runtime library" ON)
 option(BUILD_BOOT "Build Bootloader library" OFF)
 
 #check for LWIP
@@ -50,8 +50,8 @@ if(BUILD_SYS OR BUILD_ALL)
 	add_library(${SYS_DEBUG_TARGET} STATIC)
 	sos_sdk_copy_target(${SYS_RELEASE_TARGET} ${SYS_DEBUG_TARGET})
 
-	sos_sdk_library_add_arch_targets("${SYS_RELEASE_OPTIONS}" ${SOS_ARCH})
-	sos_sdk_library_add_arch_targets("${SYS_DEBUG_OPTIONS}" ${SOS_ARCH})
+	sos_sdk_library_add_arch_targets("${SYS_RELEASE_OPTIONS}" ${SOS_ARCH} "")
+	sos_sdk_library_add_arch_targets("${SYS_DEBUG_OPTIONS}" ${SOS_ARCH} "")
 endif()
 
 if(BUILD_CRT OR BUILD_ALL)
@@ -61,14 +61,15 @@ if(BUILD_CRT OR BUILD_ALL)
 	add_library(${CRT_RELEASE_TARGET} STATIC)
 	target_sources(${CRT_RELEASE_TARGET} PRIVATE ${CRT_SOURCELIST})
 	target_include_directories(${CRT_RELEASE_TARGET} PRIVATE ${SYS_INCLUDE_DIRECTORIES})
-	target_compile_options(${CRT_RELEASE_TARGET} PUBLIC -mlong-calls -Os)
+	target_compile_definitions(${CRT_RELEASE_TARGET} PUBLIC __StratifyOS__)
+	target_compile_options(${CRT_RELEASE_TARGET} PUBLIC -mlong-calls PRIVATE -Os)
 
 	add_library(${CRT_DEBUG_TARGET} STATIC)
 	sos_sdk_copy_target(${CRT_RELEASE_TARGET} ${CRT_DEBUG_TARGET})
 
 	# Create targets for all architectures using above settings
-	sos_sdk_library_add_arch_targets("${CRT_RELEASE_OPTIONS}" ${SOS_ARCH})
-	sos_sdk_library_add_arch_targets("${CRT_DEBUG_OPTIONS}" ${SOS_ARCH})
+	sos_sdk_library_add_arch_targets("${CRT_RELEASE_OPTIONS}" ${SOS_ARCH} "")
+	sos_sdk_library_add_arch_targets("${CRT_DEBUG_OPTIONS}" ${SOS_ARCH} "")
 endif()
 
 if(BUILD_BOOT OR BUILD_ALL)
@@ -84,8 +85,8 @@ if(BUILD_BOOT OR BUILD_ALL)
 	sos_sdk_copy_target(${BOOT_RELEASE_TARGET} ${BOOT_DEBUG_TARGET})
 
 	# Create targets for all architectures using above settings
-	sos_sdk_library_add_arch_targets("${BOOT_RELEASE_OPTIONS}" ${SOS_ARCH})
-	sos_sdk_library_add_arch_targets("${BOOT_DEBUG_OPTIONS}" ${SOS_ARCH})
+	sos_sdk_library_add_arch_targets("${BOOT_RELEASE_OPTIONS}" ${SOS_ARCH} "")
+	sos_sdk_library_add_arch_targets("${BOOT_DEBUG_OPTIONS}" ${SOS_ARCH} "")
 endif()
 
 install(DIRECTORY include/cortexm include/device include/mcu include/sos include/usbd DESTINATION include PATTERN CMakelists.txt EXCLUDE)

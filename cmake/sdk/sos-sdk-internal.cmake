@@ -44,6 +44,8 @@ macro(sos_sdk_internal_startup)
 		set(CMAKE_VERBOSE_MAKEFILE 1)
 	endif()
 
+	list(APPEND CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}/../arm-none-eabi/cmake)
+
 	sos_sdk_internal_get_git_hash()
 endmacro()
 

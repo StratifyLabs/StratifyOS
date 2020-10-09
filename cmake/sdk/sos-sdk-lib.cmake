@@ -4,7 +4,7 @@ function(sos_sdk_library_target OUTPUT BASE_NAME OPTION CONFIG ARCH)
 	set(${OUTPUT}_TARGET ${SOS_SDK_TMP_TARGET} PARENT_SCOPE)
 endfunction()
 
-function(sos_sdk_library_add_arch_targets OPTION_LIST ARCH)
+function(sos_sdk_library_add_arch_targets OPTION_LIST ARCH DEPENDENCIES)
 
 	string(COMPARE EQUAL ${ARCH} link IS_LINK)
 
@@ -35,6 +35,15 @@ function(sos_sdk_library_add_arch_targets OPTION_LIST ARCH)
 					${BUILD_V7M_TARGET}
 					${BUILD_TARGET}
 					)
+
+				foreach(DEPENDENCY ${DEPENDENCIES})
+					target_link_libraries(${BUILD_TARGET}
+						PUBLIC
+						${DEPENDENCY}_${ARCH}
+						)
+
+				endforeach()
+
 				# this applies architecture specific options
 				sos_sdk_library("${BUILD_OPTIONS}")
 			endif()
@@ -56,18 +65,19 @@ function(sos_sdk_library OPTION_LIST)
 
 	target_compile_definitions(${SOS_SDK_TMP_TARGET}
 		PUBLIC
+		PRIVATE
+		__${ARCH}
 		___${SOS_SDK_TMP_CONFIG}
 		__${SOS_SDK_TMP_OPTION}
-		__${ARCH}
 		MCU_SOS_GIT_HASH=${SOS_GIT_HASH}
 		)
 
-	if(NOT ARCH STREQUAL "link")
+	if(SOS_IS_ARM)
 
-		target_include_directories(${SOS_SDK_TMP_TARGET}
-			PUBLIC
-			${SOS_BUILD_SYSTEM_INCLUDES}
-			)
+		#target_include_directories(${SOS_SDK_TMP_TARGET}
+		#	PRIVATE
+		#	${SOS_BUILD_SYSTEM_INCLUDES}
+		#	)
 
 		sos_sdk_internal_arm_arch(${ARCH})
 
@@ -77,9 +87,13 @@ function(sos_sdk_library OPTION_LIST)
 			)
 
 		target_compile_options(${SOS_SDK_TMP_TARGET}
-			PUBLIC
-			-mthumb -D__StratifyOS__ -ffunction-sections -fdata-sections -fomit-frame-pointer
+			PRIVATE
+			-mthumb -ffunction-sections -fdata-sections -fomit-frame-pointer
 			${SOS_ARM_ARCH_BUILD_FLOAT_OPTIONS}
+			)
+
+		set_target_properties(${SOS_SDK_TMP_TARGET}
+			PROPERTIES NO_SYSTEM_FROM_IMPORTED TRUE
 			)
 
 	elseif()
@@ -93,6 +107,7 @@ function(sos_sdk_library OPTION_LIST)
 
 	get_target_property(TARGET_BINARY_DIR ${SOS_SDK_TMP_TARGET} BINARY_DIR)
 
-	install(FILES ${TARGET_BINARY_DIR}/lib${SOS_SDK_TMP_TARGET}.a DESTINATION lib/${SOS_ARM_ARCH_BUILD_INSTALL_DIR}/${SOS_ARM_ARCH_BUILD_FLOAT_DIR} RENAME lib${SOS_SDK_TMP_INSTALL}.a)
+	install(TARGETS ${SOS_SDK_TMP_TARGET} EXPORT ${SOS_SDK_TMP_TARGET} DESTINATION lib)
+	install(EXPORT ${SOS_SDK_TMP_TARGET} DESTINATION cmake/targets)
 
 endfunction()
