@@ -21,7 +21,7 @@ function(sos_sdk_library_add_arch_targets OPTION_LIST ARCH DEPENDENCIES)
 		foreach(DEPENDENCY ${DEPENDENCIES})
 			target_link_libraries(${BUILD_TARGET}
 				PUBLIC
-				${DEPENDENCY}_${ARCH}
+				${DEPENDENCY}_${CONFIG}_${ARCH}
 				)
 
 		endforeach()

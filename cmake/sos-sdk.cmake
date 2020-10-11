@@ -80,6 +80,19 @@ function(sos_sdk_copy_target SOURCE_TARGET DEST_TARGET)
 	endforeach(PROPERTY)
 endfunction()
 
+macro(sos_sdk_include_target TARGET)
+	if(SOS_IS_ARM)
+		set(ARCH_LIST v7m v7em v7em_f4sh v7em_f5sh v7em_f5dh)
+	else()
+		set(ARCH_LIST link)
+	endif()
+
+	foreach(ARCH ${ARCH_LIST})
+		include(targets/${TARGET}_${ARCH})
+	endforeach(ARCH)
+
+endmacro()
+
 include(${CMAKE_CURRENT_LIST_DIR}/sdk/sos-sdk-app.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/sdk/sos-sdk-bsp.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/sdk/sos-sdk-lib.cmake)

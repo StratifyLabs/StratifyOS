@@ -13,9 +13,8 @@ sos_sdk_library_target(BUILD_RELEASE StratifyOS "" release link)
 
 add_library(${BUILD_RELEASE_TARGET} STATIC)
 target_sources(${BUILD_RELEASE_TARGET}
-	PUBLIC
-	${SOS_INTERFACE_SOURCELIST}
 	PRIVATE
+	${SOS_INTERFACE_SOURCELIST}
 	${SOS_SOURCELIST}
 	${CMAKE_SOURCES}
 	)
