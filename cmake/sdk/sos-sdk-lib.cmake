@@ -51,9 +51,8 @@ function(sos_sdk_library_add_arch_targets OPTION_LIST ARCH DEPENDENCIES)
 				foreach(DEPENDENCY ${DEPENDENCIES})
 					target_link_libraries(${BUILD_TARGET}
 						PUBLIC
-						${DEPENDENCY}_${ARCH}
+						${DEPENDENCY}_${CONFIG}_${ARCH}
 						)
-
 				endforeach()
 
 				# this applies architecture specific options
@@ -61,6 +60,13 @@ function(sos_sdk_library_add_arch_targets OPTION_LIST ARCH DEPENDENCIES)
 			endif()
 		endforeach(ARCH)
 		sos_sdk_library("${BUILD_V7M_OPTIONS}")
+
+		foreach(DEPENDENCY ${DEPENDENCIES})
+			target_link_libraries(${BUILD_V7M_TARGET}
+				PUBLIC
+				${DEPENDENCY}_${CONFIG}_v7m
+				)
+		endforeach()
 	endif()
 endfunction()
 
