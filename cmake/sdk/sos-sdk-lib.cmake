@@ -26,6 +26,9 @@ function(sos_sdk_library_add_arch_targets OPTION_LIST ARCH DEPENDENCIES)
 
 		endforeach()
 
+		get_target_property(LIBS ${BUILD_TARGET} LINK_LIBRARIES)
+		message("LIBS ARE ${LIBS} for ${BUILD_TARGET}")
+
 	else()
 
 		set(ARCH_LIST v7em v7em_f4sh v7em_f5sh v7em_f5dh)
@@ -49,6 +52,7 @@ function(sos_sdk_library_add_arch_targets OPTION_LIST ARCH DEPENDENCIES)
 					)
 
 				foreach(DEPENDENCY ${DEPENDENCIES})
+					message("-Adding ${DEPENDENCY}_${CONFIG}_${ARCH}")
 					target_link_libraries(${BUILD_TARGET}
 						PUBLIC
 						${DEPENDENCY}_${CONFIG}_${ARCH}
@@ -112,13 +116,6 @@ function(sos_sdk_library OPTION_LIST)
 
 		set_target_properties(${SOS_SDK_TMP_TARGET}
 			PROPERTIES NO_SYSTEM_FROM_IMPORTED TRUE
-			)
-
-	elseif()
-
-		target_compile_options(${SOS_SDK_TMP_TARGET}
-			PUBLIC
-			${SOS_TOOLCHAIN_COMPILE_OPTIONS}
 			)
 
 	endif()

@@ -95,33 +95,66 @@ function(sos_sdk_app OPTION_LIST RAM_SIZE)
 
 endfunction()
 
-function(sos_sdk_app_add_arm_targets OPTION_LIST RAM_SIZE)
+function(sos_sdk_app_add_arch_targets OPTION_LIST DEPENDENCIES RAM_SIZE)
 	set(ARCH_LIST v7em v7em_f4sh v7em_f5sh v7em_f5dh)
 
 	list(GET OPTION_LIST 0 BASE_NAME)
 	list(GET OPTION_LIST 1 OPTION)
 	list(GET OPTION_LIST 2 CONFIG)
 
-	sos_sdk_app_target(BUILD_V7M ${BASE_NAME} "${OPTION}" "${CONFIG}" v7m)
+	if(IS_LINK)
 
-	foreach (ARCH ${ARCH_LIST})
-		sos_sdk_internal_is_arch_enabled(${ARCH})
-		if(ARCH_ENABLED)
-			set(TARGET_NAME ${BASE_NAME})
-			if(NOT OPTION STREQUAL "")
-				set(TARGET_NAME ${TARGET_NAME}_${OPTION})
-			endif()
+		sos_sdk_app_target(BUILD ${BASE_NAME} "${OPTION}" "${CONFIG}" link)
 
-			sos_sdk_app_target(BUILD ${BASE_NAME} "${OPTION}" "${CONFIG}" ${ARCH})
+		sos_sdk_app("${OPTION_LIST}" ${RAM_SIZE})
 
-			add_executable(${BUILD_TARGET})
-			sos_sdk_copy_target(
-				${BUILD_V7M_TARGET}
-				${BUILD_TARGET}
+		foreach(DEPENDENCY ${DEPENDENCIES})
+			target_link_libraries(${BUILD_TARGET}
+				PRIVATE
+				${DEPENDENCY}_${CONFIG}_${ARCH}
 				)
-			# this applies architecture specific options
-			sos_sdk_app("${BUILD_OPTIONS}" ${RAM_SIZE})
-		endif()
-	endforeach(ARCH)
-	sos_sdk_app("${BUILD_V7M_OPTIONS}" ${RAM_SIZE})
+		endforeach()
+
+	else()
+
+		sos_sdk_app_target(BUILD_V7M ${BASE_NAME} "${OPTION}" "${CONFIG}" v7m)
+
+		foreach (ARCH ${ARCH_LIST})
+			sos_sdk_internal_is_arch_enabled(${ARCH})
+			if(ARCH_ENABLED)
+				set(TARGET_NAME ${BASE_NAME})
+				if(NOT OPTION STREQUAL "")
+					set(TARGET_NAME ${TARGET_NAME}_${OPTION})
+				endif()
+
+				sos_sdk_app_target(BUILD ${BASE_NAME} "${OPTION}" "${CONFIG}" ${ARCH})
+
+				add_executable(${BUILD_TARGET})
+				sos_sdk_copy_target(
+					${BUILD_V7M_TARGET}
+					${BUILD_TARGET}
+					)
+
+				# this applies architecture specific options
+				sos_sdk_app("${BUILD_OPTIONS}" ${RAM_SIZE})
+
+				foreach(DEPENDENCY ${DEPENDENCIES})
+					target_link_libraries(${BUILD_TARGET}
+						PRIVATE
+						${DEPENDENCY}_${CONFIG}_${ARCH}
+						)
+				endforeach()
+
+			endif()
+		endforeach(ARCH)
+		sos_sdk_app("${BUILD_V7M_OPTIONS}" ${RAM_SIZE})
+
+		foreach(DEPENDENCY ${DEPENDENCIES})
+			target_link_libraries(${BUILD_V7M_TARGET}
+				PRIVATE
+				${DEPENDENCY}_${CONFIG}_${ARCH}
+				)
+		endforeach()
+
+	endif()
 endfunction()
