@@ -8,15 +8,27 @@ function(sos_sdk_library_add_arch_targets OPTION_LIST ARCH DEPENDENCIES)
 
 	string(COMPARE EQUAL ${ARCH} link IS_LINK)
 
+	list(GET OPTION_LIST 0 BASE_NAME)
+	list(GET OPTION_LIST 1 OPTION)
+	list(GET OPTION_LIST 2 CONFIG)
+
 	if(IS_LINK)
+
+		sos_sdk_library_target(BUILD ${BASE_NAME} "${OPTION}" "${CONFIG}" link)
+
 		sos_sdk_library("${OPTION_LIST}")
+
+		foreach(DEPENDENCY ${DEPENDENCIES})
+			target_link_libraries(${BUILD_TARGET}
+				PUBLIC
+				${DEPENDENCY}_${ARCH}
+				)
+
+		endforeach()
+
 	else()
 
 		set(ARCH_LIST v7em v7em_f4sh v7em_f5sh v7em_f5dh)
-
-		list(GET OPTION_LIST 0 BASE_NAME)
-		list(GET OPTION_LIST 1 OPTION)
-		list(GET OPTION_LIST 2 CONFIG)
 
 		sos_sdk_library_target(BUILD_V7M ${BASE_NAME} "${OPTION}" "${CONFIG}" v7m)
 
