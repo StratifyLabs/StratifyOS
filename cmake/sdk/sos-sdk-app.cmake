@@ -102,16 +102,18 @@ function(sos_sdk_app_add_arch_targets OPTION_LIST DEPENDENCIES RAM_SIZE)
 	list(GET OPTION_LIST 1 OPTION)
 	list(GET OPTION_LIST 2 CONFIG)
 
-	if(IS_LINK)
+	if(SOS_IS_LINK)
 
 		sos_sdk_app_target(BUILD ${BASE_NAME} "${OPTION}" "${CONFIG}" link)
 
 		sos_sdk_app("${OPTION_LIST}" ${RAM_SIZE})
 
 		foreach(DEPENDENCY ${DEPENDENCIES})
+			message(STATUS "Adding dependency ${DEPENDENCY}_${CONFIG}_link to ${BUILD_TARGET}")
+
 			target_link_libraries(${BUILD_TARGET}
 				PRIVATE
-				${DEPENDENCY}_${CONFIG}_${ARCH}
+				${DEPENDENCY}_${CONFIG}_link
 				)
 		endforeach()
 
