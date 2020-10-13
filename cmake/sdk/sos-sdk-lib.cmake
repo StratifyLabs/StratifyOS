@@ -27,7 +27,6 @@ function(sos_sdk_library_add_arch_targets OPTION_LIST ARCH DEPENDENCIES)
 		endforeach()
 
 		get_target_property(LIBS ${BUILD_TARGET} LINK_LIBRARIES)
-		message("LIBS ARE ${LIBS} for ${BUILD_TARGET}")
 
 	else()
 
@@ -52,7 +51,6 @@ function(sos_sdk_library_add_arch_targets OPTION_LIST ARCH DEPENDENCIES)
 					)
 
 				foreach(DEPENDENCY ${DEPENDENCIES})
-					message("-Adding ${DEPENDENCY}_${CONFIG}_${ARCH}")
 					target_link_libraries(${BUILD_TARGET}
 						PUBLIC
 						${DEPENDENCY}_${CONFIG}_${ARCH}

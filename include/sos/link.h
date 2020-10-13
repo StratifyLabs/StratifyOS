@@ -13,13 +13,15 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 #ifndef DEV_LINK_H_
 #define DEV_LINK_H_
 
+#include <dirent.h>
+#include <sys/stat.h>
 
 #include <time.h>
 
@@ -111,14 +113,23 @@ int link_unlink(link_transport_mdriver_t * driver /*! Device handle */, const ch
 int link_lseek(link_transport_mdriver_t * driver, int fildes, s32 offset, int whence);
 
 //For files only
-int link_stat(link_transport_mdriver_t * driver, const char * path, struct link_stat * buf);
-int link_fstat(link_transport_mdriver_t * driver, int fildes, struct link_stat * buf);
-int link_mkdir(link_transport_mdriver_t * driver, const char * path, link_mode_t mode);
+int link_stat(link_transport_mdriver_t *driver, const char *path, struct stat *buf);
+int link_fstat(link_transport_mdriver_t *driver, int fildes, struct stat *buf);
+
+int link_mkdir(link_transport_mdriver_t *driver, const char *path, int mode);
 int link_rmdir(link_transport_mdriver_t * driver, const char * path);
-int link_opendir(link_transport_mdriver_t * driver, const char * dirname);
-int link_closedir(link_transport_mdriver_t * driver, int dirp);
-int link_readdir_r(link_transport_mdriver_t * driver, int dirp, struct link_dirent * entry, struct link_dirent ** result);
-int link_mkfs(link_transport_mdriver_t * driver, const char * path);
+DIR *link_opendir(link_transport_mdriver_t *driver, const char *dirname);
+int link_closedir(link_transport_mdriver_t *driver, DIR *dirp);
+int link_readdir_r(
+  link_transport_mdriver_t *driver,
+  DIR *dirp,
+  struct dirent *entry,
+  struct dirent **result);
+int link_seekdir(link_transport_mdriver_t *driver, DIR *dirp, int location);
+int link_telldir(link_transport_mdriver_t *driver, DIR *dirp);
+int link_rewinddir(link_transport_mdriver_t *driver, DIR *dirp);
+
+int link_mkfs(link_transport_mdriver_t *driver, const char *path);
 int link_exec(link_transport_mdriver_t * driver, const char * file);
 int link_symlink(link_transport_mdriver_t * driver, const char * old_path, const char * new_path);
 int link_rename(link_transport_mdriver_t * driver, const char * old_path, const char * new_path);
