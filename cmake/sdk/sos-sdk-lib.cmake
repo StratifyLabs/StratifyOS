@@ -114,6 +114,17 @@ function(sos_sdk_library OPTION_LIST)
 			PROPERTIES NO_SYSTEM_FROM_IMPORTED TRUE
 			)
 
+		target_include_directories(${SOS_SDK_TMP_TARGET}
+			PRIVATE
+			${SOS_SDK_PATH}/Tools/gcc/arm-none-eabi/include/StratifyOS
+			)
+
+	else()
+		target_include_directories(${SOS_SDK_TMP_TARGET}
+			PRIVATE
+			${SOS_SDK_PATH}/Tools/gcc/include/StratifyOS
+			)
+
 	endif()
 
 	get_target_property(TARGET_BINARY_DIR ${SOS_SDK_TMP_TARGET} BINARY_DIR)

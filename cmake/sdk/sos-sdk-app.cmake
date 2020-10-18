@@ -38,6 +38,11 @@ function(sos_sdk_app OPTION_LIST RAM_SIZE)
 			MCU_SOS_GIT_HASH=${SOS_GIT_HASH}
 			)
 
+		target_include_directories(${TARGET_NAME}
+			PRIVATE
+			${SOS_SDK_PATH}/Tools/gcc/include/StratifyOS
+			)
+
 	else()
 
 		sos_sdk_internal_arm_arch(${ARCH})
@@ -54,6 +59,8 @@ function(sos_sdk_app OPTION_LIST RAM_SIZE)
 		target_include_directories(${TARGET_NAME}
 			PUBLIC
 			${SOS_BUILD_SYSTEM_INCLUDES}
+			PRIVATE
+			${SOS_SDK_PATH}/Tools/gcc/arm-none-eabi/include/StratifyOS
 			)
 
 		target_compile_options(${TARGET_NAME}
