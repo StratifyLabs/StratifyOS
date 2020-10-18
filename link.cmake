@@ -24,6 +24,11 @@ target_include_directories(${BUILD_RELEASE_TARGET}
 	${CMAKE_SOURCE_DIR}/include
 	)
 
+sos_sdk_library_target(BUILD_DEBUG StratifyOS "" debug link)
+add_library(${BUILD_DEBUG_TARGET} STATIC)
+sos_sdk_copy_target(${BUILD_RELEASE_TARGET} ${BUILD_DEBUG_TARGET})
+
+
 sos_sdk_library_target(BUILD_COVERAGE StratifyOS "" coverage link)
 add_library(${BUILD_COVERAGE_TARGET} STATIC)
 sos_sdk_copy_target(${BUILD_RELEASE_TARGET} ${BUILD_COVERAGE_TARGET})
@@ -36,6 +41,7 @@ target_compile_options(${BUILD_COVERAGE_TARGET}
 
 sos_sdk_library("${BUILD_RELEASE_OPTIONS}")
 sos_sdk_library("${BUILD_COVERAGE_OPTIONS}")
+sos_sdk_library("${BUILD_DEBUG_OPTIONS}")
 
 install(FILES include/mcu/types.h DESTINATION include/mcu)
 install(FILES include/mcu/mcu.h DESTINATION include/mcu)

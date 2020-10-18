@@ -80,16 +80,18 @@ function(sos_sdk_copy_target SOURCE_TARGET DEST_TARGET)
 	endforeach(PROPERTY)
 endfunction()
 
-macro(sos_sdk_include_target TARGET)
+macro(sos_sdk_include_target TARGET CONFIG_LIST)
 	if(SOS_IS_ARM)
 		set(ARCH_LIST v7m v7em v7em_f4sh v7em_f5sh v7em_f5dh)
 	else()
 		set(ARCH_LIST link)
 	endif()
 
-	foreach(ARCH ${ARCH_LIST})
-		include(targets/${TARGET}_${ARCH})
-	endforeach(ARCH)
+	foreach(CONFIG CONFIG_LIST)
+		foreach(ARCH ${ARCH_LIST})
+			include(targets/${TARGET}_${CONFIG}_${ARCH})
+		endforeach(ARCH)
+	endforeach(CONFIG)
 
 endmacro()
 
