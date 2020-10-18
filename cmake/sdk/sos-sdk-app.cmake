@@ -58,7 +58,7 @@ function(sos_sdk_app OPTION_LIST RAM_SIZE)
 
 		target_compile_options(${TARGET_NAME}
 			PUBLIC
-			-mthumb -mlong-calls -ffunction-sections -fdata-sections -fomit-frame-pointer
+			-mthumb -mlong-calls -ffunction-sections -fdata-sections
 			${SOS_ARM_ARCH_BUILD_FLOAT_OPTIONS}
 			)
 
@@ -109,7 +109,7 @@ function(sos_sdk_app_add_arch_targets OPTION_LIST DEPENDENCIES RAM_SIZE)
 		sos_sdk_app("${OPTION_LIST}" ${RAM_SIZE})
 
 		foreach(DEPENDENCY ${DEPENDENCIES})
-			message(STATUS "Adding dependency ${DEPENDENCY}_${CONFIG}_link to ${BUILD_TARGET}")
+			message(STATUS "SOS SDK Adding dependency ${DEPENDENCY}_${CONFIG}_link to ${BUILD_TARGET}")
 
 			target_link_libraries(${BUILD_TARGET}
 				PRIVATE

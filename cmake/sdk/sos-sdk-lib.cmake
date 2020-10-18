@@ -18,10 +18,9 @@ function(sos_sdk_library_add_arch_targets OPTION_LIST ARCH DEPENDENCIES)
 
 		sos_sdk_library("${OPTION_LIST}")
 
-
 		foreach(DEPENDENCY ${DEPENDENCIES})
 
-			message(STATUS "Adding ${DEPENDENCY}_${CONFIG}_${ARCH} to ${BUILD_TARGET}")
+			message(STATUS "SOS SDK Adding ${DEPENDENCY}_${CONFIG}_${ARCH} to ${BUILD_TARGET}")
 
 			target_link_libraries(${BUILD_TARGET}
 				PUBLIC
@@ -98,11 +97,6 @@ function(sos_sdk_library OPTION_LIST)
 
 	if(SOS_IS_ARM)
 
-		#target_include_directories(${SOS_SDK_TMP_TARGET}
-		#	PRIVATE
-		#	${SOS_BUILD_SYSTEM_INCLUDES}
-		#	)
-
 		sos_sdk_internal_arm_arch(${ARCH})
 
 		target_compile_definitions(${SOS_SDK_TMP_TARGET}
@@ -112,7 +106,7 @@ function(sos_sdk_library OPTION_LIST)
 
 		target_compile_options(${SOS_SDK_TMP_TARGET}
 			PRIVATE
-			-mthumb -ffunction-sections -fdata-sections -fomit-frame-pointer
+			-mthumb -ffunction-sections -fdata-sections
 			${SOS_ARM_ARCH_BUILD_FLOAT_OPTIONS}
 			)
 

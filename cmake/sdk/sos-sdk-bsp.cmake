@@ -43,7 +43,7 @@ function(sos_sdk_bsp OPTION_LIST HARDWARE_ID START_ADDRESS)
 
 	target_compile_options(${TARGET_NAME}
 		PUBLIC
-		-mthumb -ffunction-sections -fdata-sections -fomit-frame-pointer
+		-mthumb -ffunction-sections -fdata-sections
 		${SOS_ARM_ARCH_BUILD_FLOAT_OPTIONS}
 		)
 

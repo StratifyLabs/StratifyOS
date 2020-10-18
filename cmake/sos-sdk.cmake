@@ -87,7 +87,7 @@ macro(sos_sdk_include_target TARGET CONFIG_LIST)
 		set(ARCH_LIST link)
 	endif()
 
-	foreach(CONFIG CONFIG_LIST)
+	foreach(CONFIG ${CONFIG_LIST})
 		foreach(ARCH ${ARCH_LIST})
 			include(targets/${TARGET}_${CONFIG}_${ARCH})
 		endforeach(ARCH)

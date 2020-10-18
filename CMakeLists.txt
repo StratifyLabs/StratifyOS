@@ -14,6 +14,11 @@ project(StratifyOS CXX C ASM)
 set(SOS_INCLUDE_DIRECTORIES include)
 include( ${CMAKE_SOURCE_DIR}/${SOS_BUILD_CONFIG}.cmake )
 
+install(FILES
+	${CMAKE_CURRENT_LIST_DIR}/cmake/StratifyOS.cmake
+	DESTINATION
+	cmake/targets)
+
 add_custom_target(
   format
   COMMAND /usr/local/bin/clang-format
