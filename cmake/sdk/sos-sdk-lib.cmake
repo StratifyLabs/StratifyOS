@@ -4,7 +4,22 @@ function(sos_sdk_library_target OUTPUT BASE_NAME OPTION CONFIG ARCH)
 	set(${OUTPUT}_TARGET ${SOS_SDK_TMP_TARGET} PARENT_SCOPE)
 endfunction()
 
+function(sos_sdk_library_add_architecture_targets OPTION_LIST ARCH DEPENDENCIES)
+	set(ONE_VALUE_ARGS ARCHITECTURE)
+	set(MULTI_VALUE_ARGS TARGET DEPENDENCIES)
+	cmake_parse_arguments(
+		ARGS "" "${ONE_VALUE_ARGS}" "${MULTI_VALUE_ARGS}" ${ARGN} )
+
+	message("ARCH is ${ARGS_ARCHITECTURE}")
+	message("TARGET is ${ARGS_TARGET}")
+	message("DEPS is ${ARGS_DEPENDENCIES}")
+
+
+	#sos_sdk_library_add_arch_targets(${TARGET} ${ARCHITECTURE} "${DEPENDENCIES}")
+endfunction()
+
 function(sos_sdk_library_add_arch_targets OPTION_LIST ARCH DEPENDENCIES)
+
 
 	string(COMPARE EQUAL ${ARCH} link IS_LINK)
 

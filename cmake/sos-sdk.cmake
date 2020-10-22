@@ -80,6 +80,29 @@ function(sos_sdk_copy_target SOURCE_TARGET DEST_TARGET)
 	endforeach(PROPERTY)
 endfunction()
 
+function(sos_sdk_add_test NAME CONFIG)
+
+	string(COMPARE EQUAL ${CONFIG} release IS_RELEASE)
+	if(IS_RELEASE)
+		set(EXEC_NAME ${NAME})
+	else()
+		set(EXEC_NAME ${NAME}_${CONFIG})
+	endif()
+
+	message(STATUS "SOS SDK Add test ${NAME}_${CONFIG}")
+	add_test(NAME ${NAME}_${CONFIG}
+		COMMAND "../build_${CONFIG}_link/${EXEC_NAME}_link.elf" --api
+		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tmp
+		)
+
+	set_tests_properties(
+		${NAME}_${CONFIG}
+		PROPERTIES
+		PASS_REGULAR_EXPRESSION "___finalResultPass___"
+		)
+
+endfunction()
+
 macro(sos_sdk_include_target TARGET CONFIG_LIST)
 	if(SOS_IS_ARM)
 		set(ARCH_LIST v7m v7em v7em_f4sh v7em_f5sh v7em_f5dh)

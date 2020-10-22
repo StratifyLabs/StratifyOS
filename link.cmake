@@ -3,8 +3,8 @@
 file(GLOB_RECURSE CMAKE_SOURCES ${CMAKE_SOURCE_DIR}/cmake/*)
 
 #Add sources to the project
-sos_sdk_add_subdirectory(SOS_INTERFACE_SOURCELIST ${CMAKE_SOURCE_DIR}/include)
-sos_sdk_add_subdirectory(SOS_SOURCELIST ${CMAKE_SOURCE_DIR}/src)
+sos_sdk_add_subdirectory(SOS_INTERFACE_SOURCELIST ${CMAKE_CURRENT_SOURCE_DIR}/include)
+sos_sdk_add_subdirectory(SOS_SOURCELIST ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 
 set(SOS_ARCH link)
@@ -22,7 +22,7 @@ target_sources(${BUILD_RELEASE_TARGET}
 target_include_directories(${BUILD_RELEASE_TARGET}
 	PUBLIC
 	$<INSTALL_INTERFACE:include/StratifyOS>
-	$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
+	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 	)
 
 
