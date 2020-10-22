@@ -80,18 +80,28 @@ function(sos_sdk_copy_target SOURCE_TARGET DEST_TARGET)
 	endforeach(PROPERTY)
 endfunction()
 
-function(sos_sdk_add_test NAME CONFIG)
+function(sos_sdk_add_test NAME OPTION CONFIG)
 
 	string(COMPARE EQUAL ${CONFIG} release IS_RELEASE)
-	if(IS_RELEASE)
-		set(EXEC_NAME ${NAME})
+
+	if(OPTION)
+		set(EXEC_NAME ${NAME}_${OPTION})
+		set(DIR_NAME build_${OPTION})
 	else()
-		set(EXEC_NAME ${NAME}_${CONFIG})
+		set(EXEC_NAME ${NAME})
+		set(DIR_NAME build)
+	endif()
+
+
+	if(IS_RELEASE)
+		set(EXEC_NAME ${EXEC_NAME})
+	else()
+		set(EXEC_NAME ${EXEC_NAME}_${CONFIG})
 	endif()
 
 	message(STATUS "SOS SDK Add test ${NAME}_${CONFIG}")
 	add_test(NAME ${NAME}_${CONFIG}
-		COMMAND "../build_${CONFIG}_link/${EXEC_NAME}_link.elf" --api
+		COMMAND "../${DIR_NAME}_${CONFIG}_link/${EXEC_NAME}_link.elf" --api
 		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tmp
 		)
 
