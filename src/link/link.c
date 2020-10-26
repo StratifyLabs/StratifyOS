@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>. */
 
+#include <errno.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -193,9 +194,14 @@ int link_ping(
   int is_keep_open,
   int is_legacy) {
 
+  if (errno < 0) {
+    return -1;
+  }
   // write a command none packet
   int err = -1;
   int tries = 0;
+
+  link_debug(LINK_DEBUG_MESSAGE, "Start");
 
   driver->transport_version = 0;
   driver->phy_driver.handle = driver->phy_driver.open(name, driver->options);
@@ -208,15 +214,16 @@ int link_ping(
       link_debug(LINK_DEBUG_MESSAGE, "Flush %s", name);
       driver->phy_driver.flush(driver->phy_driver.handle);
       if (is_legacy) {
-        link_debug(LINK_DEBUG_MESSAGE, "is legacy bootloader");
+        link_debug(LINK_DEBUG_MESSAGE, "is legacy bootloader?");
         err = link_isbootloader_legacy(driver);
       } else {
-        link_debug(LINK_DEBUG_MESSAGE, "is bootloader");
+        link_debug(LINK_DEBUG_MESSAGE, "is bootloader?");
         err = link_isbootloader(driver);
       }
 
       if (err == LINK_DEVICE_PRESENT_BUT_NOT_BOOTLOADER) {
         err = 0;
+        link_debug(LINK_DEBUG_MESSAGE, "present but not bootloader");
       } else if (err > 0) {
         // is a bootloader
         err = 1;
