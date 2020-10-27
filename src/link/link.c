@@ -208,7 +208,7 @@ int link_ping(
   if (driver->phy_driver.handle != LINK_PHY_OPEN_ERROR) {
     link_debug(LINK_DEBUG_INFO, "Look for bootloader or device on %s", name);
 
-    link_transport_mastersettimeout(driver, 25);
+    link_transport_mastersettimeout(driver, 50);
 
     do {
       link_debug(LINK_DEBUG_MESSAGE, "Flush %s", name);
@@ -386,6 +386,7 @@ int link_handle_err(link_transport_mdriver_t *driver, int err) {
   case LINK_PHY_ERROR:
     break;
   case LINK_PROT_ERROR:
+    // return LINK_PHY_ERROR;
     // send zero length packets until device is ready
     tries = 0;
     link_debug(LINK_DEBUG_MESSAGE, "Try to overcome PROT error");

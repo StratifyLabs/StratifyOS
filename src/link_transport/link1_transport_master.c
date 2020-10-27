@@ -172,7 +172,8 @@ int wait_ack(link_transport_mdriver_t *driver, uint8_t checksum, int timeout) {
 
   if (ack.checksum != checksum) {
     link_debug(
-      LINK_DEBUG_MESSAGE, "checksum mismatch 0x%X != 0x%X", ack.checksum, checksum);
+      LINK_DEBUG_MESSAGE, "checksum mismatch 0x%X != 0x%X on %d bytes read", ack.checksum,
+      checksum, bytes_read);
     return LINK_PROT_ERROR;
   }
 

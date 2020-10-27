@@ -162,6 +162,7 @@ function(sos_sdk_app_add_arch_targets OPTION_LIST DEPENDENCIES RAM_SIZE)
 					supc++
 					)
 
+
 			endif()
 		endforeach(ARCH)
 		sos_sdk_app("${BUILD_V7M_OPTIONS}" ${RAM_SIZE})

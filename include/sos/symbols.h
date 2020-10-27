@@ -128,6 +128,7 @@ extern u32 __aeabi_d2lz();
 extern u32 __aeabi_d2ulz();
 extern u32 __gnu_f2h_ieee();
 extern u32 __gnu_h2f_ieee();
+// extern u32 __aeabi_atexit();
 
 extern u32 _Unwind_GetRegionStart();
 extern u32 _Unwind_GetTextRelBase();

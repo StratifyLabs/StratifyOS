@@ -1,7 +1,7 @@
 
-option(BUILD_ALL "Build All configurations" OFF)
-option(BUILD_SYS "Build Stratify OS System library" ON)
-option(BUILD_CRT "Build C Runtime library" ON)
+option(BUILD_ALL "Build All configurations" ON)
+option(BUILD_SYS "Build Stratify OS System library" OFF)
+option(BUILD_CRT "Build C Runtime library" OFF)
 option(BUILD_BOOT "Build Bootloader library" OFF)
 
 #check for LWIP

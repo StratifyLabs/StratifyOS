@@ -661,4 +661,4 @@
 .global pthread_testcancel; pthread_testcancel = LINK_ADDR;
 .global pthread_setcancelstate; pthread_setcancelstate = LINK_ADDR;
 .global pthread_setcanceltype; pthread_setcanceltype = LINK_ADDR;
-
+.global __aeabi_atexit; __aeabi_atexit = LINK_ADDR;

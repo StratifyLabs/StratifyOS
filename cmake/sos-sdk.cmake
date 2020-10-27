@@ -128,6 +128,7 @@ macro(sos_sdk_include_target TARGET CONFIG_LIST)
 
 endmacro()
 
+
 include(${CMAKE_CURRENT_LIST_DIR}/sdk/sos-sdk-app.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/sdk/sos-sdk-bsp.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/sdk/sos-sdk-lib.cmake)
