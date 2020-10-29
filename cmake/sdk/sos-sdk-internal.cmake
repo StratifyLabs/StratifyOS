@@ -46,7 +46,11 @@ macro(sos_sdk_internal_startup)
 		set(CMAKE_VERBOSE_MAKEFILE 1)
 	endif()
 
-	list(APPEND CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}/../arm-none-eabi/cmake)
+	list(APPEND CMAKE_MODULE_PATH
+		${SOS_SDK_PATH}/Tools/gcc/cmake/targets
+		${SOS_SDK_PATH}/Tools/gcc/arm-none-eabi/cmake
+		${SOS_SDK_PATH}/Tools/gcc/arm-none-eabi/cmake/targets
+		)
 
 	sos_sdk_internal_get_git_hash()
 endmacro()
@@ -107,7 +111,9 @@ macro(sos_sdk_internal_arm_arch ARCH_NAME)
 
 	string(COMPARE EQUAL "${CMAKE_C_COMPILER_VERSION}" 9.3.1 IS_GCC_9)
 	string(COMPARE EQUAL "${CMAKE_C_COMPILER_VERSION}" 8.3.1 IS_GCC_8)
-	if(IS_GCC_9 OR IS_GCC_8)
+	string(COMPARE EQUAL "${CMAKE_CXX_COMPILER_VERSION}" 9.3.1 IS_GCC_9XX)
+	string(COMPARE EQUAL "${CMAKE_CXX_COMPILER_VERSION}" 8.3.1 IS_GCC_8XX)
+	if(IS_GCC_9 OR IS_GCC_8 OR IS_GCC_9XX OR IS_GCC_8XX)
 		set(SOS_ARM_ARCH_BUILD_FLOAT_DIR_V7EM_F4SS "softfp") #single precision soft ABI
 		set(SOS_ARM_ARCH_BUILD_FLOAT_DIR_V7EM_F4SH "hard")   #single precision hard ABI
 		set(SOS_ARM_ARCH_BUILD_FLOAT_DIR_V7EM_F5SS "softfp") #single precision soft ABI
@@ -115,11 +121,12 @@ macro(sos_sdk_internal_arm_arch ARCH_NAME)
 		set(SOS_ARM_ARCH_BUILD_FLOAT_DIR_V7EM_F5DS "softfp")    #double precision soft ABI
 		set(SOS_ARM_ARCH_BUILD_FLOAT_DIR_V7EM_F5DH "hard")      #double precision hard ABI
 		set(SOS_ARM_ARCH_BUILD_INSTALL_DIR_V7M "thumb/v7-m/nofp") #M3 no FP
-		set(SOS_ARM_ARCH_BUILD_INSTALL_DIR_V7EM "thumb/v7-m/nofp") #M4 no FP
+		set(SOS_ARM_ARCH_BUILD_INSTALL_DIR_V7EM "thumb/v7e-m/nofp") #M4 no FP
 		set(SOS_ARM_ARCH_BUILD_INSTALL_DIR_V7_FP "thumb/v7+fp") #M4 with FP
 		set(SOS_ARM_ARCH_BUILD_INSTALL_DIR_V7EM_DP "thumb/v7e-m+dp") #M7
 		set(SOS_ARM_ARCH_BUILD_INSTALL_DIR_V7EM_FP "thumb/v7e-m+fp") #m7
 	else()
+		message(STATUS "USING GCC 6 ${CMAKE_C_COMPILER_VERSION}")
 		set(SOS_ARM_ARCH_BUILD_FLOAT_DIR_V7EM_F4SS "fpv4-sp/softfp") #single precision soft ABI
 		set(SOS_ARM_ARCH_BUILD_FLOAT_DIR_V7EM_F4SH "fpv4-sp/hard")   #single precision hard ABI
 		set(SOS_ARM_ARCH_BUILD_FLOAT_DIR_V7EM_F5SS "fpv5-sp/softfp") #single precision soft ABI

@@ -113,6 +113,14 @@ function(sos_sdk_add_test NAME OPTION CONFIG)
 
 endfunction()
 
+function(sos_sdk_exclude_arch_from_all TARGET ARCH_LIST)
+	foreach(ARCH ${ARCH_LIST})
+		set_target_properties(${TARGET}_${ARCH}
+			PROPERTIES EXCLUDE_FROM_ALL ON
+			)
+	endforeach()
+endfunction()
+
 macro(sos_sdk_include_target TARGET CONFIG_LIST)
 	if(SOS_IS_ARM)
 		set(ARCH_LIST v7m v7em v7em_f4sh v7em_f5sh v7em_f5dh)
@@ -122,7 +130,7 @@ macro(sos_sdk_include_target TARGET CONFIG_LIST)
 
 	foreach(CONFIG ${CONFIG_LIST})
 		foreach(ARCH ${ARCH_LIST})
-			include(targets/${TARGET}_${CONFIG}_${ARCH})
+			include(${TARGET}_${CONFIG}_${ARCH})
 		endforeach(ARCH)
 	endforeach(CONFIG)
 
