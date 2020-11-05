@@ -35,7 +35,7 @@ limitations under the License.
 #define SOS_LINK_TRANSPORT_MSFT_VENDOR_CODE 'S'
 
 //next valid 3FC
-#define SOS_LINK_TRANSPORT_USB_BCD_VERSION 0x004C
+#define SOS_LINK_TRANSPORT_USB_BCD_VERSION 0x0058
 
 #define SOS_LINK_TRANSPORT_USB_EXTERN_CONST(name) \
 	extern const usbd_device_descriptor_t sos_link_transport_usb_##name##_device_descriptor MCU_WEAK; \
