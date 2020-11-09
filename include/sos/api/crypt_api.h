@@ -1,10 +1,10 @@
 #ifndef SOS_API_CRYPT_API_H
 #define SOS_API_CRYPT_API_H
 
-#include "sos_api.h"
+#include <API/api/api.h>
 
 typedef struct {
-  sos_api_t sos_api;
+  api_t sos_api;
   int (*init)(void **context);
   void (*deinit)(void **context);
   int (*set_key)(void *context, const unsigned char *key, u32 keybits, u32 bits_per_word);
@@ -51,7 +51,7 @@ typedef struct {
 
 // Can be used for SHA256
 typedef struct {
-  sos_api_t sos_api;
+  api_t sos_api;
   int (*init)(void **context);
   void (*deinit)(void **context);
   int (*start)(void *context);
@@ -73,7 +73,7 @@ typedef struct {
 } crypt_public_key_api_t;
 
 typedef struct {
-  sos_api_t sos_api;
+  api_t sos_api;
   void (*init)(void **context, int padding, int hash_id);
   void (*deinit)(void **context);
 
@@ -82,7 +82,7 @@ typedef struct {
 } crypt_rsa_api_t;
 
 typedef struct {
-  sos_api_t sos_api;
+  api_t sos_api;
   int (*init)(void **context);
   void (*deinit)(void **context);
   int (*seed)(void *context, const unsigned char *data, u32 data_len);

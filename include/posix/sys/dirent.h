@@ -26,7 +26,7 @@
 #ifndef DIRENT_H_
 #define DIRENT_H_
 
-#include <sys/syslimits.h>
+#include <limits.h>
 #include <sys/types.h>
 
 #ifdef __cplusplus

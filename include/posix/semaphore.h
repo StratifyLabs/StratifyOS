@@ -20,11 +20,9 @@
 #ifndef SEMAPHORE_H_
 #define SEMAPHORE_H_
 
-
-#include <sys/syslimits.h>
+#include <limits.h>
 #include <sys/time.h>
 #include <sys/types.h>
-#include <limits.h>
 
 #ifdef __cplusplus
 extern "C" {

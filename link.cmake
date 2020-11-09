@@ -48,8 +48,4 @@ install(FILES include/mcu/types.h DESTINATION include/StratifyOS/mcu)
 install(FILES include/mcu/mcu.h DESTINATION include/StratifyOS/mcu)
 install(DIRECTORY include/sos DESTINATION include/StratifyOS PATTERN CMakelists.txt EXCLUDE)
 
-option(SOS_SKIP_CMAKE "Don't install the cmake files" OFF)
 
-if(NOT SOS_SKIP_CMAKE)
-	install(DIRECTORY cmake/ DESTINATION cmake)
-endif()

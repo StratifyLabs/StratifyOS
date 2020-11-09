@@ -1,8 +1,9 @@
 #ifndef SOS_API_WIFI_API_H
 #define SOS_API_WIFI_API_H
 
-#include "sos/dev/netif.h"
-#include "sos_api.h"
+#include <API/api/api.h>
+
+#include <sos/dev/netif.h>
 
 enum {
   WIFI_SECURITY_INVALID,
@@ -63,7 +64,7 @@ typedef struct MCU_PACK {
 // WPS is wifi protected setup
 
 typedef struct {
-  sos_api_t sos_api;
+  api_t sos_api;
   int (*init)(void **context);
   void (*deinit)(void **context);
 

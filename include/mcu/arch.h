@@ -205,8 +205,8 @@ typedef u32 pwm_duty_t;
 #define ARCH_DEFINED
 
 #else
-#include <sys/syslimits.h>
-typedef void * mcu_target_ptr_t;
+#include <limits.h>
+typedef void *mcu_target_ptr_t;
 #endif
 
 

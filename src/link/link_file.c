@@ -288,7 +288,6 @@ int link_read(link_transport_mdriver_t *driver, int fildes, void *buf, int nbyte
   int err;
 
   if (driver == 0) {
-    link_debug(LINK_DEBUG_DEBUG, "reading up to %d bytes from fileno:%d", nbyte, fildes);
     int result = posix_read(fildes, buf, (posix_nbyte_t)nbyte);
     link_errno = errno;
     return result;
@@ -338,7 +337,6 @@ int link_write(link_transport_mdriver_t *driver, int fildes, const void *buf, in
   int err;
 
   if (driver == NULL) {
-    link_debug(LINK_DEBUG_DEBUG, "writing up to %d bytes to fileno:%d", nbyte, fildes);
     int result = posix_write(fildes, buf, (posix_nbyte_t)nbyte);
     if (result < 0) {
       link_error("failed to write posix file with errno %d", errno);
