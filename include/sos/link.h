@@ -113,7 +113,7 @@ int link_unlink(link_transport_mdriver_t * driver /*! Device handle */, const ch
 int link_lseek(link_transport_mdriver_t * driver, int fildes, s32 offset, int whence);
 
 //For files only
-int link_stat(link_transport_mdriver_t *driver, const char *path, struct stat *buf);
+int link_stat(link_transport_mdriver_t *driver, const char *path, struct stat* buf);
 int link_fstat(link_transport_mdriver_t *driver, int fildes, struct stat *buf);
 
 int link_mkdir(link_transport_mdriver_t *driver, const char *path, int mode);

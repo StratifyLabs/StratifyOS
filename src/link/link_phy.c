@@ -247,7 +247,7 @@ int link_phy_write(link_transport_phy_t handle, const void *buf, int nbyte) {
   }
 
   if (!WriteFile(phy->handle, buf, (DWORD)nbyte, &bytes_written, NULL)) {
-    link_error("Failed to write %d bytes from handle:%d\n", nbyte, (int)handle);
+		link_error("Failed to write %d bytes from handle:%p\n", nbyte, handle);
     return LINK_PHY_ERROR;
   }
   return (int)bytes_written;
@@ -266,7 +266,7 @@ int link_phy_read(link_transport_phy_t handle, void *buf, int nbyte) {
   }
 
   if (!ReadFile(phy->handle, buf, (DWORD)nbyte, &bytes_read, NULL)) {
-    link_error("Failed to read %d bytes from handle:%d\n", nbyte, (int)handle);
+		link_error("Failed to read %d bytes from handle:%p\n", nbyte, handle);
     return LINK_PHY_ERROR;
   }
   return (int)bytes_read;

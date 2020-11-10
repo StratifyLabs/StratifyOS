@@ -49,7 +49,7 @@
 #define posix_nbyte_t int
 #endif
 
-static void convert_stat(struct posix_stat *dest, const struct link_stat *source) {
+static void convert_stat(struct stat *dest, const struct link_stat *source) {
   // dest->st_blksize = source->st_blksize;
   // dest->st_blocks = source->st_blocks;
   // dest->st_ctime_ = source->st_ctime_;
@@ -564,10 +564,15 @@ int link_lseek(link_transport_mdriver_t *driver, int fildes, s32 offset, int whe
 int link_stat(
   link_transport_mdriver_t *driver,
   const char *path,
-  struct posix_stat *buf) {
+	struct stat *buf) {
 
   if (driver == NULL) {
-    return posix_stat(path, buf);
+		struct posix_stat tmp;
+		int result;
+		if( (result = posix_stat(path, &tmp)) < 0 ){
+			return result;
+		}
+
   }
 
   link_op_t op;
@@ -623,7 +628,7 @@ int link_stat(
   return reply.err;
 }
 
-int link_fstat(link_transport_mdriver_t *driver, int fildes, struct posix_stat *buf) {
+int link_fstat(link_transport_mdriver_t *driver, int fildes, struct stat *buf) {
   if (driver == NULL) {
     link_debug(LINK_DEBUG_INFO, "posix call with (%d, %p)", fildes, buf);
     return posix_fstat(fildes, buf);
