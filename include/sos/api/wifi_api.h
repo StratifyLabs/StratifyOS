@@ -1,7 +1,7 @@
 #ifndef SOS_API_WIFI_API_H
 #define SOS_API_WIFI_API_H
 
-#include <API/api/api.h>
+#include <mcu/api.h>
 
 #include <sos/dev/netif.h>
 
