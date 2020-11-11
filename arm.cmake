@@ -12,7 +12,7 @@ if(NOT HAVE_LWIP_SOCKETS_H)
 	set(SOS_DEFINITIONS SOS_BOOTSTRAP_SOCKETS=1)
 endif()
 
-sos_sdk_add_subdirectory(SOS_INTERFACE_SOURCELIST ${CMAKE_SOURCE_DIR}/include)
+sos_sdk_add_subdirectory(SOS_INTERFACE_SOURCELIST ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 # Grab GLOB files - these don't affect the build so GLOB is OK
 file(GLOB_RECURSE CMAKE_SOURCES ${CMAKE_SOURCE_DIR}/cmake/*)
