@@ -30,10 +30,10 @@ The Stratify MCU library contains all the MCU specific startup code and peripher
 Stratify OS can run on an MCU if the following modules are implemented in the MCU library.
 
 - [startup](https://github.com/StratifyLabs/StratifyOS-mcu-stm32/blob/master/src/stm32f417xx/core_startup.c): defines MCU startup vectors
-- [core](https://github.com/StratifyLabs/StratifyOS-mcu-stm32/blob/master/src/core_dev.c): defines driver to access core MCU functionality
-- [pio](https://github.com/StratifyLabs/StratifyOS-mcu-stm32/blob/master/src/pio_dev.c): defines driver to control a single LED
-- [tmr](https://github.com/StratifyLabs/StratifyOS-mcu-stm32/blob/master/src/tmr_dev.c): defines a driver with a 32-bit hardware timers used for usleep() and other system timing.
-- [uart](https://github.com/StratifyLabs/StratifyOS-mcu-stm32/blob/master/src/uart_dev.c): defines a driver that can be used for debugging and to run the link protocol if USB is not ready
+- [core](https://github.com/StratifyLabs/StratifyOS-mcu-stm32/blob/master/src/core/core_dev.c): defines driver to access core MCU functionality
+- [pio](https://github.com/StratifyLabs/StratifyOS-mcu-stm32/blob/master/src/pio/pio_dev.c): defines driver to control a single LED
+- [tmr](https://github.com/StratifyLabs/StratifyOS-mcu-stm32/blob/master/src/tmr/tmr_dev.c): defines a driver with a 32-bit hardware timers used for usleep() and other system timing.
+- [uart](https://github.com/StratifyLabs/StratifyOS-mcu-stm32/blob/master/src/uart/uart_dev.c): defines a driver that can be used for debugging and to run the link protocol if USB is not ready
 
 ## Standard Implementation
 
