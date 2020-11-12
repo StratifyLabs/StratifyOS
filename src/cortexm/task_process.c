@@ -17,10 +17,11 @@
  *
  */
 
-#include <cortexm/task_local.h>
 #include <errno.h>
-#include "mcu/mcu.h"
+
+#include "cortexm/task_local.h"
 #include "mcu/core.h"
+#include "mcu/mcu.h"
 
 int task_create_process(void (*p)(char*),
 								void (*cleanup)(void*),

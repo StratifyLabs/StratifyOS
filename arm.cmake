@@ -30,9 +30,9 @@ sos_sdk_add_subdirectory(CRT_SOURCELIST src/crt)
 sos_sdk_add_subdirectory(BOOT_SOURCELIST src/boot)
 
 set(SYS_INCLUDE_DIRECTORIES
-	${CMAKE_SOURCE_DIR}/src
-	${CMAKE_SOURCE_DIR}/src/sys/auth/tinycrypt/lib/include
-	${CMAKE_SOURCE_DIR}/posix
+	${CMAKE_CURRENT_SOURCE_DIR}/src
+	${CMAKE_CURRENT_SOURCE_DIR}/src/sys/auth/tinycrypt/lib/include
+	${CMAKE_CURRENT_SOURCE_DIR}/posix
 	)
 
 list(APPEND SYS_SOURCELIST ${COMMON_SOURCES})

@@ -17,6 +17,7 @@
  *
  */
 
+#include <mcu/api.h>
 
 #include "config.h"
 #include <errno.h>

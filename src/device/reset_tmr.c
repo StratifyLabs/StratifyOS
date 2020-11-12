@@ -1,4 +1,6 @@
 
+#include <string.h>
+
 #include "device/reset_tmr.h"
 #include "sos/dev/tmr.h"
 
