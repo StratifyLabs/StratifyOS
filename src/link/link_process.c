@@ -40,8 +40,7 @@ int link_exec(link_transport_mdriver_t *driver, const char *file) {
     return -1;
   }
 
-  link_debug(
-		LINK_DEBUG_MESSAGE, "Write op (%p)", driver->phy_driver.handle);
+  link_debug(LINK_DEBUG_MESSAGE, "Write op (%p)", driver->phy_driver.handle);
   err = link_transport_masterwrite(driver, &op, sizeof(link_open_t));
   if (err < 0) {
     return err;

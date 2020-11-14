@@ -16,16 +16,15 @@
  *
  *
  */
-#include <mcu/api.h>
+#include <sdk/api.h>
 
 #include "config.h"
-#include <errno.h>
-#include <stdlib.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include "sos/dev/crypt.h"
 #include "sos/api/crypt_api.h"
-
+#include "sos/dev/crypt.h"
+#include <errno.h>
+#include <fcntl.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 typedef struct {
 	int fd;

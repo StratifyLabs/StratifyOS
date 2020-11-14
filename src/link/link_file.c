@@ -66,28 +66,28 @@ static void convert_stat(struct stat *dest, const struct link_stat *source) {
 
 static int convert_flags(int link_flags) {
   int result = 0;
-  if (link_flags & LINK_O_CREAT) {
-    result |= O_CREAT;
+  if (link_flags & O_CREAT) {
+    result |= LINK_O_CREAT;
   }
-  if (link_flags & LINK_O_APPEND) {
-    result |= O_APPEND;
+  if (link_flags & O_APPEND) {
+    result |= LINK_O_APPEND;
   }
-  if (link_flags & LINK_O_EXCL) {
-    result |= O_EXCL;
+  if (link_flags & O_EXCL) {
+    result |= LINK_O_EXCL;
   }
-  if (link_flags & LINK_O_RDWR) {
-    result |= O_RDWR;
+  if (link_flags & O_RDWR) {
+    result |= LINK_O_RDWR;
   }
 #if defined O_NONBLOCK
-  if (link_flags & LINK_O_NONBLOCK) {
-    result |= O_NONBLOCK;
+  if (link_flags & O_NONBLOCK) {
+    result |= LINK_O_NONBLOCK;
   }
 #endif
-  if (link_flags & LINK_O_WRONLY) {
-    result |= O_WRONLY;
+  if (link_flags & O_WRONLY) {
+    result |= LINK_O_WRONLY;
   }
-  if (link_flags & LINK_O_TRUNC) {
-    result |= O_TRUNC;
+  if (link_flags & O_TRUNC) {
+    result |= LINK_O_TRUNC;
   }
   return result;
 }
@@ -99,7 +99,7 @@ int link_open(link_transport_mdriver_t *driver, const char *path, int flags, ...
   int err;
   va_list ap;
 
-  if (flags & LINK_O_CREAT) {
+  if (flags & O_CREAT) {
     va_start(ap, flags);
     mode = va_arg(ap, link_mode_t);
     va_end(ap);
@@ -110,10 +110,7 @@ int link_open(link_transport_mdriver_t *driver, const char *path, int flags, ...
   if (driver == 0) {
     link_debug(LINK_DEBUG_INFO, "posix call with (%s, 0x%X, %o)", path, flags, mode);
 
-    link_debug(
-      LINK_DEBUG_INFO, "convert flags 0x%X -> 0x%X", flags,
-      convert_flags(flags) | POSIX_OPEN_FLAGS);
-    int result = posix_open(path, convert_flags(flags) | POSIX_OPEN_FLAGS, mode);
+    int result = posix_open(path, flags | POSIX_OPEN_FLAGS, mode);
 
     link_debug(LINK_DEBUG_MESSAGE, "opened with file number: %d", result);
 
@@ -122,12 +119,16 @@ int link_open(link_transport_mdriver_t *driver, const char *path, int flags, ...
   }
 
   link_debug(
+    LINK_DEBUG_INFO, "convert flags 0x%X -> 0x%X", flags,
+    convert_flags(flags) | POSIX_OPEN_FLAGS);
+
+  link_debug(
     LINK_DEBUG_INFO, "call with (%s, 0x%X, %o) and handle %p", path, mode, flags,
     driver->phy_driver.handle);
 
   op.open.cmd = LINK_CMD_OPEN;
   op.open.path_size = strlen(path) + 1;
-  op.open.flags = (u32)flags;
+  op.open.flags = (u32)convert_flags(flags) | LINK_O_NONBLOCK;
   op.open.mode = mode;
 
   link_debug(LINK_DEBUG_MESSAGE, "Write open op (%p)", driver->phy_driver.handle);
@@ -561,18 +562,18 @@ int link_lseek(link_transport_mdriver_t *driver, int fildes, s32 offset, int whe
   return reply.err;
 }
 
-int link_stat(
-  link_transport_mdriver_t *driver,
-  const char *path,
-	struct stat *buf) {
+int link_stat(link_transport_mdriver_t *driver, const char *path, struct stat *buf) {
 
   if (driver == NULL) {
-		struct posix_stat tmp;
-		int result;
-		if( (result = posix_stat(path, &tmp)) < 0 ){
-			return result;
-		}
+    struct posix_stat tmp;
+    int result;
+    if ((result = posix_stat(path, &tmp)) < 0) {
+      return result;
+    }
 
+    memcpy(buf, &tmp, sizeof(tmp));
+
+    return result;
   }
 
   link_op_t op;

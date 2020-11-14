@@ -33,11 +33,13 @@ int link_mkdir(link_transport_mdriver_t *driver, const char *path, int mode) {
   int err;
 
   if (driver == NULL) {
-		return mkdir(path
-						 #if !defined __win32
-								 , mode
-						 #endif
-								 );
+    return mkdir(
+      path
+#if !defined __win32
+      ,
+      mode
+#endif
+    );
   }
 
   link_debug(
@@ -186,15 +188,15 @@ int link_readdir_r(
   int len;
 
   if (driver == NULL) {
-		struct dirent * result_dirent = readdir(dirp);
-		if( result_dirent ){
-			memcpy(entry, result_dirent, sizeof(struct dirent));
-			if( result != NULL ){
-				*result = entry;
-				return 0;
-			}
-		}
-		return -1;
+    struct dirent *result_dirent = readdir(dirp);
+    if (result_dirent) {
+      memcpy(entry, result_dirent, sizeof(struct dirent));
+      if (result != NULL) {
+        *result = entry;
+        return 0;
+      }
+    }
+    return -1;
   }
 
   if (result != NULL) {
@@ -206,7 +208,7 @@ int link_readdir_r(
     driver->phy_driver.handle);
 
   op.readdir.cmd = LINK_CMD_READDIR;
-	op.readdir.dirp = (u32)(u64)dirp;
+  op.readdir.dirp = (u32)(u64)dirp;
 
   link_debug(LINK_DEBUG_MESSAGE, "Write op");
   if (link_transport_masterwrite(driver, &op, sizeof(link_readdir_t)) < 0) {
@@ -259,7 +261,7 @@ int link_closedir(link_transport_mdriver_t *driver, DIR *dirp) {
     LINK_DEBUG_INFO, "call with (0x%X) and handle %p", dirp, driver->phy_driver.handle);
 
   op.closedir.cmd = LINK_CMD_CLOSEDIR;
-	op.closedir.dirp = (u32)(u64)dirp;
+  op.closedir.dirp = (u32)(u64)dirp;
 
   link_debug(LINK_DEBUG_MESSAGE, "Write op");
   err = link_transport_masterwrite(driver, &op, sizeof(link_closedir_t));

@@ -1,6 +1,6 @@
 #ifndef SOS_API_CRYPT_API_H
 #define SOS_API_CRYPT_API_H
 
-#include <mcu/api.h>
+#include <sdk/api.h>
 
 #endif // SOS_API_CRYPT_API_H
