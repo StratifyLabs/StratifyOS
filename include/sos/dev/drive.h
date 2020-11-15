@@ -46,7 +46,7 @@
 #ifndef SOS_DEV_DRIVE_H_
 #define SOS_DEV_DRIVE_H_
 
-#include "mcu/types.h"
+#include <sdk/types.h>
 
 #define DRIVE_VERSION (0x030000)
 #define DRIVE_IOC_IDENT_CHAR 'd'

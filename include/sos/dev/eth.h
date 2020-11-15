@@ -59,7 +59,7 @@
 #ifndef SOS_DEV_ETH_H_
 #define SOS_DEV_ETH_H_
 
-#include "mcu/types.h"
+#include <sdk/types.h>
 
 #define ETH_VERSION (0x030000)
 #define ETH_IOC_IDENT_CHAR 'e'

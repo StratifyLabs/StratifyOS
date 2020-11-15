@@ -96,9 +96,8 @@ install(DIRECTORY ldscript/ DESTINATION lib/ldscripts PATTERN CMakelists.txt EXC
 option(SOS_SKIP_CMAKE "Dont install the cmake files" OFF)
 option(SOS_CREATE_GCC_HARD "Dont install the cmake files" OFF)
 
-if(NOT SOS_SKIP_CMAKE)
-	install(DIRECTORY cmake/ DESTINATION ../cmake)
-endif()
+install(FILES StratifyOS.cmake
+	DESTINATION cmake/targets)
 
 if(SOS_CREATE_GCC_HARD)
 	install(CODE "include(../create-gcc-hard.cmake)")

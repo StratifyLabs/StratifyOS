@@ -1,7 +1,7 @@
 #ifndef SOS_API_SOS_API_H
 #define SOS_API_SOS_API_H
 
-#include "mcu/types.h"
+#include <sdk/types.h>
 
 typedef struct {
 	const char * name;

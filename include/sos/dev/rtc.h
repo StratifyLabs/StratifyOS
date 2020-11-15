@@ -35,7 +35,7 @@
 #ifndef SOS_DEV_RTC_H_
 #define SOS_DEV_RTC_H_
 
-#include "mcu/types.h"
+#include <sdk/types.h>
 #include "sos/link/types.h"
 
 #ifdef __cplusplus

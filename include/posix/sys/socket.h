@@ -31,7 +31,7 @@
 #include <lwip/sockets.h>
 #else
 #include <sys/time.h>
-#include "mcu/types.h"
+#include <sdk/types.h>
 typedef u32 socklen_t;
 typedef u32 fd_set;
 struct sockaddr;

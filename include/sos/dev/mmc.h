@@ -20,7 +20,7 @@
 #ifndef SOS_DEV_MMC_H_
 #define SOS_DEV_MMC_H_
 
-#include "mcu/types.h"
+#include <sdk/types.h>
 
 #define MMC_VERSION (0x030000)
 #define MMC_IOC_IDENT_CHAR 'Q'

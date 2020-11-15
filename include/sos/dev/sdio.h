@@ -20,7 +20,7 @@
 #ifndef SOS_DEV_SDIO_H_
 #define SOS_DEV_SDIO_H_
 
-#include "mcu/types.h"
+#include <sdk/types.h>
 
 #define SDIO_VERSION (0x030000)
 #define SDIO_IOC_IDENT_CHAR 'Q'

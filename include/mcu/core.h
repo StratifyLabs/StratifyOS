@@ -38,7 +38,7 @@
 #ifndef _MCU_CORE_H_
 #define _MCU_CORE_H_
 
-#include "mcu/types.h"
+#include <sdk/types.h>
 #include "mcu/mcu.h"
 #include "sos/dev/core.h"
 #include "sos/fs/devfs.h"

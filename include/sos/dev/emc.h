@@ -42,7 +42,7 @@
 #ifndef SOS_DEV_EMC_H_
 #define SOS_DEV_EMC_H_
 
-#include "mcu/types.h"
+#include <sdk/types.h>
 
 #define EMC_VERSION (0x030000)
 #define EMC_IOC_IDENT_CHAR 'E'

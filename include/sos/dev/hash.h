@@ -34,7 +34,7 @@
 #ifndef SOS_DEV_HASH_H_
 #define SOS_DEV_HASH_H_
 
-#include "mcu/types.h"
+#include <sdk/types.h>
 
 #define HASH_VERSION (0x030000)
 #define HASH_IOC_CHAR 'h'

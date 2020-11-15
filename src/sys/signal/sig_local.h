@@ -24,7 +24,7 @@
 #include <stdint.h>
 #include <sys/reent.h>
 
-#include "mcu/types.h"
+#include <sdk/types.h>
 
 
 #define SCOPE_PROCESS 0

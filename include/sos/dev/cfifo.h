@@ -36,7 +36,7 @@
 #define SOS_DEV_CFIFO_H_
 
 #include "fifo.h"
-#include "mcu/types.h"
+#include <sdk/types.h>
 
 #define CFIFO_VERSION (0x030000)
 #define CFIFO_IOC_CHAR 'M'

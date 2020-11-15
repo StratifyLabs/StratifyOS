@@ -20,7 +20,7 @@
 #ifndef SOS_FS_TYPES_H_
 #define SOS_FS_TYPES_H_
 
-#include "mcu/types.h"
+#include <sdk/types.h>
 
 typedef open_file_t sysfs_file_t;
 

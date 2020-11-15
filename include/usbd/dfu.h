@@ -20,7 +20,7 @@
 #ifndef USBD_DFU_H_
 #define USBD_DFU_H_
 
-#include "mcu/types.h"
+#include <sdk/types.h>
 
 //Part of DFU descriptors
 #define USBD_DFU_INTERFACE_NUM_ENDPOINTS 0x00 //Use control pipe

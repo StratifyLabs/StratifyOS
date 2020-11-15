@@ -35,7 +35,7 @@
 #ifndef SOS_DEV_FIFO_H_
 #define SOS_DEV_FIFO_H_
 
-#include "mcu/types.h"
+#include <sdk/types.h>
 
 #define FIFO_VERSION (0x030000)
 #define FIFO_IOC_CHAR 'f'

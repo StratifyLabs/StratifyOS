@@ -33,7 +33,7 @@
 #ifndef SOS_DEV_SYS_H_
 #define SOS_DEV_SYS_H_
 
-#include "mcu/types.h"
+#include <sdk/types.h>
 #include "mcu/mcu.h"
 #include "sos/link/types.h"
 

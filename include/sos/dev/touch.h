@@ -32,7 +32,7 @@
 #ifndef SOS_DEV_TOUCH_H_
 #define SOS_DEV_TOUCH_H_
 
-#include "mcu/types.h"
+#include <sdk/types.h>
 
 #define TOUCH_VERSION (0x030000)
 #define TOUCH_IOC_IDENT_CHAR 't'

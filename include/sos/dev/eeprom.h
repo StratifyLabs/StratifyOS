@@ -20,7 +20,7 @@
 #ifndef SOS_DEV_EEPROM_H_
 #define SOS_DEV_EEPROM_H_
 
-#include "mcu/types.h"
+#include <sdk/types.h>
 
 #define EEPROM_VERSION (0x030000)
 #define EEPROM_IOC_IDENT_CHAR 'E'

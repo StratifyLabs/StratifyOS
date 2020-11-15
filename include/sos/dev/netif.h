@@ -34,7 +34,7 @@
 #ifndef SOS_DEV_NETIF_H_
 #define SOS_DEV_NETIF_H_
 
-#include "mcu/types.h"
+#include <sdk/types.h>
 #include "sos/link/types.h"
 
 #define NETIF_VERSION (0x030100)

@@ -33,7 +33,7 @@
 #ifndef SOS_DEV_MCI_H_
 #define SOS_DEV_MCI_H_
 
-#include "mcu/types.h"
+#include <sdk/types.h>
 
 #ifdef __cplusplus
 extern "C" {

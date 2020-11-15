@@ -34,7 +34,7 @@
 #ifndef MPU_H_
 #define MPU_H_
 
-#include "mcu/types.h"
+#include <sdk/types.h>
 
 #ifdef __cplusplus
 extern "C" {

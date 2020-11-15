@@ -29,7 +29,7 @@
 #ifndef USBD_TYPES_H_
 #define USBD_TYPES_H_
 
-#include "mcu/types.h"
+#include <sdk/types.h>
 #include "defines.h"
 
 typedef union MCU_PACK {

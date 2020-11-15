@@ -35,7 +35,7 @@
 
 #include <stdint.h>
 
-#include "mcu/types.h"
+#include <sdk/types.h>
 #include "termios.h"
 
 #ifdef __cplusplus

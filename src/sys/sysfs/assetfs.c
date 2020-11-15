@@ -21,7 +21,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include "dirent.h"
-#include "mcu/types.h"
+#include <sdk/types.h>
 #include "sos/sos.h"
 #include "sos/fs/sysfs.h"
 #include "sos/fs/assetfs.h"

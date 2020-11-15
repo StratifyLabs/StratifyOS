@@ -33,7 +33,7 @@
 #ifndef SOS_DEV_CRYPT_H_
 #define SOS_DEV_CRYPT_H_
 
-#include "mcu/types.h"
+#include <sdk/types.h>
 
 #define CRYPT_VERSION (0x030000)
 #define CRYPT_IOC_CHAR '?'

@@ -344,7 +344,7 @@
 #include "cortexm/fault.h"
 #include "cortexm/task.h"
 #include "mcu/mcu.h"
-#include "mcu/types.h"
+#include <sdk/types.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>

@@ -34,7 +34,7 @@
 #ifndef SOS_DEV_I2S_FFIFO_H_
 #define SOS_DEV_I2S_FFIFO_H_
 
-#include "mcu/types.h"
+#include <sdk/types.h>
 #include "ffifo.h"
 #include "i2s.h"
 

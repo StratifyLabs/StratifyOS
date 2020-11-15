@@ -37,7 +37,7 @@
 #define SOS_DEV_BOOTLOADER_H_
 
 
-#include "mcu/types.h"
+#include <sdk/types.h>
 #include "sos/link/transport.h"
 
 #ifdef __cplusplus

@@ -108,7 +108,7 @@
 #define DEV_SOS_SWITCHBOARD_H
 
 #include "sos/link.h"
-#include "mcu/types.h"
+#include <sdk/types.h>
 
 #ifdef __cplusplus
 extern "C" {

@@ -20,7 +20,7 @@
 #ifndef SCHEDULER_SCHEDULER_TIMING_H_
 #define SCHEDULER_SCHEDULER_TIMING_H_
 
-#include "mcu/types.h"
+#include <sdk/types.h>
 #include "sos/sos.h"
 
 #define SCHEDULER_CLOCK_NSEC_DIV ((u32)((u64)1024 * 1000000000 / mcu_board_config.core_cpu_freq))

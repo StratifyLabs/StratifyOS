@@ -51,7 +51,7 @@
  * @{
  */
 
-#include "mcu/types.h"
+#include <sdk/types.h>
 #include "sos/dev/uart.h"
 #include "sos/dev/usb.h"
 

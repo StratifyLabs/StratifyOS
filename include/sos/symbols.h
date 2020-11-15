@@ -20,7 +20,7 @@
 #ifndef SOS_SYMBOLS_H_
 #define SOS_SYMBOLS_H_
 
-#include "mcu/types.h"
+#include <sdk/types.h>
 
 extern u32 __aeabi_uldivmod();
 extern u32 __aeabi_ldivmod();

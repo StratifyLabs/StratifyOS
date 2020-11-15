@@ -34,7 +34,7 @@
 #ifndef USBD_HID_H_
 #define USBD_HID_H_
 
-#include "mcu/types.h"
+#include <sdk/types.h>
 
 /* HID Subclass Codes */
 #define HID_SUBCLASS_NONE               0x00

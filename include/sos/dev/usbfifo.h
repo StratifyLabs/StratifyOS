@@ -34,7 +34,7 @@
 #ifndef SOS_DEV_USBFIFO_H_
 #define SOS_DEV_USBFIFO_H_
 
-#include "mcu/types.h"
+#include <sdk/types.h>
 #include "fifo.h"
 #include "usb.h"
 

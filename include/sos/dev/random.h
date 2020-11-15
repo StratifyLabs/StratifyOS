@@ -34,7 +34,7 @@
 #ifndef SOS_DEV_RANDOM_H_
 #define SOS_DEV_RANDOM_H_
 
-#include "mcu/types.h"
+#include <sdk/types.h>
 
 #define RANDOM_VERSION (0x030000)
 #define RANDOM_IOC_CHAR 'r'

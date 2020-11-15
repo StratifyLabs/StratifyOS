@@ -17,7 +17,7 @@
 #ifndef SOS_FS_DRIVE_ASSETFS_H_
 #define SOS_FS_DRIVE_ASSETFS_H_
 
-#include "mcu/types.h"
+#include <sdk/types.h>
 #include "sos/dev/drive.h"
 #include "../link/types.h"
 #include "sysfs.h"

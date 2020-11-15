@@ -74,7 +74,7 @@
 #define SOS_DEV_DAC_H_
 
 #include <stdint.h>
-#include "mcu/types.h"
+#include <sdk/types.h>
 
 #ifdef __cplusplus
 extern "C" {

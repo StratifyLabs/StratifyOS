@@ -37,7 +37,7 @@
 #include <stdint.h>
 
 #include "ioctl.h"
-#include "mcu/types.h"
+#include <sdk/types.h>
 
 #define RADIO_VERSION (0x000000)
 #define RADIO_IOC_CHAR 'R'

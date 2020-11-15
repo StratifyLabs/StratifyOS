@@ -76,7 +76,7 @@
 #ifndef SOS_DEV_I2C_H_
 #define SOS_DEV_I2C_H_
 
-#include "mcu/types.h"
+#include <sdk/types.h>
 
 #ifdef __cplusplus
 extern "C" {

@@ -18,7 +18,7 @@
  */
 
 #include "cortexm/cortexm.h"
-#include "mcu/types.h"
+#include <sdk/types.h>
 #include "sos/sos.h"
 #include "sys/malloc/malloc_local.h"
 #include <sys/unistd.h>

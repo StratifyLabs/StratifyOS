@@ -17,7 +17,7 @@
 #ifndef SOS_FS_ASSETFS_H_
 #define SOS_FS_ASSETFS_H_
 
-#include "mcu/types.h"
+#include <sdk/types.h>
 #include "../link/types.h"
 
 int assetfs_init(const void* cfg);

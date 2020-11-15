@@ -40,7 +40,7 @@
 extern "C" {
 #endif
 
-#include "mcu/types.h"
+#include <sdk/types.h>
 
 /*! \details This lists the possible values of a HWPL fault.
  *

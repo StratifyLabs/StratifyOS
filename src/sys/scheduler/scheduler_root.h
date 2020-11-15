@@ -20,7 +20,7 @@
 #ifndef SCHEDULER_SCHEDULER_ROOT_H_
 #define SCHEDULER_SCHEDULER_ROOT_H_
 
-#include "mcu/types.h"
+#include <sdk/types.h>
 #include "trace.h"
 #include "sos/sos.h"
 

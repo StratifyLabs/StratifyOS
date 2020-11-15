@@ -17,7 +17,7 @@
 #ifndef SOS_LINK_TYPES_H_
 #define SOS_LINK_TYPES_H_
 
-#include "mcu/types.h"
+#include <sdk/types.h>
 
 struct link_tm {
 	s32	tm_sec;

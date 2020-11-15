@@ -33,7 +33,7 @@
 #ifndef SOS_DEV_DEVICE_FIFO_H_
 #define SOS_DEV_DEVICE_FIFO_H_
 
-#include "mcu/types.h"
+#include <sdk/types.h>
 #include "ffifo.h"
 
 

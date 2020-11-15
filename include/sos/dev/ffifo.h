@@ -36,7 +36,7 @@
 #define SOS_STREAM_FFIFO_H_
 
 #include "fifo.h"
-#include "mcu/types.h"
+#include <sdk/types.h>
 
 #define FFIFO_VERSION (0x030000)
 #define FFIFO_IOC_CHAR 'F'

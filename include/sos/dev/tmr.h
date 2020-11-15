@@ -45,7 +45,7 @@
 
 #include <stdint.h>
 
-#include "mcu/types.h"
+#include <sdk/types.h>
 
 #ifdef __cplusplus
 extern "C" {

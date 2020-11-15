@@ -17,9 +17,11 @@
 #ifndef SOS_FS_DEVFS_H_
 #define SOS_FS_DEVFS_H_
 
-#include "mcu/types.h"
-#include "sysfs.h"
+#include <errno.h>
+#include <sdk/types.h>
 #include <sys/dirent.h>
+
+#include "sysfs.h"
 
 #define DEVFS_GET_PORT(x) (x->port)
 

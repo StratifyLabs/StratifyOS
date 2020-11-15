@@ -28,7 +28,7 @@
 
 #include "sos/fs/devfs.h"
 #include "sos/dev/usb.h"
-#include "mcu/types.h"
+#include <sdk/types.h>
 
 #include "defines.h"
 #include "types.h"

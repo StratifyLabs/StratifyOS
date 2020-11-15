@@ -20,7 +20,7 @@
 #ifndef MCU_CORTEXM_H_
 #define MCU_CORTEXM_H_
 
-#include "mcu/types.h"
+#include <sdk/types.h>
 
 #ifdef __cplusplus
 extern "C" {
