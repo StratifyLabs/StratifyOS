@@ -41,6 +41,7 @@ int close(int fildes);
 
 /*! \cond */
 int _close(int fildes) {
+  scheduler_check_cancellation();
   // Close the file if it's open
   int ret;
 
@@ -60,7 +61,6 @@ int _close(int fildes) {
   }
 
   ret = sysfs_file_close(get_open_file(fildes));
-
   u_reset_fildes(fildes);
   return ret;
 }

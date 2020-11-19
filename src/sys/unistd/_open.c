@@ -112,6 +112,8 @@ int _open(const char *name, int flags, ...) {
   int mode;
   const sysfs_t *fs;
 
+  scheduler_check_cancellation();
+
   // Check the length of the filename
   if (sysfs_ispathinvalid(name) == true) {
     return -1;

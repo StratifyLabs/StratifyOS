@@ -1,4 +1,4 @@
-/* Copyright 2011-2018 Tyler Gilbert; 
+/* Copyright 2011-2018 Tyler Gilbert;
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 /*! \addtogroup unistd
@@ -25,13 +25,12 @@
 
 #include "config.h"
 
+#include "device/sys.h"
+#include "mcu/core.h"
+#include "sos/sos.h"
+#include "unistd_local.h"
 #include <errno.h>
 #include <stdarg.h>
-#include "unistd_local.h"
-#include "sos/sos.h"
-#include "mcu/core.h"
-#include "device/sys.h"
-
 
 /*! \details This function performs a control request on the device
  * associated with \a fildes. \a request is specific to the device.
@@ -47,25 +46,24 @@
  *
  */
 int fsync(int fildes) {
+  scheduler_check_cancellation();
 
-	fildes = u_fildes_is_bad(fildes);
-	if ( fildes < 0 ){
-		//check to see if fildes is a socket
-		errno = EBADF;
-		return -1;
-	}
+  fildes = u_fildes_is_bad(fildes);
+  if (fildes < 0) {
+    // check to see if fildes is a socket
+    errno = EBADF;
+    return -1;
+  }
 
-	if( FILDES_IS_SOCKET(fildes) ){
-		if( sos_board_config.socket_api != 0 ){
-            return sos_board_config.socket_api->fsync(fildes);
-		}
-		errno = EBADF;
-		return -1;
-	}
+  if (FILDES_IS_SOCKET(fildes)) {
+    if (sos_board_config.socket_api != 0) {
+      return sos_board_config.socket_api->fsync(fildes);
+    }
+    errno = EBADF;
+    return -1;
+  }
 
-
-    return sysfs_file_fsync(get_open_file(fildes));
+  return sysfs_file_fsync(get_open_file(fildes));
 }
-
 
 /*! @} */

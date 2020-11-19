@@ -332,6 +332,7 @@ int sem_post(sem_t *sem) {
  */
 int sem_timedwait(sem_t *sem, const struct timespec *abs_timeout) {
   // timed wait
+  scheduler_check_cancellation();
   root_sem_args_t args;
 
   if (check_initialized(sem) < 0) {
@@ -435,6 +436,7 @@ int sem_unlink(const char *name) {
  *
  */
 int sem_wait(sem_t *sem) {
+  scheduler_check_cancellation();
   root_sem_args_t args;
   if (check_initialized(sem) < 0) {
     return -1;

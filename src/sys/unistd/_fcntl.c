@@ -1,4 +1,4 @@
-/* Copyright 2011-2018 Tyler Gilbert; 
+/* Copyright 2011-2018 Tyler Gilbert;
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 /*! \addtogroup unistd
@@ -23,11 +23,11 @@
 
 /*! \file */
 
+#include "sos/sos.h"
+#include "unistd_fs.h"
+#include "unistd_local.h"
 #include <fcntl.h>
 #include <stdarg.h>
-#include "unistd_local.h"
-#include "unistd_fs.h"
-#include "sos/sos.h"
 
 #include "mcu/debug.h"
 
@@ -48,67 +48,69 @@
 int fcntl(int fildes, int cmd, ...);
 
 /*! \cond */
-int _fcntl(int fildes, int cmd, ...){
-	int tmp;
-	int flags;
-	va_list ap;
+int _fcntl(int fildes, int cmd, ...) {
+  int tmp;
+  int flags;
+  va_list ap;
 
-	va_start(ap, cmd);
-	tmp = va_arg(ap, int);
-	va_end(ap);
+  va_start(ap, cmd);
+  tmp = va_arg(ap, int);
+  va_end(ap);
 
-	if( FILDES_IS_SOCKET(fildes) ){
-		  if( sos_board_config.socket_api != 0 ){
-            return sos_board_config.socket_api->fcntl(fildes & ~FILDES_SOCKET_FLAG, cmd, tmp);
-        }
-        errno = EBADF;
-        return -1;
+  scheduler_check_cancellation();
+
+  if (FILDES_IS_SOCKET(fildes)) {
+    if (sos_board_config.socket_api != 0) {
+      return sos_board_config.socket_api->fcntl(fildes & ~FILDES_SOCKET_FLAG, cmd, tmp);
     }
+    errno = EBADF;
+    return -1;
+  }
 
-	fildes = u_fildes_is_bad(fildes);
-	if ( fildes < 0 ){
-		errno = EBADF;
-		return -1;
-	}
+  fildes = u_fildes_is_bad(fildes);
+  if (fildes < 0) {
+    errno = EBADF;
+    return -1;
+  }
 
-	flags = get_flags(fildes);
+  flags = get_flags(fildes);
 
-	switch(cmd){
-	/*
-	case F_DUPFD:
+  switch (cmd) {
+    /*
+    case F_DUPFD:
 
-		new_fildes = u_new_open_file(tmp);
-		if ( new_fildes == -1 ){
-			return -1;
-		}
+            new_fildes = u_new_open_file(tmp);
+            if ( new_fildes == -1 ){
+                    return -1;
+            }
 
-		dup_open_file(new_fildes, fildes);
-		return new_fildes;
-		*/
+            dup_open_file(new_fildes, fildes);
+            return new_fildes;
+            */
 
-	case F_GETFL:
-		return flags;
+  case F_GETFL:
+    return flags;
 
-	case F_SETFL:
-		set_flags(fildes, tmp);
-		break;
+  case F_SETFL:
+    set_flags(fildes, tmp);
+    break;
 
-	case F_GETFD:
-	case F_SETFD:
-	case F_DUPFD:
-	case F_GETOWN:
-	case F_SETOWN:
-	case F_GETLK:
-	case F_SETLK:
-	case F_SETLKW:
-		errno = ENOTSUP;
-		break;
-	default:
-		errno = EINVAL;
-		break;
-	}
+  case F_GETFD:
+  case F_SETFD:
+  case F_DUPFD:
+  case F_GETOWN:
+  case F_SETOWN:
+  case F_GETLK:
+  case F_SETLK:
+  case F_SETLKW:
+    errno = ENOTSUP;
+    break;
+  default:
+    errno = EINVAL;
+    break;
+  }
 
-	return -1;
+  return -1;
 }
 /*! \endcond */
 

@@ -1,4 +1,4 @@
-/* Copyright 2011-2018 Tyler Gilbert; 
+/* Copyright 2011-2018 Tyler Gilbert;
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 /*! \addtogroup unistd
@@ -23,9 +23,9 @@
 
 /*! \file */
 
-#include "unistd_local.h"
-#include  "unistd_fs.h"
 #include "sos/sos.h"
+#include "unistd_fs.h"
+#include "unistd_local.h"
 
 /*! \details This function reads \a nbyte bytes from \a fildes to the memory
  * location pointed to by \a buf.
@@ -48,36 +48,35 @@
 int read(int fildes, void *buf, size_t nbyte);
 
 /*! \cond */
-int _read(int fildes, void *buf, size_t nbyte){
-	sysfs_file_t * file;
+int _read(int fildes, void *buf, size_t nbyte) {
+  scheduler_check_cancellation();
+  sysfs_file_t *file;
 
-	if( FILDES_IS_SOCKET(fildes) ){
-		  if( sos_board_config.socket_api != 0 ){
-            return sos_board_config.socket_api->read(fildes & ~FILDES_SOCKET_FLAG, buf, nbyte);
-        }
-        errno = EBADF;
-        return -1;
+  if (FILDES_IS_SOCKET(fildes)) {
+    if (sos_board_config.socket_api != 0) {
+      return sos_board_config.socket_api->read(fildes & ~FILDES_SOCKET_FLAG, buf, nbyte);
     }
+    errno = EBADF;
+    return -1;
+  }
 
-	fildes = u_fildes_is_bad(fildes);
-	if ( fildes < 0 ){
-		//check to see if fildes is a socket
-		errno = EBADF;
-		return -1;
-	}
+  fildes = u_fildes_is_bad(fildes);
+  if (fildes < 0) {
+    // check to see if fildes is a socket
+    errno = EBADF;
+    return -1;
+  }
 
-	if ( (get_flags(fildes) & O_ACCMODE) == O_WRONLY ){
-		errno = EACCES;
-		return -1;
-	}
+  if ((get_flags(fildes) & O_ACCMODE) == O_WRONLY) {
+    errno = EACCES;
+    return -1;
+  }
 
-	file = get_open_file(fildes);
+  file = get_open_file(fildes);
 
-	//initialize the file offset location
-	return sysfs_file_read(file, buf, nbyte);
-
+  // initialize the file offset location
+  return sysfs_file_read(file, buf, nbyte);
 }
 /*! \endcond */
-
 
 /*! @} */
