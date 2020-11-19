@@ -301,9 +301,10 @@ int fifo_ioctl_local(
     return 0;
   case I_FIFO_SETATTR:
     if (attr->o_flags & FIFO_FLAG_SET_WRITEBLOCK) {
-      fifo_set_writeblock(state, 1);
       if (attr->o_flags & FIFO_FLAG_IS_OVERFLOW) {
         fifo_set_writeblock(state, 0);
+      } else {
+        fifo_set_writeblock(state, 1);
       }
     }
 
