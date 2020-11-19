@@ -145,7 +145,6 @@ translate_value(u32 addr, u32 mask, u32 code_start, u32 data_start, u32 total, s
           *loc = ret; // this symbol isn't available -- it was removed to save space in
                       // the MCU flash
         }
-        mcu_debug_printf("CALL %08lX -> %08lX\n", addr, symbols_table[ret]);
         return symbols_table[ret];
       } else {
         mcu_debug_log_error(
@@ -154,10 +153,8 @@ translate_value(u32 addr, u32 mask, u32 code_start, u32 data_start, u32 total, s
         return 0;
       }
     } else if (addr & APPFS_REWRITE_RAM_MASK) {
-      mcu_debug_printf("RAM %08lX -> %08lX\n", addr, ret + data_start);
       ret += data_start;
     } else {
-      mcu_debug_printf("CODE %08lX -> %08lX\n", addr, ret + code_start);
       ret += code_start;
     }
   }
