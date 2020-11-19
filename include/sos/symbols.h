@@ -144,6 +144,7 @@ extern u32 _Unwind_Resume_or_Rethrow();
 extern u32 _Unwind_VRS_Get();
 extern u32 __aeabi_unwind_cpp_pr0();
 extern u32 __aeabi_unwind_cpp_pr1();
+extern u32 __aeabi_atexit();
 
 #include <pthread.h>
 #include <stdio.h>

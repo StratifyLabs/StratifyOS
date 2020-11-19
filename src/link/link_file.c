@@ -620,7 +620,7 @@ int link_stat(link_transport_mdriver_t *driver, const char *path, struct stat *b
       return err;
     }
   } else {
-    link_errno = reply.err_number;
+    errno = reply.err_number;
     link_debug(LINK_DEBUG_WARNING, "Failed to stat file (%d)", link_errno);
   }
 
