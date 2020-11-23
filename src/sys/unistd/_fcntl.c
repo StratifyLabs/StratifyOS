@@ -23,11 +23,13 @@
 
 /*! \file */
 
+#include <fcntl.h>
+#include <stdarg.h>
+
+#include "../scheduler/scheduler_local.h"
 #include "sos/sos.h"
 #include "unistd_fs.h"
 #include "unistd_local.h"
-#include <fcntl.h>
-#include <stdarg.h>
 
 #include "mcu/debug.h"
 

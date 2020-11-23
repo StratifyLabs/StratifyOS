@@ -23,6 +23,7 @@
 
 /*! \file */
 
+#include "../scheduler/scheduler_local.h"
 #include "sos/sos.h"
 #include "unistd_fs.h"
 #include "unistd_local.h"

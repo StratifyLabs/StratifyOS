@@ -56,7 +56,10 @@ int crt_common(char *path_arg, int *ret, const char *name) {
   _REENT->procmem_base->proc_name = name;
   _REENT->procmem_base->size = 0;
   _REENT->procmem_base->sigactions = NULL;
-  memset(_REENT->procmem_base->open_file, 0, sizeof(open_file_t) * OPEN_MAX);
+  open_file_t init_open_file = {0};
+  for (int i = 0; i < OPEN_MAX; i++) {
+    _REENT->procmem_base->open_file[i] = init_open_file;
+  }
 
   // Initialize the global mutexes
   __lock_init_recursive_global(__malloc_lock_object);

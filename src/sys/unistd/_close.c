@@ -24,6 +24,7 @@
 /*! \file
  */
 
+#include "../scheduler/scheduler_local.h"
 #include "mcu/debug.h"
 #include "mcu/mcu.h"
 #include "sos/fs/sysfs.h"

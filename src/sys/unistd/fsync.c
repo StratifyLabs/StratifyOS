@@ -23,14 +23,16 @@
 
 /*! \file */
 
+#include <errno.h>
+#include <stdarg.h>
+
 #include "config.h"
 
+#include "../scheduler/scheduler_local.h"
 #include "device/sys.h"
 #include "mcu/core.h"
 #include "sos/sos.h"
 #include "unistd_local.h"
-#include <errno.h>
-#include <stdarg.h>
 
 /*! \details This function performs a control request on the device
  * associated with \a fildes. \a request is specific to the device.
