@@ -18,7 +18,9 @@
 #define SOS_FS_ASSETFS_H_
 
 #include <sdk/types.h>
+
 #include "../link/types.h"
+#include "sys/dirent.h"
 
 int assetfs_init(const void* cfg);
 int assetfs_startup(const void* cfg);
