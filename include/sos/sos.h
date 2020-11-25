@@ -533,6 +533,11 @@ void sos_trace_event(
   const void *data_ptr,
   size_t data_len);
 int sos_trace_stack(u32 count);
+int sos_trace_stack_with_pointer(
+  const u32 *first_link_register,
+  const u32 *sp,
+  const u32 *stack_top,
+  u32 count);
 void sos_trace_event_addr_tid(
   link_trace_event_id_t event_id,
   const void *data_ptr,

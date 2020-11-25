@@ -38,8 +38,8 @@ set(SYS_INCLUDE_DIRECTORIES
 list(APPEND SYS_SOURCELIST ${COMMON_SOURCES})
 
 if(BUILD_SYS OR BUILD_ALL)
-	sos_sdk_library_target(SYS_RELEASE StratifyOS sys release v7m)
-	sos_sdk_library_target(SYS_DEBUG StratifyOS sys debug v7m)
+	sos_sdk_library_target(SYS_RELEASE StratifyOS sys release ${SOS_ARCH})
+	sos_sdk_library_target(SYS_DEBUG StratifyOS sys debug ${SOS_ARCH})
 
 	add_library(${SYS_RELEASE_TARGET} STATIC)
 	target_sources(${SYS_RELEASE_TARGET} PRIVATE ${SYS_SOURCELIST})
@@ -55,8 +55,8 @@ if(BUILD_SYS OR BUILD_ALL)
 endif()
 
 if(BUILD_CRT OR BUILD_ALL)
-	sos_sdk_library_target(CRT_RELEASE StratifyOS crt release v7m)
-	sos_sdk_library_target(CRT_DEBUG StratifyOS crt debug v7m)
+	sos_sdk_library_target(CRT_RELEASE StratifyOS crt release ${SOS_ARCH})
+	sos_sdk_library_target(CRT_DEBUG StratifyOS crt debug ${SOS_ARCH})
 
 	add_library(${CRT_RELEASE_TARGET} STATIC)
 	target_sources(${CRT_RELEASE_TARGET} PRIVATE ${CRT_SOURCELIST})
@@ -73,8 +73,8 @@ if(BUILD_CRT OR BUILD_ALL)
 endif()
 
 if(BUILD_BOOT OR BUILD_ALL)
-	sos_sdk_library_target(BOOT_RELEASE StratifyOS boot release v7m)
-	sos_sdk_library_target(BOOT_DEBUG StratifyOS boot debug v7m)
+	sos_sdk_library_target(BOOT_RELEASE StratifyOS boot release ${SOS_ARCH})
+	sos_sdk_library_target(BOOT_DEBUG StratifyOS boot debug ${SOS_ARCH})
 
 	add_library(${BOOT_RELEASE_TARGET} STATIC)
 	target_sources(${BOOT_RELEASE_TARGET} PRIVATE ${BOOT_SOURCELIST})
