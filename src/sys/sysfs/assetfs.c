@@ -192,7 +192,7 @@ int assetfs_readdir_r(const void *cfg, void *handle, int loc, struct dirent *ent
 }
 
 int assetfs_closedir(const void *cfg, void **handle) {
-  if (handle != VALID_DIR_HANDLE) {
+  if (*handle != VALID_DIR_HANDLE) {
     return SYSFS_SET_RETURN(EINVAL);
   }
   *handle = INVALID_DIR_HANDLE;

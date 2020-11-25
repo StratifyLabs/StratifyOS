@@ -241,7 +241,7 @@ int drive_assetfs_readdir_r(
 }
 
 int drive_assetfs_closedir(const void *cfg, void **handle) {
-  if (handle != VALID_DIR_HANDLE) {
+  if (*handle != VALID_DIR_HANDLE) {
     return SYSFS_SET_RETURN(EINVAL);
   }
   *handle = INVALID_DIR_HANDLE;
@@ -277,6 +277,7 @@ int get_directory_entry(const void *cfg, int loc, drive_assetfs_dirent_t *entry)
   }
   if (loc >= count) {
     // end of directory -- don't set errno
+    mcu_debug_printf("end of dir\n");
     return -1;
   }
   // count plus number of entries in
