@@ -277,7 +277,6 @@ int get_directory_entry(const void *cfg, int loc, drive_assetfs_dirent_t *entry)
   }
   if (loc >= count) {
     // end of directory -- don't set errno
-    mcu_debug_printf("end of dir\n");
     return -1;
   }
   // count plus number of entries in
