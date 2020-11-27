@@ -104,6 +104,8 @@ u32 task_reverse_memory_lookup(u32 input);
 #define TASK_APPLICATION_DATA_MPU_REGION 1
 #define TASK_APPLICATION_DATA_USER_REGION 0
 
+void cortexm_systick_handler() MCU_NAKED;
+void cortexm_pendsv_handler() MCU_NAKED;
 
 #endif
 

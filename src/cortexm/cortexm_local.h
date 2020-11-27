@@ -22,7 +22,7 @@
 
 #include "mcu/arch.h"
 #include "cortexm/cortexm.h"
-#include "mcu/debug.h"
+#include "sos/debug.h"
 
 #define SYSTICK_CTRL_TICKINT (1<<1)
 

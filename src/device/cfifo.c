@@ -20,7 +20,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <stddef.h>
-#include "mcu/debug.h"
+#include "sos/debug.h"
 #include "device/cfifo.h"
 
 static u32 get_ready_channels(const cfifo_config_t * config, cfifo_state_t * state);

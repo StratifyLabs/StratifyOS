@@ -17,13 +17,14 @@
  *
  */
 
-#include "device/sys.h"
-#include "mcu/boot_debug.h"
-#include "mcu/debug.h"
 #include <stdio.h>
 #include <unistd.h>
 
-#include "mcu/mcu.h"
+#include "device/sys.h"
+#include "mcu/boot_debug.h"
+#include "sos/debug.h"
+#include "sos/sos_events.h"
+
 #include "mcu/usb.h"
 #include "sys/ioctl.h"
 #include "usbd/control.h"
@@ -59,13 +60,13 @@ void usbd_control_root_init(void *args) {
     MCU_EVENT_FLAG_DATA_READY | MCU_EVENT_FLAG_WRITE_COMPLETE | MCU_EVENT_FLAG_SETUP;
   action.prio = 0;
   if (mcu_usb_setaction(context->handle, &action) < 0) {
-    mcu_board_execute_event_handler(
-      MCU_BOARD_CONFIG_EVENT_ROOT_FATAL, "usbd control setaction");
+    sos_handle_event(
+      SOS_EVENT_ROOT_FATAL, "usbd control setaction");
   }
 
   if (usbd_control_attach(context->handle) < 0) {
-    mcu_board_execute_event_handler(
-      MCU_BOARD_CONFIG_EVENT_ROOT_FATAL, "usbd control attach");
+    sos_handle_event(
+      SOS_EVENT_ROOT_FATAL, "usbd control attach");
   }
 }
 
@@ -136,8 +137,8 @@ void usbd_control_datain_stage(usbd_control_t *context) {
   u32 nbyte;
 
   // we can only send max packet size at a time
-  if (context->data.nbyte >= mcu_board_config.usb_max_packet_zero) {
-    nbyte = mcu_board_config.usb_max_packet_zero;
+  if (context->data.nbyte >= context->constants->max_packet_zero_size) {
+    nbyte = context->constants->max_packet_zero_size;
     context->data.is_zlp = 1;
   } else {
     nbyte = context->data.nbyte;

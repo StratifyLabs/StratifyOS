@@ -19,9 +19,10 @@
 
 #include "mcu/boot_debug.h"
 #include "mcu/core.h"
-#include "mcu/debug.h"
+#include "sos/debug.h"
 #include "mcu/mcu.h"
 #include "mcu/usb.h"
+#include "sos/sos_events.h"
 #include "usbd/control.h"
 #include "usbd/msft.h"
 
@@ -55,7 +56,7 @@ static void usbd_control_get_serialno(void *dest) {
   } ptr;
   int i, j;
   ptr.w = (u16 *)dest;
-  mcu_core_getserialno(&tmp);
+  sos_handle_event(SOS_EVENT_ROOT_GET_SERIAL_NUMBER, &tmp);
   for (j = 3; j >= 0; j--) {
     for (i = 0; i < 8; i++) {
       ptr.b[0] = htoc((tmp.sn[j] >> 28) & 0x0F);

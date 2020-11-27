@@ -1,5 +1,5 @@
 
-#include "mcu/debug.h"
+#include "sos/debug.h"
 #include "sos/link.h"
 #include <stdbool.h>
 #include <stdio.h>

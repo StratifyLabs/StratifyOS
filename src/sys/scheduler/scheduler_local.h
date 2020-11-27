@@ -1,4 +1,4 @@
-/* Copyright 2011-2018 Tyler Gilbert; 
+/* Copyright 2011-2018 Tyler Gilbert;
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -13,10 +13,9 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
-
 
 #ifndef SCHED_FLAGS_H_
 #define SCHED_FLAGS_H_
@@ -30,7 +29,7 @@
 #include <stdint.h>
 #include "cortexm/fault.h"
 #include "cortexm/task.h"
-#include "mcu/debug.h"
+#include "sos/debug.h"
 #include "mcu/core.h"
 #include "sos/sos.h"
 #include "trace.h"
@@ -47,7 +46,9 @@ extern volatile scheduler_fault_t m_scheduler_fault;
 
 
 static inline int scheduler_priority(int id){ return task_get_priority(id); }
-static inline trace_id_t scheduler_trace_id(int id){ return sos_sched_table[id].trace_id; }
+static inline trace_id_t scheduler_trace_id(int id) {
+  return sos_sched_table[id].trace_id;
+}
 static inline int scheduler_current_priority(){ return task_get_current_priority(); }
 
 int scheduler_check_tid(int id);

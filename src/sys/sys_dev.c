@@ -21,7 +21,7 @@
 #include "cortexm/mpu.h"
 #include "device/sys.h"
 #include "mcu/core.h"
-#include "mcu/debug.h"
+#include "sos/debug.h"
 #include "mcu/mcu.h"
 #include "scheduler/scheduler_local.h"
 #include "sos/dev/bootloader.h"
@@ -47,28 +47,27 @@ int sys_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
   case I_SYS_GETINFO:
     memset(info, 0, sizeof(sys_info_t));
     strncpy(info->kernel_version, VERSION, 7);
-    strncpy(info->sys_version, sos_board_config.sys_version, 7);
+    strncpy(
+      info->sys_version, sos_config.sys.version,
+      sizeof(sos_config.sys.version - 1));
     strncpy(info->arch, ARCH, 15);
     info->security = 0;
     info->signature = symbols_table[0];
-    info->cpu_freq = mcu_core_getclock();
-    info->sys_mem_size = sos_board_config.sys_memory_size;
-    info->o_flags = sos_board_config.o_sys_flags;
-    info->o_mcu_board_config_flags = mcu_board_config.o_flags;
-    strncpy(info->id, sos_board_config.sys_id, PATH_MAX - 1);
-    strncpy(info->stdin_name, sos_board_config.stdin_dev, NAME_MAX - 1);
-    strncpy(info->stdout_name, sos_board_config.stdout_dev, NAME_MAX - 1);
-    strncpy(info->name, sos_board_config.sys_name, NAME_MAX - 1);
-    strncpy(info->team_id, sos_board_config.team_id, NAME_MAX - 1);
-    strncpy(info->trace_name, sos_board_config.trace_dev, NAME_MAX - 1);
-    if (sos_board_config.git_hash) {
-      strncpy(info->bsp_git_hash, sos_board_config.git_hash, 15);
+    info->cpu_freq = sos_config.clock.frequency;
+    info->sys_mem_size = sos_config.sys.memory_size;
+    info->o_flags = sos_config.sys.flags;
+    info->o_mcu_board_config_flags = 0;
+    strncpy(info->id, sos_config.sys.id, PATH_MAX - 1);
+    strncpy(info->stdin_name, sos_config.fs.stdin_dev, NAME_MAX - 1);
+    strncpy(info->stdout_name, sos_config.fs.stdout_dev, NAME_MAX - 1);
+    strncpy(info->name, sos_config.sys.name, NAME_MAX - 1);
+    strncpy(info->team_id, sos_config.sys.team_id, NAME_MAX - 1);
+    strncpy(info->trace_name, sos_config.fs.trace_dev, NAME_MAX - 1);
+    if (sos_config.sys.git_hash) {
+      strncpy(info->bsp_git_hash, sos_config.sys.git_hash, 15);
     }
     strncpy(info->sos_git_hash, SOS_GIT_HASH, 15);
-    if (mcu_config.git_hash) {
-      strncpy(info->mcu_git_hash, mcu_config.git_hash, 15);
-    }
-    mcu_core_getserialno(&(info->serial));
+    sos_handle_event(SOS_EVENT_ROOT_GET_SERIAL_NUMBER, &(info->serial));
     info->hardware_id =
       *(((u32 *)cortexm_get_vector_table_addr())
         + BOOTLOADER_HARDWARE_ID_OFFSET / sizeof(u32));
@@ -78,7 +77,7 @@ int sys_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
     return read_task(ctl);
 
   case I_SYS_GETID:
-    memcpy(id->id, sos_board_config.sys_id, PATH_MAX - 1);
+    memcpy(id->id, sos_config.sys.id, PATH_MAX - 1);
     return 0;
 
   case I_SYS_KILL:
@@ -100,9 +99,10 @@ int sys_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
       killattr->si_sigvalue, 1);
   case I_SYS_GETBOARDCONFIG:
 
-    memcpy(ctl, &sos_board_config, sizeof(sos_board_config));
+    memcpy(ctl, &sos_config, sizeof(sos_config));
     return 0;
 
+#if NOT_BUILDING
   case I_SYS_GETMCUBOARDCONFIG: {
     mcu_board_config_t *config = ctl;
     memcpy(config, &mcu_board_config, sizeof(mcu_board_config));
@@ -113,6 +113,7 @@ int sys_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
     }
     return 0;
   }
+#endif
 
   case I_SYS_SETATTR:
     return sys_setattr(handle, ctl);
@@ -121,10 +122,10 @@ int sys_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
     sys_secret_key_t *key = ctl;
     memset(key, 0, sizeof(sys_secret_key_t));
     if (scheduler_authenticated_asserted(task_get_current())) {
-      u32 size = mcu_board_config.secret_key_size > sizeof(sys_secret_key_t)
+      u32 size = sos_config.sys.secret_key_size > sizeof(sys_secret_key_t)
                    ? sizeof(sys_secret_key_t)
-                   : mcu_board_config.secret_key_size;
-      memcpy(key->data, mcu_board_config.secret_key_address - 1, size);
+                   : sos_config.sys.secret_key_size;
+      memcpy(key->data, sos_config.sys.secret_key_address - 1, size);
       return 0;
     }
     return SYSFS_SET_RETURN(EPERM);
@@ -238,8 +239,8 @@ int sys_setattr(const devfs_handle_t *handle, void *ctl) {
         attr->region, (void *)attr->address, attr->size, access, type, 0);
 
       if (result < 0) {
-        mcu_debug_log_error(
-          MCU_DEBUG_SYS, "Failed to enable memory region 0x%lX to 0x%lX (%d)",
+        sos_debug_log_error(
+          SOS_DEBUG_SYS, "Failed to enable memory region 0x%lX to 0x%lX (%d)",
           attr->address, attr->size, result);
         return result;
       }

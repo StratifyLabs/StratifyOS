@@ -19,6 +19,7 @@
 
 #include <errno.h>
 #include <sdk/types.h>
+
 #include <sys/dirent.h>
 
 #include "sysfs.h"
@@ -153,6 +154,8 @@ int devfs_mcu_ioctl(
   }                                                                                      \
   transfer = async
 
+#define DEVFS_DRIVER_PORT(object) (((const object##_config_t *)handle->config)->port)
+
 #define DEVFS_DRIVER_DECLARE_LOCAL(object, port_count)                                   \
   const u32 port = handle->port;                                                         \
   if (port >= port_count) {                                                              \
@@ -166,6 +169,17 @@ int devfs_mcu_ioctl(
     return SYSFS_SET_RETURN(EBUSY);                                                      \
   }                                                                                      \
   object##_local_t *local = (object##_local_t *)handle->state
+
+#define DEVFS_DRIVER_DECLARE_STATE_LOCAL_V4(object)                                      \
+  object##_local_t *local = (object##_local_t *)handle->state
+
+#define DEVFS_DRIVER_OPEN_STATE_LOCAL_V4(object)                                         \
+  const object##_config_t *config = handle->config;                                      \
+  m_##object##_local[config->port] = handle->state;
+
+#define DEVFS_DRIVER_CLOSE_STATE_LOCAL_V4(object)                                        \
+  const object##_config_t *config = handle->config;                                      \
+  m_##object##_local[config->port] = NULL;
 
 #define DEVFS_DRIVER_ASSIGN_STATE_LOCAL(object)                                          \
   (m_##object##_state_local[handle->port] = handle->state)

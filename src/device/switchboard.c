@@ -19,7 +19,7 @@
 
 #include "device/switchboard.h"
 #include "cortexm/task.h"
-#include "mcu/debug.h"
+#include "sos/debug.h"
 #include <errno.h>
 #include <fcntl.h>
 #include <stddef.h>
@@ -305,13 +305,13 @@ int create_connection(
 
   // start reading into the primary buffer -- mark it as used
   int result;
-  mcu_debug_log_info(
-    MCU_DEBUG_DEVICE, "%d (%p) Starting %s -> %s", id, state + id,
+  sos_debug_log_info(
+    SOS_DEBUG_DEVICE, "%d (%p) Starting %s -> %s", id, state + id,
     state[id].input.device->name, state[id].output.device->name);
   if ((result = read_then_write_until_async(state + id)) < 0) {
     abort_connection(state + id);
-    mcu_debug_log_error(
-      MCU_DEBUG_DEVICE, "RW failed %d (0x%lX), %d", SYSFS_GET_RETURN(result),
+    sos_debug_log_error(
+      SOS_DEBUG_DEVICE, "RW failed %d (0x%lX), %d", SYSFS_GET_RETURN(result),
       (u32)-1 * SYSFS_GET_RETURN(result), SYSFS_GET_RETURN_ERRNO(result));
     return SYSFS_SET_RETURN(EIO);
   }
@@ -355,7 +355,7 @@ int destroy_connection(
     return 0;
   }
 
-  mcu_debug_log_info(MCU_DEBUG_DEVICE, "Invalid id:%d", id);
+  sos_debug_log_info(SOS_DEBUG_DEVICE, "Invalid id:%d", id);
   return SYSFS_SET_RETURN(EINVAL);
 }
 
@@ -376,8 +376,8 @@ void close_connection(switchboard_state_t *state) {
 int check_for_stopped_or_destroyed(switchboard_state_t *state) {
   if (state->nbyte < 0) {
     u32 o_events = MCU_EVENT_FLAG_STOP | MCU_EVENT_FLAG_CANCELED;
-    mcu_debug_log_warning(
-      MCU_DEBUG_DEVICE, "Stopping %s -> %s (%d, %d) 0x%lX", state->input.device->name,
+    sos_debug_log_warning(
+      SOS_DEBUG_DEVICE, "Stopping %s -> %s (%d, %d) 0x%lX", state->input.device->name,
       state->output.device->name, SYSFS_GET_RETURN(state->nbyte),
       SYSFS_GET_RETURN_ERRNO(state->nbyte), state->o_flags);
 
@@ -430,7 +430,7 @@ int is_ready_to_read_device(switchboard_state_t *state) {
   }
 
   if (buffer_is_free == 0) {
-    // mcu_debug_root_printf("No buffers\n");
+    // sos_debug_root_printf("No buffers\n");
   }
 
   return buffer_is_free;

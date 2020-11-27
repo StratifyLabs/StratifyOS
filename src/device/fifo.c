@@ -18,7 +18,7 @@
  */
 
 #include "device/fifo.h"
-#include "mcu/debug.h"
+#include "sos/debug.h"
 #include <errno.h>
 #include <fcntl.h>
 #include <stddef.h>

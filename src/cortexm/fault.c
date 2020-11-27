@@ -19,10 +19,8 @@
 
 #include "cortexm/fault.h"
 #include "mcu/core.h"
+#include "sos/sos_events.h"
 #include "task_local.h"
-
-extern int fault_dev_save(const fault_t *fault);
-extern int fault_dev_load(fault_t *fault);
 
 static void hardfault_handler(u32 fault_status, hw_stack_frame_t *handler_stack);
 static void busfault_handler(u32 bus_status, hw_stack_frame_t *handler_stack);
@@ -32,7 +30,7 @@ static void usagefault_handler(u32 usage_status, hw_stack_frame_t *handler_stack
 #define get_pc(stack_reg) (((hw_stack_frame_t *)(stack_reg))->pc)
 #define get_link(stack_reg) (((hw_stack_frame_t *)(stack_reg))->lr)
 
-int mcu_fault_init() {
+int cortexm_fault_init() {
   // initialize the fault handling registers
   // Bus, mem, and usage faults are enabled so that they do not cause a hard fault
   SCB->SHCSR |=
@@ -41,8 +39,7 @@ int mcu_fault_init() {
   return 0;
 }
 
-void mcu_core_hardfault_handler() MCU_WEAK;
-void mcu_core_hardfault_handler() {
+void cortexm_hardfault_handler() {
   register hw_stack_frame_t *handler_stack;
   asm volatile("MRS %0, msp\n\t" : "=r"(handler_stack));
   register u32 fault_status;
@@ -85,7 +82,7 @@ void hardfault_handler(u32 fault_status, hw_stack_frame_t *handler_stack) {
   fault.handler_pc = (void *)(handler_stack)->pc;
   fault.handler_caller = (void *)(handler_stack)->lr;
 
-  mcu_fault_event_handler(&fault);
+  scheduler_fault_event_handler(&fault);
 }
 
 void cortexm_wdtfault_handler(void *stack) {
@@ -101,11 +98,10 @@ void cortexm_wdtfault_handler(void *stack) {
   fault.handler_pc = (void *)handler_stack->pc;
   fault.handler_caller = (void *)handler_stack->lr;
 
-  mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_WDT_TIMEOUT, &fault);
+  sos_handle_event(SOS_EVENT_ROOT_WDT_TIMEDOUT, &fault);
 }
 
-void mcu_core_memfault_handler() MCU_WEAK;
-void mcu_core_memfault_handler() {
+void cortexm_memfault_handler() {
   register void *handler_stack;
   asm volatile("MRS %0, msp\n\t" : "=r"(handler_stack));
   register u32 status;
@@ -157,11 +153,10 @@ void memfault_handler(u32 mem_status, hw_stack_frame_t *handler_stack) {
 
   //! \todo This should always send the PC and the link register of the offending
   //! instructions
-  mcu_fault_event_handler(&fault);
+  scheduler_fault_event_handler(&fault);
 }
 
-void mcu_core_busfault_handler() MCU_WEAK;
-void mcu_core_busfault_handler() {
+void cortexm_busfault_handler() {
   register void *handler_stack;
   asm volatile("MRS %0, msp\n\t" : "=r"(handler_stack));
   register u32 status;
@@ -212,11 +207,10 @@ void busfault_handler(u32 bus_status, hw_stack_frame_t *handler_stack) {
 
   //! \todo This should always send the PC and the link register of the offending
   //! instructions
-  mcu_fault_event_handler(&fault);
+  scheduler_fault_event_handler(&fault);
 }
 
-void mcu_core_usagefault_handler() MCU_WEAK;
-void mcu_core_usagefault_handler() {
+void cortexm_usagefault_handler() {
   register void *handler_stack;
   asm volatile("MRS %0, msp\n\t" : "=r"(handler_stack));
   register u32 status;
@@ -266,5 +260,5 @@ void usagefault_handler(u32 usage_status, hw_stack_frame_t *handler_stack) {
   fault.handler_pc = (void *)handler_stack->pc;
   fault.handler_caller = (void *)handler_stack->lr;
 
-  mcu_fault_event_handler(&fault);
+  scheduler_fault_event_handler(&fault);
 }

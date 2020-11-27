@@ -24,7 +24,7 @@
 /*! \file */
 
 #include "sos/fs/sysfs.h"
-#include "mcu/debug.h"
+#include "sos/debug.h"
 #include <errno.h>
 #include <fcntl.h>
 #include <string.h>

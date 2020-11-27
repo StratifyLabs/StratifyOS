@@ -58,8 +58,8 @@ int fsync(int fildes) {
   }
 
   if (FILDES_IS_SOCKET(fildes)) {
-    if (sos_board_config.socket_api != 0) {
-      return sos_board_config.socket_api->fsync(fildes);
+    if (sos_config.socket_api != 0) {
+      return sos_config.socket_api->fsync(fildes);
     }
     errno = EBADF;
     return -1;

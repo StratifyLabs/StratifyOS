@@ -61,6 +61,9 @@ int cortexm_verify_zero_sum8(void * data, int size);
 typedef void (*cortexm_svcall_t)(void*);
 void cortexm_svcall(cortexm_svcall_t call, void * args) __attribute__((optimize("1")));
 
+void cortexm_svcall_handler();
+void cortexm_initialize_heap();
+
 void cortexm_reset_mode() MCU_ROOT_CODE;
 void cortexm_set_privileged_mode() MCU_ROOT_CODE;
 void cortexm_set_unprivileged_mode() MCU_ROOT_CODE;
@@ -75,6 +78,9 @@ void cortexm_set_vector_table_addr(void * addr);
 u32 cortexm_get_vector_table_addr();
 
 void cortexm_wdtfault_handler(void * stack);
+void cortexm_reset_handler();
+void cortexm_nmi_handler();
+void cortexm_debug_monitor_handler();
 
 //This is used to ensure that privileged code executes from start to finish (argument validation cannot be bypassed)
 extern cortexm_svcall_t cortexm_svcall_validation MCU_SYS_MEM;

@@ -138,7 +138,7 @@ void svcall_set_scheduling_param(void * args){
 	}
 
 #if 0
-	mcu_debug_log_info(MCU_DEBUG_PTHREAD, "%d:Set %d -> %d (%d)",
+	sos_debug_log_info(SOS_DEBUG_PTHREAD, "%d:Set %d -> %d (%d)",
 							 task_get_current_priority(),
 							 id, sos_sched_table[id].attr.schedparam.sched_priority,
 							 task_enabled_active_not_stopped(id));

@@ -22,7 +22,7 @@
 #include <stddef.h>
 #include "device/usbfifo.h"
 #include "mcu/usb.h"
-#include "mcu/debug.h"
+#include "sos/debug.h"
 
 #define i2s_ffifo_open i2s_spi_ffifo_open
 #define i2s_ffifo_close i2s_spi_ffifo_close

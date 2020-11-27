@@ -59,7 +59,7 @@ int scheduler_tmr_init(
 
   if ((info.o_flags & TMR_FLAG_IS_AUTO_RELOAD) == 0) {
     // The reset OC is only needed if TMR_FLAG_IS_AUTO_RELOAD is not supported
-    // Set the reset output compare value to reset the clock every STFY_USECOND_PERIOD
+    // Set the reset output compare value to reset the clock every SOS_USECOND_PERIOD
 
     attr.channel.loc = SCHED_USECOND_TMR_RESET_OC;
     attr.channel.value = SOS_USECOND_PERIOD;

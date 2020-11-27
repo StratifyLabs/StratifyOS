@@ -23,7 +23,7 @@
  * \ingroup CORE
  *
  * \details The fault handling module handles processor faults.  When a fault occurs, the
- * fault handler decodes the fault and calls mcu_fault_event_handler() which must be
+ * fault handler decodes the fault and calls scheduler_fault_event_handler() which must be
  * provided externally by the application.
  *
  */
@@ -93,12 +93,17 @@ typedef struct {
   void *handler_caller /*! The handler caller */;
 } fault_t;
 
-int mcu_fault_init() MCU_ROOT_CODE;
+int cortexm_fault_init() MCU_ROOT_CODE;
+
+void cortexm_hardfault_handler();
+void cortexm_memfault_handler();
+void cortexm_busfault_handler();
+void cortexm_usagefault_handler();
 
 /*! \details This function must be provided by the application or
  * OS to handle faults.
  */
-extern void mcu_fault_event_handler(fault_t *fault) MCU_ROOT_CODE;
+extern void scheduler_fault_event_handler(fault_t *fault) MCU_ROOT_CODE;
 
 #ifdef __cplusplus
 }

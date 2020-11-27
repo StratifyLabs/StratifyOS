@@ -55,7 +55,7 @@
 #endif
 
 #if !defined ARCH_DEFINED
-#define ARCH_DEFINED
+#define ARCH_DEFINED 1
 
 typedef enum IRQn
 {
@@ -72,7 +72,6 @@ typedef enum IRQn
 } IRQn_Type;
 
 #define __MPU_PRESENT 1
-#define ARCH_DEFINED 1
 #define __NVIC_PRIO_BITS 8
 
 #if defined __v7em_f5ss || defined __v7em_f5sh || defined __v7em_f5ds || defined __v7em_f5dh

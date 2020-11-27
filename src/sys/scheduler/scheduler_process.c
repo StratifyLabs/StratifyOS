@@ -66,8 +66,8 @@ int scheduler_create_process(
     return -1;
   }
 
-  mcu_debug_log_info(
-    MCU_DEBUG_SYS, "start process id:%d pid:%d parent:%d (%d)", tid, task_get_pid(tid),
+  sos_debug_log_info(
+    SOS_DEBUG_SYS, "start process id:%d pid:%d parent:%d (%d)", tid, task_get_pid(tid),
     task_get_parent(tid), task_get_current());
   return task_get_pid(tid);
 }
@@ -111,7 +111,7 @@ void svcall_init_sched_task(init_sched_task_t *task) {
   stackguard = (uint32_t)task->mem->data.address + sizeof(struct _reent);
   if (
     task_root_set_stackguard(id, (void *)stackguard, SCHED_DEFAULT_STACKGUARD_SIZE) < 0) {
-    mcu_debug_log_warning(MCU_DEBUG_SCHEDULER, "Failed to set stackguard");
+    sos_debug_log_warning(SOS_DEBUG_SCHEDULER, "Failed to set stackguard");
   }
 
   // Items inherited from parent process

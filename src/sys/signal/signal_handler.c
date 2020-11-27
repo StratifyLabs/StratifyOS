@@ -26,7 +26,7 @@
 /*! \file */
 
 
-#include "mcu/debug.h"
+#include "sos/debug.h"
 
 #include <stdlib.h>
 #include <signal.h>

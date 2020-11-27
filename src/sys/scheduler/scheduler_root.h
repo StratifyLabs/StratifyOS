@@ -21,8 +21,9 @@
 #define SCHEDULER_SCHEDULER_ROOT_H_
 
 #include <sdk/types.h>
-#include "trace.h"
+
 #include "sos/sos.h"
+#include "trace.h"
 
 #define SCHEDULER_TASK_FLAG_UNBLOCK_MASK 0x0F //bits 0 to 3 are unblock type
 //4 is available

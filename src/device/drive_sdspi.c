@@ -23,7 +23,7 @@
 #include "drive_sdspi_local.h"
 #include "mcu/core.h"
 #include "mcu/crc.h"
-#include "mcu/debug.h"
+#include "sos/debug.h"
 #include "mcu/pio.h"
 #include "mcu/spi.h"
 #include "mcu/wdt.h"
@@ -168,7 +168,7 @@ int continue_spi_read(void *handle, const mcu_event_t *ignore) {
     checksum_calc = mcu_calc_crc16(
       0x0000, 0x1021, (const uint8_t *)state->buf, (size_t) * (state->nbyte));
     if (checksum != checksum_calc) {
-      mcu_debug_printf("Bad checksum 0x%04X != 0x%04X\n", checksum, checksum_calc);
+      sos_debug_printf("Bad checksum 0x%04X != 0x%04X\n", checksum, checksum_calc);
       *(state->nbyte) = -1;
       err = EINVAL;
     }
@@ -199,7 +199,7 @@ int try_read(const devfs_handle_t *handle, int first) {
     // send the command for the first time
     ret = mcu_spi_read(handle, &(state->op));
     if (ret != 0) {
-      mcu_debug_printf(
+      sos_debug_printf(
         "SPI READ FAILED (%d,%d)", SYSFS_GET_RETURN(ret), SYSFS_GET_RETURN_ERRNO(ret));
     }
     return ret;
@@ -207,7 +207,7 @@ int try_read(const devfs_handle_t *handle, int first) {
 
   if ((ret = mcu_spi_read(handle, &(state->op))) != 0) {
     state_callback(handle, EINVAL, -5);
-    mcu_debug_printf("BAD SPI READ\n");
+    sos_debug_printf("BAD SPI READ\n");
     return 0;
   }
   return 1;
@@ -396,7 +396,7 @@ int drive_sdspi_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
       spi_attr_p->freq = 400000;
 
       if (mcu_spi_setattr(handle, spi_config) < 0) {
-        mcu_debug_printf("SD_SPI: setattr failed\n");
+        sos_debug_printf("SD_SPI: setattr failed\n");
         return SYSFS_SET_RETURN(EIO);
       }
 
@@ -414,14 +414,14 @@ int drive_sdspi_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
 
         resp.r1 = exec_cmd_r1(handle, SDSPI_CMD0_GO_IDLE_STATE, 0, 0);
         if (resp.r1.start == 1) {
-          mcu_debug_printf("SD_SPI: Failed GO IDLE 0x%X\n", resp.r1.u8);
+          sos_debug_printf("SD_SPI: Failed GO IDLE 0x%X\n", resp.r1.u8);
           if (i == 4) {
             return SYSFS_SET_RETURN(EIO);
           }
         }
 
         if (resp.r1.idle != 1) {
-          mcu_debug_printf("SD_SPI: Failed No IDLE 0x%X\n", resp.r1.u8);
+          sos_debug_printf("SD_SPI: Failed No IDLE 0x%X\n", resp.r1.u8);
           if (i == 4) {
             return SYSFS_SET_RETURN(EIO);
           }
@@ -431,7 +431,7 @@ int drive_sdspi_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
       // send CMD8
       resp.r3 = exec_cmd_r3(handle, SDSPI_CMD8_SEND_IF_COND, 0x01AA);
       if (resp.r3.r1.u8 != 0x01) {
-        mcu_debug_printf("SD_SPI: Failed NO IF COND(0x%X)\n", resp.r3.r1.u8);
+        sos_debug_printf("SD_SPI: Failed NO IF COND(0x%X)\n", resp.r3.r1.u8);
         return SYSFS_SET_RETURN(EIO);
       }
 
@@ -443,7 +443,7 @@ int drive_sdspi_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
         // set block len
         resp.r1 = exec_cmd_r1(handle, SDSPI_CMD16_SET_BLOCKLEN, BLOCK_SIZE, 0);
         if (resp.r1.u8 != 0x01) {
-          mcu_debug_printf("SD_SPI: Failed NO 16 BLOCK LEN\n");
+          sos_debug_printf("SD_SPI: Failed NO 16 BLOCK LEN\n");
           return SYSFS_SET_RETURN(EIO);
         }
       }
@@ -451,7 +451,7 @@ int drive_sdspi_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
       // enable checksums
       resp.r1 = exec_cmd_r1(handle, SDSPI_CMD59_CRC_ON_OFF, 0xFFFFFFFF, 0);
       if (resp.r1.u8 != 0x01) {
-        mcu_debug_printf("SD_SPI: Failed NO 59\n");
+        sos_debug_printf("SD_SPI: Failed NO 59\n");
         return SYSFS_SET_RETURN(EIO);
       }
 
@@ -461,7 +461,7 @@ int drive_sdspi_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
       do {
         resp.r1 = exec_cmd_r1(handle, SDSPI_CMD55_APP_CMD, 0, 0); // send 55
         if (resp.r1.u8 != 0x01) {
-          mcu_debug_printf("SD_SPI: Failed NO 55\n");
+          sos_debug_printf("SD_SPI: Failed NO 55\n");
           return SYSFS_SET_RETURN(EIO);
         }
 
@@ -470,7 +470,7 @@ int drive_sdspi_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
           0); // indicate that HC is supported
         if ((resp.r1.u8 != 0x01) && (resp.r1.u8 != 0x00)) { // this takes awhile to return
                                                             // to zero
-          mcu_debug_printf("SD_SPI: Failed HC?\n");
+          sos_debug_printf("SD_SPI: Failed HC?\n");
           return SYSFS_SET_RETURN(EIO);
         }
         timeout++;
@@ -479,14 +479,14 @@ int drive_sdspi_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
       } while ((resp.r1.u8 != 0x00) && (timeout < timeout_value));
 
       if (timeout == timeout_value) {
-        mcu_debug_printf("SD_SPI: Failed TIMEOUT\n");
+        sos_debug_printf("SD_SPI: Failed TIMEOUT\n");
         return SYSFS_SET_RETURN(EIO);
       }
 
       // set with default attributes as intended by the system
       memcpy(spi_config, &(config->spi), config->spi_config_size);
       if (mcu_spi_setattr(handle, spi_config) < 0) {
-        mcu_debug_printf("SD_SPI: Failed BITRATE\n");
+        sos_debug_printf("SD_SPI: Failed BITRATE\n");
         return SYSFS_SET_RETURN(EIO);
       }
 
@@ -495,7 +495,7 @@ int drive_sdspi_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
       spi_transfer(handle, 0, 0, CMD_FRAME_SIZE);
       deassert_chip_select(handle);
 
-      mcu_debug_printf("SD_SPI: INIT SUCCESS 0x%lX\n", state->flags);
+      sos_debug_printf("SD_SPI: INIT SUCCESS 0x%lX\n", state->flags);
 
       return 0;
     }

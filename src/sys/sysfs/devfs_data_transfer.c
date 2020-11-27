@@ -17,7 +17,7 @@
  *
  */
 
-#include "mcu/debug.h"
+#include "sos/debug.h"
 #include <errno.h>
 #include <reent.h>
 #include <stdarg.h>
@@ -242,8 +242,8 @@ int devfs_data_transfer(
         // result and nbyte are zero
         // this will happen if the driver assigned nbyte to zero because it wants
         // to be invoked again in order to, for example, empty a buffer
-        mcu_debug_log_warning(
-          MCU_DEBUG_DEVFS, "device %s assigned 0 to nbyte", device->name);
+        sos_debug_log_warning(
+          SOS_DEBUG_DEVFS, "device %s assigned 0 to nbyte", device->name);
         if (retry < 5) {
           retry++;
         } else {
@@ -258,7 +258,7 @@ int devfs_data_transfer(
         if (retry < 5) {
           retry++;
           args.result = 0;
-          mcu_debug_log_warning(MCU_DEBUG_DEVFS, "-101010 error on %s", device->name);
+          sos_debug_log_warning(SOS_DEBUG_DEVFS, "-101010 error on %s", device->name);
         } else {
           args.result = SYSFS_SET_RETURN(EFAULT);
         }

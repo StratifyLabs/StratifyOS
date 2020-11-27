@@ -38,7 +38,7 @@ static void system_reset(); // This is used if the OS process returns
 void system_reset() { cortexm_svcall(cortexm_reset, NULL); }
 
 u8 task_get_exec_count() { return m_task_exec_count; }
-u8 task_get_total() { return sos_board_config.task_total; }
+u8 task_get_total() { return sos_config.task.task_total; }
 s8 task_get_current_priority() { return m_task_current_priority; }
 void task_root_set_current_priority(s8 value) { m_task_current_priority = value; }
 
@@ -113,7 +113,7 @@ int task_init(
   mcu_core_set_nvic_priority(BusFault_IRQn, 3);
   mcu_core_set_nvic_priority(UsageFault_IRQn, 3);
 
-  mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_TASK_INIT, 0);
+  sos_handle_event(SOS_EVENT_ROOT_TASK_INITIALIZED, 0);
 
   // enable the FPU if it is in use
 #if __FPU_USED != 0
@@ -142,13 +142,13 @@ int task_init(
 int set_systick_interval(int interval) {
   u32 reload;
   int core_tick_freq;
-  reload = (mcu_board_config.core_cpu_freq * interval + 500) / 1000;
+  reload = (sos_config.clock.frequency * interval + 500) / 1000;
   if (reload > (0x00FFFFFF)) {
     reload = (0x00FFFFFF);
   } else if (reload < SYSTICK_MIN_CYCLES) {
     reload = SYSTICK_MIN_CYCLES;
   }
-  core_tick_freq = mcu_board_config.core_cpu_freq / reload;
+  core_tick_freq = sos_config.clock.frequency / reload;
   cortexm_set_systick_reload(reload);
   m_task_rr_reload = reload;
   cortexm_start_systick();
@@ -467,7 +467,7 @@ void task_root_switch_context() {
     SysTick->VAL; // cppcheck-suppress[ConfigurationNotChecked] save the RR time from the
                   // SYSTICK
   SCB->ICSR |=
-    (1 << 28); // set the pend SV interrupt pending -- causes mcu_core_pendsv_handler() to
+    (1 << 28); // set the pend SV interrupt pending -- causes cortexm_pendsv_handler() to
                // execute when current interrupt exits
 }
 
@@ -479,10 +479,9 @@ void task_check_count_flag() {
   }
 }
 
-extern void mcu_core_svcall_handler();
+extern void cortexm_svcall_handler();
 
-void mcu_core_systick_handler() MCU_NAKED MCU_WEAK;
-void mcu_core_systick_handler() {
+void cortexm_systick_handler() {
   task_save_context();
   task_check_count_flag();
   task_load_context();
@@ -490,8 +489,7 @@ void mcu_core_systick_handler() {
 }
 
 // Weak is needed for overriding when building bootloader
-void mcu_core_pendsv_handler() MCU_NAKED MCU_WEAK;
-void mcu_core_pendsv_handler() {
+void cortexm_pendsv_handler() {
   task_save_context();
 
   // disable interrupts -- Re-entrant scheduler issue #130

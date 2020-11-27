@@ -36,10 +36,10 @@
 #include <time.h>
 
 #include "../unistd/unistd_local.h"
-#include "mcu/debug.h"
 #include "mcu/rtc.h"
 #include "mcu/wdt.h"
 #include "sched.h"
+#include "sos/debug.h"
 
 #include "trace.h"
 
@@ -76,24 +76,17 @@ int scheduler_check_tid(int id) {
  */
 void scheduler() {
 
-  // This interval needs to be long enough to allow for flash writes
-  if ((sos_board_config.o_sys_flags & SYS_FLAG_IS_WDT_DISABLED) == 0) {
-    mcu_wdt_init(
-      WDT_MODE_INTERRUPT | WDT_MODE_CLK_SRC_MAIN,
-      SCHED_RR_DURATION * 10 * sos_board_config.task_total + 5);
-  }
-
   if (scheduler_prepare()) { // this starts memory protection
-    mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_FATAL, (void *)"sprep");
+    sos_handle_event(SOS_EVENT_FATAL, (void *)"sprep");
   }
 
-  mcu_debug_log_info(MCU_DEBUG_SCHEDULER, "Start first thread");
+  sos_debug_log_info(SOS_DEBUG_SCHEDULER, "Start first thread");
   if (start_first_thread() < 0) {
-    mcu_debug_log_info(MCU_DEBUG_SCHEDULER, "Start first thread failed");
-    mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_FATAL, (void *)"strt1t");
+    sos_debug_log_info(SOS_DEBUG_SCHEDULER, "Start first thread failed");
+    sos_handle_event(SOS_EVENT_FATAL, (void *)"strt1t");
   }
 
-  mcu_debug_log_info(MCU_DEBUG_SCHEDULER, "Run scheduler");
+  sos_debug_log_info(SOS_DEBUG_SCHEDULER, "Run scheduler");
 
   while (1) {
     cortexm_svcall(mcu_wdt_root_reset, NULL);
@@ -101,12 +94,10 @@ void scheduler() {
 
     // Sleep when nothing else is going on
     if (task_get_exec_count() == 0) {
-      // the BSP can set SYS_FLAG_IS_ACTIVE_ON_IDLE and then sleep during this event if a
-      // simple sleep won't work
-      mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_SCHEDULER_IDLE, 0);
-      if ((sos_board_config.o_sys_flags & SYS_FLAG_IS_ACTIVE_ON_IDLE) == 0) {
-        mcu_core_user_sleep(CORE_SLEEP);
-      }
+      sos_handle_event(SOS_EVENT_SCHEDULER_IDLE, 0);
+      // if ((sos_config.sys.flags & SYS_FLAG_IS_ACTIVE_ON_IDLE) == 0) {
+      //  mcu_core_user_sleep(CORE_SLEEP);
+      //}
     } else {
       // Otherwise switch to the active task
       sched_yield();
@@ -131,7 +122,7 @@ int check_faults() {
       m_scheduler_fault.tid);
 
     usleep(2000);
-    mcu_debug_log_error(MCU_DEBUG_SYS, "%s", buffer);
+    sos_debug_log_error(SOS_DEBUG_SYS, "%s", buffer);
 
     snprintf(
       buffer, LINK_POSIX_TRACE_DATA_SIZE - 1, "addr:%p", m_scheduler_fault.fault.addr);
@@ -140,14 +131,14 @@ int check_faults() {
       POSIX_TRACE_FATAL, buffer, strlen(buffer), (u32)m_scheduler_fault.fault.pc + 1,
       m_scheduler_fault.tid);
     usleep(2000);
-    mcu_debug_log_error(MCU_DEBUG_SYS, "%s", buffer);
+    sos_debug_log_error(SOS_DEBUG_SYS, "%s", buffer);
 
     strncpy(buffer, "caller", LINK_POSIX_TRACE_DATA_SIZE);
     sos_trace_event_addr_tid(
       POSIX_TRACE_MESSAGE, buffer, strlen(buffer), (u32)m_scheduler_fault.fault.caller,
       m_scheduler_fault.tid);
-    mcu_debug_log_error(
-      MCU_DEBUG_SYS, "Caller 0x%lX %ld", (u32)m_scheduler_fault.fault.caller,
+    sos_debug_log_error(
+      SOS_DEBUG_SYS, "Caller 0x%lX %ld", (u32)m_scheduler_fault.fault.caller,
       m_scheduler_fault.tid);
     usleep(2000);
 
@@ -158,8 +149,8 @@ int check_faults() {
     sos_trace_event_addr_tid(
       POSIX_TRACE_MESSAGE, buffer, strlen(buffer), (u32)m_scheduler_fault.fault.pc + 1,
       m_scheduler_fault.tid);
-    mcu_debug_log_error(
-      MCU_DEBUG_SYS, "Stack free %ld %ld", m_scheduler_fault.free_stack_size,
+    sos_debug_log_error(
+      SOS_DEBUG_SYS, "Stack free %ld %ld", m_scheduler_fault.free_stack_size,
       m_scheduler_fault.tid);
     usleep(2000);
 
@@ -170,8 +161,8 @@ int check_faults() {
     sos_trace_event_addr_tid(
       POSIX_TRACE_MESSAGE, buffer, strlen(buffer), (u32)m_scheduler_fault.fault.pc + 1,
       m_scheduler_fault.tid);
-    mcu_debug_log_error(
-      MCU_DEBUG_SYS, "Heap free %ld %ld", m_scheduler_fault.free_heap_size,
+    sos_debug_log_error(
+      SOS_DEBUG_SYS, "Heap free %ld %ld", m_scheduler_fault.free_heap_size,
       m_scheduler_fault.tid);
     usleep(2000);
 
@@ -179,8 +170,8 @@ int check_faults() {
     sos_trace_event_addr_tid(
       POSIX_TRACE_MESSAGE, buffer, strlen(buffer),
       (u32)m_scheduler_fault.fault.handler_pc + 1, m_scheduler_fault.tid);
-    mcu_debug_log_error(
-      MCU_DEBUG_SYS, "ROOT PC 0x%lX %ld", (u32)m_scheduler_fault.fault.handler_pc + 1,
+    sos_debug_log_error(
+      SOS_DEBUG_SYS, "ROOT PC 0x%lX %ld", (u32)m_scheduler_fault.fault.handler_pc + 1,
       m_scheduler_fault.tid);
     usleep(2000);
 
@@ -188,8 +179,8 @@ int check_faults() {
     sos_trace_event_addr_tid(
       POSIX_TRACE_MESSAGE, buffer, strlen(buffer),
       (u32)m_scheduler_fault.fault.handler_caller, m_scheduler_fault.tid);
-    mcu_debug_log_error(
-      MCU_DEBUG_SYS, "ROOT Caller 0x%lX %ld", (u32)m_scheduler_fault.fault.handler_caller,
+    sos_debug_log_error(
+      SOS_DEBUG_SYS, "ROOT Caller 0x%lX %ld", (u32)m_scheduler_fault.fault.handler_caller,
       m_scheduler_fault.tid);
     usleep(2000);
 
@@ -319,11 +310,10 @@ int start_first_thread() {
 
   init = sos_sched_table[0].init;
 
-  attr.stacksize = sos_board_config.start_stack_size;
+  attr.stacksize = sos_config.task.start_stack_size;
   attr.stackaddr = malloc(attr.stacksize);
   if (attr.stackaddr == NULL) {
-    mcu_board_execute_event_handler(
-      MCU_BOARD_CONFIG_EVENT_FATAL, "no memory for scheduler");
+    sos_handle_event(SOS_EVENT_FATAL, "no memory for scheduler");
     errno = ENOMEM;
     return -1;
   }
@@ -336,10 +326,10 @@ int start_first_thread() {
   attr.schedparam.sched_priority = 21; // not the default priority
 
   err = scheduler_create_thread(
-    init, sos_board_config.start_args, attr.stackaddr, attr.stacksize, &attr);
+    init, sos_config.task.start_args, attr.stackaddr, attr.stacksize, &attr);
 
   if (!err) {
-    mcu_debug_log_error(MCU_DEBUG_SCHEDULER, "Failed to create thread\n");
+    sos_debug_log_error(SOS_DEBUG_SCHEDULER, "Failed to create thread\n");
     return -1;
   }
 

@@ -26,7 +26,7 @@
 
 #include "config.h"
 #include "mcu/core.h"
-#include "mcu/debug.h"
+#include "sos/debug.h"
 #include "mcu/mcu.h"
 #include "trace.h"
 
@@ -182,16 +182,16 @@ void _free_r(struct _reent *reent_ptr, void *addr) {
   // sanity check for chunk that is not in proc mem (low side)
   if (addr < b) {
     sos_trace_stack((u32)-1);
-    mcu_debug_log_warning(
-      MCU_DEBUG_MALLOC, "Free addr below heap %p < %p (id:%d)", addr, b,
+    sos_debug_log_warning(
+      SOS_DEBUG_MALLOC, "Free addr below heap %p < %p (id:%d)", addr, b,
       task_get_current());
-    // mcu_debug_trace_stack();
+    // sos_debug_trace_stack();
     return;
   }
 
   if ((u32)addr > (u32)b + reent_ptr->procmem_base->size) {
-    mcu_debug_log_warning(
-      MCU_DEBUG_MALLOC, "Free addr above heap %p > %p (id:%d)", addr, b,
+    sos_debug_log_warning(
+      SOS_DEBUG_MALLOC, "Free addr above heap %p > %p (id:%d)", addr, b,
       task_get_current());
     return;
   }
@@ -199,7 +199,7 @@ void _free_r(struct _reent *reent_ptr, void *addr) {
   __malloc_lock(reent_ptr);
   // check for corrupt memory
   if (is_memory_corrupt(reent_ptr) < 0) {
-    mcu_debug_log_error(MCU_DEBUG_MALLOC, "Free Memory Corrupt 0x%lX", (u32)reent_ptr);
+    sos_debug_log_error(SOS_DEBUG_MALLOC, "Free Memory Corrupt 0x%lX", (u32)reent_ptr);
     SOS_TRACE_CRITICAL("Heap Fault");
     __malloc_unlock(reent_ptr);
     malloc_process_fault(reent_ptr); // this will exit the process
@@ -208,7 +208,7 @@ void _free_r(struct _reent *reent_ptr, void *addr) {
 
   tmp = (unsigned int)chunk - (unsigned int)(&(base->base));
   if (tmp % MALLOC_CHUNK_SIZE) {
-    mcu_debug_log_warning(MCU_DEBUG_MALLOC, "Free addr not aligned");
+    sos_debug_log_warning(SOS_DEBUG_MALLOC, "Free addr not aligned");
     __malloc_unlock(reent_ptr);
     return;
   }
@@ -217,17 +217,17 @@ void _free_r(struct _reent *reent_ptr, void *addr) {
 
   if (is_free != 0) { // Is the chunk in use (able to be freed)
     // This is not a valid memory allocation location
-    mcu_debug_log_warning(MCU_DEBUG_MALLOC, "f:%d 0x%X is already free", getpid(), addr);
+    sos_debug_log_warning(SOS_DEBUG_MALLOC, "f:%d 0x%X is already free", getpid(), addr);
     __malloc_unlock(reent_ptr);
     return;
   }
 
-  // mcu_debug_log_info(MCU_DEBUG_MALLOC, "f:%d 0x%X", getpid(), addr);
+  // sos_debug_log_info(SOS_DEBUG_MALLOC, "f:%d 0x%X", getpid(), addr);
   malloc_set_chunk_free(chunk, chunk->header.num_chunks);
   cleanup_memory(reent_ptr, 0);
 
-  mcu_debug_log_info(
-    MCU_DEBUG_MALLOC, "f:%d %p %p %p", getpid(), addr, reent_ptr, _GLOBAL_REENT);
+  sos_debug_log_info(
+    SOS_DEBUG_MALLOC, "f:%d %p %p %p", getpid(), addr, reent_ptr, _GLOBAL_REENT);
 
   __malloc_unlock(reent_ptr);
 }
@@ -295,11 +295,11 @@ void *_malloc_r(struct _reent *reent_ptr, size_t size) {
   malloc_chunk_t *chunk;
   alloc = NULL;
 
-  mcu_debug_log_info(MCU_DEBUG_MALLOC, "%s():%d->", __FUNCTION__, __LINE__);
+  sos_debug_log_info(SOS_DEBUG_MALLOC, "%s():%d->", __FUNCTION__, __LINE__);
 
   if (reent_ptr == NULL) {
     errno = EINVAL;
-    mcu_debug_log_info(MCU_DEBUG_MALLOC, "EINVAL %s():%d<-", __FUNCTION__, __LINE__);
+    sos_debug_log_info(SOS_DEBUG_MALLOC, "EINVAL %s():%d<-", __FUNCTION__, __LINE__);
     return NULL;
   }
 
@@ -308,11 +308,11 @@ void *_malloc_r(struct _reent *reent_ptr, size_t size) {
   __malloc_lock(reent_ptr);
 
   if (reent_ptr->procmem_base->size == 0) {
-    mcu_debug_log_info(MCU_DEBUG_MALLOC, "Get more memory");
+    sos_debug_log_info(SOS_DEBUG_MALLOC, "Get more memory");
     if (get_more_memory(reent_ptr, size, 1) < 0) {
       __malloc_unlock(reent_ptr);
       errno = ENOMEM;
-      mcu_debug_log_info(MCU_DEBUG_MALLOC, "ENOMEM %s():%d<-", __FUNCTION__, __LINE__);
+      sos_debug_log_info(SOS_DEBUG_MALLOC, "ENOMEM %s():%d<-", __FUNCTION__, __LINE__);
       return NULL;
     }
   }
@@ -325,12 +325,12 @@ void *_malloc_r(struct _reent *reent_ptr, size_t size) {
 
       // See if the memory is corrupt
       if (is_memory_corrupt(reent_ptr)) {
-        mcu_debug_log_error(MCU_DEBUG_MALLOC, "Memory Corrupt %p", reent_ptr);
+        sos_debug_log_error(SOS_DEBUG_MALLOC, "Memory Corrupt %p", reent_ptr);
         SOS_TRACE_CRITICAL("Heap Fault");
         __malloc_unlock(reent_ptr);      // unlock in case it is shared memory
         malloc_process_fault(reent_ptr); // this will exit the process
         errno = ENOMEM;
-        mcu_debug_log_info(MCU_DEBUG_MALLOC, "ENOMEM %s():%d<-", __FUNCTION__, __LINE__);
+        sos_debug_log_info(SOS_DEBUG_MALLOC, "ENOMEM %s():%d<-", __FUNCTION__, __LINE__);
         return NULL;
       }
 
@@ -339,7 +339,7 @@ void *_malloc_r(struct _reent *reent_ptr, size_t size) {
         cleanup_memory(reent_ptr, 0); // give memory back to stack
         __malloc_unlock(reent_ptr);
         errno = ENOMEM;
-        mcu_debug_log_info(MCU_DEBUG_MALLOC, "ENOMEM %s():%d<-", __FUNCTION__, __LINE__);
+        sos_debug_log_info(SOS_DEBUG_MALLOC, "ENOMEM %s():%d<-", __FUNCTION__, __LINE__);
         return NULL;
       }
 
@@ -355,7 +355,7 @@ void *_malloc_r(struct _reent *reent_ptr, size_t size) {
       } else if (chunk->header.num_chunks < num_chunks) {
         __malloc_unlock(reent_ptr);
         errno = ENOMEM;
-        mcu_debug_log_info(MCU_DEBUG_MALLOC, "ENOMEM %s():%d<-", __FUNCTION__, __LINE__);
+        sos_debug_log_info(SOS_DEBUG_MALLOC, "ENOMEM %s():%d<-", __FUNCTION__, __LINE__);
         return NULL;
       }
       malloc_set_chunk_used(reent_ptr, chunk, num_chunks, size);
@@ -365,8 +365,8 @@ void *_malloc_r(struct _reent *reent_ptr, size_t size) {
 
   __malloc_unlock(reent_ptr);
 
-  mcu_debug_log_info(
-    MCU_DEBUG_MALLOC, "a:%d,%d %p %d (%d) %p %p<-", getpid(), task_get_current(), alloc,
+  sos_debug_log_info(
+    SOS_DEBUG_MALLOC, "a:%d,%d %p %d (%d) %p %p<-", getpid(), task_get_current(), alloc,
     size, num_chunks * MALLOC_CHUNK_SIZE, _GLOBAL_REENT->procmem_base, _GLOBAL_REENT);
 
   return alloc;
@@ -407,7 +407,7 @@ int malloc_chunk_is_free(malloc_chunk_t *chunk) {
     cortexm_verify_zero_sum32(chunk, CORTEXM_ZERO_SUM32_COUNT(malloc_chunk_header_t))
     == 0) {
     // This chunk is corrupt
-    mcu_debug_log_error(MCU_DEBUG_MALLOC, "Corrupt Chunk 0x%lX", (u32)chunk);
+    sos_debug_log_error(SOS_DEBUG_MALLOC, "Corrupt Chunk 0x%lX", (u32)chunk);
     SOS_TRACE_CRITICAL("Heap Corrupt");
     malloc_process_fault(((u8 *)chunk) + 1);
     return -1;
@@ -422,8 +422,8 @@ int malloc_chunk_is_free(malloc_chunk_t *chunk) {
 }
 
 void malloc_process_fault(void *loc) {
-  mcu_debug_log_error(
-    MCU_DEBUG_SYS, "%Heap: 0x%lX (id:%d,pid:%d)", (u32)loc, task_get_current(),
+  sos_debug_log_error(
+    SOS_DEBUG_SYS, "%Heap: 0x%lX (id:%d,pid:%d)", (u32)loc, task_get_current(),
     task_get_pid(task_get_current()));
 
   sos_trace_stack((u32)-1);
@@ -431,6 +431,6 @@ void malloc_process_fault(void *loc) {
     // free the heap and reset the stack
     _exit(1);
   } else {
-    mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_FATAL, (void *)"malloc");
+    sos_handle_event(SOS_EVENT_FATAL, (void *)"malloc");
   }
 }

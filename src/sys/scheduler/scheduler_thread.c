@@ -26,7 +26,7 @@
 #include <sys/malloc/malloc_local.h>
 #include <sys/time.h>
 
-#include "mcu/debug.h"
+#include "sos/debug.h"
 #include "scheduler_local.h"
 
 typedef struct {
@@ -130,14 +130,13 @@ void svcall_activate_thread(svcall_activate_thread_t *args) {
   }
 
   if (
-    (id == 1)
-    && (sos_board_config.o_sys_flags & SYS_FLAG_IS_FIRST_THREAD_AUTHENTICATED)) {
-    mcu_debug_log_info(MCU_DEBUG_SYS, "First thread is authenticated");
+    (id == 1) && (sos_config.sys.flags & SYS_FLAG_IS_FIRST_THREAD_AUTHENTICATED)) {
+    sos_debug_log_info(SOS_DEBUG_SYS, "First thread is authenticated");
     scheduler_root_assert_authenticated(1);
   }
 
   if (task_root_set_stackguard(id, args->stackguard, SCHED_DEFAULT_STACKGUARD_SIZE) < 0) {
-    mcu_debug_log_warning(MCU_DEBUG_SCHEDULER, "Failed to activate stack guard");
+    sos_debug_log_warning(SOS_DEBUG_SCHEDULER, "Failed to activate stack guard");
   }
   scheduler_root_update_on_wake(id, task_get_priority(id));
 }
@@ -162,13 +161,13 @@ void scheduler_thread_cleanup(void *status) {
   args.joined = 0;
   if (detach_state == PTHREAD_CREATE_JOINABLE) {
     args.status = (int)status;
-    mcu_debug_log_info(MCU_DEBUG_SCHEDULER, "Wait joined");
+    sos_debug_log_info(SOS_DEBUG_SCHEDULER, "Wait joined");
     do {
       cortexm_svcall(svcall_wait_joined, &args);
     } while (args.joined == 0);
   }
 
-  mcu_debug_log_info(MCU_DEBUG_SCHEDULER, "%d:Shutdown", task_get_current());
+  sos_debug_log_info(SOS_DEBUG_SCHEDULER, "%d:Shutdown", task_get_current());
   // Free all memory associated with this thread
   malloc_free_task_r(_REENT, task_get_current());
 

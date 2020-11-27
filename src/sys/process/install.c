@@ -26,7 +26,7 @@
 #include "config.h"
 #include "sos/fs/devfs.h"
 #include "cortexm/task.h"
-#include "mcu/debug.h"
+#include "sos/debug.h"
 #include "sos/fs/sysfs.h"
 #include "../scheduler/scheduler_local.h"
 #include "../sysfs/appfs_local.h"
@@ -51,7 +51,7 @@ int install(
 	int needs_install = 0;
 
 	if( access(path, R_OK) < 0 ){
-		mcu_debug_log_error(MCU_DEBUG_SYS, "Can't find path %s", path);
+		sos_debug_log_error(SOS_DEBUG_SYS, "Can't find path %s", path);
 		return -1;
 	}
 
@@ -82,14 +82,14 @@ int install(
 		//first install the file using appfs/.install
 		int image_fd = open(path, O_RDONLY);
 		if( image_fd < 0 ){
-			mcu_debug_log_error(MCU_DEBUG_SYS, "Failed to open %s (%d)", path, errno);
+			sos_debug_log_error(SOS_DEBUG_SYS, "Failed to open %s (%d)", path, errno);
 			return -1;
 		}
 
 		int install_fd = open("/app/.install", O_WRONLY);
 		if( install_fd < 0 ){
 			close(image_fd);
-			mcu_debug_log_error(MCU_DEBUG_SYS, "Failed to open /app/.install %d", errno);
+			sos_debug_log_error(SOS_DEBUG_SYS, "Failed to open /app/.install %d", errno);
 			return -1;
 		}
 

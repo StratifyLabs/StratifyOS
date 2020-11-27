@@ -26,7 +26,7 @@
 #include "../signal/sig_local.h"
 #include "../unistd/unistd_local.h"
 #include "cortexm/cortexm.h"
-#include "mcu/debug.h"
+#include "sos/debug.h"
 #include "sos/fs/sysfs.h"
 #include <errno.h>
 #include <signal.h>

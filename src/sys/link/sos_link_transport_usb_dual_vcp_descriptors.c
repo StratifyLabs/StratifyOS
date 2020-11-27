@@ -25,7 +25,7 @@
 #include "sos/dev/usb.h"
 #include "usbd/control.h"
 #include "usbd/cdc.h"
-#include "mcu/debug.h"
+#include "sos/debug.h"
 #include "device/sys.h"
 
 #include "sos/link/transport_usb_dual_vcp.h"

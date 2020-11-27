@@ -24,7 +24,7 @@
 #include "mcu/pio.h"
 #include "mcu/spi.h"
 #include "mcu/tmr.h"
-#include "mcu/debug.h"
+#include "sos/debug.h"
 #include "sst25vf_local.h"
 
 static void drive_cfi_handle_write_complete(const devfs_handle_t * handle, uint32_t ignore);
@@ -188,10 +188,10 @@ void drive_cfi_handle_write_complete(const devfs_handle_t * handle, uint32_t ign
 	mcu_tmr_setaction(&tmr_handle, &action);
     mcu_tmr_get(&tmr_handle, &tval);
 	channel.value = tval + 20;
-	if( channel.value > (STFY_USECOND_PERIOD) ){
-		channel.value -= (STFY_USECOND_PERIOD);
-	}
-	mcu_tmr_setchannel(&tmr_handle, &channel);
+        if (channel.value > (SOS_USECOND_PERIOD)) {
+          channel.value -= (SOS_USECOND_PERIOD);
+        }
+        mcu_tmr_setchannel(&tmr_handle, &channel);
 
 	//everything is set; turn the timer back on
 	mcu_tmr_enable(&tmr_handle, 0);

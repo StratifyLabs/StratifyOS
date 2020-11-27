@@ -87,7 +87,7 @@ int pthread_create(
 	void * stack_addr;
 
 	if ( attr == NULL ){
-		mcu_debug_log_info(MCU_DEBUG_PTHREAD, "Init new attrs");
+		sos_debug_log_info(SOS_DEBUG_PTHREAD, "Init new attrs");
 		if ( pthread_attr_init(&attrs) < 0 ){
 			//errno is set by pthread_attr_init()
 			return -1;
@@ -99,7 +99,7 @@ int pthread_create(
 	u32 mem_size = attrs.stacksize + sizeof(struct _reent) + SCHED_DEFAULT_STACKGUARD_SIZE;
 	stack_addr = malloc(mem_size);
 	if ( stack_addr == NULL ){
-		mcu_debug_log_error(MCU_DEBUG_PTHREAD, "Failed to alloc stack memory:%d", mem_size);
+		sos_debug_log_error(SOS_DEBUG_PTHREAD, "Failed to alloc stack memory:%d", mem_size);
 		errno = ENOMEM;
 		return -1;
 	}
@@ -123,7 +123,7 @@ int pthread_create(
 	} else {
 		free(stack_addr);
 		if ( attr == NULL ){
-			mcu_debug_log_info(MCU_DEBUG_PTHREAD, "Destroy attrs");
+			sos_debug_log_info(SOS_DEBUG_PTHREAD, "Destroy attrs");
 			pthread_attr_destroy(&attrs);
 		}
 		errno = EAGAIN;

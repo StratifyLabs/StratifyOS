@@ -17,31 +17,27 @@
  *
  */
 
-#include "sos/sos.h"
+#include "cortexm/cortexm.h"
 #include "mcu/core.h"
 #include "mcu/pio.h"
-#include "cortexm/cortexm.h"
+#include "sos/sos.h"
 
-void sos_led_startup(){
-	const int factor = 10;
-	if( mcu_board_config.led.port != 255 ){
-		int duty;
-		for(int i=0; i < 100; i++){
-			duty = i*factor;
-			cortexm_svcall(sos_led_svcall_enable, 0);
-			usleep(duty);
-			cortexm_svcall(sos_led_svcall_disable, 0);
-			usleep(100*factor - duty);
-		}
+void sos_led_startup() {
+  const int factor = 10;
+  int duty;
+  for (int i = 0; i < 100; i++) {
+    duty = i * factor;
+    cortexm_svcall(sos_led_svcall_enable, 0);
+    usleep(duty);
+    cortexm_svcall(sos_led_svcall_disable, 0);
+    usleep(100 * factor - duty);
+  }
 
-		for(int i=0; i < 100; i++){
-			duty = i*factor;
-			cortexm_svcall(sos_led_svcall_enable, 0);
-			usleep(100*factor - duty);
-			cortexm_svcall(sos_led_svcall_disable, 0);
-			usleep(duty);
-		}
-	}
+  for (int i = 0; i < 100; i++) {
+    duty = i * factor;
+    cortexm_svcall(sos_led_svcall_enable, 0);
+    usleep(100 * factor - duty);
+    cortexm_svcall(sos_led_svcall_disable, 0);
+    usleep(duty);
+  }
 }
-
-

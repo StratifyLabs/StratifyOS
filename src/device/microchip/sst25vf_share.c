@@ -23,7 +23,7 @@
 #include "mcu/mcu.h"
 #include "mcu/pio.h"
 #include "mcu/spi.h"
-#include "mcu/debug.h"
+#include "sos/debug.h"
 
 #include "sst25vf_local.h"
 

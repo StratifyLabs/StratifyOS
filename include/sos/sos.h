@@ -364,55 +364,11 @@
 extern "C" {
 #endif
 
-/*! \details This function puts the controller
- * in hibernate mode.  All CPU and peripheral activity is stopped.
- * The RTC continues running and will wake up the controller
- * after \a seconds has elapsed.  When the controller wakes up, it resumes
- * execution in the same state as before \a hibernate() was called.
- *
- * Hibernate corresponds to \a CORE_SLEEP_DEEPSLEEP.  It can be woken up
- * before \a seconds elapsed if other interrupts are enabled such
- * as pin change interrupts. See the device specific documentation
- * for wakeup events for \a CORE_SLEEP_DEEPSLEEP.
- *
- * @param seconds Number of seconds to hibernate (zero to hibernate indefinitely)
- *
- */
 int hibernate(int seconds);
-
-/*! \details This function turns the controller off. The RTC
- * stays on and wakes up the controller after \a seconds has elapsed. When
- * the controller wakes up from power down, it resets.
- *
- * @param seconds Number of seconds to powerdown (zero to powedown indefinitely)
- *
- *
- */
 void powerdown(int seconds);
-
-/*! \details This function is weakly bound to code
- * that initializes each filesystem and starts any processes
- * that are designed to auto-run.  It can be completely replaced so
- * that users can customize the startup sequence.
- */
 void *sos_default_thread(void *arg);
-
-/*! \details Format the filesystem that is mounted at \a path.
- * \return Zero on success
- *
- */
 int mkfs(const char *path);
-
-/*! \details Mount the filesystem specified at \a path
- * @param path The path to the filesystem (specified at build time)
- * @return Zero on success
- */
 int mount(const char *path);
-
-/*! \details Unmount the filesystem specified at \a path
- * @param path The path to the filesystem (specified at build time)
- * @return Zero on success
- */
 int unmount(const char *path);
 
 /*! \details Launch an application from a data file system.
@@ -483,32 +439,8 @@ int install(
 void htoa(char *dest, int num);
 char htoc(int nibble);
 
-/*! \brief To be implemented by user. Default returns zero.
- *
- * @param request Request to execute
- * @param data Single argument to the request
- * @return Returns result of request operation
- */
-int kernel_request(int request, void *data) MCU_WEAK;
-
-/*! \brief To be implemented by the board support package.
- *
- * @param request The request API unique identifier
- * @return Returns a pointer to the API if it is installed, zero otherwise
- *
- * This function can be implemented to return libraries that
- * are stored in the kernel and shared between applications.
- *
- * For example, the following libraries are requests are supported in the StratifyAPI
- *
- * - MBED TLS for secure sockets
- * - Jansson Json library
- * - Stratify Graphics
- * - Stratify Object notation
- *
- *
- */
-const void *kernel_request_api(u32 request) MCU_WEAK;
+int kernel_request(int request, void *data);
+const void *kernel_request_api(u32 request);
 
 typedef struct {
   u32 tid;
@@ -549,83 +481,6 @@ void sos_trace_root_trace_event(
   const void *data_ptr,
   size_t data_len);
 
-#define SOS_SCHEDULER_TIMEVAL_SECONDS 2048
-#define STFY_SCHEDULER_TIMEVAL_SECONDS SOS_SCHEDULER_TIMEVAL_SECONDS
-#define SOS_USECOND_PERIOD (1000000UL * SOS_SCHEDULER_TIMEVAL_SECONDS)
-#define STFY_USECOND_PERIOD SOS_USECOND_PERIOD
-#define SOS_PROCESS_TIMER_COUNT 4
-
-typedef struct {
-  u32 o_flags;
-  struct mcu_timeval value;
-  struct mcu_timeval interval;
-  struct sigevent sigevent;
-} sos_process_timer_t;
-
-typedef struct {
-  pthread_attr_t attr /*! This holds the task's pthread attributes */;
-  volatile void *block_object /*! The blocking object */;
-  union {
-    volatile int exit_status /*! The task's exit status */;
-    void *(*init)(void *)/*! Task 0 init routine */;
-  };
-  pthread_mutex_t
-    *signal_delay_mutex /*! The mutex to lock if the task cannot be interrupted */;
-  volatile struct mcu_timeval wake /*! When to wake the task */;
-  volatile u16 flags /*! This indicates whether the process is active or not */;
-  trace_id_t trace_id /*! Trace ID is PID is being traced (0 otherwise) */;
-  sos_process_timer_t timer[SOS_PROCESS_TIMER_COUNT];
-} sched_task_t;
-
-#if !defined __link
-
-/*! \brief Stratify Board Configuration Structure
- * \details This structure holds the compiler-link time
- * configuration data.
- */
-typedef struct MCU_PACK {
-  u8 clk_usecond_tmr /*! Hardware timer used for usecond counter */;
-  u8 task_total /*! Total number of supported tasks */;
-  u16 start_stack_size /*! Stack size of the first thread (when in doubt use
-                          SOS_DEFAULT_START_STACK_SIZE) */
-    ;
-  const char *stdin_dev /*! Device used for standard input */;
-  const char *stdout_dev /*! Device used for standard output */;
-  const char *stderr_dev /*! Device used for standard error */;
-  const char *trace_dev /*! Device used for tracing */;
-  const char *sys_name /*! System (or board) name */;
-  const char *sys_version /*! System (or board) version (distinct from kernel version) */;
-  const char *sys_id /*! System ID (globally unique cloud identifier for board) */;
-  const char *team_id /*! Team ID (globally unique cloud identifier for team) */;
-  int sys_memory_size /*! Memory size reserved for the system */;
-  int o_sys_flags /*! System flags */;
-  void *(*start)(void *)/*! The start routine (when in doubt use sos_default_thread()) */;
-  void *start_args /*! Arguments passed to the start routine (for  sos_default_thread()
-                      use a pointer to the link transport driver) */
-    ;
-  const sos_socket_api_t
-    *socket_api /*! Socket API (zero if sockets are not supported) */;
-  void (*trace_event)(
-    void *event) /*! This will trace an event (zero if not supported) */;
-  void (*request)(
-    void) /*! Send an interrupt request to the link master (0 if not supported) */;
-  const char *git_hash /*! A pointer to the git hash string */;
-} sos_board_config_t;
-
-#define SOS_DEFAULT_START_STACK_SIZE 2048
-
-// must be provided by board support package
-extern volatile sched_task_t sos_sched_table[];
-extern volatile task_t sos_task_table[];
-extern const sos_board_config_t sos_board_config;
-
-#define SOS_DECLARE_TASK_TABLE(task_count)                                               \
-  volatile sched_task_t sos_sched_table[task_count] MCU_SYS_MEM;                         \
-  volatile task_t sos_task_table[task_count] MCU_SYS_MEM
-
-#define SOS_USER_ROOT 0
-#define SOS_USER 1
-
 void sos_led_startup();
 void sos_led_svcall_enable(void *args);
 void sos_led_svcall_disable(void *args);
@@ -635,7 +490,7 @@ void sos_led_root_enable();
 void sos_led_root_disable();
 void sos_led_root_error();
 
-#endif
+#include "config.h"
 
 #ifdef __cplusplus
 }

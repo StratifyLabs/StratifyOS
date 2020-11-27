@@ -6,7 +6,7 @@
 #include "sos/link/transport.h"
 
 #include "mcu/core.h"
-#include "mcu/debug.h"
+#include "sos/debug.h"
 
 
 #define pkt_checksum(pktp) ((pktp)->data[(pktp)->size])
@@ -80,8 +80,8 @@ int link1_transport_slaveread(link_transport_driver_t * driver, void * buf, int 
 	if( bytes == 0 ){
 		driver->flush(driver->handle);
 #if 0
-		mcu_debug_log_warning(
-					MCU_DEBUG_LINK,
+		sos_debug_log_warning(
+					SOS_DEBUG_LINK,
 					"Flushed (%d)",
 					pkt.size
 					);

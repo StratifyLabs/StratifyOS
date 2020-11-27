@@ -25,7 +25,7 @@
 
 #include "unistd_local.h"
 #include  "unistd_fs.h"
-#include "mcu/debug.h"
+#include "sos/debug.h"
 #include "sos/sos.h"
 
 
@@ -53,8 +53,8 @@ int _write(int fildes, const void *buf, size_t nbyte) {
 	sysfs_file_t * file;
 
 	if( FILDES_IS_SOCKET(fildes) ){
-		  if( sos_board_config.socket_api != 0 ){
-            return sos_board_config.socket_api->write(fildes & ~FILDES_SOCKET_FLAG, buf, nbyte);
+		  if( sos_config.socket_api != 0 ){
+            return sos_config.socket_api->write(fildes & ~FILDES_SOCKET_FLAG, buf, nbyte);
         }
         errno = EBADF;
         return -1;

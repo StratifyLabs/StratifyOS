@@ -19,7 +19,7 @@
 
 #include "device/usbfifo.h"
 #include "cortexm/task.h"
-#include "mcu/debug.h"
+#include "sos/debug.h"
 #include "mcu/usb.h"
 #include <errno.h>
 #include <fcntl.h>
@@ -79,8 +79,8 @@ static int data_received(void *context, const mcu_event_t *data) {
 
       if (result < 0) {
         // fire an error -- set this as an error condition
-        mcu_debug_log_error(
-          MCU_DEBUG_DEVICE, "failed to read USB (%d, %d)", SYSFS_GET_RETURN(result),
+        sos_debug_log_error(
+          SOS_DEBUG_DEVICE, "failed to read USB (%d, %d)", SYSFS_GET_RETURN(result),
           SYSFS_GET_RETURN_ERRNO(result));
         return 0;
       }
@@ -157,11 +157,11 @@ int usbfifo_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
       count++;
     } while ((result > 0) && (count < 10));
     if (result < 0) {
-      // mcu_debug_printf("failed to init USB fifo (%d)\n", SYSFS_GET_RETURN(result));
+      // sos_debug_printf("failed to init USB fifo (%d)\n", SYSFS_GET_RETURN(result));
       return SYSFS_SET_RETURN(EIO);
     }
     if (count == 0) {
-      // mcu_debug_printf("failed to init USB fifo -- count\n");
+      // sos_debug_printf("failed to init USB fifo -- count\n");
       return SYSFS_SET_RETURN(EIO);
     }
 

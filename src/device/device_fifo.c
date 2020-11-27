@@ -21,7 +21,7 @@
 #include <errno.h>
 #include <string.h>
 #include <fcntl.h>
-#include "mcu/debug.h"
+#include "sos/debug.h"
 #include "cortexm/cortexm.h"
 #include "cortexm/task.h"
 #include "device/device_fifo.h"
@@ -94,7 +94,7 @@ int device_fifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 
         if( attr->o_flags & DEVICE_FIFO_FLAG_START ){
 
-            mcu_debug_log_info(MCU_DEBUG_DEVICE, "Start Stream");
+            sos_debug_log_info(SOS_DEBUG_DEVICE, "Start Stream");
 
             if( config->rx.buffer ){
 

@@ -26,7 +26,7 @@
 /*! \file */
 
 #include "../scheduler/scheduler_local.h"
-#include "mcu/debug.h"
+#include "sos/debug.h"
 #include "sig_local.h"
 #include <errno.h>
 #include <signal.h>

@@ -47,7 +47,7 @@ extern "C" {
 #define SYS_IOC_CHAR 's'
 
 /*! \details SYS flags used with
- * o_flags in sos_board_config_t.
+ * o_flags in sos_config_t.
  *
  *
  *
@@ -249,15 +249,15 @@ typedef struct MCU_PACK {
 #define I_SYS_SUDO _IOCTLW(SYS_IOC_CHAR, I_MCU_TOTAL+5, sys_auth_t)
 
 /*! \brief See below for details.
- * \details This copies the sos_board_config_t data that is set by the
+ * \details This copies the sos_config_t data that is set by the
  * board support package.
  * \code
- * sos_board_config_t config;
+ * sos_config_t config;
  * ioctl(core_fd, I_SYS_GETBOARDCONFIG, &config);
  * \endcode
  *
  */
-#define I_SYS_GETBOARDCONFIG _IOCTLR(SYS_IOC_CHAR, I_MCU_TOTAL+6, sos_board_config_t)
+#define I_SYS_GETBOARDCONFIG _IOCTLR(SYS_IOC_CHAR, I_MCU_TOTAL+6, sos_config_t)
 
 /*! \brief See below for details.
  * \details This gets the MCU

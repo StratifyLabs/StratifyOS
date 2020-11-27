@@ -16,7 +16,7 @@
 #include "mcu/core.h"
 #include "mcu/usb.h"
 #include "mcu/pio.h"
-#include "mcu/debug.h"
+#include "sos/debug.h"
 #include "mcu/boot_debug.h"
 
 #include "sos/link/transport_usb.h"

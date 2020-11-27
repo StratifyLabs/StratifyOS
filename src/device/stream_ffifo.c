@@ -21,7 +21,7 @@
 #include <errno.h>
 #include <string.h>
 #include <fcntl.h>
-#include "mcu/debug.h"
+#include "sos/debug.h"
 #include "cortexm/cortexm.h"
 #include "cortexm/task.h"
 #include "device/stream_ffifo.h"
@@ -37,8 +37,8 @@ int event_write_complete(void * context, const mcu_event_t * event){
 
 	if(state->tx.async.nbyte < 0){
 		state->tx.error = state->tx.async.nbyte;
-		mcu_debug_log_error(
-					MCU_DEBUG_DEVICE,
+		sos_debug_log_error(
+					SOS_DEBUG_DEVICE,
 					"error: %s():%d (%d,%d)",
 					__FUNCTION__,
 					__LINE__,
@@ -75,11 +75,11 @@ int event_write_complete(void * context, const mcu_event_t * event){
 #if 0 //this should never print anything -- can be used for debugging
 		if( event->o_events & MCU_EVENT_FLAG_LOW ){
 			if( ffifo_state->atomic_position.access.head != 0 ){
-				mcu_debug_printf("head not zero 0x%lX\n", ffifo_state->o_flags);
+				sos_debug_printf("head not zero 0x%lX\n", ffifo_state->o_flags);
 			}
 		} else {
 			if( ffifo_state->atomic_position.access.head == 0 ){
-				mcu_debug_printf("head is zero\n");
+				sos_debug_printf("head is zero\n");
 			}
 		}
 #endif
@@ -91,8 +91,8 @@ int event_write_complete(void * context, const mcu_event_t * event){
 	if( (state->o_flags & STREAM_FFIFO_FLAG_STOP) &&
 		 (event->o_events & MCU_EVENT_FLAG_HIGH) ){
 		state->o_flags = 0;
-		mcu_debug_log_info(
-					MCU_DEBUG_DEVICE,
+		sos_debug_log_info(
+					SOS_DEBUG_DEVICE,
 					"%s():%d stopped",
 					__FUNCTION__,
 					__LINE__
@@ -113,8 +113,8 @@ int event_data_ready(void * context, const mcu_event_t * event){
 	//check for errors or abort
 	if( (state->rx.async.nbyte < 0) || (o_events & MCU_EVENT_FLAG_CANCELED) ){
 		state->rx.error = state->rx.async.nbyte;
-		mcu_debug_log_error(
-					MCU_DEBUG_DEVICE,
+		sos_debug_log_error(
+					SOS_DEBUG_DEVICE,
 					"%s:%d",
 					__FUNCTION__,
 					__LINE__
@@ -147,7 +147,7 @@ int event_data_ready(void * context, const mcu_event_t * event){
 	if( (state->o_flags & STREAM_FFIFO_FLAG_STOP) &&
 		 (event->o_events & MCU_EVENT_FLAG_HIGH) ){
 		state->o_flags = 0;
-		mcu_debug_log_info(MCU_DEBUG_DEVICE, "%s():%d stopped", __FUNCTION__, __LINE__);
+		sos_debug_log_info(SOS_DEBUG_DEVICE, "%s():%d stopped", __FUNCTION__, __LINE__);
 		return 0; //tells the interrupt handler to stop the stream
 	}
 
@@ -189,7 +189,7 @@ int stream_ffifo_ioctl(const devfs_handle_t * handle, int request, void * ctl){
 
 				state->o_flags = STREAM_FFIFO_FLAG_START;
 
-				mcu_debug_log_info(MCU_DEBUG_DEVICE, "Start Stream");
+				sos_debug_log_info(SOS_DEBUG_DEVICE, "Start Stream");
 				if( config->rx.buffer ){
 					//the application reads the RX buffer the is written by the device and data that is read from hardware
 					state->rx.async.loc = config->rx_loc;

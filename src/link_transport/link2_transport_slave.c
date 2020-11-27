@@ -6,7 +6,7 @@
 #include "sos/link/transport.h"
 
 #include "mcu/core.h"
-#include "mcu/debug.h"
+#include "sos/debug.h"
 
 
 #define pkt_checksum(pktp) ((pktp)->data[(pktp)->size])

@@ -22,7 +22,7 @@
 #include <stddef.h>
 #include "sos/dev/devfifo.h"
 #include "device/devfifo.h"
-#include "mcu/debug.h"
+#include "sos/debug.h"
 
 
 static int set_read_action(const devfs_handle_t * handle, mcu_callback_t callback){

@@ -20,7 +20,7 @@
 #include "sos/fs/drive_assetfs.h"
 #include "cortexm/cortexm.h"
 #include "dirent.h"
-#include "mcu/debug.h"
+#include "sos/debug.h"
 #include "sos/fs/sysfs.h"
 #include "sos/sos.h"
 #include <errno.h>
@@ -52,7 +52,7 @@ static void assign_stat(int ino, const drive_assetfs_dirent_t *entry, struct sta
 
 int drive_assetfs_init(const void *cfg) {
   if (cfg == 0) {
-    mcu_debug_log_error(MCU_DEBUG_FILESYSTEM, "ASSETFS: no configuration");
+    sos_debug_log_error(SOS_DEBUG_FILESYSTEM, "ASSETFS: no configuration");
     return -1;
   }
 

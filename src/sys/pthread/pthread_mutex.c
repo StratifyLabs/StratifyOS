@@ -36,7 +36,7 @@
 #include <stdbool.h>
 
 
-#include "mcu/debug.h"
+#include "sos/debug.h"
 #include "../scheduler/scheduler_local.h"
 
 /*! \cond */

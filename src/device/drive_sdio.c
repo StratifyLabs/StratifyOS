@@ -21,7 +21,7 @@
 
 #include "cortexm/cortexm.h"
 #include "device/drive_sdio.h"
-#include "mcu/debug.h"
+#include "sos/debug.h"
 #include <errno.h>
 #include <unistd.h>
 

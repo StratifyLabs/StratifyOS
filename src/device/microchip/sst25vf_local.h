@@ -24,7 +24,7 @@
 #include <unistd.h>
 #include "mcu/pio.h"
 #include "mcu/spi.h"
-#include "mcu/debug.h"
+#include "sos/debug.h"
 #include "device/microchip/sst25vf.h"
 
 #define SST25VF_CHIP_ERASE_TIME (75*1000)

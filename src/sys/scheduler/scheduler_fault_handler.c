@@ -36,13 +36,13 @@
 #include "../unistd/unistd_local.h"
 #include "scheduler_local.h"
 
-#include "mcu/debug.h"
+#include "sos/debug.h"
 
-extern void mcu_core_pendsv_handler();
+extern void cortexm_pendsv_handler();
 
 extern void sos_root_trace_event(void *info);
 
-void mcu_fault_event_handler(fault_t *fault) {
+void scheduler_fault_event_handler(fault_t *fault) {
   int pid;
 
   pid = task_get_pid(task_get_current());
@@ -86,10 +86,10 @@ void mcu_fault_event_handler(fault_t *fault) {
 #if MCU_DEBUG
     char buffer[128];
     scheduler_fault_build_string(buffer, "\n");
-    mcu_debug_root_write_uart(buffer, strnlen(buffer, 128));
+    sos_debug_root_write(buffer, strnlen(buffer, 128));
 #endif
 
-    if (sos_board_config.trace_event != NULL) {
+    if (sos_config.debug.trace_event != NULL) {
       link_trace_event_t event;
       event.posix_trace_event.posix_event_id = 0;
       event.posix_trace_event.posix_pid = pid;
@@ -97,13 +97,13 @@ void mcu_fault_event_handler(fault_t *fault) {
       event.posix_trace_event.posix_timestamp_tv_sec = 0;
       event.posix_trace_event.posix_timestamp_tv_nsec = 0;
       scheduler_fault_build_trace_string((char *)event.posix_trace_event.data);
-      sos_board_config.trace_event(&event);
+      sos_config.debug.trace_event(&event);
     }
 
 #if MCU_DEBUG
-    mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_FATAL, buffer);
+    sos_handle_event(SOS_EVENT_ROOT_FATAL, buffer);
 #else
-    mcu_board_execute_event_handler(MCU_BOARD_CONFIG_EVENT_ROOT_FATAL, "OS FAULT");
+    sos_handle_event(SOS_EVENT_ROOT_FATAL, "OS FAULT");
 #endif
 
   } else {
@@ -113,17 +113,17 @@ void mcu_fault_event_handler(fault_t *fault) {
     const u32 top_of_stack = (u32)sos_task_table[task_get_current()].mem.data.address
                              + sos_task_table[task_get_current()].mem.data.size;
 
-    mcu_debug_printf(
+    sos_debug_printf(
       "stack %p + %ld\n", sos_task_table[task_get_current()].mem.data.address,
       sos_task_table[task_get_current()].mem.data.size);
 
 #if defined MCU_DEBUG
     char buffer[128];
     scheduler_fault_build_string(buffer, 0);
-    mcu_debug_log_error(MCU_DEBUG_SYS, "Task Fault:%d:%s", task_get_current(), buffer);
+    sos_debug_log_error(SOS_DEBUG_SYS, "Task Fault:%d:%s", task_get_current(), buffer);
     // check for a stack overflow error
     if (psp <= top_of_stack) {
-      mcu_debug_log_error(MCU_DEBUG_SYS, "Stack Overflow");
+      sos_debug_log_error(SOS_DEBUG_SYS, "Stack Overflow");
     }
 #endif
     // check the PSP for the LR value
@@ -148,10 +148,10 @@ void mcu_fault_event_handler(fault_t *fault) {
      * was caused be a bad PSP value, another fault will immediately be triggered. The hw
      * frame is restored in un-privileged mode.
      *
-     * By calling mcu_core_pendsv_handler() manually, the context will be changed to a
+     * By calling cortexm_pendsv_handler() manually, the context will be changed to a
      * non-faulty thread. This means the faulting PSP will never be touched again.
      *
-     * The mcu_core_pendsv_handler() will save the context of the faulty PSP, but the PSP
+     * The cortexm_pendsv_handler() will save the context of the faulty PSP, but the PSP
      * was reset above so, it won't overflow to memory owned by another process
      *
      *
@@ -159,7 +159,7 @@ void mcu_fault_event_handler(fault_t *fault) {
     // this will make sure the hardware has stack space to shutdown
     // on a stack overflow error
     task_root_resetstack(task_get_current());
-    mcu_core_pendsv_handler();
+    cortexm_pendsv_handler();
   }
 }
 

@@ -19,7 +19,7 @@
 #define MCU_LOCAL_H_
 
 #include <errno.h>
-#include "mcu/debug.h"
+#include "sos/debug.h"
 #include "device/sys.h"
 #include "sos/fs/devfs.h"
 

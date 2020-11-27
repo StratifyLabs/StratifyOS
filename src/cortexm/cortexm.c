@@ -21,6 +21,9 @@
 #include "cortexm_local.h"
 #include "mcu/core.h"
 #include "mcu/mcu.h"
+#include "sos/sos.h"
+
+extern int sos_main();
 
 // this is used to ensure svcall's execute from start to finish
 cortexm_svcall_t cortexm_svcall_validation MCU_SYS_MEM;
@@ -57,7 +60,7 @@ void cortexm_delay_systick(u32 ticks) {
 
 void cortexm_delay_us(u32 us) {
   // ticks is the number of ticks in one microsecond
-  u32 ticks = mcu_board_config.core_cpu_freq / 1000000UL;
+  u32 ticks = sos_config.clock.frequency / 1000000UL;
   cortexm_delay_systick(ticks * us);
 }
 
@@ -144,11 +147,59 @@ void cortexm_set_thread_mode() {
   control |= 0x02;
   __set_CONTROL(control);
 }
+void cortexm_reset_handler() {
+  cortexm_initialize_heap();
+  sos_handle_event(SOS_EVENT_ROOT_RESET, 0);
+  sos_main(); // This function should never return
+  sos_handle_event(SOS_EVENT_ROOT_FATAL, "main");
+  while (1) {
+    ;
+  }
+}
+
+void cortexm_nmi_handler() { sos_handle_event(SOS_EVENT_ROOT_FATAL, "nmi"); }
+
+void cortexm_debug_monitor_handler() {}
+
+void cortexm_initialize_heap() {
+  u32 *src, *dest;
+  src = &_etext; // point src to copy of data that is stored in flash
+  for (dest = &_data; dest < &_edata;) {
+    *dest++ = *src++;
+  } // Copy from flash to RAM (data)
+  for (src = &_bss; src < &_ebss;)
+    *src++ = 0; // Zero out BSS section
+  for (src = &_sys; src < &_esys;)
+    *src++ = 0; // Zero out sysmem
+
+  // Re-entrancy initialization
+  // If the program faults on the next line, make sure the etext and data are
+  // aligned properly in the linker script (4 byte boundary)
+  _REENT->procmem_base = (proc_mem_t *)&_ebss;
+  _REENT->procmem_base->size = 0;
+  _REENT->procmem_base->sigactions = NULL;
+  _REENT->procmem_base->siginfos = NULL;
+  _REENT->procmem_base->proc_name = "sys";
+  const open_file_t init_open_file = {0};
+  for (int i = 0; i < OPEN_MAX; i++) {
+    _REENT->procmem_base->open_file[i] = init_open_file;
+  }
+
+  // Initialize the global mutexes
+  __lock_init_recursive_global(__malloc_lock_object);
+  _REENT->procmem_base->__malloc_lock_object.flags |=
+    PTHREAD_MUTEX_FLAGS_PSHARED; // Make the malloc lock pshared
+
+  __lock_init_global(__tz_lock_object);
+  __lock_init_recursive_global(__atexit_lock);
+  __lock_init_recursive_global(__sfp_lock);
+  __lock_init_recursive_global(__sinit_lock);
+  __lock_init_recursive_global(__env_lock_object);
+}
 
 void cortexm_svcall(cortexm_svcall_t call, void *args) { asm volatile("SVC 0\n"); }
 
-void mcu_core_svcall_handler() MCU_WEAK;
-void mcu_core_svcall_handler() {
+void cortexm_svcall_handler() {
   register u32 *frame;
   register cortexm_svcall_t call;
   register void *args;

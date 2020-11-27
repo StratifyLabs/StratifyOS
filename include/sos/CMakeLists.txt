@@ -2,6 +2,9 @@
 set(SOURCES
 	ioctl.h
 	link.h
+	events.h
+	config.h
+	debug.h
 	sos.h
 	symbols.h
 	api/crypt_api.h

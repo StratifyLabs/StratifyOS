@@ -25,7 +25,7 @@
 #include "cortexm/mpu.h"
 #include "cortexm/task.h"
 #include "mcu/core.h"
-#include "mcu/debug.h"
+#include "sos/debug.h"
 #include "mcu/mcu.h"
 #include "mcu/mem.h"
 #include "mcu/wdt.h"
@@ -139,16 +139,16 @@ translate_value(u32 addr, u32 mask, u32 code_start, u32 data_start, u32 total, s
       if (ret < total) {
         // get the symbol location from the symbols table
         if (symbols_table[ret] == 0) {
-          mcu_debug_log_error(
-            MCU_DEBUG_APPFS, "symbol at offset %d (%p) is zero", ret,
+          sos_debug_log_error(
+            SOS_DEBUG_APPFS, "symbol at offset %d (%p) is zero", ret,
             symbols_table + ret);
           *loc = ret; // this symbol isn't available -- it was removed to save space in
                       // the MCU flash
         }
         return symbols_table[ret];
       } else {
-        mcu_debug_log_error(
-          MCU_DEBUG_APPFS, "location exceeds total for %p (%d)", addr, total);
+        sos_debug_log_error(
+          SOS_DEBUG_APPFS, "location exceeds total for %p (%d)", addr, total);
         *loc = total;
         return 0;
       }
@@ -426,8 +426,8 @@ mem_write_page(const devfs_device_t *dev, appfs_handle_t *h, appfs_installattr_t
   memcpy(write_page.buf, attr->buffer, 256);
   int result = dev->driver.ioctl(&(dev->handle), I_MEM_WRITEPAGE, &write_page);
   if (result < 0) {
-    mcu_debug_log_error(
-      MCU_DEBUG_APPFS, "failed to write page (%d, %d)", SYSFS_GET_RETURN(result),
+    sos_debug_log_error(
+      SOS_DEBUG_APPFS, "failed to write page (%d, %d)", SYSFS_GET_RETURN(result),
       SYSFS_GET_RETURN_ERRNO(result));
   }
   return result;
@@ -541,7 +541,7 @@ int appfs_util_root_writeinstall(
   if (attr->loc == 0) {
     // This is the header data -- make sure it is complete
     if (attr->nbyte < sizeof(appfs_file_t)) {
-      mcu_debug_log_error(MCU_DEBUG_APPFS, "Page size is less than min");
+      sos_debug_log_error(SOS_DEBUG_APPFS, "Page size is less than min");
       return SYSFS_SET_RETURN(ENOTSUP);
     }
 
@@ -569,7 +569,7 @@ int appfs_util_root_writeinstall(
 
     // is signature correct
     if (src.file->exec.signature != symbols_table[0]) {
-      mcu_debug_log_error(MCU_DEBUG_APPFS, "Not executable");
+      sos_debug_log_error(SOS_DEBUG_APPFS, "Not executable");
       return SYSFS_SET_RETURN(ENOEXEC);
     }
 
@@ -590,7 +590,7 @@ int appfs_util_root_writeinstall(
     // find space for the code
     code_start_addr = (u32)-1;
 
-    mcu_debug_log_info(MCU_DEBUG_APPFS, "Install flags 0x%lX", src.file->exec.o_flags);
+    sos_debug_log_info(SOS_DEBUG_APPFS, "Install flags 0x%lX", src.file->exec.o_flags);
 
     // check for external or tightly coupled flags and see if memory is available in those
     // regions
@@ -621,11 +621,11 @@ int appfs_util_root_writeinstall(
     }
 
     if (code_start_addr == (u32)-1) {
-      mcu_debug_log_error(MCU_DEBUG_APPFS, "No exec region available");
+      sos_debug_log_error(SOS_DEBUG_APPFS, "No exec region available");
       return SYSFS_SET_RETURN(ENOSPC);
     }
-    mcu_debug_log_info(
-      MCU_DEBUG_APPFS, "Code start addr is %p:%d", code_start_addr, protectable_size);
+    sos_debug_log_info(
+      SOS_DEBUG_APPFS, "Code start addr is %p:%d", code_start_addr, protectable_size);
 
     if (!((src.file->exec.o_flags)
           & APPFS_FLAG_IS_FLASH)) { // for RAM app's mark the RAM usage
@@ -677,11 +677,11 @@ int appfs_util_root_writeinstall(
         // free the code section
         appfs_ram_root_set(dev, code_page, protectable_size, APPFS_MEMPAGETYPE_FREE);
       }
-      mcu_debug_log_error(MCU_DEBUG_APPFS, "No RAM region available %d", ram_size);
+      sos_debug_log_error(SOS_DEBUG_APPFS, "No RAM region available %d", ram_size);
       return SYSFS_SET_RETURN(ENOSPC);
     }
-    mcu_debug_log_info(
-      MCU_DEBUG_APPFS, "Data start addr is %p:%d", data_start_addr, protectable_size);
+    sos_debug_log_info(
+      SOS_DEBUG_APPFS, "Data start addr is %p:%d", data_start_addr, protectable_size);
 
     h->type.install.code_start = (u32)code_start_addr;
     h->type.install.code_size = code_size;
@@ -697,8 +697,8 @@ int appfs_util_root_writeinstall(
     dest.file.exec.ram_start = data_start_addr;
     dest.file.exec.ram_size = protectable_size;
 
-    mcu_debug_log_info(
-      MCU_DEBUG_APPFS, "code startup is at %p (%p %p 0x%X)", dest.file.exec.startup,
+    sos_debug_log_info(
+      SOS_DEBUG_APPFS, "code startup is at %p (%p %p 0x%X)", dest.file.exec.startup,
       h->type.install.code_start, h->type.install.data_start,
       h->type.install.rewrite_mask);
     dest.file.exec.startup = translate_value(
@@ -706,15 +706,15 @@ int appfs_util_root_writeinstall(
       h->type.install.code_start, h->type.install.data_start,
       h->type.install.kernel_symbols_total, &loc_err);
 
-    mcu_debug_log_info(
-      MCU_DEBUG_APPFS, "code startup is translated to at %p", dest.file.exec.startup);
+    sos_debug_log_info(
+      SOS_DEBUG_APPFS, "code startup is translated to at %p", dest.file.exec.startup);
 
     for (i = sizeof(appfs_file_t) >> 2; i < (attr->nbyte >> 2); i++) {
       dest.buf[i] = translate_value(
         src.ptr[i], h->type.install.rewrite_mask, h->type.install.code_start,
         h->type.install.data_start, h->type.install.kernel_symbols_total, &loc_err);
       if (loc_err != 0) {
-        mcu_debug_log_error(MCU_DEBUG_APPFS, "Code relocation error: %d", loc_err);
+        sos_debug_log_error(SOS_DEBUG_APPFS, "Code relocation error: %d", loc_err);
         return SYSFS_SET_RETURN_WITH_VALUE(EIO, loc_err);
       }
     }
@@ -723,7 +723,7 @@ int appfs_util_root_writeinstall(
 
     if ((attr->loc & 0x03)) {
       // this is not a word aligned write
-      mcu_debug_log_error(MCU_DEBUG_APPFS, "word alignment error 0x%X\n", attr->loc);
+      sos_debug_log_error(SOS_DEBUG_APPFS, "word alignment error 0x%X\n", attr->loc);
       return SYSFS_SET_RETURN(EINVAL);
     }
     for (i = 0; i < (attr->nbyte >> 2); i++) {
@@ -731,7 +731,7 @@ int appfs_util_root_writeinstall(
         src.ptr[i], h->type.install.rewrite_mask, h->type.install.code_start,
         h->type.install.data_start, h->type.install.kernel_symbols_total, &loc_err);
       if (loc_err != 0) {
-        mcu_debug_log_error(MCU_DEBUG_APPFS, "Code relocation error %d", loc_err);
+        sos_debug_log_error(SOS_DEBUG_APPFS, "Code relocation error %d", loc_err);
         return SYSFS_SET_RETURN_WITH_VALUE(EIO, loc_err);
       }
     }

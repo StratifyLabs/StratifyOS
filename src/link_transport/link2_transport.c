@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "sos/link.h"
-#include "mcu/debug.h"
+#include "sos/debug.h"
 
 #define TIMEOUT_VALUE 500
 

@@ -95,7 +95,7 @@
 #include <stdarg.h>
 #include "sos/fs/sysfs.h"
 
-#include "mcu/debug.h"
+#include "sos/debug.h"
 #include "mqueue.h"
 #include "../scheduler/scheduler_local.h"
 
@@ -331,12 +331,12 @@ int mq_getattr(mqd_t mqdes, struct mq_attr *mqstat){
 	mq_t * mq = mq_get_ptr(mqdes);
 	if ( mq == NULL ){
 		errno = EBADF;
-		mcu_debug_log_error(MCU_DEBUG_MQUEUE, "Cannot get attr of null");
+		sos_debug_log_error(SOS_DEBUG_MQUEUE, "Cannot get attr of null");
 		return -1;
 	}
 
 	//read the mq in priv mode
-	mcu_debug_log_error(MCU_DEBUG_MQUEUE, "Cannot get attr of null");
+	sos_debug_log_error(SOS_DEBUG_MQUEUE, "Cannot get attr of null");
 	mqstat->mq_maxmsg = mq->max_msgs;
 	mqstat->mq_msgsize = mq->max_size;
 	mqstat->mq_curmsgs = mq_cur_msgs(mq);

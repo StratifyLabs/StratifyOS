@@ -22,7 +22,7 @@
 #include <stddef.h>
 #include "cortexm/task.h"
 #include "cortexm/cortexm.h"
-#include "mcu/debug.h"
+#include "sos/debug.h"
 #include "sos/dev/ffifo.h"
 #include "device/ffifo.h"
 

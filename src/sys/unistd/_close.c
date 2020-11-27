@@ -25,7 +25,7 @@
  */
 
 #include "../scheduler/scheduler_local.h"
-#include "mcu/debug.h"
+#include "sos/debug.h"
 #include "mcu/mcu.h"
 #include "sos/fs/sysfs.h"
 #include "sos/sos.h"
@@ -47,8 +47,8 @@ int _close(int fildes) {
   int ret;
 
   if (FILDES_IS_SOCKET(fildes)) {
-    if (sos_board_config.socket_api != 0) {
-      return sos_board_config.socket_api->close(fildes & ~FILDES_SOCKET_FLAG);
+    if (sos_config.socket_api != 0) {
+      return sos_config.socket_api->close(fildes & ~FILDES_SOCKET_FLAG);
     }
     errno = EBADF;
     return -1;

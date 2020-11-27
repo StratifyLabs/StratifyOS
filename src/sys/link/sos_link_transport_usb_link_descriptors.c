@@ -28,7 +28,7 @@
 #include "usbd/control.h"
 #include "usbd/cdc.h"
 #include "mcu/core.h"
-#include "mcu/debug.h"
+#include "sos/debug.h"
 #include "device/sys.h"
 
 #include "sos/link/transport_usb_link.h"

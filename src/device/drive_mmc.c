@@ -24,7 +24,7 @@
 #include <unistd.h>
 #include "device/drive_mmc.h"
 #include "cortexm/cortexm.h"
-#include "mcu/debug.h"
+#include "sos/debug.h"
 
 #include "mcu/core.h"
 #include "cortexm/task.h"

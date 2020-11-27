@@ -27,7 +27,7 @@
 #include "../signal/sig_local.h"
 #include "scheduler_local.h"
 
-#include "mcu/debug.h"
+#include "sos/debug.h"
 #include "mcu/rtc.h"
 #include "mcu/tmr.h"
 
@@ -294,18 +294,16 @@ int scheduler_timing_process_get_timer(
 }
 
 u32 scheduler_timing_seconds_to_clocks(int seconds) {
-  return (u32)mcu_core_getclock() * (u32)seconds;
+  return (u32)sos_config.clock.frequency * (u32)seconds;
 }
 
 u32 scheduler_timing_useconds_to_clocks(int useconds) {
-  return (u32)(SCHEDULER_CLOCK_USEC_MULT * useconds);
+  return (u32)((sos_config.clock.frequency / 1000000UL) * useconds);
 }
 
 void update_tmr_for_process_timer_match(volatile sos_process_timer_t *timer) {
   mcu_channel_t chan_req;
   u32 now;
-  devfs_handle_t tmr_handle;
-  tmr_handle.port = sos_board_config.clk_usecond_tmr;
 
   // Initialization
 
@@ -314,29 +312,27 @@ void update_tmr_for_process_timer_match(volatile sos_process_timer_t *timer) {
 
     if (timer->value.tv_sec == sched_usecond_counter) {
 
-      mcu_tmr_disable(&tmr_handle, 0);
+      now = sos_config.clock.disable();
       // See if abs_time is in the past
-      mcu_tmr_get(&tmr_handle, &now);
 
       // Read the current OC value to see if it needs to be updated
       chan_req.loc = SCHED_USECOND_TMR_SYSTEM_TIMER_OC;
 
-      mcu_tmr_getchannel(&tmr_handle, &chan_req);
-      if (timer->value.tv_usec < chan_req.value) { // this means the signal needs to
-                                                   // happen sooner than currently set
+      sos_config.clock.get_channel(&chan_req);
+      if (timer->value.tv_usec < chan_req.value) {
+        // this means the signal needs to happen sooner than currently set
         chan_req.value = timer->value.tv_usec;
       }
 
-      if (
-        (timer->value.tv_usec > now) && // needs to be enough in the future to allow the
-                                        // OC to be set before the timer passes it
-        (chan_req.value == timer->value.tv_usec)) {
-        mcu_tmr_setchannel(&tmr_handle, &chan_req);
+      // needs to be enough in the future to allow the
+      // OC to be set before the timer passes it
+      if ((timer->value.tv_usec > now) && (chan_req.value == timer->value.tv_usec)) {
+        sos_config.clock.set_channel(&chan_req);
         is_time_to_send = 0;
       }
     }
 
-    mcu_tmr_enable(&tmr_handle, 0);
+    sos_config.clock.enable();
 
     if (is_time_to_send) {
       // send it now and reload if needed
@@ -391,8 +387,8 @@ int send_and_reload_timer(volatile sos_process_timer_t *timer, u8 task_id, u32 n
       0, task_id, timer->sigevent.sigev_signo, SI_TIMER,
       timer->sigevent.sigev_value.sival_int, task_get_current() == task_id);
     if (result < 0) {
-      mcu_debug_log_error(
-        MCU_DEBUG_SCHEDULER, "failed to fire %d", SYSFS_GET_RETURN(result));
+      sos_debug_log_error(
+        SOS_DEBUG_SCHEDULER, "failed to fire %d", SYSFS_GET_RETURN(result));
     } else {
       timer->o_flags |= SCHEDULER_TIMING_PROCESS_TIMER_FLAG_IS_QUEUED;
     }
@@ -415,9 +411,7 @@ void scheduler_timing_root_timedblock(void *block_object, struct mcu_timeval *ab
   int id;
   mcu_channel_t chan_req;
   u32 now;
-  devfs_handle_t tmr_handle;
   int is_time_to_sleep;
-  tmr_handle.port = sos_board_config.clk_usecond_tmr;
 
   // Initialization
   id = task_get_current();
@@ -431,14 +425,12 @@ void scheduler_timing_root_timedblock(void *block_object, struct mcu_timeval *ab
 
     if (abs_time->tv_sec == sched_usecond_counter) {
 
-      mcu_tmr_disable(&tmr_handle, 0);
-      // See if abs_time is in the past
-      mcu_tmr_get(&tmr_handle, &now);
+      now = sos_config.clock.disable();
 
       // Read the current OC value to see if it needs to be updated
       chan_req.loc = SCHED_USECOND_TMR_SLEEP_OC;
 
-      mcu_tmr_getchannel(&tmr_handle, &chan_req);
+      sos_config.clock.get_channel(&chan_req);
       if (abs_time->tv_usec < chan_req.value) { // this means the interrupt needs to
                                                 // happen sooner than currently set
         chan_req.value = abs_time->tv_usec;
@@ -448,12 +440,12 @@ void scheduler_timing_root_timedblock(void *block_object, struct mcu_timeval *ab
       if (abs_time->tv_usec > now) { // needs to be enough in the future to allow the OC
                                      // to be set before the timer passes it
         if (chan_req.value == abs_time->tv_usec) {
-          mcu_tmr_setchannel(&tmr_handle, &chan_req);
+          sos_config.clock.set_channel(&chan_req);
         }
         is_time_to_sleep = 1;
       }
 
-      mcu_tmr_enable(&tmr_handle, 0);
+      sos_config.clock.enable();
 
     } else {
       is_time_to_sleep = 1;
@@ -538,12 +530,9 @@ void scheduler_timing_svcall_get_realtime(void *args) {
 }
 
 void scheduler_timing_root_get_realtime(struct mcu_timeval *tv) {
-  devfs_handle_t tmr_handle;
-  tmr_handle.port = sos_board_config.clk_usecond_tmr;
-  mcu_tmr_disable(&tmr_handle, 0);
+  tv->tv_usec = sos_config.clock.disable();
   tv->tv_sec = sched_usecond_counter;
-  mcu_tmr_get(&tmr_handle, &(tv->tv_usec));
-  mcu_tmr_enable(&tmr_handle, 0);
+  sos_config.clock.enable();
 }
 
 int root_handle_usecond_overflow_event(void *context, const mcu_event_t *data) {
@@ -560,10 +549,6 @@ int root_handle_usecond_match_event(void *context, const mcu_event_t *data) {
   int new_priority;
   mcu_channel_t chan_req;
   u32 now;
-  devfs_handle_t tmr_handle;
-  tmr_handle.port = sos_board_config.clk_usecond_tmr;
-  tmr_handle.config = 0;
-  tmr_handle.state = 0;
 
   // Initialize variables
   chan_req.loc = SCHED_USECOND_TMR_SLEEP_OC;
@@ -571,8 +556,7 @@ int root_handle_usecond_match_event(void *context, const mcu_event_t *data) {
   new_priority = SCHED_LOWEST_PRIORITY - 1;
   next = SOS_USECOND_PERIOD;
 
-  mcu_tmr_disable(&tmr_handle, 0);
-  mcu_tmr_get(&tmr_handle, &now);
+  now = sos_config.clock.disable();
 
   for (i = 1; i < task_get_total(); i++) {
 
@@ -599,10 +583,9 @@ int root_handle_usecond_match_event(void *context, const mcu_event_t *data) {
   if (next < SOS_USECOND_PERIOD) {
     chan_req.value = next;
   }
-  mcu_tmr_setchannel(&tmr_handle, &chan_req);
-
+  sos_config.clock.set_channel(&chan_req);
   scheduler_root_update_on_wake(-1, new_priority);
-  mcu_tmr_enable(&tmr_handle, 0);
+  sos_config.clock.enable();
 
   return 1;
 }
@@ -617,18 +600,13 @@ int root_handle_usecond_process_timer_match_event(
   u32 tmp;
   mcu_channel_t chan_req;
   u32 now;
-  devfs_handle_t tmr_handle;
-  tmr_handle.port = sos_board_config.clk_usecond_tmr;
-  tmr_handle.config = 0;
-  tmr_handle.state = 0;
 
   // Initialize variables
   chan_req.loc = SCHED_USECOND_TMR_SYSTEM_TIMER_OC;
   chan_req.value = SOS_USECOND_PERIOD + 1;
   next = SOS_USECOND_PERIOD;
 
-  mcu_tmr_disable(&tmr_handle, 0);
-  mcu_tmr_get(&tmr_handle, &now);
+  now = sos_config.clock.disable();
 
   for (i = 1; i < task_get_total(); i++) {
     // look for the next signal
@@ -667,8 +645,9 @@ int root_handle_usecond_process_timer_match_event(
   if (next < SOS_USECOND_PERIOD) {
     chan_req.value = next;
   }
-  mcu_tmr_setchannel(&tmr_handle, &chan_req);
-  mcu_tmr_enable(&tmr_handle, 0);
+
+  sos_config.clock.set_channel(&chan_req);
+  sos_config.clock.enable();
 
   return 1;
 }
@@ -680,7 +659,7 @@ int open_usecond_tmr() {
   mcu_action_t action;
   mcu_channel_t chan_req;
   devfs_handle_t tmr;
-  tmr.port = sos_board_config.clk_usecond_tmr;
+  tmr.port = 0;
   tmr.config = 0;
   tmr.state = 0;
 
@@ -714,7 +693,7 @@ int open_usecond_tmr() {
 
   if ((info.o_flags & TMR_FLAG_IS_AUTO_RELOAD) == 0) {
     // The reset OC is only needed if TMR_FLAG_IS_AUTO_RELOAD is not supported
-    // Set the reset output compare value to reset the clock every STFY_USECOND_PERIOD
+    // Set the reset output compare value to reset the clock every SOS_USECOND_PERIOD
 
     attr.channel.loc = SCHED_USECOND_TMR_RESET_OC;
     attr.channel.value = SOS_USECOND_PERIOD;

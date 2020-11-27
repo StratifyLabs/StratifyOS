@@ -242,13 +242,13 @@ int u_init_stdio(int fildes) {
     _REENT->_stderr->_file = _GLOBAL_REENT->_stderr->_file;
   } else {
 
-    if (sos_board_config.o_sys_flags & SYS_FLAG_IS_STDIO_FIFO) {
+    if (sos_config.sys.flags & SYS_FLAG_IS_STDIO_FIFO) {
       // the main thread needs to open the STDIO directly
-      _REENT->_stdin->_file = _open(sos_board_config.stdin_dev, O_RDWR);
-      _REENT->_stdout->_file = _open(sos_board_config.stdout_dev, O_RDWR);
-      _REENT->_stderr->_file = _open(sos_board_config.stderr_dev, O_RDWR);
+      _REENT->_stdin->_file = _open(sos_config.fs.stdin_dev, O_RDWR);
+      _REENT->_stdout->_file = _open(sos_config.fs.stdout_dev, O_RDWR);
+      _REENT->_stderr->_file = _open(sos_config.fs.stderr_dev, O_RDWR);
     } else {
-      _REENT->_stdin->_file = _open(sos_board_config.stdin_dev, O_RDWR);
+      _REENT->_stdin->_file = _open(sos_config.fs.stdin_dev, O_RDWR);
       _REENT->_stdout->_file = _REENT->_stdin->_file;
       _REENT->_stderr->_file = _REENT->_stdin->_file;
     }

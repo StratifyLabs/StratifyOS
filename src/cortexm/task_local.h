@@ -57,8 +57,8 @@ typedef struct MCU_PACK {
 #define task_debug(...)                                                                  \
   do {                                                                                   \
     if (TASK_DEBUG == 1) {                                                               \
-      mcu_debug_user_printf("%s:", __func__);                                            \
-      mcu_debug_user_printf(__VA_ARGS__);                                                \
+      sos_debug_user_printf("%s:", __func__);                                            \
+      sos_debug_user_printf(__VA_ARGS__);                                                \
     }                                                                                    \
   } while (0)
 

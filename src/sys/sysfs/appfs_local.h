@@ -23,7 +23,7 @@
 #include "config.h"
 #include <stdbool.h>
 #include "sos/dev/appfs.h"
-#include "mcu/debug.h"
+#include "sos/debug.h"
 #include "mcu/mem.h"
 #include "sos/fs/sysfs.h"
 

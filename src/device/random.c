@@ -19,7 +19,7 @@
 
 #include <errno.h>
 #include <stddef.h>
-#include "mcu/debug.h"
+#include "sos/debug.h"
 #include "device/random.h"
 
 //32, 22, 2, 1

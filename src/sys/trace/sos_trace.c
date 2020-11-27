@@ -63,10 +63,10 @@ void sos_trace_root_trace_event(
   size_t data_len) {
   register u32 lr asm("lr");
   link_trace_event_t event;
-  if (sos_board_config.trace_event) {
+  if (sos_config.debug.trace_event) {
     sos_trace_build_event(
       &event, event_id, data_ptr, data_len, lr, task_get_current(), 0);
-    sos_board_config.trace_event(&event);
+    sos_config.debug.trace_event(&event);
   }
 }
 
@@ -122,7 +122,7 @@ void sos_trace_event_addr(
 
 void svcall_trace_event(void *args) {
   CORTEXM_SVCALL_ENTER();
-  sos_board_config.trace_event(args);
+  sos_config.debug.trace_event(args);
 }
 
 void sos_trace_event_addr_tid(
@@ -133,7 +133,7 @@ void sos_trace_event_addr_tid(
   int tid) {
   // record event id and in-calling processes trace stream
 
-  if (sos_board_config.trace_event) {
+  if (sos_config.debug.trace_event) {
     // convert the address using the task memory location
     // check if addr is part of kernel or app
     if (
@@ -267,7 +267,7 @@ int sos_trace_stack_with_pointer(
   u32 next_link_register = ((u32)first_link_register) & ~0x01;
 
 #if PRINT_DEBUG
-  mcu_debug_printf("start trace from %p\n", first_link_register);
+  sos_debug_printf("start trace from %p\n", first_link_register);
 #endif
 
   u32 push_count = 0;
@@ -285,28 +285,28 @@ int sos_trace_stack_with_pointer(
       preview += 8;
     }
     for (int i = 0; i < preview; i++) {
-      mcu_debug_printf("stack preview %d:%x -> %08x\n", i, sp + i, sp[i]);
+      sos_debug_printf("stack preview %d:%x -> %08x\n", i, sp + i, sp[i]);
     }
 #endif
 
     sp += (stack_jump);
 #if PRINT_DEBUG
-    mcu_debug_printf(
+    sos_debug_printf(
       "Pushed %p < %p registers %d jump: %d\n", sp, stack_top, link_register_offset,
       stack_jump);
 #endif
 
     next_link_register = sp[-1] & ~0x01;
 #if PRINT_DEBUG
-    mcu_debug_printf("Next link is %08x\n", next_link_register);
+    sos_debug_printf("Next link is %08x\n", next_link_register);
 #endif
     if (next_link_register == (((u32)task_restore) & ~0x01)) {
 #if PRINT_DEBUG
-      mcu_debug_printf("task restore operation\n");
+      sos_debug_printf("task restore operation\n");
 #endif
       for (int i = 0; i < 16; i++) {
 #if PRINT_DEBUG
-        mcu_debug_printf("--stack preview %d:%x -> %08x\n", i, sp + i, sp[i]);
+        sos_debug_printf("--stack preview %d:%x -> %08x\n", i, sp + i, sp[i]);
 #endif
       }
       // special treatment -- doesn't return HW stack is inserted
@@ -323,7 +323,7 @@ int sos_trace_stack_with_pointer(
 
     if (lookup_caller_address(next_link_register + 1) == 0) {
 #if PRINT_DEBUG
-      mcu_debug_printf("failed to fully trace stack %p\n", next_link_register);
+      sos_debug_printf("failed to fully trace stack %p\n", next_link_register);
 #endif
       sos_trace_event_addr(
         LINK_POSIX_TRACE_ERROR, "traceFailed", sizeof("traceFailed"), next_link_register);
@@ -333,7 +333,7 @@ int sos_trace_stack_with_pointer(
   } while ((sp < stack_top) && (push_count < count));
 
 #if PRINT_DEBUG
-  mcu_debug_printf("is end %p < %p\n", sp, stack_top);
+  sos_debug_printf("is end %p < %p\n", sp, stack_top);
 #endif
 
   return push_count;

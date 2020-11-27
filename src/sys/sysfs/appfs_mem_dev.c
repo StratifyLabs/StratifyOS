@@ -21,7 +21,7 @@
 #include "cortexm/cortexm.h"
 #include "mcu/appfs.h"
 #include "mcu/flash.h"
-#include "mcu/debug.h"
+#include "sos/debug.h"
 #include "mcu/core.h"
 #include "mcu/wdt.h"
 #include "mcu/bootloader.h"
@@ -163,7 +163,7 @@ int appfs_mem_getpageinfo(const devfs_handle_t * handle, void * ctl){
 
 #if 0
 	size = get_page_size(config, pageinfo->num, pageinfo->o_flags);
-	mcu_debug_printf("get info for page %d 0x%lX %ld\n", pageinfo->num, pageinfo->o_flags, size);
+	sos_debug_printf("get info for page %d 0x%lX %ld\n", pageinfo->num, pageinfo->o_flags, size);
 	if (size == 0 ){ return SYSFS_SET_RETURN(EINVAL); }
 	pageinfo->addr = get_page_addr(config, pageinfo->num, pageinfo->o_flags);
 	pageinfo->size = size;

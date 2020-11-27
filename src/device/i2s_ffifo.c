@@ -21,7 +21,7 @@
 #include <errno.h>
 #include <string.h>
 #include <fcntl.h>
-#include "mcu/debug.h"
+#include "sos/debug.h"
 #include "cortexm/cortexm.h"
 #include "cortexm/task.h"
 #include "device/i2s_ffifo.h"
@@ -78,7 +78,7 @@ int i2s_event_data_ready(void * context, const mcu_event_t * event){
 
     if(state->rx.i2s_async.nbyte < 0){
         state->rx.error = state->rx.i2s_async.nbyte;
-        mcu_debug_log_error(MCU_DEBUG_DEVICE, "%s:%d (%d,%d)", __FUNCTION__, __LINE__, SYSFS_GET_RETURN(state->rx.i2s_async.nbyte));
+        sos_debug_log_error(SOS_DEBUG_DEVICE, "%s:%d (%d,%d)", __FUNCTION__, __LINE__, SYSFS_GET_RETURN(state->rx.i2s_async.nbyte));
         return 0;
     }
 
@@ -100,12 +100,12 @@ int i2s_event_data_ready(void * context, const mcu_event_t * event){
     }
 
     if( state->rx.i2s_async.nbyte != config->rx.frame_size ){
-        mcu_debug_log_warning(MCU_DEBUG_DEVICE, "%s:%d != %d\n", __FUNCTION__, state->rx.i2s_async.nbyte, config->rx.frame_size);
+        sos_debug_log_warning(SOS_DEBUG_DEVICE, "%s:%d != %d\n", __FUNCTION__, state->rx.i2s_async.nbyte, config->rx.frame_size);
     }
 
     state->rx.error = mcu_i2s_read(handle, &(state->rx.i2s_async));
     if( state->rx.error < 0){
-        mcu_debug_log_error(MCU_DEBUG_DEVICE, "%s:%d", __FUNCTION__, __LINE__);
+        sos_debug_log_error(SOS_DEBUG_DEVICE, "%s:%d", __FUNCTION__, __LINE__);
         return 0;
     }
     return 1;

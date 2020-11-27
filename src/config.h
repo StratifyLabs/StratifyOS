@@ -3,7 +3,7 @@
 #ifndef CONFIG_H_
 #define CONFIG_H_
 
-#include "mcu/debug.h"
+#include "sos/debug.h"
 
 #if MCU_DEBUG
 #define VERSION "3.16.0d"

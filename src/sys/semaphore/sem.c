@@ -35,7 +35,7 @@
 #include "../scheduler/scheduler_local.h"
 #include "semaphore.h"
 
-#include "mcu/debug.h"
+#include "sos/debug.h"
 
 #define SEM_FILE_HDR_SIGNATURE 0x1285ABC8
 #define SEM_FILE_HDR_NOT_SIGNATURE (~SEM_FILE_HDR_SIGNATURE)

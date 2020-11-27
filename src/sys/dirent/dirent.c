@@ -62,7 +62,7 @@
 #include <unistd.h>
 
 #include "dirent.h"
-#include "mcu/debug.h"
+#include "sos/debug.h"
 
 /*! \cond */
 static int check_ebadf(DIR *dirp) {

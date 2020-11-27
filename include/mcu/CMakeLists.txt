@@ -11,7 +11,6 @@ set(SOURCES
 	crc.h
 	crypt.h
 	dac.h
-	debug.h
 	dma.h
 	eeprom.h
 	eint.h

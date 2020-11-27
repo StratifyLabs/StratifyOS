@@ -31,7 +31,7 @@
 #include "unistd_fs.h"
 #include "unistd_local.h"
 
-#include "mcu/debug.h"
+#include "sos/debug.h"
 
 /*! \details This function performs various operations on open files such as:
  * - F_DUPFD: duplicate a file descriptor
@@ -62,8 +62,8 @@ int _fcntl(int fildes, int cmd, ...) {
   scheduler_check_cancellation();
 
   if (FILDES_IS_SOCKET(fildes)) {
-    if (sos_board_config.socket_api != 0) {
-      return sos_board_config.socket_api->fcntl(fildes & ~FILDES_SOCKET_FLAG, cmd, tmp);
+    if (sos_config.socket_api != 0) {
+      return sos_config.socket_api->fcntl(fildes & ~FILDES_SOCKET_FLAG, cmd, tmp);
     }
     errno = EBADF;
     return -1;

@@ -24,7 +24,7 @@
 
 #include "sos/fs/devfs.h"
 #include "cortexm/task.h"
-#include "mcu/debug.h"
+#include "sos/debug.h"
 
 #include <fcntl.h>
 #include <errno.h>
@@ -61,7 +61,7 @@ int process_start(
 	path = strtok_r(tmp_path, sysfs_whitespace, &p);
 
 	if( path == 0 ){
-		mcu_debug_log_error(MCU_DEBUG_SYS, "can't get path from %s", path_arg);
+		sos_debug_log_error(SOS_DEBUG_SYS, "can't get path from %s", path_arg);
 		errno = EINVAL;
 		return -1;
 	}
@@ -69,12 +69,12 @@ int process_start(
 	len = strlen(path_arg);
 
 	if ( access(path, X_OK) < 0 ){
-		mcu_debug_log_warning(MCU_DEBUG_SYS, "no exec access:%s", path);
+		sos_debug_log_warning(SOS_DEBUG_SYS, "no exec access:%s", path);
 		return -1;
 	}
 
 	//Open the program
-	mcu_debug_log_info(MCU_DEBUG_SYS, "process_start:%s", path);
+	sos_debug_log_info(SOS_DEBUG_SYS, "process_start:%s", path);
 #if MCU_DEBUG
 	usleep(10*1000);
 #endif
@@ -89,14 +89,14 @@ int process_start(
 	if ( err != sizeof(appfs_file_t) ){
 		//The read() function sets the errno already
 		close(fd);
-		mcu_debug_log_error(MCU_DEBUG_SYS, "failed to read program header");
+		sos_debug_log_error(SOS_DEBUG_SYS, "failed to read program header");
 		return -1;
 	}
 
 	//verify the signature
 	if( appfs_util_is_executable(&startup) == 0 ){
 		errno = ENOEXEC;
-		mcu_debug_log_error(MCU_DEBUG_SYS, "not executable");
+		sos_debug_log_error(SOS_DEBUG_SYS, "not executable");
 		return -1;
 	}
 
@@ -109,7 +109,7 @@ int process_start(
 	if( !reent_is_free((void*)startup.exec.ram_start) ){
 		errno = ENOTSUP;
 		close(fd);
-		mcu_debug_log_error(MCU_DEBUG_SYS, "already running");
+		sos_debug_log_error(SOS_DEBUG_SYS, "already running");
 		return -1;
 	}
 
@@ -119,12 +119,12 @@ int process_start(
 	//this gets freed in crt_sys.c by the process that is launched
 	process_path = _malloc_r(sos_task_table[0].global_reent, len+1);
 	if( process_path == 0 ){
-		mcu_debug_log_error(MCU_DEBUG_SYS, "couldn't alloc path argument in shared mem");
+		sos_debug_log_error(SOS_DEBUG_SYS, "couldn't alloc path argument in shared mem");
 		return -1;
 	}
 	strcpy(process_path, path_arg);
 
-	mcu_debug_log_info(MCU_DEBUG_SYS, "process start: execute %s", process_path);
+	sos_debug_log_info(SOS_DEBUG_SYS, "process start: execute %s", process_path);
 
 	int parent_id = task_get_current();
 	int is_authenticated = 0;
@@ -138,7 +138,7 @@ int process_start(
 		is_authenticated = 1;
 	}
 
-	mcu_debug_log_info(MCU_DEBUG_SYS, "process start: code:%p data:%p", (void*)startup.exec.startup,
+	sos_debug_log_info(SOS_DEBUG_SYS, "process start: code:%p data:%p", (void*)startup.exec.startup,
 							 (void*)startup.exec.ram_start);
 
 	err = scheduler_create_process(
@@ -154,7 +154,7 @@ int process_start(
 		_free_r(sos_task_table[0].global_reent, process_path);
 	}
 
-	mcu_debug_log_info(MCU_DEBUG_SYS, "process_start:returned %d", err);
+	sos_debug_log_info(SOS_DEBUG_SYS, "process_start:returned %d", err);
 	return err;
 }
 

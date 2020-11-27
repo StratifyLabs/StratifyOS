@@ -57,8 +57,8 @@ int ioctl(int fildes, int request, ...) {
 	va_end(ap);
 
 	if( FILDES_IS_SOCKET(fildes) ){
-		if( sos_board_config.socket_api != 0 ){
-			return sos_board_config.socket_api->ioctl(fildes & ~FILDES_SOCKET_FLAG, request, ctl);
+		if( sos_config.socket_api != 0 ){
+			return sos_config.socket_api->ioctl(fildes & ~FILDES_SOCKET_FLAG, request, ctl);
 		}
 		errno = EBADF;
 		return -1;

@@ -1,7 +1,7 @@
 
 #include "sos/dev/qspi.h"
 #include "mcu/pio.h"
-#include "mcu/debug.h"
+#include "sos/debug.h"
 
 #include "device/drive_cfi.h"
 

@@ -28,7 +28,7 @@
 #include "usbd/control.h"
 #include "usbd/cdc.h"
 #include "mcu/core.h"
-#include "mcu/debug.h"
+#include "sos/debug.h"
 #include "device/sys.h"
 
 #include "sos/link/transport_usb_link_vcp.h"
@@ -155,7 +155,7 @@ int link_vcp_class_handler(void * object, const mcu_event_t * event){
 	u32 o_events = event->o_events;
 
 	if( sos_link_transport_usb_msft_string_event(object,event) ){
-		mcu_debug_printf("send MSFT100\n");
+		sos_debug_printf("send MSFT100\n");
 		return 1;
 	}
 
@@ -164,7 +164,7 @@ int link_vcp_class_handler(void * object, const mcu_event_t * event){
 			&& (context->setup_packet.wIndex.w == 0x0004)){
 
 
-		mcu_debug_printf("request 0x%X 0x%X 0x%X\n",
+		sos_debug_printf("request 0x%X 0x%X 0x%X\n",
 										 context->setup_packet.bmRequestType,
 										 context->setup_packet.bRequest,
 										 context->setup_packet.wValue.w);
@@ -174,7 +174,7 @@ int link_vcp_class_handler(void * object, const mcu_event_t * event){
 		if (context->data.nbyte > len) {
 			context->data.nbyte = len;
 		}
-		mcu_debug_printf("send OS descriptors %d\n", len);
+		sos_debug_printf("send OS descriptors %d\n", len);
 		usbd_control_datain_stage(context);
 		return 1;
 

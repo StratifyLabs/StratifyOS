@@ -131,9 +131,8 @@ if( ${SOS_BUILD_CONFIG} STREQUAL arm )
 		sos_led.c
 		sos_led_root.c
 		sos_main.c
+		sos_debug.c
 		symbols.c
-		sys_23_dev.c
-		sys_26_dev.c
 		sys_dev.c
 		auth/auth_dev.c
 		auth/prng.c

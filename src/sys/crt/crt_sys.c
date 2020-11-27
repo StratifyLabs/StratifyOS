@@ -27,7 +27,7 @@
 #include "mcu/core.h"
 #include "cortexm/mpu.h"
 #include "cortexm/task.h"
-#include "mcu/debug.h"
+#include "sos/debug.h"
 
 typedef struct {
 	int code_size;

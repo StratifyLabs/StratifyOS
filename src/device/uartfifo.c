@@ -21,7 +21,7 @@
 #include <errno.h>
 #include <stddef.h>
 #include "device/uartfifo.h"
-#include "mcu/debug.h"
+#include "sos/debug.h"
 #include "cortexm/task.h"
 
 

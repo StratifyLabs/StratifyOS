@@ -19,7 +19,7 @@
 
 #include <fcntl.h>
 #include <unistd.h>
-#include "mcu/debug.h"
+#include "sos/debug.h"
 #include "sos/fs/sysfs.h"
 
 extern int devfs_open(const void * cfg, void ** handle, const char * path, int flags, int mode);

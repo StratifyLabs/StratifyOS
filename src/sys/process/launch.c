@@ -19,7 +19,7 @@
 #include "sos/link.h"
 #include "sos/fs/devfs.h"
 #include "cortexm/task.h"
-#include "mcu/debug.h"
+#include "sos/debug.h"
 
 #include <fcntl.h>
 #include <errno.h>

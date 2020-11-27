@@ -42,6 +42,7 @@ typedef struct MCU_PACK {
 } tmr_event_t;
 
 typedef struct MCU_PACK {
+  u32 port;
   tmr_attr_t attr;
 } tmr_config_t;
 

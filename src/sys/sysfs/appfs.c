@@ -22,7 +22,7 @@
 #include "cortexm/mpu.h"
 #include "cortexm/task.h"
 #include "mcu/core.h"
-#include "mcu/debug.h"
+#include "sos/debug.h"
 #include "mcu/mem.h"
 #include "mcu/wdt.h"
 #include "sos/fs/sysfs.h"
@@ -122,8 +122,7 @@ void svcall_init(void *args) {
   // first mark the RAM used by the OS according to the system memory size
   if (info.system_ram_page < info.ram_pages) {
     appfs_ram_root_set(
-      device, info.system_ram_page, sos_board_config.sys_memory_size,
-      APPFS_MEMPAGETYPE_SYS);
+      device, info.system_ram_page, sos_config.sys.memory_size, APPFS_MEMPAGETYPE_SYS);
   }
 
   // now scan each flash page to see what RAM is used by applications
@@ -207,11 +206,11 @@ int appfs_startup(const void *cfg) {
           (void *)get_fileinfo_args.file_info.exec.ram_start, 0, is_root)
         >= 0) {
         started++;
-        mcu_debug_log_info(
-          MCU_DEBUG_APPFS, "Started %s", get_fileinfo_args.file_info.hdr.name);
+        sos_debug_log_info(
+          SOS_DEBUG_APPFS, "Started %s", get_fileinfo_args.file_info.hdr.name);
       } else {
-        mcu_debug_log_info(
-          MCU_DEBUG_APPFS, "Failed to start %s", get_fileinfo_args.file_info.hdr.name);
+        sos_debug_log_info(
+          SOS_DEBUG_APPFS, "Failed to start %s", get_fileinfo_args.file_info.hdr.name);
       }
     }
   }
@@ -560,14 +559,16 @@ int appfs_write(
 void svcall_close(void *args) {
   CORTEXM_SVCALL_ENTER();
   // flash may not be synced with memory because of programming ops
-  mcu_core_invalidate_instruction_cache();
+  if (sos_config.cache.enable) {
+    sos_config.cache.invalidate_instruction();
 
-  appfs_handle_t *h = args;
-  mcu_core_clean_data_cache_block(
-    (void *)h->type.install.code_start, h->type.install.code_size);
+    appfs_handle_t *h = args;
+    sos_config.cache.clean_data_block(
+      h->type.install.code_start, h->type.install.code_size);
 
-  mcu_core_clean_data_cache_block(
-    (void *)h->type.install.data_start, h->type.install.data_size);
+    sos_config.cache.clean_data_block(
+      h->type.install.data_start, h->type.install.data_size);
+  }
 }
 
 int appfs_close(const void *cfg, void **handle) {

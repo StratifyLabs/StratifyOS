@@ -20,16 +20,11 @@
 #ifndef SCHEDULER_SCHEDULER_TIMING_H_
 #define SCHEDULER_SCHEDULER_TIMING_H_
 
-#include <sdk/types.h>
 #include "sos/sos.h"
-
-#define SCHEDULER_CLOCK_NSEC_DIV ((u32)((u64)1024 * 1000000000 / mcu_board_config.core_cpu_freq))
-#define SCHEDULER_CLOCK_USEC_MULT ((u32)(mcu_board_config.core_cpu_freq / 1000000))
+#include <sdk/types.h>
 
 #define SCHEDULER_TIMEVAL_SEC_INVALID UINT_MAX
-#define SCHEDULER_TIMEVAL_SECONDS STFY_SCHEDULER_TIMEVAL_SECONDS
-
-
+#define SCHEDULER_TIMEVAL_SECONDS SOS_SCHEDULER_TIMEVAL_SECONDS
 
 int scheduler_timing_init();
 

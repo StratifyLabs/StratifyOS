@@ -29,7 +29,7 @@
 #include <unistd.h>
 
 #include "../scheduler/scheduler_local.h"
-#include "mcu/debug.h"
+#include "sos/debug.h"
 
 /*! \cond */
 static void svcall_usleep(void *args) MCU_ROOT_EXEC_CODE;
@@ -94,9 +94,8 @@ int usleep(useconds_t useconds) {
 /*! \cond */
 void svcall_get_usecond_tmr(void *args) {
   CORTEXM_SVCALL_ENTER();
-  devfs_handle_t tmr_handle;
-  tmr_handle.port = sos_board_config.clk_usecond_tmr;
-  mcu_tmr_get(&tmr_handle, args);
+  u32 *value = args;
+  *value = sos_config.clock.microseconds();
 }
 
 void svcall_usleep(void *args) {

@@ -17,63 +17,43 @@
  *
  */
 
-#include "sos/sos.h"
+#include "cortexm/cortexm.h"
 #include "mcu/core.h"
 #include "mcu/pio.h"
-#include "cortexm/cortexm.h"
+#include "sos/sos.h"
+#include "sos/sos_config.h"
 
-void sos_led_svcall_enable(void * args){
-	CORTEXM_SVCALL_ENTER();
-	MCU_UNUSED_ARGUMENT(args);
-	sos_led_root_enable();
+void sos_led_svcall_enable(void *args) {
+  CORTEXM_SVCALL_ENTER();
+  MCU_UNUSED_ARGUMENT(args);
+  sos_led_root_enable();
 }
 
-void sos_led_root_enable(){
-	if( mcu_board_config.led.port != 255 ){
-		pio_attr_t attr;
-		devfs_handle_t handle;
-		handle.port = mcu_board_config.led.port;
-		attr.o_pinmask = (1<<mcu_board_config.led.pin);
-		attr.o_flags = PIO_FLAG_SET_OUTPUT | PIO_FLAG_IS_DIRONLY;
-		mcu_pio_setattr(&handle, &attr);
-		if( mcu_board_config.o_flags & MCU_BOARD_CONFIG_FLAG_LED_ACTIVE_HIGH ){
-			mcu_pio_setmask(&handle, (void*)(1<<mcu_board_config.led.pin));
-		} else {
-			mcu_pio_clrmask(&handle, (void*)(1<<mcu_board_config.led.pin));
-		}
-	}
+void sos_led_root_enable() {
+  sos_config.event_handler(SOS_EVENT_ROOT_ENABLE_DEBUG_LED, NULL);
 }
 
-void sos_led_svcall_disable(void * args){
-	CORTEXM_SVCALL_ENTER();
-	MCU_UNUSED_ARGUMENT(args);
-	sos_led_root_disable();
+void sos_led_svcall_disable(void *args) {
+  CORTEXM_SVCALL_ENTER();
+  MCU_UNUSED_ARGUMENT(args);
+  sos_led_root_disable();
 }
 
-void sos_led_root_disable(){
-	if( mcu_board_config.led.port != 255 ){
-		pio_attr_t attr;
-		devfs_handle_t handle;
-		handle.port = mcu_board_config.led.port;
-		attr.o_flags = PIO_FLAG_SET_INPUT | PIO_FLAG_IS_DIRONLY;
-		attr.o_pinmask = (1<<mcu_board_config.led.pin);
-		mcu_pio_setattr(&handle, &attr);
-	}
+void sos_led_root_disable() {
+  sos_config.event_handler(SOS_EVENT_ROOT_DISABLE_DEBUG_LED, NULL);
 }
 
-void sos_led_svcall_error(void * args){
-	CORTEXM_SVCALL_ENTER();
-	MCU_UNUSED_ARGUMENT(args);
-	sos_led_root_error();
+void sos_led_svcall_error(void *args) {
+  CORTEXM_SVCALL_ENTER();
+  MCU_UNUSED_ARGUMENT(args);
+  sos_led_root_error();
 }
 
-void sos_led_root_error(){
-	while(1){
-		sos_led_svcall_enable(0);
-		cortexm_delay_ms(50);
-		sos_led_svcall_disable(0);
-		cortexm_delay_ms(50);
-	}
+void sos_led_root_error() {
+  while (1) {
+    sos_led_svcall_enable(0);
+    cortexm_delay_ms(50);
+    sos_led_svcall_disable(0);
+    cortexm_delay_ms(50);
+  }
 }
-
-

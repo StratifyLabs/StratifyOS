@@ -22,7 +22,7 @@
 #include "mcu/pio.h"
 #include "device/led_pio.h"
 
-#include "mcu/debug.h"
+#include "sos/debug.h"
 
 static void led_setattr(const devfs_handle_t * handle, const led_attr_t * attr);
 
