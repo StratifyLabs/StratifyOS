@@ -52,9 +52,11 @@ static u8 scheduler_timing_process_timer_count() { return SOS_PROCESS_TIMER_COUN
 static void update_tmr_for_process_timer_match(volatile sos_process_timer_t *timer);
 
 int scheduler_timing_init() {
-  if (open_usecond_tmr() < 0) {
-    return -1;
-  }
+
+  sos_config.clock.initialize(
+    root_handle_usecond_match_event, root_handle_usecond_process_timer_match_event,
+    root_handle_usecond_overflow_event);
+
   return 0;
 }
 

@@ -75,7 +75,6 @@ enum sos_debug_flags {
 #endif
 
 #if !defined ___debug
-#define sos_debug_init() 0
 #define sos_debug_user_printf(...)
 #define sos_debug_printf(...)
 #define sos_debug_root_printf(...)
@@ -86,7 +85,6 @@ enum sos_debug_flags {
 #define sos_debug_trace_corrupt_memory()
 #else
 #define SOS_DEBUG 1
-int sos_debug_init();
 void sos_debug_root_write(const char *buffer, int nbyte);
 // int sos_debug_user_printf(const char * format, ...);
 // int sos_debug_root_printf(const char * format, ...);

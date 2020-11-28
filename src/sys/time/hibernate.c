@@ -45,16 +45,12 @@ static void svcall_hibernate(void *args) MCU_ROOT_EXEC_CODE;
 
 void svcall_powerdown(void *args) {
   CORTEXM_SVCALL_ENTER();
-  mcu_core_execsleep(0, (void *)CORE_DEEPSLEEP_STANDBY);
+  if (sos_config.sleep.powerdown) {
+    sos_config.sleep.powerdown();
+  }
 }
 
 void root_prepare_hibernate(void *args) {
-  int *seconds = (int *)args;
-  // set the WDT to reset in args seconds
-
-  // The WDT only runs in hibernate on certain clock sources
-  mcu_wdt_root_reset(NULL);
-
   // elevate task prio of caller so that nothing executes until prio is restored
   task_root_set_current_priority(SCHED_HIGHEST_PRIORITY + 1);
   sos_handle_event(SOS_EVENT_ROOT_PREPARE_DEEPSLEEP, 0);
@@ -62,7 +58,6 @@ void root_prepare_hibernate(void *args) {
 
 void root_post_hibernate(void *args) {
   cortexm_disable_interrupts();
-  mcu_wdt_root_reset(NULL);
   sos_handle_event(SOS_EVENT_ROOT_RECOVER_DEEPSLEEP, 0);
 
   // restore task prio
@@ -78,7 +73,10 @@ void svcall_hibernate(void *args) {
   CORTEXM_SVCALL_ENTER();
   root_prepare_hibernate(args);
 
-  mcu_core_execsleep(0, (void *)CORE_DEEPSLEEP);
+  if (sos_config.sleep.hibernate) {
+    int *seconds = args;
+    sos_config.sleep.hibernate(*seconds);
+  }
 
   // reinitialize the Clocks
   root_post_hibernate(args);

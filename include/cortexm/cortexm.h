@@ -78,7 +78,7 @@ void cortexm_set_vector_table_addr(void * addr);
 u32 cortexm_get_vector_table_addr();
 
 void cortexm_wdtfault_handler(void * stack);
-void cortexm_reset_handler();
+void cortexm_reset_handler() __attribute__((section(".reset_vector")));
 void cortexm_nmi_handler();
 void cortexm_debug_monitor_handler();
 

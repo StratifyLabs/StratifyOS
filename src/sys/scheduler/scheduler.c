@@ -94,10 +94,7 @@ void scheduler() {
 
     // Sleep when nothing else is going on
     if (task_get_exec_count() == 0) {
-      sos_handle_event(SOS_EVENT_SCHEDULER_IDLE, 0);
-      // if ((sos_config.sys.flags & SYS_FLAG_IS_ACTIVE_ON_IDLE) == 0) {
-      //  mcu_core_user_sleep(CORE_SLEEP);
-      //}
+      sos_config.sleep.idle();
     } else {
       // Otherwise switch to the active task
       sched_yield();

@@ -82,14 +82,6 @@ static void svcall_prepare(void *args) {
 
 int scheduler_prepare() {
 
-  sos_debug_log_info(SOS_DEBUG_SCHEDULER, "Load MCU Faults");
-
-  if (sos_debug_init() < 0) {
-    cortexm_disable_interrupts();
-    sos_handle_event(SOS_EVENT_ROOT_FATAL, (void *)"dbgi");
-  }
-  sos_debug_log_info(SOS_DEBUG_SYS, "MCU Debug started");
-
   cortexm_svcall(svcall_prepare, NULL);
 
   sos_debug_log_info(SOS_DEBUG_SCHEDULER, "Init Timing");

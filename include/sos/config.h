@@ -50,7 +50,10 @@ typedef struct {
 } sos_debug_config_t;
 
 typedef struct {
-  void (*initialize)();
+  void (*initialize)(
+    int (*handle_match_channel0)(void *context, const mcu_event_t *data),
+    int (*handle_match_channel1)(void *context, const mcu_event_t *data),
+    int (*handle_overflow)(void *context, const mcu_event_t *data));
   void (*enable)();
   u32 (*disable)();
   void (*set_channel)(const mcu_channel_t *channel);
@@ -105,6 +108,12 @@ typedef struct {
   void (*clean_data_block)(u32 address, u32 size);
 } sos_cache_config_t;
 
+typedef struct {
+  void (*idle)();
+  void (*hibernate)(int seconds);
+  void (*powerdown)();
+} sos_sleep_config_t;
+
 /*! \brief Stratify Board Configuration Structure
  * \details This structure holds the compiler-link time
  * configuration data.
@@ -116,6 +125,7 @@ typedef struct MCU_PACK {
   sos_sys_config_t sys;
   sos_debug_config_t debug;
   sos_cache_config_t cache;
+  sos_sleep_config_t sleep;
   const sos_socket_api_t *socket_api;
   void (*event_handler)(int, void *);
 } sos_config_t;

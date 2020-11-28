@@ -167,9 +167,6 @@ void init_hw() {
   boot_event(BOOT_EVENT_INIT_CLOCK, 0);
 
 #if defined DEBUG_BOOTLOADER
-  if (sos_debug_init() < 0) {
-    sos_led_root_error(0);
-  }
 
   dsetmode(0);
   dsetwritefunc(debug_write_func);
