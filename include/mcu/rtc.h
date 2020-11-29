@@ -1,4 +1,4 @@
-/* Copyright 2011-2018 Tyler Gilbert; 
+/* Copyright 2011-2018 Tyler Gilbert;
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -35,29 +35,30 @@ extern "C" {
 #endif
 
 typedef struct MCU_PACK {
-	u32 value;
+  u32 value;
 } rtc_event_data_t;
 
 typedef struct {
-	rtc_time_t time;
+  rtc_time_t time;
 } rtc_event_t;
 
 typedef struct {
-	rtc_attr_t attr;
+  u32 port;
+  rtc_attr_t attr;
 } rtc_config_t;
 
-int mcu_rtc_open(const devfs_handle_t * handle) MCU_ROOT_CODE;
-int mcu_rtc_read(const devfs_handle_t * handle, devfs_async_t * rop) MCU_ROOT_CODE;
-int mcu_rtc_write(const devfs_handle_t * handle, devfs_async_t * wop) MCU_ROOT_CODE;
-int mcu_rtc_ioctl(const devfs_handle_t * handle, int request, void * ctl) MCU_ROOT_CODE;
-int mcu_rtc_close(const devfs_handle_t * handle) MCU_ROOT_CODE;
+int mcu_rtc_open(const devfs_handle_t *handle) MCU_ROOT_CODE;
+int mcu_rtc_read(const devfs_handle_t *handle, devfs_async_t *rop) MCU_ROOT_CODE;
+int mcu_rtc_write(const devfs_handle_t *handle, devfs_async_t *wop) MCU_ROOT_CODE;
+int mcu_rtc_ioctl(const devfs_handle_t *handle, int request, void *ctl) MCU_ROOT_CODE;
+int mcu_rtc_close(const devfs_handle_t *handle) MCU_ROOT_CODE;
 
-int mcu_rtc_getinfo(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
-int mcu_rtc_setattr(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
-int mcu_rtc_setaction(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
+int mcu_rtc_getinfo(const devfs_handle_t *handle, void *ctl) MCU_ROOT_CODE;
+int mcu_rtc_setattr(const devfs_handle_t *handle, void *ctl) MCU_ROOT_CODE;
+int mcu_rtc_setaction(const devfs_handle_t *handle, void *ctl) MCU_ROOT_CODE;
 
-int mcu_rtc_set(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
-int mcu_rtc_get(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
+int mcu_rtc_set(const devfs_handle_t *handle, void *ctl) MCU_ROOT_CODE;
+int mcu_rtc_get(const devfs_handle_t *handle, void *ctl) MCU_ROOT_CODE;
 
 #ifdef __cplusplus
 }

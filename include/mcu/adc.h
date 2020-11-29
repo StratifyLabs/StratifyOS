@@ -1,4 +1,4 @@
-/* Copyright 2011-2018 Tyler Gilbert; 
+/* Copyright 2011-2018 Tyler Gilbert;
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -31,34 +31,31 @@ extern "C" {
 #endif
 
 typedef struct MCU_PACK {
-	u32 value;
+  u32 value;
 } adc_event_t;
 
 typedef struct MCU_PACK {
-	adc_attr_t attr; //default attributes
-	u32 reference_mv;
+  u32 port;
+  adc_attr_t attr; // default attributes
+  u32 reference_mv;
 } adc_config_t;
 
-#define MCU_ADC_IOCTL_REQUEST_DECLARATION(driver_name) \
-	DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, getinfo); \
-	DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, setattr); \
-	DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, setaction) \
+#define MCU_ADC_IOCTL_REQUEST_DECLARATION(driver_name)                                   \
+  DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, getinfo);                           \
+  DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, setattr);                           \
+  DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, setaction)
 
-
-#define MCU_ADC_DRIVER_DECLARATION(variant) \
-	DEVFS_DRIVER_DECLARTION(variant); \
-	MCU_ADC_IOCTL_REQUEST_DECLARATION(variant)
+#define MCU_ADC_DRIVER_DECLARATION(variant)                                              \
+  DEVFS_DRIVER_DECLARTION(variant);                                                      \
+  MCU_ADC_IOCTL_REQUEST_DECLARATION(variant)
 
 MCU_ADC_DRIVER_DECLARATION(mcu_adc);
 MCU_ADC_DRIVER_DECLARATION(mcu_adc_dma);
-
 
 #ifdef __cplusplus
 }
 #endif
 
-
 #endif // ADC_H_
 
 /*! @} */
-

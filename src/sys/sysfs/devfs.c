@@ -182,7 +182,7 @@ int devfs_fstat(const void *cfg, void *handle, struct stat *st) {
   const devfs_device_t *dev = handle;
   // populate the characteristics
   int num;
-  num = (dev - devfs_list) / sizeof(devfs_device_t);
+  num = (dev - sos_config.fs.devfs_list) / sizeof(devfs_device_t);
   st->st_dev = 0;
   st->st_rdev = num;
   st->st_ino = num;

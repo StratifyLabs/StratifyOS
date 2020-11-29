@@ -79,8 +79,6 @@ typedef struct {
  */
 int devfs_signal_callback(void *context, const mcu_event_t *data);
 
-extern const devfs_device_t devfs_list[];
-
 const devfs_handle_t *devfs_lookup_handle(const devfs_device_t *list, const char *name);
 const devfs_device_t *
 devfs_lookup_device(const devfs_device_t *list, const char *device_name);
@@ -171,18 +169,17 @@ int devfs_mcu_ioctl(
   object##_local_t *local = (object##_local_t *)handle->state
 
 #define DEVFS_DRIVER_DECLARE_STATE_LOCAL_V4(object)                                      \
+  const object##_config_t *config = handle->config;                                      \
   object##_local_t *local = (object##_local_t *)handle->state
 
 #define DEVFS_DRIVER_OPEN_STATE_LOCAL_V4(object)                                         \
-  const object##_config_t *config = handle->config;                                      \
   m_##object##_local[config->port] = handle->state;
 
 #define DEVFS_DRIVER_CLOSE_STATE_LOCAL_V4(object)                                        \
-  const object##_config_t *config = handle->config;                                      \
   m_##object##_local[config->port] = NULL;
 
 #define DEVFS_DRIVER_ASSIGN_STATE_LOCAL(object)                                          \
-  (m_##object##_state_local[handle->port] = handle->state)
+  (m_##object##_local[handle->port] = handle->state)
 
 #define DEVFS_DRIVER_DECLARE_STATE_LOCAL_ARRAY(object, count)                            \
   object##_local_t *m_##object##_state_local[count] MCU_SYS_MEM

@@ -1,5 +1,5 @@
-#ifndef SOS_SOS_CONFIG_H
-#define SOS_SOS_CONFIG_H
+#ifndef SOS_CONFIG_H
+#define SOS_CONFIG_H
 
 #include <sdk/types.h>
 
@@ -44,9 +44,12 @@ typedef struct {
 } sos_fs_config_t;
 
 typedef struct {
+  u32 flags;
+  void (*initialize)();
   void (*write)(const void *buf, int nbyte);
   void (*trace_event)(void *event);
-  u32 flags;
+  void (*enable_led)();
+  void (*disable_led)();
 } sos_debug_config_t;
 
 typedef struct {
@@ -71,37 +74,30 @@ typedef struct {
 } sos_task_config_t;
 
 typedef struct {
+  // low level USB API
+} sos_usb_config_t;
+
+typedef struct {
   u32 memory_size;
   u32 os_mpu_text_mask;
   u32 flags;
   u32 secret_key_size;
-#if defined __link
-  u32 name;
-  u32 version;
-  u32 git_hash;
-  u32 id;
-  u32 team_id;
-  u32 secret_key_address;
-  u32 event_handler;
-#else
   const char *name;
   const char *version;
   const char *git_hash;
   const char *id;
   const char *team_id;
   const void *secret_key_address;
+  void (*initialize)();
+  void (*get_serial_number)(mcu_sn_t *serial_number);
   int (*kernel_request)(int request, void *data);
   const void *(*kernel_request_api)(u32 request);
-#endif
 } sos_sys_config_t;
 
 typedef struct {
   void (*enable)();
   void (*disable)();
   void (*invalidate_instruction)();
-  void (*invalidate_instruction_block)(u32 address, u32 size);
-  void (*clean_instruction)();
-  void (*clean_instruction_block)(u32 address, u32 size);
   void (*invalidate_data)();
   void (*invalidate_data_block)(u32 address, u32 size);
   void (*clean_data)();

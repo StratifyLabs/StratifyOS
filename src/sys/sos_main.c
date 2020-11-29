@@ -24,9 +24,12 @@
 
 #include "scheduler/scheduler_local.h"
 
-static void init_hw();
-
 int sos_main() {
+
+  if (sos_config.sys.initialize) {
+    sos_config.sys.initialize();
+  }
+
   cortexm_fault_init();
   cortexm_enable_interrupts(); // Enable the interrupts
 

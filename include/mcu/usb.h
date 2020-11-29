@@ -1,4 +1,4 @@
-/* Copyright 2011-2018 Tyler Gilbert; 
+/* Copyright 2011-2018 Tyler Gilbert;
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -35,30 +35,33 @@ extern "C" {
 #endif
 
 typedef struct {
-	u8 epnum;
+  u8 epnum;
 } usb_event_t;
 
 typedef struct MCU_PACK {
-	usb_attr_t attr; //default attributes
+  u32 port;
+  usb_attr_t attr; // default attributes
 } usb_config_t;
 
-int mcu_usb_open(const devfs_handle_t * handle) MCU_ROOT_CODE;
-int mcu_usb_read(const devfs_handle_t * handle, devfs_async_t * rop) MCU_ROOT_CODE;
-int mcu_usb_write(const devfs_handle_t * handle, devfs_async_t * wop) MCU_ROOT_CODE;
-int mcu_usb_ioctl(const devfs_handle_t * handle, int request, void * ctl) MCU_ROOT_CODE;
-int mcu_usb_close(const devfs_handle_t * handle) MCU_ROOT_CODE;
+int mcu_usb_open(const devfs_handle_t *handle) MCU_ROOT_CODE;
+int mcu_usb_read(const devfs_handle_t *handle, devfs_async_t *rop) MCU_ROOT_CODE;
+int mcu_usb_write(const devfs_handle_t *handle, devfs_async_t *wop) MCU_ROOT_CODE;
+int mcu_usb_ioctl(const devfs_handle_t *handle, int request, void *ctl) MCU_ROOT_CODE;
+int mcu_usb_close(const devfs_handle_t *handle) MCU_ROOT_CODE;
 
+int mcu_usb_getinfo(const devfs_handle_t *handle, void *ctl) MCU_ROOT_CODE;
+int mcu_usb_setattr(const devfs_handle_t *handle, void *ctl) MCU_ROOT_CODE;
+int mcu_usb_setaction(const devfs_handle_t *handle, void *ctl) MCU_ROOT_CODE;
+int mcu_usb_isconnected(const devfs_handle_t *handle, void *ctl) MCU_ROOT_CODE;
 
-int mcu_usb_getinfo(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
-int mcu_usb_setattr(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
-int mcu_usb_setaction(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
-int mcu_usb_isconnected(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
-
-
-//Endpoint functions
-int mcu_usb_root_read_endpoint(const devfs_handle_t * handle, u32 endpoint_num, void * dest) MCU_ROOT_CODE;
-int mcu_usb_root_write_endpoint(const devfs_handle_t * handle, u32 endpoint_num, const void * src, u32 size) MCU_ROOT_CODE;
-
+// Endpoint functions
+int mcu_usb_root_read_endpoint(const devfs_handle_t *handle, u32 endpoint_num, void *dest)
+  MCU_ROOT_CODE;
+int mcu_usb_root_write_endpoint(
+  const devfs_handle_t *handle,
+  u32 endpoint_num,
+  const void *src,
+  u32 size) MCU_ROOT_CODE;
 
 #ifdef __cplusplus
 }

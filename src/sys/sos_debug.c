@@ -53,18 +53,10 @@ static void
 sos_debug_vlog(u32 o_flags, const char *intro, const char *format, va_list args);
 static void sos_debug_svcall_write(void *args);
 
-void sos_debug_root_write(const char *buffer, int nbyte) {
-  int i;
-
-  for (i = 0; i < nbyte; i++) {
-    sos_config.debug.write(buffer + i, 1);
-  }
-}
-
 void sos_debug_svcall_write(void *args) {
   CORTEXM_SVCALL_ENTER();
   sos_debug_buffer_t *p = args;
-  sos_debug_root_write(p->buffer, p->len);
+  sos_config.debug.write(p->buffer, p->len);
 }
 
 int sos_debug_printf(const char *format, ...) {
@@ -78,7 +70,7 @@ int sos_debug_vprintf(const char *format, va_list args) {
   svcall_args.buffer[255] = 0;
   svcall_args.len = vsnprintf(svcall_args.buffer, 255, format, args);
   if (cortexm_is_root_mode()) {
-    sos_debug_root_write(svcall_args.buffer, svcall_args.len);
+    sos_config.debug.write(svcall_args.buffer, svcall_args.len);
   } else {
     cortexm_svcall(sos_debug_svcall_write, &svcall_args);
   }

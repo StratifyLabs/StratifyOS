@@ -30,7 +30,9 @@ void sos_led_svcall_enable(void *args) {
 }
 
 void sos_led_root_enable() {
-  sos_config.event_handler(SOS_EVENT_ROOT_ENABLE_DEBUG_LED, NULL);
+  if (sos_config.debug.enable_led) {
+    sos_config.debug.enable_led();
+  }
 }
 
 void sos_led_svcall_disable(void *args) {
@@ -40,7 +42,9 @@ void sos_led_svcall_disable(void *args) {
 }
 
 void sos_led_root_disable() {
-  sos_config.event_handler(SOS_EVENT_ROOT_DISABLE_DEBUG_LED, NULL);
+  if (sos_config.debug.disable_led) {
+    sos_config.debug.disable_led();
+  }
 }
 
 void sos_led_svcall_error(void *args) {

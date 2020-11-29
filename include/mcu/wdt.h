@@ -71,37 +71,12 @@ typedef enum {
 	WDT_MODE_CLK_SRC_WDT_OSC /*! The WDT is clock using the dedicated WDT oscillator */ = (3<<2)
 } wdt_mode_t;
 
-#define WDT_MODE_CLK_SRC_MASK (0x07 << 2 )
+#define WDT_MODE_CLK_SRC_MASK (0x07 << 2)
 
-/*! \details This function opens the watch dog timer.  The timer
- * will run and either reset or interrupt the device at
- * the specified interval.
- *
- * Once the WDT is intialized, it cannot be disabled and must
- * be reset (wdt_reset()) on a regular basis to prevent a device
- * reset or interrupt.
- *
- * \return An HWPL Error code (Zero on success)
- */
-int mcu_wdt_init( int mode /*! The WDT mode to use (see \ref wdt_mode_t) */,
-						int interval /*! The timeout value in ms */) MCU_ROOT_CODE;
-
-
-/*! \details This function resets the watchdog timer
- * so that it won't trigger until the interval has expired.
- * This should be called more frequently than 1/interval to prevent
- * the WDT from triggering a reset or interrupt.
- */
+int mcu_wdt_init(int mode, int interval) MCU_ROOT_CODE;
 void mcu_wdt_reset();
-
 void mcu_wdt_root_reset(void * args) MCU_ROOT_CODE;
-
 int mcu_wdt_setaction(int (*action)(const void *, void *)) MCU_ROOT_CODE;
-
-
-/*! \details This function sets the WDT timeout interval in ms.
- * \return Zero on success.
- */
 int mcu_wdt_setinterval(int interval) MCU_ROOT_CODE;
 
 #ifdef __cplusplus

@@ -67,7 +67,9 @@ int sys_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
       strncpy(info->bsp_git_hash, sos_config.sys.git_hash, 15);
     }
     strncpy(info->sos_git_hash, SOS_GIT_HASH, 15);
-    sos_handle_event(SOS_EVENT_ROOT_GET_SERIAL_NUMBER, &(info->serial));
+    if (sos_config.sys.get_serial_number) {
+      sos_config.sys.get_serial_number(&(info->serial));
+    }
     info->hardware_id =
       *(((u32 *)cortexm_get_vector_table_addr())
         + BOOTLOADER_HARDWARE_ID_OFFSET / sizeof(u32));

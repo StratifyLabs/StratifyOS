@@ -122,17 +122,19 @@ void boot_link_cmd_none(link_transport_driver_t *driver, link_data_t *args) { re
 
 void boot_link_cmd_readserialno(link_transport_driver_t *driver, link_data_t *args) {
   char serialno[LINK_PACKET_DATA_SIZE];
-  u32 tmp[4];
+  mcu_sn_t tmp = {0};
   int i, j;
   char *p = serialno;
   memset(serialno, 0, LINK_PACKET_DATA_SIZE);
 
-  sos_handle_event(SOS_EVENT_ROOT_GET_SERIAL_NUMBER, tmp);
+  if (sos_config.sys.get_serial_number) {
+    sos_config.sys.get_serial_number(&tmp);
+  }
 
   for (j = 3; j >= 0; j--) {
     for (i = 0; i < 8; i++) {
-      *p++ = htoc((tmp[j] >> 28) & 0x0F);
-      tmp[j] <<= 4;
+      *p++ = htoc((tmp.sn[j] >> 28) & 0x0F);
+      tmp.sn[j] <<= 4;
     }
   }
 

@@ -86,7 +86,7 @@ void scheduler_fault_event_handler(fault_t *fault) {
 #if MCU_DEBUG
     char buffer[128];
     scheduler_fault_build_string(buffer, "\n");
-    sos_debug_root_write(buffer, strnlen(buffer, 128));
+    sos_config.debug.write(buffer, strnlen(buffer, 128));
 #endif
 
     if (sos_config.debug.trace_event != NULL) {

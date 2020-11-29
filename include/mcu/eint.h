@@ -1,4 +1,4 @@
-/* Copyright 2011-2018 Tyler Gilbert; 
+/* Copyright 2011-2018 Tyler Gilbert;
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -26,7 +26,6 @@
 #ifndef _MCU_EINT_H_
 #define _MCU_EINT_H_
 
-
 #include "sos/dev/eint.h"
 
 #include "sos/fs/devfs.h"
@@ -36,25 +35,25 @@ extern "C" {
 #endif
 
 typedef struct MCU_PACK {
-	u32 status;
-	u32 rising;
-	u32 falling;
+  u32 status;
+  u32 rising;
+  u32 falling;
 } eint_event_t;
 
 typedef struct MCU_PACK {
-	eint_attr_t attr; //default attributes
+  u32 port;
+  eint_attr_t attr; // default attributes
 } eint_config_t;
 
-int mcu_eint_open(const devfs_handle_t * handle) MCU_ROOT_CODE;
-int mcu_eint_read(const devfs_handle_t * handle, devfs_async_t * rop) MCU_ROOT_CODE;
-int mcu_eint_write(const devfs_handle_t * handle, devfs_async_t * wop) MCU_ROOT_CODE;
-int mcu_eint_ioctl(const devfs_handle_t * handle, int request, void * ctl) MCU_ROOT_CODE;
-int mcu_eint_close(const devfs_handle_t * handle) MCU_ROOT_CODE;
+int mcu_eint_open(const devfs_handle_t *handle) MCU_ROOT_CODE;
+int mcu_eint_read(const devfs_handle_t *handle, devfs_async_t *rop) MCU_ROOT_CODE;
+int mcu_eint_write(const devfs_handle_t *handle, devfs_async_t *wop) MCU_ROOT_CODE;
+int mcu_eint_ioctl(const devfs_handle_t *handle, int request, void *ctl) MCU_ROOT_CODE;
+int mcu_eint_close(const devfs_handle_t *handle) MCU_ROOT_CODE;
 
-int mcu_eint_getinfo(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
-int mcu_eint_setattr(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
-int mcu_eint_setaction(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
-
+int mcu_eint_getinfo(const devfs_handle_t *handle, void *ctl) MCU_ROOT_CODE;
+int mcu_eint_setattr(const devfs_handle_t *handle, void *ctl) MCU_ROOT_CODE;
+int mcu_eint_setaction(const devfs_handle_t *handle, void *ctl) MCU_ROOT_CODE;
 
 #ifdef __cplusplus
 }
@@ -63,4 +62,3 @@ int mcu_eint_setaction(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
 #endif /* EINT_H_ */
 
 /*! @} */
-

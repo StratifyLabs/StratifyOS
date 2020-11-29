@@ -91,7 +91,9 @@ void *sos_default_thread(void *arg) {
 int init_fs() {
   int i;
   i = 0;
-  while (sysfs_isterminator(&sysfs_list[i]) == false) {
+  const sysfs_t *sysfs_list = sos_config.fs.rootfs_list;
+
+  while (sysfs_isterminator(sysfs_list + i) == 0) {
     SOS_TRACE_MESSAGE(sysfs_list[i].mount_path);
     sos_debug_log_info(SOS_DEBUG_SYS, "init %s", sysfs_list[i].mount_path);
     int result;
@@ -111,7 +113,9 @@ int startup_fs() {
   i = 0;
   int started;
   started = 0;
-  while (sysfs_isterminator(&sysfs_list[i]) == false) {
+  const sysfs_t *sysfs_list = sos_config.fs.rootfs_list;
+
+  while (sysfs_isterminator(sysfs_list + i) == 0) {
     int ret = sysfs_list[i].startup(sysfs_list[i].config);
     if (ret > 0) {
       started += ret;

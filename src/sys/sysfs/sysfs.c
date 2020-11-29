@@ -23,12 +23,14 @@
 
 /*! \file */
 
-#include "sos/fs/sysfs.h"
-#include "sos/debug.h"
 #include <errno.h>
 #include <fcntl.h>
 #include <string.h>
 #include <unistd.h>
+
+#include "sos/config.h"
+#include "sos/debug.h"
+#include "sos/fs/sysfs.h"
 
 #define OR_ALLOW_GROUP 0
 
@@ -117,6 +119,7 @@ const sysfs_t *sysfs_find(const char *path, bool needs_parent) {
   int i;
   int pathlen;
   pathlen = strlen(path);
+  const sysfs_t *sysfs_list = sos_config.fs.rootfs_list;
 
   i = 0;
   while (sysfs_isterminator(&(sysfs_list[i])) == false) {
@@ -329,6 +332,7 @@ int sysfs_access(int file_mode, int file_uid, int file_gid, int amode) {
 void sysfs_unlock() {
   int i;
   i = 0;
+  const sysfs_t *sysfs_list = sos_config.fs.rootfs_list;
   while (sysfs_isterminator(&(sysfs_list[i])) == false) {
     sysfs_list[i].unlock(sysfs_list[i].config);
     i++;

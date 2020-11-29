@@ -158,7 +158,7 @@ int check_run_app() {
 
 #ifdef DEBUG_BOOTLOADER
 static int debug_write_func(const void *buf, int nbyte) {
-  sos_debug_root_write(buf, nbyte);
+  sos_config.debug.write(buf, nbyte);
   return nbyte;
 }
 #endif

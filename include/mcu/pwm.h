@@ -38,6 +38,7 @@ typedef struct MCU_PACK {
 } pwm_event_data_t;
 
 typedef struct MCU_PACK {
+  u32 port;
   pwm_attr_t attr; // default attributes
 } pwm_config_t;
 
