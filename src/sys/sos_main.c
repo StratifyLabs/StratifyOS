@@ -30,8 +30,9 @@ int sos_main() {
     sos_config.sys.initialize();
   }
 
-  cortexm_fault_init();
-  cortexm_enable_interrupts(); // Enable the interrupts
+  if (sos_config.debug.initialize) {
+    sos_config.debug.initialize();
+  }
 
   if (scheduler_init() < 0) { // Initialize the data used for the scheduler
     sos_handle_event(SOS_EVENT_ROOT_FATAL, "main sched init");

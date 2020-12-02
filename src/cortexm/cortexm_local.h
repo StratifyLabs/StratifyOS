@@ -20,23 +20,23 @@
 #ifndef CORTEXM_LOCAL_H_
 #define CORTEXM_LOCAL_H_
 
-#include "mcu/arch.h"
 #include "cortexm/cortexm.h"
+#include "mcu/arch.h"
 #include "sos/debug.h"
 
-#define SYSTICK_CTRL_TICKINT (1<<1)
+#define SYSTICK_CTRL_TICKINT (1 << 1)
 
 static inline void cortexm_enable_systick_irq() MCU_ALWAYS_INLINE;
-void cortexm_enable_systick_irq(){
+void cortexm_enable_systick_irq() {
 #if defined SysTick
-	SysTick->CTRL |= SYSTICK_CTRL_TICKINT;
+  SysTick->CTRL |= SYSTICK_CTRL_TICKINT;
 #endif
 }
 
 static inline void cortexm_disable_systick_irq() MCU_ALWAYS_INLINE;
-void cortexm_disable_systick_irq(){
+void cortexm_disable_systick_irq() {
 #if defined SysTick
-	SysTick->CTRL &= ~SYSTICK_CTRL_TICKINT;
+  SysTick->CTRL &= ~SYSTICK_CTRL_TICKINT;
 #endif
 }
 

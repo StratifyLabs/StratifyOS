@@ -127,12 +127,16 @@ int task_init(
 #endif
 
   // Turn on the task timer (MCU implementation dependent)
+  cortexm_fault_init();
   set_systick_interval(interval);
   sos_task_table[0].rr_time = m_task_rr_reload;
   cortexm_set_stack_ptr((void *)&_top_of_stack); // reset the handler stack pointer
   cortexm_enable_systick_irq();                  // Enable context switching
+  cortexm_set_vector_table_addr(&_text);
   task_root_switch_context();
+  cortexm_enable_interrupts(); // Enable the interrupts
 
+  sos_handle_event(SOS_EVENT_ROOT_FATAL, "task_init()");
   while (1) {
   }
 
@@ -463,23 +467,23 @@ void switch_contexts() {
 }
 
 void task_root_switch_context() {
-  sos_task_table[task_get_current()].rr_time =
-    SysTick->VAL; // cppcheck-suppress[ConfigurationNotChecked] save the RR time from the
-                  // SYSTICK
-  SCB->ICSR |=
-    (1 << 28); // set the pend SV interrupt pending -- causes cortexm_pendsv_handler() to
-               // execute when current interrupt exits
+
+  // cppcheck-suppress[ConfigurationNotChecked] save the RR time from the SYSTICK
+  sos_task_table[task_get_current()].rr_time = SysTick->VAL;
+
+  // set the pend SV interrupt pending -- causes cortexm_pendsv_handler() to execute when
+  // current interrupt exits
+  SCB->ICSR |= (1 << 28);
 }
 
 void task_check_count_flag() {
-  if (SysTick->CTRL & (1 << 16)) { // cppcheck-suppress[ConfigurationNotChecked] check the
-                                   // countflag
+  // check the countflag
+  if (SysTick->CTRL & (1 << 16)) { // cppcheck-suppress[ConfigurationNotChecked]
     sos_task_table[m_task_current].rr_time = 0;
     switch_contexts();
   }
 }
 
-extern void cortexm_svcall_handler();
 
 void cortexm_systick_handler() {
   task_save_context();

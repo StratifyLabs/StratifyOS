@@ -76,6 +76,7 @@ int scheduler_check_tid(int id) {
  */
 void scheduler() {
 
+  SOS_DEBUG_LINE_TRACE();
   if (scheduler_prepare()) { // this starts memory protection
     sos_handle_event(SOS_EVENT_FATAL, (void *)"sprep");
   }

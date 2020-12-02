@@ -55,9 +55,9 @@ void sos_led_svcall_error(void *args) {
 
 void sos_led_root_error() {
   while (1) {
-    sos_led_svcall_enable(0);
+    sos_led_root_enable();
     cortexm_delay_ms(50);
-    sos_led_svcall_disable(0);
+    sos_led_root_disable();
     cortexm_delay_ms(50);
   }
 }
