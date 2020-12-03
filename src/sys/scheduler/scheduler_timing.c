@@ -51,13 +51,10 @@ static u8 scheduler_timing_process_timer_id_offset(timer_t timer_id) {
 static u8 scheduler_timing_process_timer_count() { return SOS_PROCESS_TIMER_COUNT; }
 static void update_tmr_for_process_timer_match(volatile sos_process_timer_t *timer);
 
-int scheduler_timing_init() {
-
+void scheduler_timing_init() {
   sos_config.clock.initialize(
     root_handle_usecond_match_event, root_handle_usecond_process_timer_match_event,
     root_handle_usecond_overflow_event);
-
-  return 0;
 }
 
 volatile sos_process_timer_t *scheduler_timing_process_timer(timer_t timer_id) {
@@ -293,10 +290,6 @@ int scheduler_timing_process_get_timer(
 
   cortexm_svcall(svcall_gettime, &args);
   return args.result;
-}
-
-u32 scheduler_timing_seconds_to_clocks(int seconds) {
-  return (u32)sos_config.clock.frequency * (u32)seconds;
 }
 
 u32 scheduler_timing_useconds_to_clocks(int useconds) {
@@ -541,6 +534,8 @@ int root_handle_usecond_overflow_event(void *context, const mcu_event_t *data) {
   sched_usecond_counter++;
   root_handle_usecond_match_event(0, 0);
   root_handle_usecond_process_timer_match_event(0, 0);
+  sos_debug_printf("tmr overflow %ld\n", sos_config.clock.disable());
+  sos_config.clock.enable();
   return 1; // do not clear callback
 }
 

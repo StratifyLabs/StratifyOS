@@ -45,10 +45,8 @@ int mcu_execute_event_handler(mcu_event_handler_t *handler, u32 o_events, void *
 }
 
 const void *mcu_select_attr(const devfs_handle_t *handle, void *ctl) {
-  if (ctl == 0) {
-    if (handle->config != 0) {
-      return handle->config;
-    }
+  if ((ctl == NULL) && (handle->config != NULL)) {
+    return handle->config;
   }
   return ctl;
 }

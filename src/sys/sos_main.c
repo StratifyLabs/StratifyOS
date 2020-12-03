@@ -34,20 +34,10 @@ int sos_main() {
     sos_config.debug.initialize();
   }
 
-  if (scheduler_init() < 0) { // Initialize the data used for the scheduler
-    sos_handle_event(SOS_EVENT_ROOT_FATAL, "main sched init");
-    cortexm_disable_interrupts();
-    while (1) {
-    }
-  }
+  scheduler_init();
+  scheduler_start(sos_config.task.start);
 
-  if (scheduler_start(sos_config.task.start) < 0) {
-    sos_handle_event(SOS_EVENT_ROOT_FATAL, "main sched start");
-    cortexm_disable_interrupts();
-    while (1) {
-    }
-  }
-
+  // should never reach this point
   sos_handle_event(SOS_EVENT_ROOT_FATAL, "main sched failed");
   cortexm_disable_interrupts();
   while (1) {

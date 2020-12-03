@@ -43,7 +43,7 @@
 
 #include "trace.h"
 
-static int start_first_thread();
+static void start_first_thread();
 static void svcall_fault_logged(void *args) MCU_ROOT_EXEC_CODE;
 
 static int check_faults();
@@ -76,17 +76,10 @@ int scheduler_check_tid(int id) {
  */
 void scheduler() {
 
-  SOS_DEBUG_LINE_TRACE();
-  if (scheduler_prepare()) { // this starts memory protection
-    sos_handle_event(SOS_EVENT_FATAL, (void *)"sprep");
-  }
+  scheduler_prepare();
 
   sos_debug_log_info(SOS_DEBUG_SCHEDULER, "Start first thread");
-  if (start_first_thread() < 0) {
-    sos_debug_log_info(SOS_DEBUG_SCHEDULER, "Start first thread failed");
-    sos_handle_event(SOS_EVENT_FATAL, (void *)"strt1t");
-  }
-
+  start_first_thread();
   sos_debug_log_info(SOS_DEBUG_SCHEDULER, "Run scheduler");
 
   while (1) {
@@ -301,7 +294,7 @@ int scheduler_root_unblock_all(void *block_object, int unblock_type) {
   return priority;
 }
 
-int start_first_thread() {
+void start_first_thread() {
   void *(*init)(void *);
   pthread_attr_t attr;
   int err;
@@ -312,8 +305,6 @@ int start_first_thread() {
   attr.stackaddr = malloc(attr.stacksize);
   if (attr.stackaddr == NULL) {
     sos_handle_event(SOS_EVENT_FATAL, "no memory for scheduler");
-    errno = ENOMEM;
-    return -1;
   }
   PTHREAD_ATTR_SET_IS_INITIALIZED((&attr), 1);
   PTHREAD_ATTR_SET_CONTENTION_SCOPE((&attr), PTHREAD_SCOPE_SYSTEM);
@@ -327,11 +318,8 @@ int start_first_thread() {
     init, sos_config.task.start_args, attr.stackaddr, attr.stacksize, &attr);
 
   if (!err) {
-    sos_debug_log_error(SOS_DEBUG_SCHEDULER, "Failed to create thread\n");
-    return -1;
+    sos_handle_event(SOS_EVENT_FATAL, "Failed to create thread");
   }
-
-  return 0;
 }
 
 u32 scheduler_calculate_heap_end(u32 task_id) {

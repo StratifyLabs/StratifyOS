@@ -53,8 +53,8 @@
 extern "C" {
 #endif
 
-int scheduler_start(void * (*init)(void*));
-int scheduler_init();
+void scheduler_start(void *(*init)(void *));
+void scheduler_init();
 
 //Schedule Debugging
 void scheduler_debug_print_tasks();

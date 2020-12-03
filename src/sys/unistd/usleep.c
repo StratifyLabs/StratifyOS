@@ -48,12 +48,14 @@ int usleep(useconds_t useconds) {
   if (task_get_current()) {
     scheduler_check_cancellation();
   }
+
   if (useconds == 0) {
     return 0;
   }
+
   if (useconds <= 1000000UL) {
-    u32 clocks = scheduler_timing_useconds_to_clocks(useconds);
-    u32 tmp = scheduler_timing_useconds_to_clocks(1);
+    const u32 clocks = scheduler_timing_useconds_to_clocks(useconds);
+    const u32 tmp = scheduler_timing_useconds_to_clocks(1);
     if ((task_get_current() == 0) || (clocks < 8000)) {
 
       // Issue #61 -- read the microsecond timer so that the delay is more accurate
@@ -66,22 +68,16 @@ int usleep(useconds_t useconds) {
 
       if (end > SOS_USECOND_PERIOD) {
         end -= SOS_USECOND_PERIOD; // adjust for overflow
-        do {
-          cortexm_svcall(svcall_get_usecond_tmr, &now);
-          //--------------END*******************START--------- wait in ---- time
-        } while ((now <= end) || (now >= start));
-      } else {
-        do {
-          cortexm_svcall(svcall_get_usecond_tmr, &now);
-          //--------------START*******************END--------- wait in **** time
-        } while ((now <= end) && (now >= start));
       }
+      // static wait loop
+      do {
+        cortexm_svcall(svcall_get_usecond_tmr, &now);
+      } while ((now <= end) && (now >= start));
 
     } else {
-      // clocks is greater than 4800 -- there is time to change to another task
-      useconds -=
-        (600
-         / tmp); // this is a fudge factor to handle the amount of time to start waiting
+      // clocks is greater than 8000 -- there is time to change to another task
+      // use a fudge factor adjustment to account for clocks taken to start sleeping
+      useconds -= (600 / tmp);
       cortexm_svcall(svcall_usleep, &useconds);
     }
   } else {

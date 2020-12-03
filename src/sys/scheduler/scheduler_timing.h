@@ -26,9 +26,8 @@
 #define SCHEDULER_TIMEVAL_SEC_INVALID UINT_MAX
 #define SCHEDULER_TIMEVAL_SECONDS SOS_SCHEDULER_TIMEVAL_SECONDS
 
-int scheduler_timing_init();
+void scheduler_timing_init();
 
-u32 scheduler_timing_seconds_to_clocks(int seconds);
 u32 scheduler_timing_useconds_to_clocks(int useconds);
 void scheduler_timing_root_timedblock(void * block_object, struct mcu_timeval * interval);
 

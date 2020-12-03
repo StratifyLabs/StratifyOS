@@ -52,7 +52,7 @@ static inline trace_id_t scheduler_trace_id(int id) {
 static inline int scheduler_current_priority(){ return task_get_current_priority(); }
 
 int scheduler_check_tid(int id);
-int scheduler_prepare();
+void scheduler_prepare();
 void scheduler();
 
 int scheduler_create_thread(void *(*p)(void*)  /*! The function to execute for the task */,
