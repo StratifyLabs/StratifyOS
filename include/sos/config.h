@@ -75,6 +75,14 @@ typedef struct {
 
 typedef struct {
   // low level USB API
+  int (*set_attributes)(const devfs_handle_t *handle, void *ctl);
+  int (*set_action)(const devfs_handle_t *handle, mcu_action_t *action);
+  void (*write_endpoint)(
+    const devfs_handle_t *handle,
+    u32 endpoint_num,
+    const void *src,
+    u32 size);
+  int (*read_endpoint)(const devfs_handle_t *handle, u32 endpoint_num, void *dest);
 } sos_usb_config_t;
 
 typedef struct {
@@ -122,6 +130,7 @@ typedef struct MCU_PACK {
   sos_debug_config_t debug;
   sos_cache_config_t cache;
   sos_sleep_config_t sleep;
+  sos_usb_config_t usb;
   const sos_socket_api_t *socket_api;
   void (*event_handler)(int, void *);
 } sos_config_t;
