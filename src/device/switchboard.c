@@ -102,7 +102,7 @@ int switchboard_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
     if (action->channel < config->connection_count) {
       u16 id = action->channel;
       if (action->handler.callback == 0) {
-        mcu_execute_event_handler(&state[id].event_handler, MCU_EVENT_FLAG_CANCELED, 0);
+        devfs_execute_event_handler(&state[id].event_handler, MCU_EVENT_FLAG_CANCELED, 0);
       }
 
       state[id].event_handler = action->handler;
@@ -386,7 +386,7 @@ int check_for_stopped_or_destroyed(switchboard_state_t *state) {
     }
 
     close_connection(state);
-    mcu_execute_event_handler(&state->event_handler, o_events, 0);
+    devfs_execute_event_handler(&state->event_handler, o_events, 0);
     return 1;
   }
   return 0;

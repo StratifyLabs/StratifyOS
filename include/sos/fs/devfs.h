@@ -181,6 +181,9 @@ int devfs_mcu_ioctl(
 #define DEVFS_DRIVER_ASSIGN_STATE_LOCAL(object)                                          \
   (m_##object##_local[handle->port] = handle->state)
 
+#define DEVFS_ASSIGN_ATTRIBUTES(object, ctl)                                             \
+  (ctl == NULL) ? &(((const object##_config_t *)handle->config)->attr) : ctl;
+
 #define DEVFS_DRIVER_DECLARE_STATE_LOCAL_ARRAY(object, count)                            \
   object##_local_t *m_##object##_state_local[count] MCU_SYS_MEM
 

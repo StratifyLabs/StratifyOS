@@ -1,4 +1,4 @@
-/* Copyright 2011-2018 Tyler Gilbert; 
+/* Copyright 2011-2018 Tyler Gilbert;
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -22,10 +22,10 @@
  *
  * \ingroup IFACE_DEV
  *
- * \details The HWPL USB module provides an API for accessing the devices USB hardware.  The full
- * USB device stack is part of the Hardware Device Library (HWDL).  The HWPL API is used for
- * low level initialization, and the HWDL is used for application level functionality such as implementing USB
- * Device Classes.
+ * \details The HWPL USB module provides an API for accessing the devices USB hardware.
+ * The full USB device stack is part of the Hardware Device Library (HWDL).  The HWPL API
+ * is used for low level initialization, and the HWDL is used for application level
+ * functionality such as implementing USB Device Classes.
  *
  * More information about accessing peripheral IO is in the \ref IFACE_DEV section.
  *
@@ -48,49 +48,47 @@ extern "C" {
 #define USB_VERSION (0x030001)
 #define USB_IOC_IDENT_CHAR 'u'
 
-
 /*! \details This lists the valid USB modes.
  *
  */
 typedef enum {
-	USB_FLAG_SET_UNCONFIGURED /*! unconfigured mode */ = (1<<0),
-	USB_FLAG_SET_DEVICE /*! device mode */ = (1<<1),
-	USB_FLAG_SET_HOST /*! host mode */ = (1<<2),
-	USB_FLAG_SET_OTG /*! on-the-go mode */ = (1<<3),
-	USB_FLAG_RESET /*! Rest the USB */ = (1<<4),
-	USB_FLAG_ATTACH /*! Attach USB device */ = (1<<5),
-	USB_FLAG_DETACH /*! Detach USB device */ = (1<<6),
-	USB_FLAG_CONFIGURE /*! Configure USB device */ = (1<<7),
-	USB_FLAG_UNCONFIGURE /*! Unconfigure USB device */ = (1<<8),
-	USB_FLAG_SET_ADDRESS = (1<<9),
-	USB_FLAG_RESET_ENDPOINT = (1<<10),
-	USB_FLAG_ENABLE_ENDPOINT = (1<<11),
-	USB_FLAG_DISABLE_ENDPOINT = (1<<12),
-	USB_FLAG_STALL_ENDPOINT = (1<<13),
-	USB_FLAG_UNSTALL_ENDPOINT = (1<<14),
-	USB_FLAG_CONFIGURE_ENDPOINT = (1<<15),
-	USB_FLAG_IS_SOF_ENABLED = (1<<16),
-	USB_FLAG_IS_LOW_POWER_MODE_ENABLED = (1<<17),
-	USB_FLAG_IS_VBUS_SENSING_ENABLED = (1<<18),
-	USB_FLAG_IS_HIGH_SPEED = (1<<19),
-	USB_FLAG_IS_BATTERY_CHARGING_ENABLED = (1<<20),
-	USB_FLAG_FLUSH_ENDPOINT = (1<<21)
+  USB_FLAG_SET_UNCONFIGURED /*! unconfigured mode */ = (1 << 0),
+  USB_FLAG_SET_DEVICE /*! device mode */ = (1 << 1),
+  USB_FLAG_SET_HOST /*! host mode */ = (1 << 2),
+  USB_FLAG_SET_OTG /*! on-the-go mode */ = (1 << 3),
+  USB_FLAG_RESET /*! Rest the USB */ = (1 << 4),
+  USB_FLAG_ATTACH /*! Attach USB device */ = (1 << 5),
+  USB_FLAG_DETACH /*! Detach USB device */ = (1 << 6),
+  USB_FLAG_CONFIGURE /*! Configure USB device */ = (1 << 7),
+  USB_FLAG_UNCONFIGURE /*! Unconfigure USB device */ = (1 << 8),
+  USB_FLAG_SET_ADDRESS = (1 << 9),
+  USB_FLAG_RESET_ENDPOINT = (1 << 10),
+  USB_FLAG_ENABLE_ENDPOINT = (1 << 11),
+  USB_FLAG_DISABLE_ENDPOINT = (1 << 12),
+  USB_FLAG_STALL_ENDPOINT = (1 << 13),
+  USB_FLAG_UNSTALL_ENDPOINT = (1 << 14),
+  USB_FLAG_CONFIGURE_ENDPOINT = (1 << 15),
+  USB_FLAG_IS_SOF_ENABLED = (1 << 16),
+  USB_FLAG_IS_LOW_POWER_MODE_ENABLED = (1 << 17),
+  USB_FLAG_IS_VBUS_SENSING_ENABLED = (1 << 18),
+  USB_FLAG_IS_HIGH_SPEED = (1 << 19),
+  USB_FLAG_IS_BATTERY_CHARGING_ENABLED = (1 << 20),
+  USB_FLAG_FLUSH_ENDPOINT = (1 << 21)
 } usb_flag_t;
 
-
 typedef struct MCU_PACK {
-	u32 o_flags;
-	u32 o_events;
-	u32 resd[8];
+  u32 o_flags;
+  u32 o_events;
+  u32 resd[8];
 } usb_info_t;
 
 #define USB_PIN_ASSIGNMENT_COUNT 4
 
 typedef struct MCU_PACK {
-	mcu_pin_t dp;
-	mcu_pin_t dm;
-	mcu_pin_t id;
-	mcu_pin_t vbus;
+  mcu_pin_t dp;
+  mcu_pin_t dm;
+  mcu_pin_t id;
+  mcu_pin_t vbus;
 } usb_pin_assignment_t;
 
 #define USB_TX_FIFO_WORD_SIZE_COUNT 9
@@ -100,15 +98,16 @@ typedef struct MCU_PACK {
  *
  */
 typedef struct MCU_PACK {
-	u32 o_flags /*! Configuration flags */;
-	usb_pin_assignment_t pin_assignment /*! Pin assignments */;
-	u32 freq /*! The crystal oscillator frequency */;
-	u32 address /*! USB endpoint address or device address (USB_FLAG_SET_ADDRESS) */;
-	u16 max_packet_size /*! USB endpoing max packet size */;
-	u16 type /*! USB endpoint type as bmAttributes */;
-	u16 rx_fifo_word_size /*! RX FIFO word size for all endpoints (STM32) */;
-	u8 tx_fifo_word_size[USB_TX_FIFO_WORD_SIZE_COUNT] /*! TX FIFO word size (used on STM32) */;
-	u32 resd[6];
+  u32 o_flags /*! Configuration flags */;
+  usb_pin_assignment_t pin_assignment /*! Pin assignments */;
+  u32 freq /*! The crystal oscillator frequency */;
+  u32 address /*! USB endpoint address or device address (USB_FLAG_SET_ADDRESS) */;
+  u16 max_packet_size /*! USB endpoing max packet size */;
+  u16 type /*! USB endpoint type as bmAttributes */;
+  u16 rx_fifo_word_size /*! RX FIFO word size for all endpoints (STM32) */;
+  u8 tx_fifo_word_size
+    [USB_TX_FIFO_WORD_SIZE_COUNT] /*! TX FIFO word size (used on STM32) */;
+  u32 resd[6];
 } usb_attr_t;
 
 #define I_USB_GETVERSION _IOCTL(USB_IOC_IDENT_CHAR, I_MCU_GETVERSION)

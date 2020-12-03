@@ -1,4 +1,4 @@
-/* Copyright 2011-2018 Tyler Gilbert; 
+/* Copyright 2011-2018 Tyler Gilbert;
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -13,8 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
+ *
+ *
  */
 
 /*! \addtogroup time
@@ -23,12 +23,11 @@
 
 /*! \file */
 
-
 #include <errno.h>
+#include <fcntl.h>
 #include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
-#include <fcntl.h>
 
 #include "mcu/mcu.h"
 #include "sos/dev/rtc.h"
@@ -37,26 +36,26 @@
 
 /*! \cond */
 struct timeval time_of_day_offset MCU_SYS_MEM;
-static void svcall_set_time(void * args) MCU_ROOT_EXEC_CODE;
-void svcall_set_time(void * args){
-	CORTEXM_SVCALL_ENTER();
-	div_t d;
-	struct mcu_timeval tv;
-	struct timeval tmp;
-	struct timeval * t = (struct timeval *)args;
-	scheduler_timing_svcall_get_realtime(&tv);
+static void svcall_set_time(void *args) MCU_ROOT_EXEC_CODE;
+void svcall_set_time(void *args) {
+  CORTEXM_SVCALL_ENTER();
+  div_t d;
+  struct mcu_timeval tv;
+  struct timeval tmp;
+  struct timeval *t = (struct timeval *)args;
+  scheduler_timing_svcall_get_realtime(&tv);
 
-	//time = value + offset
-	//offset = time - value
-	d = div(tv.tv_usec, 1000000);
-	tmp.tv_sec = tv.tv_sec * SCHEDULER_TIMEVAL_SECONDS + d.quot;
-	tmp.tv_usec = d.rem;
-	time_of_day_offset.tv_usec = t->tv_usec - tmp.tv_usec;
-	time_of_day_offset.tv_sec = t->tv_sec - tmp.tv_sec;
-	if( time_of_day_offset.tv_usec < 0 ){
-		time_of_day_offset.tv_usec += 1000000;
-		time_of_day_offset.tv_sec--;
-	}
+  // time = value + offset
+  // offset = time - value
+  d = div(tv.tv_usec, 1000000);
+  tmp.tv_sec = tv.tv_sec * SCHEDULER_TIMEVAL_SECONDS + d.quot;
+  tmp.tv_usec = d.rem;
+  time_of_day_offset.tv_usec = t->tv_usec - tmp.tv_usec;
+  time_of_day_offset.tv_sec = t->tv_sec - tmp.tv_sec;
+  if (time_of_day_offset.tv_usec < 0) {
+    time_of_day_offset.tv_usec += 1000000;
+    time_of_day_offset.tv_sec--;
+  }
 }
 /*! \endcond */
 
@@ -67,39 +66,38 @@ void svcall_set_time(void * args){
  * - EIO: IO error when setting the real time clock
  *
  */
-int settimeofday(const struct timeval * tp, const struct timezone * tzp);
+int settimeofday(const struct timeval *tp, const struct timezone *tzp);
 
 /*! \cond */
-static int settimeofday_rtc(const struct timeval * tp);
+static int settimeofday_rtc(const struct timeval *tp);
 
-int _settimeofday(const struct timeval * tp, const struct timezone * tzp) {
-	settimeofday_rtc(tp);
-	//also, set the simulated time
-	cortexm_svcall(svcall_set_time, (void*)tp);
+int _settimeofday(const struct timeval *tp, const struct timezone *tzp) {
+  settimeofday_rtc(tp);
+  // also, set the simulated time
+  cortexm_svcall(svcall_set_time, (void *)tp);
 
-	return 0;
+  return 0;
 }
 
-int settimeofday_rtc(const struct timeval * tp){
-	int fd;
-	rtc_time_t cal_time;
+int settimeofday_rtc(const struct timeval *tp) {
+  int fd;
+  rtc_time_t cal_time;
 
-	fd = open("/dev/rtc", O_RDWR);
-	if ( fd < 0 ){
-		return -1;
-	}
+  fd = open("/dev/rtc", O_RDWR);
+  if (fd < 0) {
+    return -1;
+  }
 
-	gmtime_r( &tp->tv_sec, (struct tm*)&cal_time.time);
-	cal_time.useconds = tp->tv_usec;
+  gmtime_r(&tp->tv_sec, (struct tm *)&cal_time.time);
+  cal_time.useconds = tp->tv_usec;
 
-	if (ioctl(fd, I_RTC_SET, &cal_time) < 0 ){
-		close(fd);
-		return -1;
-	}
+  if (ioctl(fd, I_RTC_SET, &cal_time) < 0) {
+    close(fd);
+    return -1;
+  }
 
-	return 0;
+  return 0;
 }
 /*! \endcond */
-
 
 /*! @} */

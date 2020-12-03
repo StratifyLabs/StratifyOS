@@ -79,10 +79,12 @@ int usbd_control_handler(void *context_object, const mcu_event_t *usb_event) {
     usbd_control_handler_setup_stage(context);
 
     int ret = usbd_standard_request_handle_setup(context);
+    sos_debug_printf("handled %d\n", ret);
 
     // allow the class handler handle the standard request if the request was handled with
     // usbd_standard_request_handle_setup(), no need to stall
     if ((ret == 0) && (execute_class_handler(context, usb_event) == 0)) {
+      sos_debug_printf("stall %d\n", __LINE__);
       stall(context);
     }
 
@@ -94,8 +96,10 @@ int usbd_control_handler(void *context_object, const mcu_event_t *usb_event) {
         usbd_control_dataout_stage(context);
         if (context->data.nbyte == 0) {
           if (usbd_control_setup_request_type(context) == USBD_REQUEST_STANDARD) {
+            sos_debug_printf("stall %d\n", __LINE__);
             stall(context);
           } else if (execute_class_handler(context, usb_event) == 0) {
+            sos_debug_printf("stall %d\n", __LINE__);
             stall(context);
           }
         }
@@ -105,6 +109,7 @@ int usbd_control_handler(void *context_object, const mcu_event_t *usb_event) {
     }
 
   } else if (o_events & MCU_EVENT_FLAG_WRITE_COMPLETE) {
+    sos_debug_printf("write complete event\n");
     if (
       usbd_control_setup_request_direction(context)
       == USBD_REQUEST_TYPE_DIRECTION_DEVICE_TO_HOST) {
@@ -112,7 +117,7 @@ int usbd_control_handler(void *context_object, const mcu_event_t *usb_event) {
       if (execute_class_handler(context, usb_event)) {
         return 1;
       }
-
+      sos_debug_printf("data in to host\n");
       usbd_control_datain_stage(context);
     }
   } else if (o_events & MCU_EVENT_FLAG_STALL) {

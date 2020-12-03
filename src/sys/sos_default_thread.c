@@ -29,9 +29,9 @@
 
 extern void *link_update(void *args);
 
-static int init_fs();
-static int startup_fs();
+static void init_fs();
 static void start_filesystem(void);
+static int startup_fs();
 
 static void svcall_core_getinfo(void *args) MCU_ROOT_EXEC_CODE;
 
@@ -56,7 +56,7 @@ void check_reset_source(void) {
   } else if (info.o_flags & CORE_FLAG_IS_RESET_SYSTEM) {
     SOS_TRACE_MESSAGE("sys reset");
   }
-  sos_handle_event(SOS_EVENT_TASK_INITIALIZED, &info);
+  sos_handle_event(SOS_EVENT_RESET_SOURCE, &info);
 }
 
 void start_filesystem(void) {
@@ -72,23 +72,15 @@ void *sos_default_thread(void *arg) {
   check_reset_source();
 
   // Initialize the file systems
-  if (init_fs() < 0) {
-    sos_handle_event(SOS_EVENT_FATAL, (void *)"init_fs");
-  }
-
+  init_fs();
   start_filesystem();
-
-  sos_debug_log_info(SOS_DEBUG_SYS, "Open RTC");
-  if (open("/dev/rtc", O_RDWR) < 0) {
-    sos_debug_log_warning(SOS_DEBUG_SYS, "RTC not opened");
-  }
 
   sos_handle_event(SOS_EVENT_START_LINK, 0);
   link_update(arg); // Run the link update thread--never returns
   return NULL;
 }
 
-int init_fs() {
+void init_fs() {
   int i;
   i = 0;
   const sysfs_t *sysfs_list = sos_config.fs.rootfs_list;
@@ -101,11 +93,10 @@ int init_fs() {
       sos_debug_log_error(
         SOS_DEBUG_SYS, "failed to init %d, %d", SYSFS_GET_RETURN(result),
         SYSFS_GET_RETURN_ERRNO(result));
-      SOS_TRACE_CRITICAL(sysfs_list[i].mount_path);
+      sos_handle_event(SOS_EVENT_FATAL, (void *)"init_fs");
     }
     i++;
   }
-  return 0;
 }
 
 int startup_fs() {

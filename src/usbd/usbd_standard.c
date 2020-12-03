@@ -84,6 +84,7 @@ int usbd_standard_request_handle_setup(usbd_control_t *context) {
   switch (context->setup_packet.bRequest) {
 
   case USBD_REQUEST_STANDARD_GET_STATUS:
+    sos_debug_printf("status\n");
     if (usbd_standard_request_get_status(context)) {
       usbd_control_datain_stage(context);
       return 1;
@@ -91,20 +92,23 @@ int usbd_standard_request_handle_setup(usbd_control_t *context) {
     break;
 
   case USBD_REQUEST_STANDARD_CLEAR_FEATURE:
-    if (usbd_standard_request_set_clr_feature(context, 0)) {
+    sos_debug_printf("clear feat\n");
+    if (usbd_standard_request_set_clear_feature(context, 0)) {
       usbd_control_statusin_stage(context);
       return 1;
     }
     break;
 
   case USBD_REQUEST_STANDARD_SET_FEATURE:
-    if (usbd_standard_request_set_clr_feature(context, 1)) {
+    sos_debug_printf("set feat\n");
+    if (usbd_standard_request_set_clear_feature(context, 1)) {
       usbd_control_statusin_stage(context);
       return 1;
     }
     break;
 
   case USBD_REQUEST_STANDARD_SET_ADDRESS:
+    sos_debug_printf("set addr\n");
     if (usbd_standard_request_set_address(context)) {
       usbd_control_statusin_stage(context);
       return 1;
@@ -112,13 +116,16 @@ int usbd_standard_request_handle_setup(usbd_control_t *context) {
     break;
 
   case USBD_REQUEST_STANDARD_GET_DESCRIPTOR:
+    sos_debug_printf("get desc\n");
     if (usbd_standard_request_get_descriptor(context)) {
+      sos_debug_printf("write data in\n");
       usbd_control_datain_stage(context);
       return 1;
     }
     break;
 
   case USBD_REQUEST_STANDARD_GET_CONFIGURATION:
+    sos_debug_printf("get conf\n");
     if (usbd_standard_request_get_config(context)) {
       usbd_control_datain_stage(context);
       return 1;
@@ -126,6 +133,7 @@ int usbd_standard_request_handle_setup(usbd_control_t *context) {
     break;
 
   case USBD_REQUEST_STANDARD_SET_CONFIGURATION:
+    sos_debug_printf("set conf\n");
     if (usbd_standard_request_set_config(context)) {
       usbd_control_statusin_stage(context);
       return 1;
@@ -134,6 +142,7 @@ int usbd_standard_request_handle_setup(usbd_control_t *context) {
     break;
 
   case USBD_REQUEST_STANDARD_GET_INTERFACE:
+    sos_debug_printf("get iface\n");
     if (usbd_standard_request_get_interface(context)) {
       usbd_control_datain_stage(context);
       return 1;
@@ -141,6 +150,7 @@ int usbd_standard_request_handle_setup(usbd_control_t *context) {
     break;
 
   case USBD_REQUEST_STANDARD_SET_INTERFACE:
+    sos_debug_printf("set iface\n");
     if (usbd_standard_request_set_interface(context)) {
       usbd_control_statusin_stage(context);
       return 1;
@@ -196,7 +206,7 @@ u32 usbd_standard_request_get_status(usbd_control_t *context) {
   return 1;
 }
 
-u32 usbd_standard_request_set_clr_feature(usbd_control_t *context, u32 sc) {
+u32 usbd_standard_request_set_clear_feature(usbd_control_t *context, u32 sc) {
   u32 i;
   u32 j;
 
@@ -490,12 +500,16 @@ u32 usbd_standard_request_get_descriptor(usbd_control_t *context) {
 
     case USBD_DESCRIPTOR_TYPE_DEVICE:
       // give the device descriptor
+      SOS_DEBUG_LINE_TRACE();
+      sos_debug_printf("device desc at %p\n", context->constants->device);
       context->data.dptr = (u8 *const)context->constants->device;
       len = sizeof(usbd_device_descriptor_t);
+      sos_debug_printf("len is %d\n", len);
       break;
 
     case USBD_DESCRIPTOR_TYPE_CONFIGURATION:
       // give the entire configuration
+      SOS_DEBUG_LINE_TRACE();
       ptr.cfg = context->constants->config;
       for (i = 0; i != context->setup_packet.wValue.b[0]; i++) {
         if (ptr.cfg->bLength != 0) {
@@ -510,20 +524,20 @@ u32 usbd_standard_request_get_descriptor(usbd_control_t *context) {
       break;
 
     case USBD_DESCRIPTOR_TYPE_STRING:
+      SOS_DEBUG_LINE_TRACE();
       // give the string
       ptr.cstr = context->constants->string;
       string_index_value = context->setup_packet.wValue.b[0];
       if (string_index_value == 0xee) {
         return 0;
 #if 0
-					const void * msft_string
-							= context->constants->msft_string;
+        const void *msft_string = context->constants->msft_string;
 
-					if( msft_string ){
-						ptr.cstr = msft_string;
-					} else {
-						return 0;
-					}
+        if (msft_string) {
+          ptr.cstr = msft_string;
+        } else {
+          return 0;
+        }
 #endif
       } else {
 
@@ -555,6 +569,7 @@ u32 usbd_standard_request_get_descriptor(usbd_control_t *context) {
       break;
 
     case USBD_DESCRIPTOR_TYPE_QUALIFIER:
+      SOS_DEBUG_LINE_TRACE();
       // this has to do with operating in full/high speed mode
       context->data.dptr = (u8 *const)context->constants->qualifier;
       if (context->data.dptr != 0) {

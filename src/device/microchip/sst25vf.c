@@ -86,7 +86,7 @@ int complete_spi_read(void *context, const mcu_event_t *event) {
   sst25vf_share_deassert_cs(handle);
 
   // use mcu_execute_handler
-  mcu_execute_event_handler(&(state->handler), MCU_EVENT_FLAG_DATA_READY, 0);
+  devfs_execute_event_handler(&(state->handler), MCU_EVENT_FLAG_DATA_READY, 0);
   return 0;
 }
 
@@ -173,7 +173,7 @@ int continue_spi_write(void *context, const mcu_event_t *event) {
     sst25vf_share_read_status(handle);
 
     // call the event handler to show the operation is complete
-    mcu_execute_event_handler(&(state->handler), MCU_EVENT_FLAG_WRITE_COMPLETE, 0);
+    devfs_execute_event_handler(&(state->handler), MCU_EVENT_FLAG_WRITE_COMPLETE, 0);
   }
   return 0;
 }
