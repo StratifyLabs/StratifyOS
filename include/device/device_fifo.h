@@ -34,7 +34,8 @@ typedef struct {
 typedef struct {
   devfs_device_t device;
   fifo_config_t fifo;
-  int location;
+  int read_location;
+  int write_location;
   void *read_buffer;
   u32 read_buffer_size;
 } device_fifo_config_t;

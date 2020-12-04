@@ -246,12 +246,14 @@ int fifo_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
 int fifo_write(const devfs_handle_t *handle, devfs_async_t *async) {
   const fifo_config_t *config = handle->config;
   fifo_state_t *state = handle->state;
+  sos_handle_event(SOS_EVENT_FIFO_WRITE, (void *)handle);
   return fifo_write_local(config, state, async, 1);
 }
 
 int fifo_read(const devfs_handle_t *handle, devfs_async_t *async) {
   const fifo_config_t *config = handle->config;
   fifo_state_t *state = handle->state;
+  sos_handle_event(SOS_EVENT_FIFO_READ, (void *)handle);
   return fifo_read_local(config, state, async, 1);
 }
 

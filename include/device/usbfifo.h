@@ -44,6 +44,7 @@ typedef struct {
  *
  */
 typedef struct {
+  devfs_device_t device;
   usb_config_t usb;
   int endpoint /*! The USB endpoint number to read */;
   int endpoint_size /*! The USB endpoint data size */;

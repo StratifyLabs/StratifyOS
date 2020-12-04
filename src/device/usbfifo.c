@@ -34,7 +34,7 @@ static int cancel_read_action(const devfs_handle_t *handle) {
   action.o_events = MCU_EVENT_FLAG_DATA_READY;
   action.channel = config->endpoint;
   action.prio = 0;
-  return mcu_usb_setaction(handle, &action);
+  return config->device.driver.ioctl(&config->device.handle, I_USB_SETACTION, &action);
 }
 
 static int data_received(void *context, const mcu_event_t *data) {
@@ -66,12 +66,12 @@ static int data_received(void *context, const mcu_event_t *data) {
     }
 
     // if this returns > 0 then data is ready right now
-    result = mcu_usb_read(handle, &state->async_read);
+    result = config->device.driver.read(&config->device.handle, &state->async_read);
     if (result < 0) {
       // EAGAIN can happen if too much data arrives at one time
       if (SYSFS_GET_RETURN_ERRNO(result) == EAGAIN) {
         // cortexm_delay_ms(1);
-        result = mcu_usb_read(handle, &state->async_read);
+        result = config->device.driver.read(&config->device.handle, &state->async_read);
       }
 
       if (result < 0) {
@@ -96,7 +96,7 @@ int usbfifo_open(const devfs_handle_t *handle) {
     return -1;
   }
 
-  return mcu_usb_open(handle);
+  return config->device.driver.open(handle);
 }
 
 int usbfifo_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
@@ -115,7 +115,7 @@ int usbfifo_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
     if (action->handler.callback == 0) {
       fifo_cancel_async_read(&(state->fifo));
     } else {
-      return mcu_usb_setaction(handle, ctl);
+      return config->device.driver.ioctl(&config->device.handle, request, ctl);
     }
     return 0;
   case I_FIFO_FLUSH:
@@ -132,7 +132,7 @@ int usbfifo_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
   }
 
     // setup the device to write to the fifo when data arrives
-    result = mcu_usb_setattr(handle, ctl);
+    result = config->device.driver.ioctl(&config->device.handle, I_USB_SETATTR, ctl);
     if (result < 0) {
       return result;
     }
@@ -150,7 +150,7 @@ int usbfifo_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
     count = 0;
     do {
       // flush the USB and get an async call
-      result = mcu_usb_read(handle, &state->async_read);
+      result = config->device.driver.read(&config->device.handle, &state->async_read);
       count++;
     } while ((result > 0) && (count < 10));
     if (result < 0) {
@@ -169,9 +169,9 @@ int usbfifo_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
     if (result < 0) {
       return SYSFS_SET_RETURN(EIO);
     }
-    return mcu_usb_close(handle);
+    return config->device.driver.close(handle);
   default:
-    return mcu_usb_ioctl(handle, request, ctl);
+    return config->device.driver.ioctl(&config->device.handle, request, ctl);
   }
   return 0;
 }
@@ -186,14 +186,15 @@ int usbfifo_write(const devfs_handle_t *handle, devfs_async_t *async) {
   const usbfifo_config_t *config = handle->config;
   async->loc = 0x80 | config->endpoint;
   // Writing to the USB FIFO is not buffered, it just writes the USB HW directly
-  if (mcu_usb_isconnected(handle, NULL) == 0) {
+  if (config->device.driver.ioctl(&config->device.handle, I_USB_ISCONNECTED, NULL) == 0) {
     return SYSFS_SET_RETURN(ENODEV);
   }
 
-  return mcu_usb_write(handle, async);
+  return config->device.driver.write(&config->device.handle, async);
 }
 
 int usbfifo_close(const devfs_handle_t *handle) {
+  const usbfifo_config_t *config = handle->config;
   // use I_FIFO_EXIT to close the USB
-  return mcu_usb_close(handle);
+  return config->device.driver.close(&config->device.handle);
 }

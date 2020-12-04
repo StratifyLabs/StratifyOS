@@ -36,7 +36,7 @@ static int cancel_read_action(const devfs_handle_t *handle) {
   action.handler.callback = 0;
   action.handler.context = 0;
   action.o_events = MCU_EVENT_FLAG_DATA_READY;
-  action.channel = config->location;
+  action.channel = config->read_location;
   action.prio = 0;
   return config->device.driver.ioctl(&config->device.handle, I_MCU_SETACTION, &action);
 }
@@ -59,7 +59,7 @@ int event_data_ready(void *context, const mcu_event_t *event) {
     if (result > 0) {
       for (int i = 0; i < result; i++) {
         dest_buffer[fifo_state->atomic_position.access.head] = source_buffer[i];
-        fifo_inc_head(fifo_state, 1);
+        fifo_inc_head(fifo_state, config->fifo.size);
       }
 
       // see if any functions are blocked waiting for data to arrive
@@ -132,14 +132,14 @@ int device_fifo_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
   case I_FIFO_INIT:
     fifo_cancel_async_read(&(state->fifo));
 
-    sos_handle_event(SOS_EVENT_DEVICE_FIFO_INIT_REQUESTED, handle);
+    sos_handle_event(SOS_EVENT_FIFO_INIT_REQUESTED, (void *)handle);
 
     fifo_flush(&(state->fifo));
     state->async.tid = task_get_current();
     state->async.flags = O_RDWR;
     state->async.handler.callback = event_data_ready;
     state->async.handler.context = (void *)handle;
-    state->async.loc = config->location;
+    state->async.loc = config->read_location;
     state->async.buf = config->read_buffer;
     state->async.nbyte = config->read_buffer_size;
 
@@ -169,11 +169,16 @@ int device_fifo_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
 int device_fifo_read(const devfs_handle_t *handle, devfs_async_t *async) {
   const device_fifo_config_t *config = handle->config;
   device_fifo_state_t *state = handle->state;
+  sos_handle_event(SOS_EVENT_FIFO_READ, (void *)handle);
   return fifo_read_local(&(config->fifo), &(state->fifo), async, 1);
 }
 
 int device_fifo_write(const devfs_handle_t *handle, devfs_async_t *async) {
   const device_fifo_config_t *config = handle->config;
+  sos_handle_event(SOS_EVENT_FIFO_WRITE, (void *)handle);
+  if (config->write_location > -1) {
+    async->loc = config->write_location;
+  }
   return config->device.driver.write(&config->device.handle, async);
 }
 

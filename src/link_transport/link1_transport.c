@@ -53,6 +53,7 @@ int link1_transport_wait_start(
     }
     if (bytes_read > 0) {
       if (pkt->start != LINK_PACKET_START) {
+        sos_debug_printf("value is 0x%lX\n", pkt->start);
         return LINK_PROT_ERROR;
       }
     } else {
