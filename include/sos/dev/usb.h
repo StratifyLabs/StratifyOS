@@ -91,7 +91,6 @@ typedef struct MCU_PACK {
   mcu_pin_t vbus;
 } usb_pin_assignment_t;
 
-#define USB_TX_FIFO_WORD_SIZE_COUNT 9
 
 /*! \brief USB Attribute Data Structure
  * \details This defines the USB IOCTL data structure.
@@ -104,9 +103,6 @@ typedef struct MCU_PACK {
   u32 address /*! USB endpoint address or device address (USB_FLAG_SET_ADDRESS) */;
   u16 max_packet_size /*! USB endpoing max packet size */;
   u16 type /*! USB endpoint type as bmAttributes */;
-  u16 rx_fifo_word_size /*! RX FIFO word size for all endpoints (STM32) */;
-  u8 tx_fifo_word_size
-    [USB_TX_FIFO_WORD_SIZE_COUNT] /*! TX FIFO word size (used on STM32) */;
   u32 resd[6];
 } usb_attr_t;
 

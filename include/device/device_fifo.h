@@ -32,7 +32,7 @@ typedef struct {
 } device_fifo_state_t;
 
 typedef struct {
-  const devfs_device_t *device;
+  devfs_device_t device;
   fifo_config_t fifo;
   int location;
   void *read_buffer;

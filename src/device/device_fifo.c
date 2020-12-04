@@ -36,7 +36,7 @@ static int cancel_read_action(const devfs_handle_t *handle) {
   action.o_events = MCU_EVENT_FLAG_DATA_READY;
   action.channel = config->location;
   action.prio = 0;
-  return config->device->driver.ioctl(&config->device->handle, I_MCU_SETACTION, &action);
+  return config->device.driver.ioctl(&config->device.handle, I_MCU_SETACTION, &action);
 }
 
 int event_data_ready(void *context, const mcu_event_t *event) {
@@ -65,12 +65,12 @@ int event_data_ready(void *context, const mcu_event_t *event) {
     }
 
     // if this returns > 0 then data is ready right now
-    result = config->device->driver.read(handle, &state->async);
+    result = config->device.driver.read(handle, &state->async);
     if (result < 0) {
       // EAGAIN can happen if too much data arrives at one time
       if (SYSFS_GET_RETURN_ERRNO(result) == EAGAIN) {
         // cortexm_delay_ms(1);
-        result = config->device->driver.read(handle, &state->async);
+        result = config->device.driver.read(handle, &state->async);
       }
 
       if (result < 0) {
@@ -92,7 +92,7 @@ int device_fifo_open(const devfs_handle_t *handle) {
   device_fifo_state_t *state = handle->state;
   int result;
 
-  result = config->device->driver.open(&config->device->handle);
+  result = config->device.driver.open(&config->device.handle);
   if (result < 0) {
     return result;
   }
@@ -140,7 +140,7 @@ int device_fifo_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
     count = 0;
     do {
       // flush the device
-      result = config->device->driver.read(handle, &state->async);
+      result = config->device.driver.read(handle, &state->async);
       count++;
     } while ((result > 0) && (count < 10));
 
@@ -157,7 +157,7 @@ int device_fifo_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
     }
   }
 
-  return config->device->driver.ioctl(&config->device->handle, request, ctl);
+  return config->device.driver.ioctl(&config->device.handle, request, ctl);
 }
 
 int device_fifo_read(const devfs_handle_t *handle, devfs_async_t *async) {
@@ -168,12 +168,12 @@ int device_fifo_read(const devfs_handle_t *handle, devfs_async_t *async) {
 
 int device_fifo_write(const devfs_handle_t *handle, devfs_async_t *async) {
   const device_fifo_config_t *config = handle->config;
-  return config->device->driver.write(&config->device->handle, async);
+  return config->device.driver.write(&config->device.handle, async);
 }
 
 int device_fifo_close(const devfs_handle_t *handle) {
   const device_fifo_config_t *config = handle->config;
   device_fifo_state_t *state = handle->state;
   fifo_close_local(&(config->fifo), &(state->fifo));
-  return config->device->driver.close(&config->device->handle);
+  return config->device.driver.close(&config->device.handle);
 }
