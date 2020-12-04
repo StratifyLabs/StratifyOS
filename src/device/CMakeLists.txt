@@ -28,6 +28,7 @@ if( ${SOS_BUILD_CONFIG} STREQUAL arm )
 		drive_mmc.c
 		drive_mmc_dma.c
 		drive_sdio.c
+		drive_device.c
 		drive_sdio_dma.c
 		drive_sdspi.c
 		drive_sdspi_dma.c

@@ -28,17 +28,23 @@
 #include "cortexm/task.h"
 #include "mcu/core.h"
 
-int drive_sdio_open(const devfs_handle_t *handle) { return mcu_sdio_open(handle); }
+int drive_sdio_open(const devfs_handle_t *handle) {
+  const drive_sdio_config_t *config = handle->config;
+  return config->device.driver.open(&config->device.handle);
+}
 
 int drive_sdio_read(const devfs_handle_t *handle, devfs_async_t *async) {
-  return mcu_sdio_read(handle, async);
+  const drive_sdio_config_t *config = handle->config;
+  return config->device.driver.read(&config->device.handle, async);
 }
 
 int drive_sdio_write(const devfs_handle_t *handle, devfs_async_t *async) {
-  return mcu_sdio_write(handle, async);
+  const drive_sdio_config_t *config = handle->config;
+  return config->device.driver.write(&config->device.handle, async);
 }
 
 int drive_sdio_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
+  const drive_sdio_config_t *config = handle->config;
   drive_info_t *info = ctl;
   drive_attr_t *attr = ctl;
   u32 o_flags;
@@ -56,7 +62,9 @@ int drive_sdio_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
         sdio_attr.o_flags = SDIO_FLAG_ERASE_BLOCKS;
         sdio_attr.start = attr->start;
         sdio_attr.end = attr->end;
-        result = mcu_sdio_setattr(handle, &sdio_attr);
+        result =
+          config->device.driver.ioctl(&config->device.handle, I_SDIO_SETATTR, &sdio_attr);
+
         if (result < 0) {
           return result;
         }
@@ -66,19 +74,21 @@ int drive_sdio_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
 
     if (o_flags & DRIVE_FLAG_INIT) {
       // this will init the SD card with the default settings
-      return mcu_sdio_setattr(handle, 0);
+      return config->device.driver.ioctl(&config->device.handle, I_SDIO_SETATTR, NULL);
     }
 
     if (o_flags & DRIVE_FLAG_RESET) {
       sdio_attr.o_flags = SDIO_FLAG_RESET;
-      return mcu_sdio_setattr(handle, &sdio_attr);
+      return config->device.driver.ioctl(
+        &config->device.handle, I_SDIO_SETATTR, &sdio_attr);
     }
 
-    break;
+    return 0;
 
   case I_DRIVE_ISBUSY:
     sdio_attr.o_flags = SDIO_FLAG_GET_CARD_STATE;
-    result = mcu_sdio_setattr(handle, &sdio_attr);
+    result =
+      config->device.driver.ioctl(&config->device.handle, I_SDIO_SETATTR, &sdio_attr);
 
     if (result < 0) {
       return result;
@@ -87,7 +97,9 @@ int drive_sdio_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
     return (result != SDIO_CARD_STATE_TRANSFER);
 
   case I_DRIVE_GETINFO:
-    result = mcu_sdio_getinfo(handle, &sdio_info);
+    result =
+      config->device.driver.ioctl(&config->device.handle, I_SDIO_GETINFO, &sdio_info);
+
     if (result < 0) {
       return result;
     }
@@ -102,14 +114,14 @@ int drive_sdio_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
     info->num_write_blocks = sdio_info.block_count;
     info->write_block_size = sdio_info.block_size;
     info->page_program_size = sdio_info.block_size;
-    break;
-
-  default:
-    return mcu_sdio_ioctl(handle, request, ctl);
+    return 0;
   }
-  return 0;
+  return config->device.driver.ioctl(&config->device.handle, request, ctl);
 }
 
-int drive_sdio_close(const devfs_handle_t *handle) { return mcu_sdio_close(handle); }
+int drive_sdio_close(const devfs_handle_t *handle) {
+  const drive_sdio_config_t *config = handle->config;
+  return config->device.driver.close(&config->device.handle);
+}
 
 /*! @} */

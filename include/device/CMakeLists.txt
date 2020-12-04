@@ -9,6 +9,7 @@ set(SOURCES
 	usbfifo.h
 	device_fifo.h
 	drive_sdio.h
+	drive_device.h
 	full.h
 	reset_tmr.h
 	tty.h

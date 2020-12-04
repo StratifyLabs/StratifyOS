@@ -29,7 +29,7 @@ typedef struct {
 } drive_sdio_state_t;
 
 typedef struct {
-  sdio_config_t sdio;
+  devfs_device_t device;
 } drive_sdio_config_t;
 
 int drive_sdio_open(const devfs_handle_t *handle);
