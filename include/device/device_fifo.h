@@ -29,17 +29,14 @@ typedef struct {
   devfs_async_t async;
   u32 count;
   s32 error;
-} device_fifo_channel_state_t;
-
-typedef struct {
-  device_fifo_channel_state_t rx;
-  device_fifo_channel_state_t tx;
 } device_fifo_state_t;
 
 typedef struct {
-  fifo_config_t tx;
-  fifo_config_t rx;
   const devfs_device_t *device;
+  fifo_config_t fifo;
+  int location;
+  void *read_buffer;
+  u32 read_buffer_size;
 } device_fifo_config_t;
 
 int device_fifo_open(const devfs_handle_t *handle);

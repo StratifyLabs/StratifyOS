@@ -64,8 +64,8 @@ int root_data_transfer_callback(void *context, const mcu_event_t *event) {
     if (scheduler_inuse_asserted(args->async.tid)) {
       if (event->o_events & MCU_EVENT_FLAG_CANCELED) {
         // ignore any data transferred and return an error
-        if (args->async.nbyte >= 0) {
-          args->async.nbyte = SYSFS_SET_RETURN(EAGAIN);
+        if (args->async.result >= 0) {
+          args->async.result = SYSFS_SET_RETURN(EAGAIN);
         }
       }
 
@@ -214,6 +214,7 @@ int devfs_data_transfer(
     }
     args.result = -101010;
     args.async.nbyte = nbyte;
+    args.async.result = 0;
 
     // This transfers the data
     cortexm_svcall(svcall_device_data_transfer, (void *)&args);
@@ -234,10 +235,10 @@ int devfs_data_transfer(
 
     if (args.result == 0) {
       // the operation happened asynchronously
-      if (args.async.nbyte != 0) {
+      if (args.async.result != 0) {
         // The operation has completed and transferred args.async.nbyte bytes
         // OR there was an error executing the operation (or the operation was cancelled)
-        args.result = args.async.nbyte;
+        args.result = args.async.result;
       } else {
         // result and nbyte are zero
         // this will happen if the driver assigned nbyte to zero because it wants
@@ -302,7 +303,7 @@ int devfs_execute_read_handler(
     devfs_async_t *async = transfer_handler->read;
     transfer_handler->read = 0;
     if (nbyte) {
-      async->nbyte = nbyte;
+      async->result = nbyte;
     }
     return devfs_execute_event_handler(&async->handler, o_flags, data);
   }
@@ -318,8 +319,10 @@ int devfs_execute_write_handler(
   if (transfer_handler->write) {
     devfs_async_t *async = transfer_handler->write;
     transfer_handler->write = 0;
-    if (nbyte) {
-      async->nbyte = nbyte;
+    if (nbyte == 0) {
+      async->result = async->nbyte;
+    } else {
+      async->result = nbyte;
     }
     return devfs_execute_event_handler(&async->handler, o_flags, data);
   }

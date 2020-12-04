@@ -36,12 +36,12 @@ int i2s_event_write_complete(void * context, const mcu_event_t * event){
     int nbyte;
     ffifo_state_t * ffifo_state = &state->tx.ffifo;
 
-    if(state->tx.i2s_async.nbyte < 0){
-        state->tx.error = state->tx.i2s_async.nbyte;
-        return 0;
+    if (state->tx.i2s_async.result < 0) {
+      state->tx.error = state->tx.i2s_async.result;
+      return 0;
     }
 
-    nbyte = state->tx.i2s_async.nbyte;
+    nbyte = state->tx.i2s_async.result;
 
     if( ffifo_state->atomic_position.access.head == ffifo_state->atomic_position.access.tail ){
         //no data to read -- send a zero frame
@@ -76,10 +76,12 @@ int i2s_event_data_ready(void * context, const mcu_event_t * event){
     i2s_ffifo_state_t * state = handle->state;
     ffifo_state_t * ffifo_state = &state->rx.ffifo;
 
-    if(state->rx.i2s_async.nbyte < 0){
-        state->rx.error = state->rx.i2s_async.nbyte;
-        sos_debug_log_error(SOS_DEBUG_DEVICE, "%s:%d (%d,%d)", __FUNCTION__, __LINE__, SYSFS_GET_RETURN(state->rx.i2s_async.nbyte));
-        return 0;
+    if (state->rx.i2s_async.result < 0) {
+      state->rx.error = state->rx.i2s_async.result;
+      sos_debug_log_error(
+        SOS_DEBUG_DEVICE, "%s:%d (%d,%d)", __FUNCTION__, __LINE__,
+        SYSFS_GET_RETURN(state->rx.i2s_async.result));
+      return 0;
     }
 
     //increment the head for the frame received
@@ -99,8 +101,10 @@ int i2s_event_data_ready(void * context, const mcu_event_t * event){
         state->rx.i2s_async.buf += config->rx.frame_size;
     }
 
-    if( state->rx.i2s_async.nbyte != config->rx.frame_size ){
-        sos_debug_log_warning(SOS_DEBUG_DEVICE, "%s:%d != %d\n", __FUNCTION__, state->rx.i2s_async.nbyte, config->rx.frame_size);
+    if (state->rx.i2s_async.result != config->rx.frame_size) {
+      sos_debug_log_warning(
+        SOS_DEBUG_DEVICE, "%s:%d != %d\n", __FUNCTION__, state->rx.i2s_async.result,
+        config->rx.frame_size);
     }
 
     state->rx.error = mcu_i2s_read(handle, &(state->rx.i2s_async));
@@ -253,8 +257,8 @@ int i2s_ffifo_read(const devfs_handle_t * handle, devfs_async_t * async){
     i2s_ffifo_state_t * state = handle->state;
     int ret;
 
-    if( async->nbyte % config->rx.frame_size != 0 ){
-        return SYSFS_SET_RETURN(EINVAL);
+    if (async->nbyte % config->rx.frame_size != 0) {
+      return SYSFS_SET_RETURN(EINVAL);
     }
 
     ret = ffifo_read_buffer(&(config->rx), &(state->rx.ffifo), async->buf, async->nbyte);
@@ -269,8 +273,8 @@ int i2s_ffifo_write(const devfs_handle_t * handle, devfs_async_t * async){
     const i2s_ffifo_config_t * config = handle->config;
     i2s_ffifo_state_t * state = handle->state;
 
-    if( async->nbyte % config->rx.frame_size != 0 ){
-        return SYSFS_SET_RETURN(EINVAL);
+    if (async->nbyte % config->rx.frame_size != 0) {
+      return SYSFS_SET_RETURN(EINVAL);
     }
 
     //I2S interrupt can't fire while writing the local buffer?

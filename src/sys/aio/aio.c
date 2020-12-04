@@ -74,7 +74,7 @@ int aio_error(const struct aiocb *aiocbp /*! a pointer to the AIO data struture 
     return EINPROGRESS;
   } else {
     // this is where the error value is stored in case of failure
-    return aiocbp->async.nbyte;
+    return aiocbp->async.result;
   }
 }
 
@@ -289,12 +289,12 @@ int sysfs_aio_data_transfer_callback(void *context, const mcu_event_t *event) {
   aiocbp = context;
   aiocbp->async.buf = NULL;
 
-  if (aiocbp->async.nbyte < 0) {
-    aiocbp->aio_nbytes = SYSFS_GET_RETURN(aiocbp->async.nbyte); // given for aio_return
-    aiocbp->async.nbyte = SYSFS_GET_RETURN_ERRNO(aiocbp->async.nbyte);
+  if (aiocbp->async.result < 0) {
+    aiocbp->aio_nbytes = SYSFS_GET_RETURN(aiocbp->async.result); // given for aio_return
+    aiocbp->async.result = SYSFS_GET_RETURN_ERRNO(aiocbp->async.result);
   } else {
-    aiocbp->aio_nbytes = aiocbp->async.nbyte; // given for aio_return
-    aiocbp->async.nbyte = 0;                  // given for aio_error()
+    aiocbp->aio_nbytes = aiocbp->async.result; // given for aio_return
+    aiocbp->async.result = 0;                  // given for aio_error()
   }
 
   tid = aiocbp->async.tid;

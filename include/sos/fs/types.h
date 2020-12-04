@@ -40,11 +40,10 @@ typedef struct {
     const void *buf_const /*! Pointer to const void buffer */;
     void *buf /*! Pointer to void buffer */;
   };
-  int nbyte /*! The number of bytes to transfer */;
+  int nbyte;
+  int result;
   mcu_event_handler_t handler /*! The function to call when the operation completes */;
 } devfs_async_t;
-
-typedef devfs_async_t device_3_transfer_t;
 
 typedef int (*devfs_open_t)(const devfs_handle_t *);
 typedef int (*devfs_ioctl_t)(const devfs_handle_t *, int, void *);

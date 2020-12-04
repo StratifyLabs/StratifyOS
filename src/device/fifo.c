@@ -328,7 +328,8 @@ int fifo_read_local(
   DEVFS_DRIVER_IS_BUSY(state->transfer_handler.read, async);
 
   bytes_read = fifo_read_buffer(
-    config, state, async->buf, async->nbyte); // see if there are bytes in the buffer
+    config, state, async->buf,
+    async->nbyte); // see if there are bytes in the buffer
   if (bytes_read == 0) {
     if (
       (async->flags & O_NONBLOCK)

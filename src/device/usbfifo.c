@@ -48,7 +48,7 @@ static int data_received(void *context, const mcu_event_t *data) {
   int result;
   int size = config->fifo.size;
 
-  result = state->async_read.nbyte;
+  result = state->async_read.result;
 
   do {
 
@@ -64,9 +64,6 @@ static int data_received(void *context, const mcu_event_t *data) {
       // see if any functions are blocked waiting for data to arrive
       fifo_data_received(&(config->fifo), &(state->fifo));
     }
-
-    // the callback can modify nbyte -- restore it here
-    state->async_read.nbyte = config->endpoint_size;
 
     // if this returns > 0 then data is ready right now
     result = mcu_usb_read(handle, &state->async_read);

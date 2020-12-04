@@ -50,14 +50,14 @@ void svcall_device_data_transfer(void *args) {
   cortexm_enable_interrupts();
 
   if (p->result == 0) {
-    if (p->aiocbp->async.nbyte > 0) {
+    if (p->aiocbp->async.result > 0) {
       // AIO is in progress
     }
   } else if (p->result < 0) {
     // AIO was not started -- errno is set by the driver
   } else if (p->result > 0) {
     // The transfer happened synchronously -- call the callback manually
-    p->aiocbp->async.nbyte = p->result;
+    p->aiocbp->async.result = p->result;
     sysfs_aio_data_transfer_callback(p->aiocbp, 0);
     p->result = 0;
   }
