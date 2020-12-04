@@ -182,6 +182,7 @@ int continue_spi_read(void *handle, const mcu_event_t *ignore) {
 
 int try_read(const devfs_handle_t *handle, int first) {
   int ret;
+  const drive_sdspi_config_t *config = handle->config;
   drive_sdspi_state_t *state = handle->state;
   state->count = parse_data(
     (uint8_t *)state->buf, *(state->nbyte), -1, SDSPI_START_BLOCK_TOKEN, state->cmd);
@@ -197,7 +198,7 @@ int try_read(const devfs_handle_t *handle, int first) {
 
   if (first != 0) {
     // send the command for the first time
-    ret = mcu_spi_read(handle, &(state->op));
+    ret = config->device.driver.read(&config->device.handle, &(state->op));
     if (ret != 0) {
       sos_debug_printf(
         "SPI READ FAILED (%d,%d)", SYSFS_GET_RETURN(ret), SYSFS_GET_RETURN_ERRNO(ret));
@@ -205,7 +206,7 @@ int try_read(const devfs_handle_t *handle, int first) {
     return ret;
   }
 
-  if ((ret = mcu_spi_read(handle, &(state->op))) != 0) {
+  if ((ret = config->device.driver.read(&config->device.handle, &(state->op))) != 0) {
     state_callback(handle, EINVAL, -5);
     sos_debug_printf("BAD SPI READ\n");
     return 0;
@@ -301,6 +302,7 @@ int continue_spi_write(void *handle, const mcu_event_t *ignore) {
 }
 
 int drive_sdspi_write(const devfs_handle_t *handle, devfs_async_t *wop) {
+  const drive_sdspi_config_t *config = handle->config;
   drive_sdspi_state_t *state = handle->state;
   drive_sdspi_r1_t r1;
   u32 loc;
@@ -348,7 +350,7 @@ int drive_sdspi_write(const devfs_handle_t *handle, devfs_async_t *wop) {
   state->op.handler.callback = continue_spi_write;
   state->op.tid = wop->tid;
 
-  return mcu_spi_write(handle, &(state->op));
+  return config->device.driver.write(&config->device.handle, &(state->op));
 }
 
 int drive_sdspi_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
@@ -395,7 +397,9 @@ int drive_sdspi_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
       memcpy(spi_config, &(config->spi), config->spi_config_size);
       spi_attr_p->freq = 400000;
 
-      if (mcu_spi_setattr(handle, spi_config) < 0) {
+      if (
+        config->device.driver.ioctl(&config->device.handle, I_SPI_SETATTR, spi_config)
+        < 0) {
         sos_debug_printf("SD_SPI: setattr failed\n");
         return SYSFS_SET_RETURN(EIO);
       }
@@ -485,7 +489,9 @@ int drive_sdspi_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
 
       // set with default attributes as intended by the system
       memcpy(spi_config, &(config->spi), config->spi_config_size);
-      if (mcu_spi_setattr(handle, spi_config) < 0) {
+      if (
+        config->device.driver.ioctl(&config->device.handle, I_SPI_SETATTR, spi_config)
+        < 0) {
         sos_debug_printf("SD_SPI: Failed BITRATE\n");
         return SYSFS_SET_RETURN(EIO);
       }
@@ -561,7 +567,7 @@ int drive_sdspi_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
     return 0;
 
   default:
-    return mcu_spi_ioctl(handle, request, ctl);
+    return config->device.driver.ioctl(&config->device.handle, request, ctl);
   }
   return 0;
 }
@@ -604,10 +610,11 @@ int erase_blocks(const devfs_handle_t *handle, uint32_t block_num, uint32_t end_
 }
 
 int is_busy(const devfs_handle_t *handle) {
+  const drive_sdspi_config_t *config = handle->config;
   uint8_t c;
   assert_chip_select(handle);
   cortexm_delay_us(LONG_DELAY);
-  c = mcu_spi_swap(handle, (void *)0xFF);
+  c = config->device.driver.ioctl(&config->device.handle, I_SPI_SWAP, (void *)0xFF);
   deassert_chip_select(handle);
   return (c == 0x00);
 }
@@ -765,18 +772,22 @@ int spi_transfer(
   const uint8_t *data_out,
   uint8_t *data_in,
   int nbyte) {
+  const drive_sdspi_config_t *config = handle->config;
   int i;
   for (i = 0; i < nbyte; i++) {
     if (data_out == 0) {
       if (data_in != 0) {
-        data_in[i] = mcu_spi_swap(handle, (void *)0xFF);
+        data_in[i] =
+          config->device.driver.ioctl(&config->device.handle, I_SPI_SWAP, (void *)0xFF);
       } else {
-        mcu_spi_swap(handle, (void *)0xFF);
+        config->device.driver.ioctl(&config->device.handle, I_SPI_SWAP, (void *)0xFF);
       }
     } else if (data_in == 0) {
-      mcu_spi_swap(handle, (void *)(ssize_t)data_out[i]);
+      config->device.driver.ioctl(
+        &config->device.handle, I_SPI_SWAP, (void *)(ssize_t)data_out[i]);
     } else {
-      data_in[i] = mcu_spi_swap(handle, (void *)(ssize_t)data_out[i]);
+      data_in[i] = config->device.driver.ioctl(
+        &config->device.handle, I_SPI_SWAP, (void *)(ssize_t)data_out[i]);
     }
   }
   return nbyte;
