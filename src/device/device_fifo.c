@@ -17,13 +17,15 @@
  *
  */
 
-#include "device/device_fifo.h"
-#include "cortexm/cortexm.h"
-#include "cortexm/task.h"
-#include "sos/debug.h"
 #include <errno.h>
 #include <fcntl.h>
 #include <string.h>
+
+#include "cortexm/cortexm.h"
+#include "cortexm/task.h"
+#include "device/device_fifo.h"
+#include "sos/debug.h"
+#include "sos/events.h"
 
 static int event_data_ready(void *context, const mcu_event_t *event);
 
@@ -128,6 +130,10 @@ int device_fifo_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
       &state->fifo.transfer_handler, 0, -1, MCU_EVENT_FLAG_CANCELED);
     break;
   case I_FIFO_INIT:
+    fifo_cancel_async_read(&(state->fifo));
+
+    sos_handle_event(SOS_EVENT_DEVICE_FIFO_INIT_REQUESTED, handle);
+
     fifo_flush(&(state->fifo));
     state->async.tid = task_get_current();
     state->async.flags = O_RDWR;

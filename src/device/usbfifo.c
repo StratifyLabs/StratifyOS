@@ -19,8 +19,8 @@
 
 #include "device/usbfifo.h"
 #include "cortexm/task.h"
-#include "sos/debug.h"
 #include "mcu/usb.h"
+#include "sos/debug.h"
 #include <errno.h>
 #include <fcntl.h>
 #include <stddef.h>

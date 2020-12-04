@@ -17,11 +17,13 @@
  *
  */
 
-#include "device/fifo.h"
-#include "sos/debug.h"
 #include <errno.h>
 #include <fcntl.h>
 #include <stddef.h>
+
+#include "device/fifo.h"
+#include "sos/debug.h"
+#include "sos/events.h"
 
 void fifo_inc_tail(fifo_state_t *state, int size) {
   state->atomic_position.access.tail++;
@@ -292,6 +294,7 @@ int fifo_ioctl_local(
     // fifo doesn't store a local handler so it can't set an arbitrary action
     return SYSFS_SET_RETURN(ENOTSUP);
   case I_FIFO_INIT:
+    sos_handle_event(SOS_EVENT_DEVICE_FIFO_INIT_REQUESTED, handle);
     state->transfer_handler.read = NULL;
     state->transfer_handler.write = NULL;
     /* no break */
@@ -339,6 +342,7 @@ int fifo_read_local(
   } else if ((bytes_read > 0) && allow_callback) {
     // see if anything needs to write the FIFO
     fifo_data_transmitted(config, state);
+    sos_handle_event(SOS_EVENT_DEVICE_FIFO_DATA_TRANSMITTED, handle);
   }
 
   if (bytes_read != 0) {
@@ -368,6 +372,7 @@ int fifo_write_local(
     }
   } else if ((bytes_written > 0) && allow_callback) {
     fifo_data_received(config, state);
+    sos_handle_event(SOS_EVENT_DEVICE_FIFO_DATA_RECEIVED, handle);
   }
 
   if (bytes_written != 0) {

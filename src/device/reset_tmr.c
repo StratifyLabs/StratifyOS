@@ -41,7 +41,6 @@ int initialize(const devfs_handle_t *handle) {
   }
 
   const reset_tmr_config_t *config = handle->config;
-
   const devfs_device_t *device = config->tmr_device;
 
   tmr_attr_t tmr;

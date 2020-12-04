@@ -168,6 +168,8 @@ link_transport_phy_t sos_link_transport_usb_open(
     close(pio_fd);
   }
 
+  ioctl(fd, I_FIFO_INIT);
+
   return fd;
 }
 
