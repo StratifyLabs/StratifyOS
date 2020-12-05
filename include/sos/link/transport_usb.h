@@ -47,12 +47,8 @@ limitations under the License.
     sos_link_transport_usb_##name##_string_descriptor MCU_WEAK;                          \
   extern const usbd_control_constants_t sos_link_transport_usb_##name##_constants
 
-#define SOS_LINK_TRANSPORT_USB_CONST(                                                    \
-  name, port_value, config_value, state_value, class_event_handler_value)                \
+#define SOS_LINK_TRANSPORT_USB_CONST(name, class_event_handler_value)                    \
   const usbd_control_constants_t sos_link_transport_usb_##name##_constants = {           \
-    .handle.port = port_value,                                                           \
-    .handle.config = config_value,                                                       \
-    .handle.state = state_value,                                                         \
     .device = &sos_link_transport_usb_##name##_device_descriptor,                        \
     .config = &sos_link_transport_usb_##name##_configuration_descriptor,                 \
     .qualifier = &sos_link_transport_usb_##name##_qualifier_descriptor,                  \
@@ -102,25 +98,19 @@ link_transport_phy_t sos_link_transport_usb_open(
   const char *name,
   usbd_control_t *context,
   const usbd_control_constants_t *constants,
-  const usb_attr_t *usb_attr,
-  mcu_pin_t usb_up_pin,
-  int usb_up_active_high);
+  const devfs_handle_t *usb_handle,
+  const usb_attr_t *usb_attr);
 int sos_link_transport_usb_read(link_transport_phy_t, void *buf, int nbyte);
 int sos_link_transport_usb_write(link_transport_phy_t, const void *buf, int nbyte);
 int sos_link_transport_usb_close(link_transport_phy_t *handle);
 void sos_link_transport_usb_wait(int msec);
 void sos_link_transport_usb_flush(link_transport_phy_t handle);
 
-// provided for the link device fifo
-// DEVFS_DEVICE("link-phy-usb", 0, &sos_link_transport_usb_fifo_cfg,
-// &sos_link_transport_usb_fifo_state, 0666, USER_ROOT, GROUP_ROOT),
-extern const usbfifo_config_t sos_link_transport_usb_fifo_cfg;
-extern usbfifo_state_t sos_link_transport_usb_fifo_state MCU_SYS_MEM;
-
 link_transport_phy_t boot_link_transport_usb_open(
   const char *name,
   usbd_control_t *context,
   const usbd_control_constants_t *constants,
+  const devfs_handle_t *usb_handle,
   const usb_attr_t *usb_attr,
   mcu_pin_t usb_up_pin,
   int usb_up_active_high);

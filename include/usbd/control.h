@@ -37,7 +37,6 @@
 #define USBD_ALT_SETTING_SIZE 16
 
 typedef struct {
-  const devfs_handle_t handle;
   const void *const device;
   const void *const qualifier;
   const void *const config;

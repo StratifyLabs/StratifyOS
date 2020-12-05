@@ -29,72 +29,75 @@ static int m_read_head;
 static  usbd_control_t * m_context;
 
 link_transport_phy_t boot_link_transport_usb_open(
-		const char * name,
-		usbd_control_t * context,
-		const usbd_control_constants_t * constants,
-		const usb_attr_t * usb_attr,
-		mcu_pin_t usb_up_pin,
-		int usb_up_active_high
-		){
+  const char *name,
+  usbd_control_t *context,
+  const usbd_control_constants_t *constants,
+  const devfs_handle_t *usb_handle,
+  const usb_attr_t *usb_attr,
+  mcu_pin_t usb_up_pin,
+  int usb_up_active_high) {
 
-	MCU_UNUSED_ARGUMENT(name);
+  MCU_UNUSED_ARGUMENT(name);
 
-	pio_attr_t pio_attr;
-	devfs_handle_t pio_handle;
-	pio_handle.port = usb_up_pin.port;
-	pio_handle.config = 0;
-	pio_handle.state = 0;
+  pio_attr_t pio_attr;
+  devfs_handle_t pio_handle;
+  pio_handle.port = usb_up_pin.port;
+  pio_handle.config = 0;
+  pio_handle.state = 0;
 
-	if( usb_up_pin.port != 0xff ){
-		dstr("CONFIGURE UP PIN\n");
-		mcu_pio_open(&pio_handle);
-		pio_attr.o_pinmask = (1<<usb_up_pin.pin);
-		if( usb_up_active_high ){
-			mcu_pio_clrmask(&pio_handle, (void*)(pio_attr.o_pinmask));
-		} else {
-			mcu_pio_setmask(&pio_handle, (void*)(pio_attr.o_pinmask));
-		}
-		pio_attr.o_flags = PIO_FLAG_SET_OUTPUT | PIO_FLAG_IS_DIRONLY;
-		mcu_pio_setattr(&pio_handle, &pio_attr);
-	}
-	memset(context, 0, sizeof(usbd_control_t));
-	context->constants = constants;
-	context->handle = &(constants->handle);
+  if (usb_up_pin.port != 0xff) {
+    dstr("CONFIGURE UP PIN\n");
+    mcu_pio_open(&pio_handle);
+    pio_attr.o_pinmask = (1 << usb_up_pin.pin);
+    if (usb_up_active_high) {
+      mcu_pio_clrmask(&pio_handle, (void *)(pio_attr.o_pinmask));
+    } else {
+      mcu_pio_setmask(&pio_handle, (void *)(pio_attr.o_pinmask));
+    }
+    pio_attr.o_flags = PIO_FLAG_SET_OUTPUT | PIO_FLAG_IS_DIRONLY;
+    mcu_pio_setattr(&pio_handle, &pio_attr);
+  }
+  memset(context, 0, sizeof(usbd_control_t));
+  context->constants = constants;
 
-	dstr("OPEN USB\n");
-	//open USB
-	cortexm_delay_ms(100);
+  context->handle = usb_handle;
 
-	if( mcu_usb_open(context->handle) < 0 ){ return -1; }
+  dstr("OPEN USB\n");
+  // open USB
+  cortexm_delay_ms(100);
 
-	cortexm_delay_ms(100);
+  if (mcu_usb_open(context->handle) < 0) {
+    return -1;
+  }
 
-	if( mcu_usb_setattr(context->handle, (void*)usb_attr) < 0 ){
-		return -1;
-	}
+  cortexm_delay_ms(100);
 
-	cortexm_delay_ms(100);
+  if (mcu_usb_setattr(context->handle, (void *)usb_attr) < 0) {
+    return -1;
+  }
 
-	dstr("USB INIT\n");
-	//initialize USB device
-	usbd_control_svcall_init(context);
+  cortexm_delay_ms(100);
 
-	m_read_tail = 0;
-	m_read_head = 0;
+  dstr("USB INIT\n");
+  // initialize USB device
+  usbd_control_svcall_init(context);
 
-	dstr("USB CONNECT\n");
-	if( usb_up_pin.port != 0xff ){
-		if( usb_up_active_high ){
-			dstr("HIGH\n");
-			mcu_pio_setmask(&pio_handle, (void*)(pio_attr.o_pinmask));
-		} else {
-			mcu_pio_clrmask(&pio_handle, (void*)(pio_attr.o_pinmask));
-		}
-	}
+  m_read_tail = 0;
+  m_read_head = 0;
 
-	m_context = context;
+  dstr("USB CONNECT\n");
+  if (usb_up_pin.port != 0xff) {
+    if (usb_up_active_high) {
+      dstr("HIGH\n");
+      mcu_pio_setmask(&pio_handle, (void *)(pio_attr.o_pinmask));
+    } else {
+      mcu_pio_clrmask(&pio_handle, (void *)(pio_attr.o_pinmask));
+    }
+  }
 
-	return 0;
+  m_context = context;
+
+  return 0;
 }
 
 int boot_link_transport_usb_write(link_transport_phy_t handle, const void * buf, int nbyte){

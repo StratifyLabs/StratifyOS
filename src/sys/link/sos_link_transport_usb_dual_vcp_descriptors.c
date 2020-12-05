@@ -46,15 +46,8 @@ SOS_LINK_TRANSPORT_USB_DEVICE_DESCRIPTOR(
   0,
   SOS_LINK_TRANSPORT_USB_BCD_VERSION | 3)
 
-const usb_config_t sos_link_transport_dual_vcp_config = {
-  .port = SOS_LINK_TRANSPORT_USB_PORT,
-};
-
 SOS_LINK_TRANSPORT_USB_CONST(
   dual_vcp,
-  SOS_LINK_TRANSPORT_USB_PORT,
-  &sos_link_transport_dual_vcp_config,
-  0,
   cdc_event_handler)
 
 const usbd_string_descriptor_t *usbd_extern_get_msft_string_descriptor() { return NULL; }

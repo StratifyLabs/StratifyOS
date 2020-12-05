@@ -67,7 +67,7 @@ int event_data_ready(void *context, const mcu_event_t *event) {
     }
 
     // if this returns > 0 then data is ready right now
-    result = config->device.driver.read(handle, &state->async);
+    result = config->device.driver.read(&config->device.handle, &state->async);
     if (result < 0) {
       // EAGAIN can happen if too much data arrives at one time
       if (SYSFS_GET_RETURN_ERRNO(result) == EAGAIN) {
@@ -146,7 +146,7 @@ int device_fifo_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
     count = 0;
     do {
       // flush the device
-      result = config->device.driver.read(handle, &state->async);
+      result = config->device.driver.read(&config->device.handle, &state->async);
       count++;
     } while ((result > 0) && (count < 10));
 

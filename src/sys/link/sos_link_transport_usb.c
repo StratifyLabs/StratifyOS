@@ -44,15 +44,6 @@ const msft_string_t sos_link_transport_usb_msft_string = USBD_ASSIGN_STRING(
   '0',
   USBD_MSFT_VENDOR_CODE_BYTE);
 
-#define USB0_DEVFIFO_BUFFER_SIZE 64
-static char usb0_fifo_buffer[USB0_DEVFIFO_BUFFER_SIZE] MCU_SYS_MEM;
-static char usb0_read_buffer[SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT_SIZE] MCU_ALIGN(32);
-const usbfifo_config_t sos_link_transport_usb_fifo_cfg = {
-  .usb.port = 0,
-  .endpoint = SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT,
-  .endpoint_size = SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT_SIZE,
-  .read_buffer = usb0_read_buffer,
-  .fifo = {.buffer = usb0_fifo_buffer, .size = USB0_DEVFIFO_BUFFER_SIZE}};
 
 int sos_link_transport_usb_msft_string_event(
   void *context_object,
@@ -109,29 +100,16 @@ link_transport_phy_t sos_link_transport_usb_open(
   const char *name,
   usbd_control_t *context,
   const usbd_control_constants_t *constants,
-  const usb_attr_t *usb_attr,
-  mcu_pin_t usb_up_pin,
-  int usb_up_active_high) {
+  const devfs_handle_t *usb_handle,
+  const usb_attr_t *usb_attr) {
 
   int fd;
-  int pio_fd;
   int result;
   MCU_UNUSED_ARGUMENT(name);
 
-  if (usb_up_pin.port != 0xff) {
-    pio_fd = open_pio(usb_up_pin, usb_up_active_high);
-    if (pio_fd < 0) {
-      sos_debug_log_error(
-        SOS_DEBUG_USB | SOS_DEBUG_LINK, "Failed to open PIO (%d)\n", errno);
-      return LINK_PHY_ERROR;
-    }
-  } else {
-    pio_fd = -1;
-  }
-
   memset(context, 0, sizeof(usbd_control_t));
   context->constants = constants;
-  context->handle = &(constants->handle);
+  context->handle = usb_handle;
 
   usleep(100 * 1000);
 
@@ -158,15 +136,6 @@ link_transport_phy_t sos_link_transport_usb_open(
   sos_debug_log_info(SOS_DEBUG_USB | SOS_DEBUG_LINK, "USB Dev Init");
   // initialize USB device
   cortexm_svcall(usbd_control_svcall_init, context);
-
-  if (pio_fd >= 0) {
-    if (usb_up_active_high) {
-      ioctl(pio_fd, I_PIO_SETMASK, (void *)(1 << usb_up_pin.pin));
-    } else {
-      ioctl(pio_fd, I_PIO_CLRMASK, (void *)(1 << usb_up_pin.pin));
-    }
-    close(pio_fd);
-  }
 
   ioctl(fd, I_FIFO_INIT);
 

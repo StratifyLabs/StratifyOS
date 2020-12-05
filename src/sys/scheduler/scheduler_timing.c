@@ -534,7 +534,6 @@ int root_handle_usecond_overflow_event(void *context, const mcu_event_t *data) {
   sched_usecond_counter++;
   root_handle_usecond_match_event(0, 0);
   root_handle_usecond_process_timer_match_event(0, 0);
-  sos_debug_printf("tmr overflow %ld\n", sos_config.clock.disable());
   sos_config.clock.enable();
   return 1; // do not clear callback
 }
