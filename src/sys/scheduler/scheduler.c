@@ -80,8 +80,6 @@ void scheduler() {
 
   sos_debug_log_info(SOS_DEBUG_SCHEDULER, "Start first thread");
   start_first_thread();
-  sos_debug_log_info(SOS_DEBUG_SCHEDULER, "Run scheduler");
-
   while (1) {
     cortexm_svcall(mcu_wdt_root_reset, NULL);
     check_faults(); // check to see if a fault needs to be logged

@@ -67,13 +67,15 @@ void start_filesystem(void) {
 }
 
 void *sos_default_thread(void *arg) {
-  sos_debug_log_info(SOS_DEBUG_SYS, "Enter default thread");
+  sos_debug_log_info(SOS_DEBUG_SYS, "Enter default thread-");
 
   check_reset_source();
 
   // Initialize the file systems
   init_fs();
+  SOS_DEBUG_LINE_TRACE();
   start_filesystem();
+  SOS_DEBUG_LINE_TRACE();
 
   sos_handle_event(SOS_EVENT_START_LINK, 0);
   link_update(arg); // Run the link update thread--never returns

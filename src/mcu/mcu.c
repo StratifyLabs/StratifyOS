@@ -99,6 +99,7 @@ int mcu_set_pin_assignment(
       }
 
       if (mcu_core_set_pinsel_func(pin, periph, periph_port) < 0) {
+        sos_handle_event(SOS_EVENT_ROOT_INVALID_PIN_ASSIGNMENT, (void *)pin);
         return SYSFS_SET_RETURN_WITH_VALUE(ENODEV, i);
       }
 

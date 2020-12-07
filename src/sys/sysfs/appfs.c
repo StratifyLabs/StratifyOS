@@ -564,10 +564,10 @@ void svcall_close(void *args) {
 
     appfs_handle_t *h = args;
     sos_config.cache.clean_data_block(
-      h->type.install.code_start, h->type.install.code_size);
+      (void *)(h->type.install.code_start), h->type.install.code_size);
 
     sos_config.cache.clean_data_block(
-      h->type.install.data_start, h->type.install.data_size);
+      (void *)(h->type.install.data_start), h->type.install.data_size);
   }
 }
 
@@ -626,7 +626,7 @@ void svcall_ioctl(void *args) {
       a->result = SYSFS_SET_RETURN(ENOTSUP);
     } else {
       a->result = appfs_util_root_writeinstall(a->cfg, h, attr);
-      mcu_core_invalidate_instruction_cache();
+      sos_config.cache.invalidate_instruction();
     }
     break;
 

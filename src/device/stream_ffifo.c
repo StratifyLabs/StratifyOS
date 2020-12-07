@@ -160,7 +160,7 @@ int stream_ffifo_open(const devfs_handle_t *handle) {
     return SYSFS_SET_RETURN(ENOSYS);
   }
 
-  ret = config->device->driver.open(&config->device->handle);
+  ret = config->device.driver.open(&config->device.handle);
   if (ret < 0) {
     return ret;
   }
@@ -214,8 +214,7 @@ int stream_ffifo_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
         ffifo_flush(&(state->rx.ffifo));
 
         // on the first call the FIFO is full of zeros and returns immediately
-        if (
-          config->device->driver.read(&config->device->handle, &(state->rx.async)) < 0) {
+        if (config->device.driver.read(&config->device.handle, &(state->rx.async)) < 0) {
           return SYSFS_SET_RETURN(EIO);
         }
       }
@@ -256,7 +255,7 @@ int stream_ffifo_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
         memset(state->tx.async.buf, 0, state->tx.async.nbyte);
 
         int result =
-          config->device->driver.write(&config->device->handle, &(state->tx.async));
+          config->device.driver.write(&config->device.handle, &(state->tx.async));
         if (result < 0) {
           return result;
         }
@@ -312,7 +311,7 @@ int stream_ffifo_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
     /* no break */ // execute the driver SETACTION as well
   }
 
-  return config->device->driver.ioctl(&config->device->handle, request, ctl);
+  return config->device.driver.ioctl(&config->device.handle, request, ctl);
 }
 
 int stream_ffifo_read(const devfs_handle_t *handle, devfs_async_t *async) {
@@ -352,5 +351,5 @@ int stream_ffifo_close(const devfs_handle_t *handle) {
   stream_ffifo_state_t *state = handle->state;
   ffifo_close_local(&(config->tx), &(state->tx.ffifo));
   ffifo_close_local(&(config->rx), &(state->rx.ffifo));
-  return config->device->driver.close(&config->device->handle);
+  return config->device.driver.close(&config->device.handle);
 }

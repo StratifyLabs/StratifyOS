@@ -155,37 +155,37 @@ int devfs_mcu_ioctl(
 #define DEVFS_DRIVER_PORT(object) (((const object##_config_t *)handle->config)->port)
 
 #define DEVFS_DRIVER_DECLARE_LOCAL(object, port_count)                                   \
-  const u32 port = handle->port;                                                         \
+  const u32 port = config->port;                                                         \
   if (port >= port_count) {                                                              \
     return SYSFS_SET_RETURN(EBUSY);                                                      \
   }                                                                                      \
-  object##_local_t *local = m_##object##_local + handle->port
+  object##_local_t *local = m_##object##_local + config->port
 
 #define DEVFS_DRIVER_DECLARE_STATE_LOCAL(object, port_count)                             \
-  const u32 port = handle->port;                                                         \
+  const u32 port = config->port;                                                         \
   if (port >= port_count) {                                                              \
     return SYSFS_SET_RETURN(EBUSY);                                                      \
   }                                                                                      \
   object##_local_t *local = (object##_local_t *)handle->state
 
-#define DEVFS_DRIVER_DECLARE_STATE_LOCAL_V4(object)                                      \
+#define DEVFS_DRIVER_DECLARE_CONFIG_STATE(object)                                        \
   const object##_config_t *config = handle->config;                                      \
-  object##_local_t *local = (object##_local_t *)handle->state
+  object##_state_t *state = (object##_state_t *)handle->state
 
 #define DEVFS_DRIVER_OPEN_STATE_LOCAL_V4(object)                                         \
-  m_##object##_local[config->port] = handle->state;
+  m_##object##_state_list[config->port] = handle->state;
 
 #define DEVFS_DRIVER_CLOSE_STATE_LOCAL_V4(object)                                        \
-  m_##object##_local[config->port] = NULL;
+  m_##object##_state_list[config->port] = NULL;
 
 #define DEVFS_DRIVER_ASSIGN_STATE_LOCAL(object)                                          \
-  (m_##object##_local[handle->port] = handle->state)
+  (m_##object##_state_list[config->port] = handle->state)
 
 #define DEVFS_ASSIGN_ATTRIBUTES(object, ctl)                                             \
   (ctl == NULL) ? &(((const object##_config_t *)handle->config)->attr) : ctl;
 
 #define DEVFS_DRIVER_DECLARE_STATE_LOCAL_ARRAY(object, count)                            \
-  object##_local_t *m_##object##_state_local[count] MCU_SYS_MEM
+  object##_local_t *m_##object##_state_state_list[count] MCU_SYS_MEM
 
 #define DEVFS_MCU_DRIVER_IOCTL_FUNCTION(                                                 \
   driver_name, version, ident_char, ioctl_total, ...)                                    \

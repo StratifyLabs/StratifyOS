@@ -64,37 +64,6 @@ void mcu_core_get_bootloader_api(void *args) MCU_ROOT_CODE;
 void mcu_core_set_nvic_priority(int irq, int prio) MCU_ROOT_CODE;
 int mcu_core_invokebootloader(int port, void *arg) MCU_ROOT_CODE;
 
-/*
- *
- * Clean -- write values in cache to memory
- * A cache clean operation ensures that updates made by an observer that controls
- * the cache are made visible to other observers that can access memory at the point
- * to which the operation is performed. Once the Clean has completed, the new memory
- * values are guaranteed to be visible to the point to which the operation is performed,
- * for example to the point of unification. The cleaning of a cache entry from a cache can
- * overwrite memory that has been written by another observer only if the entry
- * contains a location that has been written to by an observer in the shareability
- * domain of that memory location.
- *
- * Invalidate -- pull in values from memory to cache
- * A cache invalidate operation ensures that updates made visible by observers that
- *	access memory at the point to which the invalidate is defined are made visible
- * to an observer that controls the cache. This might result in the loss of updates
- * to the locations affected by the invalidate operation that have been written
- * by observers that access the cache. If the address of an entry on which the
- * invalidate operates does not have a Normal Cacheable attribute, or if the cache
- * is disabled, then an invalidate operation also ensures that this address is not
- * present in the cache.
- *
- */
-void mcu_core_enable_cache() MCU_ROOT_CODE;
-void mcu_core_disable_cache() MCU_ROOT_CODE;
-void mcu_core_invalidate_instruction_cache() MCU_ROOT_CODE;
-void mcu_core_clean_data_cache() MCU_ROOT_CODE;
-void mcu_core_invalidate_data_cache() MCU_ROOT_CODE;
-void mcu_core_clean_data_cache_block(void *addr, u32 size) MCU_ROOT_CODE;
-void mcu_core_invalidate_data_cache_block(void *addr, u32 size) MCU_ROOT_CODE;
-
 typedef enum {
   CORE_SLEEP /*! Sleep mode */,
   CORE_DEEPSLEEP /*! Deep sleep (preserve SRAM) */,

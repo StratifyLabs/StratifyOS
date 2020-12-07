@@ -100,12 +100,7 @@ int task_init_mpu(void *system_memory, int system_memory_size) {
     sizeof(os_mem)); // Copy the OS mem to the task table
 
   sos_handle_event(SOS_EVENT_ROOT_MPU_INITIALIZED, NULL);
-
-  mcu_core_enable_cache();
-  if (sos_config.cache.enable) {
-    sos_config.cache.enable();
-  }
-
+  sos_config.cache.enable();
   return 0;
 }
 

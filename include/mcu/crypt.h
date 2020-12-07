@@ -27,6 +27,11 @@
 extern "C" {
 #endif
 
+typedef struct {
+  u32 port;
+  crypt_attr_t attr;
+} crypt_config_t;
+
 #define MCU_CRYPT_IOCTL_REQUEST_DECLARATION(driver_name) \
 	DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, getinfo); \
 	DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, setattr); \

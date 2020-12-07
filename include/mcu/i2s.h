@@ -51,6 +51,8 @@ typedef struct MCU_PACK {
   u32 value;
 } i2s_event_t;
 
+typedef i2s_config_t sai_config_t;
+
 /*
  * These macros will declare the following functions with the specified variants
  *

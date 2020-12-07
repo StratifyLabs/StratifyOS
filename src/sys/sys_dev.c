@@ -66,6 +66,9 @@ int sys_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
     if (sos_config.sys.git_hash) {
       strncpy(info->bsp_git_hash, sos_config.sys.git_hash, 15);
     }
+    if (sos_config.sys.mcu_git_hash) {
+      strncpy(info->mcu_git_hash, sos_config.sys.mcu_git_hash, 15);
+    }
     strncpy(info->sos_git_hash, SOS_GIT_HASH, 15);
     if (sos_config.sys.get_serial_number) {
       sos_config.sys.get_serial_number(&(info->serial));

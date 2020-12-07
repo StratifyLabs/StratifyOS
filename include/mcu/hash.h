@@ -23,6 +23,18 @@
 #include "sos/dev/hash.h"
 #include "sos/fs/devfs.h"
 
+typedef struct {
+  u32 port;
+  hash_attr_t attr;
+} hash_config_t;
+
+typedef struct {
+  u32 port;
+  u32 attr;
+} random_config_t;
+
+typedef random_config_t rng_config_t;
+
 #ifdef __cplusplus
 extern "C" {
 #endif

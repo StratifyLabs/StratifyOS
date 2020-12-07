@@ -1,4 +1,4 @@
-/* Copyright 2011-2018 Tyler Gilbert; 
+/* Copyright 2011-2018 Tyler Gilbert;
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -34,30 +34,28 @@ extern "C" {
 #endif
 
 typedef struct MCU_PACK {
-	u32 value;
+  u32 value;
 } mmc_event_data_t;
 
 typedef struct MCU_PACK {
-	mmc_attr_t attr; //default attributes
+  u32 port;
+  mmc_attr_t attr; // default attributes
 } mmc_config_t;
 
-#define MCU_MMC_IOCTL_REQUEST_DECLARATION(driver_name) \
-	DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, getinfo); \
-	DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, setattr); \
-	DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, setaction); \
-	DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, getcid); \
-	DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, getcsd); \
-	DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, getstatus)
+#define MCU_MMC_IOCTL_REQUEST_DECLARATION(driver_name)                                   \
+  DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, getinfo);                           \
+  DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, setattr);                           \
+  DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, setaction);                         \
+  DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, getcid);                            \
+  DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, getcsd);                            \
+  DEVFS_DRIVER_DECLARTION_IOCTL_REQUEST(driver_name, getstatus)
 
-
-
-#define MCU_MMC_DRIVER_DECLARATION(variant) \
-	DEVFS_DRIVER_DECLARTION(variant); \
-	MCU_MMC_IOCTL_REQUEST_DECLARATION(variant)
+#define MCU_MMC_DRIVER_DECLARATION(variant)                                              \
+  DEVFS_DRIVER_DECLARTION(variant);                                                      \
+  MCU_MMC_IOCTL_REQUEST_DECLARATION(variant)
 
 MCU_MMC_DRIVER_DECLARATION(mcu_mmc);
 MCU_MMC_DRIVER_DECLARATION(mcu_mmc_dma);
-
 
 #ifdef __cplusplus
 }
