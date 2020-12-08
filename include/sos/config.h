@@ -87,17 +87,17 @@ typedef struct {
 } sos_usb_config_t;
 
 typedef struct {
+  const void *secret_key_address;
+  u32 secret_key_size;
   u32 memory_size;
   u32 os_mpu_text_mask;
   u32 flags;
-  u32 secret_key_size;
   const char *name;
   const char *version;
   const char *git_hash;
   const char *mcu_git_hash;
   const char *id;
   const char *team_id;
-  const void *secret_key_address;
   void (*initialize)();
   void (*get_serial_number)(mcu_sn_t *serial_number);
   int (*kernel_request)(int request, void *data);
@@ -149,10 +149,10 @@ typedef struct {
  * configuration data.
  */
 typedef struct MCU_PACK {
+  sos_sys_config_t sys;
   sos_fs_config_t fs;
   sos_clock_config_t clock;
   sos_task_config_t task;
-  sos_sys_config_t sys;
   sos_debug_config_t debug;
   sos_cache_config_t cache;
   sos_sleep_config_t sleep;
