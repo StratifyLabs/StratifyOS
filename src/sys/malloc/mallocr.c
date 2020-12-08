@@ -300,6 +300,7 @@ void *_malloc_r(struct _reent *reent_ptr, size_t size) {
   if (reent_ptr == NULL) {
     errno = EINVAL;
     sos_debug_log_info(SOS_DEBUG_MALLOC, "EINVAL %s():%d<-", __FUNCTION__, __LINE__);
+    sos_handle_event(SOS_EVENT_MALLOC_FAILED, NULL);
     return NULL;
   }
 
@@ -313,6 +314,7 @@ void *_malloc_r(struct _reent *reent_ptr, size_t size) {
       __malloc_unlock(reent_ptr);
       errno = ENOMEM;
       sos_debug_log_info(SOS_DEBUG_MALLOC, "ENOMEM %s():%d<-", __FUNCTION__, __LINE__);
+      sos_handle_event(SOS_EVENT_MALLOC_FAILED, NULL);
       return NULL;
     }
   }
@@ -331,6 +333,7 @@ void *_malloc_r(struct _reent *reent_ptr, size_t size) {
         malloc_process_fault(reent_ptr); // this will exit the process
         errno = ENOMEM;
         sos_debug_log_info(SOS_DEBUG_MALLOC, "ENOMEM %s():%d<-", __FUNCTION__, __LINE__);
+        sos_handle_event(SOS_EVENT_MALLOC_FAILED, NULL);
         return NULL;
       }
 
@@ -340,6 +343,7 @@ void *_malloc_r(struct _reent *reent_ptr, size_t size) {
         __malloc_unlock(reent_ptr);
         errno = ENOMEM;
         sos_debug_log_info(SOS_DEBUG_MALLOC, "ENOMEM %s():%d<-", __FUNCTION__, __LINE__);
+        sos_handle_event(SOS_EVENT_MALLOC_FAILED, NULL);
         return NULL;
       }
 
@@ -356,6 +360,7 @@ void *_malloc_r(struct _reent *reent_ptr, size_t size) {
         __malloc_unlock(reent_ptr);
         errno = ENOMEM;
         sos_debug_log_info(SOS_DEBUG_MALLOC, "ENOMEM %s():%d<-", __FUNCTION__, __LINE__);
+        sos_handle_event(SOS_EVENT_MALLOC_FAILED, NULL);
         return NULL;
       }
       malloc_set_chunk_used(reent_ptr, chunk, num_chunks, size);
