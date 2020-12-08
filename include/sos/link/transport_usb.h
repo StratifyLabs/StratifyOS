@@ -52,7 +52,6 @@ limitations under the License.
     .device = &sos_link_transport_usb_##name##_device_descriptor,                        \
     .config = &sos_link_transport_usb_##name##_configuration_descriptor,                 \
     .qualifier = &sos_link_transport_usb_##name##_qualifier_descriptor,                  \
-    .max_packet_zero_size = 64,                                                          \
     .string = &sos_link_transport_usb_##name##_string_descriptor,                        \
     .class_event_handler = class_event_handler_value};
 

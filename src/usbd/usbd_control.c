@@ -136,8 +136,8 @@ void usbd_control_datain_stage(usbd_control_t *context) {
   u32 nbyte;
 
   // we can only send max packet size at a time
-  if (context->data.nbyte >= context->constants->max_packet_zero_size) {
-    nbyte = context->constants->max_packet_zero_size;
+  if (context->data.nbyte >= sos_config.usb.control_endpoint_max_size) {
+    nbyte = sos_config.usb.control_endpoint_max_size;
     context->data.is_zlp = 1;
   } else {
     nbyte = context->data.nbyte;

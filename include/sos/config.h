@@ -75,6 +75,7 @@ typedef struct {
 
 typedef struct {
   // low level USB API
+  u32 control_endpoint_max_size;
   int (*set_attributes)(const devfs_handle_t *handle, void *ctl);
   int (*set_action)(const devfs_handle_t *handle, mcu_action_t *action);
   void (*write_endpoint)(
