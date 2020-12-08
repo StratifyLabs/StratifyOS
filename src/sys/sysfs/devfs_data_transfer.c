@@ -302,7 +302,9 @@ int devfs_execute_read_handler(
   if (transfer_handler->read) {
     devfs_async_t *async = transfer_handler->read;
     transfer_handler->read = 0;
-    if (nbyte) {
+    if (nbyte == 0) {
+      async->result = async->nbyte;
+    } else {
       async->result = nbyte;
     }
     return devfs_execute_event_handler(&async->handler, o_flags, data);

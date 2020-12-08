@@ -83,7 +83,7 @@ void scheduler_fault_event_handler(fault_t *fault) {
 
   if ((pid == 0) || (task_enabled_active_not_stopped(task_get_current()) == 0)) {
 
-#if MCU_DEBUG
+#if SOS_DEBUG
     char buffer[128];
     scheduler_fault_build_string(buffer, "\n");
     sos_config.debug.write(buffer, strnlen(buffer, 128));
@@ -100,7 +100,7 @@ void scheduler_fault_event_handler(fault_t *fault) {
       sos_config.debug.trace_event(&event);
     }
 
-#if MCU_DEBUG
+#if SOS_DEBUG
     sos_handle_event(SOS_EVENT_ROOT_FATAL, buffer);
 #else
     sos_handle_event(SOS_EVENT_ROOT_FATAL, "OS FAULT");
@@ -117,7 +117,7 @@ void scheduler_fault_event_handler(fault_t *fault) {
       "stack %p + %ld\n", sos_task_table[task_get_current()].mem.data.address,
       sos_task_table[task_get_current()].mem.data.size);
 
-#if defined MCU_DEBUG
+#if defined SOS_DEBUG
     char buffer[128];
     scheduler_fault_build_string(buffer, 0);
     sos_debug_log_error(SOS_DEBUG_SYS, "Task Fault:%d:%s", task_get_current(), buffer);

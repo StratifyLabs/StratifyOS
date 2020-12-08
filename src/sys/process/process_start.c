@@ -75,8 +75,8 @@ int process_start(
 
 	//Open the program
 	sos_debug_log_info(SOS_DEBUG_SYS, "process_start:%s", path);
-#if MCU_DEBUG
-	usleep(10*1000);
+#if SOS_DEBUG
+        usleep(10*1000);
 #endif
 	fd = open(path, O_RDONLY);
 	if ( fd < 0 ){
