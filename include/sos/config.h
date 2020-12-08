@@ -4,6 +4,7 @@
 #include <sdk/types.h>
 
 #include "cortexm/task_types.h"
+#include "dev/pio.h"
 #include "fs/devfs.h"
 #include "sys/socket.h"
 #include "trace.h"
@@ -99,6 +100,9 @@ typedef struct {
   const char *id;
   const char *team_id;
   void (*initialize)();
+  void (*pio_set_attributes)(int port, const pio_attr_t *attr);
+  void (*pio_write)(int port, u32 mask, int value);
+  u32 (*pio_read)(int port, u32 mask);
   void (*get_serial_number)(mcu_sn_t *serial_number);
   int (*kernel_request)(int request, void *data);
   const void *(*kernel_request_api)(u32 request);
