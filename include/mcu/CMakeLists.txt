@@ -36,7 +36,6 @@ set(SOURCES
 	sdio.h
 	spi.h
 	tmr.h
-	types.h
 	uart.h
 	usb.h
 	wdt.h

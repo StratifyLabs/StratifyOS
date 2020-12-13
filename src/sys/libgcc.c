@@ -27,13 +27,13 @@
  *
  *
 
-export PATH=$PATH:/Applications/StratifyLabs-SDK/Tools/gcc/bin
+export PATH=$PATH:/Applications/StratifyLabs-SDK/bin
 export CMD="arm-none-eabi-objcopy -W __aeabi_fmul -W __aeabi_dmul -W __aeabi_fdiv -W __aeabi_ddiv -W __aeabi_dadd -W __adddf3 -W __aeabi_fadd -W __addsf3 -W __divdc3 -W __divsc3 -W __muldc3 libgcc.a libgcc-hard.a"
-cd /Applications/StratifyLabs-SDK/Tools/gcc/lib/gcc/arm-none-eabi/6.3.1/thumb/v7e-m/fpv4-sp/hard
+cd /Applications/StratifyLabs-SDK/lib/gcc/arm-none-eabi/6.3.1/thumb/v7e-m/fpv4-sp/hard
 $CMD
-cd /Applications/StratifyLabs-SDK/Tools/gcc/lib/gcc/arm-none-eabi/6.3.1/thumb/v7e-m/fpv5-sp/hard
+cd /Applications/StratifyLabs-SDK/lib/gcc/arm-none-eabi/6.3.1/thumb/v7e-m/fpv5-sp/hard
 $CMD
-cd /Applications/StratifyLabs-SDK/Tools/gcc/lib/gcc/arm-none-eabi/6.3.1/thumb/v7e-m/fpv5/hard
+cd /Applications/StratifyLabs-SDK/lib/gcc/arm-none-eabi/6.3.1/thumb/v7e-m/fpv5/hard
 $CMD
 
 */

@@ -25,8 +25,8 @@
 #ifndef ARCH_H_
 #define ARCH_H_
 
+#include <sdk/types.h>
 #include <stdlib.h>
-#include "types.h"
 
 #define SCHED_USECOND_TMR_RESET_OC 2
 #define SCHED_USECOND_TMR_SLEEP_OC 0

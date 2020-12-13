@@ -192,7 +192,6 @@ int drive_cfi_qspi_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
     info->bitrate = config->info.bitrate;
     info->page_program_size = config->opcode.page_program_size;
     info->partition_start = config->info.partition_start;
-
     break;
 
   case I_DRIVE_ISBUSY:
@@ -286,7 +285,7 @@ int drive_cfi_qspi_close(const devfs_handle_t *handle) {
 
 u8 drive_cfi_qspi_read_status(const devfs_handle_t *handle) {
   const drive_cfi_config_t *config = handle->config;
-  u8 status;
+  u8 status = 0;
   int result = drive_cfi_qspi_execute_command(
     handle, config->opcode.read_busy_status, 0, &status, 1, 0,
     config->qspi_flags | QSPI_FLAG_IS_DATA_READ);

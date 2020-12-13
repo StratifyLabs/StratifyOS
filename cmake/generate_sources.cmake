@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 3.6)
 
 #Usage:
-#cmake -DPATH=/Users/tgil/git/StratifyOS-libc/newlib/libm/math -P /Applications/StratifyLabs-SDK/Tools/gcc/arm-none-eabi/cmake/generate_sources.cmake
+#cmake -DPATH=/Users/tgil/git/StratifyOS-libc/newlib/libm/math -P /Applications/StratifyLabs-SDK/arm-none-eabi/cmake/generate_sources.cmake
 
 file(GLOB FILELIST
 	${PATH}/*.c

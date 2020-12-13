@@ -50,7 +50,8 @@ void scheduler_fault_event_handler(fault_t *fault) {
   if (m_scheduler_fault.fault.num == 0) {
     m_scheduler_fault.tid = task_get_current();
     m_scheduler_fault.pid = pid;
-    memcpy((void *)&m_scheduler_fault.fault, fault, sizeof(fault_t));
+    m_scheduler_fault.fault = *fault;
+    // memcpy((void *)&m_scheduler_fault.fault, fault, sizeof(fault_t));
 
     // grab stack and memory usage
     u32 tid = m_scheduler_fault.tid;

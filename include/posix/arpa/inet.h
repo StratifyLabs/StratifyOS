@@ -29,7 +29,7 @@
 #if !defined SOS_BOOTSTRAP_SOCKETS
 #include <lwip/sockets.h>
 #else
-#include <mcu/types.h>
+#include <sdk/types.h>
 typedef u32 in_addr_t;
 typedef u16 in_port_t;
 #define INET_ADDRSTRLEN 8

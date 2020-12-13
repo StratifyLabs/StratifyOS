@@ -44,7 +44,6 @@ sos_sdk_library("${BUILD_RELEASE_OPTIONS}")
 sos_sdk_library("${BUILD_COVERAGE_OPTIONS}")
 sos_sdk_library("${BUILD_DEBUG_OPTIONS}")
 
-install(FILES include/mcu/types.h DESTINATION include/StratifyOS/mcu)
 install(FILES include/mcu/mcu.h DESTINATION include/StratifyOS/mcu)
 install(DIRECTORY include/sos DESTINATION include/StratifyOS PATTERN CMakelists.txt EXCLUDE)
 
