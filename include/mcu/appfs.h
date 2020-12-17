@@ -17,77 +17,76 @@
  *
  */
 
-
 #ifndef _MCU_APPFS_H_
 #define _MCU_APPFS_H_
 
-#include "sos/dev/mem.h"
 #include "sos/dev/appfs.h"
+#include "sos/dev/mem.h"
 #include "sos/fs/devfs.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-
 typedef struct {
 
 } appfs_mem_state_t;
 
 typedef struct {
-	u16 o_flags; //assigned to MEM_FLAG_IS_RAM or MEM_FLAG_IS_FLASH
-	u16 page_count; //number of pages in the section
-	u32 address; //beginning of the section
-	u32 page_size; //number of bytes in each page
+  u16 o_flags;    // assigned to MEM_FLAG_IS_RAM or MEM_FLAG_IS_FLASH
+  u16 page_count; // number of pages in the section
+  u32 address;    // beginning of the section
+  u32 page_size;  // number of bytes in each page
 } appfs_mem_section_t;
 
 typedef struct {
-	u16 usage_size;
-	u16 section_count;
-	u32 * usage;
-	u32 system_ram_page;
-	const devfs_device_t * flash_driver;
-	const appfs_mem_section_t sections[];
+  u16 usage_size;
+  u16 section_count;
+  u32 *usage;
+  const devfs_device_t *flash_driver;
+  const appfs_mem_section_t sections[];
 } appfs_mem_config_t;
 
-#define APPFS_MEM_SECTION(arg_o_flags, arg_page_count, arg_page_size, arg_address) \
-{ .o_flags = arg_o_flags, .page_count = arg_page_count, .page_size = arg_page_size, .address = arg_address }
+#define APPFS_MEM_SECTION(arg_o_flags, arg_page_count, arg_page_size, arg_address)       \
+  {                                                                                      \
+    .o_flags = arg_o_flags, .page_count = arg_page_count, .page_size = arg_page_size,    \
+    .address = arg_address                                                               \
+  }
 
-#define APPFS_FLASH_SECTION(arg_page_count, arg_page_size, arg_address) \
-	APPFS_MEM_SECTION(MEM_FLAG_IS_FLASH, arg_page_count, arg_page_size, arg_address)
+#define APPFS_FLASH_SECTION(arg_page_count, arg_page_size, arg_address)                  \
+  APPFS_MEM_SECTION(MEM_FLAG_IS_FLASH, arg_page_count, arg_page_size, arg_address)
 
-#define APPFS_RAM_SECTION(arg_page_count, arg_page_size, arg_address) \
-	APPFS_MEM_SECTION(MEM_FLAG_IS_RAM, arg_page_count, arg_page_size, arg_address)
+#define APPFS_RAM_SECTION(arg_page_count, arg_page_size, arg_address)                    \
+  APPFS_MEM_SECTION(MEM_FLAG_IS_RAM, arg_page_count, arg_page_size, arg_address)
 
-#define APPFS_TIGHTLY_COUPLED_FLASH_SECTION(arg_page_count, arg_page_size, arg_address) \
-	APPFS_MEM_SECTION(MEM_FLAG_IS_FLASH | MEM_FLAG_IS_TIGHTLY_COUPLED, arg_page_count, arg_page_size, arg_address)
+#define APPFS_TIGHTLY_COUPLED_FLASH_SECTION(arg_page_count, arg_page_size, arg_address)  \
+  APPFS_MEM_SECTION(                                                                     \
+    MEM_FLAG_IS_FLASH | MEM_FLAG_IS_TIGHTLY_COUPLED, arg_page_count, arg_page_size,      \
+    arg_address)
 
-#define APPFS_TIGHTLY_COUPLED_RAM_SECTION(arg_page_count, arg_page_size, arg_address) \
-	APPFS_MEM_SECTION(MEM_FLAG_IS_RAM | MEM_FLAG_IS_TIGHTLY_COUPLED, arg_page_count, arg_page_size, arg_address)
+#define APPFS_TIGHTLY_COUPLED_RAM_SECTION(arg_page_count, arg_page_size, arg_address)    \
+  APPFS_MEM_SECTION(                                                                     \
+    MEM_FLAG_IS_RAM | MEM_FLAG_IS_TIGHTLY_COUPLED, arg_page_count, arg_page_size,        \
+    arg_address)
 
-#define APPFS_USAGE_WORDS(ram_page_total) ((ram_page_total*2+31)/32)
+#define APPFS_USAGE_WORDS(ram_page_total) ((ram_page_total * 2 + 31) / 32)
 
-int appfs_mem_open(const devfs_handle_t * handle) MCU_ROOT_CODE;
-int appfs_mem_read(const devfs_handle_t * handle, devfs_async_t * rop) MCU_ROOT_CODE;
-int appfs_mem_write(const devfs_handle_t * handle, devfs_async_t * wop) MCU_ROOT_CODE;
-int appfs_mem_ioctl(const devfs_handle_t * handle, int request, void * ctl) MCU_ROOT_CODE;
-int appfs_mem_close(const devfs_handle_t * handle) MCU_ROOT_CODE;
+int appfs_mem_open(const devfs_handle_t *handle) MCU_ROOT_CODE;
+int appfs_mem_read(const devfs_handle_t *handle, devfs_async_t *rop) MCU_ROOT_CODE;
+int appfs_mem_write(const devfs_handle_t *handle, devfs_async_t *wop) MCU_ROOT_CODE;
+int appfs_mem_ioctl(const devfs_handle_t *handle, int request, void *ctl) MCU_ROOT_CODE;
+int appfs_mem_close(const devfs_handle_t *handle) MCU_ROOT_CODE;
 
-int appfs_mem_getinfo(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
-int appfs_mem_setattr(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
-int appfs_mem_setaction(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
+int appfs_mem_getinfo(const devfs_handle_t *handle, void *ctl) MCU_ROOT_CODE;
+int appfs_mem_setattr(const devfs_handle_t *handle, void *ctl) MCU_ROOT_CODE;
+int appfs_mem_setaction(const devfs_handle_t *handle, void *ctl) MCU_ROOT_CODE;
 
-int appfs_mem_erasepage(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
-int appfs_mem_getpageinfo(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
-int appfs_mem_writepage(const devfs_handle_t * handle, void * ctl) MCU_ROOT_CODE;
-
+int appfs_mem_erasepage(const devfs_handle_t *handle, void *ctl) MCU_ROOT_CODE;
+int appfs_mem_getpageinfo(const devfs_handle_t *handle, void *ctl) MCU_ROOT_CODE;
+int appfs_mem_writepage(const devfs_handle_t *handle, void *ctl) MCU_ROOT_CODE;
 
 #ifdef __cplusplus
 }
 #endif
 
-
 #endif // _MCU_APPFS_H_
-
-
-

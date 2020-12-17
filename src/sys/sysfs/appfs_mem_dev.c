@@ -130,7 +130,6 @@ int appfs_mem_getinfo(const devfs_handle_t *handle, void *ctl) {
     get_memory_page_count(config, MEM_FLAG_IS_RAM | MEM_FLAG_IS_TIGHTLY_COUPLED);
   info->tightlycoupled_ram_size =
     get_memory_size(config, MEM_FLAG_IS_RAM | MEM_FLAG_IS_TIGHTLY_COUPLED);
-  info->system_ram_page = config->system_ram_page;
   info->usage = config->usage;
   info->usage_size = config->usage_size;
   return 0;

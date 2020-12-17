@@ -1,4 +1,4 @@
-/* Copyright 2011-2018 Tyler Gilbert; 
+/* Copyright 2011-2018 Tyler Gilbert;
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -23,8 +23,8 @@
  * \ingroup IFACE_DEV
  *
  * \details The flash memory software module allows the user code to read memory
- * in the flash program space.  Reading the flash is portable across all supported MCU's.  However,
- * writing the flash is dependent on the MCU page size.
+ * in the flash program space.  Reading the flash is portable across all supported MCU's.
+ * However, writing the flash is dependent on the MCU page size.
  */
 
 /*! \file
@@ -44,20 +44,18 @@ extern "C" {
 #define MEM_VERSION (0x030100)
 #define MEM_IOC_IDENT_CHAR 'M'
 
-
 typedef struct MCU_PACK {
-	u32 flash_pages /*! The total number of flash pages */;
-	u32 flash_size /*! The total size of the flash memory */;
-	u32 ram_pages /*! The total number of RAM pages */;
-	u32 ram_size /*! The total size of the RAM */;
-	u32 system_ram_page /*! First page for system shared RAM */;
-	u32 usage_size;
-	u32 * usage;
-	u32 external_ram_pages /*! The total number of external RAM pages */;
-	u32 external_ram_size /*! The total size of external RAM */;
-	u32 tightlycoupled_ram_pages /*! The total number of external RAM pages */;
-	u32 tightlycoupled_ram_size /*! The total size of external RAM */;
-	u32 resd[1];
+  u32 flash_pages /*! The total number of flash pages */;
+  u32 flash_size /*! The total size of the flash memory */;
+  u32 ram_pages /*! The total number of RAM pages */;
+  u32 ram_size /*! The total size of the RAM */;
+  u32 usage_size;
+  u32 *usage;
+  u32 external_ram_pages /*! The total number of external RAM pages */;
+  u32 external_ram_size /*! The total size of external RAM */;
+  u32 tightlycoupled_ram_pages /*! The total number of external RAM pages */;
+  u32 tightlycoupled_ram_size /*! The total size of external RAM */;
+  u32 resd[1];
 } mem_info_t;
 
 /*! \brief Holds the devices attributes.
@@ -68,19 +66,22 @@ typedef struct MCU_PACK {
  *
  */
 typedef struct MCU_PACK {
-	u32 o_flags;
-	u32 resd[8];
+  u32 o_flags;
+  u32 resd[8];
 } mem_attr_t;
 
 /*! \details This lists each type of page.
  *
  */
 enum {
-	MEM_FLAG_IS_QUERY /*! Query the page type. This is used when the address is known but the page number, size, and type are not known */ = (1<<0),
-	MEM_FLAG_IS_RAM /*! RAM */ = (1<<1),
-	MEM_FLAG_IS_FLASH /*! Flash */ = (1<<2),
-	MEM_FLAG_IS_TIGHTLY_COUPLED /*! Tightly coupled memory (OR with RAM or FLASH) */ = (1<<3),
-	MEM_FLAG_IS_EXTERNAL /*! External memory chip (OR with RAM or FLASH) */ = (1<<4),
+  MEM_FLAG_IS_QUERY /*! Query the page type. This is used when the address is known but
+                       the page number, size, and type are not known */
+  = (1 << 0),
+  MEM_FLAG_IS_RAM /*! RAM */ = (1 << 1),
+  MEM_FLAG_IS_FLASH /*! Flash */ = (1 << 2),
+  MEM_FLAG_IS_TIGHTLY_COUPLED /*! Tightly coupled memory (OR with RAM or FLASH) */ =
+    (1 << 3),
+  MEM_FLAG_IS_EXTERNAL /*! External memory chip (OR with RAM or FLASH) */ = (1 << 4),
 };
 
 /*! \brief Holds the characteristics of a page.
@@ -88,17 +89,16 @@ enum {
  * for a page of memory.
  */
 typedef struct MCU_PACK {
-	s32 num /*! \brief the page number */;
-	u32 o_flags /*! \brief RAM or FLASH (page numbers are not unique between types) */;
-	u32 addr /*! \brief the address of the page */;
-	u32 size /*! \brief the size of the page */;
+  s32 num /*! \brief the page number */;
+  u32 o_flags /*! \brief RAM or FLASH (page numbers are not unique between types) */;
+  u32 addr /*! \brief the address of the page */;
+  u32 size /*! \brief the size of the page */;
 } mem_pageinfo_t;
 
-
 typedef struct MCU_PACK {
-	u32 addr /*! The address to write to */;
-	u32 nbyte /*! The number of bytes to write */;
-	u8 buf[256] /*! A buffer for writing to the flash */;
+  u32 addr /*! The address to write to */;
+  u32 nbyte /*! The number of bytes to write */;
+  u8 buf[256] /*! A buffer for writing to the flash */;
 } mem_writepage_t;
 
 #define I_MEM_GETVERSION _IOCTL(MEM_IOC_IDENT_CHAR, I_MCU_GETVERSION)
@@ -158,16 +158,12 @@ typedef struct MCU_PACK {
  */
 #define I_MEM_WRITEPAGE _IOCTLW(MEM_IOC_IDENT_CHAR, I_MCU_TOTAL + 2, mem_writepage_t)
 
-
 #define I_MEM_TOTAL 3
 
 #ifdef __cplusplus
 }
 #endif
 
-
 #endif // SOS_DEV_MEM_H_
 
 /*! @} */
-
-

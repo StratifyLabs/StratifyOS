@@ -794,13 +794,13 @@ int populate_file_header(
   case APPFS_MEMPAGETYPE_SYS:
     strcpy(file->hdr.name, ".sys");
     strcat(file->hdr.name, hex_num);
-    file->hdr.mode = S_IFREG;
+    file->hdr.mode = S_IFREG | 0444;
     memset(&(file->exec), 0, sizeof(appfs_exec_t));
     break;
   case APPFS_MEMPAGETYPE_FREE:
     strcpy(file->hdr.name, ".free");
     strcat(file->hdr.name, hex_num);
-    file->hdr.mode = S_IFREG;
+    file->hdr.mode = S_IFREG | 0444;
     memset(&(file->exec), 0, sizeof(appfs_exec_t));
     break;
   case APPFS_MEMPAGETYPE_USER:

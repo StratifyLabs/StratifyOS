@@ -22,9 +22,9 @@
 #include "cortexm/mpu.h"
 #include "cortexm/task.h"
 #include "mcu/core.h"
-#include "sos/debug.h"
 #include "mcu/mem.h"
 #include "mcu/wdt.h"
+#include "sos/debug.h"
 #include "sos/fs/sysfs.h"
 #include <errno.h>
 #include <fcntl.h>
@@ -113,17 +113,12 @@ void svcall_init(void *args) {
   appfs_file_t appfs_file;
   const devfs_device_t *device = args;
 
+  SOS_DEBUG_LINE_TRACE();
   // the RAM usage table needs to be initialized
   appfs_ram_root_init(device);
 
   // get info from memory device
   appfs_util_root_get_meminfo(device, &info);
-
-  // first mark the RAM used by the OS according to the system memory size
-  if (info.system_ram_page < info.ram_pages) {
-    appfs_ram_root_set(
-      device, info.system_ram_page, sos_config.sys.memory_size, APPFS_MEMPAGETYPE_SYS);
-  }
 
   // now scan each flash page to see what RAM is used by applications
   for (i = 0; i < info.flash_pages; i++) {
@@ -131,6 +126,7 @@ void svcall_init(void *args) {
       (appfs_util_root_get_fileinfo(device, &appfs_file, i, MEM_FLAG_IS_FLASH, NULL)
        == APPFS_MEMPAGETYPE_USER)
       && (appfs_util_is_executable(&appfs_file))) {
+      SOS_DEBUG_LINE_TRACE();
 
       mem_pageinfo_t page_info;
       page_info.o_flags = MEM_FLAG_IS_QUERY;
@@ -140,12 +136,15 @@ void svcall_init(void *args) {
       }
 
 #if 0
-			//get the RAM page associated with the data start
-			root_file_info.pageinfo.o_flags = MEM_FLAG_IS_QUERY;
-			root_file_info.pageinfo.addr = (int)root_file_info.fileinfo.exec.ram_start;
-			if ( device->driver.ioctl(&(device->handle), I_MEM_GETPAGEINFO, &root_file_info.pageinfo) < 0 ){
-				continue;
-			}
+      // get the RAM page associated with the data start
+      root_file_info.pageinfo.o_flags = MEM_FLAG_IS_QUERY;
+      root_file_info.pageinfo.addr = (int)root_file_info.fileinfo.exec.ram_start;
+      if (
+        device->driver.ioctl(
+          &(device->handle), I_MEM_GETPAGEINFO, &root_file_info.pageinfo)
+        < 0) {
+        continue;
+      }
 #endif
 
       appfs_ram_root_set(
@@ -409,8 +408,8 @@ int appfs_fstat(const void *cfg, void *handle, struct stat *st) {
   st->st_dev = h->type.reg.o_flags;
   st->st_ino = h->type.reg.page;
   st->st_blksize = MCU_RAM_PAGE_SIZE;
-  if (get_fileinfo_args.file_info.hdr.mode == 0444) { // this is a read only data file --
-                                                      // peel off the header from the size
+  // this is a read only data file -- peel off the header from the size
+  if (get_fileinfo_args.file_info.hdr.mode == 0444) {
     get_fileinfo_args.size -= sizeof(appfs_file_t);
   }
   st->st_size = get_fileinfo_args.size;
