@@ -132,7 +132,7 @@ int task_init(
   sos_task_table[0].rr_time = m_task_rr_reload;
   cortexm_set_stack_ptr((void *)&_top_of_stack); // reset the handler stack pointer
   cortexm_enable_systick_irq();                  // Enable context switching
-  cortexm_set_vector_table_addr(&_text);
+  cortexm_set_vector_table_addr(sos_config.sys.vector_table);
   task_root_switch_context();
   cortexm_enable_interrupts(); // Enable the interrupts
 

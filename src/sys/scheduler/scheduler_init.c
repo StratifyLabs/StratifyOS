@@ -32,14 +32,9 @@
 
 volatile scheduler_fault_t m_scheduler_fault MCU_SYS_MEM;
 
-/*! \details This function initializes the peripheral hardware needed
- * by the scheduler specifically the microsecond timer.
- * \return Zero on success or an error code (see \ref caoslib_err_t)
- */
 void scheduler_init() {
   memset((void *)sos_task_table, 0, sizeof(task_t) * sos_config.task.task_total);
-  memset(
-    (void *)sos_sched_table, 0, sizeof(sched_task_t) * sos_config.task.task_total);
+  memset((void *)sos_sched_table, 0, sizeof(sched_task_t) * sos_config.task.task_total);
 
   // Do basic init of task 0 so that memory allocation can happen before the scheduler
   // starts
@@ -47,10 +42,6 @@ void scheduler_init() {
   sos_task_table[0].global_reent = _global_impure_ptr;
 }
 
-/* \details This function initializes the scheduler.  It should be
- * called after all peripherals are initialized and interrupts are on.
- * \return Zero on success or an error code
- */
 void scheduler_start(void *(*init)(void *)) {
   sos_sched_table[0].init = init;
   sos_sched_table[0].attr.stackaddr = &_data;

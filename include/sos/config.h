@@ -99,6 +99,7 @@ typedef struct {
   const char *mcu_git_hash;
   const char *id;
   const char *team_id;
+  void *vector_table;
   void (*initialize)();
   void (*pio_set_attributes)(int port, const pio_attr_t *attr);
   void (*pio_write)(int port, u32 mask, int value);
