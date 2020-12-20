@@ -1,21 +1,5 @@
-/* Copyright 2011-2017 Tyler Gilbert;
- * This file is part of Stratify OS.
- *
- * Stratify OS is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Stratify OS is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- *
- *
- */
+// Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
+
 
 #include <stdio.h>
 #include <unistd.h>
@@ -31,14 +15,18 @@
 
 #include "usbd_standard.h"
 
-static int execute_class_handler(usbd_control_t *context, const mcu_event_t *usb_event) {
+static int execute_class_handler(usbd_control_t *context, const mcu_event_t *usb_event)
+  MCU_ROOT_EXEC_CODE;
+static void stall(usbd_control_t *context) MCU_ROOT_EXEC_CODE;
+
+int execute_class_handler(usbd_control_t *context, const mcu_event_t *usb_event) {
   if (context->constants->class_event_handler != 0) {
     return context->constants->class_event_handler(context, usb_event);
   }
   return 0;
 }
 
-static void stall(usbd_control_t *context) {
+void stall(usbd_control_t *context) {
   usbd_control_stall_endpoint(context->handle, (USBD_ENDPOINT_ADDRESS_IN | 0x00));
   context->data.nbyte = 0;
 }

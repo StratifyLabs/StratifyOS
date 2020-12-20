@@ -1,26 +1,11 @@
-/* Copyright 2011-2018 Tyler Gilbert;
- * This file is part of Stratify OS.
- *
- * Stratify OS is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Stratify OS is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- *
- *
- */
+// Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
 #ifndef MCU_TASK_H_
 #define MCU_TASK_H_
 
 #include <sdk/types.h>
+
+#include "sos/config.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -40,7 +25,7 @@ int task_init(
   MCU_ROOT_CODE;
 
 int task_init_mpu(void *system_memory, int system_memory_size) MCU_ROOT_CODE;
-int task_validate_memory(void *target, int size);
+int task_validate_memory(void *target, int size) MCU_ROOT_CODE;
 
 int task_create_process(
   void (*p)(char *) /*! The function to execute for the process */,
@@ -65,7 +50,6 @@ int task_root_set_stackguard(
   int stacksize /*! The stack size in bytes (must be a power of 2 greater than 16) */)
   MCU_ROOT_CODE;
 
-u8 task_get_exec_count();
 u64 task_gettime(int tid);
 u64 task_root_gettime(int tid) MCU_ROOT_CODE;
 
@@ -88,9 +72,16 @@ void task_svcall_interrupt(void *args) MCU_ROOT_CODE;
 int task_mpu_calc_protection(task_memories_t *mem);
 u32 task_interrupt_stacksize();
 
-s8 task_get_current_priority();
-void task_root_set_current_priority(s8 value);
-void task_root_elevate_current_priority(s8 value);
+u8 task_get_exec_count();
+static inline u8 task_get_total() { return sos_config.task.task_total; }
+
+extern volatile s8 m_task_current_priority MCU_SYS_MEM;
+static inline s8 task_get_current_priority() { return m_task_current_priority; }
+static inline void task_root_set_current_priority(s8 value) {
+  m_task_current_priority = value;
+}
+
+void task_root_elevate_current_priority(s8 value) MCU_ROOT_EXEC_CODE;
 
 u32 task_reverse_memory_lookup(u32 input);
 
@@ -105,8 +96,8 @@ u32 task_reverse_memory_lookup(u32 input);
 #define TASK_APPLICATION_DATA_MPU_REGION 1
 #define TASK_APPLICATION_DATA_USER_REGION 0
 
-void cortexm_systick_handler() MCU_NAKED;
-void cortexm_pendsv_handler() MCU_NAKED;
+void cortexm_systick_handler() MCU_NAKED MCU_ROOT_EXEC_CODE;
+void cortexm_pendsv_handler() MCU_NAKED MCU_ROOT_EXEC_CODE;
 
 #endif
 

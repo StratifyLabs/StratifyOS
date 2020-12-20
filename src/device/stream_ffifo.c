@@ -1,21 +1,5 @@
-/* Copyright 2011-2018 Tyler Gilbert;
- * This file is part of Stratify OS.
- *
- * Stratify OS is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Stratify OS is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- *
- *
- */
+// Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
+
 
 #include "device/stream_ffifo.h"
 #include "cortexm/cortexm.h"
@@ -71,16 +55,17 @@ int event_write_complete(void *context, const mcu_event_t *event) {
     }
     ffifo_inc_tail(ffifo_state, config->tx.frame_count);
 
-#if 0 // this should never print anything -- can be used for debugging
-		if( event->o_events & MCU_EVENT_FLAG_LOW ){
-			if( ffifo_state->atomic_position.access.head != 0 ){
-				sos_debug_printf("head not zero 0x%lX\n", ffifo_state->o_flags);
-			}
-		} else {
-			if( ffifo_state->atomic_position.access.head == 0 ){
-				sos_debug_printf("head is zero\n");
-			}
-		}
+#if 0
+    // this should never print anything -- can be used for debugging
+    if (event->o_events & MCU_EVENT_FLAG_LOW) {
+      if (ffifo_state->atomic_position.access.head != 0) {
+        sos_debug_printf("head not zero 0x%lX\n", ffifo_state->o_flags);
+      }
+    } else {
+      if (ffifo_state->atomic_position.access.head == 0) {
+        sos_debug_printf("head is zero\n");
+      }
+    }
 #endif
 
     // execute the FFIFO action if something is trying to write the ffifo

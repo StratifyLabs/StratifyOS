@@ -1,21 +1,5 @@
-/* Copyright 2011-2018 Tyler Gilbert;
- * This file is part of Stratify OS.
- *
- * Stratify OS is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Stratify OS is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- *
- *
- */
+// Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
+
 
 /*! \addtogroup time
  * @{
@@ -42,6 +26,8 @@
 static int set_alarm(int seconds);
 static void svcall_powerdown(void *args) MCU_ROOT_EXEC_CODE;
 static void svcall_hibernate(void *args) MCU_ROOT_EXEC_CODE;
+static void root_post_hibernate(void *args) MCU_ROOT_EXEC_CODE;
+static void root_prepare_hibernate(void *args) MCU_ROOT_EXEC_CODE;
 
 void svcall_powerdown(void *args) {
   CORTEXM_SVCALL_ENTER();

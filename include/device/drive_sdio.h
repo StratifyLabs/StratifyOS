@@ -1,21 +1,4 @@
-/* Copyright 2011-2017 Tyler Gilbert;
- * This file is part of Stratify OS.
- *
- * Stratify OS is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Stratify OS is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- *
- *
- */
+// Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
 #ifndef DEVICE_SDIO_H_
 #define DEVICE_SDIO_H_
@@ -32,16 +15,20 @@ typedef struct {
   devfs_device_t device;
 } drive_sdio_config_t;
 
-int drive_sdio_open(const devfs_handle_t *handle);
-int drive_sdio_ioctl(const devfs_handle_t *handle, int request, void *ctl);
-int drive_sdio_read(const devfs_handle_t *handle, devfs_async_t *rop);
-int drive_sdio_write(const devfs_handle_t *handle, devfs_async_t *wop);
+int drive_sdio_open(const devfs_handle_t *handle) MCU_ROOT_EXEC_CODE;
+int drive_sdio_ioctl(const devfs_handle_t *handle, int request, void *ctl)
+  MCU_ROOT_EXEC_CODE;
+int drive_sdio_read(const devfs_handle_t *handle, devfs_async_t *rop) MCU_ROOT_EXEC_CODE;
+int drive_sdio_write(const devfs_handle_t *handle, devfs_async_t *wop) MCU_ROOT_EXEC_CODE;
 int drive_sdio_close(const devfs_handle_t *handle);
 
-int drive_sdio_dma_open(const devfs_handle_t *handle);
-int drive_sdio_dma_ioctl(const devfs_handle_t *handle, int request, void *ctl);
-int drive_sdio_dma_read(const devfs_handle_t *handle, devfs_async_t *rop);
-int drive_sdio_dma_write(const devfs_handle_t *handle, devfs_async_t *wop);
-int drive_sdio_dma_close(const devfs_handle_t *handle);
+int drive_sdio_dma_open(const devfs_handle_t *handle) MCU_ROOT_EXEC_CODE;
+int drive_sdio_dma_ioctl(const devfs_handle_t *handle, int request, void *ctl)
+  MCU_ROOT_EXEC_CODE;
+int drive_sdio_dma_read(const devfs_handle_t *handle, devfs_async_t *rop)
+  MCU_ROOT_EXEC_CODE;
+int drive_sdio_dma_write(const devfs_handle_t *handle, devfs_async_t *wop)
+  MCU_ROOT_EXEC_CODE;
+int drive_sdio_dma_close(const devfs_handle_t *handle) MCU_ROOT_EXEC_CODE;
 
 #endif /* DEVICE_SD_SPI_H_ */

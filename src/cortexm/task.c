@@ -1,21 +1,4 @@
-/* Copyright 2011-2018 Tyler Gilbert;
- * This file is part of Stratify OS.
- *
- * Stratify OS is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Stratify OS is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- *
- *
- */
+// Copyright 2016-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
 #include <errno.h>
 #include <string.h>
@@ -30,17 +13,14 @@ volatile s8 m_task_current_priority MCU_SYS_MEM;
 static volatile u8 m_task_exec_count MCU_SYS_MEM;
 int m_task_rr_reload MCU_SYS_MEM;
 volatile int m_task_current MCU_SYS_MEM;
-static void svcall_read_rr_timer(u32 *val);
-static int set_systick_interval(int interval) MCU_ROOT_CODE;
-static void switch_contexts();
+static void svcall_read_rr_timer(u32 *val) MCU_ROOT_CODE;
+static int set_systick_interval(int interval) MCU_ROOT_EXEC_CODE;
+static void switch_contexts() MCU_ROOT_EXEC_CODE;
+static void task_check_count_flag() MCU_ROOT_EXEC_CODE;
 
 static void system_reset(); // This is used if the OS process returns
 void system_reset() { cortexm_svcall(cortexm_reset, NULL); }
-
 u8 task_get_exec_count() { return m_task_exec_count; }
-u8 task_get_total() { return sos_config.task.task_total; }
-s8 task_get_current_priority() { return m_task_current_priority; }
-void task_root_set_current_priority(s8 value) { m_task_current_priority = value; }
 
 void task_root_elevate_current_priority(s8 value) {
   cortexm_disable_interrupts();

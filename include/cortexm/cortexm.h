@@ -1,26 +1,11 @@
-/* Copyright 2011-2018 Tyler Gilbert;
- * This file is part of Stratify OS.
- *
- * Stratify OS is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Stratify OS is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- *
- *
- */
+// Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
-#ifndef MCU_CORTEXM_H_
-#define MCU_CORTEXM_H_
+#ifndef CORTEXM_CORTEXM_H_
+#define CORTEXM_CORTEXM_H_
 
 #include <sdk/types.h>
+
+#include "mcu/arch/cmsis/cmsis_compiler.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -61,26 +46,30 @@ int cortexm_verify_zero_sum8(void * data, int size);
 typedef void (*cortexm_svcall_t)(void*);
 void cortexm_svcall(cortexm_svcall_t call, void * args) __attribute__((optimize("1")));
 
-void cortexm_svcall_handler();
-void cortexm_initialize_heap();
+void cortexm_svcall_handler() MCU_ROOT_CODE;
+void cortexm_initialize_heap() MCU_ROOT_CODE;
 
 void cortexm_reset_mode() MCU_ROOT_CODE;
 void cortexm_set_privileged_mode() MCU_ROOT_CODE;
 void cortexm_set_unprivileged_mode() MCU_ROOT_CODE;
 void cortexm_set_thread_mode() MCU_ROOT_CODE;
-int cortexm_is_root_mode();
+static inline int cortexm_is_root_mode() {
+  register u32 control;
+  control = __get_CONTROL();
+  return (control & 0x02) == 0;
+}
 
-void cortexm_delay_us(u32 us);
-void cortexm_delay_ms(u32 ms);
-void cortexm_delay_systick(u32 ticks);
+void cortexm_delay_us(u32 us) MCU_ROOT_EXEC_CODE;
+void cortexm_delay_ms(u32 ms) MCU_ROOT_EXEC_CODE;
+void cortexm_delay_systick(u32 ticks) MCU_ROOT_EXEC_CODE;
 
-void cortexm_set_vector_table_addr(void * addr);
-u32 cortexm_get_vector_table_addr();
+void cortexm_set_vector_table_addr(void *addr) MCU_ROOT_EXEC_CODE;
+u32 cortexm_get_vector_table_addr() MCU_ROOT_EXEC_CODE;
 
-void cortexm_wdtfault_handler(void * stack);
+void cortexm_wdtfault_handler(void *stack) MCU_ROOT_EXEC_CODE;
 void cortexm_reset_handler() __attribute__((section(".reset_vector")));
-void cortexm_nmi_handler();
-void cortexm_debug_monitor_handler();
+void cortexm_nmi_handler() MCU_ROOT_EXEC_CODE;
+void cortexm_debug_monitor_handler() MCU_ROOT_EXEC_CODE;
 
 //This is used to ensure that privileged code executes from start to finish (argument validation cannot be bypassed)
 extern cortexm_svcall_t cortexm_svcall_validation MCU_SYS_MEM;
@@ -95,5 +84,4 @@ extern cortexm_svcall_t cortexm_svcall_validation MCU_SYS_MEM;
 }
 #endif
 
-
-#endif /* MCU_CORTEXM_H_ */
+#endif /* CORTEXM_CORTEXM_H_ */

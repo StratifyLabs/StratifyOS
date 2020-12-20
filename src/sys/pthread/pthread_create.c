@@ -1,61 +1,5 @@
-/* Copyright 2011-2018 Tyler Gilbert;
- * This file is part of Stratify OS.
- *
- * Stratify OS is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Stratify OS is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- *
- *
- */
+// Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
-/*! \addtogroup pthread
- * @{
- *
- * \details This is the interface for POSIX threads.  Here is an example of creating a new
- * thread:
- *
- * \code
- * #include <pthread.h>
- *
- * void * thread_function(void * args);
- *
- * pthread_t t;
- * pthread_attr_t attr;
- *
- * if ( pthread_attr_init(&attr) < 0 ){
- * 	perror("failed to initialize attr");
- * 	return -1;
- * }
- *
- * if ( pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED) < 0 ){
- * 	perror("failed to set detach state");
- * 	return -1;
- * }
- *
- * if ( pthread_attr_setstacksize(&attr, 4096) < 0 ){
- * 	perror("failed to set stack size");
- * 	return -1;
- * }
- *
- * if ( pthread_create(&t, &attr, thread_function, NULL) ){
- * 	perror("failed to create thread");
- * 	return -1;
- * }
- *
- * \endcode
- *
- */
-
-/*! \file */
 
 #include "config.h"
 
@@ -64,9 +8,7 @@
 
 #include "../scheduler/scheduler_local.h"
 
-/*! \cond */
 static void svcall_join_thread(void *args) MCU_ROOT_EXEC_CODE;
-/*! \endcond */
 
 /*! \details This function creates a new thread.
  * \return Zero on success or -1 with \a errno (see \ref errno) set to:

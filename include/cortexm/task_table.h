@@ -1,24 +1,7 @@
-/* Copyright 2011-2018 Tyler Gilbert; 
- * This file is part of Stratify OS.
- *
- * Stratify OS is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Stratify OS is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- *
- *
- */
+// Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
-#ifndef TASK_TABLE_H_
-#define TASK_TABLE_H_
+#ifndef CORTEXM_TASK_TABLE_H_
+#define CORTEXM_TASK_TABLE_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -106,8 +89,6 @@ int task_get_pid(int id){
     return sos_task_table[id].pid;
 }
 
-u8 task_get_total();
-
 static inline void task_get_timer(u32 * dest, int id){
     dest[1] = sos_task_table[id].timer.t_atomic[1];
     dest[0] = sos_task_table[id].timer.t_atomic[0];
@@ -119,4 +100,4 @@ static inline void task_get_timer(u32 * dest, int id){
 }
 #endif
 
-#endif /* TASK_TABLE_H_ */
+#endif /* CORTEXM_TASK_TABLE_H_ */

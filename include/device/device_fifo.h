@@ -1,21 +1,4 @@
-/* Copyright 2011-2021 Tyler Gilbert;
- * This file is part of Stratify OS.
- *
- * Stratify OS is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Stratify OS is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- *
- *
- */
+// Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
 #ifndef DEVICE_DEVICE_FIFO_H_
 #define DEVICE_DEVICE_FIFO_H_
@@ -40,11 +23,14 @@ typedef struct {
   u32 read_buffer_size;
 } device_fifo_config_t;
 
-int device_fifo_open(const devfs_handle_t *handle);
-int device_fifo_ioctl(const devfs_handle_t *handle, int request, void *ctl);
-int device_fifo_read(const devfs_handle_t *handle, devfs_async_t *async);
-int device_fifo_write(const devfs_handle_t *handle, devfs_async_t *async);
-int device_fifo_close(const devfs_handle_t *handle);
+int device_fifo_open(const devfs_handle_t *handle) MCU_ROOT_EXEC_CODE;
+int device_fifo_ioctl(const devfs_handle_t *handle, int request, void *ctl)
+  MCU_ROOT_EXEC_CODE;
+int device_fifo_read(const devfs_handle_t *handle, devfs_async_t *async)
+  MCU_ROOT_EXEC_CODE;
+int device_fifo_write(const devfs_handle_t *handle, devfs_async_t *async)
+  MCU_ROOT_EXEC_CODE;
+int device_fifo_close(const devfs_handle_t *handle) MCU_ROOT_EXEC_CODE;
 
 #define DEVICE_FIFO_DECLARE_CONFIG_STATE_RX_ONLY(                                        \
   name, frame_size_value, count_value, device_value)                                     \

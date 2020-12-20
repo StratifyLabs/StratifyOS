@@ -1,3 +1,5 @@
+// Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
+
 #ifndef SOS_USBD_MSFT_H
 #define SOS_USBD_MSFT_H
 

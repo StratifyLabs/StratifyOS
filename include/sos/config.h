@@ -1,3 +1,5 @@
+// Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
+
 #ifndef SOS_CONFIG_H
 #define SOS_CONFIG_H
 
@@ -169,10 +171,18 @@ typedef struct MCU_PACK {
 #define SOS_DEFAULT_START_STACK_SIZE 2048
 #if !defined __link
 
+#if defined __cplusplus
+extern "C" {
+#endif
+
 // must be provided by board support package
 extern volatile sched_task_t sos_sched_table[];
 extern volatile task_t sos_task_table[];
 extern const sos_config_t sos_config;
+
+#if defined __cplusplus
+}
+#endif
 
 #define SOS_DECLARE_TASK_TABLE(task_count)                                               \
   volatile sched_task_t sos_sched_table[task_count] MCU_SYS_MEM;                         \

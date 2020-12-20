@@ -1,18 +1,4 @@
-/* Copyright 2011-2018 Tyler Gilbert;
- * This file is part of Stratify OS.
- *
- * Stratify OS is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Stratify OS is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>. */
+// Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
 #ifndef SOS_FS_DEVFS_H_
 #define SOS_FS_DEVFS_H_
@@ -44,40 +30,7 @@ typedef struct {
   int keep;
 } devfs_signal_callback_t;
 
-/*! \details This function can be set as the callback for mcu_action_t.
- * In this case, the context is pointing to a devfs_signal_callback_t.  When
- * the event happens, it will send a signal to the specified task.
- *
- * If keep is non-zero, the signal will be sent each time the interrupt happens.
- * Otherwise, the signal is just sent one time.
- *
- * In the example below, the thread below will receive a SIGUSR1 the next time
- * the external interrupt goes low.  The run_on_sigusr1() will execute when the
- * signal is received.
- *
- * \code
- * #include <pthread.h>
- * #include <signal.h>
- * #include <stfy/Hal.hpp>
- *
- * void run_on_sigusr1(int a){
- * 	printf("got sigusr1\n");
- * }
- *
- * Eint intr(0);
- * intr.init();
- *
- * signal(SIGUSR1, (_sig_func_ptr)run_on_sigusr1);
- *
- * devfs_signal_callback_t sig; //this must be valid when the interrupt happens
- * sig.tid = pthread_self();
- * sig.signo = SIGUSR1;
- * sig.keep = 0;
- * intr.setaction(0, EINT_ACTION_EVENT_FALLING, signal_callback, &sig);
- * \endcode
- *
- */
-int devfs_signal_callback(void *context, const mcu_event_t *data);
+int devfs_signal_callback(void *context, const mcu_event_t *data) MCU_ROOT_EXEC_CODE;
 
 const devfs_handle_t *devfs_lookup_handle(const devfs_device_t *list, const char *name);
 const devfs_device_t *
@@ -236,28 +189,29 @@ bool devfs_is_terminator(const devfs_device_t *dev) {
   return false;
 }
 
-int devfs_execute_event_handler(mcu_event_handler_t *handler, u32 o_events, void *data);
+int devfs_execute_event_handler(mcu_event_handler_t *handler, u32 o_events, void *data)
+  MCU_ROOT_EXEC_CODE;
 // executes the read handler (if it exists) and nulls the read async object so it can be
 // assigned again
 int devfs_execute_read_handler(
   devfs_transfer_handler_t *transfer_handler,
   void *data,
   int nbyte,
-  u32 o_flags);
+  u32 o_flags) MCU_ROOT_EXEC_CODE;
 // executes the write handler (if it exists) and nulls the write async object so it can be
 // assigned again
 int devfs_execute_write_handler(
   devfs_transfer_handler_t *transfer_handler,
   void *data,
   int nbyte,
-  u32 o_flags);
+  u32 o_flags) MCU_ROOT_EXEC_CODE;
 
 // executes read and write handlers (if they exist) with MCU_EVENT_FLAG_CANCELED set
 void devfs_execute_cancel_handler(
   devfs_transfer_handler_t *transfer_handler,
   void *data,
   int nbyte,
-  u32 o_flags);
+  u32 o_flags) MCU_ROOT_EXEC_CODE;
 
 int devfs_init(const void *cfg);
 int devfs_open(const void *cfg, void **handle, const char *path, int flags, int mode);

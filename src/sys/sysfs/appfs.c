@@ -1,21 +1,5 @@
-/* Copyright 2011-2018 Tyler Gilbert;
- * This file is part of Stratify OS.
- *
- * Stratify OS is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Stratify OS is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- *
- *
- */
+// Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
+
 
 #include "../scheduler/scheduler_local.h"
 #include "appfs_local.h"
@@ -41,10 +25,10 @@
 #define ANALYZE_PATH_RAM 4
 #define ANALYZE_PATH_RAM_DIR 5
 
-static void svcall_ioctl(void *args);
-static void svcall_init(void *args);
-static void svcall_read(void *args);
-static void svcall_close(void *args);
+static void svcall_ioctl(void *args) MCU_ROOT_CODE;
+static void svcall_init(void *args) MCU_ROOT_CODE;
+static void svcall_read(void *args) MCU_ROOT_CODE;
+static void svcall_close(void *args) MCU_ROOT_CODE;
 static int readdir_rootdir(const void *cfg, int loc, struct dirent *entry);
 
 static int analyze_path(const char *path, const char **name, int *mem_type) {
@@ -113,7 +97,6 @@ void svcall_init(void *args) {
   appfs_file_t appfs_file;
   const devfs_device_t *device = args;
 
-  SOS_DEBUG_LINE_TRACE();
   // the RAM usage table needs to be initialized
   appfs_ram_root_init(device);
 
@@ -126,7 +109,6 @@ void svcall_init(void *args) {
       (appfs_util_root_get_fileinfo(device, &appfs_file, i, MEM_FLAG_IS_FLASH, NULL)
        == APPFS_MEMPAGETYPE_USER)
       && (appfs_util_is_executable(&appfs_file))) {
-      SOS_DEBUG_LINE_TRACE();
 
       mem_pageinfo_t page_info;
       page_info.o_flags = MEM_FLAG_IS_QUERY;

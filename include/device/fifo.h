@@ -1,21 +1,4 @@
-/* Copyright 2011-2018 Tyler Gilbert;
- * This file is part of Stratify OS.
- *
- * Stratify OS is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Stratify OS is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- *
- *
- */
+// Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
 #ifndef DEVICE_FIFO_H_
 #define DEVICE_FIFO_H_
@@ -48,49 +31,50 @@ typedef struct MCU_PACK {
   char *buffer /*! \brief A pointer to the buffer */;
 } fifo_config_t;
 
-int fifo_open(const devfs_handle_t *handle);
-int fifo_ioctl(const devfs_handle_t *handle, int request, void *ctl);
-int fifo_read(const devfs_handle_t *handle, devfs_async_t *async);
-int fifo_write(const devfs_handle_t *handle, devfs_async_t *async);
-int fifo_close(const devfs_handle_t *handle);
+int fifo_open(const devfs_handle_t *handle) MCU_ROOT_EXEC_CODE;
+int fifo_ioctl(const devfs_handle_t *handle, int request, void *ctl) MCU_ROOT_EXEC_CODE;
+int fifo_read(const devfs_handle_t *handle, devfs_async_t *async) MCU_ROOT_EXEC_CODE;
+int fifo_write(const devfs_handle_t *handle, devfs_async_t *async) MCU_ROOT_EXEC_CODE;
+int fifo_close(const devfs_handle_t *handle) MCU_ROOT_EXEC_CODE;
 
-int fifo_open_local(const fifo_config_t *config, fifo_state_t *state);
-int fifo_close_local(const fifo_config_t *config, fifo_state_t *state);
+int fifo_open_local(const fifo_config_t *config, fifo_state_t *state) MCU_ROOT_EXEC_CODE;
+int fifo_close_local(const fifo_config_t *config, fifo_state_t *state) MCU_ROOT_EXEC_CODE;
 int fifo_write_local(
   const fifo_config_t *config,
   fifo_state_t *state,
   devfs_async_t *async,
-  int allow_callback);
+  int allow_callback) MCU_ROOT_EXEC_CODE;
 int fifo_read_local(
   const fifo_config_t *config,
   fifo_state_t *state,
   devfs_async_t *async,
-  int allow_callback);
+  int allow_callback) MCU_ROOT_EXEC_CODE;
 int fifo_ioctl_local(
   const fifo_config_t *config,
   fifo_state_t *state,
   int request,
-  void *ctl);
+  void *ctl) MCU_ROOT_EXEC_CODE;
 
 // helper functions for implementing FIFOs
-void fifo_flush(fifo_state_t *state);
-void fifo_getinfo(fifo_info_t *info, const fifo_config_t *cfgp, fifo_state_t *state);
+void fifo_flush(fifo_state_t *state) MCU_ROOT_EXEC_CODE;
+void fifo_getinfo(fifo_info_t *info, const fifo_config_t *cfgp, fifo_state_t *state)
+  MCU_ROOT_EXEC_CODE;
 
-void fifo_inc_head(fifo_state_t *state, int size);
-void fifo_inc_tail(fifo_state_t *state, int size);
-int fifo_is_write_ok(fifo_state_t *state, u16 size, int writeblock);
+void fifo_inc_head(fifo_state_t *state, int size) MCU_ROOT_EXEC_CODE;
+void fifo_inc_tail(fifo_state_t *state, int size) MCU_ROOT_EXEC_CODE;
+int fifo_is_write_ok(fifo_state_t *state, u16 size, int writeblock) MCU_ROOT_EXEC_CODE;
 
-int fifo_is_writeblock(fifo_state_t *state);
-void fifo_set_writeblock(fifo_state_t *state, int value);
+int fifo_is_writeblock(fifo_state_t *state) MCU_ROOT_EXEC_CODE;
+void fifo_set_writeblock(fifo_state_t *state, int value) MCU_ROOT_EXEC_CODE;
 
-int fifo_is_notify_read(fifo_state_t *state);
-void fifo_set_notify_read(fifo_state_t *state, int value);
+int fifo_is_notify_read(fifo_state_t *state) MCU_ROOT_EXEC_CODE;
+void fifo_set_notify_read(fifo_state_t *state, int value) MCU_ROOT_EXEC_CODE;
 
-int fifo_is_notify_write(fifo_state_t *state);
-void fifo_set_notify_write(fifo_state_t *state, int value);
+int fifo_is_notify_write(fifo_state_t *state) MCU_ROOT_EXEC_CODE;
+void fifo_set_notify_write(fifo_state_t *state, int value) MCU_ROOT_EXEC_CODE;
 
-int fifo_is_overflow(fifo_state_t *state);
-void fifo_set_overflow(fifo_state_t *state, int value);
+int fifo_is_overflow(fifo_state_t *state) MCU_ROOT_EXEC_CODE;
+void fifo_set_overflow(fifo_state_t *state, int value) MCU_ROOT_EXEC_CODE;
 
 int fifo_read_buffer(
   const fifo_config_t *cfgp,
@@ -102,13 +86,15 @@ int fifo_write_buffer(
   fifo_state_t *state,
   const char *buf,
   int nbyte,
-  int non_blocking);
+  int non_blocking) MCU_ROOT_EXEC_CODE;
 
-int fifo_data_transmitted(const fifo_config_t *cfgp, fifo_state_t *state);
-void fifo_data_received(const fifo_config_t *cfgp, fifo_state_t *state);
+int fifo_data_transmitted(const fifo_config_t *cfgp, fifo_state_t *state)
+  MCU_ROOT_EXEC_CODE;
+void fifo_data_received(const fifo_config_t *cfgp, fifo_state_t *state)
+  MCU_ROOT_EXEC_CODE;
 
-void fifo_cancel_async_read(fifo_state_t *state);
-void fifo_cancel_async_write(fifo_state_t *state);
+void fifo_cancel_async_read(fifo_state_t *state) MCU_ROOT_EXEC_CODE;
+void fifo_cancel_async_write(fifo_state_t *state) MCU_ROOT_EXEC_CODE;
 
 #define FIFO_DEFINE_CONFIG(fifo_size, fifo_buffer)                                       \
   .size = fifo_size, .buffer = fifo_buffer

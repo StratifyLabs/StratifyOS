@@ -1,21 +1,4 @@
-/* Copyright 2011-2018 Tyler Gilbert;
- * This file is part of Stratify OS.
- *
- * Stratify OS is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Stratify OS is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- *
- *
- */
+// Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
 /*! \addtogroup FAULT Fault Handling
  * @{
@@ -32,8 +15,8 @@
  * \brief Fault Handling Header file (Defines Fault Codes)
  */
 
-#ifndef FAULT_H_
-#define FAULT_H_
+#ifndef CORTEXM_FAULT_H_
+#define CORTEXM_FAULT_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -95,20 +78,20 @@ typedef struct {
 
 int cortexm_fault_init() MCU_ROOT_CODE;
 
-void cortexm_hardfault_handler();
-void cortexm_memfault_handler();
-void cortexm_busfault_handler();
-void cortexm_usagefault_handler();
+void cortexm_hardfault_handler() MCU_ROOT_EXEC_CODE;
+void cortexm_memfault_handler() MCU_ROOT_EXEC_CODE;
+void cortexm_busfault_handler() MCU_ROOT_EXEC_CODE;
+void cortexm_usagefault_handler() MCU_ROOT_EXEC_CODE;
 
 /*! \details This function must be provided by the application or
  * OS to handle faults.
  */
-extern void scheduler_fault_event_handler(fault_t *fault) MCU_ROOT_CODE;
+extern void scheduler_fault_event_handler(fault_t *fault) MCU_ROOT_EXEC_CODE;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* FAULT_H_ */
+#endif /* CORTEXM_FAULT_H_ */
 
 /*! @} */

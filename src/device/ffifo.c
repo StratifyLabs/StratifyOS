@@ -1,21 +1,4 @@
-/* Copyright 2011-2018 Tyler Gilbert;
- * This file is part of Stratify OS.
- *
- * Stratify OS is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Stratify OS is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- *
- *
- */
+// Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
 #include "sos/dev/ffifo.h"
 #include "cortexm/cortexm.h"
@@ -171,6 +154,8 @@ int ffifo_write_buffer(
       state->o_flags |= FIFO_FLAG_IS_WRITE_BUSY;
       frame = ffifo_get_frame(config, state->atomic_position.access.head);
       memcpy(frame, buf, frame_size);
+      u32 *src = (u32 *)buf;
+      u32 *dest = (u32 *)frame;
 
       // don't inc head until the data is copied
       ffifo_inc_head(state, frame_count);

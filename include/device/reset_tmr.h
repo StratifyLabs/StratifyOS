@@ -1,3 +1,5 @@
+// Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
+
 #ifndef DEVICE_RESET_TMR_H
 #define DEVICE_RESET_TMR_H
 

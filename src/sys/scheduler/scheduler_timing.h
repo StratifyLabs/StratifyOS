@@ -1,21 +1,5 @@
-/* Copyright 2011-2017 Tyler Gilbert;
- * This file is part of Stratify OS.
- *
- * Stratify OS is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Stratify OS is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- *
- *
- */
+// Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
+
 
 #ifndef SCHEDULER_SCHEDULER_TIMING_H_
 #define SCHEDULER_SCHEDULER_TIMING_H_
@@ -50,7 +34,7 @@ u32 scheduler_timing_get_realtime();
 
 #define SCHEDULER_TIMING_PROCESS_TIMER(t_id, id_off) (t_id << 8 | id_off)
 
-void scheduler_timing_root_process_timer_initialize(u16 task_id);
+void scheduler_timing_root_process_timer_initialize(u16 task_id) MCU_ROOT_EXEC_CODE;
 volatile sos_process_timer_t * scheduler_timing_process_timer(timer_t timer_id);
 timer_t scheduler_timing_process_create_timer(const struct sigevent *evp);
 int scheduler_timing_process_delete_timer(timer_t timer_id);

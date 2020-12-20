@@ -1,21 +1,5 @@
-/* Copyright 2011-2017 Tyler Gilbert;
- * This file is part of Stratify OS.
- *
- * Stratify OS is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Stratify OS is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- *
- *
- */
+// Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
+
 
 #include "config.h"
 
@@ -33,23 +17,28 @@
 
 static volatile u32 sched_usecond_counter MCU_SYS_MEM;
 
-static int open_usecond_tmr();
-static void svcall_allocate_timer(void *args);
-static void root_allocate_timer(void *args);
-static int root_handle_usecond_overflow_event(void *context, const mcu_event_t *data);
-static int root_handle_usecond_match_event(void *context, const mcu_event_t *data);
-static int
-root_handle_usecond_process_timer_match_event(void *context, const mcu_event_t *data);
-static int
-send_and_reload_timer(volatile sos_process_timer_t *timer, u8 task_id, u32 now);
-static u8 scheduler_timing_process_timer_task_id(timer_t timer_id) {
+static void svcall_allocate_timer(void *args) MCU_ROOT_EXEC_CODE;
+static void root_allocate_timer(void *args) MCU_ROOT_EXEC_CODE;
+static int root_handle_usecond_overflow_event(void *context, const mcu_event_t *data)
+  MCU_ROOT_EXEC_CODE;
+static int root_handle_usecond_match_event(void *context, const mcu_event_t *data)
+  MCU_ROOT_EXEC_CODE;
+static int root_handle_usecond_process_timer_match_event(
+  void *context,
+  const mcu_event_t *data) MCU_ROOT_EXEC_CODE;
+static int send_and_reload_timer(volatile sos_process_timer_t *timer, u8 task_id, u32 now)
+  MCU_ROOT_EXEC_CODE;
+static inline u8 scheduler_timing_process_timer_task_id(timer_t timer_id) {
   return timer_id >> 8;
 }
-static u8 scheduler_timing_process_timer_id_offset(timer_t timer_id) {
+static inline u8 scheduler_timing_process_timer_id_offset(timer_t timer_id) {
   return timer_id & 0xFF;
 }
-static u8 scheduler_timing_process_timer_count() { return SOS_PROCESS_TIMER_COUNT; }
-static void update_tmr_for_process_timer_match(volatile sos_process_timer_t *timer);
+static inline u8 scheduler_timing_process_timer_count() {
+  return SOS_PROCESS_TIMER_COUNT;
+}
+static void update_tmr_for_process_timer_match(volatile sos_process_timer_t *timer)
+  MCU_ROOT_EXEC_CODE;
 
 void scheduler_timing_init() {
   sos_config.clock.initialize(
@@ -646,120 +635,4 @@ int root_handle_usecond_process_timer_match_event(
   sos_config.clock.enable();
 
   return 1;
-}
-
-int open_usecond_tmr() {
-  int err;
-  tmr_attr_t attr;
-  tmr_info_t info;
-  mcu_action_t action;
-  mcu_channel_t chan_req;
-  devfs_handle_t tmr;
-  tmr.port = 0;
-  tmr.config = 0;
-  tmr.state = 0;
-
-  // Open the microsecond timer
-  err = mcu_tmr_open(&tmr);
-  if (err) {
-    return err;
-  }
-
-  err = mcu_tmr_getinfo(&tmr, &info);
-  if (err) {
-    return err;
-  }
-
-  memset(&attr, 0, sizeof(tmr_attr_t));
-  attr.freq = 1000000UL;
-  attr.o_flags = TMR_FLAG_SET_TIMER | TMR_FLAG_IS_SOURCE_CPU | TMR_FLAG_IS_AUTO_RELOAD;
-  attr.period = SOS_USECOND_PERIOD; // only works if TMR_FLAG_IS_AUTO_RELOAD is supported
-  memset(&attr.pin_assignment, 0xff, sizeof(tmr_pin_assignment_t));
-
-  err = mcu_tmr_setattr(&tmr, &attr);
-  if (err) {
-    return err;
-  }
-
-  // Initialize the value of the timer to zero
-  err = mcu_tmr_set(&tmr, (void *)0);
-  if (err) {
-    return err;
-  }
-
-  if ((info.o_flags & TMR_FLAG_IS_AUTO_RELOAD) == 0) {
-    // The reset OC is only needed if TMR_FLAG_IS_AUTO_RELOAD is not supported
-    // Set the reset output compare value to reset the clock every SOS_USECOND_PERIOD
-
-    attr.channel.loc = SCHED_USECOND_TMR_RESET_OC;
-    attr.channel.value = SOS_USECOND_PERIOD;
-    attr.o_flags = TMR_FLAG_SET_CHANNEL | TMR_FLAG_IS_CHANNEL_RESET_ON_MATCH;
-    err = mcu_tmr_setattr(&tmr, &attr);
-    if (err) {
-      return err;
-    }
-
-    action.prio = 0;
-    action.channel = SCHED_USECOND_TMR_RESET_OC;
-    action.o_events = MCU_EVENT_FLAG_MATCH;
-    action.handler.callback = root_handle_usecond_overflow_event;
-    action.handler.context = 0;
-    err = mcu_tmr_setaction(&tmr, &action);
-    if (err) {
-      return -1;
-    }
-
-  } else {
-    action.prio = 0;
-    action.channel = 0; // doesn't matter
-    action.o_events = MCU_EVENT_FLAG_OVERFLOW;
-    action.handler.callback = root_handle_usecond_overflow_event;
-    action.handler.context = 0;
-    err = mcu_tmr_setaction(&tmr, &action);
-    if (err) {
-      return -1;
-    }
-  }
-
-  // Turn the timer on
-  err = mcu_tmr_enable(&tmr, 0);
-  if (err) {
-    return -1;
-  }
-
-  // This sets up the output compare unit used with the usleep() function
-  chan_req.loc = SCHED_USECOND_TMR_SLEEP_OC;
-  chan_req.value = SOS_USECOND_PERIOD + 1;
-  err = mcu_tmr_setchannel(&tmr, &chan_req);
-  if (err) {
-    return -1;
-  }
-
-  action.channel = SCHED_USECOND_TMR_SLEEP_OC;
-  action.o_events = MCU_EVENT_FLAG_MATCH;
-  action.handler.callback = root_handle_usecond_match_event;
-  action.handler.context = 0;
-  err = mcu_tmr_setaction(&tmr, &action);
-  if (err) {
-    return -1;
-  }
-
-#if SOS_PROCESS_TIMER_COUNT > 0
-  chan_req.loc = SCHED_USECOND_TMR_SYSTEM_TIMER_OC;
-  err = mcu_tmr_setchannel(&tmr, &chan_req);
-  if (err) {
-    return -1;
-  }
-
-  action.channel = SCHED_USECOND_TMR_SYSTEM_TIMER_OC;
-  action.o_events = MCU_EVENT_FLAG_MATCH;
-  action.handler.callback = root_handle_usecond_process_timer_match_event;
-  action.handler.context = 0;
-  err = mcu_tmr_setaction(&tmr, &action);
-  if (err) {
-    return -1;
-  }
-#endif
-
-  return 0;
 }

@@ -1,21 +1,4 @@
-/* Copyright 2011-2018 Tyler Gilbert;
- * This file is part of Stratify OS.
- *
- * Stratify OS is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Stratify OS is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- *
- *
- */
+// Copyright 2016-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
 #include "cortexm/mpu.h"
 #include "sos/sos.h"
@@ -24,6 +7,7 @@
 // returns 1 if target and size fit in task_memory
 static int is_part_of_memory(void *target, int size, volatile task_memory_t *task_memory);
 
+static void svcall_setstackguard(void *arg) MCU_ROOT_CODE;
 static int init_os_memory_protection(task_memories_t *os_mem);
 int task_mpu_calc_protection(task_memories_t *mem);
 
@@ -110,7 +94,7 @@ typedef struct {
   int stacksize;
 } root_setstackguard_t;
 
-static void svcall_setstackguard(void *arg) {
+void svcall_setstackguard(void *arg) {
   CORTEXM_SVCALL_ENTER();
   root_setstackguard_t *p = arg;
   p->tid = task_root_set_stackguard(p->tid, p->stackaddr, p->stacksize);

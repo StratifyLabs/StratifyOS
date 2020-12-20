@@ -1,21 +1,5 @@
-/* Copyright 2011-2018 Tyler Gilbert;
- * This file is part of Stratify OS.
- *
- * Stratify OS is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Stratify OS is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- *
- *
- */
+// Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
+
 
 #include "sos/sos.h"
 #include <errno.h>
@@ -44,26 +28,34 @@ static int populate_file_header(
   appfs_file_t *file,
   const mem_pageinfo_t *page_info,
   int type);
-static int get_flash_page_type(const devfs_device_t *dev, u32 address, u32 size);
-static int is_flash_blank(u32 address, u32 size);
 static int
-read_appfs_file_header(const devfs_device_t *dev, u32 address, appfs_file_t *dest);
+get_flash_page_type(const devfs_device_t *dev, u32 address, u32 size) MCU_ROOT_EXEC_CODE;
+static int is_flash_blank(u32 address, u32 size) MCU_ROOT_EXEC_CODE;
+static int
+read_appfs_file_header(const devfs_device_t *dev, u32 address, appfs_file_t *dest)
+  MCU_ROOT_EXEC_CODE;
 static u32 find_protectable_addr(
   const devfs_device_t *dev,
   int size,
   int type,
   int *page,
   u32 *protectable_size,
-  int skip_protection);
+  int skip_protection) MCU_ROOT_EXEC_CODE;
 static u32 find_protectable_free(
   const devfs_device_t *dev,
   int type,
   int size,
   int *page,
   u32 *protectable_size,
-  int skip_protection);
+  int skip_protection) MCU_ROOT_EXEC_CODE;
 
-static u8 calc_checksum(const char *name) {
+static int
+check_for_free_space(const devfs_device_t *dev, int start_page, int type, int size)
+  MCU_ROOT_EXEC_CODE;
+
+static u8 calc_checksum(const char *name) MCU_ROOT_EXEC_CODE;
+
+u8 calc_checksum(const char *name) {
   int i;
   u8 checksum;
   checksum = 0;

@@ -1,21 +1,4 @@
-/* Copyright 2011-2018 Tyler Gilbert;
- * This file is part of Stratify OS.
- *
- * Stratify OS is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Stratify OS is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- *
- *
- */
+// Copyright 2016-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
 #include "cortexm/mpu.h"
 #include "cortexm_local.h"
@@ -135,18 +118,13 @@ void cortexm_set_unprivileged_mode() {
   __set_CONTROL(control);
 }
 
-int cortexm_is_root_mode() {
-  register u32 control;
-  control = __get_CONTROL();
-  return (control & 0x02) == 0;
-}
-
 void cortexm_set_thread_mode() {
   register u32 control;
   control = __get_CONTROL();
   control |= 0x02;
   __set_CONTROL(control);
 }
+
 void cortexm_reset_handler() {
   cortexm_initialize_heap();
   sos_handle_event(SOS_EVENT_ROOT_RESET, 0);
