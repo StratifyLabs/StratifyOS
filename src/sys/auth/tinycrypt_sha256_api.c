@@ -20,67 +20,61 @@
 #include <sdk/api.h>
 
 #include "config.h"
-#include <errno.h>
-#include <stdlib.h>
 #include "device/auth.h"
 #include "sos/api/crypt_api.h"
+#include <errno.h>
+#include <stdlib.h>
 
 #include "tinycrypt/constants.h"
 #include "tinycrypt/sha256.h"
 
-int tinycrypt_sha256_init(void ** context){
-	void * c = malloc(sizeof(struct tc_sha256_state_struct));
-	if( c == 0 ){
-		return -1;
-	}
-	memset(c, 0, sizeof(struct tc_sha256_state_struct));
-	*context = c;
-	return 0;
+int tinycrypt_sha256_init(void **context) {
+  void *c = malloc(sizeof(struct tc_sha256_state_struct));
+  if (c == 0) {
+    return -1;
+  }
+  memset(c, 0, sizeof(struct tc_sha256_state_struct));
+  *context = c;
+  return 0;
 }
 
-void tinycrypt_sha256_deinit(void ** context){
-	if( *context != 0 ){
-		void * c = *context;
-		*context = 0;
-		free(c);
-	}
+void tinycrypt_sha256_deinit(void **context) {
+  if (*context != 0) {
+    void *c = *context;
+    *context = 0;
+    free(c);
+  }
 }
 
-int tinycrypt_sha256_start(void * context){
-	if( tc_sha256_init(context) == TC_CRYPTO_FAIL ){
-		return -1;
-	}
-	return 0;
+int tinycrypt_sha256_start(void *context) {
+  if (tc_sha256_init(context) == TC_CRYPTO_FAIL) {
+    return -1;
+  }
+  return 0;
 }
 
-int tinycrypt_sha256_update(void * context, const unsigned char * input, u32 size){
-	if( tc_sha256_update(context, (const u8*)input, size) == TC_CRYPTO_FAIL ){
-		return -1;
-	}
-	return 0;
+int tinycrypt_sha256_update(void *context, const unsigned char *input, u32 size) {
+  if (tc_sha256_update(context, (const u8 *)input, size) == TC_CRYPTO_FAIL) {
+    return -1;
+  }
+  return 0;
 }
 
-int tinycrypt_sha256_finish(void * context, unsigned char * output, u32 size){
-	if( size != 32 ){
-		return -1;
-	}
-	if( tc_sha256_final(output, context) == TC_CRYPTO_FAIL ){
-		return -1;
-	}
-	return 0;
+int tinycrypt_sha256_finish(void *context, unsigned char *output, u32 size) {
+  if (size != 32) {
+    return -1;
+  }
+  if (tc_sha256_final(output, context) == TC_CRYPTO_FAIL) {
+    return -1;
+  }
+  return 0;
 }
 
 const crypt_hash_api_t tinycrypt_sha256_hash_api = {
-	.sos_api = {
-		.name = "tinycrypt_sha256_hash",
-		.version = 0x0001,
-		.git_hash = SOS_GIT_HASH
-	},
-	.init = tinycrypt_sha256_init,
-	.deinit = tinycrypt_sha256_deinit,
-	.start = tinycrypt_sha256_start,
-	.update = tinycrypt_sha256_update,
-	.finish = tinycrypt_sha256_finish
-};
-
-
+  .sos_api =
+    {.name = "tinycrypt_sha256_hash", .version = 0x0001, .git_hash = SOS_GIT_HASH},
+  .init = tinycrypt_sha256_init,
+  .deinit = tinycrypt_sha256_deinit,
+  .start = tinycrypt_sha256_start,
+  .update = tinycrypt_sha256_update,
+  .finish = tinycrypt_sha256_finish};

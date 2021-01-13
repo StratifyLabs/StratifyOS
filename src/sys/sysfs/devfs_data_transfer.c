@@ -1,6 +1,5 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
-
 #include "sos/debug.h"
 #include <errno.h>
 #include <reent.h>

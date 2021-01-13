@@ -1,11 +1,11 @@
-// Copyright 2016-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
+// Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
-#include <errno.h>
-#include <unistd.h>
 #include "mcu/mcu.h"
 #include "mcu/pio.h"
 #include "mcu/spi.h"
 #include "sos/debug.h"
+#include <errno.h>
+#include <unistd.h>
 
 #include "sst25vf_local.h"
 

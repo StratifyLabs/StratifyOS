@@ -1,3 +1,4 @@
+// Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
 #include "mcu/pio.h"
 #include "sos/debug.h"

@@ -46,8 +46,13 @@ int link_mkdir(link_transport_mdriver_t *driver, const char *path, int mode) {
     return LINK_TRANSFER_ERR;
   }
 
+  u32 timeout = driver->phy_driver.timeout;
+  driver->phy_driver.timeout = 1000;
+  link_debug(
+    LINK_DEBUG_MESSAGE, "wait for mkdir reply, timeout %d", driver->phy_driver.timeout);
   // read the reply to see if the file opened correctly
   err = link_transport_masterread(driver, &reply, sizeof(reply));
+  driver->phy_driver.timeout = timeout;
   if (err < 0) {
     link_error("Failed to get reply");
     return err;

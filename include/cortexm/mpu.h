@@ -118,9 +118,7 @@ u32 mpu_calc_region(
   mpu_memory_t type,
   int executable,
   uint32_t *rbar,
-  uint32_t *rasr) MCU_ROOT_CODE;
-
-int mpu_getnextpowerof2(u32 size) MCU_ROOT_CODE;
+  uint32_t *rasr);
 
 int mpu_dev_init() MCU_ROOT_CODE;
 

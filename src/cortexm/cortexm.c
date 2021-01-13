@@ -1,4 +1,4 @@
-// Copyright 2016-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
+// Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
 #include "cortexm/mpu.h"
 #include "cortexm_local.h"

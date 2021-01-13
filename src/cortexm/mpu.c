@@ -1,4 +1,4 @@
-// Copyright 2016-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
+// Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
 #include "cortexm/mpu.h"
 #include "cortexm_local.h"
@@ -61,20 +61,6 @@ int mpu_disable_region(int region) {
   rasr &= ~(0x01);
   MPU->RASR = rasr;
   return 0;
-}
-
-int mpu_getnextpowerof2(u32 size) {
-  int i;
-  for (i = 31; i > 0; i--) {
-    if (size & (1 << i)) { // cppcheck-suppress[shiftTooManyBitsSigned]
-      if (size == (1 << i)) {
-        return (1 << i);
-      } else {
-        return (1 << (i + 1));
-      }
-    }
-  }
-  return 1;
 }
 
 u32 mpu_calc_region(
@@ -172,21 +158,24 @@ u32 mpu_calc_region(
 
   /*
    * Bits 19, 20, 21 = TEX
-   * Bit 18 = shareable (can't be cached) (S)
+   * Bit 18 = shareable (can't be cached?) (S)
    * Bit 17 = cacheable (C)
    * Bit 16 = write-back (B)
    *
    *
    */
+  const u32 default_cache_policy =
+    (1 << 21) | (1 << 20) | (1 << 19) | (0 << 18) | (1 << 17) | (0 << 16);
+
   switch (type) {
   case MPU_MEMORY_EXTERNAL_SRAM:
-    rasr_value |= (1 << 17); // Outer and Inner Write-Back, no Write-Allocate
+    rasr_value |= default_cache_policy; // Outer and Inner Write-Back, no Write-Allocate
     break;
   case MPU_MEMORY_SRAM:
-    rasr_value |= (1 << 17); // Outer and Inner Write-Back, no Write-Allocate
+    rasr_value |= default_cache_policy; // Outer and Inner Write-Back, no Write-Allocate
     break;
   case MPU_MEMORY_FLASH:
-    rasr_value |= (1 << 17); // Outer and Inner Write-Back, no Write-Allocate
+    rasr_value |= default_cache_policy; // Outer and Inner Write-Back, no Write-Allocate
     break;
   case MPU_MEMORY_LCD:
   case MPU_MEMORY_PERIPHERALS:
