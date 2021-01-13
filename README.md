@@ -1,6 +1,8 @@
 # StratifyOS
 
-![Build](https://github.com/StratifyLabs/StratifyOS/workflows/Build/badge.svg)
+## What's New
+
+Welcome to Stratify OS 4. Version 3 is available as [master](https://github.com/StratifyLabs/StratifyOS/tree/master). The main change from Stratify OS 3 to 4 is how to port and integrate with the board support package. See the [porting guide](guides/Porting.md) for details.
 
 [Getting Started Guide](guides/Getting-Started.md)
 

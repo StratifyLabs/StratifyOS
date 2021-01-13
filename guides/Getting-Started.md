@@ -67,7 +67,6 @@ sl cloud.login
 
 Now, copy your credentials from the website to the command line.
 
-
 **Install the SDK**
 
 Use `sl` to install the GCC cross-compiler on your machine and build the latest libraries.

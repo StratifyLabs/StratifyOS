@@ -15,6 +15,7 @@
 #define SOS_USECOND_PERIOD (1000000UL * SOS_SCHEDULER_TIMEVAL_SECONDS)
 #define SOS_PROCESS_TIMER_COUNT 4
 
+//not used for porting, just needs to be here
 typedef struct {
   u32 o_flags;
   struct mcu_timeval value;
@@ -22,92 +23,146 @@ typedef struct {
   struct sigevent sigevent;
 } sos_process_timer_t;
 
+//not used for porting, just needs to be here
 typedef struct {
-  pthread_attr_t attr /*! This holds the task's pthread attributes */;
-  volatile void *block_object /*! The blocking object */;
+  pthread_attr_t attr;
+  volatile void *block_object;
   union {
-    volatile int exit_status /*! The task's exit status */;
-    void *(*init)(void *)/*! Task 0 init routine */;
+    volatile int exit_status;
+    void *(*init)(void *);
   };
   pthread_mutex_t
-    *signal_delay_mutex /*! The mutex to lock if the task cannot be interrupted */;
-  volatile struct mcu_timeval wake /*! When to wake the task */;
-  volatile u16 flags /*! This indicates whether the process is active or not */;
-  trace_id_t trace_id /*! Trace ID is PID is being traced (0 otherwise) */;
+    *signal_delay_mutex;
+  volatile struct mcu_timeval wake;
+  volatile u16 flags;
+  trace_id_t trace_id;
   sos_process_timer_t timer[SOS_PROCESS_TIMER_COUNT];
 } sched_task_t;
 
 typedef struct {
+  //pointer to device filesystem, required
   const devfs_device_t *devfs_list;
+  //pointer to device filesystem, required
   const sysfs_t *rootfs_list;
+  //name of device in /dev for standard input
   const char *stdin_dev;
+  //name of device in /dev for standard output
   const char *stdout_dev;
+  //name of device in /dev for standard error
+  //this can be the same as stdout
   const char *stderr_dev;
+  //device name for system trace (ie /dev/trace)
   const char *trace_dev;
 } sos_fs_config_t;
 
 typedef struct {
+  //OR SOS_DEBUG_* flags
   u32 flags;
+  //initialize serial tracing
   void (*initialize)();
+  //write to serial trace output
   void (*write)(const void *buf, int nbyte);
+  //write to trace buffer (root call)
   void (*trace_event)(void *event);
+  //enable the board LED (root call)
   void (*enable_led)();
+  //disable the board LED (root call)
   void (*disable_led)();
 } sos_debug_config_t;
 
+//Stratify OS needs a 32-bit microsecond timer for all timing
+//of the OS. You can optionally provide submicrosecond
+//precision with the nanoseconds() callback
 typedef struct {
+  //initialize timing
   void (*initialize)(
     int (*handle_match_channel0)(void *context, const mcu_event_t *data),
     int (*handle_match_channel1)(void *context, const mcu_event_t *data),
     int (*handle_overflow)(void *context, const mcu_event_t *data));
+  //turn the timer on
   void (*enable)();
+  //turn the timer off and return current value
   u32 (*disable)();
+  //set the value of the compare channel
   void (*set_channel)(const mcu_channel_t *channel);
+  //get the value of the compare channel
   void (*get_channel)(mcu_channel_t *channel);
+  //return the clock's microsecond cound
   u32 (*microseconds)();
+  //use for sub-microsecond precision
+  //just return 0 if not available
   u32 (*nanoseconds)();
   u32 frequency;
 } sos_clock_config_t;
 
 typedef struct {
+  //total number of tasks to support
   u8 task_total;
+  //stack size of the first thread
   u16 start_stack_size;
+  //function of the first thread
   void *(*start)(void *);
+  //arguments passed to start()
   void *start_args;
 } sos_task_config_t;
 
+//This is only needed if you are using USB
 typedef struct {
-  // low level USB API
+  //size of control EP (usually 64)
   u32 control_endpoint_max_size;
+  //set the USB attributes -- see the STM32 example
   int (*set_attributes)(const devfs_handle_t *handle, void *ctl);
+  //set a callback for the spec'd action -- see the STM32 example
   int (*set_action)(const devfs_handle_t *handle, mcu_action_t *action);
+  //root write to the specified endpoint
   void (*write_endpoint)(
     const devfs_handle_t *handle,
     u32 endpoint_num,
     const void *src,
     u32 size);
+  //root read from the specified endpoint
   int (*read_endpoint)(const devfs_handle_t *handle, u32 endpoint_num, void *dest);
 } sos_usb_config_t;
 
+
 typedef struct {
+  //pointer to secret_key_size-bytes used as a secret system key
   const void *secret_key_address;
+  //size of secret key (usually 32 bytes)
   u32 secret_key_size;
+  //number of bytes used for the system heap/stack space
   u32 memory_size;
   u32 os_mpu_text_mask;
   u32 flags;
+  //null-terminated name of the board
   const char *name;
+  //null-terminated version
   const char *version;
+  //SOS_GIT_HASH
   const char *git_hash;
+  //unused
   const char *mcu_git_hash;
+  //OS package ID -- can be ""
   const char *id;
+  //team ID -- can be ""
   const char *team_id;
+  //location of the reset vector table
   void *vector_table;
+  //root initialization routine
   void (*initialize)();
+  //these are convenience functions for the board support package
+  //they are not used by Stratify OS
+  //root pin IO set attributes -- see STM32 example
   void (*pio_set_attributes)(int port, const pio_attr_t *attr);
+  //root pin IO write
   void (*pio_write)(int port, u32 mask, int value);
+  //root pin IO read
   u32 (*pio_read)(int port, u32 mask);
+  //function to get the MCU serial number
   void (*get_serial_number)(mcu_sn_t *serial_number);
+  //user implementation of the kernel_request() available to apps
   int (*kernel_request)(int request, void *data);
+  //this is how "shared" libraries are implemented -- see STM32 example
   const void *(*kernel_request_api)(u32 request);
 } sos_sys_config_t;
 
@@ -135,6 +190,9 @@ typedef struct {
  *
  */
 
+//only needed on cortex M7
+//can be left as do nothing functions
+//if the cache is not used
 typedef struct {
   void (*enable)();
   void (*disable)();
@@ -146,15 +204,15 @@ typedef struct {
 } sos_cache_config_t;
 
 typedef struct {
+  //called during RR scheduling when no tasks are active
   void (*idle)();
+  //called when application calls hibernate()
   void (*hibernate)(int seconds);
+  //called when appliation calls powerdown()
   void (*powerdown)();
 } sos_sleep_config_t;
 
-/*! \brief Stratify Board Configuration Structure
- * \details This structure holds the compiler-link time
- * configuration data.
- */
+
 typedef struct MCU_PACK {
   sos_sys_config_t sys;
   sos_fs_config_t fs;

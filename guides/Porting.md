@@ -11,7 +11,15 @@ There is planned support for the ARM Cortex M23 and M33 architectures though no 
 
 # Configuration
 
-Stratify OS is ported using link level configuration. Your board support package must provide a single variable populated with constant data.
+Stratify OS is ported using link level configuration. Your board support package must provide the following variable symbols:
+
+```c++
+extern volatile sched_task_t sos_sched_table[];
+extern volatile task_t sos_task_table[];
+extern const sos_config_t sos_config;
+```
+
+The `sos_config_t` structure looks like this:
 
 ```c++
 typedef struct MCU_PACK {
@@ -28,7 +36,9 @@ typedef struct MCU_PACK {
 } sos_config_t;
 ```
 
-The details of the `sos_config_t` are listed in the [sos/config.h](../include/sos/config.h) header file.
+The details of `sos_config_t` are listed in the [sos/config.h](../include/sos/config.h) header file. The code contains relevant comments for implementing the functionality.
+
+There is a sample project for a collection of [Nucleo144 development boards](https://github.com/StratifyLabs/StratifyOS-Nucleo144) that is also a great resource for understanding how to port to your own board.
 
 
 
