@@ -28,6 +28,16 @@ int sos_main() {
   return 0;
 }
 
+u64 sos_realtime() {
+  struct mcu_timeval tv;
+  if (cortexm_is_root_mode()) {
+    scheduler_timing_svcall_get_realtime(&tv);
+  } else {
+    cortexm_svcall(scheduler_timing_svcall_get_realtime, &tv);
+  }
+  return scheduler_timing_real64usec(&tv);
+}
+
 void sos_handle_event(int event, void *args) {
   if (sos_config.event_handler != NULL) {
     sos_config.event_handler(event, args);

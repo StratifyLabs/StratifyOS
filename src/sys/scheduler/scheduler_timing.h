@@ -24,9 +24,7 @@ struct mcu_timeval scheduler_timing_add_mcu_timeval(const struct mcu_timeval * a
 struct mcu_timeval scheduler_timing_subtract_mcu_timeval(const struct mcu_timeval * a, const struct mcu_timeval * b);
 
 u32 scheduler_timing_get_realtime();
-
-
-
+u64 scheduler_timing_real64usec(struct mcu_timeval *tv);
 
 //per process timers
 #define SCHEDULER_TIMING_PROCESS_TIMER_FLAG_IS_INITIALIZED (1<<0)

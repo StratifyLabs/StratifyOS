@@ -40,6 +40,10 @@ static inline u8 scheduler_timing_process_timer_count() {
 static void update_tmr_for_process_timer_match(volatile sos_process_timer_t *timer)
   MCU_ROOT_EXEC_CODE;
 
+u64 scheduler_timing_real64usec(struct mcu_timeval *tv) {
+  return tv->tv_usec + (u64)tv->tv_sec * (u64)SOS_USECOND_PERIOD;
+}
+
 void scheduler_timing_init() {
   sos_config.clock.initialize(
     root_handle_usecond_match_event, root_handle_usecond_process_timer_match_event,

@@ -16,7 +16,13 @@
 
 int accept(int s, struct sockaddr *addr, socklen_t *addrlen) {
   if (FILDES_IS_SOCKET(s)) {
-    return sos_config.socket_api->accept(s & ~FILDES_SOCKET_FLAG, addr, addrlen);
+    int accept_socket =
+      sos_config.socket_api->accept(s & ~FILDES_SOCKET_FLAG, addr, addrlen);
+    if (accept_socket < 0) {
+      return -1;
+    }
+    accept_socket |= FILDES_SOCKET_FLAG;
+    return accept_socket;
   }
   errno = ENOTSOCK;
   return -1;

@@ -473,6 +473,8 @@ void sos_led_root_enable();
 void sos_led_root_disable();
 void sos_led_root_error();
 
+u64 sos_realtime();
+
 #include "config.h"
 
 #ifdef __cplusplus
