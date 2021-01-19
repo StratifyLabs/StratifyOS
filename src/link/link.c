@@ -26,7 +26,9 @@ const link_transport_mdriver_t link_default_driver = {
   .phy_driver.wait = link_phy_wait,
   .phy_driver.timeout = 100,
   .phy_driver.o_flags = 0,
-  .transport_version = 0};
+  .transport_version = 0,
+  .path_max = LINK_PATH_MAX,
+  .arg_max = LINK_PATH_ARG_MAX};
 
 int link_errno;
 

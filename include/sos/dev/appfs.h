@@ -5,6 +5,8 @@
 
 #define APPFS_VERSION (0x030000)
 
+#include "../fs/types.h"
+
 #include "sos/link/types.h"
 #define APPFS_RAM_USAGE_WORDS(x) ((x * 2 + 31) / 32)
 #define APPFS_IOC_IDENT_CHAR 'a'
@@ -53,8 +55,8 @@ typedef struct MCU_PACK {
   u32 ram_size;
   u32 o_flags;
   u32 signature;
-  u8 id[LINK_NAME_MAX];
-  u8 name[LINK_NAME_MAX];
+  u8 id[APPFS_ID_MAX + 1];
+  u8 name[APPFS_NAME_MAX + 1];
   u32 resd[8];
 } appfs_info_t;
 
@@ -83,10 +85,9 @@ typedef struct MCU_PACK {
 } appfs_exec_t; // 32 bytes
 
 typedef struct MCU_PACK {
-  char name[LINK_NAME_MAX] /*! The name of the process or file (must be specially written
-                              to the binary) */
-    ;
-  char id[LINK_NAME_MAX];
+  /*! The name of the process or file */
+  char name[APPFS_NAME_MAX + 1];
+  char id[APPFS_ID_MAX + 1];
   u16 mode /*! Access mode */;
   u16 version /*! BCD 0xMMmm version (e.g, 1.2 is 0x0102) */;
 } appfs_header_t; // 28 + 24 bytes

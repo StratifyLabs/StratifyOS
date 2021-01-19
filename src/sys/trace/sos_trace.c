@@ -212,7 +212,7 @@ u32 lookup_caller_address(u32 input) {
  */
 
 int sos_trace_stack(u32 count) {
-
+  return 0;
   const u32 *sp;
   cortexm_svcall(svcall_get_stack_pointer, &sp);
 

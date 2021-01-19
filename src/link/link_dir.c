@@ -216,10 +216,12 @@ int link_readdir_r(
     return reply.err;
   }
 
-  struct link_dirent link_entry;
+  struct link_dirent link_entry = {0};
   // Read the bulk in buffer for the result of the read
   link_debug(LINK_DEBUG_MESSAGE, "Read link dirent");
+
   len = link_transport_masterread(driver, &link_entry, sizeof(struct link_dirent));
+
   if (len < 0) {
     link_error("Failed to read dirent");
     return -1;
@@ -230,7 +232,7 @@ int link_readdir_r(
   }
 
   memset(entry, 0, sizeof(struct dirent));
-  strncpy(entry->d_name, link_entry.d_name, LINK_NAME_MAX);
+  strncpy(entry->d_name, link_entry.d_name, sizeof(link_entry.d_name) - 1);
   entry->d_ino = link_entry.d_ino;
 
   return 0;

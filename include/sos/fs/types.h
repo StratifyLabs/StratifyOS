@@ -5,7 +5,14 @@
 
 #include <sdk/types.h>
 
+#define DEVFS_NAME_MAX 23
+#define APPFS_NAME_MAX 23
+#define APPFS_ID_MAX 23
+#define ASSETFS_NAME_MAX 255
+
+#if !defined __link
 typedef open_file_t sysfs_file_t;
+#endif
 
 enum sysfs_user { SYSFS_ROOT = 0, SYSFS_USER = 1, SYSFS_GROUP = 0 };
 
@@ -50,7 +57,7 @@ typedef struct {
 // mcu_execute_read_complete(devfs_transfer_handler_t * transfer_handler);
 
 typedef struct {
-  char name[NAME_MAX] /*! The name of the device */;
+  char name[DEVFS_NAME_MAX + 1] /*! The name of the device */;
   u16 uid /*! The user ID of the device (either user or root) */;
   u16 mode /*! The file access values */;
   devfs_driver_t driver /*! \brief The driver functions */;
@@ -59,7 +66,7 @@ typedef struct {
 
 #define DEVFS_IOC_IDENT_CHAR 'D'
 
-typedef char devfs_get_name_t[NAME_MAX];
+typedef char devfs_get_name_t[DEVFS_NAME_MAX + 1];
 
 #define I_DEVFS_GETNAME _IOCTLW(DEVFS_IOC_IDENT_CHAR, I_MCU_TOTAL, devfs_get_name_t)
 

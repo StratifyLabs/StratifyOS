@@ -90,7 +90,7 @@ int link_open(link_transport_mdriver_t *driver, const char *path, int flags, ...
     mode = 0;
   }
 
-  if (driver == 0) {
+  if (driver == NULL) {
     link_debug(LINK_DEBUG_INFO, "posix call with (%s, 0x%X, %o)", path, flags, mode);
 
     int result = posix_open(path, flags | POSIX_OPEN_FLAGS, mode);
@@ -110,9 +110,15 @@ int link_open(link_transport_mdriver_t *driver, const char *path, int flags, ...
     driver->phy_driver.handle);
 
   op.open.cmd = LINK_CMD_OPEN;
-  op.open.path_size = strlen(path) + 1;
+  op.open.path_size = strnlen(path, LINK_PATH_MAX) + 1;
   op.open.flags = (u32)convert_flags(flags) | LINK_O_NONBLOCK;
   op.open.mode = mode;
+
+  if (op.open.path_size > driver->path_max) {
+    link_error("name too long %d > %d", op.open.path_size, driver->path_max);
+    errno = ENAMETOOLONG;
+    return -1;
+  }
 
   link_debug(LINK_DEBUG_MESSAGE, "Write open op (%p)", driver->phy_driver.handle);
   err = link_transport_masterwrite(driver, &op, sizeof(link_open_t));
@@ -417,12 +423,19 @@ int link_symlink(
     return LINK_TRANSFER_ERR;
   }
   op.symlink.cmd = LINK_CMD_LINK;
-  op.symlink.path_size_old = strlen(old_path) + 1;
-  op.symlink.path_size_new = strlen(new_path) + 1;
+  op.symlink.path_size_old = strnlen(old_path, LINK_PATH_MAX_LARGE) + 1;
+  op.symlink.path_size_new = strnlen(new_path, LINK_PATH_MAX_LARGE) + 1;
 
   link_debug(
     LINK_DEBUG_INFO, "call with (%s, %s) and handle %p", old_path, new_path,
     driver->phy_driver.handle);
+
+  if (
+    (op.symlink.path_size_old > driver->path_max)
+    || (op.symlink.path_size_old > driver->path_max)) {
+    errno = ENAMETOOLONG;
+    return -1;
+  }
 
   err = link_transport_masterwrite(driver, &op, sizeof(link_symlink_t));
   if (err < 0) {
@@ -468,6 +481,11 @@ int link_unlink(link_transport_mdriver_t *driver, const char *path) {
 
   link_debug(
     LINK_DEBUG_INFO, "call with (%s) and handle %p", path, driver->phy_driver.handle);
+
+  if (strnlen(path, LINK_PATH_MAX_LARGE) > driver->path_max) {
+    errno = ENAMETOOLONG;
+    return -1;
+  }
 
   op.unlink.cmd = LINK_CMD_UNLINK;
   op.unlink.path_size = strlen(path) + 1;
@@ -555,7 +573,6 @@ int link_stat(link_transport_mdriver_t *driver, const char *path, struct stat *b
     }
 
     memcpy(buf, &tmp, sizeof(tmp));
-
     return result;
   }
 
@@ -567,6 +584,11 @@ int link_stat(link_transport_mdriver_t *driver, const char *path, struct stat *b
   link_debug(
     LINK_DEBUG_INFO, "call with (%s, %p) and handle %p", path, buf,
     driver->phy_driver.handle);
+
+  if (strnlen(path, LINK_PATH_MAX_LARGE) > driver->path_max) {
+    errno = ENAMETOOLONG;
+    return -1;
+  }
 
   op.stat.cmd = LINK_CMD_STAT;
   op.stat.path_size = strlen(path) + 1;
@@ -675,8 +697,14 @@ int link_rename(
     driver->phy_driver.handle);
 
   op.rename.cmd = LINK_CMD_RENAME;
-  op.rename.old_size = strlen(old_path) + 1;
-  op.rename.new_size = strlen(new_path) + 1;
+  op.rename.old_size = strnlen(old_path, LINK_PATH_MAX_LARGE) + 1;
+  op.rename.new_size = strnlen(new_path, LINK_PATH_MAX_LARGE) + 1;
+
+  if (
+    (op.rename.old_size > driver->path_max) || (op.rename.new_size > driver->path_max)) {
+    errno = ENAMETOOLONG;
+    return -1;
+  }
 
   err = link_transport_masterwrite(driver, &op, sizeof(link_rename_t));
   if (err < 0) {
@@ -722,6 +750,11 @@ int link_chown(link_transport_mdriver_t *driver, const char *path, int owner, in
     LINK_DEBUG_INFO, "call with (%s, %d, %d) and handle %p", path, owner, group,
     driver->phy_driver.handle);
 
+  if (strnlen(path, LINK_PATH_MAX_LARGE) > driver->path_max) {
+    errno = ENAMETOOLONG;
+    return -1;
+  }
+
   op.chown.cmd = LINK_CMD_CHOWN;
   op.chown.path_size = strlen(path) + 1;
   op.chown.uid = owner;
@@ -764,6 +797,11 @@ int link_chmod(link_transport_mdriver_t *driver, const char *path, int mode) {
   link_debug(
     LINK_DEBUG_INFO, "call with (%s, %o) and handle %p", path, mode,
     driver->phy_driver.handle);
+
+  if (strnlen(path, LINK_PATH_MAX_LARGE) > driver->path_max) {
+    errno = ENAMETOOLONG;
+    return -1;
+  }
 
   op.chmod.cmd = LINK_CMD_CHMOD;
   op.chmod.path_size = strlen(path) + 1;

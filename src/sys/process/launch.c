@@ -1,4 +1,4 @@
-/* Copyright 2011-2018 Tyler Gilbert; 
+/* Copyright 2011-2018 Tyler Gilbert;
  * This file is part of Stratify OS.
  *
  * Stratify OS is free software: you can redistribute it and/or modify
@@ -16,74 +16,72 @@
 
 #include "config.h"
 
-#include "sos/link.h"
-#include "sos/fs/devfs.h"
 #include "cortexm/task.h"
 #include "sos/debug.h"
+#include "sos/fs/devfs.h"
+#include "sos/link.h"
 
-#include <fcntl.h>
 #include <errno.h>
+#include <fcntl.h>
 
-#include "sos/fs/sysfs.h"
-#include "sos/sos.h"
-#include "process_start.h"
 #include "../scheduler/scheduler_local.h"
 #include "../sysfs/appfs_local.h"
+#include "process_start.h"
+#include "sos/fs/sysfs.h"
+#include "sos/sos.h"
 
-#define PATH_ARG_MAX LINK_PATH_ARG_MAX
+#define PATH_ARG_MAX ARG_MAX
 
 int launch(
-		const char * path,
-		char * exec_dest,
-		const char * args,
-		int options,
-		int ram_size,
-		int (*update_progress)(const void *, int, int),
-		const void * update_context,
-		char *const envp[]
-		){
+  const char *path,
+  char *exec_dest,
+  const char *args,
+  int options,
+  int ram_size,
+  int (*update_progress)(const void *, int, int),
+  const void *update_context,
+  char *const envp[]) {
 
-	char exec_path[PATH_ARG_MAX];
+  char exec_path[PATH_ARG_MAX + 1];
 
-	//check if path exists
-	if( access(path, R_OK) < 0 ){
-		return -1;
-	}
+  // check if path exists
+  if (access(path, R_OK) < 0) {
+    return -1;
+  }
 
+  if (args != 0) {
+    if (strnlen(args, PATH_ARG_MAX) > PATH_ARG_MAX - PATH_MAX) {
+      errno = ENAMETOOLONG;
+      return -1;
+    }
+  }
 
-	if( args != 0 ){
-		if( strnlen(args, PATH_ARG_MAX) > PATH_ARG_MAX - PATH_MAX ){
-			errno=ENAMETOOLONG;
-			return -1;
-		}
-	}
+  if (options & APPFS_FLAG_IS_REPLACE) {
+    // kill the process if it is running (or abort)
 
-	if( options & APPFS_FLAG_IS_REPLACE ){
-		//kill the process if it is running (or abort)
+    // delete the image and re-install
+  }
 
-		//delete the image and re-install
+  // if path is already in app then there is no need to install -- just execute
+  if (strncmp(path, "/app/", 5) != 0) {
 
-	}
+    if (
+      install(path, exec_path, options, ram_size, update_progress, update_context) < 0) {
+      return -1;
+    }
 
-	//if path is already in app then there is no need to install -- just execute
-	if( strncmp(path, "/app/", 5) != 0 ){
+  } else {
+    strncpy(exec_path, path, PATH_ARG_MAX);
+  }
 
-		if( install(path, exec_path, options, ram_size, update_progress, update_context) < 0 ){
-			return -1;
-		}
+  if (exec_dest != 0) {
+    strncpy(exec_dest, exec_path, PATH_MAX);
+  }
 
-	} else {
-		strncpy(exec_path, path, PATH_ARG_MAX-1);
-	}
+  if (args) {
+    strncat(exec_path, " ", PATH_ARG_MAX);
+    strncat(exec_path, args, PATH_ARG_MAX);
+  }
 
-	if( exec_dest != 0 ){
-		strncpy(exec_dest, exec_path, PATH_MAX-1);
-	}
-
-	if( args ){
-		strncat(exec_path, " ", PATH_ARG_MAX-1);
-		strncat(exec_path, args, PATH_ARG_MAX-1);
-	}
-
-	return process_start(exec_path, envp);
+  return process_start(exec_path, envp);
 }

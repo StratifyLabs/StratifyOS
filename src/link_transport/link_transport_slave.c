@@ -20,7 +20,7 @@ int link_transport_slaveread(
   int (*callback)(void *, void *, int),
   void *context) {
   // get sos board config for link transport
-  if (driver->transport_read == 0) {
+  if (driver->transport_read == NULL) {
     cortexm_svcall(transport_svcall_fatal, "transport read");
   }
   return driver->transport_read(driver, buf, nbyte, callback, context);

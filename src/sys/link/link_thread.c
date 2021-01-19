@@ -1,6 +1,5 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
-
 /*! \addtogroup LINK
  * @{
  *
@@ -39,6 +38,8 @@ static int write_device(link_transport_driver_t *driver, int fildes, int size);
 static int read_device_callback(void *context, void *buf, int nbyte);
 static int write_device_callback(void *context, void *buf, int nbyte);
 static void translate_link_stat(struct link_stat *dest, struct stat *src);
+
+static int read_path(link_transport_driver_t *driver, char *path, size_t size);
 
 typedef struct {
   link_op_t op;
@@ -172,10 +173,13 @@ void link_cmd_readserialno(link_transport_driver_t *driver, link_data_t *args) {
 }
 
 void link_cmd_open(link_transport_driver_t *driver, link_data_t *args) {
-  char path[PATH_MAX];
   errno = 0;
-  args->reply.err =
-    link_transport_slaveread(driver, path, args->op.open.path_size, NULL, NULL);
+  char path[PATH_MAX + 1];
+  if (read_path(driver, path, args->op.open.path_size) < 0) {
+    driver->flush(driver->handle);
+    return;
+  }
+
   args->reply.err = open(path, args->op.open.flags, args->op.open.mode);
   if (args->reply.err < 0) {
     sos_debug_log_error(SOS_DEBUG_LINK, "Failed to open %s (%d)", path, errno);
@@ -184,20 +188,22 @@ void link_cmd_open(link_transport_driver_t *driver, link_data_t *args) {
 }
 
 void link_cmd_link(link_transport_driver_t *driver, link_data_t *args) {
-  char path[PATH_MAX];
-  args->reply.err = link_transport_slaveread(
-    driver, path, args->op.symlink.path_size_old, NULL, NULL); // send final ack
+  char old_path[PATH_MAX + 1];
+  if (read_path(driver, old_path, args->op.symlink.path_size_old) < 0) {
+    driver->flush(driver->handle);
+    return;
+  }
 
-  if (args->reply.err == args->op.symlink.path_size_old) {
-    char path_new[PATH_MAX];
-    args->reply.err = link_transport_slaveread(
-      driver, path_new, args->op.symlink.path_size_new, NULL,
-      NULL); // don't send final ack
-    args->reply.err = link(path, path_new);
-    if (args->reply.err < 0) {
-      sos_debug_log_error(SOS_DEBUG_LINK, "Failed to link %s (%d)", path, errno);
-      args->reply.err_number = errno;
-    }
+  char new_path[PATH_MAX + 1];
+  if (read_path(driver, new_path, args->op.symlink.path_size_new) < 0) {
+    driver->flush(driver->handle);
+    return;
+  }
+
+  args->reply.err = link(old_path, new_path);
+  if (args->reply.err < 0) {
+    sos_debug_log_error(SOS_DEBUG_LINK, "Failed to link %s (%d)", old_path, errno);
+    args->reply.err_number = errno;
   }
 }
 
@@ -293,8 +299,9 @@ void link_cmd_close(link_transport_driver_t *driver, link_data_t *args) {
 }
 
 void link_cmd_unlink(link_transport_driver_t *driver, link_data_t *args) {
-  char path[PATH_MAX];
-  if (link_transport_slaveread(driver, path, args->op.unlink.path_size, NULL, NULL) < 0) {
+  char path[PATH_MAX + 1];
+  if (read_path(driver, path, args->op.unlink.path_size) < 0) {
+    driver->flush(driver->handle);
     return;
   }
   args->reply.err = unlink(path);
@@ -313,13 +320,15 @@ void link_cmd_lseek(link_transport_driver_t *driver, link_data_t *args) {
 }
 
 void link_cmd_stat(link_transport_driver_t *driver, link_data_t *args) {
-  char path[PATH_MAX];
   int err;
   struct stat st;
   struct link_stat lst;
 
-  link_transport_slaveread(driver, path, args->op.stat.path_size, NULL, NULL);
-
+  char path[PATH_MAX + 1];
+  if (read_path(driver, path, args->op.stat.path_size) < 0) {
+    driver->flush(driver->handle);
+    return;
+  }
   args->reply.err = stat(path, &st);
   if (args->reply.err < 0) {
     sos_debug_log_error(SOS_DEBUG_LINK, "Failed to stat (%d)", errno);
@@ -370,8 +379,12 @@ void link_cmd_fstat(link_transport_driver_t *driver, link_data_t *args) {
 }
 
 void link_cmd_mkdir(link_transport_driver_t *driver, link_data_t *args) {
-  char path[PATH_MAX];
-  link_transport_slaveread(driver, path, args->op.mkdir.path_size, NULL, NULL);
+  char path[PATH_MAX + 1];
+  if (read_path(driver, path, args->op.mkdir.path_size) < 0) {
+    driver->flush(driver->handle);
+    return;
+  }
+
   args->reply.err = mkdir(path, args->op.mkdir.mode);
   if (args->reply.err < 0) {
     args->reply.err_number = errno;
@@ -379,8 +392,11 @@ void link_cmd_mkdir(link_transport_driver_t *driver, link_data_t *args) {
 }
 
 void link_cmd_rmdir(link_transport_driver_t *driver, link_data_t *args) {
-  char path[PATH_MAX];
-  link_transport_slaveread(driver, path, args->op.rmdir.path_size, NULL, NULL);
+  char path[PATH_MAX + 1];
+  if (read_path(driver, path, args->op.rmdir.path_size) < 0) {
+    driver->flush(driver->handle);
+    return;
+  }
   args->reply.err = rmdir(path);
   if (args->reply.err < 0) {
     args->reply.err_number = errno;
@@ -388,8 +404,12 @@ void link_cmd_rmdir(link_transport_driver_t *driver, link_data_t *args) {
 }
 
 void link_cmd_opendir(link_transport_driver_t *driver, link_data_t *args) {
-  char path[PATH_MAX];
-  link_transport_slaveread(driver, path, args->op.opendir.path_size, NULL, NULL);
+  char path[PATH_MAX + 1];
+  if (read_path(driver, path, args->op.opendir.path_size) < 0) {
+    driver->flush(driver->handle);
+    return;
+  }
+
   args->reply.err = (int)opendir(path);
   if (args->reply.err == 0) {
     sos_debug_log_error(SOS_DEBUG_LINK, "Failed to open dir %s (%d)", path, errno);
@@ -438,38 +458,32 @@ void link_cmd_closedir(link_transport_driver_t *driver, link_data_t *args) {
 }
 
 void link_cmd_rename(link_transport_driver_t *driver, link_data_t *args) {
-  char path_new[PATH_MAX];
-  char path[PATH_MAX];
-  args->reply.err = 0;
-  if (
-    link_transport_slaveread(driver, path, args->op.rename.old_size, NULL, NULL)
-    != args->op.rename.old_size) {
-    args->reply.err = -1;
-  }
-  if (
-    link_transport_slaveread(driver, path_new, args->op.rename.new_size, NULL, NULL)
-    != args->op.rename.new_size) {
-    args->reply.err = -1;
-  }
-  if (args->reply.err < 0) {
+
+  char old_path[PATH_MAX + 1];
+  if (read_path(driver, old_path, args->op.rename.old_size) < 0) {
+    driver->flush(driver->handle);
     return;
   }
-  args->reply.err = rename(path, path_new);
+
+  char new_path[PATH_MAX + 1];
+  if (read_path(driver, new_path, args->op.rename.new_size) < 0) {
+    driver->flush(driver->handle);
+    return;
+  }
+
+  args->reply.err = rename(old_path, new_path);
   if (args->reply.err < 0) {
     args->reply.err_number = errno;
   }
 }
 
 void link_cmd_chown(link_transport_driver_t *driver, link_data_t *args) {
-  char path[PATH_MAX];
-  if (
-    link_transport_slaveread(driver, path, args->op.chown.path_size, NULL, NULL)
-    != args->op.chown.path_size) {
-    args->reply.err = -1;
-  }
-  if (args->reply.err < 0) {
+  char path[PATH_MAX + 1];
+  if (read_path(driver, path, args->op.chown.path_size) < 0) {
+    driver->flush(driver->handle);
     return;
   }
+
   args->reply.err = chown(path, args->op.chown.uid, args->op.chown.gid);
   if (args->reply.err < 0) {
     args->reply.err_number = errno;
@@ -477,15 +491,12 @@ void link_cmd_chown(link_transport_driver_t *driver, link_data_t *args) {
 }
 
 void link_cmd_chmod(link_transport_driver_t *driver, link_data_t *args) {
-  char path[PATH_MAX];
-  if (
-    link_transport_slaveread(driver, path, args->op.chmod.path_size, NULL, NULL)
-    != args->op.chmod.path_size) {
-    args->reply.err = -1;
-  }
-  if (args->reply.err < 0) {
+  char path[PATH_MAX + 1];
+  if (read_path(driver, path, args->op.chmod.path_size) < 0) {
+    driver->flush(driver->handle);
     return;
   }
+
   args->reply.err = chmod(path, args->op.chmod.mode);
   if (args->reply.err < 0) {
     args->reply.err_number = errno;
@@ -493,22 +504,26 @@ void link_cmd_chmod(link_transport_driver_t *driver, link_data_t *args) {
 }
 
 void link_cmd_exec(link_transport_driver_t *driver, link_data_t *args) {
-  char path[LINK_PATH_ARG_MAX];
-  memset(path, 0, LINK_PATH_ARG_MAX);
-  args->reply.err =
-    link_transport_slaveread(driver, path, args->op.exec.path_size, NULL, NULL);
-  args->reply.err = process_start(path, NULL);
+  // was LINK_PATH_ARG_MAX
+  char path_arg[ARG_MAX + 1];
+  if (read_path(driver, path_arg, args->op.exec.path_size) < 0) {
+    driver->flush(driver->handle);
+    return;
+  }
+
+  args->reply.err = process_start(path_arg, NULL);
   if (args->reply.err < 0) {
-    sos_debug_log_error(SOS_DEBUG_LINK, "Failed to exec %s (%d)", path, errno);
+    sos_debug_log_error(SOS_DEBUG_LINK, "Failed to exec %s (%d)", path_arg, errno);
     args->reply.err_number = errno;
   }
 }
 
 void link_cmd_mkfs(link_transport_driver_t *driver, link_data_t *args) {
-  char path[PATH_MAX];
-  memset(path, 0, PATH_MAX);
-  args->reply.err =
-    link_transport_slaveread(driver, path, args->op.exec.path_size, NULL, NULL);
+  char path[PATH_MAX + 1];
+  if (read_path(driver, path, args->op.mkfs.path_size) < 0) {
+    driver->flush(driver->handle);
+    return;
+  }
 
   // send the reply immediately so that the protocol isn't left waiting for a lengthy
   // format
@@ -551,6 +566,20 @@ int read_device(link_transport_driver_t *driver, int fildes, int nbyte) {
 
 int write_device(link_transport_driver_t *driver, int fildes, int nbyte) {
   return link_transport_slaveread(driver, NULL, nbyte, write_device_callback, &fildes);
+}
+
+int read_path(link_transport_driver_t *driver, char *path, size_t size) {
+  int result;
+  if (size > PATH_MAX) {
+    // path should never be larger than PATH_MAX
+    return -1;
+  } else {
+    // just read into the buffer
+    result = link_transport_slaveread(driver, path, size, NULL, NULL);
+  }
+  // ensure null termination
+  path[size] = 0;
+  return result;
 }
 
 void translate_link_stat(struct link_stat *dest, struct stat *src) {

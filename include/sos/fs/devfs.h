@@ -38,7 +38,7 @@ devfs_lookup_device(const devfs_device_t *list, const char *device_name);
 int devfs_lookup_name(
   const devfs_device_t *list,
   const devfs_device_t *device,
-  char name[NAME_MAX]);
+  devfs_get_name_t name);
 
 #define DEVFS_MODE(mode_value, uid_value, type)                                          \
   .mode = mode_value | type, .uid = uid_value

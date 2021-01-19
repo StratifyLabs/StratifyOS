@@ -81,7 +81,7 @@ int drive_assetfs_open(
   int mode) {
   MCU_UNUSED_ARGUMENT(mode);
 
-  if (flags != O_RDONLY) {
+  if ((flags & O_ACCMODE) != O_RDONLY) {
     return SYSFS_SET_RETURN(EINVAL);
   }
 
@@ -118,7 +118,7 @@ int drive_assetfs_read(
   void *buf,
   int nbyte) {
   MCU_UNUSED_ARGUMENT(cfg);
-  if (flags != O_RDONLY) {
+  if ((flags & O_ACCMODE) != O_RDONLY) {
     return SYSFS_SET_RETURN(EINVAL);
   }
   drive_assetfs_handle_t *h = handle;

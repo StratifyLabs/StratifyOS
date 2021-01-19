@@ -1,5 +1,6 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
+#include <errno.h>
 
 #include "config.h"
 #include "cortexm/mpu.h"
@@ -10,7 +11,6 @@
 #include "scheduler/scheduler_local.h"
 #include "sos/dev/bootloader.h"
 #include "sos/dev/sys.h"
-#include <errno.h>
 
 #include "device/sys.h"
 #include "signal/sig_local.h"
@@ -41,12 +41,12 @@ int sys_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
     info->sys_mem_size = sos_config.sys.memory_size;
     info->o_flags = sos_config.sys.flags;
     info->o_mcu_board_config_flags = 0;
-    strncpy(info->id, sos_config.sys.id, PATH_MAX - 1);
-    strncpy(info->stdin_name, sos_config.fs.stdin_dev, NAME_MAX - 1);
-    strncpy(info->stdout_name, sos_config.fs.stdout_dev, NAME_MAX - 1);
-    strncpy(info->name, sos_config.sys.name, NAME_MAX - 1);
-    strncpy(info->team_id, sos_config.sys.team_id, NAME_MAX - 1);
-    strncpy(info->trace_name, sos_config.fs.trace_dev, NAME_MAX - 1);
+    strncpy(info->stdin_name, sos_config.fs.stdin_dev, DEVFS_NAME_MAX);
+    strncpy(info->stdout_name, sos_config.fs.stdout_dev, DEVFS_NAME_MAX);
+    strncpy(info->name, sos_config.sys.name, APPFS_NAME_MAX);
+    strncpy(info->trace_name, sos_config.fs.trace_dev, DEVFS_NAME_MAX);
+    strncpy(info->id, sos_config.sys.id, APPFS_ID_MAX);
+    strncpy(info->team_id, sos_config.sys.team_id, APPFS_ID_MAX);
     if (sos_config.sys.git_hash) {
       strncpy(info->bsp_git_hash, sos_config.sys.git_hash, 15);
     }
@@ -60,6 +60,8 @@ int sys_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
     info->hardware_id =
       *(((u32 *)cortexm_get_vector_table_addr())
         + BOOTLOADER_HARDWARE_ID_OFFSET / sizeof(u32));
+    info->path_max = PATH_MAX;
+    info->arg_max = ARG_MAX;
     return 0;
 
   case I_SYS_GETTASK:

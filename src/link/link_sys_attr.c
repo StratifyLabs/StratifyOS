@@ -1,8 +1,10 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
+#include <errno.h>
+#include <string.h>
+
 #include "link_local.h"
 #include "sos/dev/sys.h"
-#include <string.h>
 
 static sys_info_t convert_sys_26_info(const sys_26_info_t *sys_26_info);
 static sys_info_t
@@ -19,7 +21,7 @@ int link_get_sys_info(link_transport_mdriver_t *driver, sys_info_t *sys_info) {
 
     memset(sys_info, 0, sizeof(sys_info_t));
     if (link_ioctl(driver, sys_fd, I_SYS_GETINFO, sys_info) < 0) {
-      // this usually means there is a version mismatch between StratifyIO and StratifyOS
+      // this usually means there is a version mismatch between SosAPI and StratifyOS
       if (link_ioctl(driver, sys_fd, I_SYS_26_GETINFO, &sys_26_info) < 0) {
         // try previous version
         if (link_ioctl(driver, sys_fd, I_SYS_23_GETINFO, &sys_23_info) < 0) {
@@ -34,6 +36,18 @@ int link_get_sys_info(link_transport_mdriver_t *driver, sys_info_t *sys_info) {
       } else {
         *sys_info = convert_sys_26_info(&sys_26_info);
       }
+    }
+
+    if (sys_info->path_max > 0) {
+      driver->path_max = sys_info->path_max;
+    } else {
+      driver->path_max = LINK_PATH_MAX;
+    }
+
+    if (sys_info->arg_max > 0) {
+      driver->arg_max = sys_info->arg_max;
+    } else {
+      driver->arg_max = LINK_PATH_ARG_MAX;
     }
 
     link_close(driver, sys_fd);

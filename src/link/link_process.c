@@ -1,5 +1,6 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
+#include <errno.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,10 +17,12 @@ int link_exec(link_transport_mdriver_t *driver, const char *file) {
   link_debug(LINK_DEBUG_MESSAGE, "exec %s", file);
 
   op.exec.cmd = LINK_CMD_EXEC;
-  op.exec.path_size = strnlen(file, LINK_PATH_ARG_MAX);
+  op.exec.path_size = strnlen(file, LINK_ARG_MAX_LARGE);
 
-  if (op.exec.path_size >= LINK_PATH_ARG_MAX) {
-    link_error("Path size is too long %d > %d", op.exec.path_size, LINK_PATH_ARG_MAX);
+  if (op.exec.path_size > driver->arg_max) {
+    link_error(
+      "Exec command size is too long %d > %d", op.exec.path_size, LINK_PATH_ARG_MAX);
+    errno = ENAMETOOLONG;
     return -1;
   }
 

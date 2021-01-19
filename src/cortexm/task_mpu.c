@@ -57,6 +57,11 @@ int task_init_mpu(void *system_memory, int system_memory_size) {
   // Calculate the device specific memory protection regions
   // mpu_dev_init();
 
+  // disable all regions
+  for (u32 i = 0; i < 16; i++) {
+    mpu_disable_region(i);
+  }
+
   // Turn the MPU On
   mpu_enable();
 

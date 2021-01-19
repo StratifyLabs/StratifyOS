@@ -38,7 +38,7 @@ int assetfs_startup(const void *cfg) {
 int assetfs_open(const void *cfg, void **handle, const char *path, int flags, int mode) {
   MCU_UNUSED_ARGUMENT(mode);
 
-  if (flags != O_RDONLY) {
+  if ((flags & O_ACCMODE) != O_RDONLY) {
     return SYSFS_SET_RETURN(EINVAL);
   }
 
@@ -62,6 +62,7 @@ int assetfs_open(const void *cfg, void **handle, const char *path, int flags, in
   *handle = h;
   return 0;
 }
+
 int assetfs_read(
   const void *cfg,
   void *handle,
@@ -70,7 +71,7 @@ int assetfs_read(
   void *buf,
   int nbyte) {
   MCU_UNUSED_ARGUMENT(cfg);
-  if (flags != O_RDONLY) {
+  if ((flags & O_ACCMODE) != O_RDONLY) {
     return SYSFS_SET_RETURN(EINVAL);
   }
   assetfs_handle_t *h = handle;

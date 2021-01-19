@@ -3,10 +3,12 @@
 #ifndef SOS_FS_DRIVE_ASSETFS_H_
 #define SOS_FS_DRIVE_ASSETFS_H_
 
+#include <sdk/types.h>
+
 #include "../link/types.h"
 #include "sos/dev/drive.h"
 #include "sysfs.h"
-#include <sdk/types.h>
+#include "types.h"
 
 int drive_assetfs_init(const void *cfg);
 int drive_assetfs_exit(const void *cfg);
@@ -33,7 +35,7 @@ int drive_assetfs_readdir_r(const void *cfg, void *handle, int loc, struct diren
 int drive_assetfs_closedir(const void *cfg, void **handle);
 
 typedef struct MCU_PACK {
-  char name[LINK_NAME_MAX];
+  char name[ASSETFS_NAME_MAX + 1];
   u32 start;
   u32 size;
   u16 uid;

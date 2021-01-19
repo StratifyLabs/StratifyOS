@@ -102,6 +102,8 @@ typedef struct {
   char notify_name[64];
   const void *options;
   u32 transport_version; // which version of the protocol is the slave running
+  u16 path_max;
+  u16 arg_max;
 } link_transport_mdriver_t;
 
 typedef struct {

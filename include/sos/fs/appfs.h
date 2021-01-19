@@ -3,6 +3,7 @@
 #ifndef SOS_FS_APPFS_H_
 #define SOS_FS_APPFS_H_
 
+#include "types.h"
 
 int appfs_init(const void* cfg);
 int appfs_startup(const void* cfg);

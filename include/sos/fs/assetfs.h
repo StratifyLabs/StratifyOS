@@ -7,6 +7,7 @@
 
 #include "../link/types.h"
 #include "sys/dirent.h"
+#include "types.h"
 
 int assetfs_init(const void *cfg);
 int assetfs_startup(const void *cfg);
@@ -54,7 +55,7 @@ int assetfs_closedir(const void *cfg, void **handle);
   }
 
 typedef struct MCU_PACK {
-  char name[LINK_NAME_MAX];
+  char name[ASSETFS_NAME_MAX + 1];
   u32 start;
   u32 end;
   u16 uid;

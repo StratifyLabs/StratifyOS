@@ -110,6 +110,8 @@ int mpu_enable_region(
   int executable /*! Non-zero to mark code as executable */
   ) MCU_ROOT_CODE;
 
+int mpu_disable_region(int region) MCU_ROOT_CODE;
+
 u32 mpu_calc_region(
   int region,
   const void *addr,
