@@ -57,7 +57,7 @@ static sem_t *sem_find_named(const char *name) {
   sem_list_t *entry;
   for (entry = sem_first; entry != 0; entry = entry->next) {
     if (entry->sem.is_initialized != 0) {
-      if (strncmp(entry->sem.name, name, NAME_MAX) == 0) {
+      if (strncmp(entry->sem.name, name, sizeof(entry->sem.name) - 1) == 0) {
         return &entry->sem;
       }
     }
@@ -115,7 +115,7 @@ int sem_init(sem_t *sem, int pshared, unsigned int value) {
   sem->value = value;
   sem->pshared = pshared;
   sem->pid = getpid();
-  memset(sem->name, 0, NAME_MAX); // This is an unnamed semaphore
+  memset(sem->name, 0, sizeof(sem->name)); // This is an unnamed semaphore
   return 0;
 }
 
@@ -175,7 +175,7 @@ sem_t *sem_open(const char *name, int oflag, ...) {
   int action;
   va_list ap;
 
-  if (strnlen(name, NAME_MAX) == NAME_MAX) {
+  if (strnlen(name, SEM_NAME_MAX) == SEM_NAME_MAX) {
     errno = ENAMETOOLONG;
     return SEM_FAILED;
   }
@@ -231,7 +231,7 @@ sem_t *sem_open(const char *name, int oflag, ...) {
     new_sem->references = 1;
     new_sem->mode = mode;
     new_sem->pshared = 1;
-    strncpy(new_sem->name, name, NAME_MAX - 1);
+    strncpy(new_sem->name, name, sizeof(new_sem->name) - 1);
     break;
 
   case 1:
@@ -381,7 +381,7 @@ int sem_trywait(sem_t *sem) {
 int sem_unlink(const char *name) {
   sem_t *sem;
 
-  if (strnlen(name, NAME_MAX) == NAME_MAX) {
+  if (strnlen(name, SEM_NAME_MAX) == SEM_NAME_MAX) {
     errno = ENAMETOOLONG;
     return -1;
   }

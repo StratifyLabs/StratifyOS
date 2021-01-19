@@ -183,10 +183,9 @@ typedef struct MCU_PACK {
  *
  */
 typedef struct MCU_PACK {
-  char name[LINK_NAME_MAX] /*! The name of the terminal */;
-  u32 loc /*! The location of the terminal (block location or channel depending on the
-             device) */
-    ;
+  char name[DEVFS_NAME_MAX + 1] /*! The name of the terminal */;
+  /*! The location of the terminal (block location or channel depending on the device) */
+  u32 loc;
   u32 bytes_transferred /*! Number of bytes transferred on the terminal */;
   s8 priority /*! Hardware interrupt priority elevation */;
   u8 device_type /*! Block or character device */;

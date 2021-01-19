@@ -18,7 +18,6 @@ int link_get_sys_info(link_transport_mdriver_t *driver, sys_info_t *sys_info) {
 
   sys_fd = link_open(driver, "/dev/sys", LINK_O_RDWR);
   if (sys_fd >= 0) {
-
     memset(sys_info, 0, sizeof(sys_info_t));
     if (link_ioctl(driver, sys_fd, I_SYS_GETINFO, sys_info) < 0) {
       // this usually means there is a version mismatch between SosAPI and StratifyOS

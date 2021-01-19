@@ -44,15 +44,15 @@ static int analyze_path(const char *path, const char **name, int *mem_type) {
   }
 
   if (elements == 1) {
-    if (strncmp(*name, ".install", NAME_MAX) == 0) {
+    if (strncmp(*name, ".install", APPFS_NAME_MAX) == 0) {
       return ANALYZE_PATH_INSTALL;
     }
 
-    if (strncmp(*name, "flash", NAME_MAX) == 0) {
+    if (strncmp(*name, "flash", APPFS_NAME_MAX) == 0) {
       return ANALYZE_PATH_FLASH_DIR;
     }
 
-    if (strncmp(*name, "ram", NAME_MAX) == 0) {
+    if (strncmp(*name, "ram", APPFS_NAME_MAX) == 0) {
       return ANALYZE_PATH_RAM_DIR;
     }
 
@@ -648,8 +648,8 @@ void svcall_ioctl(void *args) {
       info->signature = f->exec.signature;
       info->version = f->hdr.version;
       info->ram_size = f->exec.ram_size;
-      memcpy(info->id, f->hdr.id, LINK_NAME_MAX);
-      memcpy(info->name, f->hdr.name, LINK_NAME_MAX);
+      memcpy(info->id, f->hdr.id, sizeof(info->id) - 1);
+      memcpy(info->name, f->hdr.name, sizeof(info->name) - 1);
       a->result = 0;
     }
     break;
@@ -686,7 +686,9 @@ static int readdir_mem(const void *cfg, int loc, struct dirent *entry, int type)
     return SYSFS_SET_RETURN(ENOENT);
   }
 
-  strncpy(entry->d_name, get_fileinfo_args.file_info.hdr.name, NAME_MAX);
+  strncpy(
+    entry->d_name, get_fileinfo_args.file_info.hdr.name,
+    sizeof(get_fileinfo_args.file_info.hdr.name) - 1);
   entry->d_ino = loc;
   return 0;
 }
@@ -695,13 +697,13 @@ int readdir_rootdir(const void *cfg, int loc, struct dirent *entry) {
   MCU_UNUSED_ARGUMENT(cfg);
   switch (loc) {
   case 0:
-    strncpy(entry->d_name, ".install", NAME_MAX);
+    strncpy(entry->d_name, ".install", sizeof(entry->d_name) - 1);
     break;
   case 1:
-    strncpy(entry->d_name, "flash", NAME_MAX);
+    strncpy(entry->d_name, "flash", sizeof(entry->d_name) - 1);
     break;
   case 2:
-    strncpy(entry->d_name, "ram", NAME_MAX);
+    strncpy(entry->d_name, "ram", sizeof(entry->d_name) - 1);
     break;
   default:
     return SYSFS_SET_RETURN(ENOENT);

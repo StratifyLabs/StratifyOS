@@ -168,7 +168,7 @@ int read_task(sys_taskattr_t *task) {
         task->name,
         ((struct _reent *)sos_task_table[task->tid].global_reent)
           ->procmem_base->proc_name,
-        NAME_MAX);
+        LINK_NAME_MAX);
 
 #if 1
       task->malloc_loc = scheduler_calculate_heap_end(task->tid);

@@ -169,8 +169,7 @@ int assetfs_readdir_r(const void *cfg, void *handle, int loc, struct dirent *ent
     return result;
   }
 
-  entry->d_name[NAME_MAX - 1] = 0;
-  strncpy(entry->d_name, directory_entry->name, NAME_MAX - 1);
+  strncpy(entry->d_name, directory_entry->name, sizeof(entry->d_name) - 1);
   entry->d_ino = loc;
 
   return 0;

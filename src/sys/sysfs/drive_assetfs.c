@@ -217,8 +217,7 @@ int drive_assetfs_readdir_r(
     return result;
   }
 
-  entry->d_name[NAME_MAX - 1] = 0;
-  strncpy(entry->d_name, directory_entry.name, NAME_MAX - 1);
+  strncpy(entry->d_name, directory_entry.name, NAME_MAX);
   entry->d_ino = loc;
 
   return 0;

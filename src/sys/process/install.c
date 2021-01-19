@@ -54,13 +54,13 @@ int install(
     return -1;
   }
 
-  strncpy(name, sysfs_getfilename(path, 0), APPFS_NAME_MAX);
+  strncpy(name, sysfs_getfilename(path, 0), sizeof(name) - 1);
   if (options & APPFS_FLAG_IS_FLASH) {
-    strncpy(target_path, "/app/flash/", PATH_MAX);
+    strncpy(target_path, "/app/flash/", sizeof(target_path) - 1);
   } else {
-    strncpy(target_path, "/app/ram/", PATH_MAX);
+    strncpy(target_path, "/app/ram/", sizeof(target_path) - 1);
   }
-  strncat(target_path, name, PATH_MAX);
+  strncat(target_path, name, sizeof(target_path) - 1);
 
   // does the image already exist at the target location
   if (access(target_path, R_OK) == 0) {
@@ -109,13 +109,13 @@ int install(
           appfs_file_t *hdr = (appfs_file_t *)attr.buffer;
           // update the header for the image to be installed
           if (options & APPFS_FLAG_IS_UNIQUE) {
-            strncpy(hdr->hdr.name, name, APPFS_NAME_MAX);
-            const int len = strnlen(hdr->hdr.name, APPFS_NAME_MAX - 1);
+            strncpy(hdr->hdr.name, name, sizeof(hdr->hdr.name) - 1);
+            const int len = strnlen(hdr->hdr.name, sizeof(hdr->hdr.name) - 1);
             hdr->hdr.name[len] = (launch_count % 10) + '0';
             hdr->hdr.name[len + 1] = 0;
             launch_count++;
           } else {
-            strncpy(hdr->hdr.name, name, APPFS_NAME_MAX);
+            strncpy(hdr->hdr.name, name, sizeof(hdr->hdr.name) - 1);
           }
           hdr->exec.o_flags = options;
           if (ram_size > 0) {
@@ -147,7 +147,7 @@ int install(
   }
 
   if (exec_path) {
-    strncpy(exec_path, target_path, PATH_MAX);
+    strncpy(exec_path, target_path, sizeof(target_path) - 1);
   }
 
   return 0;

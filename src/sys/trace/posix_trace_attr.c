@@ -55,7 +55,7 @@ int posix_trace_attr_getmaxusereventsize(
 }
 
 int posix_trace_attr_getname(const trace_attr_t *attr, char *name) {
-  strncpy(name, attr->name, NAME_MAX);
+  strncpy(name, attr->name, APPFS_NAME_MAX);
   return 0;
 }
 

@@ -77,15 +77,16 @@ enum sys_memory_flags {
 typedef struct MCU_PACK {
   char kernel_version[8] /*!  The OS (kernel) Version */;
   char sys_version[8] /*!  The System (board) Version */;
-  char arch[16] /*!  architecture, e.g. v7em_f5dh */;
-  u32 signature /*!  Ths OS library signature for applications*/;
+  char arch[16];
+  u32 signature;
   u32 security /*!  Security flags */;
   u32 cpu_freq /*!  The CPU clock frequency */;
-  u32 sys_mem_size /*! bytes in RAM shared across OS and other processes */;
+  u32 sys_mem_size /*!  and other processes */;
   char stdout_name[DEVFS_NAME_MAX + 1] /*!  Default value for the standard output */;
   char stdin_name[DEVFS_NAME_MAX + 1] /*!  Default value for the standard output */;
-  char name[APPFS_NAME_MAX + 1] /*!  Device Name */;
+  char name[DEVFS_NAME_MAX + 1] /*!  Device Name */;
   char id[APPFS_ID_MAX + 1] /*!  Globally unique Cloud Kernel ID value */;
+  u32 resd_id[10];
   mcu_sn_t serial /*!  Device Serial number */;
   u32 o_flags /*!  System flags */;
   u32 hardware_id /*! Hardware ID of the board */;

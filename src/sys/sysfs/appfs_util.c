@@ -59,7 +59,7 @@ u8 calc_checksum(const char *name) {
   int i;
   u8 checksum;
   checksum = 0;
-  for (i = 0; i < NAME_MAX - 1; i++) {
+  for (i = 0; i < APPFS_NAME_MAX - 1; i++) {
     checksum ^= name[i];
   }
   return checksum;
@@ -450,11 +450,11 @@ int appfs_util_root_create(
     }
 
     // make sure the name is valid
-    int len = strnlen(dest->hdr.name, NAME_MAX - 2);
-    if (len == (NAME_MAX - 2)) {
+    int len = strnlen(dest->hdr.name, APPFS_NAME_MAX - 2);
+    if (len == (APPFS_NAME_MAX - 2)) {
       // truncate the name if it is too long
-      dest->hdr.name[NAME_MAX - 1] = 0;
-      dest->hdr.name[NAME_MAX - 2] = 0;
+      dest->hdr.name[APPFS_NAME_MAX - 1] = 0;
+      dest->hdr.name[APPFS_NAME_MAX - 2] = 0;
     }
 
     // add a checksum to the name
@@ -541,20 +541,20 @@ int appfs_util_root_writeinstall(
     memset(&dest.file, 0, sizeof(appfs_file_t));
     memcpy(&dest.file, src.file, attr->nbyte);
     int len = strnlen(dest.file.hdr.name, NAME_MAX - 2);
-    if (len == (NAME_MAX - 2)) {
+    if (len == (APPFS_NAME_MAX - 2)) {
       // truncate the name if it is too long
-      dest.file.hdr.name[NAME_MAX - 2] = 0;
+      dest.file.hdr.name[APPFS_NAME_MAX - 2] = 0;
     }
 
-    len = strnlen(dest.file.hdr.id, NAME_MAX - 2);
-    if (len == (NAME_MAX - 2)) {
+    len = strnlen(dest.file.hdr.id, APPFS_NAME_MAX - 2);
+    if (len == (APPFS_NAME_MAX - 2)) {
       // truncate the name if it is too long
-      dest.file.hdr.id[NAME_MAX - 2] = 0;
+      dest.file.hdr.id[APPFS_NAME_MAX - 2] = 0;
     }
 
     // add a checksum to the name
-    dest.file.hdr.name[NAME_MAX - 1] = calc_checksum(dest.file.hdr.name);
-    dest.file.hdr.id[NAME_MAX - 1] = calc_checksum(dest.file.hdr.id);
+    dest.file.hdr.name[APPFS_NAME_MAX - 1] = calc_checksum(dest.file.hdr.name);
+    dest.file.hdr.id[APPFS_NAME_MAX - 1] = calc_checksum(dest.file.hdr.id);
 
     // set mode to read/exec
     dest.file.hdr.mode = 0555;
@@ -744,12 +744,12 @@ int get_flash_page_type(const devfs_device_t *dev, u32 address, u32 size) {
   }
 
   read_appfs_file_header(dev, address, &appfs_file);
-  len = strnlen(appfs_file.hdr.name, NAME_MAX - 2);
+  len = strnlen(appfs_file.hdr.name, APPFS_NAME_MAX - 2);
   if (
-    (len == NAME_MAX - 2) || // check if the name is short enough
+    (len == APPFS_NAME_MAX - 2) || // check if the name is short enough
     (len != strspn(appfs_file.hdr.name, sysfs_validset))
     || // check if only valid characters are present
-    (appfs_file.hdr.name[NAME_MAX - 1] != calc_checksum(appfs_file.hdr.name))
+    (appfs_file.hdr.name[APPFS_NAME_MAX - 1] != calc_checksum(appfs_file.hdr.name))
     || // check for a valid checksum
     (len == 0)) {
 
@@ -876,7 +876,7 @@ int appfs_util_lookupname(
   get_pageinfo_args.device = device;
   get_pageinfo_args.page_info.o_flags = type;
 
-  if (strnlen(path, NAME_MAX - 2) == NAME_MAX - 2) {
+  if (strnlen(path, APPFS_NAME_MAX - 2) == APPFS_NAME_MAX - 2) {
     return -1;
   }
 
@@ -902,9 +902,15 @@ int appfs_util_lookupname(
       return get_fileinfo_args.result;
     }
 
-    if (strncmp(path, get_fileinfo_args.file_info.hdr.name, NAME_MAX) == 0) {
-      memcpy(file_info, &get_fileinfo_args.file_info, sizeof(appfs_file_t));
-      memcpy(page_info, &get_pageinfo_args.page_info, sizeof(mem_pageinfo_t));
+    if (
+      strncmp(
+        path, get_fileinfo_args.file_info.hdr.name,
+        sizeof(get_fileinfo_args.file_info.hdr.name) - 1)
+      == 0) {
+      memcpy(
+        file_info, &get_fileinfo_args.file_info, sizeof(get_fileinfo_args.file_info));
+      memcpy(
+        page_info, &get_pageinfo_args.page_info, sizeof(get_pageinfo_args.page_info));
       return 0;
     }
 

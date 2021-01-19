@@ -53,13 +53,12 @@ devfs_lookup_device(const devfs_device_t *list, const char *device_name) {
 int devfs_lookup_name(
   const devfs_device_t *list,
   const devfs_device_t *device,
-  char name[NAME_MAX]) {
+  devfs_get_name_t name) {
   int i;
   i = 0;
   while (devfs_is_terminator(&(list[i])) == 0) {
     if (device == (list + i)) {
-      name[NAME_MAX - 1] = 0;
-      strncpy(name, list[i].name, NAME_MAX - 1);
+      strncpy(name, list[i].name, DEVFS_NAME_MAX);
       return 0;
     }
     i++;

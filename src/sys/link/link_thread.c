@@ -208,12 +208,11 @@ void link_cmd_link(link_transport_driver_t *driver, link_data_t *args) {
 }
 
 void link_cmd_ioctl(link_transport_driver_t *driver, link_data_t *args) {
-  u16 size;
   errno = 0;
-  size = _IOCTL_SIZE(args->op.ioctl.request);
+  const u16 size = _IOCTL_SIZE(args->op.ioctl.request);
   char io_buf[size];
-  if (_IOCTL_IOCTLW(args->op.ioctl.request) != 0) { // this means data is being sent over
-                                                    // the bulk interrupt
+  // this means data is being sent over to forward to ioctl
+  if (_IOCTL_IOCTLW(args->op.ioctl.request) != 0) {
     if (link_transport_slaveread(driver, io_buf, size, NULL, NULL) < 0) {
       args->op.cmd = 0;
       args->reply.err = -1;
