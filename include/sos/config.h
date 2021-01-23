@@ -5,7 +5,10 @@
 
 #include <sdk/types.h>
 
+#include <trace.h>
+
 #include "cortexm/task_types.h"
+#include "dev/bootloader.h"
 #include "dev/pio.h"
 #include "fs/devfs.h"
 #include "sys/socket.h"
@@ -110,6 +113,8 @@ typedef struct {
 typedef struct {
   //size of control EP (usually 64)
   u32 control_endpoint_max_size;
+  // number of logical endpoints
+  u16 logical_endpoint_count;
   //set the USB attributes -- see the STM32 example
   int (*set_attributes)(const devfs_handle_t *handle, void *ctl);
   //set a callback for the spec'd action -- see the STM32 example
@@ -132,9 +137,14 @@ typedef struct {
   u32 secret_key_size;
   //number of bytes used for the system heap/stack space
   u32 memory_size;
+  // mask for MPU is OS start is offset from boundary by a small amount
   u32 os_mpu_text_mask;
   u32 flags;
-  //null-terminated name of the board
+  // board hardware ID assigned by Stratify Labs
+  u32 hardware_id;
+  // beginning of the bootloader (set to 0xffffffff) if no bootloader
+  u32 bootloader_start_address;
+  // null-terminated name of the board
   const char *name;
   //null-terminated version
   const char *version;
@@ -212,9 +222,28 @@ typedef struct {
   void (*powerdown)();
 } sos_sleep_config_t;
 
+typedef struct MCU_PACK {
+  u16 interrupt_request_total;
+  u16 interrupt_middle_priority;
+  void (*set_interrupt_priority)(int number, int priority);
+  void (*reset_watchdog_timer)();
+} sos_mcu_config_t;
+
+typedef struct MCU_PACK {
+  bootloader_api_t api;
+  u32 program_start_address;
+  u32 software_bootloader_request_address;
+  u32 software_bootloader_request_value;
+  int (*is_bootloader_requested)();
+  devfs_handle_t flash_handle;
+  int (*flash_erase_page)(const devfs_handle_t *handle, void *ctl);
+  int (*flash_write_page)(const devfs_handle_t *handle, void *ctl);
+  link_transport_driver_t *link_transport_driver;
+} sos_boot_config_t;
 
 typedef struct MCU_PACK {
   sos_sys_config_t sys;
+  sos_mcu_config_t mcu;
   sos_fs_config_t fs;
   sos_clock_config_t clock;
   sos_task_config_t task;
@@ -222,6 +251,7 @@ typedef struct MCU_PACK {
   sos_cache_config_t cache;
   sos_sleep_config_t sleep;
   sos_usb_config_t usb;
+  sos_boot_config_t boot;
   const sos_socket_api_t *socket_api;
   void (*event_handler)(int, void *);
 } sos_config_t;

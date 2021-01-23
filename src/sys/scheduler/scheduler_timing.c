@@ -9,11 +9,10 @@
 #include <time.h>
 
 #include "../signal/sig_local.h"
+#include "cortexm/cortexm.h"
 #include "scheduler_local.h"
 
 #include "sos/debug.h"
-#include "mcu/rtc.h"
-#include "mcu/tmr.h"
 
 static volatile u32 sched_usecond_counter MCU_SYS_MEM;
 

@@ -16,7 +16,6 @@
 #include "../sffs/sim_device.h"
 #else
 #include "sos/fs/devfs.h"
-#include "mcu/core.h"
 #endif
 #include "sffs_dev.h"
 

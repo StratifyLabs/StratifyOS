@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "mcu/core.h"
 #include "sos/debug.h"
 
 #define pkt_checksum(pktp) ((pktp)->data[(pktp)->size])

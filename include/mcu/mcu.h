@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "sos/config.h"
 #include "sos/dev/pio.h"
 
 /*! @} */
@@ -69,20 +70,6 @@ int mcu_sync_io(
   int nbyte,
   int flags);
 
-typedef struct MCU_PACK {
-  u16 irq_total /* Total number of interrupts */;
-  u16 irq_middle_prio /* Middle priority value */;
-  u16 usb_logical_endpoint_count /* Number of logical endpoints */;
-  u16 delay_factor /* factor to multiply by when calculating delays (depends on memory
-                      performance) */
-    ;
-  const char *git_hash /* Pointer to git hash string */;
-} mcu_config_t;
-
-extern const mcu_config_t mcu_config;
-
-void sos_handle_event(int event, void *args);
-
 // execute an event callback -- callback is null'd if result is 0 -- deprecated
 int mcu_execute_event_handler(mcu_event_handler_t *handler, u32 o_events, void *data);
 
@@ -102,6 +89,8 @@ int mcu_set_pin_assignment(
   void (*pre_configure_pin)(const mcu_pin_t *, void *),
   void (*post_configure_pin)(const mcu_pin_t *, void *),
   void *arg) MCU_ROOT_CODE;
+
+bootloader_api_t *mcu_core_get_bootloader_api();
 
 const void *mcu_select_pin_assignment(
   const void *attr_pin_assignment,

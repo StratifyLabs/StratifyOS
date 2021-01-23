@@ -6,9 +6,11 @@
 
 #include "cortexm/cortexm.h"
 #include "cortexm/task.h"
+
 #include "device/device_fifo.h"
 #include "sos/debug.h"
 #include "sos/events.h"
+#include "sos/sos.h"
 
 static int event_data_ready(void *context, const mcu_event_t *event);
 

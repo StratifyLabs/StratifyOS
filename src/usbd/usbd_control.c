@@ -4,15 +4,16 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#include "cortexm/cortexm.h"
+
 #include "device/sys.h"
-#include "mcu/boot_debug.h"
 #include "sos/config.h"
 #include "sos/debug.h"
+#include "sys/ioctl.h"
 
 #include "mcu/usb.h"
-#include "sys/ioctl.h"
-#include "usbd/control.h"
 
+#include "usbd/control.h"
 #include "usbd_standard.h"
 
 static int execute_class_handler(usbd_control_t *context, const mcu_event_t *usb_event)

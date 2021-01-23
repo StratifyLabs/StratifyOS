@@ -3,11 +3,16 @@
 #ifndef SOS_SYMBOLS_TABLE_H_
 #define SOS_SYMBOLS_TABLE_H_
 
-#include "arpa/inet.h"
-#include "mcu/arch.h"
-#include "sos/sos.h"
 #include <assert.h>
 #include <sdk/types.h>
+
+#include "mcu/arch.h"
+
+#include "arpa/inet.h"
+#include "sos/fs.h"
+#include "sos/power.h"
+#include "sos/process.h"
+#include "sos/sos.h"
 
 #include "defines.h"
 

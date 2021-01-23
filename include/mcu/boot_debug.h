@@ -34,10 +34,6 @@ int dbin(int x);
  */
 int dfloat(float x);
 
-/*! \details This function sets the callback to write data to
- * the debug output.
- */
-void dsetwritefunc(int (*func)(const void *, int));
 /*! \details This function sets the mode.
  *
  */

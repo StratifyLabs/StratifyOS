@@ -3,7 +3,7 @@
 #include "cortexm/cortexm.h"
 #include "cortexm/task.h"
 #include "sos/debug.h"
-#include "sos/sos_events.h"
+#include "sos/events.h"
 
 void __assert_func(const char *file, int line, const char *func, const char *failedexpr) {
 

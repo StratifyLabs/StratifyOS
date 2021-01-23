@@ -5,9 +5,9 @@
  *
  * \ingroup IFACE_DEV
  *
- * \details The Bootloader provides the IOCTL definitions for accessing the bootloader.  This interface
- * is not available on any device when Stratify OS is running.  It is only available
- * to the bootloader.
+ * \details The Bootloader provides the IOCTL definitions for accessing the bootloader.
+ * This interface is not available on any device when Stratify OS is running.  It is only
+ * available to the bootloader.
  *
  */
 
@@ -19,9 +19,8 @@
 #ifndef SOS_DEV_BOOTLOADER_H_
 #define SOS_DEV_BOOTLOADER_H_
 
-
-#include <sdk/types.h>
 #include "sos/link/transport.h"
+#include <sdk/types.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -29,9 +28,7 @@ extern "C" {
 
 #define BOOTLOADER_VERSION (0x030000)
 
-
 #define BOOTLOADER_IOC_IDENT_CHAR 'b'
-
 
 /*! \brief See below for details
  * \details This specifies where in the image the hardware
@@ -40,25 +37,23 @@ extern "C" {
 #define BOOTLOADER_HARDWARE_ID_OFFSET (28)
 #define BOOTLOADER_API_ADDR (36)
 
-
 /*! \brief Bootloader attributes.
  * \details This structure contains the attributes for the bootloader.
  */
 typedef struct MCU_PACK {
-	u32 version /*! \brief The bootloader version */;
-	u32 serialno[4] /*! \brief The device serial number */;
-	u32 startaddr /*! \brief The start address of the target program (read-only) */;
-	u32 hardware_id /*! \brief The hardware ID of the bootloader (must match image) */;
+  u32 version /*! \brief The bootloader version */;
+  u32 serialno[4] /*! \brief The device serial number */;
+  u32 startaddr /*! \brief The start address of the target program (read-only) */;
+  u32 hardware_id /*! \brief The hardware ID of the bootloader (must match image) */;
 } bootloader_info_t;
 
 typedef bootloader_info_t bootloader_attr_t;
 
 typedef struct MCU_PACK {
-	uint32_t version;
-	uint32_t serialno[4];
-	uint32_t startaddr;
+  uint32_t version;
+  uint32_t serialno[4];
+  uint32_t startaddr;
 } bootloader_attr_legacy_t;
-
 
 /*! \brief This is the size of a bootloader flash page.
  */
@@ -69,12 +64,25 @@ typedef struct MCU_PACK {
  * data to the bootloader flash using \ref I_BOOTLOADER_WRITEPAGE.
  */
 typedef struct MCU_PACK {
-	u32 addr /*! \brief The address to write to */;
-	u32 nbyte /*! \brief The number of bytes to write */;
-	u8 buf[BOOTLOADER_WRITEPAGESIZE] /*! \brief A buffer for writing to the flash */;
+  u32 addr /*! \brief The address to write to */;
+  u32 nbyte /*! \brief The number of bytes to write */;
+  u8 buf[BOOTLOADER_WRITEPAGESIZE] /*! \brief A buffer for writing to the flash */;
 } bootloader_writepage_t;
 
+/*! \brief Bootloader attributes.
+ * \details This structure contains the attributes for the bootloader.
+ */
+typedef struct MCU_PACK {
+  /*! The number of bytes occupied by the bootloader */
+  u32 code_size;
+  /*! Execute the bootlaoder, args is NULL */
+  void (*exec)(void *args);
+  /*! Invoke the board events (encryption, decryption, custom code) */
+  void (*event)(int, void *);
+} bootloader_api_t;
 
+// only available to bootloader
+extern void boot_invoke_bootloader(void *args);
 
 /*! \brief See below for details.
  * \details This request sets the functionality of the specified pin.
@@ -93,8 +101,8 @@ typedef struct MCU_PACK {
 #define I_BOOTLOADER_GETINFO _IOCTLR(BOOTLOADER_IOC_IDENT_CHAR, 1, bootloader_info_t)
 #define I_BOOTLOADER_ATTR I_BOOTLOADER_GETINFO
 
-#define I_BOOTLOADER_GETATTR_LEGACY _IOCTLR(BOOTLOADER_IOC_IDENT_CHAR, 1, bootloader_attr_legacy_t)
-
+#define I_BOOTLOADER_GETATTR_LEGACY                                                      \
+  _IOCTLR(BOOTLOADER_IOC_IDENT_CHAR, 1, bootloader_attr_legacy_t)
 
 /*! \brief See below for details.
  * \details This request invokes a reset.  The third IOCTL argument is a
@@ -120,8 +128,8 @@ typedef struct MCU_PACK {
  * ioctl(fd, I_BOOTLOADER_WRITEPAGE, &attr);
  * \endcode
  */
-#define I_BOOTLOADER_WRITEPAGE _IOCTLW(BOOTLOADER_IOC_IDENT_CHAR, 3, bootloader_writepage_t)
-
+#define I_BOOTLOADER_WRITEPAGE                                                           \
+  _IOCTLW(BOOTLOADER_IOC_IDENT_CHAR, 3, bootloader_writepage_t)
 
 #define I_BOOTLOADER_TOTAL 4
 
@@ -129,8 +137,6 @@ typedef struct MCU_PACK {
 }
 #endif
 
-
 #endif // SOS_DEV_BOOTLOADER_H_
 
 /*! @} */
-

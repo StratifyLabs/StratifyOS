@@ -5,8 +5,8 @@
  *
  * \ingroup IFACE_DEV
  *
- * \details The DAC peripheral driver allows access to the MCU's built-in DAC. More information about accessing
- * peripheral IO is in the \ref IFACE_DEV section.
+ * \details The DAC peripheral driver allows access to the MCU's built-in DAC. More
+ *information about accessing peripheral IO is in the \ref IFACE_DEV section.
  *
  * The following is an example of how to write the DAC in an OS environment:
  *
@@ -16,7 +16,6 @@
  * #include <fcntl.h>
  * #include <errno.h>
  * #include <stdio.h>
- * #include "mcu/mcu.h"
  *
  * int write_dac(dac_sample_t * src, int samples){
  * 	int fd;
@@ -28,15 +27,14 @@
  * 	} else {
  *		ctl.enabled_channels = (1<<0); //enable channel zero
  * 		ctl.freq = 20000; //20KHz output
- * 		ctl.pin_assign = 0; //Use GPIO configuration zero (see device specific documentation for details)
- * 		if( ioctl(fd, I_SETATTR, &ctl) < 0 ){
- * 			printf("Failed to set peripheral configuration (%d)\n", errno);
- * 			return -1;
+ * 		ctl.pin_assign = 0; //Use GPIO configuration zero (see device specific
+ *documentation for details) if( ioctl(fd, I_SETATTR, &ctl) < 0 ){ printf("Failed to set
+ *peripheral configuration (%d)\n", errno); return -1;
  *		}
  *
  *		//now write the samples of the DAC
- *		lseek(fd, 0, SEEK_SET); //this sets the channel to 0, 'c' device does not auto-increment on write
- *		if ( write(fd, src, sizeof(dac_sample_t)*samples) < 0 ){
+ *		lseek(fd, 0, SEEK_SET); //this sets the channel to 0, 'c' device does not
+ *auto-increment on write if ( write(fd, src, sizeof(dac_sample_t)*samples) < 0 ){
  *			printf("Error writing peripheral (%d)\n", errno);
  *			return -1;
  *		}
@@ -56,8 +54,8 @@
 #ifndef SOS_DEV_DAC_H_
 #define SOS_DEV_DAC_H_
 
-#include <stdint.h>
 #include <sdk/types.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -67,49 +65,47 @@ extern "C" {
 #define DAC_IOC_IDENT_CHAR 'd'
 
 enum dac_flags {
-	DAC_FLAG_NONE = 0,
-	DAC_FLAG_SET_CONVERTER = (1<<0),
-	DAC_FLAG_IS_LEFT_JUSTIFIED = (1<<1),
-	DAC_FLAG_IS_RIGHT_JUSTIFIED = (1<<2),
-	DAC_FLAG_SET_CHANNELS = (1<<3),
-	DAC_FLAG_IS_OUTPUT_BUFFERED = (1<<4),
-	DAC_FLAG_IS_ON_CHIP = (1<<5),
-	DAC_FLAG_IS_SAMPLE_AND_HOLD = (1<<6),
-	DAC_FLAG_IS_TRIGGER_EINT = (1<<7),
-	DAC_FLAG_IS_TRIGGER_EINT_RISING = (1<<8),
-	DAC_FLAG_IS_TRIGGER_EINT_FALLING = (1<<9),
-	DAC_FLAG_IS_TRIGGER_TMR = (1<<10)
+  DAC_FLAG_NONE = 0,
+  DAC_FLAG_SET_CONVERTER = (1 << 0),
+  DAC_FLAG_IS_LEFT_JUSTIFIED = (1 << 1),
+  DAC_FLAG_IS_RIGHT_JUSTIFIED = (1 << 2),
+  DAC_FLAG_SET_CHANNELS = (1 << 3),
+  DAC_FLAG_IS_OUTPUT_BUFFERED = (1 << 4),
+  DAC_FLAG_IS_ON_CHIP = (1 << 5),
+  DAC_FLAG_IS_SAMPLE_AND_HOLD = (1 << 6),
+  DAC_FLAG_IS_TRIGGER_EINT = (1 << 7),
+  DAC_FLAG_IS_TRIGGER_EINT_RISING = (1 << 8),
+  DAC_FLAG_IS_TRIGGER_EINT_FALLING = (1 << 9),
+  DAC_FLAG_IS_TRIGGER_TMR = (1 << 10)
 };
 
-
 typedef struct MCU_PACK {
-	u32 o_flags;
-	u32 o_events;
-	u32 freq;
-	u32 maximum;
-	u32 reference_mv;
-	u8 resolution;
-	u8 bytes_per_sample;
-	u16 resd0;
-	u32 resd[6];
+  u32 o_flags;
+  u32 o_events;
+  u32 freq;
+  u32 maximum;
+  u32 reference_mv;
+  u8 resolution;
+  u8 bytes_per_sample;
+  u16 resd0;
+  u32 resd[6];
 } dac_info_t;
 
 typedef struct MCU_PACK {
-	mcu_pin_t channel[4];
+  mcu_pin_t channel[4];
 } dac_pin_assignment_t;
 
 typedef struct MCU_PACK {
-	u32 o_flags;
-	dac_pin_assignment_t pin_assignment;
-	u32 freq;
-	mcu_pin_t trigger /*! Pin or Timer trigger */;
-	u8 width;
-	u8 channel;
-	u32 resd[8];
+  u32 o_flags;
+  dac_pin_assignment_t pin_assignment;
+  u32 freq;
+  mcu_pin_t trigger /*! Pin or Timer trigger */;
+  u8 width;
+  u8 channel;
+  u32 resd[8];
 } dac_attr_t;
 
 #define I_DAC_GETVERSION _IOCTL(DAC_IOC_IDENT_CHAR, I_MCU_GETVERSION)
-
 
 /*! \brief See below for details.
  * \details This requests reads the DAC attributes.
@@ -142,7 +138,6 @@ typedef struct MCU_PACK {
 #define I_DAC_SETATTR _IOCTLW(DAC_IOC_IDENT_CHAR, I_MCU_SETATTR, dac_attr_t)
 #define I_DAC_SETACTION _IOCTLW(DAC_IOC_IDENT_CHAR, I_MCU_SETACTION, mcu_action_t)
 
-
 /*! \brief See below for details.
  * \details This IOCTL arg value causes
  * the ioctl call to return the current output
@@ -171,7 +166,7 @@ typedef struct MCU_PACK {
  * \endcode
  * \hideinitializer
  */
-#define I_DAC_SET _IOCTLW(DAC_IOC_IDENT_CHAR, I_MCU_TOTAL+1, mcu_channel_t)
+#define I_DAC_SET _IOCTLW(DAC_IOC_IDENT_CHAR, I_MCU_TOTAL + 1, mcu_channel_t)
 
 #define I_DAC_TOTAL 2
 
@@ -182,5 +177,3 @@ typedef struct MCU_PACK {
 #endif // SOS_DEV_DAC_H_
 
 /*! @} */
-
-

@@ -1,15 +1,15 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
-
-#include "config.h"
-#include "sos/debug.h"
-#include "mcu/pio.h"
-#include "sos/fs/sysfs.h"
-#include "sos/link.h"
-#include "sos/sos.h"
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
+
+#include "config.h"
+#include "cortexm/cortexm.h"
+#include "sos/debug.h"
+#include "sos/fs/sysfs.h"
+#include "sos/link.h"
+#include "sos/sos.h"
 
 extern void *link_update(void *args);
 
@@ -17,30 +17,27 @@ static void init_fs();
 static void start_filesystem(void);
 static int startup_fs();
 
-static void svcall_core_getinfo(void *args) MCU_ROOT_EXEC_CODE;
-
-void svcall_core_getinfo(void *args) {
-  CORTEXM_SVCALL_ENTER();
-  mcu_core_getinfo(0, args);
-}
-
 void check_reset_source(void) {
   core_info_t info;
-  cortexm_svcall(svcall_core_getinfo, &info);
-  if (info.o_flags & CORE_FLAG_IS_RESET_SOFTWARE) {
-    SOS_TRACE_MESSAGE("soft reset");
-  } else if (info.o_flags & CORE_FLAG_IS_RESET_POR) {
-    SOS_TRACE_MESSAGE("por reset");
-  } else if (info.o_flags & CORE_FLAG_IS_RESET_EXTERNAL) {
-    SOS_TRACE_MESSAGE("ext reset");
-  } else if (info.o_flags & CORE_FLAG_IS_RESET_WDT) {
-    SOS_TRACE_MESSAGE("wdt reset");
-  } else if (info.o_flags & CORE_FLAG_IS_RESET_BOR) {
-    SOS_TRACE_MESSAGE("bor reset");
-  } else if (info.o_flags & CORE_FLAG_IS_RESET_SYSTEM) {
-    SOS_TRACE_MESSAGE("sys reset");
+  int fd = open("/dev/core", O_RDWR);
+  if (fd >= 0) {
+    ioctl(fd, I_CORE_GETINFO, &info);
+    close(fd);
+    if (info.o_flags & CORE_FLAG_IS_RESET_SOFTWARE) {
+      SOS_TRACE_MESSAGE("soft reset");
+    } else if (info.o_flags & CORE_FLAG_IS_RESET_POR) {
+      SOS_TRACE_MESSAGE("por reset");
+    } else if (info.o_flags & CORE_FLAG_IS_RESET_EXTERNAL) {
+      SOS_TRACE_MESSAGE("ext reset");
+    } else if (info.o_flags & CORE_FLAG_IS_RESET_WDT) {
+      SOS_TRACE_MESSAGE("wdt reset");
+    } else if (info.o_flags & CORE_FLAG_IS_RESET_BOR) {
+      SOS_TRACE_MESSAGE("bor reset");
+    } else if (info.o_flags & CORE_FLAG_IS_RESET_SYSTEM) {
+      SOS_TRACE_MESSAGE("sys reset");
+    }
+    sos_handle_event(SOS_EVENT_RESET_SOURCE, &info);
   }
-  sos_handle_event(SOS_EVENT_RESET_SOURCE, &info);
 }
 
 void start_filesystem(void) {

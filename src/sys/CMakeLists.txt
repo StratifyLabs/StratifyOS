@@ -54,7 +54,7 @@ if( ${SOS_BUILD_CONFIG} STREQUAL arm )
 		scheduler/scheduler_root.c
 		scheduler/scheduler_root.h
 		scheduler/scheduler_thread.c
-		scheduler/scheduler_tmr.c
+		#scheduler/scheduler_tmr.c
 		scheduler/scheduler_timing.c
 		scheduler/scheduler_timing.h
 		scheduler/scheduler.c

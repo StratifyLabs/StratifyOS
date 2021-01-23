@@ -5,8 +5,6 @@
 
 #include "sos/fs/devfs.h"
 #include "sos/dev/drive.h"
-#include "mcu/spi.h"
-#include "mcu/qspi.h"
 
 //Serial Flash Discoverable Parameters -- the minimum need for the driver to work
 typedef struct {

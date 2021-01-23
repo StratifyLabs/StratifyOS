@@ -4,17 +4,19 @@
 #ifndef SCHED_FLAGS_H_
 #define SCHED_FLAGS_H_
 
-#include <sys/types.h>
-#include <signal.h>
-#include <pthread.h>
 #include <limits.h>
-#include <sys/time.h>
+#include <pthread.h>
+#include <signal.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <sys/time.h>
+#include <sys/types.h>
+
+#include "cortexm/cortexm.h"
 #include "cortexm/fault.h"
 #include "cortexm/task.h"
+
 #include "sos/debug.h"
-#include "mcu/core.h"
 #include "sos/sos.h"
 #include "trace.h"
 
@@ -25,6 +27,14 @@
 
 
 #define SCHEDULER_NUM_SIGNALS 32
+
+typedef struct {
+  u32 tid;
+  s32 free_stack_size;
+  s32 free_heap_size;
+  u32 pid;
+  fault_t fault;
+} scheduler_fault_t;
 
 extern volatile scheduler_fault_t m_scheduler_fault;
 

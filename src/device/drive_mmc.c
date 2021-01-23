@@ -1,15 +1,13 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
-
-#include "sos/sos.h"
-
-#include "cortexm/cortexm.h"
-#include "device/drive_mmc.h"
-#include "sos/debug.h"
 #include <errno.h>
 #include <unistd.h>
 
+#include "sos/sos.h"
+#include "cortexm/cortexm.h"
+#include "device/drive_mmc.h"
+#include "sos/debug.h"
+
 #include "cortexm/task.h"
-#include "mcu/core.h"
 
 int drive_mmc_open(const devfs_handle_t *handle) {
   const drive_mmc_config_t *config = handle->config;
@@ -112,7 +110,7 @@ int drive_mmc_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
     break;
 
   default:
-    return mcu_mmc_ioctl(handle, request, ctl);
+    return config->device.driver.ioctl(handle, request, ctl);
   }
   return 0;
 }

@@ -1,16 +1,13 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
-
 #include <errno.h>
+#include <fcntl.h>
 #include <string.h>
 
 #include "../scheduler/scheduler_local.h"
 #include "cortexm/mpu.h"
 #include "cortexm/task.h"
-#include "mcu/core.h"
-#include "mcu/mcu.h"
 #include "trace.h"
-#include <fcntl.h>
 
 typedef struct {
   trace_id_handle_t trace;

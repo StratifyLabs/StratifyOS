@@ -2,7 +2,6 @@
 
 #include "config.h"
 #include "cortexm/cortexm.h"
-#include "mcu/mcu.h"
 #include "sos/sos.h"
 
 #include "scheduler/scheduler_local.h"
@@ -55,6 +54,13 @@ int kernel_request(int request, void *data) {
 const void *kernel_request_api(u32 request) {
   if (sos_config.sys.kernel_request_api) {
     return sos_config.sys.kernel_request_api(request);
+  }
+  return NULL;
+}
+
+bootloader_api_t *sos_get_bootloader_api() {
+  if (sos_config.sys.bootloader_start_address == 0xffffffff) {
+    return (bootloader_api_t *)(sos_config.sys.bootloader_start_address + 36);
   }
   return NULL;
 }

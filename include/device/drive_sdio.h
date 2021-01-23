@@ -3,8 +3,8 @@
 #ifndef DEVICE_SDIO_H_
 #define DEVICE_SDIO_H_
 
-#include "mcu/sdio.h"
 #include "sos/dev/drive.h"
+#include "sos/dev/sdio.h"
 #include "sos/fs/devfs.h"
 
 typedef struct {

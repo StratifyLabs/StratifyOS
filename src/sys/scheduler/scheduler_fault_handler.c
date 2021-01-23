@@ -9,12 +9,12 @@
 /*! \file */
 
 //#include "config.h"
-#include "cortexm/mpu.h"
-#include "mcu/core.h"
-#include "mcu/mcu.h"
-#include "sos/sos.h"
+
 #include <errno.h>
 #include <signal.h>
+
+#include "cortexm/mpu.h"
+#include "sos/sos.h"
 
 #include "../signal/sig_local.h"
 #include "../unistd/unistd_local.h"

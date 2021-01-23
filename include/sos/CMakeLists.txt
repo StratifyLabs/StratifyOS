@@ -6,7 +6,12 @@ set(SOURCES
 	config.h
 	debug.h
 	sos.h
+	led.h
+	trace.h
+	power.h
+	process.h
 	symbols.h
+	fs.h
 	api/crypt_api.h
 	api/sos_api.h
 	api/wifi_api.h

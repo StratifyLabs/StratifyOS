@@ -1,21 +1,18 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
-
-#include "../scheduler/scheduler_local.h"
-#include "appfs_local.h"
-#include "cortexm/mpu.h"
-#include "cortexm/task.h"
-#include "mcu/core.h"
-#include "mcu/mem.h"
-#include "mcu/wdt.h"
-#include "sos/debug.h"
-#include "sos/fs/sysfs.h"
 #include <errno.h>
 #include <fcntl.h>
 #include <reent.h>
 #include <stdarg.h>
 #include <stddef.h>
 #include <sys/stat.h>
+
+#include "../scheduler/scheduler_local.h"
+#include "appfs_local.h"
+#include "cortexm/mpu.h"
+#include "cortexm/task.h"
+#include "sos/debug.h"
+#include "sos/fs/sysfs.h"
 
 #define ANALYZE_PATH_NOENT -1
 #define ANALYZE_PATH_ROOT 0
@@ -589,7 +586,7 @@ void svcall_ioctl(void *args) {
   void *ctl = a->ctl;
   a->result = -1;
 
-  mcu_wdt_reset();
+  sos_config.mcu.reset_watchdog_timer();
 
   // check permissions on this device - IOCTL needs read/write access
   if (sysfs_is_rw_ok(dev->mode, dev->uid, SYSFS_GROUP) == 0) {

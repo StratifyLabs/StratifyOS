@@ -5,7 +5,6 @@
 #include <errno.h>
 #include <stddef.h>
 #include "device/usbfifo.h"
-#include "mcu/usb.h"
 #include "sos/debug.h"
 
 #define i2s_ffifo_open i2s_spi_ffifo_open

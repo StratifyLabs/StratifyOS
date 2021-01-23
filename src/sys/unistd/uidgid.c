@@ -6,7 +6,6 @@
 #include "../scheduler/scheduler_flags.h"
 #include "cortexm/cortexm.h"
 #include "cortexm/task.h"
-#include "mcu/mcu.h"
 #include "sos/sos.h"
 
 static void svcall_update_task_root(void *args) {

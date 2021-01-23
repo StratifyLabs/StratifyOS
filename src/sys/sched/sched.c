@@ -10,11 +10,10 @@
 
 #include "config.h"
 
-#include <sched.h>
 #include <errno.h>
-#include <sys/scheduler/scheduler_local.h>
-#include "mcu/mcu.h"
+#include <sched.h>
 
+#include "../scheduler/scheduler_local.h"
 
 /*! \cond */
 typedef struct {

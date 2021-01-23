@@ -27,9 +27,7 @@
 #include <sys/times.h>
 #include <errno.h>
 
-#include "mcu/arch.h"
 #include "cortexm/task.h"
-
 
 /*! \details This function populates \a buffer with the:
  * - process user time

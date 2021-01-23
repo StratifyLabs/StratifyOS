@@ -17,6 +17,7 @@
 #include "../scheduler/scheduler_local.h"
 
 #include "sos/debug.h"
+#include "sos/fs.h"
 #include "sos/sos.h"
 
 #include "sos/link.h"
@@ -138,14 +139,14 @@ void link_cmd_isbootloader(link_transport_driver_t *driver, link_data_t *args) {
 static void svcall_get_serialno(void *dest) MCU_ROOT_EXEC_CODE;
 void svcall_get_serialno(void *dest) {
   CORTEXM_SVCALL_ENTER();
-  core_info_t info;
+  mcu_sn_t serial_number;
   int i, j;
   char *p = dest;
-  mcu_core_getinfo(0, &info);
+  sos_config.sys.get_serial_number(&serial_number);
   for (j = SERIAL_NUM_WIDTH; j >= 0; j--) {
     for (i = 0; i < 8; i++) {
-      *p++ = htoc((info.serial.sn[j] >> 28) & 0x0F);
-      info.serial.sn[j] <<= 4;
+      *p++ = htoc((serial_number.sn[j] >> 28) & 0x0F);
+      serial_number.sn[j] <<= 4;
     }
   }
 }

@@ -28,7 +28,7 @@
 #include "../sysfs/appfs_local.h"
 #include "process_start.h"
 #include "sos/fs/sysfs.h"
-#include "sos/sos.h"
+#include "sos/process.h"
 
 #define PATH_ARG_MAX ARG_MAX
 
@@ -42,7 +42,7 @@ int launch(
   const void *update_context,
   char *const envp[]) {
 
-  char exec_path[PATH_ARG_MAX + 1];
+  char exec_path[PATH_MAX + ARG_MAX];
 
   // check if path exists
   if (access(path, R_OK) < 0) {
@@ -50,7 +50,7 @@ int launch(
   }
 
   if (args != 0) {
-    if (strnlen(args, PATH_ARG_MAX) > PATH_ARG_MAX - PATH_MAX) {
+    if (strnlen(args, ARG_MAX) > ARG_MAX) {
       errno = ENAMETOOLONG;
       return -1;
     }
@@ -71,7 +71,7 @@ int launch(
     }
 
   } else {
-    strncpy(exec_path, path, PATH_ARG_MAX);
+    strncpy(exec_path, path, sizeof(exec_path) - 1);
   }
 
   if (exec_dest != 0) {
@@ -79,8 +79,8 @@ int launch(
   }
 
   if (args) {
-    strncat(exec_path, " ", PATH_ARG_MAX);
-    strncat(exec_path, args, PATH_ARG_MAX);
+    strncat(exec_path, " ", sizeof(exec_path) - 1);
+    strncat(exec_path, args, sizeof(exec_path) - 1);
   }
 
   return process_start(exec_path, envp);

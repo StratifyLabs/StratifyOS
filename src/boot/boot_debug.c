@@ -15,161 +15,152 @@
  * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-
 #include <string.h>
+
 #include "mcu/arch.h"
 #include "mcu/boot_debug.h"
+#include "sos/config.h"
 
 #if defined ___debug || __debug
 
 #define BUF_SIZE 36
 
 static int width;
-static int (*writefunc)(const void *, int);
-
 static char Htoc(int nibble);
 static char htoc(int nibble);
 static int ditoa(char dest[BUF_SIZE], s32 num, int width);
 static int dutoa(char dest[BUF_SIZE], u32 num, int base, char upper, int width);
-static void dwrite(const char * str);
+static void dwrite(const char *str);
 
-void dsetmode(int leading_zeros){
-	width = leading_zeros;
+void dsetmode(int leading_zeros) { width = leading_zeros; }
+
+int dint(int x) {
+  char buf[BUF_SIZE];
+  ditoa(buf, x, width);
+  dwrite(buf);
+  return 0;
 }
 
-void dsetwritefunc(int (*func)(const void *, int)){
-	writefunc = func;
+int duint(unsigned int x) {
+  char buf[BUF_SIZE];
+  dutoa(buf, x, 10, 1, width);
+  dwrite(buf);
+  return 0;
 }
 
-int dint(int x){
-	char buf[BUF_SIZE];
-	ditoa(buf, x, width);
-	dwrite(buf);
-	return 0;
+int dstr(const char *str) {
+  dwrite(str);
+  return 0;
 }
 
-int duint(unsigned int x){
-	char buf[BUF_SIZE];
-	dutoa(buf, x, 10, 1, width);
-	dwrite(buf);
-	return 0;
+int dhex(int x) {
+  char buf[BUF_SIZE];
+  dutoa(buf, x, 16, false, width);
+  dwrite(buf);
+  return 0;
 }
 
-int dstr(const char * str){
-	dwrite(str);
-	return 0;
+int dHex(int x) {
+  char buf[BUF_SIZE];
+  dutoa(buf, x, 16, true, width);
+  dwrite(buf);
+  return 0;
 }
 
-int dhex(int x){
-	char buf[BUF_SIZE];
-	dutoa(buf, x, 16, false, width);
-	dwrite(buf);
-	return 0;
+int dbin(int x) {
+  char buf[BUF_SIZE];
+  dutoa(buf, x, 2, false, width);
+  dwrite(buf);
+  return 0;
 }
 
-int dHex(int x){
-	char buf[BUF_SIZE];
-	dutoa(buf, x, 16, true, width);
-	dwrite(buf);
-	return 0;
+void dwrite(const char *str) {
+  if (sos_config.debug.write != NULL) {
+    sos_config.debug.write(str, strlen(str));
+  }
 }
 
-int dbin(int x){
-	char buf[BUF_SIZE];
-	dutoa(buf, x, 2, false, width);
-	dwrite(buf);
-	return 0;
+char Htoc(int nibble) {
+  if (nibble >= 0 && nibble < 10) {
+    return nibble + '0';
+  } else {
+    return nibble + 'A' - 10;
+  }
 }
 
-void dwrite(const char * str){
-	if ( writefunc != NULL ){
-		writefunc(str, strlen(str));
-	}
+char htoc(int nibble) {
+  if (nibble >= 0 && nibble < 10) {
+    return nibble + '0';
+  } else {
+    return nibble + 'a' - 10;
+  }
 }
 
+int ditoa(char dest[BUF_SIZE], int32_t num, int width) {
+  char buf[BUF_SIZE];
+  int i, j;
+  char started;
+  char neg;
+  j = 0;
+  neg = 0;
+  if (num < 0) {
+    neg = 1;
+    num *= -1;
+  }
+  memset(buf, '0', BUF_SIZE);
+  do {
+    buf[j++] = htoc(num % 10);
+    num /= 10;
+  } while ((num > 0) && (j < BUF_SIZE));
+  started = 0;
+  j = 0;
+  if (neg != 0) {
+    dest[j++] = '-';
+  }
+  for (i = BUF_SIZE - 1; i >= 0; i--) {
+    if ((buf[i] != '0') || (started != 0) || (i < width)) {
+      started = 1;
+      dest[j++] = buf[i];
+    }
+  }
 
-char Htoc(int nibble){
-	if ( nibble >= 0 && nibble < 10 ){
-		return nibble + '0';
-	} else {
-		return nibble + 'A' - 10;
-	}
+  if ((j == 0) || ((j == 1) && neg)) {
+    dest[j++] = '0';
+  }
+
+  dest[j] = 0;
+  return j;
 }
 
-char htoc(int nibble){
-	if ( nibble >= 0 && nibble < 10 ){
-		return nibble + '0';
-	} else {
-		return nibble + 'a' - 10;
-	}
-}
-
-int ditoa(char dest[BUF_SIZE], int32_t num, int width){
-	char buf[BUF_SIZE];
-	int i, j;
-	char started;
-	char neg;
-	j = 0;
-	neg = 0;
-	if( num < 0 ){
-		neg = 1;
-		num *= -1;
-	}
-	memset(buf, '0', BUF_SIZE);
-	do {
-		buf[j++] = htoc(num%10);
-		num /= 10;
-	} while( (num >  0) && (j < BUF_SIZE));
-	started = 0;
-	j = 0;
-	if( neg != 0 ){
-		dest[j++] = '-';
-	}
-	for(i=BUF_SIZE-1; i >= 0; i--){
-		if( (buf[i] != '0') || (started != 0) || (i<width)){
-			started = 1;
-			dest[j++] = buf[i];
-		}
-	}
-
-	if( (j == 0) || ((j == 1) && neg) ){
-		dest[j++] = '0';
-	}
-
-	dest[j] = 0;
-	return j;
-}
-
-int dutoa(char dest[BUF_SIZE], uint32_t num, int base, char upper, int width){
-	char buf[BUF_SIZE];
-	int i, j;
-	char started;
-	char c;
-	j = 0;
-	memset(buf, '0', BUF_SIZE);
-	while( (num > 0) && (j < BUF_SIZE)){
-		if( upper ){
-			c = Htoc(num%base);
-		} else {
-			c = htoc(num%base);
-		}
-		buf[j++] = c;
-		num /= base;
-	};
-	started = 0;
-	j = 0;
-	for(i=BUF_SIZE-1; i >= 0; i--){
-		if( (buf[i] != '0') || (started != 0) || (i<width)){
-			started = 1;
-			dest[j++] = buf[i];
-		}
-	}
-	if( j == 0 ){
-		dest[j++] = '0';
-	}
-	dest[j] = 0;
-	return j;
+int dutoa(char dest[BUF_SIZE], uint32_t num, int base, char upper, int width) {
+  char buf[BUF_SIZE];
+  int i, j;
+  char started;
+  char c;
+  j = 0;
+  memset(buf, '0', BUF_SIZE);
+  while ((num > 0) && (j < BUF_SIZE)) {
+    if (upper) {
+      c = Htoc(num % base);
+    } else {
+      c = htoc(num % base);
+    }
+    buf[j++] = c;
+    num /= base;
+  };
+  started = 0;
+  j = 0;
+  for (i = BUF_SIZE - 1; i >= 0; i--) {
+    if ((buf[i] != '0') || (started != 0) || (i < width)) {
+      started = 1;
+      dest[j++] = buf[i];
+    }
+  }
+  if (j == 0) {
+    dest[j++] = '0';
+  }
+  dest[j] = 0;
+  return j;
 }
 
 #endif

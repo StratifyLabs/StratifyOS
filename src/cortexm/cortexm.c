@@ -2,8 +2,6 @@
 
 #include "cortexm/mpu.h"
 #include "cortexm_local.h"
-#include "mcu/core.h"
-#include "mcu/mcu.h"
 #include "sos/sos.h"
 
 extern int sos_main();
@@ -100,7 +98,7 @@ void cortexm_reset_mode() {
   cortexm_disable_systick_irq();
   for (s16 i = -14; i < 255; i++) {
     cortexm_disable_irq(i);
-    mcu_core_set_nvic_priority(i, 0);
+    sos_config.mcu.set_interrupt_priority(i, 0);
   }
 }
 
@@ -255,7 +253,7 @@ int cortexm_set_irq_priority(int irq, int prio, u32 o_events) {
   if (o_events & MCU_EVENT_FLAG_SET_PRIORITY) {
 
     // calculate the relative priority (lower value is higher priority)
-    prio = mcu_config.irq_middle_prio * 2 - 1 - prio;
+    prio = sos_config.mcu.interrupt_middle_priority * 2 - 1 - prio;
 
     // zero priority is reserved for exceptions -- lower value is higher priority
     if (prio < 4) {
@@ -263,12 +261,12 @@ int cortexm_set_irq_priority(int irq, int prio, u32 o_events) {
     }
 
     // ensure lowest priority (highest value) is not exceeded
-    if (prio > (mcu_config.irq_middle_prio * 2 - 1)) {
-      prio = mcu_config.irq_middle_prio * 2 - 1;
+    if (prio > (sos_config.mcu.interrupt_middle_priority * 2 - 1)) {
+      prio = sos_config.mcu.interrupt_middle_priority * 2 - 1;
     }
 
     // now set the priority in the NVIC
-    mcu_core_set_nvic_priority(irq, prio);
+    sos_config.mcu.set_interrupt_priority(irq, prio);
   }
 
   return 0;

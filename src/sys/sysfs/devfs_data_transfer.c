@@ -7,8 +7,6 @@
 #include <sys/stat.h>
 
 #include "../scheduler/scheduler_local.h"
-#include "mcu/mcu.h"
-
 #include "devfs_local.h"
 #include "sos/fs/sysfs.h"
 

@@ -7,11 +7,13 @@
 #include <malloc.h>
 #include <pthread.h>
 #include <reent.h>
-#include <sys/malloc/malloc_local.h>
 #include <sys/time.h>
 
-#include "sos/debug.h"
+#include "cortexm/cortexm.h"
 #include "scheduler_local.h"
+#include "sos/debug.h"
+#include "sos/dev/sys.h"
+#include "sys/malloc/malloc_local.h"
 
 typedef struct {
   int joined;

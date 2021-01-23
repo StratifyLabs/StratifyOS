@@ -9,14 +9,12 @@
 
 /*! \file */
 
-#include "cortexm/task.h"
-#include "mcu/mcu.h"
 #include <errno.h>
 #include <signal.h>
 #include <stdlib.h>
 
+#include "cortexm/task.h"
 #include "../scheduler/scheduler_local.h"
-
 #include "sig_local.h"
 
 /*! \cond */

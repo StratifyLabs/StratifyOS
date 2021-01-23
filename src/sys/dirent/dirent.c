@@ -1,6 +1,5 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
-
 /*! \addtogroup directory
  * @{
  *
@@ -45,6 +44,7 @@
 #include <malloc.h>
 #include <unistd.h>
 
+#include "cortexm/cortexm.h"
 #include "dirent.h"
 #include "sos/debug.h"
 

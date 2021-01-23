@@ -73,25 +73,26 @@ int task_init(
   m_task_current_priority = 0;
 
   // Set the interrupt priorities
-  for (i = 0; i <= mcu_config.irq_total; i++) {
-    mcu_core_set_nvic_priority(
-      i, mcu_config.irq_middle_prio * 2 - 1); // mark as middle priority
+  for (i = 0; i <= sos_config.mcu.interrupt_request_total; i++) {
+    sos_config.mcu.set_interrupt_priority(
+      i, sos_config.mcu.interrupt_middle_priority * 2 - 1); // mark as middle priority
   }
 
-  mcu_core_set_nvic_priority(
-    SysTick_IRQn,
-    mcu_config.irq_middle_prio * 2 - 1); // must be same priority as microsecond timer
-  mcu_core_set_nvic_priority(PendSV_IRQn, mcu_config.irq_middle_prio * 2 - 1);
-  mcu_core_set_nvic_priority(SVCall_IRQn, mcu_config.irq_middle_prio * 2 - 1);
-#if !defined MCU_NO_HARD_FAULT
-  mcu_core_set_nvic_priority(HardFault_IRQn, 2);
-#endif
+  // must be same priority as microsecond timer
+  sos_config.mcu.set_interrupt_priority(
+    SysTick_IRQn, sos_config.mcu.interrupt_middle_priority * 2 - 1);
+  sos_config.mcu.set_interrupt_priority(
+    PendSV_IRQn, sos_config.mcu.interrupt_middle_priority * 2 - 1);
+  sos_config.mcu.set_interrupt_priority(
+    SVCall_IRQn, sos_config.mcu.interrupt_middle_priority * 2 - 1);
 
-  // priority 1 is used for the WDT
-  mcu_core_set_nvic_priority(DebugMonitor_IRQn, 0);
-  mcu_core_set_nvic_priority(MemoryManagement_IRQn, 3);
-  mcu_core_set_nvic_priority(BusFault_IRQn, 3);
-  mcu_core_set_nvic_priority(UsageFault_IRQn, 3);
+  // highest priority
+  sos_config.mcu.set_interrupt_priority(DebugMonitor_IRQn, 0);
+  // high but leave room for WDT
+  sos_config.mcu.set_interrupt_priority(HardFault_IRQn, 2);
+  sos_config.mcu.set_interrupt_priority(MemoryManagement_IRQn, 3);
+  sos_config.mcu.set_interrupt_priority(BusFault_IRQn, 3);
+  sos_config.mcu.set_interrupt_priority(UsageFault_IRQn, 3);
 
   sos_handle_event(SOS_EVENT_ROOT_TASK_INITIALIZED, 0);
 

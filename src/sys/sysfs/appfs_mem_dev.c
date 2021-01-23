@@ -18,13 +18,9 @@
  */
 
 #include "cortexm/cortexm.h"
-#include "mcu/appfs.h"
-#include "mcu/arch.h"
-#include "mcu/bootloader.h"
-#include "mcu/core.h"
-#include "mcu/flash.h"
-#include "mcu/wdt.h"
+#include "device/appfs.h"
 #include "sos/debug.h"
+#include "sos/dev/flash.h"
 
 #define DECLARE_APPFS_CONFIG() const appfs_mem_config_t *config = handle->config
 #define DECLARE_APPFS_CONFIG_STATE()                                                     \

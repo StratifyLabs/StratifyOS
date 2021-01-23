@@ -10,7 +10,6 @@
 #include "../scheduler/scheduler_local.h"
 #include "../unistd/unistd_fs.h"
 #include "../unistd/unistd_local.h"
-#include "mcu/mcu.h"
 
 #include "sos/fs/devfs.h"
 #include "sos/fs/sysfs.h"

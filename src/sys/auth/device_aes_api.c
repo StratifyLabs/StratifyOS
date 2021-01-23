@@ -18,13 +18,15 @@
  */
 #include <sdk/api.h>
 
-#include "config.h"
-#include "sos/api/crypt_api.h"
-#include "sos/dev/crypt.h"
+#include <aio.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <stdlib.h>
 #include <unistd.h>
+
+#include "config.h"
+#include "sos/api/crypt_api.h"
+#include "sos/dev/crypt.h"
 
 typedef struct {
   int fd;

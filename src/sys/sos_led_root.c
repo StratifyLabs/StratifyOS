@@ -1,11 +1,9 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
-
 #include "cortexm/cortexm.h"
-#include "mcu/core.h"
-#include "mcu/pio.h"
+#include "sos/config.h"
+#include "sos/led.h"
 #include "sos/sos.h"
-#include "sos/sos_config.h"
 
 void sos_led_svcall_enable(void *args) {
   CORTEXM_SVCALL_ENTER();

@@ -347,133 +347,16 @@
 extern "C" {
 #endif
 
-int hibernate(int seconds);
-void powerdown(int seconds);
-void *sos_default_thread(void *arg);
-int mkfs(const char *path);
-int mount(const char *path);
-int unmount(const char *path);
-
-/*! \details Launch an application from a data file system.
- *
- * The options are:
- * - APPFS_FLAG_IS_REPLACE
- * - APPFS_FLAG_IS_FLASH
- * - APPFS_FLAG_IS_STARTUP (only with APPFS_FLAG_IS_FLASH)
- * - APPFS_FLAG_IS_REPLACE
- * - APPFS_FLAG_IS_ORPHAN
- *
- * Here is an example of launching a new application:
- * \code
- * #include <caos.h>
- *
- * pid_t p;
- * int status;
- * char exec_path[PATH_MAX];
- *
- * p = launch("/home/HelloWorld", exec_path, 0, APPFS_FLAG_IS_FLASH, 0, 0, 0);
- *
- * wait(&status); //wait until hello world is done running
- * unlink(exec_path); //delete the installed image (or just leave it there to run again)
- *
- * \endcode
- *
- *
- * @param path Path to launch binary
- * @param exec_path The path to store the path where the binary is installed (e.g.
- * /app/flash/0-HelloWorld)
- * @param args Pointer to the arguments for launch
- * @param options Install options mask (flash, startup, etc)
- * @param ram_size The amount of RAM that will be allocated to stack/heap (excludes code
- * even if running from RAM), set to zero for default RAM size
- * @param update_progress Callback to show progress of install/launch
- * @param update_context Value passed to update_progress() callback
- * @param envp Null for this version
- * @return Zero on success
- */
-int launch(
-  const char *path,
-  char *exec_path,
-  const char *args,
-  int options,
-  int ram_size,
-  int (*update_progress)(const void *, int, int),
-  const void *update_context,
-  char *const envp[]);
-
-/*! \brief Install an application
- * \details This function installs an application in flash or RAM
- * @param path The source path
- * @param exec_path A destination buffer for the path to execute once installed
- * @param options Install options
- * @param ram_size The number of bytes to use for heap/stack
- * @param update_progress Callback to show progress of the install
- * @param update_context Value passed to update_progress() callback
- * @return Zero on success
- */
-int install(
-  const char *path,
-  char *exec_path,
-  int options,
-  int ram_size,
-  int (*update_progress)(const void *, int, int),
-  const void *update_context);
-
 void htoa(char *dest, int num);
 char htoc(int nibble);
 
 int kernel_request(int request, void *data);
 const void *kernel_request_api(u32 request);
 
-typedef struct {
-  u32 tid;
-  s32 free_stack_size;
-  s32 free_heap_size;
-  u32 pid;
-  fault_t fault;
-} scheduler_fault_t;
-
-#define SOS_TRACE_MESSAGE(msg)                                                           \
-  sos_trace_event(LINK_POSIX_TRACE_MESSAGE, msg, strnlen(msg, LINK_POSIX_TRACE_DATA_SIZE))
-#define SOS_TRACE_WARNING(msg)                                                           \
-  sos_trace_event(LINK_POSIX_TRACE_WARNING, msg, strnlen(msg, LINK_POSIX_TRACE_DATA_SIZE))
-#define SOS_TRACE_CRITICAL(msg)                                                          \
-  sos_trace_event(                                                                       \
-    LINK_POSIX_TRACE_CRITICAL, msg, strnlen(msg, LINK_POSIX_TRACE_DATA_SIZE))
-#define SOS_TRACE_FATAL(msg)                                                             \
-  sos_trace_event(LINK_POSIX_TRACE_FATAL, msg, strnlen(msg, LINK_POSIX_TRACE_DATA_SIZE))
-
-void sos_trace_event(
-  link_trace_event_id_t event_id,
-  const void *data_ptr,
-  size_t data_len);
-int sos_trace_stack(u32 count);
-int sos_trace_stack_with_pointer(
-  const u32 *first_link_register,
-  const u32 *sp,
-  const u32 *stack_top,
-  u32 count);
-void sos_trace_event_addr_tid(
-  link_trace_event_id_t event_id,
-  const void *data_ptr,
-  size_t data_len,
-  u32 addr,
-  int tid);
-void sos_trace_root_trace_event(
-  link_trace_event_id_t event_id,
-  const void *data_ptr,
-  size_t data_len);
-
-void sos_led_startup();
-void sos_led_svcall_enable(void *args);
-void sos_led_svcall_disable(void *args);
-void sos_led_svcall_error(void *args);
-
-void sos_led_root_enable();
-void sos_led_root_disable();
-void sos_led_root_error();
-
+int sos_main();
+void *sos_default_thread(void *arg);
 u64 sos_realtime();
+bootloader_api_t *sos_get_bootloader_api() MCU_ROOT_CODE;
 
 #include "config.h"
 

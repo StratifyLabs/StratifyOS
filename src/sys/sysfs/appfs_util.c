@@ -6,13 +6,7 @@
 #include <limits.h>
 
 #include "appfs_local.h"
-#include "cortexm/mpu.h"
-#include "cortexm/task.h"
-#include "mcu/core.h"
 #include "sos/debug.h"
-#include "mcu/mcu.h"
-#include "mcu/mem.h"
-#include "mcu/wdt.h"
 
 #include "../symbols.h"
 
@@ -78,7 +72,7 @@ int is_flash_blank(u32 address, u32 size) {
 int appfs_util_root_erase_pages(const devfs_device_t *dev, int start_page, int end_page) {
   int i;
   for (i = start_page; i <= end_page; i++) {
-    mcu_wdt_reset();
+    sos_config.mcu.reset_watchdog_timer();
     int result = dev->driver.ioctl(&(dev->handle), I_MEM_ERASE_PAGE, (void *)i);
     if (result < 0) {
       return result;

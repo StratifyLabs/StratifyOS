@@ -5,6 +5,8 @@ set(SOURCES
 	fifo.h
 	led_pwm.h
 	random.h
+	appfs.h
+	mem.h
 	sys.h
 	usbfifo.h
 	device_fifo.h

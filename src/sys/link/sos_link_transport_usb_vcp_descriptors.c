@@ -6,9 +6,9 @@
 #include <stdbool.h>
 #include <sys/fcntl.h>
 #include <unistd.h>
+
 #include "config.h"
 #include "sos/link.h"
-#include "mcu/mcu.h"
 #include "sos/dev/usb.h"
 #include "usbd/control.h"
 #include "usbd/cdc.h"

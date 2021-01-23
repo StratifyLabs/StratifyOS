@@ -7,8 +7,8 @@
 #include <pthread.h>
 #include <limits.h>
 
-#include "sos/link.h"
 #include "mqueue.h"
+#include "sos/link/types.h"
 
 #ifdef __cplusplus
 extern "C" {

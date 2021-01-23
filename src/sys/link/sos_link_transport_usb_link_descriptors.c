@@ -1,21 +1,18 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
-
-#include "config.h"
-#include "device/sys.h"
-#include "mcu/boot_debug.h"
-#include "mcu/core.h"
-#include "mcu/mcu.h"
-#include "sos/debug.h"
-#include "sos/dev/usb.h"
-#include "sos/link.h"
-#include "usbd/cdc.h"
-#include "usbd/control.h"
 #include <errno.h>
 #include <stdbool.h>
 #include <string.h>
 #include <sys/fcntl.h>
 #include <unistd.h>
+
+#include "config.h"
+#include "device/sys.h"
+#include "sos/debug.h"
+#include "sos/dev/usb.h"
+#include "sos/link.h"
+#include "usbd/cdc.h"
+#include "usbd/control.h"
 
 #include "sos/link/transport_usb_link.h"
 

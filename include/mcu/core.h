@@ -21,10 +21,10 @@
 #ifndef _MCU_CORE_H_
 #define _MCU_CORE_H_
 
-#include "mcu/mcu.h"
+#include <sdk/types.h>
+
 #include "sos/dev/core.h"
 #include "sos/fs/devfs.h"
-#include <sdk/types.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -43,8 +43,6 @@ int mcu_core_setaction(const devfs_handle_t *handle, void *arg) MCU_ROOT_CODE;
 // below are undocumented calls that can be made by BSPs but aren't accessible to
 // applications
 
-void mcu_core_get_bootloader_api(void *args) MCU_ROOT_CODE;
-void mcu_core_set_nvic_priority(int irq, int prio) MCU_ROOT_CODE;
 int mcu_core_invokebootloader(int port, void *arg) MCU_ROOT_CODE;
 
 typedef enum {

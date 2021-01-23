@@ -4,12 +4,13 @@
 #ifndef UNISTD_FLAGS_H_
 #define UNISTD_FLAGS_H_
 
-#include "dirent.h"
-#include "mcu/mcu.h"
-#include "sos/fs/sysfs.h"
 #include <stdint.h>
+#include <string.h>
 #include <sys/lock.h>
 #include <sys/stat.h>
+
+#include "dirent.h"
+#include "sos/fs/sysfs.h"
 
 #define FILDES_STDIO_FLAG 0x0200
 #define FILDES_SOCKET_FLAG 0x0400

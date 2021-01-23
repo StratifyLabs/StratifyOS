@@ -3,9 +3,11 @@
 #ifndef DEVICE_SDSPI_H_
 #define DEVICE_SDSPI_H_
 
-#include "mcu/spi.h"
 #include "sos/dev/drive.h"
+#include "sos/dev/spi.h"
 #include "sos/fs/devfs.h"
+
+#include "mcu/spi.h"
 
 typedef struct {
   const char *buf;

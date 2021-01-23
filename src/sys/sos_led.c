@@ -1,9 +1,7 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
-
 #include "cortexm/cortexm.h"
-#include "mcu/core.h"
-#include "mcu/pio.h"
+#include "sos/led.h"
 #include "sos/sos.h"
 
 void sos_led_startup() {

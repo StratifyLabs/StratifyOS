@@ -8,7 +8,6 @@
 /*! \file */
 
 #include "config.h"
-#include "sos/fs/sysfs.h"
 #include <errno.h>
 #include <signal.h>
 #include <stdbool.h>
@@ -18,6 +17,8 @@
 #include "../scheduler/scheduler_local.h"
 #include "../signal/sig_local.h"
 #include "cortexm/mpu.h"
+#include "sos/dev/appfs.h"
+#include "sos/fs/sysfs.h"
 
 /*! \cond */
 static void svcall_stop_threads(int *send_signal) MCU_ROOT_EXEC_CODE;

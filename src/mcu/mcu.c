@@ -94,3 +94,11 @@ int mcu_set_pin_assignment(
   }
   return 0;
 }
+
+bootloader_api_t *mcu_get_bootloader_api() {
+  if (sos_config.sys.bootloader_start_address == 0xffffffff) {
+    return 0;
+  } else {
+    return (bootloader_api_t *)(sos_config.sys.bootloader_start_address + 36);
+  }
+}

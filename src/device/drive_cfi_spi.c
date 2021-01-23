@@ -1,7 +1,8 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
-#include "mcu/pio.h"
+#include "sos/config.h"
 #include "sos/debug.h"
+#include "sos/dev/pio.h"
 #include "sos/dev/spi.h"
 
 #include "device/drive_cfi.h"
@@ -329,10 +330,11 @@ int drive_cfi_spi_write(const devfs_handle_t *handle, devfs_async_t *async) {
 
 int drive_cfi_spi_close(const devfs_handle_t *handle) {
   drive_cfi_state_t *state = handle->state;
+  const drive_cfi_config_t *config = handle->config;
   if (state->is_initialized) {
     state->is_initialized--;
     if (state->is_initialized == 0) {
-      return mcu_spi_close(handle);
+      return config->serial_device->driver.close(handle);
     }
   }
   return 0;
@@ -342,13 +344,10 @@ void drive_cfi_spi_initialize_cs(const devfs_handle_t *handle) {
   const drive_cfi_config_t *config = handle->config;
   mcu_pin_t cs = config->cs;
   if (cs.port != 255) {
-    devfs_handle_t pio_handle;
     pio_attr_t pio_attr;
     pio_attr.o_pinmask = 1 << cs.pin;
     pio_attr.o_flags = PIO_FLAG_SET_OUTPUT;
-    pio_handle.port = cs.port;
-    pio_handle.config = 0;
-    mcu_pio_setattr(&pio_handle, &pio_attr);
+    sos_config.sys.pio_set_attributes(cs.port, &pio_attr);
   }
 }
 
@@ -356,10 +355,7 @@ void drive_cfi_spi_assert_cs(const devfs_handle_t *handle) {
   const drive_cfi_config_t *config = handle->config;
   mcu_pin_t cs = config->cs;
   if (cs.port != 255) {
-    devfs_handle_t pio_handle;
-    pio_handle.port = cs.port;
-    pio_handle.config = 0;
-    mcu_pio_clrmask(&pio_handle, (void *)(ssize_t)(1 << cs.pin));
+    sos_config.sys.pio_write(cs.port, 1 << cs.pin, 0);
   }
 }
 
@@ -367,10 +363,7 @@ void drive_cfi_spi_deassert_cs(const devfs_handle_t *handle) {
   const drive_cfi_config_t *config = handle->config;
   mcu_pin_t cs = config->cs;
   if (cs.port != 255) {
-    devfs_handle_t pio_handle;
-    pio_handle.port = cs.port;
-    pio_handle.config = 0;
-    mcu_pio_setmask(&pio_handle, (void *)(ssize_t)(1 << cs.pin));
+    sos_config.sys.pio_write(cs.port, 1 << cs.pin, 1);
   }
 }
 

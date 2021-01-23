@@ -1,23 +1,19 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
-
 /*! \addtogroup unistd
  * @{
  */
 
 /*! \file */
 
-#include "config.h"
-
-#include "sos/ioctl.h"
-#include "mcu/mcu.h"
 #include <errno.h>
 #include <stdarg.h>
-#include "unistd_local.h"
-#include "sos/sos.h"
-#include "mcu/core.h"
-#include "device/sys.h"
 
+#include "config.h"
+#include "device/sys.h"
+#include "sos/ioctl.h"
+#include "sos/sos.h"
+#include "unistd_local.h"
 
 /*! \details This function performs a control request on the device
  * associated with \a fildes. \a request is specific to the device.
@@ -34,29 +30,28 @@
  *
  */
 int ioctl(int fildes, int request, ...) {
-	void * ctl;
-	va_list ap;
-	va_start(ap, request);
-	ctl = va_arg(ap, void*);
-	va_end(ap);
+  void *ctl;
+  va_list ap;
+  va_start(ap, request);
+  ctl = va_arg(ap, void *);
+  va_end(ap);
 
-	if( FILDES_IS_SOCKET(fildes) ){
-		if( sos_config.socket_api != 0 ){
-			return sos_config.socket_api->ioctl(fildes & ~FILDES_SOCKET_FLAG, request, ctl);
-		}
-		errno = EBADF;
-		return -1;
-	}
+  if (FILDES_IS_SOCKET(fildes)) {
+    if (sos_config.socket_api != 0) {
+      return sos_config.socket_api->ioctl(fildes & ~FILDES_SOCKET_FLAG, request, ctl);
+    }
+    errno = EBADF;
+    return -1;
+  }
 
-	fildes = u_fildes_is_bad(fildes);
-	if ( fildes < 0 ){
-		//check to see if fildes is a socket
-		errno = EBADF;
-		return -1;
-	}
+  fildes = u_fildes_is_bad(fildes);
+  if (fildes < 0) {
+    // check to see if fildes is a socket
+    errno = EBADF;
+    return -1;
+  }
 
-	return sysfs_file_ioctl(get_open_file(fildes), request, ctl);
+  return sysfs_file_ioctl(get_open_file(fildes), request, ctl);
 }
-
 
 /*! @} */

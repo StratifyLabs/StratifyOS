@@ -9,9 +9,7 @@
 #include <unistd.h>
 
 #include "config.h"
-#include "mcu/core.h"
 #include "sos/debug.h"
-#include "mcu/mcu.h"
 #include "trace.h"
 
 static void set_last_chunk(malloc_chunk_t *chunk);

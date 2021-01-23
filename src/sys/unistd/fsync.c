@@ -10,12 +10,7 @@
 #include <errno.h>
 #include <stdarg.h>
 
-#include "config.h"
-
 #include "../scheduler/scheduler_local.h"
-#include "device/sys.h"
-#include "mcu/core.h"
-#include "sos/sos.h"
 #include "unistd_local.h"
 
 /*! \details This function performs a control request on the device

@@ -13,6 +13,7 @@
 #include <fcntl.h>
 #include <sys/time.h>
 
+#include "cortexm/cortexm.h"
 #include "scheduler_local.h"
 
 typedef struct {

@@ -16,9 +16,6 @@
 #include "ffifo.h"
 
 
-
-
-
 typedef struct {
     ffifo_state_t ffifo;
     devfs_async_t i2s_async;

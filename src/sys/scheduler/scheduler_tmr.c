@@ -1,7 +1,7 @@
 
 #include <sdk/types.h>
 
-#include "mcu/tmr.h"
+#include "sos/dev/tmr.h"
 
 #include "sos/fs/devfs.h"
 #include "sos/sos.h"

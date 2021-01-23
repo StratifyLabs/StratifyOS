@@ -8,9 +8,7 @@
 #include "cortexm/cortexm.h"
 #include "device/drive_device.h"
 #include "sos/debug.h"
-
 #include "cortexm/task.h"
-#include "mcu/core.h"
 
 int drive_device_open(const devfs_handle_t *handle) {
   const drive_device_config_t *config = handle->config;

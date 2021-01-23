@@ -3,8 +3,6 @@
 #include <errno.h>
 
 #include "cortexm/task_local.h"
-#include "mcu/core.h"
-#include "mcu/mcu.h"
 
 int task_create_process(
   void (*p)(char *),

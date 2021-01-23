@@ -1,27 +1,22 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
-
-#include "mcu/boot_debug.h"
-#include "mcu/core.h"
-#include "mcu/mcu.h"
-#include "mcu/usb.h"
 #include "sos/config.h"
 #include "sos/debug.h"
-#include "sos/sos_events.h"
+#include "sos/events.h"
 #include "usbd/control.h"
 #include "usbd/msft.h"
 
 #include "usbd_standard.h"
 
 #define USBD_EP_MASK                                                                     \
-  (USBD_ENDPOINT_ADDRESS_IN | (mcu_config.usb_logical_endpoint_count - 1))
+  (USBD_ENDPOINT_ADDRESS_IN | (sos_config.usb.logical_endpoint_count - 1))
 
 static int usb_dev_decode_ep(usbd_control_t *context, int ep) {
   MCU_UNUSED_ARGUMENT(context);
   if (ep & USBD_ENDPOINT_ADDRESS_IN) {
     return (
-      (ep << mcu_config.usb_logical_endpoint_count)
-      << (ep & (mcu_config.usb_logical_endpoint_count - 1)));
+      (ep << sos_config.usb.logical_endpoint_count)
+      << (ep & (sos_config.usb.logical_endpoint_count - 1)));
   } else {
     return (1 << ep);
   }
@@ -165,7 +160,7 @@ u32 usbd_standard_request_get_status(usbd_control_t *context) {
     j = usb_dev_decode_ep(context, i);
     if (
       ((context->current_configuration != 0)
-       || ((i & (mcu_config.usb_logical_endpoint_count - 1)) == 0))
+       || ((i & (sos_config.usb.logical_endpoint_count - 1)) == 0))
       && (context->ep_mask & j)) {
       *bufp = (context->ep_halt & j) ? 1 : 0;
       context->data.dptr = context->buf;
@@ -206,7 +201,7 @@ u32 usbd_standard_request_set_clear_feature(usbd_control_t *context, u32 sc) {
     j = usb_dev_decode_ep(context, i);
     if (
       (context->current_configuration != 0)
-      && ((i & (mcu_config.usb_logical_endpoint_count - 1)) != 0)
+      && ((i & (sos_config.usb.logical_endpoint_count - 1)) != 0)
       && (context->ep_mask & j)) {
       if (
         context->setup_packet.wValue.w == USBD_REQUEST_STANDARD_FEATURE_ENDPOINT_STALL) {
@@ -278,12 +273,12 @@ u32 usbd_standard_request_set_config(usbd_control_t *context) {
             for (i = 0; i < USBD_ALT_SETTING_SIZE; i++) {
               context->alt_setting[i] = 0;
             }
-            for (i = 1; i < mcu_config.usb_logical_endpoint_count; i++) {
+            for (i = 1; i < sos_config.usb.logical_endpoint_count; i++) {
               if (context->ep_mask & (1 << i)) {
                 usbd_control_disable_endpoint(context->handle, i);
               }
               if (
-                context->ep_mask & ((1 << mcu_config.usb_logical_endpoint_count) << i)) {
+                context->ep_mask & ((1 << sos_config.usb.logical_endpoint_count) << i)) {
                 usbd_control_disable_endpoint(
                   context->handle, i | USBD_ENDPOINT_ADDRESS_IN);
               }
@@ -329,11 +324,11 @@ u32 usbd_standard_request_set_config(usbd_control_t *context) {
     } else {
       // configuration zero disables all USB configurations -- enter addressed state
       context->current_configuration = 0;
-      for (i = 1; i < mcu_config.usb_logical_endpoint_count; i++) {
+      for (i = 1; i < sos_config.usb.logical_endpoint_count; i++) {
         if (context->ep_mask & (1 << i)) {
           usbd_control_disable_endpoint(context->handle, i);
         }
-        if (context->ep_mask & ((1 << mcu_config.usb_logical_endpoint_count) << i)) {
+        if (context->ep_mask & ((1 << sos_config.usb.logical_endpoint_count) << i)) {
           usbd_control_disable_endpoint(context->handle, i | USBD_ENDPOINT_ADDRESS_IN);
         }
       }

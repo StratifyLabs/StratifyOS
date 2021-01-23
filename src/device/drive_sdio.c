@@ -1,16 +1,15 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
+#include <errno.h>
+#include <unistd.h>
 
 #include "sos/sos.h"
 
 #include "cortexm/cortexm.h"
 #include "device/drive_sdio.h"
 #include "sos/debug.h"
-#include <errno.h>
-#include <unistd.h>
 
 #include "cortexm/task.h"
-#include "mcu/core.h"
 
 int drive_sdio_open(const devfs_handle_t *handle) {
   const drive_sdio_config_t *config = handle->config;

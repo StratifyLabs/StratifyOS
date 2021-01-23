@@ -1,8 +1,7 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
 #include "cortexm/fault.h"
-#include "mcu/core.h"
-#include "sos/sos_events.h"
+#include "sos/events.h"
 #include "task_local.h"
 
 static void

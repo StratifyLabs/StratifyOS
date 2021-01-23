@@ -17,6 +17,7 @@
 #include <unistd.h>
 
 #include "../scheduler/scheduler_local.h"
+#include "cortexm/cortexm.h"
 #include "sos/debug.h"
 
 /*! \cond */

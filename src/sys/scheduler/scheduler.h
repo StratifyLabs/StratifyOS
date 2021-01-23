@@ -31,8 +31,6 @@
 
 #include <pthread.h>
 
-#include "mcu/mcu.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -10,9 +10,7 @@
 #include "config.h"
 #include "scheduler_local.h"
 
-#include "mcu/core.h"
 #include "sos/debug.h"
-#include "mcu/mcu.h"
 
 volatile scheduler_fault_t m_scheduler_fault MCU_SYS_MEM;
 

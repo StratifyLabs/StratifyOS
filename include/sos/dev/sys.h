@@ -18,7 +18,6 @@
 
 #include <sdk/types.h>
 
-#include "mcu/mcu.h"
 #include "sos/fs/types.h"
 #include "sos/link/types.h"
 

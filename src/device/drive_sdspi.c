@@ -1,17 +1,16 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
-#include "sos/sos.h"
+#include <errno.h>
+#include <unistd.h>
 
+#include "sos/sos.h"
 #include "cortexm/cortexm.h"
 #include "drive_sdspi_local.h"
-#include "mcu/core.h"
 #include "mcu/crc.h"
 #include "sos/debug.h"
 #include "mcu/pio.h"
 #include "mcu/spi.h"
 #include "mcu/wdt.h"
-#include <errno.h>
-#include <unistd.h>
 
 #include "cortexm/task.h"
 #include "device/drive_sdspi.h"

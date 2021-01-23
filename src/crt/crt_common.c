@@ -10,8 +10,6 @@
 #include <sys/reent.h>
 
 #include "cortexm/task.h"
-#include "mcu/arch.h"
-#include "mcu/core.h"
 
 extern void (*_ctors)();
 extern int _ctors_size;

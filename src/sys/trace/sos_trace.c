@@ -7,7 +7,6 @@
 #include "cortexm/cortexm.h"
 #include "cortexm/mpu.h"
 #include "cortexm/task.h"
-#include "mcu/core.h"
 #include "sos/link.h"
 #include "sos/link/transport_usb.h"
 #include "sos/sos.h"

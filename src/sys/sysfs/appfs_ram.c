@@ -2,6 +2,7 @@
 
 
 #include "appfs_local.h"
+#include "cortexm/cortexm.h"
 #include "cortexm/mpu.h"
 #include "sos/sos.h"
 

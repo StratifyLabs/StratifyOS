@@ -1,4 +1,6 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
+#include <errno.h>
+#include <unistd.h>
 
 #include "mcu/pio.h"
 #include "mcu/spi.h"
@@ -6,8 +8,6 @@
 #include "sos/debug.h"
 #include "sos/sos.h"
 #include "sst25vf_local.h"
-#include <errno.h>
-#include <unistd.h>
 
 static void
 drive_cfi_handle_write_complete(const devfs_handle_t *handle, uint32_t ignore);

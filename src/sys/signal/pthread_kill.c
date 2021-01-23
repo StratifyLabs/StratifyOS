@@ -7,18 +7,16 @@
 
 /*! \file */
 
+#include <errno.h>
 #include <pthread.h>
+#include <signal.h>
 
 #include "../scheduler/scheduler_local.h"
 #include "config.h"
 #include "cortexm/task.h"
 #include "sos/debug.h"
-#include "mcu/mcu.h"
 #include "sig_local.h"
 #include "sos/sos.h"
-#include <errno.h>
-#include <pthread.h>
-#include <signal.h>
 
 #include "sos/debug.h"
 

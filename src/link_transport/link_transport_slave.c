@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "cortexm/cortexm.h"
+
 #include "sos/debug.h"
 #include "sos/sos.h"
 

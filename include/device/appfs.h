@@ -1,7 +1,7 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
-#ifndef _MCU_APPFS_H_
-#define _MCU_APPFS_H_
+#ifndef _DEVICE_APPFS_H_
+#define _DEVICE_APPFS_H_
 
 #include "sos/dev/appfs.h"
 #include "sos/dev/mem.h"
@@ -72,4 +72,4 @@ int appfs_mem_writepage(const devfs_handle_t *handle, void *ctl) MCU_ROOT_CODE;
 }
 #endif
 
-#endif // _MCU_APPFS_H_
+#endif // _DEVICE_APPFS_H_

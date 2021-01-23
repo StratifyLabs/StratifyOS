@@ -1,38 +1,35 @@
 
+#include <sys/lock.h>
+
 #include "mcu/arch.h"
 
-//#include "config.h"
 #include "boot_config.h"
 #include "boot_link.h"
 #include "cortexm/cortexm.h"
-#include "mcu/boot_debug.h"
-#include "mcu/core.h"
-#include "mcu/mcu.h"
-#include "mcu/pio.h"
-#include "mcu/uart.h"
-#include "mcu/usb.h"
+#include "sos/config.h"
 #include "sos/debug.h"
 #include "sos/dev/usb.h"
 #include "sos/fs/devfs.h"
+#include "sos/led.h"
 #include "sos/sos.h"
 #include "usbd/control.h"
-#include <sys/lock.h>
 
-void exec_bootloader(void *args) {
+void boot_invoke_bootloader(void *args) {
   // write SW location with key and then reset
-  u32 *bootloader_start = (u32 *)boot_board_config.sw_req_loc;
-  *bootloader_start = boot_board_config.sw_req_value;
+  u32 *bootloader_software_request_address =
+    (u32 *)sos_config.boot.software_bootloader_request_address;
+  *bootloader_software_request_address =
+    sos_config.boot.software_bootloader_request_value;
   cortexm_reset(0);
 }
 
-void boot_event(int event, void *args) { sos_handle_event(event, args); }
+void boot_event(int event, void *args) { sos_config.event_handler(event, args); }
 
 extern u32 _etext;
 
 const bootloader_api_t mcu_core_bootloader_api = {
   .code_size = (u32)&_etext,
-  .exec = exec_bootloader,
-  .usbd_control_root_init = usbd_control_root_init,
+  .exec = boot_invoke_bootloader,
   .event = boot_event};
 
 void init_hw();
@@ -67,17 +64,17 @@ void run_bootloader();
  */
 int boot_main() {
 
-  boot_event(BOOT_EVENT_START, 0);
+  boot_event(SOS_EVENT_ROOT_RESET, 0);
 
-  stack_ptr = (void *)(((u32 *)boot_board_config.program_start_addr)[0]);
-  app_reset = (void (*)())((((u32 *)boot_board_config.program_start_addr)[1]));
+  stack_ptr = (void *)(((u32 *)sos_config.boot.program_start_address)[0]);
+  app_reset = (void (*)())((((u32 *)sos_config.boot.program_start_address)[1]));
 
   if (check_run_app()) {
-    boot_event(BOOT_EVENT_RUN_APP, 0);
+    boot_event(SOS_EVENT_BOOT_RUN_APPLICATION, 0);
     // assign stack pointer to stack value
     app_reset();
   } else {
-    boot_event(BOOT_EVENT_RUN_BOOTLOADER, 0);
+    boot_event(SOS_EVENT_BOOT_RUN_BOOTLOADER, 0);
     run_bootloader();
   }
 
@@ -93,84 +90,44 @@ void run_bootloader() {
 
   // initialize link and run link update
   dstr("Link Start\n");
-  boot_link_update((void *)boot_board_config.link_transport_driver);
+  boot_link_update((void *)sos_config.boot.link_transport_driver);
 }
 
-/*! \details This function checks to see if the application should be run
- * or if the device should enter DFU mode.
- * \return Non-zero if the application should be run.
- */
 int check_run_app() {
-  //! \todo Check to see if end of text is less than app program start
-  volatile u32 *bootloader_start = (u32 *)boot_board_config.sw_req_loc;
-  u32 hw_req_value;
-  u32 pio_value;
-  pio_attr_t pio_attr;
-  devfs_handle_t hw_req_handle;
 
-  boot_event(BOOT_EVENT_CHECK_APP_EXISTS, 0);
+  volatile u32 *software_bootloader_request =
+    (u32 *)sos_config.boot.software_bootloader_request_address;
+
+  u32 software_bootloader_request_value = *software_bootloader_request;
+  *software_bootloader_request = 0;
+
+  // check for a value program
   if ((u32)stack_ptr == 0xFFFFFFFF) {
     // code is not valid
-    *bootloader_start = 0;
     return 0;
   }
 
-  boot_event(BOOT_EVENT_CHECK_SOFTWARE_BOOT_REQUEST, 0);
-  if (*bootloader_start == boot_board_config.sw_req_value) {
-    *bootloader_start = 0;
+  // check to see if there is a software request to run the bootloader
+  if (
+    sos_config.boot.software_bootloader_request_value
+    && sos_config.boot.software_bootloader_request_value
+         == software_bootloader_request_value) {
     return 0;
   }
 
-  boot_event(BOOT_EVENT_CHECK_HARDWARE_BOOT_REQUEST, 0);
-  if (boot_board_config.hw_req.port != 0xff) {
-
-    hw_req_handle.port = boot_board_config.hw_req.port;
-    hw_req_handle.config = 0;
-    hw_req_handle.state = 0;
-    pio_attr.o_pinmask = (1 << boot_board_config.hw_req.pin);
-
-    pio_attr.o_flags = PIO_FLAG_SET_INPUT;
-    if (boot_board_config.o_flags & BOOT_BOARD_CONFIG_FLAG_HW_REQ_PULLUP) {
-      pio_attr.o_flags |= PIO_FLAG_IS_PULLUP;
-    } else if (boot_board_config.o_flags & BOOT_BOARD_CONFIG_FLAG_HW_REQ_PULLDOWN) {
-      pio_attr.o_flags |= PIO_FLAG_IS_PULLDOWN;
-    }
-    mcu_pio_setattr(&hw_req_handle, &pio_attr);
-
-    mcu_pio_get(&hw_req_handle, &pio_value);
-    hw_req_value = ((pio_value & pio_attr.o_pinmask) != 0);
-
-    if (boot_board_config.o_flags & BOOT_BOARD_CONFIG_FLAG_HW_REQ_ACTIVE_HIGH) {
-      if (hw_req_value) { // pin is high and pin is active high
-        *bootloader_start = 0;
-        return 0;
-      }
-    } else {                   // request is active low
-      if (hw_req_value == 0) { // pin is active low
-        *bootloader_start = 0;
-        return 0;
-      }
-    }
+  // check for a board specific request (like a pin is pulled low)
+  if (sos_config.boot.is_bootloader_requested()) {
+    return 0;
   }
 
   return 1;
 }
 
-#ifdef DEBUG_BOOTLOADER
-static int debug_write_func(const void *buf, int nbyte) {
-  sos_config.debug.write(buf, nbyte);
-  return nbyte;
-}
-#endif
-
 void init_hw() {
-  boot_event(BOOT_EVENT_INIT_CLOCK, 0);
+  boot_event(SOS_EVENT_BOOT_RESET, 0);
 
 #if defined DEBUG_BOOTLOADER
-
   dsetmode(0);
-  dsetwritefunc(debug_write_func);
-
   dstr("STACK:");
   dhex((u32)stack_ptr);
   dstr("\n");
@@ -180,7 +137,6 @@ void init_hw() {
 #endif
   cortexm_delay_ms(50);
   cortexm_enable_interrupts(); // Enable the interrupts
-  boot_event(BOOT_EVENT_INIT, 0);
 }
 
 // prevent linkage to real handlers

@@ -14,7 +14,6 @@
 
 #include "../scheduler/scheduler_local.h"
 #include "cortexm/cortexm.h"
-#include "mcu/mcu.h"
 #include "sos/dev/sys.h"
 #include "unistd_fs.h"
 #include "unistd_local.h"

@@ -15,9 +15,6 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "mcu/arch.h"
-#include "mcu/mcu.h"
-#include "mcu/wdt.h"
 #include "sos/dev/rtc.h"
 
 #include "../scheduler/scheduler_local.h"

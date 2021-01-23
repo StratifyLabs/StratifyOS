@@ -14,9 +14,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include "cortexm/cortexm.h"
 #include "cortexm/task.h"
-#include "mcu/core.h"
-#include "mcu/mcu.h"
 
 static void svcall_update_guard(void *args) MCU_ROOT_EXEC_CODE;
 

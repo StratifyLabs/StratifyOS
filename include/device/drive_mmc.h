@@ -3,8 +3,8 @@
 #ifndef DEVICE_MMC_H_
 #define DEVICE_MMC_H_
 
-#include "mcu/mmc.h"
 #include "sos/dev/drive.h"
+#include "sos/dev/mmc.h"
 #include "sos/fs/devfs.h"
 
 typedef struct {

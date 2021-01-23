@@ -13,7 +13,6 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "mcu/mcu.h"
 #include "sos/dev/rtc.h"
 
 #include "../scheduler/scheduler_local.h"

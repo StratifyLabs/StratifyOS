@@ -1,36 +1,19 @@
-/*
+// Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
-Copyright 2011-2018 Tyler Gilbert
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-                http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-
- */
-
-#include "device/sys.h"
-#include "device/usbfifo.h"
-#include "mcu/core.h"
-#include "mcu/mcu.h"
-#include "mcu/usb.h"
-#include "sos/debug.h"
-#include "sos/dev/usb.h"
-#include "sos/link.h"
-#include "sos/link/transport_usb.h"
-#include "usbd/control.h"
 #include <errno.h>
 #include <stdbool.h>
 #include <sys/fcntl.h>
 #include <unistd.h>
 
+#include "cortexm/cortexm.h"
+
+#include "device/sys.h"
+#include "device/usbfifo.h"
+#include "sos/debug.h"
+#include "sos/dev/usb.h"
+#include "sos/link.h"
+#include "sos/link/transport_usb.h"
+#include "usbd/control.h"
 #include "usbd/msft.h"
 
 const msft_string_t sos_link_transport_usb_msft_string = USBD_ASSIGN_STRING(

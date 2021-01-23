@@ -16,13 +16,11 @@
 #include <reent.h>
 #include <signal.h>
 #include <stdbool.h>
-#include <sys/scheduler/scheduler_local.h>
 #include <time.h>
 
 #include "../unistd/unistd_local.h"
-#include "mcu/rtc.h"
-#include "mcu/wdt.h"
 #include "sched.h"
+#include "scheduler_local.h"
 #include "sos/debug.h"
 
 #include "trace.h"
@@ -65,7 +63,6 @@ void scheduler() {
   sos_debug_log_info(SOS_DEBUG_SCHEDULER, "Start first thread");
   start_first_thread();
   while (1) {
-    cortexm_svcall(mcu_wdt_root_reset, NULL);
     check_faults(); // check to see if a fault needs to be logged
 
     // Sleep when nothing else is going on

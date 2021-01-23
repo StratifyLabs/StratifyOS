@@ -1,7 +1,7 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
-#ifndef DEV_SYS_H_
-#define DEV_SYS_H_
+#ifndef DEVICE_SYS_H_
+#define DEVICE_SYS_H_
 
 #include "sos/dev/sys.h"
 #include "sos/dev/spi.h"
@@ -21,5 +21,4 @@ int sys_23_read(const devfs_handle_t *handle, devfs_async_t *rop) MCU_ROOT_EXEC_
 int sys_23_write(const devfs_handle_t *handle, devfs_async_t *wop) MCU_ROOT_EXEC_CODE;
 int sys_23_close(const devfs_handle_t *handle) MCU_ROOT_EXEC_CODE;
 
-#endif /* DEV_SYS_H_ */
-
+#endif /* DEVICE_SYS_H_ */

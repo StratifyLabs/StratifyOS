@@ -11,9 +11,6 @@
 #endif
 
 void delay_ms(int ms);
-extern const bootloader_board_config_t boot_board_config;
-
-
 void boot_event(int event, void * args);
 
 #endif /* BOOT_CONFIG_H_ */

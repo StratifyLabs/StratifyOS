@@ -1,7 +1,6 @@
 
 set(SOURCES
 	adc.h
-	appfs.h
 	arch.h
 	boot_debug.h
 	bootloader.h
@@ -23,7 +22,6 @@ set(SOURCES
 	ltdc.h
 	mci.h
 	mcu.h
-	mem.h
 	mmc.h
 	ohci.h
 	periph.h

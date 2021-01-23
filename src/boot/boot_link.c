@@ -22,17 +22,17 @@
  *
  */
 
-#include "boot_link.h"
-#include "boot_config.h"
-#include "cortexm/cortexm.h"
-#include "mcu/arch.h"
-#include "mcu/core.h"
-#include "sos/debug.h"
-#include "mcu/flash.h"
-#include "sos/sos.h"
 #include <errno.h>
 #include <stdbool.h>
 #include <sys/fcntl.h>
+
+#include "boot_config.h"
+#include "boot_link.h"
+#include "cortexm/cortexm.h"
+#include "mcu/arch.h"
+#include "sos/debug.h"
+#include "sos/led.h"
+#include "sos/sos.h"
 
 #define FLASH_PORT 0
 
@@ -153,7 +153,7 @@ void boot_link_cmd_readserialno(link_transport_driver_t *driver, link_data_t *ar
 
   args->op.cmd = 0; // reply was already sent
 
-  boot_event(BOOT_EVENT_READ_SERIALNO, 0);
+  boot_event(SOS_EVENT_BOOT_READ_SERIAL_NUMBER, 0);
 }
 
 void boot_link_cmd_ioctl(link_transport_driver_t *driver, link_data_t *args) {
@@ -190,10 +190,13 @@ void boot_link_cmd_ioctl(link_transport_driver_t *driver, link_data_t *args) {
     // write data to io_buf
     dstr("info\n");
     attr.version = BCDVERSION;
-    mcu_core_getserialno((mcu_sn_t *)(attr.serialno));
+    sos_config.sys.get_serial_number((mcu_sn_t *)attr.serialno);
+    // mcu_core_getserialno((mcu_sn_t *)(attr.serialno));
 
-    attr.startaddr = boot_board_config.program_start_addr;
-    attr.hardware_id = boot_board_config.id;
+    // attr.startaddr = boot_board_config.program_start_addr;
+    attr.startaddr = sos_config.boot.program_start_address;
+    // attr.hardware_id = boot_board_config.id;
+    attr.hardware_id = sos_config.sys.hardware_id;
 
     err = link_transport_slavewrite(driver, &attr, size, NULL, NULL);
     if (err == -1) {
@@ -208,10 +211,10 @@ void boot_link_cmd_ioctl(link_transport_driver_t *driver, link_data_t *args) {
   case I_BOOTLOADER_RESET:
     dstr("rst\n");
     if (args->op.ioctl.arg == 0) {
-      boot_event(BOOT_EVENT_RESET, 0);
+      boot_event(SOS_EVENT_BOOT_RESET, 0);
       boot_link_cmd_reset(driver, args);
     } else {
-      boot_event(BOOT_EVENT_RESET_BOOTLOADER, 0);
+      boot_event(SOS_EVENT_BOOT_RESET_BOOTLOADER, 0);
       boot_link_cmd_reset_bootloader(driver, args);
     }
     break;
@@ -228,7 +231,9 @@ void boot_link_cmd_ioctl(link_transport_driver_t *driver, link_data_t *args) {
     dint(wattr.nbyte);
     dstr("\n");
 
-    args->reply.err = mcu_flash_writepage(FLASH_PORT, (flash_writepage_t *)&wattr);
+    args->reply.err =
+      sos_config.boot.flash_write_page(&sos_config.boot.flash_handle, &wattr);
+    // args->reply.err = mcu_flash_writepage(FLASH_PORT, (flash_writepage_t *)&wattr);
     if (args->reply.err < 0) {
       dstr("Failed to write flash:");
       dhex(args->reply.err);
@@ -237,7 +242,7 @@ void boot_link_cmd_ioctl(link_transport_driver_t *driver, link_data_t *args) {
 
     event_args.increment = wattr.nbyte;
     event_args.bytes += event_args.increment;
-    boot_event(BOOT_EVENT_FLASH_WRITE, &event_args);
+    boot_event(SOS_EVENT_BOOT_WRITE_FLASH, &event_args);
     break;
   default:
     args->reply.err_number = EINVAL;
@@ -270,13 +275,16 @@ void erase_flash(link_transport_driver_t *driver) {
   args.total = -1;
   args.increment = -1;
 
-  while (mcu_flash_erasepage(FLASH_PORT, (void *)page++) != 0) {
+  while (sos_config.boot.flash_erase_page(&sos_config.boot.flash_handle, (void *)page++)
+         != 0) {
+    // while (mcu_flash_erasepage(FLASH_PORT, (void *)page++) != 0) {
     // these are the bootloader pages and won't be erased
-    sos_led_svcall_enable(0);
+
+    sos_led_root_enable();
     driver->wait(1);
-    sos_led_svcall_disable(0);
+    sos_led_root_disable();
     args.bytes = page;
-    boot_event(BOOT_EVENT_FLASH_ERASE, &args);
+    boot_event(SOS_EVENT_BOOT_ERASE_FLASH, &args);
   }
   page--;
 
@@ -285,12 +293,15 @@ void erase_flash(link_transport_driver_t *driver) {
   dstr("\n");
 
   // erase the flash pages -- ends when an erase on an invalid page is attempted
-  while ((result = mcu_flash_erasepage(FLASH_PORT, (void *)page++)) == 0) {
+  while ((result = sos_config.boot.flash_erase_page(
+            &sos_config.boot.flash_handle, (void *)page++))
+         == 0) {
+    // while ((result = mcu_flash_erasepage(FLASH_PORT, (void *)page++)) == 0) {
     sos_led_svcall_enable(0);
     driver->wait(1);
     sos_led_svcall_disable(0);
     args.bytes = page;
-    boot_event(BOOT_EVENT_FLASH_ERASE, &args);
+    boot_event(SOS_EVENT_BOOT_ERASE_FLASH, &args);
   }
 
   dstr("result:");
@@ -305,7 +316,7 @@ void boot_link_cmd_reset(link_transport_driver_t *driver, link_data_t *args) {
   u32 *dfu_sw_req;
   driver->wait(500);
   driver->close(&(driver->handle));
-  dfu_sw_req = (u32 *)boot_board_config.sw_req_loc;
+  dfu_sw_req = (u32 *)sos_config.boot.software_bootloader_request_address;
   *dfu_sw_req = 0;
   cortexm_reset(NULL);
   // the program never arrives here
@@ -315,10 +326,15 @@ void boot_link_cmd_reset_bootloader(link_transport_driver_t *driver, link_data_t
   u32 *dfu_sw_req;
   driver->wait(500);
   driver->close(&(driver->handle));
-  dfu_sw_req = (u32 *)boot_board_config.sw_req_loc;
-  *dfu_sw_req = boot_board_config.sw_req_value;
+  dfu_sw_req = (u32 *)sos_config.boot.software_bootloader_request_address;
+  *dfu_sw_req = sos_config.boot.software_bootloader_request_value;
   cortexm_reset(NULL);
   // the program never arrives here
+}
+
+static int mcu_flash_read(const devfs_handle_t *cfg, devfs_async_t *async) {
+  memcpy(async->buf, (const void *)async->loc, async->nbyte);
+  return async->nbyte;
 }
 
 int read_flash_callback(void *context, void *buf, int nbyte) {

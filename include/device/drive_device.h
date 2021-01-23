@@ -3,7 +3,6 @@
 #ifndef DRIVE_DEVICE_H
 #define DRIVE_DEVICE_H
 
-#include "mcu/sdio.h"
 #include "sos/dev/drive.h"
 #include "sos/fs/devfs.h"
 

@@ -3,6 +3,7 @@
 #ifndef _SOS_DEBUG_H_
 #define _SOS_DEBUG_H_
 
+#include <sdk/types.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
@@ -48,10 +49,6 @@ enum sos_debug_flags {
 };
 
 #ifndef __link
-
-#include "cortexm/cortexm.h"
-#include "mcu/core.h"
-#include "sos/fs/devfs.h"
 
 #if defined __debug
 #define ___debug
