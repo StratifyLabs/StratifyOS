@@ -10,6 +10,7 @@
 #include "sos/link.h"
 #include "sos/link/transport_usb.h"
 #include "sos/sos.h"
+#include "sos/symbols.h"
 
 #define PRINT_DEBUG 0
 

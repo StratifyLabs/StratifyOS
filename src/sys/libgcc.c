@@ -1,6 +1,6 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
-#include "mcu/arch.h"
+#include "sos/arch.h"
 
 #include <complex.h>
 

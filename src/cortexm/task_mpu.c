@@ -2,6 +2,7 @@
 
 #include "cortexm/mpu.h"
 #include "sos/sos.h"
+#include "sos/symbols.h"
 #include "task_local.h"
 
 // returns 1 if target and size fit in task_memory

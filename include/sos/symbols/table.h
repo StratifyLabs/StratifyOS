@@ -6,7 +6,7 @@
 #include <assert.h>
 #include <sdk/types.h>
 
-#include "mcu/arch.h"
+#include "sos/arch.h"
 
 #include "arpa/inet.h"
 #include "sos/fs.h"

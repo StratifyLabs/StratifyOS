@@ -25,6 +25,6 @@
 
 #define USE_STDIO 1
 
-#include "mcu/arch.h"
+#include "sos/arch.h"
 
 #endif

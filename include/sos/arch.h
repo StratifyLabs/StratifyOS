@@ -22,41 +22,42 @@
 #define SCHED_DEFAULT_STACKGUARD_SIZE 128
 
 #if defined MCU_ARCH_IMXRT
-#include <mcu/arch/imxrt/imxrt_arch.h>
+#include <imxrt/imxrt_arch.h>
 #define ARCH_DEFINED
 #endif
 
 #if defined MCU_ARCH_LPC
-#include <mcu/arch/lpc/lpc_arch.h>
+#include <lpc/lpc_arch.h>
 #define ARCH_DEFINED
 #endif
 
 #if defined MCU_ARCH_STM32
-#include <mcu/arch/stm32/stm32_arch.h>
+#include <stm32/stm32_arch.h>
 #define ARCH_DEFINED
 #endif
 
 #if !defined ARCH_DEFINED
 #define ARCH_DEFINED 1
 
-typedef enum IRQn
-{
-	/******  Cortex-M4 Processor Exceptions Numbers ***************************************************/
-	NonMaskableInt_IRQn           = -14,      /*!< 2 Non Maskable Interrupt                         */
-	HardFault_IRQn                = -13,              /*!<   3  Hard Fault, all classes of Fault                                 */
-	MemoryManagement_IRQn         = -12,      /*!< 4 Cortex-M3 Memory Management Interrupt          */
-	BusFault_IRQn                 = -11,      /*!< 5 Cortex-M3 Bus Fault Interrupt                  */
-	UsageFault_IRQn               = -10,      /*!< 6 Cortex-M3 Usage Fault Interrupt                */
-	SVCall_IRQn                   = -5,       /*!< 11 Cortex-M3 SV Call Interrupt                   */
-	DebugMonitor_IRQn             = -4,       /*!< 12 Cortex-M3 Debug Monitor Interrupt             */
-	PendSV_IRQn                   = -2,       /*!< 14 Cortex-M3 Pend SV Interrupt                   */
-	SysTick_IRQn                  = -1,       /*!< 15 Cortex-M3 System Tick Interrupt               */
+typedef enum IRQn {
+  /******  Cortex-M4 Processor Exceptions Numbers
+   ***************************************************/
+  NonMaskableInt_IRQn = -14,   /*!< 2 Non Maskable Interrupt                         */
+  HardFault_IRQn = -13,        /*!<   3  Hard Fault, all classes of Fault        */
+  MemoryManagement_IRQn = -12, /*!< 4 Cortex-M3 Memory Management Interrupt          */
+  BusFault_IRQn = -11,         /*!< 5 Cortex-M3 Bus Fault Interrupt                  */
+  UsageFault_IRQn = -10,       /*!< 6 Cortex-M3 Usage Fault Interrupt                */
+  SVCall_IRQn = -5,            /*!< 11 Cortex-M3 SV Call Interrupt                   */
+  DebugMonitor_IRQn = -4,      /*!< 12 Cortex-M3 Debug Monitor Interrupt             */
+  PendSV_IRQn = -2,            /*!< 14 Cortex-M3 Pend SV Interrupt                   */
+  SysTick_IRQn = -1,           /*!< 15 Cortex-M3 System Tick Interrupt               */
 } IRQn_Type;
 
 #define __MPU_PRESENT 1
 #define __NVIC_PRIO_BITS 8
 
-#if defined __v7em_f5ss || defined __v7em_f5sh || defined __v7em_f5ds || defined __v7em_f5dh
+#if defined __v7em_f5ss || defined __v7em_f5sh || defined __v7em_f5ds                    \
+  || defined __v7em_f5dh
 
 #define __ICACHE_PRESENT 0
 #define __DCACHE_PRESENT 0
@@ -189,6 +190,5 @@ typedef u32 pwm_duty_t;
 #include <limits.h>
 typedef void *mcu_target_ptr_t;
 #endif
-
 
 #endif /* ARCH_H_ */

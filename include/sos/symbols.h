@@ -168,6 +168,19 @@ extern u32 __aeabi_atexit();
 #include "sos/sos.h"
 #include "trace.h"
 
+// These values are defined in the linker script
+extern u32 _top_of_stack;
+extern u32 _text;
+extern u32 _etext;
+extern u32 _tcim;
+extern u32 _etcim;
+extern u32 _data;
+extern u32 _edata;
+extern u32 _bss;
+extern u32 _ebss;
+extern u32 _sys;
+extern u32 _esys;
+
 extern void __cxa_pure_virtual();
 extern void __cxa_atexit();
 extern void __cxa_finalize();

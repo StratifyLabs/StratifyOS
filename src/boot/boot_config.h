@@ -1,7 +1,7 @@
 #ifndef BOOT_CONFIG_H_
 #define BOOT_CONFIG_H_
 
-#include "mcu/bootloader.h"
+#include "sos/boot/bootloader.h"
 
 #define BCDVERSION 0x200
 

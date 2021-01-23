@@ -41,10 +41,10 @@
 #ifndef BOOT_LINK_H_
 #define BOOT_LINK_H_
 
+#include "sos/boot/boot_debug.h"
 #include "sos/fs/devfs.h"
 #include "sos/link.h"
 #include "usbd/types.h"
-#include "mcu/boot_debug.h"
 
 void * boot_link_update(void * arg);
 

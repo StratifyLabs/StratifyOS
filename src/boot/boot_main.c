@@ -1,7 +1,7 @@
 
 #include <sys/lock.h>
 
-#include "mcu/arch.h"
+#include "sos/arch.h"
 
 #include "boot_config.h"
 #include "boot_link.h"

@@ -11,6 +11,7 @@
 #include "scheduler_local.h"
 
 #include "sos/debug.h"
+#include "sos/symbols.h"
 
 volatile scheduler_fault_t m_scheduler_fault MCU_SYS_MEM;
 

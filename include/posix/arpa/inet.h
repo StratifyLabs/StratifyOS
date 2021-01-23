@@ -9,15 +9,14 @@
  *
  */
 
-#if !defined SOS_BOOTSTRAP_SOCKETS
-#include <lwip/sockets.h>
-#else
+#if SOS_BOOTSTRAP_SOCKETS
 #include <sdk/types.h>
 typedef u32 in_addr_t;
 typedef u16 in_port_t;
 #define INET_ADDRSTRLEN 8
 #define INET6_ADDRSTRLEN 8
-
+#else
+#include <lwip/sockets.h>
 #endif //SOS_BOOTSTRAP_SOCKETS
 
 

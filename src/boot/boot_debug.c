@@ -17,8 +17,8 @@
 
 #include <string.h>
 
-#include "mcu/arch.h"
-#include "mcu/boot_debug.h"
+#include "sos/arch.h"
+#include "sos/boot/boot_debug.h"
 #include "sos/config.h"
 
 #if defined ___debug || __debug

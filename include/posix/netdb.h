@@ -8,7 +8,7 @@
  * If LWIP isn't installed in the SDK, any apps that use netdb will get an error.
  *
  */
-#if !defined SOS_BOOTSTRAP_SOCKETS
+#if !SOS_BOOTSTRAP_SOCKETS
 #include <lwip/netdb.h>
 #else
 #include "sys/socket.h"

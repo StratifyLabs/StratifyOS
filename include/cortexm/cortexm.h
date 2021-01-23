@@ -5,7 +5,7 @@
 
 #include <sdk/types.h>
 
-#include "mcu/arch/cmsis/cmsis_compiler.h"
+#include "sos/arch/cmsis/cmsis_compiler.h"
 
 #ifdef __cplusplus
 extern "C" {

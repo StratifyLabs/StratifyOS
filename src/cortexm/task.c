@@ -5,6 +5,7 @@
 
 #include "cortexm/task.h"
 #include "sos/sos.h"
+#include "sos/symbols.h"
 #include "task_local.h"
 
 #define SYSTICK_MIN_CYCLES 10000

@@ -3,6 +3,7 @@
 #include "cortexm/mpu.h"
 #include "cortexm_local.h"
 #include "sos/sos.h"
+#include "sos/symbols.h"
 
 extern int sos_main();
 

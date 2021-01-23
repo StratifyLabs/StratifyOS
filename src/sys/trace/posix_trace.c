@@ -7,6 +7,7 @@
 #include "../scheduler/scheduler_local.h"
 #include "cortexm/mpu.h"
 #include "cortexm/task.h"
+#include "sos/symbols.h"
 #include "trace.h"
 
 typedef struct {

@@ -1,10 +1,8 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
-
-#include "mcu/boot_debug.h"
-#include "mcu/mcu.h"
-#include "sos/debug.h"
 #include <fcntl.h>
+
+#include "mcu/mcu.h"
 
 static int mcu_sync_io_complete(void *context, const mcu_event_t *data);
 

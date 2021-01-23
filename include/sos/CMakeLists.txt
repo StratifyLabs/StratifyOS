@@ -15,6 +15,29 @@ set(SOURCES
 	api/crypt_api.h
 	api/sos_api.h
 	api/wifi_api.h
+	arch/delay_cm.h
+	arch.h
+	arch/cmsis/arm_math.h
+	arch/cmsis/cmsis_compiler.h
+	arch/cmsis/cmsis_gcc.h
+	arch/cmsis/core_armv8mbl.h
+	arch/cmsis/core_armv8mml.h
+	arch/cmsis/core_ca.h
+	arch/cmsis/core_cm0.h
+	arch/cmsis/core_cm0plus.h
+	arch/cmsis/core_cm23.h
+	arch/cmsis/core_cm3.h
+	arch/cmsis/core_cm33.h
+	arch/cmsis/core_cm4.h
+	arch/cmsis/core_cm4_simd.h
+	arch/cmsis/core_cm7.h
+	arch/cmsis/core_cmFunc.h
+	arch/cmsis/core_cmInstr.h
+	arch/cmsis/core_cmSecureAccess.h
+	arch/cmsis/core_sc000.h
+	arch/cmsis/core_sc300.h
+	boot/boot_debug.h
+	boot/bootloader.h
 	dev/adc.h
 	dev/appfs.h
 	dev/auth.h

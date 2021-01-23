@@ -3,7 +3,7 @@
 #ifndef CORTEXM_TASK_TYPES_H_
 #define CORTEXM_TASK_TYPES_H_
 
-#include "mcu/arch.h"
+#include "sos/arch.h"
 
 #if !defined ARCH_DEFINED
 #error "Architecture is not yet defined"

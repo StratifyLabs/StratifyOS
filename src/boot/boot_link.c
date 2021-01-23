@@ -29,7 +29,7 @@
 #include "boot_config.h"
 #include "boot_link.h"
 #include "cortexm/cortexm.h"
-#include "mcu/arch.h"
+#include "sos/arch.h"
 #include "sos/debug.h"
 #include "sos/led.h"
 #include "sos/sos.h"

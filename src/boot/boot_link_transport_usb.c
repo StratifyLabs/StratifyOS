@@ -6,8 +6,7 @@
 
 #include "cortexm/cortexm.h"
 #include "device/usbfifo.h"
-#include "mcu/boot_debug.h"
-#include "mcu/mcu.h"
+#include "sos/boot/boot_debug.h"
 #include "sos/config.h"
 #include "sos/debug.h"
 #include "sos/dev/usb.h"
@@ -15,6 +14,8 @@
 #include "sos/link/transport_usb.h"
 #include "usbd/cdc.h"
 #include "usbd/control.h"
+
+#include "mcu/mcu.h"
 
 #define BUF_SIZE 256
 static char m_read_buffer[BUF_SIZE];

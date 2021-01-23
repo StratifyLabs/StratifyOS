@@ -47,19 +47,6 @@ extern "C" {
 
 #include "sos/fs/types.h"
 
-// These values are defined in the linker script
-extern u32 _top_of_stack;
-extern u32 _text;
-extern u32 _etext;
-extern u32 _tcim;
-extern u32 _etcim;
-extern u32 _data;
-extern u32 _edata;
-extern u32 _bss;
-extern u32 _ebss;
-extern u32 _sys;
-extern u32 _esys;
-
 #define MCU_SYNC_IO_FLAG_READ (1 << 15)
 
 int mcu_sync_io(

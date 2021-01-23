@@ -10,19 +10,19 @@
  *
  */
 
-#if !defined SOS_BOOTSTRAP_SOCKETS
-#include <lwip/sockets.h>
-#else
-#include <sys/time.h>
+#if SOS_BOOTSTRAP_SOCKETS
 #include <sdk/types.h>
+#include <sys/time.h>
 typedef u32 socklen_t;
 typedef u32 fd_set;
 struct sockaddr;
 struct msghdr;
 struct iovec;
 struct in_addr {
-	int dummy;
+  int dummy;
 };
+#else
+#include <lwip/sockets.h>
 #endif //SOS_BOOTSTRAP_SOCKETS
 
 #include "arpa/inet.h"

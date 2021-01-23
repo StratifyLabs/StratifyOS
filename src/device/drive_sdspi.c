@@ -66,20 +66,12 @@ static int continue_spi_write(void *handle, const mcu_event_t *ignore);
 
 static void deassert_chip_select(const devfs_handle_t *handle) {
   const drive_sdspi_config_t *config = handle->config;
-  devfs_handle_t pio_handle;
-  pio_handle.port = config->cs.port;
-  pio_handle.config = 0;
-
-  mcu_pio_setmask(&pio_handle, (void *)(ssize_t)(1 << config->cs.pin));
+  sos_config.sys.pio_write(config->cs.port, 1 << config->cs.pin, 1);
 }
 
 static void assert_chip_select(const devfs_handle_t *handle) {
   const drive_sdspi_config_t *config = handle->config;
-  devfs_handle_t pio_handle;
-  pio_handle.port = config->cs.port;
-  pio_handle.config = 0;
-
-  mcu_pio_clrmask(&pio_handle, (void *)(ssize_t)(1 << config->cs.pin));
+  sos_config.sys.pio_write(config->cs.port, 1 << config->cs.pin, 0);
 }
 
 static void state_callback(const devfs_handle_t *handle, int err, int nbyte);
@@ -88,23 +80,22 @@ int drive_sdspi_open(const devfs_handle_t *handle) {
   int err;
   pio_attr_t attr;
   const drive_sdspi_config_t *config = handle->config;
-  devfs_handle_t pio_handle;
-  pio_handle.port = config->cs.port;
-  pio_handle.config = 0;
 
-  err = mcu_spi_open(handle);
+  err = config->device.driver.open(&config->device.handle);
   if (err < 0) {
     return err;
   }
 
-  if ((err = mcu_spi_ioctl(handle, I_SPI_SETATTR, (void *)&(config->spi.attr))) < 0) {
+  if (
+    (err = config->device.driver.ioctl(&config->device.handle, I_SPI_SETATTR, NULL))
+    < 0) {
     return err;
   }
 
   deassert_chip_select(handle);
   attr.o_pinmask = (1 << config->cs.pin);
   attr.o_flags = PIO_FLAG_SET_OUTPUT | PIO_FLAG_IS_DIRONLY;
-  mcu_pio_setattr(&pio_handle, &attr);
+  sos_config.sys.pio_set_attributes(config->cs.port, &attr);
 
   // The device is ready to use
   return 0;
@@ -343,9 +334,6 @@ int drive_sdspi_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
   drive_sdspi_r_t resp;
   u32 o_flags;
 
-  char spi_config[config->spi_config_size];
-  spi_attr_t *spi_attr_p = (spi_attr_t *)spi_config;
-
   u16 erase_size;
   u16 erase_timeout;
 
@@ -376,12 +364,14 @@ int drive_sdspi_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
     if (o_flags & DRIVE_FLAG_INIT) {
       state->flags = 0;
 
-      memcpy(spi_config, &(config->spi), config->spi_config_size);
-      spi_attr_p->freq = 400000;
+      spi_attr_t attr;
+      memset(&attr.pin_assignment, 0xff, sizeof(attr.pin_assignment));
+      attr.o_flags = SPI_FLAG_SET_MASTER | SPI_FLAG_SET_FULL_DUPLEX | SPI_FLAG_IS_MODE0
+                     | SPI_FLAG_IS_FORMAT_SPI;
+      attr.width = 8;
+      attr.freq = 400000;
 
-      if (
-        config->device.driver.ioctl(&config->device.handle, I_SPI_SETATTR, spi_config)
-        < 0) {
+      if (config->device.driver.ioctl(&config->device.handle, I_SPI_SETATTR, &attr) < 0) {
         sos_debug_printf("SD_SPI: setattr failed\n");
         return SYSFS_SET_RETURN(EIO);
       }
@@ -470,10 +460,7 @@ int drive_sdspi_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
       }
 
       // set with default attributes as intended by the system
-      memcpy(spi_config, &(config->spi), config->spi_config_size);
-      if (
-        config->device.driver.ioctl(&config->device.handle, I_SPI_SETATTR, spi_config)
-        < 0) {
+      if (config->device.driver.ioctl(&config->device.handle, I_SPI_SETATTR, NULL) < 0) {
         sos_debug_printf("SD_SPI: Failed BITRATE\n");
         return SYSFS_SET_RETURN(EIO);
       }

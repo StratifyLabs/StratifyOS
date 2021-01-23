@@ -5,7 +5,7 @@
 #define CORTEXM_LOCAL_H_
 
 #include "cortexm/cortexm.h"
-#include "mcu/arch.h"
+#include "sos/arch.h"
 #include "sos/debug.h"
 
 #define SYSTICK_CTRL_TICKINT (1 << 1)

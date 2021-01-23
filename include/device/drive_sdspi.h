@@ -23,10 +23,6 @@ typedef struct {
 typedef struct {
   devfs_device_t device;
   mcu_pin_t cs;
-  u32 spi_config_size;
-  spi_config_t spi;
-  // some implementatations may add driver specific data here which is encompassed in
-  // spi_config_size
 } drive_sdspi_config_t;
 
 typedef struct MCU_PACK {

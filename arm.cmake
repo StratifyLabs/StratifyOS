@@ -6,13 +6,17 @@ option(BUILD_BOOT "Build Bootloader library" OFF)
 
 #check for LWIP
 include(CheckIncludeFiles)
-check_include_files("lwip/sockets.h" HAVE_LWIP_SOCKETS_H)
-check_include_files("mbedtls/net_sockets.h" HAVE_MBEDTLS_NETSOCKETS_H)
-if(NOT HAVE_LWIP_SOCKETS_H)
-	message(STATUS "Bootstrapping sockets")
-	set(BOOTSTRAP_SOCKETS 1)
-else()
-	set(BOOTSTRAP_SOCKETS 0)
+
+if(NOT STRATIFYOS_LWIP_PATH)
+	message(STATUS "LWIP path not provided -- check system for LWIP")
+	check_include_files("lwip/sockets.h" HAVE_LWIP_SOCKETS_H)
+	check_include_files("mbedtls/net_sockets.h" HAVE_MBEDTLS_NETSOCKETS_H)
+	if(NOT HAVE_LWIP_SOCKETS_H)
+		message(STATUS "Bootstrapping sockets")
+		set(BOOTSTRAP_SOCKETS 1)
+	else()
+		set(BOOTSTRAP_SOCKETS 0)
+	endif()
 endif()
 
 sos_sdk_add_subdirectory(SOS_INTERFACE_SOURCELIST ${CMAKE_CURRENT_SOURCE_DIR}/include)
@@ -41,6 +45,45 @@ set(SYS_INCLUDE_DIRECTORIES
 
 list(APPEND SYS_SOURCELIST ${COMMON_SOURCES})
 
+macro(add_lwip_path TARGET DOMAIN)
+	if(NOT STRATIFYOS_LWIP_PATH)
+		target_compile_definitions(${TARGET} ${DOMAIN} SOS_BOOTSTRAP_SOCKETS=${BOOTSTRAP_SOCKETS})
+	else()
+		target_include_directories(${TARGET}
+			${DOMAIN}
+			$<BUILD_INTERFACE:${STRATIFYOS_LWIP_PATH}>
+			)
+	endif()
+endmacro()
+
+macro(create_iface_library CONFIG CONFIG_LOWER ARCH)
+	sos_sdk_library_target(IFACE_${CONFIG} StratifyOS iface ${CONFIG_LOWER} ${ARCH})
+	add_library(${IFACE_${CONFIG}_TARGET} INTERFACE)
+	target_include_directories(${IFACE_${CONFIG}_TARGET}
+		INTERFACE
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/posix>
+		)
+
+	add_lwip_path(${IFACE_${CONFIG}_TARGET} INTERFACE)
+
+	install(
+		TARGETS ${IFACE_${CONFIG}_TARGET}
+		EXPORT ${IFACE_${CONFIG}_TARGET}
+		DESTINATION lib
+		OPTIONAL)
+	install(
+		EXPORT ${IFACE_${CONFIG}_TARGET}
+		DESTINATION cmake/targets)
+endmacro()
+
+create_iface_library(RELEASE release ${SOS_ARCH})
+create_iface_library(DEBUG debug ${SOS_ARCH})
+foreach(ARCH ${SOS_ARCH_LIST})
+	create_iface_library(RELEASE release ${ARCH})
+	create_iface_library(DEBUG debug ${ARCH})
+endforeach()
+
+
 if(BUILD_SYS OR BUILD_ALL)
 	sos_sdk_library_target(SYS_RELEASE StratifyOS sys release ${SOS_ARCH})
 	sos_sdk_library_target(SYS_DEBUG StratifyOS sys debug ${SOS_ARCH})
@@ -49,7 +92,7 @@ if(BUILD_SYS OR BUILD_ALL)
 	target_sources(${SYS_RELEASE_TARGET} PRIVATE ${SYS_SOURCELIST})
 	target_include_directories(${SYS_RELEASE_TARGET} PRIVATE ${SYS_INCLUDE_DIRECTORIES})
 	target_compile_options(${SYS_RELEASE_TARGET} PUBLIC -Os)
-	target_compile_definitions(${SYS_RELEASE_TARGET} PUBLIC SOS_BOOTSTRAP_SOCKETS=${BOOTSTRAP_SOCKETS})
+	add_lwip_path(${SYS_RELEASE_TARGET} PUBLIC)
 	set_property(TARGET ${SYS_RELEASE_TARGET} PROPERTY INTERPROCEDURAL_OPTIMIZATION FALSE)
 
 	add_library(${SYS_DEBUG_TARGET} STATIC)
@@ -66,7 +109,8 @@ if(BUILD_CRT OR BUILD_ALL)
 	add_library(${CRT_RELEASE_TARGET} STATIC)
 	target_sources(${CRT_RELEASE_TARGET} PRIVATE ${CRT_SOURCELIST})
 	target_include_directories(${CRT_RELEASE_TARGET} PRIVATE ${SYS_INCLUDE_DIRECTORIES})
-	target_compile_definitions(${CRT_RELEASE_TARGET} PUBLIC __StratifyOS__ SOS_BOOTSTRAP_SOCKETS=${BOOTSTRAP_SOCKETS})
+	target_compile_definitions(${CRT_RELEASE_TARGET} PUBLIC __StratifyOS__)
+	add_lwip_path(${CRT_RELEASE_TARGET} PUBLIC)
 	target_compile_options(${CRT_RELEASE_TARGET} PUBLIC -mlong-calls PRIVATE -Os)
 
 	add_library(${CRT_DEBUG_TARGET} STATIC)
@@ -85,7 +129,7 @@ if(BUILD_BOOT OR BUILD_ALL)
 	target_sources(${BOOT_RELEASE_TARGET} PRIVATE ${BOOT_SOURCELIST})
 	target_include_directories(${BOOT_RELEASE_TARGET} PRIVATE ${SYS_INCLUDE_DIRECTORIES})
 	target_compile_options(${BOOT_RELEASE_TARGET} PUBLIC -Os)
-	target_compile_definitions(${BOOT_RELEASE_TARGET} PUBLIC SOS_BOOTSTRAP_SOCKETS=${BOOTSTRAP_SOCKETS})
+	add_lwip_path(${BOOT_RELEASE_TARGET} PUBLIC)
 
 	add_library(${BOOT_DEBUG_TARGET} STATIC)
 	sos_sdk_copy_target(${BOOT_RELEASE_TARGET} ${BOOT_DEBUG_TARGET})
