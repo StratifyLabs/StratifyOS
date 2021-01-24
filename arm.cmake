@@ -6,7 +6,12 @@ option(BUILD_SYS "Build Stratify OS System library" OFF)
 option(BUILD_CRT "Build C Runtime library" OFF)
 option(BUILD_BOOT "Build Bootloader library" OFF)
 option(BUILD_DEVICE "Build Device library" OFF)
+option(BUILD_USBD "Build USB Device library" OFF)
 option(BUILD_LINK_TRANSPORT "Build Link transport library" OFF)
+
+include(compiler_rt)
+include(newlib)
+
 
 #check for LWIP
 include(CheckIncludeFiles)
@@ -49,6 +54,9 @@ sos_sdk_add_subdirectory(MCU_SOURCELIST src/mcu)
 #Add link transport
 sos_sdk_add_subdirectory(LINK_TRANSPORT_SOURCELIST src/link_transport)
 
+#Add usbd
+sos_sdk_add_subdirectory(USBD_SOURCELIST src/usbd)
+
 #add device library
 sos_sdk_add_subdirectory(DEVICE_SOURCELIST src/device)
 
@@ -78,14 +86,30 @@ set(DEVICE_INCLUDE_DIRECTORIES
 	${CMAKE_CURRENT_SOURCE_DIR}/include
 	)
 
+set(USBD_INCLUDE_DIRECTORIES
+	${CMAKE_CURRENT_SOURCE_DIR}/src
+	${CMAKE_CURRENT_SOURCE_DIR}/include
+	)
 
 set(MCU_INCLUDE_DIRECTORIES
 	${CMAKE_CURRENT_SOURCE_DIR}/src
 	${CMAKE_CURRENT_SOURCE_DIR}/include
 	)
 
-set(SYS_DEPENDENCIES StratifyOS_linktransport StratifyOS_device StratifyOS_cortexm)
-set(BOOT_DEPENDENCIES StratifyOS_linktransport StratifyOS_device StratifyOS_cortexm StratifyOS_mcu)
+set(SYS_DEPENDENCIES
+	StratifyOS_linktransport
+	StratifyOS_device
+	StratifyOS_cortexm
+	compiler_rt)
+
+set(BOOT_DEPENDENCIES
+	StratifyOS_linktransport
+	StratifyOS_device
+	StratifyOS_cortexm
+	StratifyOS_mcu
+	newlib_libc
+	newlib_libm
+	compiler_rt)
 
 list(APPEND SYS_SOURCELIST ${COMMON_SOURCES})
 
@@ -179,6 +203,24 @@ if(BUILD_DEVICE OR BUILD_ALL)
 
 	sos_sdk_library_add_arch_targets("${DEVICE_RELEASE_OPTIONS}" ${SOS_ARCH} "")
 	sos_sdk_library_add_arch_targets("${DEVICE_DEBUG_OPTIONS}" ${SOS_ARCH} "")
+endif()
+
+if(BUILD_USBD OR BUILD_ALL)
+	sos_sdk_library_target(USBD_RELEASE StratifyOS usbd release ${SOS_ARCH})
+	sos_sdk_library_target(USBD_DEBUG StratifyOS usbd debug ${SOS_ARCH})
+
+	add_library(${USBD_RELEASE_TARGET} STATIC)
+	target_sources(${USBD_RELEASE_TARGET} PRIVATE ${USBD_SOURCELIST})
+	target_include_directories(${USBD_RELEASE_TARGET} PRIVATE ${USBD_INCLUDE_DIRECTORIES})
+	target_compile_options(${USBD_RELEASE_TARGET} PUBLIC -Os)
+	add_lwip_path(${USBD_RELEASE_TARGET} PUBLIC)
+	set_property(TARGET ${USBD_RELEASE_TARGET} PROPERTY INTERPROCEDURAL_OPTIMIZATION FALSE)
+
+	add_library(${USBD_DEBUG_TARGET} STATIC)
+	sos_sdk_copy_target(${USBD_RELEASE_TARGET} ${USBD_DEBUG_TARGET})
+
+	sos_sdk_library_add_arch_targets("${USBD_RELEASE_OPTIONS}" ${SOS_ARCH} "")
+	sos_sdk_library_add_arch_targets("${USBD_DEBUG_OPTIONS}" ${SOS_ARCH} "")
 endif()
 
 

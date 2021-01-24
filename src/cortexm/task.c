@@ -128,13 +128,13 @@ int task_init(
 int set_systick_interval(int interval) {
   u32 reload;
   int core_tick_freq;
-  reload = (sos_config.clock.frequency * interval + 500) / 1000;
+  reload = (sos_config.sys.core_clock_frequency * interval + 500) / 1000;
   if (reload > (0x00FFFFFF)) {
     reload = (0x00FFFFFF);
   } else if (reload < SYSTICK_MIN_CYCLES) {
     reload = SYSTICK_MIN_CYCLES;
   }
-  core_tick_freq = sos_config.clock.frequency / reload;
+  core_tick_freq = sos_config.sys.core_clock_frequency / reload;
   cortexm_set_systick_reload(reload);
   m_task_rr_reload = reload;
   cortexm_start_systick();

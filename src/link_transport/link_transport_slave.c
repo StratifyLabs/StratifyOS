@@ -7,7 +7,7 @@
 
 #include "cortexm/cortexm.h"
 
-#include "sos/debug.h"
+#include "sos/boot/boot_debug.h"
 #include "sos/sos.h"
 
 void transport_svcall_fatal(void *args) {

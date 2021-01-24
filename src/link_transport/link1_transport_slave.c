@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <sos/boot/boot_debug.h>
+
 #include "sos/debug.h"
 
 #define pkt_checksum(pktp) ((pktp)->data[(pktp)->size])
@@ -84,13 +86,6 @@ int link1_transport_slaveread(
 
   if (bytes == 0) {
     driver->flush(driver->handle);
-#if 0
-		sos_debug_log_warning(
-					SOS_DEBUG_LINK,
-					"Flushed (%d)",
-					pkt.size
-					);
-#endif
   }
 
   return bytes;

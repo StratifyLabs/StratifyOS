@@ -42,7 +42,7 @@ void cortexm_delay_systick(u32 ticks) {
 
 void cortexm_delay_us(u32 us) {
   // ticks is the number of ticks in one microsecond
-  u32 ticks = sos_config.clock.frequency / 1000000UL;
+  u32 ticks = sos_config.sys.core_clock_frequency / 1000000UL;
   cortexm_delay_systick(ticks * us);
 }
 

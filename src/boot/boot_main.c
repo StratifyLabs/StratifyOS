@@ -15,8 +15,6 @@
 #include "sos/sos.h"
 #include "usbd/control.h"
 
-int boot_main();
-
 void boot_invoke_bootloader(void *args) {
   // write SW location with key and then reset
   u32 *bootloader_software_request_address =
@@ -30,20 +28,6 @@ void sos_handle_event(int event, void *args) {
   if (sos_config.event_handler != NULL) {
     sos_config.event_handler(event, args);
   }
-}
-
-void cortexm_reset_handler() {
-  u32 *src, *dest;
-  src = &_etext; // point src to copy of data that is stored in flash
-  for (dest = &_data; dest < &_edata;) {
-    *dest++ = *src++;
-  } // Copy from flash to RAM (data)
-  for (src = &_bss; src < &_ebss;)
-    *src++ = 0; // Zero out BSS section
-  for (src = &_sys; src < &_esys;)
-    *src++ = 0; // Zero out sysmem
-
-  boot_main(); // This function should never return
 }
 
 extern u32 _etext;
@@ -61,19 +45,29 @@ static void (*app_reset)();
 void run_bootloader();
 
 void led_flash() {
-  sos_led_svcall_enable(0);
-  cortexm_delay_ms(500);
-  sos_led_svcall_disable(0);
-  cortexm_delay_ms(500);
+  while (1) {
+    sos_config.debug.enable_led();
+    cortexm_delay_ms(500);
+    sos_config.debug.disable_led();
+    cortexm_delay_ms(500);
+  }
+}
+
+void led_flash_error() {
+  while (1) {
+    sos_config.debug.enable_led();
+    cortexm_delay_ms(50);
+    sos_config.debug.disable_led();
+    cortexm_delay_ms(50);
+  }
 }
 
 void led_flash_run_bootloader() {
   int i;
   for (i = 0; i < 3; i++) {
-
-    sos_led_svcall_enable(0);
+    sos_config.debug.enable_led();
     cortexm_delay_ms(50);
-    sos_led_svcall_disable(0);
+    sos_config.debug.disable_led();
     cortexm_delay_ms(50);
   }
 }
@@ -83,14 +77,16 @@ void run_bootloader();
 
 /*! \details
  */
-int boot_main() {
-
-  sos_handle_event(SOS_EVENT_ROOT_RESET, 0);
-
+void boot_main() {
   stack_ptr = (void *)(((u32 *)sos_config.boot.program_start_address)[0]);
   app_reset = (void (*)())((((u32 *)sos_config.boot.program_start_address)[1]));
 
+  // sos_config.sys.initialize();
+  // sos_config.debug.initialize();
+  // dstr("hello\n");
+
   if (check_run_app()) {
+    // led_flash_error();
     sos_handle_event(SOS_EVENT_BOOT_RUN_APPLICATION, 0);
     // assign stack pointer to stack value
     app_reset();
@@ -101,7 +97,6 @@ int boot_main() {
 
   while (1)
     ;
-  return 0;
 }
 
 void run_bootloader() {
@@ -115,18 +110,22 @@ void run_bootloader() {
 }
 
 int check_run_app() {
+  // check for a value program
+  if ((u32)stack_ptr == 0xFFFFFFFF) {
+    // code is not valid
+    return 0;
+  }
+
+  // check for a board specific request (like a pin is pulled low)
+  if (sos_config.boot.is_bootloader_requested()) {
+    return 0;
+  }
 
   volatile u32 *software_bootloader_request =
     (u32 *)sos_config.boot.software_bootloader_request_address;
 
   u32 software_bootloader_request_value = *software_bootloader_request;
   *software_bootloader_request = 0;
-
-  // check for a value program
-  if ((u32)stack_ptr == 0xFFFFFFFF) {
-    // code is not valid
-    return 0;
-  }
 
   // check to see if there is a software request to run the bootloader
   if (
@@ -136,16 +135,13 @@ int check_run_app() {
     return 0;
   }
 
-  // check for a board specific request (like a pin is pulled low)
-  if (sos_config.boot.is_bootloader_requested()) {
-    return 0;
-  }
-
   return 1;
 }
 
 void init_hw() {
   sos_handle_event(SOS_EVENT_BOOT_RESET, 0);
+  sos_config.sys.initialize();
+  sos_config.debug.initialize();
 
 #if defined DEBUG_BOOTLOADER
   dsetmode(0);

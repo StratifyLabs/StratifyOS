@@ -21,7 +21,7 @@ static s32 convert_clocks_to_nanoseconds(s32 clocks);
 static void task_timer_to_timespec(struct timespec *tp, u64 task_timer);
 
 #define SCHEDULER_CLOCK_NSEC_DIV                                                         \
-  ((u32)((u64)1024 * 1000000000 / sos_config.clock.frequency))
+  ((u32)((u64)1024 * 1000000000 / sos_config.sys.core_clock_frequency))
 
 /*! \endcond */
 
@@ -151,7 +151,7 @@ int32_t convert_clocks_to_nanoseconds(int32_t clocks) {
 void task_timer_to_timespec(struct timespec *tp, u64 task_timer) {
   u64 nanosec;
   ldiv_t divide;
-  divide = ldiv(task_timer, sos_config.clock.frequency);
+  divide = ldiv(task_timer, sos_config.sys.core_clock_frequency);
   nanosec = divide.rem * SCHEDULER_CLOCK_NSEC_DIV;
   tp->tv_sec = divide.quot;
   tp->tv_nsec = nanosec;

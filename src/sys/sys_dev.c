@@ -37,7 +37,7 @@ int sys_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
     strncpy(info->arch, ARCH, 15);
     info->security = 0;
     info->signature = symbols_table[0];
-    info->cpu_freq = sos_config.clock.frequency;
+    info->cpu_freq = sos_config.sys.core_clock_frequency;
     info->sys_mem_size = sos_config.sys.memory_size;
     info->o_flags = sos_config.sys.flags;
     info->o_mcu_board_config_flags = 0;

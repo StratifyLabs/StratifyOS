@@ -172,4 +172,7 @@ void boot_link_transport_usb_wait(int msec) {
   }
 }
 
-void boot_link_transport_usb_flush(link_transport_phy_t handle) {}
+void boot_link_transport_usb_flush(link_transport_phy_t handle) {
+  m_read_head = 0;
+  m_read_tail = 0;
+}

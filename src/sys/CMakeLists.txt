@@ -6,11 +6,6 @@ if( ${SOS_BUILD_CONFIG} STREQUAL arm )
 		crt/crt_sys.c
 		dirent/dirent.c
 		link/link_thread.c
-		link/sos_link_transport_usb_link_descriptors.c
-		link/sos_link_transport_usb_link_vcp_descriptors.c
-		link/sos_link_transport_usb_vcp_descriptors.c
-		link/sos_link_transport_usb_dual_vcp_descriptors.c
-		link/sos_link_transport_usb.c
 		malloc/_calloc.c
 		malloc/_realloc.c
 		malloc/_sbrk.c

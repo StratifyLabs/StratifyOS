@@ -109,13 +109,13 @@ static void assert_delay() {
   int loop_max;
   int tmp;
 
-  if (sos_config.clock.frequency <= 25000000) {
+  if (sos_config.sys.core_clock_frequency <= 25000000) {
     return;
-  } else if (sos_config.clock.frequency > 100000000) {
+  } else if (sos_config.sys.core_clock_frequency > 100000000) {
     loop_max = 75;
-  } else if (sos_config.clock.frequency > 50000000) {
+  } else if (sos_config.sys.core_clock_frequency > 50000000) {
     loop_max = 60;
-  } else if (sos_config.clock.frequency > 25000000) {
+  } else if (sos_config.sys.core_clock_frequency > 25000000) {
     loop_max = 30;
   }
 

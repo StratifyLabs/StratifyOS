@@ -95,7 +95,6 @@ typedef struct {
   //use for sub-microsecond precision
   //just return 0 if not available
   u32 (*nanoseconds)();
-  u32 frequency;
 } sos_clock_config_t;
 
 typedef struct {
@@ -142,6 +141,8 @@ typedef struct {
   u32 flags;
   // board hardware ID assigned by Stratify Labs
   u32 hardware_id;
+  // target core clock frequency
+  u32 core_clock_frequency;
   // beginning of the bootloader (set to 0xffffffff) if no bootloader
   u32 bootloader_start_address;
   // null-terminated name of the board

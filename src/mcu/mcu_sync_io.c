@@ -44,7 +44,7 @@ int mcu_sync_io(
     while (done != 1234567) { // cppcheck-suppress[knownConditionTrueFalse]
       ;
     }
-    return op.nbyte;
+    return op.result;
   }
   return ret;
 }

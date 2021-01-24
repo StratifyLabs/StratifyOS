@@ -1,11 +1,11 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
-#include "sos/debug.h"
-#include "sos/link.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "sos/link.h"
 
 #define TIMEOUT_VALUE 500
 

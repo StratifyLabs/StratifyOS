@@ -285,7 +285,7 @@ int scheduler_timing_process_get_timer(
 }
 
 u32 scheduler_timing_useconds_to_clocks(int useconds) {
-  return (u32)((sos_config.clock.frequency / 1000000UL) * useconds);
+  return (u32)((sos_config.sys.core_clock_frequency / 1000000UL) * useconds);
 }
 
 void update_tmr_for_process_timer_match(volatile sos_process_timer_t *timer) {

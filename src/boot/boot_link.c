@@ -26,6 +26,8 @@
 #include <stdbool.h>
 #include <sys/fcntl.h>
 
+#include "sos/symbols.h"
+
 #include "boot_config.h"
 #include "boot_link.h"
 #include "cortexm/cortexm.h"
@@ -81,8 +83,8 @@ void *boot_link_update(void *arg) {
   dstr("Enter update loop\n");
   while (1) {
     // Wait for data to arrive on the USB
-    while (1) {
-      int err;
+    int err;
+    do {
 
       if (
         (err = link_transport_slaveread(driver, &data.op, sizeof(link_op_t), NULL, NULL))
@@ -93,10 +95,7 @@ void *boot_link_update(void *arg) {
         continue;
       }
 
-      if (err > 0) {
-        break;
-      }
-    }
+    } while (err < 0);
 
     dstr("EXEC CMD: ");
     dint(data.op.cmd);
@@ -139,7 +138,7 @@ void boot_link_cmd_readserialno(link_transport_driver_t *driver, link_data_t *ar
     }
   }
 
-  args->reply.err = strlen(serialno);
+  args->reply.err = strnlen(serialno, 256);
   args->reply.err_number = 0;
 
   if (
