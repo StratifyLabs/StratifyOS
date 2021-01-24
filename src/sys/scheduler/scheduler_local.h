@@ -28,16 +28,6 @@
 
 #define SCHEDULER_NUM_SIGNALS 32
 
-typedef struct {
-  u32 tid;
-  s32 free_stack_size;
-  s32 free_heap_size;
-  u32 pid;
-  fault_t fault;
-} scheduler_fault_t;
-
-extern volatile scheduler_fault_t m_scheduler_fault;
-
 
 static inline int scheduler_priority(int id){ return task_get_priority(id); }
 static inline trace_id_t scheduler_trace_id(int id) {
@@ -65,7 +55,6 @@ int scheduler_create_process(void (*p)(char *),
 int scheduler_switch_context(void * args);
 int scheduler_get_highest_priority_blocked(void * block_object);
 
-u32 scheduler_calculate_heap_end(u32 task_id);
 
 void scheduler_check_cancellation();
 

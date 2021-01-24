@@ -1,8 +1,12 @@
 
 option(BUILD_ALL "Build All configurations" ON)
+option(BUILD_MCU "Build Stratify OS MCU Helper library" OFF)
+option(BUILD_CORTEXM "Build Stratify OS Cortex M library" OFF)
 option(BUILD_SYS "Build Stratify OS System library" OFF)
 option(BUILD_CRT "Build C Runtime library" OFF)
 option(BUILD_BOOT "Build Bootloader library" OFF)
+option(BUILD_DEVICE "Build Device library" OFF)
+option(BUILD_LINK_TRANSPORT "Build Link transport library" OFF)
 
 #check for LWIP
 include(CheckIncludeFiles)
@@ -22,8 +26,8 @@ endif()
 sos_sdk_add_subdirectory(SOS_INTERFACE_SOURCELIST ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 # Grab GLOB files - these don't affect the build so GLOB is OK
-file(GLOB_RECURSE CMAKE_SOURCES ${CMAKE_SOURCE_DIR}/cmake/*)
-file(GLOB LDSCRIPT_SOURCES ${CMAKE_SOURCE_DIR}/ldscript/*)
+file(GLOB_RECURSE CMAKE_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/cmake/*)
+file(GLOB LDSCRIPT_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/ldscript/*)
 
 set(COMMON_SOURCES ${CMAKE_SOURCES} ${LDSCRIPT_SOURCES} ${SOS_INTERFACE_SOURCELIST})
 
@@ -36,12 +40,52 @@ sos_sdk_add_subdirectory(CRT_SOURCELIST src/crt)
 #Add bootloader sources
 sos_sdk_add_subdirectory(BOOT_SOURCELIST src/boot)
 
+#Add Cortex-m sources
+sos_sdk_add_subdirectory(CORTEXM_SOURCELIST src/cortexm)
+
+#Add  MCU sources
+sos_sdk_add_subdirectory(MCU_SOURCELIST src/mcu)
+
+#Add link transport
+sos_sdk_add_subdirectory(LINK_TRANSPORT_SOURCELIST src/link_transport)
+
+#add device library
+sos_sdk_add_subdirectory(DEVICE_SOURCELIST src/device)
+
+
 set(SYS_INCLUDE_DIRECTORIES
 	${CMAKE_CURRENT_SOURCE_DIR}/src
 	${CMAKE_CURRENT_SOURCE_DIR}/src/sys/auth/tinycrypt/lib/include
 	${CMAKE_CURRENT_SOURCE_DIR}/include/posix
 	${CMAKE_CURRENT_SOURCE_DIR}/include
 	)
+
+set(LINK_TRANSPORT_INCLUDE_DIRECTORIES
+	${CMAKE_CURRENT_SOURCE_DIR}/src
+	${CMAKE_CURRENT_SOURCE_DIR}/src/sys/auth/tinycrypt/lib/include
+	${CMAKE_CURRENT_SOURCE_DIR}/include/posix
+	${CMAKE_CURRENT_SOURCE_DIR}/include
+	)
+
+
+set(CORTEXM_INCLUDE_DIRECTORIES
+	${CMAKE_CURRENT_SOURCE_DIR}/src
+	${CMAKE_CURRENT_SOURCE_DIR}/include
+	)
+
+set(DEVICE_INCLUDE_DIRECTORIES
+	${CMAKE_CURRENT_SOURCE_DIR}/src
+	${CMAKE_CURRENT_SOURCE_DIR}/include
+	)
+
+
+set(MCU_INCLUDE_DIRECTORIES
+	${CMAKE_CURRENT_SOURCE_DIR}/src
+	${CMAKE_CURRENT_SOURCE_DIR}/include
+	)
+
+set(SYS_DEPENDENCIES StratifyOS_linktransport StratifyOS_device StratifyOS_cortexm)
+set(BOOT_DEPENDENCIES StratifyOS_linktransport StratifyOS_device StratifyOS_cortexm StratifyOS_mcu)
 
 list(APPEND SYS_SOURCELIST ${COMMON_SOURCES})
 
@@ -73,7 +117,7 @@ macro(create_iface_library CONFIG CONFIG_LOWER ARCH)
 		OPTIONAL)
 	install(
 		EXPORT ${IFACE_${CONFIG}_TARGET}
-		DESTINATION cmake/targets)
+		DESTINATION ${SOS_SDK_PATH}/cmake/targets)
 endmacro()
 
 create_iface_library(RELEASE release ${SOS_ARCH})
@@ -83,6 +127,78 @@ foreach(ARCH ${SOS_ARCH_LIST})
 	create_iface_library(DEBUG debug ${ARCH})
 endforeach()
 
+if(BUILD_CORTEXM OR BUILD_ALL)
+	sos_sdk_library_target(CORTEXM_RELEASE StratifyOS cortexm release ${SOS_ARCH})
+	sos_sdk_library_target(CORTEXM_DEBUG StratifyOS cortexm debug ${SOS_ARCH})
+
+	add_library(${CORTEXM_RELEASE_TARGET} STATIC)
+	target_sources(${CORTEXM_RELEASE_TARGET} PRIVATE ${CORTEXM_SOURCELIST})
+	target_include_directories(${CORTEXM_RELEASE_TARGET} PRIVATE ${CORTEXM_INCLUDE_DIRECTORIES})
+	target_compile_options(${CORTEXM_RELEASE_TARGET} PUBLIC -Os)
+	add_lwip_path(${CORTEXM_RELEASE_TARGET} PUBLIC)
+	set_property(TARGET ${CORTEXM_RELEASE_TARGET} PROPERTY INTERPROCEDURAL_OPTIMIZATION FALSE)
+
+	add_library(${CORTEXM_DEBUG_TARGET} STATIC)
+	sos_sdk_copy_target(${CORTEXM_RELEASE_TARGET} ${CORTEXM_DEBUG_TARGET})
+
+	sos_sdk_library_add_arch_targets("${CORTEXM_RELEASE_OPTIONS}" ${SOS_ARCH} "")
+	sos_sdk_library_add_arch_targets("${CORTEXM_DEBUG_OPTIONS}" ${SOS_ARCH} "")
+endif()
+
+if(BUILD_LINK_TRANSPORT OR BUILD_ALL)
+	sos_sdk_library_target(LINK_TRANSPORT_RELEASE StratifyOS linktransport release ${SOS_ARCH})
+	sos_sdk_library_target(LINK_TRANSPORT_DEBUG StratifyOS linktransport debug ${SOS_ARCH})
+
+	add_library(${LINK_TRANSPORT_RELEASE_TARGET} STATIC)
+	target_sources(${LINK_TRANSPORT_RELEASE_TARGET} PRIVATE ${LINK_TRANSPORT_SOURCELIST})
+	target_include_directories(${LINK_TRANSPORT_RELEASE_TARGET} PRIVATE ${LINK_TRANSPORT_INCLUDE_DIRECTORIES})
+	target_compile_options(${LINK_TRANSPORT_RELEASE_TARGET} PUBLIC -Os)
+	add_lwip_path(${LINK_TRANSPORT_RELEASE_TARGET} PUBLIC)
+	set_property(TARGET ${LINK_TRANSPORT_RELEASE_TARGET} PROPERTY INTERPROCEDURAL_OPTIMIZATION FALSE)
+
+	add_library(${LINK_TRANSPORT_DEBUG_TARGET} STATIC)
+	sos_sdk_copy_target(${LINK_TRANSPORT_RELEASE_TARGET} ${LINK_TRANSPORT_DEBUG_TARGET})
+
+	sos_sdk_library_add_arch_targets("${LINK_TRANSPORT_RELEASE_OPTIONS}" ${SOS_ARCH} "")
+	sos_sdk_library_add_arch_targets("${LINK_TRANSPORT_DEBUG_OPTIONS}" ${SOS_ARCH} "")
+endif()
+
+if(BUILD_DEVICE OR BUILD_ALL)
+	sos_sdk_library_target(DEVICE_RELEASE StratifyOS device release ${SOS_ARCH})
+	sos_sdk_library_target(DEVICE_DEBUG StratifyOS device debug ${SOS_ARCH})
+
+	add_library(${DEVICE_RELEASE_TARGET} STATIC)
+	target_sources(${DEVICE_RELEASE_TARGET} PRIVATE ${DEVICE_SOURCELIST})
+	target_include_directories(${DEVICE_RELEASE_TARGET} PRIVATE ${DEVICE_INCLUDE_DIRECTORIES})
+	target_compile_options(${DEVICE_RELEASE_TARGET} PUBLIC -Os)
+	add_lwip_path(${DEVICE_RELEASE_TARGET} PUBLIC)
+	set_property(TARGET ${DEVICE_RELEASE_TARGET} PROPERTY INTERPROCEDURAL_OPTIMIZATION FALSE)
+
+	add_library(${DEVICE_DEBUG_TARGET} STATIC)
+	sos_sdk_copy_target(${DEVICE_RELEASE_TARGET} ${DEVICE_DEBUG_TARGET})
+
+	sos_sdk_library_add_arch_targets("${DEVICE_RELEASE_OPTIONS}" ${SOS_ARCH} "")
+	sos_sdk_library_add_arch_targets("${DEVICE_DEBUG_OPTIONS}" ${SOS_ARCH} "")
+endif()
+
+
+if(BUILD_MCU OR BUILD_ALL)
+	sos_sdk_library_target(MCU_RELEASE StratifyOS mcu release ${SOS_ARCH})
+	sos_sdk_library_target(MCU_DEBUG StratifyOS mcu debug ${SOS_ARCH})
+
+	add_library(${MCU_RELEASE_TARGET} STATIC)
+	target_sources(${MCU_RELEASE_TARGET} PRIVATE ${MCU_SOURCELIST})
+	target_include_directories(${MCU_RELEASE_TARGET} PRIVATE ${MCU_INCLUDE_DIRECTORIES})
+	target_compile_options(${MCU_RELEASE_TARGET} PUBLIC -Os)
+	add_lwip_path(${MCU_RELEASE_TARGET} PUBLIC)
+	set_property(TARGET ${MCU_RELEASE_TARGET} PROPERTY INTERPROCEDURAL_OPTIMIZATION FALSE)
+
+	add_library(${MCU_DEBUG_TARGET} STATIC)
+	sos_sdk_copy_target(${MCU_RELEASE_TARGET} ${MCU_DEBUG_TARGET})
+
+	sos_sdk_library_add_arch_targets("${MCU_RELEASE_OPTIONS}" ${SOS_ARCH} "")
+	sos_sdk_library_add_arch_targets("${MCU_DEBUG_OPTIONS}" ${SOS_ARCH} "")
+endif()
 
 if(BUILD_SYS OR BUILD_ALL)
 	sos_sdk_library_target(SYS_RELEASE StratifyOS sys release ${SOS_ARCH})
@@ -98,9 +214,10 @@ if(BUILD_SYS OR BUILD_ALL)
 	add_library(${SYS_DEBUG_TARGET} STATIC)
 	sos_sdk_copy_target(${SYS_RELEASE_TARGET} ${SYS_DEBUG_TARGET})
 
-	sos_sdk_library_add_arch_targets("${SYS_RELEASE_OPTIONS}" ${SOS_ARCH} "")
-	sos_sdk_library_add_arch_targets("${SYS_DEBUG_OPTIONS}" ${SOS_ARCH} "")
+	sos_sdk_library_add_arch_targets("${SYS_RELEASE_OPTIONS}" ${SOS_ARCH} "${SYS_DEPENDENCIES}")
+	sos_sdk_library_add_arch_targets("${SYS_DEBUG_OPTIONS}" ${SOS_ARCH} "${SYS_DEPENDENCIES}")
 endif()
+
 
 if(BUILD_CRT OR BUILD_ALL)
 	sos_sdk_library_target(CRT_RELEASE StratifyOS crt release ${SOS_ARCH})
@@ -135,21 +252,12 @@ if(BUILD_BOOT OR BUILD_ALL)
 	sos_sdk_copy_target(${BOOT_RELEASE_TARGET} ${BOOT_DEBUG_TARGET})
 
 	# Create targets for all architectures using above settings
-	sos_sdk_library_add_arch_targets("${BOOT_RELEASE_OPTIONS}" ${SOS_ARCH} "")
-	sos_sdk_library_add_arch_targets("${BOOT_DEBUG_OPTIONS}" ${SOS_ARCH} "")
+	sos_sdk_library_add_arch_targets("${BOOT_RELEASE_OPTIONS}" ${SOS_ARCH} "${BOOT_DEPENDENCIES}")
+	sos_sdk_library_add_arch_targets("${BOOT_DEBUG_OPTIONS}" ${SOS_ARCH} "${BOOT_DEPENDENCIES}")
 endif()
 
 install(DIRECTORY include/cortexm include/device include/mcu include/sos include/usbd DESTINATION include PATTERN CMakelists.txt EXCLUDE)
 install(DIRECTORY include/posix/ DESTINATION include PATTERN CMakelists.txt EXCLUDE)
 install(DIRECTORY ldscript/ DESTINATION lib/ldscripts PATTERN CMakelists.txt EXCLUDE)
 
-option(SOS_SKIP_CMAKE "Dont install the cmake files" OFF)
-option(SOS_CREATE_GCC_HARD "Dont install the cmake files" OFF)
-
-install(FILES StratifyOS.cmake
-	DESTINATION cmake/targets)
-
-if(SOS_CREATE_GCC_HARD)
-	install(CODE "include(../create-gcc-hard.cmake)")
-endif()
 

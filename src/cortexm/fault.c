@@ -25,6 +25,7 @@ int cortexm_fault_init() {
   return 0;
 }
 
+void cortexm_hardfault_handler() MCU_WEAK;
 void cortexm_hardfault_handler() {
   register hw_stack_frame_t *handler_stack;
   asm volatile("MRS %0, msp\n\t" : "=r"(handler_stack));
@@ -68,7 +69,7 @@ void hardfault_handler(u32 fault_status, hw_stack_frame_t *handler_stack) {
   fault.handler_pc = (void *)(handler_stack)->pc;
   fault.handler_caller = (void *)(handler_stack)->lr;
 
-  scheduler_fault_event_handler(&fault);
+  cortexm_fault_event_handler(&fault);
 }
 
 void cortexm_wdtfault_handler(void *stack) {
@@ -87,6 +88,7 @@ void cortexm_wdtfault_handler(void *stack) {
   sos_handle_event(SOS_EVENT_ROOT_WDT_TIMEDOUT, &fault);
 }
 
+void cortexm_memfault_handler() MCU_WEAK;
 void cortexm_memfault_handler() {
   register void *handler_stack;
   asm volatile("MRS %0, msp\n\t" : "=r"(handler_stack));
@@ -139,9 +141,10 @@ void memfault_handler(u32 mem_status, hw_stack_frame_t *handler_stack) {
 
   //! \todo This should always send the PC and the link register of the offending
   //! instructions
-  scheduler_fault_event_handler(&fault);
+  cortexm_fault_event_handler(&fault);
 }
 
+void cortexm_busfault_handler() MCU_WEAK;
 void cortexm_busfault_handler() {
   register void *handler_stack;
   asm volatile("MRS %0, msp\n\t" : "=r"(handler_stack));
@@ -193,9 +196,10 @@ void busfault_handler(u32 bus_status, hw_stack_frame_t *handler_stack) {
 
   //! \todo This should always send the PC and the link register of the offending
   //! instructions
-  scheduler_fault_event_handler(&fault);
+  cortexm_fault_event_handler(&fault);
 }
 
+void cortexm_usagefault_handler() MCU_WEAK;
 void cortexm_usagefault_handler() {
   register void *handler_stack;
   asm volatile("MRS %0, msp\n\t" : "=r"(handler_stack));
@@ -246,5 +250,5 @@ void usagefault_handler(u32 usage_status, hw_stack_frame_t *handler_stack) {
   fault.handler_pc = (void *)handler_stack->pc;
   fault.handler_caller = (void *)handler_stack->lr;
 
-  scheduler_fault_event_handler(&fault);
+  cortexm_fault_event_handler(&fault);
 }

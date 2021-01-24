@@ -15,9 +15,8 @@ set(SOS_INCLUDE_DIRECTORIES include)
 include( ${CMAKE_CURRENT_SOURCE_DIR}/${SOS_BUILD_CONFIG}.cmake )
 
 install(FILES
-	${CMAKE_CURRENT_SOURCE_DIR}/cmake/StratifyOS.cmake
-	DESTINATION
-	cmake/targets)
+	${CMAKE_CURRENT_SOURCE_DIR}/StratifyOS.cmake
+	DESTINATION ${SOS_SDK_PATH}/cmake/targets)
 
 add_custom_target(
   format

@@ -29,6 +29,7 @@
 #include "boot_config.h"
 #include "boot_link.h"
 #include "cortexm/cortexm.h"
+#include "cortexm/util.h"
 #include "sos/arch.h"
 #include "sos/debug.h"
 #include "sos/led.h"
@@ -153,7 +154,7 @@ void boot_link_cmd_readserialno(link_transport_driver_t *driver, link_data_t *ar
 
   args->op.cmd = 0; // reply was already sent
 
-  boot_event(SOS_EVENT_BOOT_READ_SERIAL_NUMBER, 0);
+  sos_handle_event(SOS_EVENT_BOOT_READ_SERIAL_NUMBER, 0);
 }
 
 void boot_link_cmd_ioctl(link_transport_driver_t *driver, link_data_t *args) {
@@ -211,10 +212,10 @@ void boot_link_cmd_ioctl(link_transport_driver_t *driver, link_data_t *args) {
   case I_BOOTLOADER_RESET:
     dstr("rst\n");
     if (args->op.ioctl.arg == 0) {
-      boot_event(SOS_EVENT_BOOT_RESET, 0);
+      sos_handle_event(SOS_EVENT_BOOT_RESET, 0);
       boot_link_cmd_reset(driver, args);
     } else {
-      boot_event(SOS_EVENT_BOOT_RESET_BOOTLOADER, 0);
+      sos_handle_event(SOS_EVENT_BOOT_RESET_BOOTLOADER, 0);
       boot_link_cmd_reset_bootloader(driver, args);
     }
     break;
@@ -242,7 +243,7 @@ void boot_link_cmd_ioctl(link_transport_driver_t *driver, link_data_t *args) {
 
     event_args.increment = wattr.nbyte;
     event_args.bytes += event_args.increment;
-    boot_event(SOS_EVENT_BOOT_WRITE_FLASH, &event_args);
+    sos_handle_event(SOS_EVENT_BOOT_WRITE_FLASH, &event_args);
     break;
   default:
     args->reply.err_number = EINVAL;
@@ -284,7 +285,7 @@ void erase_flash(link_transport_driver_t *driver) {
     driver->wait(1);
     sos_led_root_disable();
     args.bytes = page;
-    boot_event(SOS_EVENT_BOOT_ERASE_FLASH, &args);
+    sos_handle_event(SOS_EVENT_BOOT_ERASE_FLASH, &args);
   }
   page--;
 
@@ -301,7 +302,7 @@ void erase_flash(link_transport_driver_t *driver) {
     driver->wait(1);
     sos_led_svcall_disable(0);
     args.bytes = page;
-    boot_event(SOS_EVENT_BOOT_ERASE_FLASH, &args);
+    sos_handle_event(SOS_EVENT_BOOT_ERASE_FLASH, &args);
   }
 
   dstr("result:");

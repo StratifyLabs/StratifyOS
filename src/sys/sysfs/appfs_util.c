@@ -1,16 +1,16 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
 
-#include "sos/sos.h"
 #include <errno.h>
 #include <limits.h>
 
 #include "appfs_local.h"
+#include "cortexm/util.h"
 #include "sos/debug.h"
+#include "sos/sos.h"
 
 #include "../symbols.h"
 
-#define MCU_LAST_BOOTLOADER_PAGE 3
 
 #define APPFS_REWRITE_MASK 0xFE000000
 #define APPFS_REWRITE_RAM_MASK (0x01000000)
@@ -310,32 +310,6 @@ u32 find_protectable_free(
   // return an invalid address
   return (u32)-1;
 }
-
-/*
-static int find_free(const devfs_device_t * dev, int type, int size){
-        mem_pageinfo_t pageinfo;
-        //find any area for the code
-
-        pageinfo.num = MCU_LAST_BOOTLOADER_PAGE;
-        //find an area of flash that is available to write
-        do {
-
-                pageinfo.o_flags = type;
-                if ( dev->driver.ioctl(&(dev->handle), I_MEM_GET_PAGEINFO, &pageinfo) < 0
-){ return -1;
-                }
-
-                if ( check_for_free_space(dev, pageinfo.num, type, size) == 0 ){
-                        return pageinfo.addr;
-                }
-
-                pageinfo.num++;
-
-        } while(1);
-
-        return -1;
-}
- */
 
 const appfs_file_t *appfs_util_getfile(appfs_handle_t *h) {
   return (appfs_file_t *)h->type.reg.beg_addr;

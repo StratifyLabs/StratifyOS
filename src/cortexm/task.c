@@ -466,7 +466,7 @@ void task_check_count_flag() {
   }
 }
 
-
+void cortexm_systick_handler() MCU_WEAK;
 void cortexm_systick_handler() {
   task_save_context();
   task_check_count_flag();
@@ -475,6 +475,7 @@ void cortexm_systick_handler() {
 }
 
 // Weak is needed for overriding when building bootloader
+void cortexm_pendsv_handler() MCU_WEAK;
 void cortexm_pendsv_handler() {
   task_save_context();
 
@@ -604,4 +605,16 @@ int task_interrupt(task_interrupt_t *intr) {
     return 0;
   }
   return -1;
+}
+
+u32 task_calculate_heap_end(u32 task_id) {
+  if (
+    (task_id < task_get_total()) && (task_thread_asserted(task_id) == 0)
+    && (sos_task_table[task_id].reent != NULL)) {
+
+    return (u32)
+           & (((struct _reent *)sos_task_table[task_id].reent)->procmem_base->base)
+               + ((struct _reent *)sos_task_table[task_id].reent)->procmem_base->size;
+  }
+  return 0;
 }

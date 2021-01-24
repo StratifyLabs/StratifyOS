@@ -13,6 +13,8 @@
 #include <stdbool.h>
 #include <sys/fcntl.h> //Defines the flags
 
+#include "cortexm/util.h"
+
 #include "../process/process_start.h"
 #include "../scheduler/scheduler_local.h"
 

@@ -96,8 +96,9 @@ u32 task_reverse_memory_lookup(u32 input);
 #define TASK_APPLICATION_DATA_MPU_REGION 1
 #define TASK_APPLICATION_DATA_USER_REGION 0
 
-void cortexm_systick_handler() MCU_NAKED MCU_ROOT_EXEC_CODE;
-void cortexm_pendsv_handler() MCU_NAKED MCU_ROOT_EXEC_CODE;
+// weak so bootloader can override
+void cortexm_systick_handler() MCU_NAKED MCU_ROOT_EXEC_CODE MCU_WEAK;
+void cortexm_pendsv_handler() MCU_NAKED MCU_ROOT_EXEC_CODE MCU_WEAK;
 
 #endif
 

@@ -11,6 +11,6 @@
 #endif
 
 void delay_ms(int ms);
-void boot_event(int event, void * args);
+void sos_handle_event(int event, void * args);
 
 #endif /* BOOT_CONFIG_H_ */

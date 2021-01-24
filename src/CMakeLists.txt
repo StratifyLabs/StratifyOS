@@ -1,10 +1,6 @@
 
 if( ${SOS_BUILD_CONFIG} STREQUAL arm )
-	sos_sdk_add_subdirectory(SOURCELIST cortexm)
   list(APPEND SOURCELIST ${SRC_SOURCES_PREFIX}/config.h)
-	sos_sdk_add_subdirectory(SOURCELIST device)
-	sos_sdk_add_subdirectory(SOURCELIST link_transport)
-	sos_sdk_add_subdirectory(SOURCELIST mcu)
 	sos_sdk_add_subdirectory(SOURCELIST sys)
 	sos_sdk_add_subdirectory(SOURCELIST usbd)
 else()

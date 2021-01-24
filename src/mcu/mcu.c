@@ -5,6 +5,7 @@
 
 #include "mcu/core.h"
 #include "mcu/mcu.h"
+#include "sos/config.h"
 #include "sos/sos.h"
 
 // deprecated -- stop using this -- this is the old way -- use
@@ -82,7 +83,7 @@ int mcu_set_pin_assignment(
         pre_configure_pin(pin, arg);
       }
 
-      if (mcu_core_set_pinsel_func(pin, periph, periph_port) < 0) {
+      if (sos_config.mcu.set_pin_function(pin, periph, periph_port) < 0) {
         sos_handle_event(SOS_EVENT_ROOT_INVALID_PIN_ASSIGNMENT, (void *)pin);
         return SYSFS_SET_RETURN_WITH_VALUE(ENODEV, i);
       }

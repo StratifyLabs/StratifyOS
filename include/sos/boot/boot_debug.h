@@ -1,7 +1,7 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
-#ifndef DEBUG_BOOTLOADER_H_
-#define DEBUG_BOOTLOADER_H_
+#ifndef SOS_BOOT_DEBUG_H_
+#define SOS_BOOT_DEBUG_H_
 
 #if defined ___debug || defined __debug
 #include <sdk/types.h>
@@ -60,7 +60,4 @@ void dsetmode(int leading_zeros);
 
 #endif
 
-
-
-
-#endif /* DEBUG_BOOTLOADER_H_ */
+#endif /* SOS_BOOT_DEBUG_H_ */

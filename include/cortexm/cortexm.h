@@ -46,7 +46,8 @@ int cortexm_verify_zero_sum8(void * data, int size);
 typedef void (*cortexm_svcall_t)(void*);
 void cortexm_svcall(cortexm_svcall_t call, void * args) __attribute__((optimize("1")));
 
-void cortexm_svcall_handler() MCU_ROOT_CODE;
+// weak to allow overriding by bootloader
+void cortexm_svcall_handler() MCU_ROOT_CODE MCU_WEAK;
 void cortexm_initialize_heap() MCU_ROOT_CODE;
 
 void cortexm_reset_mode() MCU_ROOT_CODE;

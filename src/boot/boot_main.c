@@ -2,6 +2,7 @@
 #include <sys/lock.h>
 
 #include "sos/arch.h"
+#include "sos/symbols.h"
 
 #include "boot_config.h"
 #include "boot_link.h"
@@ -14,6 +15,8 @@
 #include "sos/sos.h"
 #include "usbd/control.h"
 
+int boot_main();
+
 void boot_invoke_bootloader(void *args) {
   // write SW location with key and then reset
   u32 *bootloader_software_request_address =
@@ -23,14 +26,32 @@ void boot_invoke_bootloader(void *args) {
   cortexm_reset(0);
 }
 
-void boot_event(int event, void *args) { sos_config.event_handler(event, args); }
+void sos_handle_event(int event, void *args) {
+  if (sos_config.event_handler != NULL) {
+    sos_config.event_handler(event, args);
+  }
+}
+
+void cortexm_reset_handler() {
+  u32 *src, *dest;
+  src = &_etext; // point src to copy of data that is stored in flash
+  for (dest = &_data; dest < &_edata;) {
+    *dest++ = *src++;
+  } // Copy from flash to RAM (data)
+  for (src = &_bss; src < &_ebss;)
+    *src++ = 0; // Zero out BSS section
+  for (src = &_sys; src < &_esys;)
+    *src++ = 0; // Zero out sysmem
+
+  boot_main(); // This function should never return
+}
 
 extern u32 _etext;
 
 const bootloader_api_t mcu_core_bootloader_api = {
   .code_size = (u32)&_etext,
   .exec = boot_invoke_bootloader,
-  .event = boot_event};
+  .event = sos_handle_event};
 
 void init_hw();
 
@@ -64,17 +85,17 @@ void run_bootloader();
  */
 int boot_main() {
 
-  boot_event(SOS_EVENT_ROOT_RESET, 0);
+  sos_handle_event(SOS_EVENT_ROOT_RESET, 0);
 
   stack_ptr = (void *)(((u32 *)sos_config.boot.program_start_address)[0]);
   app_reset = (void (*)())((((u32 *)sos_config.boot.program_start_address)[1]));
 
   if (check_run_app()) {
-    boot_event(SOS_EVENT_BOOT_RUN_APPLICATION, 0);
+    sos_handle_event(SOS_EVENT_BOOT_RUN_APPLICATION, 0);
     // assign stack pointer to stack value
     app_reset();
   } else {
-    boot_event(SOS_EVENT_BOOT_RUN_BOOTLOADER, 0);
+    sos_handle_event(SOS_EVENT_BOOT_RUN_BOOTLOADER, 0);
     run_bootloader();
   }
 
@@ -124,7 +145,7 @@ int check_run_app() {
 }
 
 void init_hw() {
-  boot_event(SOS_EVENT_BOOT_RESET, 0);
+  sos_handle_event(SOS_EVENT_BOOT_RESET, 0);
 
 #if defined DEBUG_BOOTLOADER
   dsetmode(0);
@@ -137,21 +158,6 @@ void init_hw() {
 #endif
   cortexm_delay_ms(50);
   cortexm_enable_interrupts(); // Enable the interrupts
-}
-
-// prevent linkage to real handlers
-void mcu_core_fault_handler() {}
-void cortexm_hardfault_handler() {}
-void cortexm_memfault_handler() {}
-void cortexm_busfault_handler() {}
-void cortexm_usagefault_handler() {}
-void cortexm_systick_handler() {}
-void cortexm_svcall_handler() {}
-void cortexm_pendsv_handler() {}
-void mcu_core_wdt_isr() {}
-
-int pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *attr) {
-  return 0;
 }
 
 /*! @} */

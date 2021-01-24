@@ -22,7 +22,6 @@ typedef struct {
   u32 lr;
   u32 pc;
   u32 psr;
-
 } hw_stack_frame_t;
 
 typedef struct MCU_PACK {
@@ -37,6 +36,8 @@ typedef struct MCU_PACK {
 } sw_stack_frame_t;
 
 #define TASK_DEBUG 0
+
+u32 task_calculate_heap_end(u32 task_id);
 
 #define task_debug(...)                                                                  \
   do {                                                                                   \

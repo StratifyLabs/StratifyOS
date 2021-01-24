@@ -347,9 +347,6 @@
 extern "C" {
 #endif
 
-void htoa(char *dest, int num);
-char htoc(int nibble);
-
 int kernel_request(int request, void *data);
 const void *kernel_request_api(u32 request);
 

@@ -10,10 +10,9 @@
 #include "config.h"
 #include "scheduler_local.h"
 
+#include "cortexm/fault_local.h"
 #include "sos/debug.h"
 #include "sos/symbols.h"
-
-volatile scheduler_fault_t m_scheduler_fault MCU_SYS_MEM;
 
 void scheduler_init() {
   memset((void *)sos_task_table, 0, sizeof(task_t) * sos_config.task.task_total);
@@ -41,6 +40,9 @@ void scheduler_start(void *(*init)(void *)) {
 
 static void svcall_prepare(void *args) {
   sos_debug_log_info(SOS_DEBUG_SCHEDULER, "Init MPU");
+  m_cortexm_fault_handler.callback = scheduler_root_fault_handler;
+  m_cortexm_fault_handler.context = NULL;
+
   if (task_init_mpu(&_data, sos_config.sys.memory_size) < 0) {
     sos_debug_log_info(SOS_DEBUG_SCHEDULER, "Failed to initialize memory protection");
     sos_handle_event(SOS_EVENT_ROOT_FATAL, (void *)"tski");
@@ -51,6 +53,7 @@ static void svcall_prepare(void *args) {
 void scheduler_prepare() {
   cortexm_svcall(svcall_prepare, NULL);
   scheduler_timing_init();
+
   cortexm_set_unprivileged_mode(); // Enter unpriv mode
 }
 

@@ -56,7 +56,6 @@ int mpu_disable_region(int region) {
     return -1;
   }
 
-  sos_debug_printf("disable %d\n", region);
   MPU->RNR = (region & 0xFF); // Set the region register
   rasr = MPU->RASR;
   rasr &= ~(0x01);
@@ -202,8 +201,6 @@ int mpu_enable_region(
   u32 rasr;
   u32 rbar;
   u8 valid_regions;
-
-  sos_debug_printf("enable %d\n", region);
 
   // check if the region is valid
   valid_regions = ((MPU->TYPE >> 8) & 0xFF);

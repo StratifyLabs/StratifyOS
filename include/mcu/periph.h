@@ -14,7 +14,6 @@
 #include "eth.h"
 #include "flash.h"
 #include "mci.h"
-#include "mem.h"
 #include "i2c.h"
 #include "i2s.h"
 #include "pio.h"

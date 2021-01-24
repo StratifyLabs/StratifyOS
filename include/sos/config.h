@@ -227,6 +227,7 @@ typedef struct MCU_PACK {
   u16 interrupt_middle_priority;
   void (*set_interrupt_priority)(int number, int priority);
   void (*reset_watchdog_timer)();
+  int (*set_pin_function)(const mcu_pin_t *pin, int function, int periph_port);
 } sos_mcu_config_t;
 
 typedef struct MCU_PACK {

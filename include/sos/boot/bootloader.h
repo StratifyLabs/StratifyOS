@@ -1,9 +1,9 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
-#ifndef MCU_BOOTLOADER_H_
-#define MCU_BOOTLOADER_H_
+#ifndef SOS_BOOT_BOOTLOADER_H_
+#define SOS_BOOT_BOOTLOADER_H_
 
-#include "../sos/dev/bootloader.h"
+#include "../dev/bootloader.h"
 
 typedef struct {
   int abort;
@@ -18,4 +18,4 @@ typedef struct {
   const char *key;
 } boot_event_crypt_t;
 
-#endif /* MCU_BOOTLOADER_H_ */
+#endif /* SOS_BOOT_BOOTLOADER_H_ */

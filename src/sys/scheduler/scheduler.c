@@ -1,6 +1,5 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
-
 /*! \addtogroup SCHED
  * @{
  *
@@ -22,6 +21,8 @@
 #include "sched.h"
 #include "scheduler_local.h"
 #include "sos/debug.h"
+
+#include "cortexm/fault_local.h"
 
 #include "trace.h"
 
@@ -77,81 +78,80 @@ void scheduler() {
 
 void svcall_fault_logged(void *args) {
   CORTEXM_SVCALL_ENTER();
-  m_scheduler_fault.fault.num = 0;
+  m_cortexm_fault.fault.num = 0;
 }
 
 int check_faults() {
-  if (m_scheduler_fault.fault.num != 0) {
+  if (m_cortexm_fault.fault.num != 0) {
     char buffer[LINK_POSIX_TRACE_DATA_SIZE + 1];
     // Trace the fault -- and output on debug
     buffer[LINK_POSIX_TRACE_DATA_SIZE] = 0;
 
-    snprintf(buffer, LINK_POSIX_TRACE_DATA_SIZE, "fault:%d", m_scheduler_fault.fault.num);
+    snprintf(buffer, LINK_POSIX_TRACE_DATA_SIZE, "fault:%d", m_cortexm_fault.fault.num);
     sos_trace_event_addr_tid(
-      POSIX_TRACE_FATAL, buffer, strlen(buffer), (u32)m_scheduler_fault.fault.pc + 1,
-      m_scheduler_fault.tid);
+      POSIX_TRACE_FATAL, buffer, strlen(buffer), (u32)m_cortexm_fault.fault.pc + 1,
+      m_cortexm_fault.tid);
 
     usleep(2000);
     sos_debug_log_error(SOS_DEBUG_SYS, "%s", buffer);
 
     snprintf(
-      buffer, LINK_POSIX_TRACE_DATA_SIZE - 1, "addr:%p", m_scheduler_fault.fault.addr);
+      buffer, LINK_POSIX_TRACE_DATA_SIZE - 1, "addr:%p", m_cortexm_fault.fault.addr);
 
     sos_trace_event_addr_tid(
-      POSIX_TRACE_FATAL, buffer, strlen(buffer), (u32)m_scheduler_fault.fault.pc + 1,
-      m_scheduler_fault.tid);
+      POSIX_TRACE_FATAL, buffer, strlen(buffer), (u32)m_cortexm_fault.fault.pc + 1,
+      m_cortexm_fault.tid);
     usleep(2000);
     sos_debug_log_error(SOS_DEBUG_SYS, "%s", buffer);
 
     strncpy(buffer, "caller", LINK_POSIX_TRACE_DATA_SIZE);
     sos_trace_event_addr_tid(
-      POSIX_TRACE_MESSAGE, buffer, strlen(buffer), (u32)m_scheduler_fault.fault.caller,
-      m_scheduler_fault.tid);
+      POSIX_TRACE_MESSAGE, buffer, strlen(buffer), (u32)m_cortexm_fault.fault.caller,
+      m_cortexm_fault.tid);
     sos_debug_log_error(
-      SOS_DEBUG_SYS, "Caller 0x%lX %ld", (u32)m_scheduler_fault.fault.caller,
-      m_scheduler_fault.tid);
+      SOS_DEBUG_SYS, "Caller 0x%lX %ld", (u32)m_cortexm_fault.fault.caller,
+      m_cortexm_fault.tid);
     usleep(2000);
 
     snprintf(
       buffer, LINK_POSIX_TRACE_DATA_SIZE - 1, "stack:%ld",
-      m_scheduler_fault.free_stack_size);
+      m_cortexm_fault.free_stack_size);
 
     sos_trace_event_addr_tid(
-      POSIX_TRACE_MESSAGE, buffer, strlen(buffer), (u32)m_scheduler_fault.fault.pc + 1,
-      m_scheduler_fault.tid);
+      POSIX_TRACE_MESSAGE, buffer, strlen(buffer), (u32)m_cortexm_fault.fault.pc + 1,
+      m_cortexm_fault.tid);
     sos_debug_log_error(
-      SOS_DEBUG_SYS, "Stack free %ld %ld", m_scheduler_fault.free_stack_size,
-      m_scheduler_fault.tid);
+      SOS_DEBUG_SYS, "Stack free %ld %ld", m_cortexm_fault.free_stack_size,
+      m_cortexm_fault.tid);
     usleep(2000);
 
     snprintf(
-      buffer, LINK_POSIX_TRACE_DATA_SIZE - 1, "heap:%ld",
-      m_scheduler_fault.free_heap_size);
+      buffer, LINK_POSIX_TRACE_DATA_SIZE - 1, "heap:%ld", m_cortexm_fault.free_heap_size);
 
     sos_trace_event_addr_tid(
-      POSIX_TRACE_MESSAGE, buffer, strlen(buffer), (u32)m_scheduler_fault.fault.pc + 1,
-      m_scheduler_fault.tid);
+      POSIX_TRACE_MESSAGE, buffer, strlen(buffer), (u32)m_cortexm_fault.fault.pc + 1,
+      m_cortexm_fault.tid);
     sos_debug_log_error(
-      SOS_DEBUG_SYS, "Heap free %ld %ld", m_scheduler_fault.free_heap_size,
-      m_scheduler_fault.tid);
+      SOS_DEBUG_SYS, "Heap free %ld %ld", m_cortexm_fault.free_heap_size,
+      m_cortexm_fault.tid);
     usleep(2000);
 
     strcpy(buffer, "root pc");
     sos_trace_event_addr_tid(
       POSIX_TRACE_MESSAGE, buffer, strlen(buffer),
-      (u32)m_scheduler_fault.fault.handler_pc + 1, m_scheduler_fault.tid);
+      (u32)m_cortexm_fault.fault.handler_pc + 1, m_cortexm_fault.tid);
     sos_debug_log_error(
-      SOS_DEBUG_SYS, "ROOT PC 0x%lX %ld", (u32)m_scheduler_fault.fault.handler_pc + 1,
-      m_scheduler_fault.tid);
+      SOS_DEBUG_SYS, "ROOT PC 0x%lX %ld", (u32)m_cortexm_fault.fault.handler_pc + 1,
+      m_cortexm_fault.tid);
     usleep(2000);
 
     strcpy(buffer, "root caller");
     sos_trace_event_addr_tid(
       POSIX_TRACE_MESSAGE, buffer, strlen(buffer),
-      (u32)m_scheduler_fault.fault.handler_caller, m_scheduler_fault.tid);
+      (u32)m_cortexm_fault.fault.handler_caller, m_cortexm_fault.tid);
     sos_debug_log_error(
-      SOS_DEBUG_SYS, "ROOT Caller 0x%lX %ld", (u32)m_scheduler_fault.fault.handler_caller,
-      m_scheduler_fault.tid);
+      SOS_DEBUG_SYS, "ROOT Caller 0x%lX %ld", (u32)m_cortexm_fault.fault.handler_caller,
+      m_cortexm_fault.tid);
     usleep(2000);
 
     cortexm_svcall(svcall_fault_logged, NULL);
@@ -299,18 +299,6 @@ void start_first_thread() {
   if (!err) {
     sos_handle_event(SOS_EVENT_FATAL, "Failed to create thread");
   }
-}
-
-u32 scheduler_calculate_heap_end(u32 task_id) {
-  if (
-    (task_id < task_get_total()) && (task_thread_asserted(task_id) == 0)
-    && (sos_task_table[task_id].reent != NULL)) {
-
-    return (u32)
-           & (((struct _reent *)sos_task_table[task_id].reent)->procmem_base->base)
-               + ((struct _reent *)sos_task_table[task_id].reent)->procmem_base->size;
-  }
-  return 0;
 }
 
 void scheduler_check_cancellation() {

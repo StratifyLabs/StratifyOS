@@ -45,7 +45,6 @@ if( ${SOS_BUILD_CONFIG} STREQUAL arm )
 		pthread/pthread_self.c
 		sched/sched.c
 		scheduler/scheduler_debug.c
-		scheduler/scheduler_fault_handler.c
 		scheduler/scheduler_fault.c
 		scheduler/scheduler_fault.h
 		scheduler/scheduler_flags.h
@@ -132,6 +131,7 @@ if( ${SOS_BUILD_CONFIG} STREQUAL arm )
 		sos_led_root.c
 		sos_main.c
 		sos_debug.c
+		sos_interrupt_handlers.c
 		symbols.c
 		sys_dev.c
 		auth/auth_dev.c

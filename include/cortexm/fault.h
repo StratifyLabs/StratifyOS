@@ -78,6 +78,7 @@ typedef struct {
 
 int cortexm_fault_init() MCU_ROOT_CODE;
 
+// weak so that bootloader can provide thin alternates
 void cortexm_hardfault_handler() MCU_ROOT_EXEC_CODE;
 void cortexm_memfault_handler() MCU_ROOT_EXEC_CODE;
 void cortexm_busfault_handler() MCU_ROOT_EXEC_CODE;
@@ -86,7 +87,7 @@ void cortexm_usagefault_handler() MCU_ROOT_EXEC_CODE;
 /*! \details This function must be provided by the application or
  * OS to handle faults.
  */
-extern void scheduler_fault_event_handler(fault_t *fault) MCU_ROOT_EXEC_CODE;
+extern void cortexm_fault_event_handler(fault_t *fault) MCU_ROOT_EXEC_CODE;
 
 #ifdef __cplusplus
 }

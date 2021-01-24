@@ -10,14 +10,15 @@
 /*! \file */
 
 
-#include "sos/debug.h"
 
 #include <stdlib.h>
 #include <signal.h>
-#include "trace.h"
-#include "../scheduler/scheduler_local.h"
-#include "sig_local.h"
 
+#include "../scheduler/scheduler_local.h"
+#include "cortexm/util.h"
+#include "sig_local.h"
+#include "sos/debug.h"
+#include "trace.h"
 
 /*! \cond */
 static void abort_action(int signo, int flags);

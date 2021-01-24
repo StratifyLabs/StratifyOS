@@ -14,6 +14,8 @@
 #include "signal/sig_local.h"
 #include "symbols.h"
 
+#include "cortexm/task_local.h"
+
 static int read_task(sys_taskattr_t *task);
 static int sys_setattr(const devfs_handle_t *handle, void *ctl);
 
@@ -169,7 +171,7 @@ int read_task(sys_taskattr_t *task) {
         LINK_NAME_MAX);
 
 #if 1
-      task->malloc_loc = scheduler_calculate_heap_end(task->tid);
+      task->malloc_loc = task_calculate_heap_end(task->tid);
 #else
       if (!task->is_thread && (sos_task_table[task->tid].reent != NULL)) {
         task->malloc_loc =
