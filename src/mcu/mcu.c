@@ -100,6 +100,8 @@ bootloader_api_t *mcu_get_bootloader_api() {
   if (sos_config.sys.bootloader_start_address == 0xffffffff) {
     return 0;
   } else {
-    return (bootloader_api_t *)(sos_config.sys.bootloader_start_address + 36);
+    bootloader_api_t **papi =
+      (bootloader_api_t **)(sos_config.sys.bootloader_start_address + 36);
+    return *papi;
   }
 }
