@@ -71,9 +71,7 @@ void cortexm_fault_event_handler(fault_t *fault) {
   }
 
   if ((pid == 0) || (task_enabled_active_not_stopped(task_get_current()) == 0)) {
-
     m_cortexm_fault_handler.callback(m_cortexm_fault_handler.context, (void *)1);
-
   } else {
 
     // send a signal to kill the task
@@ -84,6 +82,9 @@ void cortexm_fault_event_handler(fault_t *fault) {
       }
     }
 
+    // this will make sure the hardware has stack space to shutdown
+    // on a stack overflow error
+    task_root_resetstack(task_get_current());
     m_cortexm_fault_handler.callback(m_cortexm_fault_handler.context, NULL);
 
     /* scheduler_root_update_on_sleep() sets the PEND SV interrupt.
@@ -102,9 +103,6 @@ void cortexm_fault_event_handler(fault_t *fault) {
      *
      *
      */
-    // this will make sure the hardware has stack space to shutdown
-    // on a stack overflow error
-    task_root_resetstack(task_get_current());
     cortexm_pendsv_handler();
   }
 }

@@ -107,11 +107,7 @@ void *link_update(void *arg) {
         sos_debug_log_warning(SOS_DEBUG_LINK, "slave read error %d", err);
         continue;
       }
-
-      if (err > 0) {
-        break;
-      } else {
-      }
+      break;
     }
 
     if (data.op.cmd < LINK_CMD_TOTAL) {

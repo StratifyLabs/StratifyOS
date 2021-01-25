@@ -150,8 +150,9 @@ void cortexm_initialize_heap() {
 
   // Initialize the global mutexes
   __lock_init_recursive_global(__malloc_lock_object);
-  _REENT->procmem_base->__malloc_lock_object.flags |=
-    PTHREAD_MUTEX_FLAGS_PSHARED; // Make the malloc lock pshared
+
+  // Make the malloc lock pshared
+  _REENT->procmem_base->__malloc_lock_object.flags |= PTHREAD_MUTEX_FLAGS_PSHARED;
 
   __lock_init_global(__tz_lock_object);
   __lock_init_recursive_global(__atexit_lock);
@@ -165,7 +166,7 @@ void cortexm_svcall(cortexm_svcall_t call, void *args) { asm volatile("SVC 0\n")
 int cortexm_validate_callback(mcu_callback_t callback) {
   // \todo callbacks need to be in ROOT_EXEC_ONLY
   if (
-    (((u32)callback >= (u32)&_text)
+    (((u32)callback >= (u32)&_text)     // cppcheck-suppress[clarifyCondition]
      && ((u32)callback < (u32)&_etext)) // cppcheck-suppress[clarifyCondition]
     || (((u32)callback >= (u32)&_tcim) && ((u32)callback < (u32)&_etcim)) // cppcheck-suppress[clarifyCondition]
   ) {
@@ -256,4 +257,20 @@ void cortexm_set_systick_reload(u32 value) {
 void cortexm_start_systick() {
   SysTick->CTRL = (1 << 0) | (1 << 2); // cppcheck-suppress[ConfigurationNotChecked]
                                        // Internal Clock CPU and enable the timer
+}
+
+bootloader_api_t *cortexm_get_bootloader_api() {
+  if (sos_config.sys.bootloader_start_address == 0xffffffff) {
+    return NULL;
+  }
+
+  bootloader_api_t **papi =
+    (bootloader_api_t **)(sos_config.sys.bootloader_start_address + 36);
+  return *papi;
+}
+
+u32 cortexm_get_hardware_id() {
+  return *(
+    ((u32 *)cortexm_get_vector_table_addr())
+    + BOOTLOADER_HARDWARE_ID_OFFSET / sizeof(u32));
 }

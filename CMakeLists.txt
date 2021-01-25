@@ -11,8 +11,6 @@ include(sos-sdk)
 set(SOS_NAME sos)
 project(StratifyOS CXX C ASM)
 
-
-set(SOS_INCLUDE_DIRECTORIES include)
 include( ${CMAKE_CURRENT_SOURCE_DIR}/${SOS_BUILD_CONFIG}.cmake )
 
 install(FILES

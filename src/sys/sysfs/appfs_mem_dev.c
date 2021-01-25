@@ -147,8 +147,12 @@ int appfs_mem_setaction(const devfs_handle_t *handle, void *ctl) {
 int appfs_mem_erasepage(const devfs_handle_t *handle, void *ctl) {
   DECLARE_APPFS_CONFIG();
   if (config->flash_driver != 0) {
+
+    // need to get the address of the page to erase it
+    mem_pageinfo_t page_info = {0};
+    get_page_info(config, (u32)ctl, MEM_FLAG_IS_FLASH, &page_info);
     return config->flash_driver->driver.ioctl(
-      &config->flash_driver->handle, I_FLASH_ERASEPAGE, ctl);
+      &config->flash_driver->handle, I_FLASH_ERASE_ADDR, (void *)page_info.addr);
   }
   return SYSFS_SET_RETURN(ENOTSUP);
 }
@@ -187,17 +191,16 @@ int appfs_mem_getpageinfo(const devfs_handle_t *handle, void *ctl) {
 
 int appfs_mem_writepage(const devfs_handle_t *handle, void *ctl) {
   DECLARE_APPFS_CONFIG();
-  mem_writepage_t *write_page_info = ctl;
+  const mem_writepage_t *write_page_info = ctl;
   u32 type;
-  int result;
 
-  result =
-    get_page(config, (u32)write_page_info->addr, (u32)write_page_info->nbyte, &type);
+  get_page(config, (u32)write_page_info->addr, (u32)write_page_info->nbyte, &type);
 
   if (type == 0) {
     return SYSFS_SET_RETURN(EINVAL);
   }
 
+  int result;
   if (type & MEM_FLAG_IS_RAM) {
     // check to see if the memcpy fits in RAM
     memcpy((void *)write_page_info->addr, write_page_info->buf, write_page_info->nbyte);

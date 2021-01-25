@@ -196,7 +196,7 @@ void boot_link_cmd_ioctl(link_transport_driver_t *driver, link_data_t *args) {
     // attr.startaddr = boot_board_config.program_start_addr;
     attr.startaddr = sos_config.boot.program_start_address;
     // attr.hardware_id = boot_board_config.id;
-    attr.hardware_id = sos_config.sys.hardware_id;
+    attr.hardware_id = cortexm_get_hardware_id();
 
     err = link_transport_slavewrite(driver, &attr, size, NULL, NULL);
     if (err == -1) {

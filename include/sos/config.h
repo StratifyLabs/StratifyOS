@@ -139,8 +139,6 @@ typedef struct {
   // mask for MPU is OS start is offset from boundary by a small amount
   u32 os_mpu_text_mask;
   u32 flags;
-  // board hardware ID assigned by Stratify Labs
-  u32 hardware_id;
   // target core clock frequency
   u32 core_clock_frequency;
   // beginning of the bootloader (set to 0xffffffff) if no bootloader

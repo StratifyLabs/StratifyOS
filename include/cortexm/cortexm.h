@@ -6,6 +6,7 @@
 #include <sdk/types.h>
 
 #include "sos/arch/cmsis/cmsis_compiler.h"
+#include "sos/boot/bootloader.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -72,7 +73,11 @@ void cortexm_reset_handler() __attribute__((section(".reset_vector")));
 void cortexm_nmi_handler() MCU_ROOT_EXEC_CODE;
 void cortexm_debug_monitor_handler() MCU_ROOT_EXEC_CODE;
 
-//This is used to ensure that privileged code executes from start to finish (argument validation cannot be bypassed)
+bootloader_api_t *cortexm_get_bootloader_api() MCU_ROOT_EXEC_CODE;
+u32 cortexm_get_hardware_id() MCU_ROOT_EXEC_CODE;
+
+// This is used to ensure that privileged code executes from start to finish (argument
+// validation cannot be bypassed)
 extern cortexm_svcall_t cortexm_svcall_validation MCU_SYS_MEM;
 #define CORTEXM_SVCALL_ENTER() (cortexm_svcall_validation = (cortexm_svcall_t)__FUNCTION__)
 

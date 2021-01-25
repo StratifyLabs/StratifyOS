@@ -41,9 +41,11 @@ int scheduler_root_fault_handler(void *context, const mcu_event_t *data) {
                              + sos_task_table[task_get_current()].mem.data.size;
 
     // check the PSP for the LR value
+#if 0
     sos_trace_stack_with_pointer(
       (const u32 *)m_cortexm_fault.fault.caller, (const u32 *)psp,
       (const u32 *)top_of_stack, 32);
+#endif
 
     sos_debug_printf(
       "stack %p + %ld\n", sos_task_table[task_get_current()].mem.data.address,
@@ -58,6 +60,7 @@ int scheduler_root_fault_handler(void *context, const mcu_event_t *data) {
       sos_debug_log_error(SOS_DEBUG_SYS, "Stack Overflow");
     }
 #endif
+    sos_handle_event(SOS_EVENT_ROOT_APPLICATION_FAULT, NULL);
   }
 
   scheduler_root_update_on_sleep();

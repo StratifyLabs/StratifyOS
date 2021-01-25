@@ -27,10 +27,8 @@ int drive_device_write(const devfs_handle_t *handle, devfs_async_t *async) {
 
 int drive_device_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
   const drive_device_config_t *config = handle->config;
-  drive_info_t *info = ctl;
   drive_attr_t *attr = ctl;
   u32 o_flags;
-  int result;
 
   switch (request) {
   case I_DRIVE_SETATTR:

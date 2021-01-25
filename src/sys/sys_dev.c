@@ -57,9 +57,7 @@ int sys_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
     if (sos_config.sys.get_serial_number) {
       sos_config.sys.get_serial_number(&(info->serial));
     }
-    info->hardware_id =
-      *(((u32 *)cortexm_get_vector_table_addr())
-        + BOOTLOADER_HARDWARE_ID_OFFSET / sizeof(u32));
+    info->hardware_id = cortexm_get_hardware_id();
     info->path_max = PATH_MAX;
     info->arg_max = ARG_MAX;
     return 0;

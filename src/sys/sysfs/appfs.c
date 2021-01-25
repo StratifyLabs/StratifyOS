@@ -159,7 +159,6 @@ int appfs_startup(const void *cfg) {
   for (i = 0; i < get_meminfo_args.mem_info.flash_pages; i++) {
 
     get_fileinfo_args.page = i;
-
     cortexm_svcall(appfs_util_svcall_get_fileinfo, &get_fileinfo_args);
 
     if (

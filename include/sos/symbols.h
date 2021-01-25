@@ -180,6 +180,7 @@ extern u32 _bss;
 extern u32 _ebss;
 extern u32 _sys;
 extern u32 _esys;
+extern u32 _sos_hardware_id;
 
 extern void __cxa_pure_virtual();
 extern void __cxa_atexit();

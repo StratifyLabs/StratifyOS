@@ -288,8 +288,6 @@ void *_malloc_r(struct _reent *reent_ptr, size_t size) {
 
   num_chunks = malloc_calc_num_chunks(size);
 
-  __malloc_lock(reent_ptr);
-
   if (reent_ptr->procmem_base->size == 0) {
     sos_debug_log_info(SOS_DEBUG_MALLOC, "Get more memory");
     if (get_more_memory(reent_ptr, size, 1) < 0) {

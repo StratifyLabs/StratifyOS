@@ -77,7 +77,6 @@ int mcu_set_pin_assignment(
   void (*post_configure_pin)(const mcu_pin_t *, void *),
   void *arg) MCU_ROOT_CODE;
 
-bootloader_api_t *mcu_get_bootloader_api();
 
 const void *mcu_select_pin_assignment(
   const void *attr_pin_assignment,
