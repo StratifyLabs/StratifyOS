@@ -265,7 +265,8 @@ bootloader_api_t *cortexm_get_bootloader_api() {
   }
 
   bootloader_api_t **papi =
-    (bootloader_api_t **)(sos_config.sys.bootloader_start_address + 36);
+    (bootloader_api_t *
+       *)(sos_config.sys.bootloader_start_address + BOOTLOADER_API_OFFSET);
   return *papi;
 }
 

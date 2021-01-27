@@ -60,7 +60,8 @@ const void *kernel_request_api(u32 request) {
 
 bootloader_api_t *sos_get_bootloader_api() {
   if (sos_config.sys.bootloader_start_address == 0xffffffff) {
-    return (bootloader_api_t *)(sos_config.sys.bootloader_start_address + 36);
+    return (bootloader_api_t
+              *)(sos_config.sys.bootloader_start_address + BOOTLOADER_API_OFFSET);
   }
   return NULL;
 }

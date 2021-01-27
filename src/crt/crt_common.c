@@ -22,7 +22,7 @@ static void destructors();
 
 static siginfo_t signal_info[32];
 
-int crt_common(char *path_arg, int *ret, const char *name) {
+void crt_common(char *path_arg, int *ret, const char *name) {
   task_setstackguard(
     pthread_self(), &_ebss + sizeof(proc_mem_t), SCHED_DEFAULT_STACKGUARD_SIZE);
   int argc;
@@ -64,8 +64,6 @@ int crt_common(char *path_arg, int *ret, const char *name) {
   constructors();
   *ret = main(argc, argv);
   destructors();
-
-  return 0;
 }
 
 void constructors() {

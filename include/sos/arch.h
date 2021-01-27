@@ -22,17 +22,17 @@
 #define SCHED_DEFAULT_STACKGUARD_SIZE 128
 
 #if defined MCU_ARCH_IMXRT
-#include <imxrt/imxrt_arch.h>
+#include <imxrt_arch.h>
 #define ARCH_DEFINED
 #endif
 
 #if defined MCU_ARCH_LPC
-#include <lpc/lpc_arch.h>
+#include <lpc_arch.h>
 #define ARCH_DEFINED
 #endif
 
 #if defined MCU_ARCH_STM32
-#include <stm32/stm32_arch.h>
+#include <stm32_arch.h>
 #define ARCH_DEFINED
 #endif
 

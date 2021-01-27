@@ -175,7 +175,6 @@ int u_fildes_is_bad(int fildes) {
     if (((int)get_handle(fildes) & ~(0x01)) != 0) {
       return fildes;
     } else {
-      errno = EBADF;
       return -1;
     }
   }
@@ -183,7 +182,7 @@ int u_fildes_is_bad(int fildes) {
   if (fildes & FILDES_STDIO_FLAG) {
     fildes = u_init_stdio(fildes);
   } else {
-    return -1;
+    return SYSFS_RETURN_LINE();
   }
 
   return fildes;

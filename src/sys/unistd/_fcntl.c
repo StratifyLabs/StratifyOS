@@ -50,13 +50,13 @@ int _fcntl(int fildes, int cmd, ...) {
       return sos_config.socket_api->fcntl(fildes & ~FILDES_SOCKET_FLAG, cmd, tmp);
     }
     errno = EBADF;
-    return -1;
+    return SYSFS_RETURN_LINE();
   }
 
   fildes = u_fildes_is_bad(fildes);
   if (fildes < 0) {
     errno = EBADF;
-    return -1;
+    return SYSFS_RETURN_LINE();
   }
 
   flags = get_flags(fildes);

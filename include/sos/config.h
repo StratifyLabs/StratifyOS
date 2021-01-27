@@ -244,6 +244,7 @@ typedef struct MCU_PACK {
 typedef struct MCU_PACK {
   sos_sys_config_t sys;
   sos_mcu_config_t mcu;
+  sos_boot_config_t boot;
   sos_fs_config_t fs;
   sos_clock_config_t clock;
   sos_task_config_t task;
@@ -251,7 +252,6 @@ typedef struct MCU_PACK {
   sos_cache_config_t cache;
   sos_sleep_config_t sleep;
   sos_usb_config_t usb;
-  sos_boot_config_t boot;
   const sos_socket_api_t *socket_api;
   void (*event_handler)(int, void *);
 } sos_config_t;

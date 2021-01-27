@@ -14,16 +14,13 @@ include(newlib)
 
 
 #check for LWIP
-include(CheckIncludeFiles)
-
 if(NOT STRATIFYOS_LWIP_PATH)
 	message(STATUS "LWIP path not provided -- check system for LWIP")
-	check_include_files("lwip/sockets.h" HAVE_LWIP_SOCKETS_H)
-	check_include_files("mbedtls/net_sockets.h" HAVE_MBEDTLS_NETSOCKETS_H)
-	if(NOT HAVE_LWIP_SOCKETS_H)
+	if(NOT EXISTS ${SOS_SDK_PATH}/arm-none-eabi/include/lwip/sockets.h)
 		message(STATUS "Bootstrapping sockets")
 		set(BOOTSTRAP_SOCKETS 1)
 	else()
+		message(STATUS "LWIP is installed")
 		set(BOOTSTRAP_SOCKETS 0)
 	endif()
 endif()

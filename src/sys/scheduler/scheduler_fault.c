@@ -40,6 +40,8 @@ int scheduler_root_fault_handler(void *context, const mcu_event_t *data) {
     const u32 top_of_stack = (u32)sos_task_table[task_get_current()].mem.data.address
                              + sos_task_table[task_get_current()].mem.data.size;
 
+    const u32 top_of_heap = (u32)(&_REENT->procmem_base) + _REENT->procmem_base->size;
+
     // check the PSP for the LR value
 #if 0
     sos_trace_stack_with_pointer(
@@ -51,12 +53,14 @@ int scheduler_root_fault_handler(void *context, const mcu_event_t *data) {
       "stack %p + %ld\n", sos_task_table[task_get_current()].mem.data.address,
       sos_task_table[task_get_current()].mem.data.size);
 
+    sos_debug_printf("psp %p\n", psp);
+
 #if defined SOS_DEBUG
     char buffer[128];
     scheduler_fault_build_string(buffer, 0);
     sos_debug_log_error(SOS_DEBUG_SYS, "Task Fault:%d:%s", task_get_current(), buffer);
     // check for a stack overflow error
-    if (psp <= top_of_stack) {
+    if (psp <= top_of_heap) {
       sos_debug_log_error(SOS_DEBUG_SYS, "Stack Overflow");
     }
 #endif

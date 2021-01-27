@@ -35,9 +35,7 @@ void crt(char *path_arg) {
   crt_load_data(
     &global_impure_data, startup_data.exec.code_size, startup_data.exec.data_size);
 
-  if (crt_common(path_arg, &ret, startup_data.hdr.name) != 0) {
-    ret = -1;
-  }
+  crt_common(path_arg, &ret, startup_data.hdr.name);
 
   exit(ret);
 }

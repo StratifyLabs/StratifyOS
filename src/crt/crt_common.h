@@ -24,7 +24,7 @@ extern uint32_t _ebss;
 
 extern uint32_t _app_ram_size;
 
-int crt_common(char *path_arg, int *ret, const char *name)
+void crt_common(char *path_arg, int *ret, const char *name)
   __attribute__((__short_call__));
 void crt_exit(int exit_code);
 

@@ -23,6 +23,7 @@ extern "C" {
 #endif
 
 // Encodes the error number and the line number ex: return SYSFS_SET_RETURN(EINVAL);
+#define SYSFS_RETURN_LINE() (-1 * __LINE__)
 #define SYSFS_SET_RETURN(error_number) (-1 * (error_number | (__LINE__ << 8)))
 #define SYSFS_SET_RETURN_WITH_VALUE(error_number, value)                                 \
   (-1 * (error_number | (value << 8)))

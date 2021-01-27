@@ -35,7 +35,7 @@ extern "C" {
  * ID value resides.
  */
 #define BOOTLOADER_HARDWARE_ID_OFFSET (28)
-#define BOOTLOADER_API_ADDR (36)
+#define BOOTLOADER_API_OFFSET (36)
 
 /*! \brief Bootloader attributes.
  * \details This structure contains the attributes for the bootloader.
@@ -79,6 +79,8 @@ typedef struct MCU_PACK {
   void (*exec)(void *args);
   /*! Invoke the board events (encryption, decryption, custom code) */
   void (*event)(int, void *);
+  /*! Usage specific pointer */
+  void *data;
 } bootloader_api_t;
 
 // only available to bootloader

@@ -286,6 +286,7 @@ void *_malloc_r(struct _reent *reent_ptr, size_t size) {
     return NULL;
   }
 
+  __malloc_lock(reent_ptr);
   num_chunks = malloc_calc_num_chunks(size);
 
   if (reent_ptr->procmem_base->size == 0) {
