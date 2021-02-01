@@ -637,7 +637,27 @@ int link_stat(link_transport_mdriver_t *driver, const char *path, struct stat *b
 int link_fstat(link_transport_mdriver_t *driver, int fildes, struct stat *buf) {
   if (driver == NULL) {
     link_debug(LINK_DEBUG_INFO, "posix call with (%d, %p)", fildes, buf);
-    return posix_fstat(fildes, buf);
+#if defined(__win32)
+		struct _stat result;
+		if( posix_fstat(fildes, &result) < 0 ){
+			return -1;
+		}
+		buf->st_dev = result.st_dev;
+		buf->st_ino = result.st_ino;
+		buf->st_mode = result.st_mode;
+		buf->st_nlink = result.st_nlink;
+		buf->st_uid = result.st_uid;
+		buf->st_gid = result.st_gid;
+		buf->st_rdev = result.st_rdev;
+		buf->st_size = result.st_size;
+		buf->st_atime = result.st_atime;
+		buf->st_mtime = result.st_mtime;
+		buf->st_ctime = result.st_ctime;
+		return 0;
+
+#else
+		return posix_fstat(fildes, buf);
+#endif
   }
 
   link_op_t op;
