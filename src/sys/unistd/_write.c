@@ -1,17 +1,15 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
-
 /*! \addtogroup unistd
  * @{
  */
 
 /*! \file */
 
+#include "sos/config.h"
+#include "sys/socket.h"
+#include "unistd_fs.h"
 #include "unistd_local.h"
-#include  "unistd_fs.h"
-#include "sos/debug.h"
-#include "sos/sos.h"
-
 
 /*! \details This function writes \a nbyte bytes \a fildes  from the memory
  * location pointed to by \a buf.
@@ -34,34 +32,31 @@ int write(int fildes, const void *buf, size_t nbyte);
 
 /*! \cond */
 int _write(int fildes, const void *buf, size_t nbyte) {
-	sysfs_file_t * file;
+  sysfs_file_t *file;
 
-	if( FILDES_IS_SOCKET(fildes) ){
-		  if( sos_config.socket_api != 0 ){
-            return sos_config.socket_api->write(fildes & ~FILDES_SOCKET_FLAG, buf, nbyte);
-        }
-        errno = EBADF;
-        return -1;
+  if (FILDES_IS_SOCKET(fildes)) {
+    if (sos_config.socket_api != 0) {
+      return SOS_SOCKET_API()->write(fildes & ~FILDES_SOCKET_FLAG, buf, nbyte);
     }
+    errno = EBADF;
+    return -1;
+  }
 
-	fildes = u_fildes_is_bad(fildes);
-	if ( fildes < 0 ){
-		//check to see if fildes is a socket
-		errno = EBADF;
-		return -1;
-	}
+  fildes = u_fildes_is_bad(fildes);
+  if (fildes < 0) {
+    // check to see if fildes is a socket
+    errno = EBADF;
+    return -1;
+  }
 
-	if ( (get_flags(fildes) & O_ACCMODE) == O_RDONLY ){
-		errno = EACCES;
-		return -1;
-	}
+  if ((get_flags(fildes) & O_ACCMODE) == O_RDONLY) {
+    errno = EACCES;
+    return -1;
+  }
 
-	file = get_open_file(fildes);
-	return sysfs_file_write(file, buf, nbyte);
+  file = get_open_file(fildes);
+  return sysfs_file_write(file, buf, nbyte);
 }
 /*! \endcond */
 
-
-
 /*! @} */
-

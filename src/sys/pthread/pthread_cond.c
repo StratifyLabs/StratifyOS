@@ -15,6 +15,7 @@
 #include <pthread.h>
 
 #include "../scheduler/scheduler_local.h"
+#include "pthread_mutex_local.h"
 
 /*! \cond */
 #define PSHARED_FLAG 31
@@ -26,9 +27,7 @@ static void svcall_cond_signal(void *args) MCU_ROOT_EXEC_CODE;
 typedef struct {
   pthread_cond_t *cond;
   pthread_mutex_t *mutex;
-  int new_thread;
   struct mcu_timeval interval;
-  int result;
 } svcall_cond_wait_t;
 static void svcall_cond_wait(void *args) MCU_ROOT_EXEC_CODE;
 static void svcall_cond_broadcast(void *args) MCU_ROOT_EXEC_CODE;
@@ -145,44 +144,7 @@ int pthread_cond_signal(pthread_cond_t *cond) {
  * - EPERM:  the caller does not have a lock on \a mutex
  */
 int pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex) {
-  scheduler_check_cancellation();
-  int pid;
-  svcall_cond_wait_t args;
-
-  if (cond == NULL) {
-    errno = EINVAL;
-    return -1;
-  }
-
-  if ((*cond & (1 << INIT_FLAG)) == 0) {
-    errno = EINVAL;
-    return -1;
-  }
-
-  pid = *cond & PID_MASK;
-
-  if ((*cond & (1 << PSHARED_FLAG)) == 0) { // cppcheck-suppress[shiftTooManyBitsSigned]
-    if (pid != getpid()) { // This is a different process with a not pshared cond
-      errno = EACCES;
-      return -1;
-    }
-  }
-
-  args.cond = cond;
-  args.mutex = mutex;
-  args.interval.tv_sec = SCHEDULER_TIMEVAL_SEC_INVALID;
-  args.interval.tv_usec = 0;
-
-  // release the mutex and block on the cond
-  args.new_thread = scheduler_get_highest_priority_blocked(mutex);
-  cortexm_svcall(svcall_cond_wait, &args);
-
-  if (args.result == -1) {
-    errno = EPERM;
-    return -1;
-  }
-
-  return 0;
+  return pthread_cond_timedwait(cond, mutex, NULL);
 }
 
 /*! \details This function causes the calling thread to block
@@ -237,18 +199,23 @@ int pthread_cond_timedwait(
     }
   }
 
-  args.cond = cond;
-  args.mutex = mutex;
-  scheduler_timing_convert_timespec(&args.interval, abstime);
-
-  // release the mutex and block on the cond
-  args.new_thread = scheduler_get_highest_priority_blocked(mutex);
-  cortexm_svcall(svcall_cond_wait, &args);
-
-  if (args.result == -1) {
-    errno = EPERM;
+  // does caller have a lock on the mutex?
+  if (mutex->pthread != task_get_current()) {
+    errno = EACCES;
     return -1;
   }
+
+  args.cond = cond;
+  args.mutex = mutex;
+  if (abstime) {
+    scheduler_timing_convert_timespec(&args.interval, abstime);
+  } else {
+    args.interval.tv_sec = SCHEDULER_TIMEVAL_SEC_INVALID;
+    args.interval.tv_usec = 0;
+  }
+
+  // release the mutex and block on the cond
+  cortexm_svcall(svcall_cond_wait, &args);
 
   if (scheduler_unblock_type(task_get_current()) == SCHEDULER_UNBLOCK_SLEEP) {
     errno = ETIMEDOUT;
@@ -261,32 +228,14 @@ int pthread_cond_timedwait(
 /*! \cond */
 void svcall_cond_wait(void *args) {
   CORTEXM_SVCALL_ENTER();
+
   svcall_cond_wait_t *argsp = (svcall_cond_wait_t *)args;
-  int new_thread = argsp->new_thread;
+  pthread_mutex_root_unlock_t unlock_args;
+  unlock_args.id = task_get_current();
+  unlock_args.mutex = argsp->mutex;
+  pthread_mutex_root_unlock(&unlock_args);
 
-  if (argsp->mutex->pthread == task_get_current()) {
-    // First unlock the mutex
-    // Restore the priority to the task that is unlocking the mutex
-    task_set_priority(
-      task_get_current(),
-      sos_sched_table[task_get_current()].attr.schedparam.sched_priority);
-
-    if (new_thread != -1) {
-      argsp->mutex->pthread = new_thread;
-      argsp->mutex->pid = task_get_pid(new_thread);
-      argsp->mutex->lock = 1;
-      task_set_priority(new_thread, argsp->mutex->prio_ceiling);
-      scheduler_root_assert_active(new_thread, SCHEDULER_UNBLOCK_MUTEX);
-    } else {
-      argsp->mutex->lock = 0;
-      argsp->mutex->pthread = -1; // The mutex is up for grabs
-    }
-
-    scheduler_timing_root_timedblock(argsp->cond, &argsp->interval);
-    argsp->result = 0;
-  } else {
-    argsp->result = -1;
-  }
+  scheduler_timing_root_timedblock(argsp->cond, &argsp->interval);
 }
 /*! \endcond */
 

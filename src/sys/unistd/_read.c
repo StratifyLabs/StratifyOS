@@ -9,6 +9,7 @@
 
 #include "../scheduler/scheduler_local.h"
 #include "sos/sos.h"
+#include "sys/socket.h"
 #include "unistd_fs.h"
 #include "unistd_local.h"
 
@@ -39,7 +40,7 @@ int _read(int fildes, void *buf, size_t nbyte) {
 
   if (FILDES_IS_SOCKET(fildes)) {
     if (sos_config.socket_api != 0) {
-      return sos_config.socket_api->read(fildes & ~FILDES_SOCKET_FLAG, buf, nbyte);
+      return SOS_SOCKET_API()->read(fildes & ~FILDES_SOCKET_FLAG, buf, nbyte);
     }
     errno = EBADF;
     return -1;

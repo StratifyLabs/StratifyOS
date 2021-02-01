@@ -12,6 +12,7 @@
 #include "sos/debug.h"
 #include "sos/fs/sysfs.h"
 #include "sos/sos.h"
+#include "sys/socket.h"
 #include "unistd_fs.h"
 #include "unistd_local.h"
 
@@ -31,7 +32,7 @@ int _close(int fildes) {
 
   if (FILDES_IS_SOCKET(fildes)) {
     if (sos_config.socket_api != 0) {
-      return sos_config.socket_api->close(fildes & ~FILDES_SOCKET_FLAG);
+      return SOS_SOCKET_API()->close(fildes & ~FILDES_SOCKET_FLAG);
     }
     errno = EBADF;
     return -1;

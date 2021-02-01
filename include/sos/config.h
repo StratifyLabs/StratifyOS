@@ -11,7 +11,6 @@
 #include "dev/bootloader.h"
 #include "dev/pio.h"
 #include "fs/devfs.h"
-#include "sys/socket.h"
 #include "trace.h"
 
 #define SOS_SCHEDULER_TIMEVAL_SECONDS 2048
@@ -252,7 +251,7 @@ typedef struct MCU_PACK {
   sos_cache_config_t cache;
   sos_sleep_config_t sleep;
   sos_usb_config_t usb;
-  const sos_socket_api_t *socket_api;
+  const void *socket_api;
   void (*event_handler)(int, void *);
 } sos_config_t;
 

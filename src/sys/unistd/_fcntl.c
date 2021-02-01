@@ -12,6 +12,7 @@
 
 #include "../scheduler/scheduler_local.h"
 #include "sos/sos.h"
+#include "sys/socket.h"
 #include "unistd_fs.h"
 #include "unistd_local.h"
 
@@ -47,7 +48,7 @@ int _fcntl(int fildes, int cmd, ...) {
 
   if (FILDES_IS_SOCKET(fildes)) {
     if (sos_config.socket_api != 0) {
-      return sos_config.socket_api->fcntl(fildes & ~FILDES_SOCKET_FLAG, cmd, tmp);
+      return SOS_SOCKET_API()->fcntl(fildes & ~FILDES_SOCKET_FLAG, cmd, tmp);
     }
     errno = EBADF;
     return SYSFS_RETURN_LINE();

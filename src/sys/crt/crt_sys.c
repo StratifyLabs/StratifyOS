@@ -55,14 +55,6 @@ void crt_load_data(void *global_reent, int code_size, int data_size) {
 }
 
 char **const crt_import_argv(char *path_arg, int *argc) {
-  char **argv;
-  char *arg_buffer;
-  char *p;
-  char *next;
-
-  int count;
-  int len;
-
   *argc = 0;
 
   if (path_arg == 0) {
@@ -70,18 +62,22 @@ char **const crt_import_argv(char *path_arg, int *argc) {
   }
 
   // this needs to be strnlen -- security
-  len = strnlen(path_arg, PATH_MAX + ARG_MAX) + 1;
+  const int len = strnlen(path_arg, PATH_MAX + ARG_MAX) + 1;
 
-  count = 0;
-  next = strtok_r(path_arg, sysfs_whitespace, &p);
-  while (next) {
-    next = strtok_r(0, sysfs_whitespace, &p);
-    count++;
+  int count = 0;
+  {
+    char *next = NULL;
+    char *p = NULL;
+    next = strtok_r(path_arg, sysfs_whitespace, &p);
+    while (next) {
+      next = strtok_r(0, sysfs_whitespace, &p);
+      count++;
+    }
   }
 
   u32 argv_size = sizeof(char *) * (count + 1);
-  argv = malloc(argv_size + len);
-  if (argv == 0) {
+  char **argv = malloc(argv_size + len);
+  if (argv == NULL) {
     // since we couldn't allocate memory in the application, free the memory allocated on
     // global
     if (path_arg) {
@@ -90,10 +86,10 @@ char **const crt_import_argv(char *path_arg, int *argc) {
     return 0;
   }
 
-  arg_buffer = ((char *)argv) + argv_size;
+  char *arg_buffer = ((char *)argv) + argv_size;
   memcpy(arg_buffer, path_arg, len);
-  arg_buffer[len - 1] =
-    0; // len includes the zero terminator -- need to zero terminate just in case
+  // len includes the zero terminator -- need to zero terminate just in case
+  arg_buffer[len - 1] = 0;
 
   // free the path_arg passed from shared system memory
   _free_r(sos_task_table[0].global_reent, path_arg);

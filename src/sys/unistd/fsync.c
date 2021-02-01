@@ -11,6 +11,7 @@
 #include <stdarg.h>
 
 #include "../scheduler/scheduler_local.h"
+#include "sys/socket.h"
 #include "unistd_local.h"
 
 /*! \details This function performs a control request on the device
@@ -38,7 +39,7 @@ int fsync(int fildes) {
 
   if (FILDES_IS_SOCKET(fildes)) {
     if (sos_config.socket_api != 0) {
-      return sos_config.socket_api->fsync(fildes);
+      return SOS_SOCKET_API()->fsync(fildes);
     }
     errno = EBADF;
     return -1;

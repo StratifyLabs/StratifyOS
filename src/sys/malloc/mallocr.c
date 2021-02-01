@@ -12,6 +12,8 @@
 #include "sos/debug.h"
 #include "trace.h"
 
+#define ENABLE_DEEP_TRACE 0
+
 static void set_last_chunk(malloc_chunk_t *chunk);
 static void cleanup_memory(struct _reent *reent_ptr, int release_extra_memory);
 static int get_more_memory(struct _reent *reent_ptr, u32 size, int is_new_heap);
@@ -35,7 +37,16 @@ malloc_chunk_t *find_free_chunk(struct _reent *reent_ptr, u32 num_chunks) {
   int loop_count = 0;
   malloc_chunk_t *chunk = (malloc_chunk_t *)&(reent_ptr->procmem_base->base);
 
+#if ENABLE_DEEP_TRACE
+  sos_debug_log_info(SOS_DEBUG_MALLOC, "-----------find free");
+#endif
+
   while (chunk->header.num_chunks != 0) {
+#if ENABLE_DEEP_TRACE
+    sos_debug_log_info(
+      SOS_DEBUG_MALLOC, "checking chunk %p %d %ld", chunk, chunk->header.num_chunks,
+      chunk->header.actual_size);
+#endif
     int is_free = malloc_chunk_is_free(chunk);
 
     if (is_free == -1) {
@@ -226,7 +237,11 @@ int get_more_memory(struct _reent *reent_ptr, u32 size, int is_new_heap) {
   int jump_size =
     ((size + MALLOC_SBRK_JUMP_SIZE - 1) / MALLOC_SBRK_JUMP_SIZE) * MALLOC_SBRK_JUMP_SIZE;
   new_heap = _sbrk_r(reent_ptr, jump_size + extra_bytes);
+
   if (new_heap == NULL) {
+    sos_debug_log_error(
+      SOS_DEBUG_MALLOC, "sbrk has no more memory (tried to jump %ld)",
+      jump_size + extra_bytes);
     // this means _sbrk_r was unable to allocate the requested memory due to a potential
     // collision with the stack
     return -1;
@@ -246,8 +261,12 @@ int get_more_memory(struct _reent *reent_ptr, u32 size, int is_new_heap) {
       chunk = new_heap - MALLOC_SBRK_JUMP_SIZE;
     }
     malloc_set_chunk_free(chunk, jump_size / MALLOC_CHUNK_SIZE);
-    set_last_chunk(chunk + chunk->header.num_chunks); // mark the last block (heap should
-                                                      // have extra room for this)
+    // mark the last block (heap should have extra room for this)
+    set_last_chunk(chunk + chunk->header.num_chunks);
+#if ENABLE_DEEP_TRACE
+    sos_debug_log_info(
+      SOS_DEBUG_MALLOC, "set last chunk at %p", chunk + chunk->header.num_chunks);
+#endif
   }
   return 0;
 }
@@ -267,7 +286,7 @@ int malloc_is_memory_corrupt(struct _reent *reent_ptr) {
     chunk = chunk + chunk->header.num_chunks;
   }
 
-  // No block found to fit size
+  // not corrupt
   return 0;
 }
 
@@ -282,7 +301,7 @@ void *_malloc_r(struct _reent *reent_ptr, size_t size) {
   if (reent_ptr == NULL) {
     errno = EINVAL;
     sos_debug_log_info(SOS_DEBUG_MALLOC, "EINVAL %s():%d<-", __FUNCTION__, __LINE__);
-    sos_handle_event(SOS_EVENT_MALLOC_FAILED, NULL);
+    sos_handle_event(SOS_EVENT_MALLOC_FAILED, "reent_ptr");
     return NULL;
   }
 
@@ -295,7 +314,7 @@ void *_malloc_r(struct _reent *reent_ptr, size_t size) {
       __malloc_unlock(reent_ptr);
       errno = ENOMEM;
       sos_debug_log_info(SOS_DEBUG_MALLOC, "ENOMEM %s():%d<-", __FUNCTION__, __LINE__);
-      sos_handle_event(SOS_EVENT_MALLOC_FAILED, NULL);
+      sos_handle_event(SOS_EVENT_MALLOC_FAILED, "ENOMEM1");
       return NULL;
     }
   }
@@ -314,7 +333,7 @@ void *_malloc_r(struct _reent *reent_ptr, size_t size) {
         malloc_process_fault(reent_ptr); // this will exit the process
         errno = ENOMEM;
         sos_debug_log_info(SOS_DEBUG_MALLOC, "ENOMEM %s():%d<-", __FUNCTION__, __LINE__);
-        sos_handle_event(SOS_EVENT_MALLOC_FAILED, NULL);
+        sos_handle_event(SOS_EVENT_MALLOC_FAILED, "ENOMEM2");
         return NULL;
       }
 
@@ -324,7 +343,7 @@ void *_malloc_r(struct _reent *reent_ptr, size_t size) {
         __malloc_unlock(reent_ptr);
         errno = ENOMEM;
         sos_debug_log_info(SOS_DEBUG_MALLOC, "ENOMEM %s():%d<-", __FUNCTION__, __LINE__);
-        sos_handle_event(SOS_EVENT_MALLOC_FAILED, NULL);
+        sos_handle_event(SOS_EVENT_MALLOC_FAILED, "ENOMEM3");
         return NULL;
       }
 

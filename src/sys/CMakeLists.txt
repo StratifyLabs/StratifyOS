@@ -32,6 +32,7 @@ if( ${SOS_BUILD_CONFIG} STREQUAL arm )
 		pthread/pthread_create.c
 		pthread/pthread_mutex_init.c
 		pthread/pthread_mutex.c
+		pthread/pthread_mutex_local.h
 		pthread/pthread_mutexattr_init.c
 		pthread/pthread_mutexattr.c
 		pthread/pthread_rwlock.c

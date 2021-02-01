@@ -74,7 +74,7 @@ void init_fs() {
       sos_debug_log_error(
         SOS_DEBUG_SYS, "failed to init %d, %d", SYSFS_GET_RETURN(result),
         SYSFS_GET_RETURN_ERRNO(result));
-      sos_handle_event(SOS_EVENT_FATAL, (void *)"init_fs");
+      sos_handle_event(SOS_EVENT_ERROR, (void *)sysfs_list[i].mount_path);
     }
     i++;
   }

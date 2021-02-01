@@ -31,7 +31,7 @@ SECTIONS {
          *(.text.*)
          KEEP(*(_binary___*))
          FILL(0xFF);
-         
+				 . = ALIGN(8);
 	 } > flash
 
    

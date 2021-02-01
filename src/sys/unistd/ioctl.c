@@ -11,8 +11,9 @@
 
 #include "config.h"
 #include "device/sys.h"
+#include "sos/config.h"
 #include "sos/ioctl.h"
-#include "sos/sos.h"
+#include "sys/socket.h"
 #include "unistd_local.h"
 
 /*! \details This function performs a control request on the device
@@ -38,7 +39,7 @@ int ioctl(int fildes, int request, ...) {
 
   if (FILDES_IS_SOCKET(fildes)) {
     if (sos_config.socket_api != 0) {
-      return sos_config.socket_api->ioctl(fildes & ~FILDES_SOCKET_FLAG, request, ctl);
+      return SOS_SOCKET_API()->ioctl(fildes & ~FILDES_SOCKET_FLAG, request, ctl);
     }
     errno = EBADF;
     return -1;
