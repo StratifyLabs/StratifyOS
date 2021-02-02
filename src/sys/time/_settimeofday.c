@@ -71,7 +71,7 @@ int settimeofday_rtc(const struct timeval *tp) {
     return -1;
   }
 
-  gmtime_r(&tp->tv_sec, (struct tm *)&cal_time.time);
+  gmtime_r((time_t *)&tp, (struct tm *)&cal_time.time);
   cal_time.useconds = tp->tv_usec;
 
   if (ioctl(fd, I_RTC_SET, &cal_time) < 0) {
