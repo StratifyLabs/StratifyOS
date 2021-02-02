@@ -104,7 +104,7 @@ set(BOOT_DEPENDENCIES
 	newlib_libm
 	compiler_rt)
 
-set(COMPILE_OPTIONS -Wno-address -Wno-address-of-packed-member -Wno-register)
+set(COMPILE_OPTIONS -Wno-address -Wno-address-of-packed-member $<$<COMPILE_LANGUAGE:CXX>:-Wno-register>)
 
 list(APPEND SYS_SOURCELIST ${COMMON_SOURCES})
 

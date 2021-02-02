@@ -11,6 +11,7 @@
 
 #include "../symbols.h"
 
+#define APPFS_NAME_MAX_MINUS_1 (APPFS_NAME_MAX - 1)
 
 #define APPFS_REWRITE_MASK 0xFE000000
 #define APPFS_REWRITE_RAM_MASK (0x01000000)
@@ -53,7 +54,7 @@ u8 calc_checksum(const char *name) {
   int i;
   u8 checksum;
   checksum = 0;
-  for (i = 0; i < APPFS_NAME_MAX - 1; i++) {
+  for (i = 0; i < APPFS_NAME_MAX; i++) {
     checksum ^= name[i];
   }
   return checksum;
@@ -418,15 +419,15 @@ int appfs_util_root_create(
     }
 
     // make sure the name is valid
-    int len = strnlen(dest->hdr.name, APPFS_NAME_MAX - 2);
-    if (len == (APPFS_NAME_MAX - 2)) {
+    int len = strnlen(dest->hdr.name, APPFS_NAME_MAX_MINUS_1);
+    if (len == (APPFS_NAME_MAX_MINUS_1)) {
       // truncate the name if it is too long
-      dest->hdr.name[APPFS_NAME_MAX - 1] = 0;
-      dest->hdr.name[APPFS_NAME_MAX - 2] = 0;
+      dest->hdr.name[APPFS_NAME_MAX] = 0;
+      dest->hdr.name[APPFS_NAME_MAX_MINUS_1] = 0;
     }
 
     // add a checksum to the name
-    dest->hdr.name[NAME_MAX - 1] = calc_checksum(dest->hdr.name);
+    dest->hdr.name[APPFS_NAME_MAX] = calc_checksum(dest->hdr.name);
 
     // set the mode to read only
     dest->hdr.mode = 0444;
@@ -508,21 +509,21 @@ int appfs_util_root_writeinstall(
     // make sure the name is valid
     memset(&dest.file, 0, sizeof(appfs_file_t));
     memcpy(&dest.file, src.file, attr->nbyte);
-    int len = strnlen(dest.file.hdr.name, NAME_MAX - 2);
-    if (len == (APPFS_NAME_MAX - 2)) {
+    int len = strnlen(dest.file.hdr.name, APPFS_NAME_MAX_MINUS_1);
+    if (len == (APPFS_NAME_MAX_MINUS_1)) {
       // truncate the name if it is too long
-      dest.file.hdr.name[APPFS_NAME_MAX - 2] = 0;
+      dest.file.hdr.name[APPFS_NAME_MAX_MINUS_1] = 0;
     }
 
-    len = strnlen(dest.file.hdr.id, APPFS_NAME_MAX - 2);
-    if (len == (APPFS_NAME_MAX - 2)) {
+    len = strnlen(dest.file.hdr.id, APPFS_NAME_MAX_MINUS_1);
+    if (len == (APPFS_NAME_MAX_MINUS_1)) {
       // truncate the name if it is too long
-      dest.file.hdr.id[APPFS_NAME_MAX - 2] = 0;
+      dest.file.hdr.id[APPFS_NAME_MAX_MINUS_1] = 0;
     }
 
     // add a checksum to the name
-    dest.file.hdr.name[APPFS_NAME_MAX - 1] = calc_checksum(dest.file.hdr.name);
-    dest.file.hdr.id[APPFS_NAME_MAX - 1] = calc_checksum(dest.file.hdr.id);
+    dest.file.hdr.name[APPFS_NAME_MAX] = calc_checksum(dest.file.hdr.name);
+    dest.file.hdr.id[APPFS_NAME_MAX] = calc_checksum(dest.file.hdr.id);
 
     // set mode to read/exec
     dest.file.hdr.mode = 0555;
@@ -712,12 +713,12 @@ int get_flash_page_type(const devfs_device_t *dev, u32 address, u32 size) {
   }
 
   read_appfs_file_header(dev, address, &appfs_file);
-  len = strnlen(appfs_file.hdr.name, APPFS_NAME_MAX - 2);
+  len = strnlen(appfs_file.hdr.name, APPFS_NAME_MAX_MINUS_1);
   if (
-    (len == APPFS_NAME_MAX - 2) || // check if the name is short enough
+    (len == APPFS_NAME_MAX_MINUS_1) || // check if the name is short enough
     (len != strspn(appfs_file.hdr.name, sysfs_validset))
     || // check if only valid characters are present
-    (appfs_file.hdr.name[APPFS_NAME_MAX - 1] != calc_checksum(appfs_file.hdr.name))
+    (appfs_file.hdr.name[APPFS_NAME_MAX] != calc_checksum(appfs_file.hdr.name))
     || // check for a valid checksum
     (len == 0)) {
 
@@ -844,7 +845,7 @@ int appfs_util_lookupname(
   get_pageinfo_args.device = device;
   get_pageinfo_args.page_info.o_flags = type;
 
-  if (strnlen(path, APPFS_NAME_MAX - 2) == APPFS_NAME_MAX - 2) {
+  if (strnlen(path, APPFS_NAME_MAX_MINUS_1) == APPFS_NAME_MAX_MINUS_1) {
     return -1;
   }
 
