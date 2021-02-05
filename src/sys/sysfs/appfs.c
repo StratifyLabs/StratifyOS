@@ -498,7 +498,7 @@ void svcall_read(void *args) {
   }
 
   if (async.loc >= h->type.reg.size) {
-    p->result = SYSFS_SET_RETURN(EINVAL);
+    p->result = 0;
     return; // return EOF
   }
 
