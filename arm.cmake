@@ -12,7 +12,6 @@ option(BUILD_LINK_TRANSPORT "Build Link transport library" OFF)
 include(compiler_rt)
 include(newlib)
 
-
 #check for LWIP
 if(NOT STRATIFYOS_LWIP_PATH)
 	message(STATUS "LWIP path not provided -- check system for LWIP")
