@@ -8,7 +8,7 @@ Welcome to Stratify OS 4. Version 3 is available as [master](https://github.com/
 
 Stratify OS is a fully featured microcontroller operating system designed specifically for the ARM Cortex M architecture. It features:
 
-- [Decoupled System and Application Binaries](guides/Stratify-OS.md)
+- [Decoupled System and Application Binaries](guides/Overview.md)
 - [Deep integration with Cortex M hardware](guides/ARM-Cortex-M.md) such as the MPU, SysTick/PendSV, SVCall, Dual Stacks, NVIC, BPU, and Cache
 - [POSIX Style Filesystems](guides/Filesystems.md)
 - [Complete Hardware Abstraction](guides/Device-Drivers.md)
