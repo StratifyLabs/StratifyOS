@@ -11,8 +11,13 @@ extern "C" {
 #endif
 
 typedef struct MCU_PACK {
+  u32 port;
+  crc_attr_t attr; // default attributes
+} crc_config_t;
+
+typedef struct MCU_PACK {
   u32 value;
-} rng_event_data_t;
+} crc_event_data_t;
 
 u32 mcu_calc_crc32(u32 seed, u32 polynomial, const u8 *buffer, u32 nbyte);
 u16 mcu_calc_crc16(u16 seed, u16 polynomial, const u8 *buffer, u32 nbyte);

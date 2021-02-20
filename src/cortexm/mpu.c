@@ -197,19 +197,18 @@ int mpu_enable_region(
   mpu_access_t access,
   mpu_memory_t type,
   int executable) {
-  int err;
-  u32 rasr;
-  u32 rbar;
-  u8 valid_regions;
+
 
   // check if the region is valid
-  valid_regions = ((MPU->TYPE >> 8) & 0xFF);
+  const u8 valid_regions = ((MPU->TYPE >> 8) & 0xFF);
   if (region >= valid_regions) {
     return -1;
   }
 
-  err = mpu_calc_region(region, addr, size, access, type, executable, &rbar, &rasr);
-  if (err == 0) {
+  u32 rasr = 0;
+  u32 rbar = 0;
+  u32 s = mpu_calc_region(region, addr, size, access, type, executable, &rbar, &rasr);
+  if (s == 0) {
     return -1;
   }
 

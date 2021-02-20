@@ -44,6 +44,14 @@ enum {
   SOS_EVENT_ASSERT
 };
 
+#if defined __cplusplus
+extern "C" {
+#endif
+
 void sos_handle_event(int event, void *args);
+
+#if defined __cplusplus
+}
+#endif
 
 #endif // SOS_EVENTS_H

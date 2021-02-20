@@ -74,7 +74,7 @@ int launch(
     strncpy(exec_path, path, sizeof(exec_path) - 1);
   }
 
-  if (exec_dest != 0) {
+  if (exec_dest != NULL) {
     strncpy(exec_dest, exec_path, PATH_MAX);
   }
 
