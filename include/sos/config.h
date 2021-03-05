@@ -41,7 +41,7 @@ typedef struct {
   sos_process_timer_t timer[SOS_PROCESS_TIMER_COUNT];
 } sched_task_t;
 
-typedef struct {
+typedef struct MCU_PACK{
   //pointer to device filesystem, required
   const devfs_device_t *devfs_list;
   //pointer to device filesystem, required
@@ -57,7 +57,7 @@ typedef struct {
   const char *trace_dev;
 } sos_fs_config_t;
 
-typedef struct {
+typedef struct MCU_PACK{
   //OR SOS_DEBUG_* flags
   u32 flags;
   //initialize serial tracing
@@ -75,7 +75,7 @@ typedef struct {
 //Stratify OS needs a 32-bit microsecond timer for all timing
 //of the OS. You can optionally provide submicrosecond
 //precision with the nanoseconds() callback
-typedef struct {
+typedef struct MCU_PACK{
   //initialize timing
   void (*initialize)(
     int (*handle_match_channel0)(void *context, const mcu_event_t *data),
@@ -96,7 +96,7 @@ typedef struct {
   u32 (*nanoseconds)();
 } sos_clock_config_t;
 
-typedef struct {
+typedef struct MCU_PACK{
   //total number of tasks to support
   u8 task_total;
   //stack size of the first thread
@@ -108,7 +108,7 @@ typedef struct {
 } sos_task_config_t;
 
 //This is only needed if you are using USB
-typedef struct {
+typedef struct MCU_PACK{
   //size of control EP (usually 64)
   u32 control_endpoint_max_size;
   // number of logical endpoints
@@ -128,7 +128,7 @@ typedef struct {
 } sos_usb_config_t;
 
 
-typedef struct {
+typedef struct MCU_PACK{
   //pointer to secret_key_size-bytes used as a secret system key
   const void *secret_key_address;
   //size of secret key (usually 32 bytes)
@@ -201,7 +201,7 @@ typedef struct {
 //only needed on cortex M7
 //can be left as do nothing functions
 //if the cache is not used
-typedef struct {
+typedef struct MCU_PACK{
   void (*enable)();
   void (*disable)();
   void (*invalidate_instruction)();
@@ -211,7 +211,7 @@ typedef struct {
   void (*clean_data_block)(void *address, size_t size);
 } sos_cache_config_t;
 
-typedef struct {
+typedef struct MCU_PACK{
   //called during RR scheduling when no tasks are active
   void (*idle)();
   //called when application calls hibernate()

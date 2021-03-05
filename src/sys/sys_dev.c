@@ -5,8 +5,8 @@
 #include "config.h"
 #include "cortexm/mpu.h"
 #include "device/sys.h"
-#include "sos/debug.h"
 #include "scheduler/scheduler_local.h"
+#include "sos/debug.h"
 #include "sos/dev/bootloader.h"
 #include "sos/dev/sys.h"
 
@@ -32,8 +32,7 @@ int sys_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
     memset(info, 0, sizeof(sys_info_t));
     strncpy(info->kernel_version, VERSION, 7);
     strncpy(
-      info->sys_version, sos_config.sys.version,
-      sizeof(sos_config.sys.version - 1));
+      info->sys_version, sos_config.sys.version, sizeof(sos_config.sys.version - 1));
     strncpy(info->arch, ARCH, 15);
     info->security = 0;
     info->signature = symbols_table[0];
@@ -166,7 +165,7 @@ int read_task(sys_taskattr_t *task) {
         task->name,
         ((struct _reent *)sos_task_table[task->tid].global_reent)
           ->procmem_base->proc_name,
-        LINK_NAME_MAX);
+        APPFS_NAME_MAX);
 
 #if 1
       task->malloc_loc = task_calculate_heap_end(task->tid);

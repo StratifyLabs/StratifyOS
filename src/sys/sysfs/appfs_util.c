@@ -111,8 +111,7 @@ void appfs_util_svcall_erase_pages(void *args) {
 static u32
 translate_value(u32 addr, u32 mask, u32 code_start, u32 data_start, u32 total, s32 *loc) {
   // check if the value is an address
-  u32 ret;
-  ret = addr;
+  u32 ret = addr;
   *loc = 0;
   if ((addr & APPFS_REWRITE_MASK) == mask) { // matches Text or Data
     ret = addr & ~(APPFS_REWRITE_MASK | APPFS_REWRITE_RAM_MASK);
@@ -145,7 +144,6 @@ translate_value(u32 addr, u32 mask, u32 code_start, u32 data_start, u32 total, s
       ret += code_start;
     }
   }
-
   return ret;
 }
 

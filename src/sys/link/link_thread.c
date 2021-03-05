@@ -42,7 +42,7 @@ static int read_device_callback(void *context, void *buf, int nbyte);
 static int write_device_callback(void *context, void *buf, int nbyte);
 static void translate_link_stat(struct link_stat *dest, struct stat *src);
 
-static int read_path(link_transport_driver_t *driver, char *path, size_t size);
+static int read_path(link_transport_driver_t *driver, char *path, size_t size, size_t capacity);
 
 typedef struct {
   link_op_t op;
@@ -174,7 +174,7 @@ void link_cmd_readserialno(link_transport_driver_t *driver, link_data_t *args) {
 void link_cmd_open(link_transport_driver_t *driver, link_data_t *args) {
   errno = 0;
   char path[PATH_MAX + 1];
-  if (read_path(driver, path, args->op.open.path_size) < 0) {
+  if (read_path(driver, path, args->op.open.path_size, PATH_MAX) < 0) {
     driver->flush(driver->handle);
     return;
   }
@@ -188,13 +188,13 @@ void link_cmd_open(link_transport_driver_t *driver, link_data_t *args) {
 
 void link_cmd_link(link_transport_driver_t *driver, link_data_t *args) {
   char old_path[PATH_MAX + 1];
-  if (read_path(driver, old_path, args->op.symlink.path_size_old) < 0) {
+  if (read_path(driver, old_path, args->op.symlink.path_size_old, PATH_MAX) < 0) {
     driver->flush(driver->handle);
     return;
   }
 
   char new_path[PATH_MAX + 1];
-  if (read_path(driver, new_path, args->op.symlink.path_size_new) < 0) {
+  if (read_path(driver, new_path, args->op.symlink.path_size_new, PATH_MAX) < 0) {
     driver->flush(driver->handle);
     return;
   }
@@ -298,7 +298,7 @@ void link_cmd_close(link_transport_driver_t *driver, link_data_t *args) {
 
 void link_cmd_unlink(link_transport_driver_t *driver, link_data_t *args) {
   char path[PATH_MAX + 1];
-  if (read_path(driver, path, args->op.unlink.path_size) < 0) {
+  if (read_path(driver, path, args->op.unlink.path_size, PATH_MAX) < 0) {
     driver->flush(driver->handle);
     return;
   }
@@ -323,7 +323,7 @@ void link_cmd_stat(link_transport_driver_t *driver, link_data_t *args) {
   struct link_stat lst;
 
   char path[PATH_MAX + 1];
-  if (read_path(driver, path, args->op.stat.path_size) < 0) {
+  if (read_path(driver, path, args->op.stat.path_size, PATH_MAX) < 0) {
     driver->flush(driver->handle);
     return;
   }
@@ -378,7 +378,7 @@ void link_cmd_fstat(link_transport_driver_t *driver, link_data_t *args) {
 
 void link_cmd_mkdir(link_transport_driver_t *driver, link_data_t *args) {
   char path[PATH_MAX + 1];
-  if (read_path(driver, path, args->op.mkdir.path_size) < 0) {
+  if (read_path(driver, path, args->op.mkdir.path_size, PATH_MAX) < 0) {
     driver->flush(driver->handle);
     return;
   }
@@ -391,7 +391,7 @@ void link_cmd_mkdir(link_transport_driver_t *driver, link_data_t *args) {
 
 void link_cmd_rmdir(link_transport_driver_t *driver, link_data_t *args) {
   char path[PATH_MAX + 1];
-  if (read_path(driver, path, args->op.rmdir.path_size) < 0) {
+  if (read_path(driver, path, args->op.rmdir.path_size, PATH_MAX) < 0) {
     driver->flush(driver->handle);
     return;
   }
@@ -403,7 +403,7 @@ void link_cmd_rmdir(link_transport_driver_t *driver, link_data_t *args) {
 
 void link_cmd_opendir(link_transport_driver_t *driver, link_data_t *args) {
   char path[PATH_MAX + 1];
-  if (read_path(driver, path, args->op.opendir.path_size) < 0) {
+  if (read_path(driver, path, args->op.opendir.path_size, PATH_MAX) < 0) {
     driver->flush(driver->handle);
     return;
   }
@@ -458,13 +458,13 @@ void link_cmd_closedir(link_transport_driver_t *driver, link_data_t *args) {
 void link_cmd_rename(link_transport_driver_t *driver, link_data_t *args) {
 
   char old_path[PATH_MAX + 1];
-  if (read_path(driver, old_path, args->op.rename.old_size) < 0) {
+  if (read_path(driver, old_path, args->op.rename.old_size, PATH_MAX) < 0) {
     driver->flush(driver->handle);
     return;
   }
 
   char new_path[PATH_MAX + 1];
-  if (read_path(driver, new_path, args->op.rename.new_size) < 0) {
+  if (read_path(driver, new_path, args->op.rename.new_size, PATH_MAX) < 0) {
     driver->flush(driver->handle);
     return;
   }
@@ -477,7 +477,7 @@ void link_cmd_rename(link_transport_driver_t *driver, link_data_t *args) {
 
 void link_cmd_chown(link_transport_driver_t *driver, link_data_t *args) {
   char path[PATH_MAX + 1];
-  if (read_path(driver, path, args->op.chown.path_size) < 0) {
+  if (read_path(driver, path, args->op.chown.path_size, PATH_MAX) < 0) {
     driver->flush(driver->handle);
     return;
   }
@@ -490,7 +490,7 @@ void link_cmd_chown(link_transport_driver_t *driver, link_data_t *args) {
 
 void link_cmd_chmod(link_transport_driver_t *driver, link_data_t *args) {
   char path[PATH_MAX + 1];
-  if (read_path(driver, path, args->op.chmod.path_size) < 0) {
+  if (read_path(driver, path, args->op.chmod.path_size, PATH_MAX) < 0) {
     driver->flush(driver->handle);
     return;
   }
@@ -504,7 +504,8 @@ void link_cmd_chmod(link_transport_driver_t *driver, link_data_t *args) {
 void link_cmd_exec(link_transport_driver_t *driver, link_data_t *args) {
   // was LINK_PATH_ARG_MAX
   char path_arg[ARG_MAX + 1];
-  if (read_path(driver, path_arg, args->op.exec.path_size) < 0) {
+  if (read_path(driver, path_arg, args->op.exec.path_size, ARG_MAX) < 0) {
+    sos_debug_log_error(SOS_DEBUG_LINK, "Failed to read path", path_arg, errno);
     driver->flush(driver->handle);
     return;
   }
@@ -518,7 +519,7 @@ void link_cmd_exec(link_transport_driver_t *driver, link_data_t *args) {
 
 void link_cmd_mkfs(link_transport_driver_t *driver, link_data_t *args) {
   char path[PATH_MAX + 1];
-  if (read_path(driver, path, args->op.mkfs.path_size) < 0) {
+  if (read_path(driver, path, args->op.mkfs.path_size, PATH_MAX) < 0) {
     driver->flush(driver->handle);
     return;
   }
@@ -566,9 +567,9 @@ int write_device(link_transport_driver_t *driver, int fildes, int nbyte) {
   return link_transport_slaveread(driver, NULL, nbyte, write_device_callback, &fildes);
 }
 
-int read_path(link_transport_driver_t *driver, char *path, size_t size) {
+int read_path(link_transport_driver_t *driver, char *path, size_t size, size_t capacity) {
   int result;
-  if (size > PATH_MAX) {
+  if (size > capacity) {
     // path should never be larger than PATH_MAX
     return -1;
   } else {
