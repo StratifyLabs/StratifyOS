@@ -216,11 +216,20 @@ int pthread_cond_timedwait(
 
   // release the mutex and block on the cond
   cortexm_svcall(svcall_cond_wait, &args);
+  pthread_mutex_lock(mutex);
 
   if (scheduler_unblock_type(task_get_current()) == SCHEDULER_UNBLOCK_SLEEP) {
     errno = ETIMEDOUT;
     return -1;
   }
+
+#if POSIX_SPECIFIES_NO_RETURNING_EINTR || 1
+  //signal will cause a spurious wakeup
+  if (scheduler_unblock_type(task_get_current()) == SCHEDULER_UNBLOCK_SIGNAL) {
+    errno = EINTR;
+    return -1;
+  }
+#endif
 
   return 0;
 }

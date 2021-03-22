@@ -34,11 +34,6 @@ void scheduler_root_deassert_active(int id) {
   task_deassert_exec(id); // stop executing the task
 }
 
-void scheduler_root_stop_task(int id) { scheduler_root_deassert_active(id); }
-
-void scheulder_root_start_task(int id) {
-  scheduler_root_assert_active(id, SCHEDULER_UNBLOCK_SIGNAL);
-}
 
 void scheduler_root_assert(int id, int flag) { sos_sched_table[id].flags |= (1 << flag); }
 void scheduler_root_deassert(int id, int flag) {

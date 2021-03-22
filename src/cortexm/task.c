@@ -95,8 +95,6 @@ int task_init(
   sos_config.mcu.set_interrupt_priority(BusFault_IRQn, 3);
   sos_config.mcu.set_interrupt_priority(UsageFault_IRQn, 3);
 
-  sos_handle_event(SOS_EVENT_ROOT_TASK_INITIALIZED, 0);
-
   // enable the FPU if it is in use
 #if __FPU_USED != 0
   SCB->CPACR =
@@ -115,6 +113,9 @@ int task_init(
   cortexm_set_stack_ptr((void *)&_top_of_stack); // reset the handler stack pointer
   cortexm_enable_systick_irq();                  // Enable context switching
   cortexm_set_vector_table_addr(sos_config.sys.vector_table);
+
+  sos_config.cache.enable();
+
   task_root_switch_context();
   cortexm_enable_interrupts(); // Enable the interrupts
 
@@ -225,6 +226,7 @@ void task_svcall_new_task(new_task_t *task) {
 
     task->tid = i;
   }
+
 }
 
 void task_root_delete(int id) {
@@ -392,7 +394,6 @@ void switch_contexts() {
 
   // Enable the MPU for the task stack guard
 #if MPU_PRESENT || __MPU_PRESENT
-  // Enable the MPU for the process code section
   MPU->RBAR = (u32)(sos_task_table[m_task_current].mem.code.rbar);
   MPU->RASR = (u32)(sos_task_table[m_task_current].mem.code.rasr);
 

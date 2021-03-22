@@ -59,8 +59,6 @@ int scheduler_create_process(
 
 void svcall_init_sched_task(init_sched_task_t *task) {
   CORTEXM_SVCALL_ENTER();
-  uint32_t stackguard;
-  struct _reent *reent;
   int id = task->tid;
 
   memset((void *)&sos_sched_table[id], 0, sizeof(sched_task_t));
@@ -93,7 +91,7 @@ void svcall_init_sched_task(init_sched_task_t *task) {
   scheduler_root_assert_active(id, 0);
   scheduler_root_assert_inuse(id);
   scheduler_root_update_on_wake(id, task_get_priority(id));
-  stackguard = (uint32_t)task->mem->data.address + sizeof(struct _reent);
+  u32 stackguard = (u32)task->mem->data.address + sizeof(struct _reent);
   if (
     task_root_set_stackguard(id, (void *)stackguard, SCHED_DEFAULT_STACKGUARD_SIZE) < 0) {
     sos_debug_log_warning(SOS_DEBUG_SCHEDULER, "Failed to set stackguard");
@@ -102,7 +100,7 @@ void svcall_init_sched_task(init_sched_task_t *task) {
   // Items inherited from parent process
 
   // Signal mask
-  reent = (struct _reent *)sos_task_table[id].reent;
+  struct _reent *const reent = (struct _reent *)sos_task_table[id].reent;
   reent->sigmask = _REENT->sigmask;
 }
 

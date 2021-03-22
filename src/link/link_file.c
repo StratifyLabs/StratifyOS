@@ -136,12 +136,17 @@ int link_open(link_transport_mdriver_t *driver, const char *path, int flags, ...
     return link_handle_err(driver, err);
   }
 
+  //give extra time in case opening takes awhile
+  link_transport_mastersettimeout(driver, 5000);
+
   // read the reply to see if the file opened correctly
   err = link_transport_masterread(driver, &reply, sizeof(reply));
   if (err < 0) {
     link_error("failed to read the reply");
     return link_handle_err(driver, err);
   }
+
+  link_transport_mastersettimeout(driver, 0);
 
   if (reply.err < 0) {
     link_errno = reply.err_number;
@@ -502,7 +507,7 @@ int link_unlink(link_transport_mdriver_t *driver, const char *path) {
   }
 
   // some erase operations take a long time
-  link_transport_mastersettimeout(driver, 5000);
+  link_transport_mastersettimeout(driver, 10000);
 
   // read the reply to see if the file deleted correctly
   err = link_transport_masterread(driver, &reply, sizeof(reply));

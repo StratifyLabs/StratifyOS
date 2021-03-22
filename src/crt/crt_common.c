@@ -40,12 +40,13 @@ void crt_common(char *path_arg, int *ret, const char *name) {
   _REENT->procmem_base->sigactions = NULL;
 
 
+  //u32 * value = 0;
+  //*value = 100;
+
   const open_file_t init_open_file = {0};
   for (int i = 0; i < OPEN_MAX; i++) {
     _REENT->procmem_base->open_file[i] = init_open_file;
   }
-
-
 
   // Initialize the global mutexes
   __lock_init_recursive_global(__malloc_lock_object);

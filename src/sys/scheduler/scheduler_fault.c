@@ -36,11 +36,14 @@ int scheduler_root_fault_handler(void *context, const mcu_event_t *data) {
 #endif
   } else {
     const u32 psp;
+    const int current_task = task_get_current();
     cortexm_get_thread_stack_ptr((void **)&psp);
-    const u32 top_of_stack = (u32)sos_task_table[task_get_current()].mem.data.address
-                             + sos_task_table[task_get_current()].mem.data.size;
+    const u32 top_of_stack = (u32)sos_task_table[current_task].mem.data.address
+                             + sos_task_table[current_task].mem.data.size;
 
-    const u32 top_of_heap = (u32)(&_REENT->procmem_base) + _REENT->procmem_base->size;
+    const struct _reent * reent = sos_task_table[current_task].global_reent;
+    const u32 bottom_of_heap = (u32)(&reent->procmem_base);
+    const u32 top_of_heap = bottom_of_heap + reent->procmem_base->size;
 
     // check the PSP for the LR value
 #if 0
@@ -49,11 +52,17 @@ int scheduler_root_fault_handler(void *context, const mcu_event_t *data) {
       (const u32 *)top_of_stack, 32);
 #endif
 
-    sos_debug_printf(
-      "stack %p + %ld\n", sos_task_table[task_get_current()].mem.data.address,
-      sos_task_table[task_get_current()].mem.data.size);
+    sos_debug_log_info(
+      SOS_DEBUG_SYS, "memory area %p -> %p",
+      sos_task_table[current_task].mem.data.address,
+      top_of_stack);
 
-    sos_debug_printf("psp %p\n", psp);
+    sos_debug_log_info(
+      SOS_DEBUG_SYS, "heap area %p -> %p",
+      bottom_of_heap,
+      top_of_heap);
+
+    sos_debug_log_info(SOS_DEBUG_SYS, "stack pointer %p", psp);
 
 #if defined SOS_DEBUG
     char buffer[128];

@@ -39,7 +39,7 @@ int link2_transport_masterread(link_transport_mdriver_t *driver, void *buf, int 
       (err = link2_transport_wait_start(
          &driver->phy_driver, &pkt, driver->phy_driver.timeout))
       < 0) {
-      // printf("\nerror %s():%d result:%d\n", __FUNCTION__, __LINE__, err);
+      //printf("\nerror %s():%d result:%d\n", __FUNCTION__, __LINE__, err);
       driver->phy_driver.flush(driver->phy_driver.handle);
       return err;
     }
@@ -48,6 +48,7 @@ int link2_transport_masterread(link_transport_mdriver_t *driver, void *buf, int 
       (err = link2_transport_wait_packet(
          &driver->phy_driver, &pkt, driver->phy_driver.timeout))
       < 0) {
+      //printf("\nerror %s():%d result:%d\n", __FUNCTION__, __LINE__, err);
       driver->phy_driver.flush(driver->phy_driver.handle);
       return err;
     }

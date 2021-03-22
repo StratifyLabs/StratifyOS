@@ -66,7 +66,7 @@ int task_init_mpu(void *system_memory, int system_memory_size) {
   // Turn the MPU On
   mpu_enable();
 
-  u32 text_start = (u32)&_text & ~sos_config.sys.os_mpu_text_mask;
+  const u32 text_start = (u32)&_text & ~sos_config.sys.os_mpu_text_mask;
 
   // Memory Protection
   os_mem.code.address = (void *)text_start;
@@ -85,12 +85,15 @@ int task_init_mpu(void *system_memory, int system_memory_size) {
   if (err < 0) {
     return err;
   }
+
   memcpy(
     (void *)&(sos_task_table[0].mem), &os_mem,
     sizeof(os_mem)); // Copy the OS mem to the task table
 
+  const u32 heap_size = (u32)&_ebss - (u32)&_data;
+  task_root_set_stackguard(0, system_memory + heap_size, system_memory_size - heap_size);
+
   sos_handle_event(SOS_EVENT_ROOT_MPU_INITIALIZED, NULL);
-  sos_config.cache.enable();
   return 0;
 }
 
@@ -154,14 +157,7 @@ int task_root_set_stackguard(int tid, void *stackaddr, int stacksize) {
 }
 
 int init_os_memory_protection(task_memories_t *os_mem) {
-  int err;
-
-#if 0
-	err = mpu_dev_init();
-	if ( err < 0 ){
-		return err;
-	}
-#endif
+  int err = 0;
 
   if (sos_config.sys.secret_key_size > 0) {
     err = mpu_enable_region(
@@ -215,8 +211,8 @@ int init_os_memory_protection(task_memories_t *os_mem) {
 int task_mpu_calc_protection(task_memories_t *mem) {
   int err;
   mpu_memory_t mem_type;
-  uint32_t rasr;
-  uint32_t rbar;
+  uint32_t rasr = 0;
+  uint32_t rbar = 0;
 
   if (mem->code.address < (void *)&_data) {
     mem_type = MPU_MEMORY_FLASH;

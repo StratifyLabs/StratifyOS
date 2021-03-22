@@ -81,10 +81,6 @@ void boot_main() {
   stack_ptr = (void *)(((u32 *)sos_config.boot.program_start_address)[0]);
   app_reset = (void (*)())((((u32 *)sos_config.boot.program_start_address)[1]));
 
-  // sos_config.sys.initialize();
-  // sos_config.debug.initialize();
-  // dstr("hello\n");
-
   if (check_run_app()) {
     // led_flash_error();
     sos_handle_event(SOS_EVENT_BOOT_RUN_APPLICATION, 0);
@@ -95,8 +91,7 @@ void boot_main() {
     run_bootloader();
   }
 
-  while (1)
-    ;
+  while (1);
 }
 
 void run_bootloader() {

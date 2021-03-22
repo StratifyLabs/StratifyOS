@@ -178,15 +178,6 @@ int appfs_mem_getpageinfo(const devfs_handle_t *handle, void *ctl) {
   }
 
   return 0;
-
-#if 0
-	size = get_page_size(config, pageinfo->num, pageinfo->o_flags);
-	sos_debug_printf("get info for page %d 0x%lX %ld\n", pageinfo->num, pageinfo->o_flags, size);
-	if (size == 0 ){ return SYSFS_SET_RETURN(EINVAL); }
-	pageinfo->addr = get_page_addr(config, pageinfo->num, pageinfo->o_flags);
-	pageinfo->size = size;
-	return 0;
-#endif
 }
 
 int appfs_mem_writepage(const devfs_handle_t *handle, void *ctl) {

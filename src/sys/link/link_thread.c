@@ -179,6 +179,7 @@ void link_cmd_open(link_transport_driver_t *driver, link_data_t *args) {
     return;
   }
 
+
   args->reply.err = open(path, args->op.open.flags, args->op.open.mode);
   if (args->reply.err < 0) {
     sos_debug_log_error(SOS_DEBUG_LINK, "Failed to open %s (%d)", path, errno);
@@ -227,7 +228,6 @@ void link_cmd_ioctl(link_transport_driver_t *driver, link_data_t *args) {
     } else {
       // This means a read or write is happening and the pointer should be passed
       args->reply.err = ioctl(args->op.ioctl.fildes, args->op.ioctl.request, io_buf);
-      // sos_debug_printf("ioctl buf was %d \n", args->reply.err);
     }
     args->reply.err_number = errno;
   } else {

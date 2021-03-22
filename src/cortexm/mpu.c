@@ -1,5 +1,7 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
+#include "sos/config.h"
+
 #include "cortexm/mpu.h"
 #include "cortexm_local.h"
 
@@ -164,22 +166,22 @@ u32 mpu_calc_region(
    *
    *
    */
-  const u32 default_cache_policy =
-    (1 << 21) | (1 << 20) | (1 << 19) | (0 << 18) | (1 << 17) | (0 << 16);
 
   switch (type) {
   case MPU_MEMORY_EXTERNAL_SRAM:
-    rasr_value |= default_cache_policy; // Outer and Inner Write-Back, no Write-Allocate
+    rasr_value |= sos_config.cache.external_sram_policy; // Outer and Inner Write-Back, no Write-Allocate
     break;
   case MPU_MEMORY_SRAM:
-    rasr_value |= default_cache_policy; // Outer and Inner Write-Back, no Write-Allocate
+    rasr_value |= sos_config.cache.sram_policy; // Outer and Inner Write-Back, no Write-Allocate
     break;
   case MPU_MEMORY_FLASH:
-    rasr_value |= default_cache_policy; // Outer and Inner Write-Back, no Write-Allocate
+    rasr_value |= sos_config.cache.flash_policy; // Outer and Inner Write-Back, no Write-Allocate
     break;
   case MPU_MEMORY_LCD:
+    rasr_value |= sos_config.cache.lcd_policy; // shareable, not cacheable
+    break;
   case MPU_MEMORY_PERIPHERALS:
-    rasr_value |= ((1 << 16) | (1 << 18)); // shareable, not cacheable
+    rasr_value |= sos_config.cache.flash_policy; // shareable, not cacheable
     break;
   }
 
@@ -213,6 +215,7 @@ int mpu_enable_region(
   }
 
   __DSB();
+
   MPU->RBAR = rbar;
   MPU->RASR = rasr;
   MPU->RNR = 15;

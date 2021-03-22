@@ -76,7 +76,6 @@ const devfs_handle_t *devfs_lookup_handle(const devfs_device_t *list, const char
 void svcall_open_device(void *args) {
   CORTEXM_SVCALL_ENTER();
   root_args_t *p = (root_args_t *)args;
-
   if (p->mode == O_RDONLY) {
     if (sysfs_is_r_ok(p->device->mode, p->device->uid, SYSFS_GROUP) == 0) {
       p->err = SYSFS_SET_RETURN(EPERM);

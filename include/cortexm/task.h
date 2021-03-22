@@ -90,8 +90,8 @@ u32 task_reverse_memory_lookup(u32 input);
 #define TASK_SYSTEM_STACK_MPU_REGION 6
 #define TASK_SYSTEM_CODE_MPU_REGION 5
 #define TASK_SYSTEM_DATA_MPU_REGION 4
-#define TASK_APPLICATION_STACK_GUARD_REGION                                              \
-  3 // stack guard must have higher precedence than application data because they overlap
+// stack guard must have higher precedence than application data because they overlap
+#define TASK_APPLICATION_STACK_GUARD_REGION 3
 #define TASK_APPLICATION_CODE_MPU_REGION 2
 #define TASK_APPLICATION_DATA_MPU_REGION 1
 #define TASK_APPLICATION_DATA_USER_REGION 0

@@ -58,4 +58,6 @@ int scheduler_get_highest_priority_blocked(void * block_object);
 
 void scheduler_check_cancellation();
 
+extern void show_mpu(void *);
+
 #endif /* SCHED_FLAGS_H_ */

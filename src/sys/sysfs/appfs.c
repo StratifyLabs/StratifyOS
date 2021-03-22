@@ -89,19 +89,18 @@ static bool is_sys(const char *name) {
 
 void svcall_init(void *args) {
   CORTEXM_SVCALL_ENTER();
-  int i;
-  mem_info_t info;
-  appfs_file_t appfs_file;
   const devfs_device_t *device = args;
 
   // the RAM usage table needs to be initialized
   appfs_ram_root_init(device);
 
   // get info from memory device
+  mem_info_t info;
   appfs_util_root_get_meminfo(device, &info);
 
   // now scan each flash page to see what RAM is used by applications
-  for (i = 0; i < info.flash_pages; i++) {
+  for (int i = 0; i < info.flash_pages; i++) {
+    appfs_file_t appfs_file;
     if (
       (appfs_util_root_get_fileinfo(device, &appfs_file, i, MEM_FLAG_IS_FLASH, NULL)
        == APPFS_MEMPAGETYPE_USER)
@@ -113,18 +112,6 @@ void svcall_init(void *args) {
       if (appfs_util_root_get_pageinfo(device, &page_info) < 0) {
         continue;
       }
-
-#if 0
-      // get the RAM page associated with the data start
-      root_file_info.pageinfo.o_flags = MEM_FLAG_IS_QUERY;
-      root_file_info.pageinfo.addr = (int)root_file_info.fileinfo.exec.ram_start;
-      if (
-        device->driver.ioctl(
-          &(device->handle), I_MEM_GETPAGEINFO, &root_file_info.pageinfo)
-        < 0) {
-        continue;
-      }
-#endif
 
       appfs_ram_root_set(
         device, page_info.num, appfs_file.exec.ram_size, APPFS_MEMPAGETYPE_SYS);
@@ -139,11 +126,7 @@ int appfs_init(const void *cfg) {
 }
 
 int appfs_startup(const void *cfg) {
-  int i;
-  task_memories_t mem;
-  int started;
   const devfs_device_t *dev = cfg;
-
   appfs_get_fileinfo_t get_fileinfo_args;
   get_fileinfo_args.device = dev;
   get_fileinfo_args.type = MEM_FLAG_IS_FLASH;
@@ -152,10 +135,11 @@ int appfs_startup(const void *cfg) {
   get_meminfo_args.device = dev;
 
   // go through each flash page and look for programs that should be run on startup
-  started = 0;
 
   cortexm_svcall(appfs_util_svcall_get_meminfo, &get_meminfo_args);
 
+  int started = 0;
+  int i;
   for (i = 0; i < get_meminfo_args.mem_info.flash_pages; i++) {
 
     get_fileinfo_args.page = i;
@@ -167,6 +151,7 @@ int appfs_startup(const void *cfg) {
       && (get_fileinfo_args.file_info.exec.o_flags & APPFS_FLAG_IS_STARTUP)) {
 
       // start the process
+      task_memories_t mem;
       mem.code.address = (void *)get_fileinfo_args.file_info.exec.code_start;
       mem.code.size = get_fileinfo_args.file_info.exec.code_size;
       mem.data.address = (void *)get_fileinfo_args.file_info.exec.ram_start;
