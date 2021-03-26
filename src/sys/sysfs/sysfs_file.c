@@ -116,7 +116,7 @@ int sysfs_shared_read(
   int loc,
   void *buf,
   int nbyte) {
-  if (config->state->file.fs == 0) {
+  if (config->state->file.fs == NULL) {
     return SYSFS_SET_RETURN(ENODEV);
   }
   config->state->file.loc = loc;

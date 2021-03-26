@@ -1,15 +1,18 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
 
+#include <errno.h>
+#include <sdk/types.h>
+#include <string.h>
+#include <sys/stat.h>
+
+#include "sos/debug.h"
 #include "sos/fs/assetfs.h"
 #include "cortexm/cortexm.h"
 #include "dirent.h"
 #include "sos/fs/sysfs.h"
 #include "sos/sos.h"
-#include <errno.h>
-#include <sdk/types.h>
-#include <string.h>
-#include <sys/stat.h>
+
 
 #define INVALID_DIR_HANDLE ((void *)0)
 #define VALID_DIR_HANDLE ((void *)0x12345678)
@@ -133,7 +136,7 @@ int assetfs_fstat(const void *cfg, void *handle, struct stat *st) {
 int assetfs_stat(const void *cfg, const char *path, struct stat *st) {
   int ino;
   const assetfs_dirent_t *directory_entry = find_file(cfg, path, &ino);
-  if (directory_entry == 0) {
+  if (directory_entry == NULL) {
     return SYSFS_SET_RETURN(ENOENT);
   }
 
@@ -200,7 +203,7 @@ const assetfs_dirent_t *find_file(const void *cfg, const char *path, int *ino) {
 
 int get_directory_entry(const void *cfg, int loc, const assetfs_dirent_t **entry) {
   const assetfs_config_t *config = cfg;
-  u32 count = config->count;
+  const u32 count = config->count;
   if (loc < 0) {
     return SYSFS_SET_RETURN(EINVAL);
   }

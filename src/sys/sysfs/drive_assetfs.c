@@ -251,7 +251,12 @@ int find_file(
 
 int get_directory_entry(const void *cfg, int loc, drive_assetfs_dirent_t *entry) {
   u32 count;
-  read_drive(cfg, 0, &count, sizeof(u32));
+  int result = read_drive(cfg, 0, &count, sizeof(u32));
+  if( result < 0 ){
+    SYSFS_PROCESS_RETURN(result);
+    return result;
+  }
+
   if (count == 0xffffffff) {
     count = 0;
   }
@@ -269,6 +274,7 @@ int get_directory_entry(const void *cfg, int loc, drive_assetfs_dirent_t *entry)
 }
 
 int read_drive(const void *cfg, int loc, void *buf, int nbyte) {
+
   return sysfs_shared_read(
     ASSETFS_DRIVE(cfg), ASSETFS_CONFIG(cfg)->offset + loc, buf, nbyte);
 }

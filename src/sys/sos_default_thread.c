@@ -51,6 +51,7 @@ void *sos_default_thread(void *arg) {
   sos_debug_log_info(SOS_DEBUG_SYS, "Enter default thread");
 
   check_reset_source();
+  sos_handle_event(SOS_EVENT_ENTER_FIRST_THREAD, NULL);
 
   // Initialize the file systems
   init_fs();
