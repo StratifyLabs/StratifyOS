@@ -22,7 +22,7 @@
 extern "C" {
 #endif
 
-#define I2S_VERSION (0x030000)
+#define I2S_VERSION (0x030100)
 #define I2S_IOC_IDENT_CHAR 'I'
 
 enum {
