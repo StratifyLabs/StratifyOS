@@ -71,6 +71,7 @@ void cortexm_fault_event_handler(fault_t *fault) {
   }
 
   if ((pid == 0) || (task_enabled_active_not_stopped(task_get_current()) == 0)) {
+    sos_debug_printf("pid: %d\n", pid);
     m_cortexm_fault_handler.callback(m_cortexm_fault_handler.context, (void *)1);
   } else {
 

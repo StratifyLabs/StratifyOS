@@ -60,7 +60,7 @@ enum {
   I2S_FLAG_IS_ULAW_2CPL_COMPANDING /*! SAI Block Companding Mode*/ = (1 << 24),
   I2S_FLAG_IS_ALAW_2CPL_COMPANDING /*! SAI Block Companding Mode*/ = (1 << 25),
   I2S_FLAG_ENABLE /*! SAI enable command*/ = (1 << 26),
-  I2S_DMA_ENABLE /*! SAI dma enable command*/ = (1 << 27),
+  I2S_FLAG_IS_FULL_DUPLEX /*! SAI dma enable command*/ = (1 << 27),
   I2S_FLAG_IS_SYNCHRONOUS /*! Synchronous with other block of same SAI */ = (1 << 28),
   I2S_FLAG_IS_SYNCHRONOUS_EXT_SAI1 /*! Synchronous with other SAI, SAI1 */ = (1 << 29),
   I2S_FLAG_IS_SYNCHRONOUS_EXT_SAI2 /*! Synchronous with other SAI, SAI2 */ = (1 << 30),

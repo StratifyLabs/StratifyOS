@@ -119,7 +119,7 @@ int task_init(
   task_root_switch_context();
   cortexm_enable_interrupts(); // Enable the interrupts
 
-  sos_handle_event(SOS_EVENT_ROOT_FATAL, "task_init()");
+  sos_handle_event(SOS_EVENT_ROOT_FATAL, "task_init");
   while (1) {
   }
 

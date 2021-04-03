@@ -21,7 +21,7 @@ static void init_mpu() {
 
   if (task_init_mpu(&_data, sos_config.sys.memory_size) < 0) {
     sos_debug_log_info(SOS_DEBUG_SCHEDULER, "Failed to initialize memory protection");
-    sos_handle_event(SOS_EVENT_ROOT_FATAL, (void *)"tski");
+    sos_handle_event(SOS_EVENT_ROOT_FATAL, (void *)"scheduler init mpu");
   }
   sos_handle_event(SOS_EVENT_ROOT_DEBUG_INITIALIZED, 0);
 }

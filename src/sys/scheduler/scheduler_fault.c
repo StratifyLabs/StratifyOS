@@ -9,7 +9,7 @@
 #include "cortexm/util.h"
 
 int scheduler_root_fault_handler(void *context, const mcu_event_t *data) {
-
+  MCU_UNUSED_ARGUMENT(context);
   if (data != NULL) {
 
 #if SOS_DEBUG
@@ -72,8 +72,10 @@ int scheduler_root_fault_handler(void *context, const mcu_event_t *data) {
     if (psp <= top_of_heap) {
       sos_debug_log_error(SOS_DEBUG_SYS, "Stack Overflow");
     }
-#endif
+    sos_handle_event(SOS_EVENT_ROOT_APPLICATION_FAULT, buffer);
+#else
     sos_handle_event(SOS_EVENT_ROOT_APPLICATION_FAULT, NULL);
+#endif
   }
 
   scheduler_root_update_on_sleep();

@@ -318,6 +318,7 @@ int appfs_unlink(const void *cfg, const char *path) {
     ram.size = mpu_calc_region(
       0, (void *)get_pageinfo_args.page_info.addr,
       file_info.exec.code_size + file_info.exec.data_size, 0, 0, 0, &rbar, &rasr);
+
     // The Ram size is the code size + the data size round up to the next power of 2 to
     // account for memory protection
     cortexm_svcall(appfs_ram_svcall_set, &ram);
@@ -341,6 +342,7 @@ int appfs_unlink(const void *cfg, const char *path) {
 
     ram.page = get_pageinfo_args.page_info.num;
     ram.size = file_info.exec.ram_size;
+
     cortexm_svcall(appfs_ram_svcall_set, &ram);
   }
 

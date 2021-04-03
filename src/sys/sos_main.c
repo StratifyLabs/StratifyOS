@@ -4,7 +4,13 @@
 #include "cortexm/cortexm.h"
 #include "sos/sos.h"
 
+#include "check_config.h"
+
 #include "scheduler/scheduler_local.h"
+
+static void check_sys_config();
+static void check_debug_config();
+static void check_config();
 
 int sos_main() {
 
@@ -15,6 +21,8 @@ int sos_main() {
   if (sos_config.debug.initialize) {
     sos_config.debug.initialize();
   }
+
+  check_config();
 
   scheduler_init();
   scheduler_start(sos_config.task.start);
@@ -64,4 +72,59 @@ bootloader_api_t *sos_get_bootloader_api() {
               *)(sos_config.sys.bootloader_start_address + BOOTLOADER_API_OFFSET);
   }
   return NULL;
+}
+
+void check_sys_config() {
+  // SOS_EVENT_ROOT_PANIC_SYSTEM_CONFIG
+}
+
+void check_debug_config() {
+  // SOS_EVENT_ROOT_PANIC_DEBUG_CONFIG
+}
+
+void check_config() {
+  CHECK_SYS_CONFIG(get_serial_number);
+  CHECK_SYS_CONFIG(kernel_request);
+  CHECK_SYS_CONFIG(kernel_request_api);
+  CHECK_SYS_CONFIG(name);
+  CHECK_SYS_CONFIG(version);
+  CHECK_SYS_CONFIG(git_hash);
+  CHECK_SYS_CONFIG(id);
+  CHECK_SYS_CONFIG(team_id);
+
+  CHECK_MCU_CONFIG(set_interrupt_priority);
+  CHECK_MCU_CONFIG(reset_watchdog_timer);
+  CHECK_MCU_CONFIG(set_pin_function);
+
+  CHECK_SLEEP_CONFIG(idle);
+  CHECK_SLEEP_CONFIG(hibernate);
+  CHECK_SLEEP_CONFIG(powerdown);
+
+  CHECK_CACHE_CONFIG(enable);
+  CHECK_CACHE_CONFIG(disable);
+  CHECK_CACHE_CONFIG(invalidate_instruction);
+  CHECK_CACHE_CONFIG(invalidate_data);
+  CHECK_CACHE_CONFIG(invalidate_data_block);
+  CHECK_CACHE_CONFIG(clean_data);
+  CHECK_CACHE_CONFIG(clean_data_block);
+
+  // cache policy check
+  if (sos_config.usb.logical_endpoint_count > 0) {
+    CHECK_USB_CONFIG(set_attributes);
+    CHECK_USB_CONFIG(set_action);
+    CHECK_USB_CONFIG(write_endpoint);
+    CHECK_USB_CONFIG(read_endpoint);
+  }
+
+
+  CHECK_TASK_CONFIG(start);
+
+  CHECK_CLOCK_CONFIG(initialize);
+  CHECK_CLOCK_CONFIG(enable);
+  CHECK_CLOCK_CONFIG(disable);
+  CHECK_CLOCK_CONFIG(set_channel);
+  CHECK_CLOCK_CONFIG(get_channel);
+  CHECK_CLOCK_CONFIG(microseconds);
+  CHECK_CLOCK_CONFIG(nanoseconds);
+
 }

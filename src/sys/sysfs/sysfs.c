@@ -102,12 +102,12 @@ const char *sysfs_get_filename(const char *path) {
 const sysfs_t *sysfs_find(const char *path, bool needs_parent) {
   int i;
   int pathlen;
-  pathlen = strlen(path);
+  pathlen = strnlen(path, PATH_MAX);
   const sysfs_t *sysfs_list = sos_config.fs.rootfs_list;
 
   i = 0;
   while (sysfs_isterminator(&(sysfs_list[i])) == false) {
-    int mountlen = strlen(sysfs_list[i].mount_path);
+    int mountlen = strnlen(sysfs_list[i].mount_path, NAME_MAX);
     if (strncmp(path, sysfs_list[i].mount_path, mountlen) == 0) {
       if (needs_parent == true) {
         if ((pathlen > (mountlen + 1)) || (pathlen == 1)) {
@@ -123,7 +123,7 @@ const sysfs_t *sysfs_find(const char *path, bool needs_parent) {
 }
 
 const char *sysfs_stripmountpath(const sysfs_t *fs, const char *path) {
-  path = path + strlen(fs->mount_path);
+  path = path + strnlen(fs->mount_path, NAME_MAX);
   if (path[0] == '/') {
     path++;
   }

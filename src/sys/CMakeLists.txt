@@ -122,6 +122,7 @@ if( ${SOS_BUILD_CONFIG} STREQUAL arm )
 		unistd/unistd_local.h
 		assert_func.c
 		libgcc.c
+		check_config.h
 		sos_default_thread.c
 		sos_led.c
 		sos_led_root.c

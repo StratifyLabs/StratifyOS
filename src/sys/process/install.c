@@ -104,7 +104,6 @@ int install(
       if (bytes_read > 0) {
         attr.nbyte = bytes_read;
         bytes_cumm += attr.nbyte;
-
         if (attr.loc == 0) {
           appfs_file_t *hdr = (appfs_file_t *)attr.buffer;
           // update the header for the image to be installed
