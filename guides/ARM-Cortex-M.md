@@ -13,7 +13,7 @@ Stratify OS was designed specifically to take advantage of the powerful hardware
 
 ## Thread and Handler Mode with the MPU
 
-The Cortex M has two execution modes: thread and handler. ISR's alway execute in handler mode while non-ISR's can be configured for thread or handler mode. The MPU allows different permissions to the same memory based on the execution mode. In Stratify OS, applications--[which are built independent of the kernel](../Guide-Stratify-OS/)--run in thread mode while specified kernel code and device drivers run in handler mode. This prevents applications from accessing sensitive code or data.
+The Cortex M has two execution modes: thread and handler. ISR's alway execute in handler mode while non-ISR's can be configured for thread or handler mode. The MPU allows different permissions to the same memory based on the execution mode. In Stratify OS, applications--[which are built independent of the kernel](Overview.md)--run in thread mode while specified kernel code and device drivers run in handler mode. This prevents applications from accessing sensitive code or data.
 
 The general MPU access for applications is organized as follows:
 

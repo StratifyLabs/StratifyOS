@@ -34,7 +34,7 @@ Now, use the following commands to download and install `sl`.
 
 ```
 export INSTALL_DIRECTORY=~/StratifyLabs-SDK # or another directory of your choosing
-export PROFILE=~/.bash_profile
+export PROFILE=~/.bash_profile # or another shell profile
 
 mkdir -p $INSTALL_DIRECTORY
 chmod 777 -R $INSTALL_DIRECTORY # if needed to make public
@@ -72,8 +72,7 @@ Now, copy your credentials from the website to the command line.
 Use `sl` to install the GCC cross-compiler on your machine and build the latest libraries.
 
 ```
-sl sdk.install # download and install the compiler
-sl sdk.update # pull and build baseline Stratify OS libraries
+sl cloud.install:compiler # download and install the SDK (arm-none-eabi-gcc)
 ```
 
 **Install Stratify OS**
