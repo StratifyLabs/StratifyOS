@@ -69,21 +69,21 @@ Stratify OS uses the [ARM Cortex M memory protection unit (MPU)](../Guide-ARM-Co
 
 The code is built in a re-locatable fashion such that it is translated when it is installed to its execution location in either flash or RAM (including external RAM). The relocatable copy of the program can be installed in a data filesystem (e.g., on an external SD card) and then be loaded dynamically.
 
-The code below uses the [Stratify API](../StratifyAPI/#namespace-sys) to launch a program stored on a data filesystem.
+The code below uses the Stratify [API](https://github.com/StratifyLabs/API) to launch a program stored on a data filesystem.
 
 ```c
-#include <sapi/sys.hpp>
+#include <sos.hpp>
 
 int main(int argc, char * argv[](){
    printf("I am about to launch Hello World in a new process\n");
-   Sys::launch("/home/HelloWorld");
+   Sos().launch(Sos::Launch().set_path("/home/HelloWorld"));
    return 0;
 }
 ```
 
 The program above launches "HelloWorld" that is installed in the local folder `/home`. If "HelloWorld" exists in RAM or flash, it will be executed. If not, it will be dynamically installed to flash and executed. 
 
-`Sys::launch()` calls a Stratify OS function called `launch()`. Most system calls are based on the standard C library or POSIX API. However, because the Cortex M architecture [does not have an MMU](https://blog.stratifylabs.co/device/2014-05-03-Applications-without-MMU/), `launch()` is used in lieu of the `exec()` and `fork()` function families.
+`Sos::launch()` calls a Stratify OS function called `launch()`. Most system calls are based on the standard C library or POSIX API. However, because the Cortex M architecture [does not have an MMU](https://blog.stratifylabs.co/device/2014-05-03-Applications-without-MMU/), `launch()` is used in lieu of the `exec()` and `fork()` function families.
 
 ## What to do Now
 
