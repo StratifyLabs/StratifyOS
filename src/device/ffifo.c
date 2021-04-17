@@ -266,9 +266,17 @@ int ffifo_close(const devfs_handle_t *handle) {
   return ffifo_close_local(cfgp, state);
 }
 
-int ffifo_open_local(const ffifo_config_t *config, ffifo_state_t *state) { return 0; }
+int ffifo_open_local(const ffifo_config_t *config, ffifo_state_t *state) {
+  MCU_UNUSED_ARGUMENT(config);
+  MCU_UNUSED_ARGUMENT(state);
+  return 0;
+}
 
-int ffifo_close_local(const ffifo_config_t *config, ffifo_state_t *state) { return 0; }
+int ffifo_close_local(const ffifo_config_t *config, ffifo_state_t *state) {
+  MCU_UNUSED_ARGUMENT(config);
+  MCU_UNUSED_ARGUMENT(state);
+  return 0;
+}
 
 int ffifo_ioctl_local(
   const ffifo_config_t *config,

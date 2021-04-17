@@ -1,6 +1,5 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
-
 #include <stdio.h>
 #include <unistd.h>
 
@@ -49,13 +48,11 @@ void usbd_control_root_init(void *args) {
     MCU_EVENT_FLAG_DATA_READY | MCU_EVENT_FLAG_WRITE_COMPLETE | MCU_EVENT_FLAG_SETUP;
   action.prio = 0;
   if (sos_config.usb.set_action(context->handle, &action) < 0) {
-    sos_handle_event(
-      SOS_EVENT_ROOT_FATAL, "usbd control setaction");
+    sos_handle_event(SOS_EVENT_ROOT_FATAL, "usbd control setaction");
   }
 
   if (usbd_control_attach(context->handle) < 0) {
-    sos_handle_event(
-      SOS_EVENT_ROOT_FATAL, "usbd control attach");
+    sos_handle_event(SOS_EVENT_ROOT_FATAL, "usbd control attach");
   }
 }
 
@@ -112,6 +109,7 @@ int usbd_control_handler(void *context_object, const mcu_event_t *usb_event) {
 }
 
 void *usbd_control_add_ptr(usbd_control_t *context, void *ptr, u32 value) {
+  MCU_UNUSED_ARGUMENT(context);
   return (char *)ptr + value;
 }
 

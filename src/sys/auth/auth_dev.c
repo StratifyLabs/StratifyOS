@@ -1,6 +1,5 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
-
 #include "../scheduler/scheduler_local.h"
 #include "config.h"
 #include "cortexm/task.h"

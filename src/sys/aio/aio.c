@@ -69,6 +69,8 @@ int aio_error(const struct aiocb *aiocbp /*! a pointer to the AIO data struture 
  * \return -1 with errno set to ENOTSUP
  */
 int aio_fsync(int op, struct aiocb *aiocbp) {
+  MCU_UNUSED_ARGUMENT(op);
+  MCU_UNUSED_ARGUMENT(aiocbp);
   // all data is already synced
   errno = ENOTSUP;
   return -1;
@@ -244,10 +246,8 @@ void svcall_suspend(void *args) {
 
       // first check to see if we block on aio suspend (if anything is complete don't
       // block)
-      if ((p->list[i]->async.buf == NULL) && (p->block_on_all == 0)) { // if op.buf is
-                                                                       // NULL the
-                                                                       // operation is
-                                                                       // complete
+      // if op.buf is NULL the operation is complete
+      if ((p->list[i]->async.buf == NULL) && (p->block_on_all == 0)) {
         is_suspend = 0;
         break;
       }
@@ -271,6 +271,7 @@ void svcall_suspend(void *args) {
 }
 
 int sysfs_aio_data_transfer_callback(void *context, const mcu_event_t *event) {
+  MCU_UNUSED_ARGUMENT(event);
   struct aiocb *aiocbp;
   unsigned int tid;
   aiocbp = context;

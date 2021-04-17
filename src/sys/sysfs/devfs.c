@@ -167,7 +167,9 @@ int devfs_fstat(const void *cfg, void *handle, struct stat *st) {
   st->st_dev = 0;
   st->st_rdev = num;
   st->st_ino = num;
-  st->st_size = 0;
+  //block devices can have a size value
+  st->st_size = dev->size;
+
   st->st_uid = dev->uid;
   st->st_mode = dev->mode;
   return 0;

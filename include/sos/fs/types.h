@@ -62,6 +62,7 @@ typedef struct {
   u16 mode /*! The file access values */;
   devfs_driver_t driver /*! \brief The driver functions */;
   devfs_handle_t handle /*! \brief The configuration for the device */;
+  u32 size /*! \brief Size of the device (used with block devices) */;
 } devfs_device_t;
 
 #define DEVFS_IOC_IDENT_CHAR 'D'

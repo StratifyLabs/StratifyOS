@@ -178,11 +178,19 @@ int devfs_mcu_ioctl(
     .handle.config = handle_config                                                       \
   }
 
+#define DEVFS_BLOCK_DEVICE(                                                              \
+  device_name, periph_name, handle_port, handle_config, handle_state, mode_value,        \
+  uid_value, device_size)                                                                \
+  {                                                                                      \
+    .name = device_name, DEVFS_MODE(mode_value, uid_value, S_IFBLK),                     \
+    .size = device_size, DEVFS_DRIVER(periph_name), .handle.port = handle_port,           \
+    .handle.state = handle_state, .handle.config = handle_config                         \
+  }
+
 #define DEVFS_TERMINATOR                                                                 \
   { .driver.open = NULL }
 
-static inline bool devfs_is_terminator(const devfs_device_t *dev);
-bool devfs_is_terminator(const devfs_device_t *dev) {
+static inline bool devfs_is_terminator(const devfs_device_t *dev){
   if (dev->driver.open == NULL) {
     return true;
   }
