@@ -1,13 +1,12 @@
 # Stratify OS Overview
 
-Stratify OS is not like any other microcontroller operating system you have ever used. [It was built from the ground up for the ARM Cortex M architecture](Guide-ARM-Cortex-M.md) to solve the challenge of increasingly complex hardware designs and expanding software requirements. 
+Stratify OS is not like any other microcontroller operating system you have ever used. [It was built from the ground up for the ARM Cortex M architecture](ARM-Cortex-M.md) to solve the challenge of increasingly complex hardware designs and expanding software requirements. 
 
 It does this by:
 
 - Building and Installing the OS independent of applications
-- Providing portable applications that can be run on any hardware with Stratify OS installed
+- Providing portable applications that can be run on any hardware running Stratify OS
 - Providing a cloud platform for board firmware updates, sharing pre-built applications, as well as storing and retrieving data
-
 
 > **Note.** 
 >
@@ -15,36 +14,21 @@ It does this by:
 >
 > With Stratify OS, module manufacturers can define the BSP and root applications while allowing customers to build and run applications that run native C/C++ applications on the MCU using an easy-to-use POSIX API.
 
-
-
 ## OS Built and Installed Independent of Applications
 
 The first thing to understand is that the OS is built and installed independent of applications. A project for building Stratify OS for a particular board is called an OS package. The OS package is built using:
 
 - Board specific configuration tables
 - Any board specific code provided by the board manufacturer (such as custom drivers or kernel requests)
-- Stratify OS library (libsos_sys)
-- Stratify OS MCU family library (libsos_mcu_family) 
-  - e.g., STM32F446xx, STM32F723xx, LPC17xx, LPC40xx
-
-Stratify Labs provides OS packages for many popular microcontroller development boards including:
-
-- Nucleo-F412ZG
-- Nucleo-F429ZI
-- Nucleo-F446ZE
-- Mbed LPC1768
-- STM32F411E-DISCO
-- Nucleo-F746ZG
-- Nucleo-F767ZI
-- And more
+- System level routines (if applicable)
 
 To get started on Stratify OS, [you can install a pre-built bootloader and kernel image in a matter of minutes](https://app.stratifylabs.co).
 
-For a custom OS package, you just have to change a few configuration tables which define which pins and drivers you want to include in the build. The OS package uses link level configuration settings which means you don't have to build the Stratify OS libraries in order to create a custom OS package.
+For a custom OS package, please see the [porting guide](Porting.md).
 
 ### Stratify OS Library
 
-The Stratify OS library includes code that is developed for the ARM Cortex M architecture to accomplish context switching, filesystem abstraction, mutexes, threads, etc. The OS functionality is accessible via a [POSIX API](../api/) including:
+The Stratify OS library includes code that is developed for the ARM Cortex M architecture to accomplish context switching, filesystem abstraction, mutexes, threads, etc. The OS functionality is accessible via a POSIX API including:
 
 - unistd: e.g., `open()`, `close()`, `read()`, `write()`, `ioctl()`, and `usleep()`
 - pthreads: e.g., `pthread_create()`
@@ -60,66 +44,6 @@ The Stratify OS library is built per instruction set architecture and ABI:
   - Hard Float v4 (Cortex M4F)
   - Hard Float v5 single precision (Cortex M7)
   - Hard Float v5 double precision (Cortex M7)
-
-### Stratify OS MCU Library
-
-The mcu specific libraries provide low level abstraction at the chip level. OS drivers use the MCU libraries to provide access to hardware.
-
-For example, the OS package includes a table of devices with entries like this:
-
-```c
-DEVFS_DEVICE("spi0", mcu_spi, 0, 0, 0, 0666, USER_ROOT, S_IFCHR)
-```
-
-The line above means that "/dev/spi0" will use the "mcu_spi" driver on port 0 with no default configuration provided, with access permissions `0666`, root ownership, and character device.
-
-For the OS package to build correctly, the MCU library must implement the following functions:
-
-```c
-int mcu_spi_open(const devfs_handle_t * handle);
-int mcu_spi_close(const devfs_handle_t * handle);
-int mcu_spi_ioctl(const devfs_handle_t * handle, int request, void * ctl);
-int mcu_spi_write(const devfs_handle_t * handle, const void * buf, int nbyte);
-int mcu_spi_read(const devfs_handle_t * handle, void * buf, int byte);
-```
-
-The file `<sos/dev/spi.h>` defines the IOCTL calls and data structures required to use and implement the driver. [The application uses the following code for driver access](../Guide-Device-Drivers/):
-
-```c
-#include <unistd.h>
-#include <fcntl.h>
-#include <dev/sos/spi.h>
-
-int fd;
-char buffer[32];
-spi_attr_t attr;
-fd = open("/dev/spi0", O_RDWR);
-
-attr.o_flags = SPI_FLAG_SET_MASTER | SPI_FLAG_IS_MODE0 | SPI_FLAG_IS_FORMAT_SPI;
-attr.width = 8;
-attr.freq = 1000000;
-attr.pin_assignment.mosi = mcu_pin(0,0);
-attr.pin_assignment.miso = mcu_pin(0,1);
-attr.pin_assignment.sck = mcu_pin(0,2);
-attr.pin_assignment.cs = mcu_pin(0xff,0xff); //only used by slave
-ioctl(fd, I_SPI_SETATTR, &attr);
-read(fd, buffer, 32);
-write(fd, buffer, 32);
-
-close(fd);
-```
-
-The [Stratify API](../StratifyAPI/) provides C++ wrappers for the above code to simplify hardware use.
-
-The MCU library is built at the chip level as needed. A static library is built for each chip family and a linker script is provided to set the memory attributes for each chip within the family.
-
-- lpc17xx
-- lpc407x_8x
-- stm32f446xx
-- stm32f411xe
-- stm32f429xx
-- stm32f401xc
-- stm32f412zx
 
 **[Learn More About Device Drivers](../Guide-Device-Drivers/)**
 
