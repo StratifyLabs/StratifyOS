@@ -5,6 +5,7 @@
 
 #include "cortexm/task.h"
 #include "sos/sos.h"
+#include "sos/debug.h"
 #include "sos/symbols.h"
 #include "task_local.h"
 
@@ -226,7 +227,6 @@ void task_svcall_new_task(new_task_t *task) {
 
     task->tid = i;
   }
-
 }
 
 void task_root_delete(int id) {
@@ -247,31 +247,29 @@ void task_root_resetstack(int id) {
 }
 
 void *task_get_sbrk_stack_ptr(struct _reent *reent_ptr) {
-  if (sos_task_table != NULL) {
-    int i;
-    for (i = 0; i < task_get_total(); i++) {
+  int i;
+  for (i = 0; i < task_get_total(); i++) {
 
-      // If the reent and global reent are the same then this is the main thread
-      if (
-        (sos_task_table[i].reent == reent_ptr)
-        && (sos_task_table[i].global_reent == reent_ptr)) {
+    // If the reent and global reent are the same then this is the main thread
+    if (
+      (sos_task_table[i].reent == reent_ptr)
+      && (sos_task_table[i].global_reent == reent_ptr)) {
 
-        // If the main thread is not in use, the stack is not valid
-        if (task_used_asserted(i)) {
-          if ((i == task_get_current())) {
-            void *stackaddr;
-            // If the main thread is the current thread return the current stack
-            // security? can set stackaddr to any value -- only write valid locations
-            cortexm_svcall(cortexm_svcall_get_thread_stack_ptr, &stackaddr);
-            return stackaddr;
-          } else {
-            // Return the stack value from thread 0 if another thread is running
-            return (void *)sos_task_table[i].sp;
-          }
+      // If the main thread is not in use, the stack is not valid
+      if (task_used_asserted(i)) {
+        if (i == task_get_current()) {
+          void *stackaddr;
+          // If the main thread is the current thread return the current stack
+          // security? can set stackaddr to any value -- only write valid locations
+          cortexm_svcall(cortexm_svcall_get_thread_stack_ptr, &stackaddr);
+          return stackaddr;
         } else {
-          // The main thread is not in use, so there is no valid stack value
-          return NULL;
+          // Return the stack value from thread 0 if another thread is running
+          return (void *)sos_task_table[i].sp;
         }
+      } else {
+        // The main thread is not in use, so there is no valid stack value
+        return NULL;
       }
     }
   }
@@ -318,8 +316,11 @@ u64 task_gettime(int tid) {
   }
 }
 
+
+
 void switch_contexts() {
   // Save the PSP to the current task's stack pointer
+  SOS_DEBUG_ENTER_CYCLE_SCOPE_AVERAGE();
   asm volatile("MRS %0, psp\n\t" : "=r"(sos_task_table[m_task_current].sp));
 
   if (SCB->SHCSR & (1 << 15)) {
@@ -410,6 +411,7 @@ void switch_contexts() {
   } else {
     mpu_enable();
   }
+  SOS_DEBUG_EXIT_CYCLE_SCOPE_AVERAGE(SOS_DEBUG_TASK, switch_contexts, 5000);
 
 #endif
 
@@ -482,6 +484,7 @@ void cortexm_pendsv_handler() {
 
   // disable interrupts -- Re-entrant scheduler issue #130
   m_task_exec_count = 0;
+  SOS_DEBUG_ENTER_CYCLE_SCOPE_AVERAGE();
   cortexm_disable_interrupts();
   int i;
   for (i = 1; i < task_get_total(); i++) {
@@ -502,6 +505,7 @@ void cortexm_pendsv_handler() {
 
   // enable interrupts -- Re-entrant scheduler issue
   cortexm_enable_interrupts();
+  SOS_DEBUG_EXIT_CYCLE_SCOPE_AVERAGE(SOS_DEBUG_TASK, pend_critical, 1000);
 
   // switch contexts if current task is not executing or it wants to yield
   if (

@@ -40,6 +40,9 @@ int mcu_core_getinfo(const devfs_handle_t *handle, void *arg) MCU_ROOT_CODE;
 int mcu_core_setattr(const devfs_handle_t *handle, void *arg) MCU_ROOT_CODE;
 int mcu_core_setaction(const devfs_handle_t *handle, void *arg) MCU_ROOT_CODE;
 
+int mcu_core_setclkout(const devfs_handle_t *handle, void *arg) MCU_ROOT_CODE;
+int mcu_core_setclkdivide(const devfs_handle_t *handle, void *arg) MCU_ROOT_CODE;
+
 // below are undocumented calls that can be made by BSPs but aren't accessible to
 // applications
 

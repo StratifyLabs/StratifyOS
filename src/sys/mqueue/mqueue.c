@@ -150,13 +150,12 @@ static mq_t *mq_find_named(const char *name) {
 }
 
 static ssize_t mq_cur_msgs(const mq_t *mq) {
-  ssize_t i;
   ssize_t count = 0;
 
   struct message *imsg = mq->msg_table;
   int entry_size = mq_entry_size(mq);
 
-  for (i = 0; i < mq->max_msgs; i++) {
+  for (size_t i = 0; i < mq->max_msgs; i++) {
     if (imsg->size != 0) {
       count++;
     }
@@ -198,17 +197,15 @@ static mq_t *mq_find_free() {
 }
 
 static void mq_init_table(mq_t *mq) {
-  int i;
   struct message *imsg = mq->msg_table;
   int entry_size = mq_entry_size(mq);
-  for (i = 0; i < mq->max_msgs; i++) {
+  for (size_t i = 0; i < mq->max_msgs; i++) {
     imsg->size = 0;
     imsg = mq_next_message(imsg, entry_size);
   }
 }
 
 static struct message *mq_find_oldest_highest(const mq_t *mq) {
-  int i;
   struct message *msg;
   int max_prio = 0;
   int max_age = INT_MAX;
@@ -217,7 +214,7 @@ static struct message *mq_find_oldest_highest(const mq_t *mq) {
 
   msg = 0;
   // find the oldest, highest priority message from the queue
-  for (i = 0; i < mq->max_msgs; i++) {
+  for (size_t i = 0; i < mq->max_msgs; i++) {
     if (imsg->size != 0) {
       if (imsg->prio > max_prio) {
         max_prio = imsg->prio;
@@ -237,10 +234,9 @@ static struct message *mq_find_oldest_highest(const mq_t *mq) {
 }
 
 static struct message *mq_find_free_msg(const mq_t *mq) {
-  int i;
   struct message *imsg = mq->msg_table;
   int entry_size = mq_entry_size(mq);
-  for (i = 0; i < mq->max_msgs; i++) {
+  for (size_t i = 0; i < mq->max_msgs; i++) {
     if (imsg->size == 0) {
       return imsg;
     }
@@ -309,12 +305,10 @@ int mq_getattr(mqd_t mqdes, struct mq_attr *mqstat) {
   mq_t *mq = mq_get_ptr(mqdes);
   if (mq == NULL) {
     errno = EBADF;
-    sos_debug_log_error(SOS_DEBUG_MQUEUE, "Cannot get attr of null");
     return -1;
   }
 
   // read the mq in priv mode
-  sos_debug_log_error(SOS_DEBUG_MQUEUE, "Cannot get attr of null");
   mqstat->mq_maxmsg = mq->max_msgs;
   mqstat->mq_msgsize = mq->max_size;
   mqstat->mq_curmsgs = mq_cur_msgs(mq);
@@ -608,6 +602,8 @@ void mq_flush(mqd_t mqdes) {
  *
  */
 int mq_notify(mqd_t mqdes, const struct sigevent *notification) {
+  MCU_UNUSED_ARGUMENT(mqdes);
+  MCU_UNUSED_ARGUMENT(notification);
   errno = ENOTSUP;
   return -1;
 }

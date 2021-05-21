@@ -27,6 +27,7 @@ static int cancel_read_action(const devfs_handle_t *handle) {
 }
 
 int event_data_ready(void *context, const mcu_event_t *event) {
+  MCU_UNUSED_ARGUMENT(event);
   const devfs_handle_t *handle = context;
   const device_fifo_config_t *config = handle->config;
   device_fifo_state_t *state = handle->state;
@@ -36,7 +37,7 @@ int event_data_ready(void *context, const mcu_event_t *event) {
 
   int result = state->async.result;
   u8 *source_buffer = config->read_buffer;
-  u8 *dest_buffer = config->fifo.buffer;
+  u8 *dest_buffer = (u8*)config->fifo.buffer;
   fifo_state_t *fifo_state = &state->fifo;
 
   do {

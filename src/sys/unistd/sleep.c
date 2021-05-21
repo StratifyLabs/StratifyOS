@@ -19,6 +19,7 @@ static void svcall_sleep(void *args) MCU_ROOT_EXEC_CODE;
  * \return 0
  */
 unsigned int sleep(unsigned int seconds /*! The number of seconds to sleep */) {
+  SOS_DEBUG_ENTER_TIMER_SCOPE(sleep);
   struct mcu_timeval interval;
   if (task_get_current() != 0) {
     scheduler_check_cancellation();
@@ -32,6 +33,7 @@ unsigned int sleep(unsigned int seconds /*! The number of seconds to sleep */) {
     }
     cortexm_svcall(svcall_sleep, &interval);
   }
+  sos_debug_log_datum(SOS_DEBUG_UNISTD, "sleep_us:%ld", sos_realtime() - sos_debug_timer_scope_sleep - seconds*1000000UL);
   return 0;
 }
 

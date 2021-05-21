@@ -1,6 +1,5 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
-
 /*! \addtogroup SYSCALLS
  * @{
  */
@@ -16,6 +15,7 @@
 
 #include "cortexm/cortexm.h"
 #include "cortexm/task.h"
+#include "sos/debug.h"
 
 static void svcall_update_guard(void *args) MCU_ROOT_EXEC_CODE;
 
@@ -42,6 +42,11 @@ void *_sbrk_r(struct _reent *reent_ptr, ptrdiff_t incr) {
   cortexm_svcall(svcall_update_guard, base + size + incr);
 
   reent_ptr->procmem_base->size += incr;
+
+  sos_debug_log_datum(
+    SOS_DEBUG_MALLOC, "heap%d:resize,%d,%d", getpid(), base,
+    reent_ptr->procmem_base->size);
+
   return base + size;
 }
 

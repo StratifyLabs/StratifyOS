@@ -1,6 +1,5 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
-
 /*! \addtogroup SCHED
  * @{
  *
@@ -51,9 +50,18 @@ int scheduler_create_process(
     return -1;
   }
 
+#if SOS_DEBUG
+  const pid_t pid = task_get_pid(tid);
   sos_debug_log_info(
-    SOS_DEBUG_SYS, "start process id:%d pid:%d parent:%d (%d)", tid, task_get_pid(tid),
+    SOS_DEBUG_SYS, "start process id:%d pid:%d parent:%d (%d)", tid, pid,
     task_get_parent(tid), task_get_current());
+
+  sos_debug_log_directive(
+    SOS_DEBUG_MALLOC, "heap:Process %d Heap:heap%d:Process %d Heap Utilization over time",
+    pid, pid, pid);
+
+#endif
+
   return task_get_pid(tid);
 }
 

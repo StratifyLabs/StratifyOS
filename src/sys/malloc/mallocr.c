@@ -1,10 +1,9 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
-
 #include "cortexm/cortexm.h"
-#include <sdk/types.h>
 #include "sos/sos.h"
 #include "sys/malloc/malloc_local.h"
+#include <sdk/types.h>
 #include <sys/unistd.h>
 #include <unistd.h>
 
@@ -142,6 +141,7 @@ void malloc_free_task_r(struct _reent *reent_ptr, int task_id) {
 }
 
 void _free_r(struct _reent *reent_ptr, void *addr) {
+  SOS_DEBUG_ENTER_TIMER_SCOPE(_free_r);
   int tmp;
 
   malloc_chunk_t *chunk;
@@ -219,10 +219,12 @@ void _free_r(struct _reent *reent_ptr, void *addr) {
   malloc_set_chunk_free(chunk, chunk->header.num_chunks);
   cleanup_memory(reent_ptr, 0);
 
-  sos_debug_log_info(
-    SOS_DEBUG_MALLOC, "f:%d %p %p %p", getpid(), addr, reent_ptr, _GLOBAL_REENT);
-
   __malloc_unlock(reent_ptr);
+  SOS_DEBUG_EXIT_TIMER_SCOPE(SOS_DEBUG_MALLOC, _free_r);
+
+  sos_debug_log_datum(SOS_DEBUG_MALLOC, "heap%d:free,%d", getpid(), addr);
+
+
 }
 
 int get_more_memory(struct _reent *reent_ptr, u32 size, int is_new_heap) {
@@ -296,7 +298,7 @@ void *_malloc_r(struct _reent *reent_ptr, size_t size) {
   malloc_chunk_t *chunk;
   alloc = NULL;
 
-  sos_debug_log_info(SOS_DEBUG_MALLOC, "%s():%d->", __FUNCTION__, __LINE__);
+  SOS_DEBUG_ENTER_TIMER_SCOPE(_malloc_r);
 
   if (reent_ptr == NULL) {
     errno = EINVAL;
@@ -309,7 +311,6 @@ void *_malloc_r(struct _reent *reent_ptr, size_t size) {
   num_chunks = malloc_calc_num_chunks(size);
 
   if (reent_ptr->procmem_base->size == 0) {
-    sos_debug_log_info(SOS_DEBUG_MALLOC, "Get more memory");
     if (get_more_memory(reent_ptr, size, 1) < 0) {
       __malloc_unlock(reent_ptr);
       errno = ENOMEM;
@@ -370,9 +371,9 @@ void *_malloc_r(struct _reent *reent_ptr, size_t size) {
 
   __malloc_unlock(reent_ptr);
 
-  sos_debug_log_info(
-    SOS_DEBUG_MALLOC, "a:%d,%d %p %d (%d) %p %p<-", getpid(), task_get_current(), alloc,
-    size, num_chunks * MALLOC_CHUNK_SIZE, _GLOBAL_REENT->procmem_base, _GLOBAL_REENT);
+  SOS_DEBUG_EXIT_TIMER_SCOPE(SOS_DEBUG_MALLOC, _malloc_r);
+
+  sos_debug_log_datum(SOS_DEBUG_MALLOC, "heap%d:alloc,%d,%d", getpid(), alloc, size);
 
   return alloc;
 }

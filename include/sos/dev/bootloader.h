@@ -81,6 +81,8 @@ typedef struct MCU_PACK {
   void (*event)(int, void *);
   /*! Usage specific pointer */
   void *data;
+  /* Hardare ID */
+  u32 hardware_id;
 } bootloader_api_t;
 
 // only available to bootloader

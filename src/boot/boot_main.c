@@ -16,11 +16,13 @@
 #include "usbd/control.h"
 
 void boot_invoke_bootloader(void *args) {
+  MCU_UNUSED_ARGUMENT(args);
   // write SW location with key and then reset
   u32 *bootloader_software_request_address =
     (u32 *)sos_config.boot.software_bootloader_request_address;
   *bootloader_software_request_address =
     sos_config.boot.software_bootloader_request_value;
+
   cortexm_reset(0);
 }
 

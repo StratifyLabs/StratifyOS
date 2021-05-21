@@ -34,11 +34,11 @@ void cortexm_svcall_handler() {
     // this needs to be a fault
   }
 #if 0
-	//add this when security update is ready
-	if( cortexm_svcall_validation != call ){
-		//this is a security violation
-	}
-	cortexm_svcall_validation = 0;
+  // add this when security update is ready
+  if (cortexm_svcall_validation != call) {
+    // this is a security violation
+  }
+  cortexm_svcall_validation = 0;
 #endif
 }
 

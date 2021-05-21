@@ -272,6 +272,7 @@ int link_ioctl_delay(
   link_errno = reply.err_number;
   link_debug(LINK_DEBUG_MESSAGE, "Replied with %d (%d)", reply.err, link_errno);
   if (reply.err < 0) {
+    errno = link_errno;
     link_debug(LINK_DEBUG_WARNING, "Failed to ioctl file (%d)", link_errno);
   }
   return reply.err;

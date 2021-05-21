@@ -5,10 +5,10 @@
  *
  * \ingroup CORE
  *
- * \details The Direct memory access allows for direct memory transfers from memory to memory or
- * memory to/from peripherals.  Various peripheral APIs use the DMA to asynchronously read/write
- * peripheral data.  The DMA should not be used directly by the application because it
- * may conflict with peripheral IO's use of the DMA.
+ * \details The Direct memory access allows for direct memory transfers from memory to
+ * memory or memory to/from peripherals.  Various peripheral APIs use the DMA to
+ * asynchronously read/write peripheral data.  The DMA should not be used directly by the
+ * application because it may conflict with peripheral IO's use of the DMA.
  *
  *
  *
@@ -26,7 +26,7 @@
 extern "C" {
 #endif
 
-#include "types.h"
+#include <sdk/types.h>
 
 #ifndef dma_no_sleep_ram
 /* \details This attribute can be applied to RAM so
@@ -42,29 +42,26 @@ extern "C" {
 #define dma_no_sleep_ram
 #endif
 
-typedef struct dma_lli_t{
-	const void * src;
-	void * dest;
-	struct dma_lli_t * next;
-	u32 ctrl;
+typedef struct dma_lli_t {
+  const void *src;
+  void *dest;
+  struct dma_lli_t *next;
+  u32 ctrl;
 } dma_lli_t;
-
 
 /*! \details This lists the valid DMA operations.
  */
 enum {
-	DMA_MEM_TO_MEM /*! A memory to memory DMA operation */,
-	DMA_MEM_TO_PERIPH /*! A memory to peripheral DMA operation */,
-	DMA_PERIPH_TO_MEM /*! A peripheral to memory DMA operation */,
-	DMA_PERIPH_TO_PERIPH /*! A peripheral to peripheral DMA operation */
+  DMA_MEM_TO_MEM /*! A memory to memory DMA operation */,
+  DMA_MEM_TO_PERIPH /*! A memory to peripheral DMA operation */,
+  DMA_PERIPH_TO_MEM /*! A peripheral to memory DMA operation */,
+  DMA_PERIPH_TO_PERIPH /*! A peripheral to peripheral DMA operation */
 };
-
 
 /*! \details This function opens the DMA peripheral.
  */
-void mcu_dma_init(int mode /*! Flags which specify how the DMA is configured */) MCU_ROOT_CODE;
-
-
+void mcu_dma_init(int mode /*! Flags which specify how the DMA is configured */)
+  MCU_ROOT_CODE;
 
 /*! \details This function halts the specified DMA channel.
  */
@@ -74,25 +71,25 @@ int mcu_dma_halttransfer(int chan /*! The channel to halt */) MCU_ROOT_CODE;
  */
 void mcu_dma_exit() MCU_ROOT_CODE;
 
-int mcu_dma_transferlist(int operation,
-								 int chan,
-								 dma_lli_t * linked_list,
-								 mcu_callback_t callback,
-								 void * context,
-								 u32 dest_periph,
-								 u32 src_periph
-								 ) MCU_ROOT_CODE;
+int mcu_dma_transferlist(
+  int operation,
+  int chan,
+  dma_lli_t *linked_list,
+  mcu_callback_t callback,
+  void *context,
+  u32 dest_periph,
+  u32 src_periph) MCU_ROOT_CODE;
 
-int mcu_dma_transfer(int operation,
-							int chan,
-							void * dest,
-							const void * src,
-							int ctrl,
-							mcu_callback_t cb,
-							void * context,
-							u32 dest_periph,
-							u32 src_periph) MCU_ROOT_CODE;
-
+int mcu_dma_transfer(
+  int operation,
+  int chan,
+  void *dest,
+  const void *src,
+  int ctrl,
+  mcu_callback_t cb,
+  void *context,
+  u32 dest_periph,
+  u32 src_periph) MCU_ROOT_CODE;
 
 #ifdef __cplusplus
 }

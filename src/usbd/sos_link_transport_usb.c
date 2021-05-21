@@ -27,7 +27,6 @@ const msft_string_t sos_link_transport_usb_msft_string = USBD_ASSIGN_STRING(
   '0',
   USBD_MSFT_VENDOR_CODE_BYTE);
 
-
 int sos_link_transport_usb_msft_string_event(
   void *context_object,
   const mcu_event_t *usb_event) {
@@ -97,26 +96,24 @@ link_transport_phy_t sos_link_transport_usb_open(
   usleep(100 * 1000);
 
   // open USB
-  sos_debug_log_info(SOS_DEBUG_USB | SOS_DEBUG_LINK, "Open link-phy-usb");
+  sos_debug_log_info(SOS_DEBUG_LINK, "Open link-phy-usb");
   errno = 0;
   fd = open("/dev/link-phy-usb", O_RDWR);
   if (fd < 0) {
-    sos_debug_log_error(
-      SOS_DEBUG_USB | SOS_DEBUG_LINK, "Failed to open link-phy-usb (%d)", errno);
+    sos_debug_log_error(SOS_DEBUG_LINK, "Failed to open link-phy-usb (%d)", errno);
     return LINK_PHY_ERROR;
   }
 
   // set USB attributes
-  sos_debug_log_info(SOS_DEBUG_USB | SOS_DEBUG_LINK, "Set USB attr fd:%d", fd);
+  sos_debug_log_info(SOS_DEBUG_LINK, "Set USB attr fd:%d", fd);
 
   result = ioctl(fd, I_USB_SETATTR, usb_attr);
   if (result < 0) {
-    sos_debug_log_error(
-      SOS_DEBUG_USB | SOS_DEBUG_LINK, "Failed to set USB attr (%d, %d)", result, errno);
+    sos_debug_log_error(SOS_DEBUG_LINK, "Failed to set USB attr (%d, %d)", result, errno);
     return LINK_PHY_ERROR;
   }
 
-  sos_debug_log_info(SOS_DEBUG_USB | SOS_DEBUG_LINK, "USB Dev Init");
+  sos_debug_log_info(SOS_DEBUG_LINK, "USB Dev Init");
   // initialize USB device
   cortexm_svcall(usbd_control_svcall_init, context);
 

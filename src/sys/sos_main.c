@@ -19,8 +19,25 @@ int sos_main() {
   }
 
   if (sos_config.debug.initialize) {
+#if SOS_DEBUG
+    cortexm_initialize_dwt();
+#endif
     sos_config.debug.initialize();
+
+    sos_debug_log_directive(SOS_DEBUG_MALLOC | SOS_DEBUG_TASK | SOS_DEBUG_SCHEDULER, "reset");
+    sos_debug_log_directive(SOS_DEBUG_MALLOC, "hist:Malloc Perf:_malloc_r_us:malloc() execution time in us");
+    sos_debug_log_directive(SOS_DEBUG_MALLOC, "hist:Free Perf:_free_r_us:free() execution time in us");
+    sos_debug_log_directive(SOS_DEBUG_PTHREAD, "hist:Mutex Lock Perf:pthread_mutex_lock_us:pthread_mutex_lock() execution time in us");
+    sos_debug_log_directive(SOS_DEBUG_PTHREAD, "hist:Mutex Unlock Perf:pthread_mutex_unlock_us:pthread_mutex_unlock() execution time in us");
+    sos_debug_log_directive(SOS_DEBUG_PTHREAD, "hist:Condition Perf:pthread_cond_timedwait_us:pthread_cond_timedwait() execution time in us");
+    sos_debug_log_directive(SOS_DEBUG_UNISTD, "hist:usleep Oversleep:usleep_us:usleep() oversleep time in us");
+    sos_debug_log_directive(SOS_DEBUG_UNISTD, "hist:sleep Oversleep:sleep_us:sleep() oversleep time in us");
+    sos_debug_log_directive(SOS_DEBUG_TASK, "hist:Context Switch Cycles:switch_contexts:Average number of cycles for context switching");
+    sos_debug_log_directive(SOS_DEBUG_TASK, "hist:PendSV Critical Cycles:pend_critical:Average number of cycles interrupts are off on PendSV");
+    sos_debug_log_directive(SOS_DEBUG_SCHEDULER, "hist:Scheduler Critical Cycles:scheduler_critical:Average number of cycles interrupts are off when stopping a task");
+    sos_debug_log_directive(SOS_DEBUG_MALLOC, "heap:OS Heap:heap0:OS Heap Utilization over time");
   }
+
 
   check_config();
 

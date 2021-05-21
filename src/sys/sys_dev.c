@@ -19,7 +19,10 @@
 static int read_task(sys_taskattr_t *task);
 static int sys_setattr(const devfs_handle_t *handle, void *ctl);
 
-int sys_open(const devfs_handle_t *handle) { return 0; }
+int sys_open(const devfs_handle_t *handle) {
+  MCU_UNUSED_ARGUMENT(handle);
+  return 0;
+}
 
 int sys_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
   sys_id_t *id = ctl;
@@ -54,7 +57,9 @@ int sys_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
     }
     strncpy(info->sos_git_hash, SOS_GIT_HASH, 15);
     if (sos_config.sys.get_serial_number) {
-      sos_config.sys.get_serial_number(&(info->serial));
+      mcu_sn_t serial_number;
+      sos_config.sys.get_serial_number(&serial_number);
+      info->serial = serial_number;
     }
     info->hardware_id = cortexm_get_hardware_id();
     info->path_max = PATH_MAX;
@@ -135,15 +140,22 @@ int sys_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
   return SYSFS_SET_RETURN(EINVAL);
 }
 
-int sys_read(const devfs_handle_t *handle, devfs_async_t *rop) {
+int sys_read(const devfs_handle_t *handle, devfs_async_t *async) {
+  MCU_UNUSED_ARGUMENT(handle);
+  MCU_UNUSED_ARGUMENT(async);
   return SYSFS_SET_RETURN(ENOTSUP);
 }
 
-int sys_write(const devfs_handle_t *handle, devfs_async_t *wop) {
+int sys_write(const devfs_handle_t *handle, devfs_async_t *async) {
+  MCU_UNUSED_ARGUMENT(handle);
+  MCU_UNUSED_ARGUMENT(async);
   return SYSFS_SET_RETURN(ENOTSUP);
 }
 
-int sys_close(const devfs_handle_t *handle) { return 0; }
+int sys_close(const devfs_handle_t *handle) {
+  MCU_UNUSED_ARGUMENT(handle);
+  return 0;
+}
 
 int read_task(sys_taskattr_t *task) {
   int ret;
@@ -196,6 +208,7 @@ int read_task(sys_taskattr_t *task) {
 }
 
 int sys_setattr(const devfs_handle_t *handle, void *ctl) {
+  MCU_UNUSED_ARGUMENT(handle);
   const sys_attr_t *attr = ctl;
 
   if (attr == 0) {

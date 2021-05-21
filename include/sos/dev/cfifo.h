@@ -25,38 +25,37 @@
 #define CFIFO_IOC_CHAR 'M'
 
 enum {
-	CFIFO_FLAG_NONE = 0,
+  CFIFO_FLAG_NONE = 0,
 };
 
 typedef struct MCU_PACK {
-	u32 o_flags /*! Fifo flags */;
-	u16 count /*! Total number of channels in the fifo */;
-	u16 size /*! The size of each channel */;
-	u32 o_ready /*! Bitmask of channels with at least one byte */;
-	u32 resd[8];
+  u32 o_flags /*! Fifo flags */;
+  u16 count /*! Total number of channels in the fifo */;
+  u16 size /*! The size of each channel */;
+  u32 o_ready /*! Bitmask of channels with at least one byte */;
+  u32 resd[8];
 } cfifo_info_t;
-
 
 /*! \brief FIFO Attributes
  * \details This structure defines the attributes of a FIFO.
  */
 typedef struct MCU_PACK {
-	u32 o_flags /*! Fifo flags */;
-	u32 resd[8];
+  u32 o_flags /*! Fifo flags */;
+  u32 resd[8];
 } cfifo_attr_t;
 
 typedef struct MCU_PACK {
-	u32 channel;
+  u32 channel;
 } cfifo_fiforequest_t;
 
 typedef struct MCU_PACK {
-	u32 channel;
-	fifo_attr_t attr;
+  u32 channel;
+  fifo_attr_t attr;
 } cfifo_fifoattr_t;
 
 typedef struct MCU_PACK {
-	u32 channel;
-	fifo_info_t info;
+  u32 channel;
+  fifo_info_t info;
 } cfifo_fifoinfo_t;
 
 #define I_CFIFO_GETVERSION _IOCTL(CFIFO_IOC_CHAR, I_MCU_GETVERSION)
@@ -72,10 +71,6 @@ typedef struct MCU_PACK {
 #define I_CFIFO_FIFOSETATTR _IOCTLW(CFIFO_IOC_CHAR, 7, cfifo_fifoattr_t)
 #define I_CFIFO_FIFOGETINFO _IOCTLRW(CFIFO_IOC_CHAR, 8, cfifo_fifoinfo_t)
 
-
-
-
 #endif /* SOS_DEV_CFIFO_H_ */
-
 
 /*! @} */

@@ -11,22 +11,39 @@
 
 #if SOS_DEBUG
 
-static const char *const flag_names[] = {"SYS", // 0
-                                         "SYS",
-                                         "SYS", // 2
-                                         "CM",
-                                         "DEV", // 4
-                                         "AIO",     "CRT",    "DIR",       "MALLOC", "MQ",
-                                         "PROCESS", // 10
-                                         "PTHREAD", "SCHED",  "SCHEDULER", "SEM",
-                                         "SIGNAL", // 15
-                                         "FS",      "SOCKET", "TIME",      "APPFS",
-                                         "LINK", // 20
-                                         "UNISTD",  "USB",    "DEVFS",     "SGFX",
-                                         "SON", // 25
-                                         "USER0",   "USER1",  "USER2",
-                                         "USER3", // 29
-                                         "USER4",   "USER5"};
+static const char *const flag_names[] = {
+  "NA", // 0
+  "NA", //1
+  "NA", // 2
+  "NA", // 3
+  "NA", // 4
+  "NA", // 5
+  "NA", // 6
+  "NA", // 7
+  "DEV", // 8
+  "AIO",//9
+  "CRT",//10
+  "MALLOC",//11
+  "PROCESS", // 12
+  "PTHREAD",//13
+  "SCHED",//14
+  "SCHEDULER",//15
+  "SIGNAL", // 16
+  "FS",//17
+  "SOCKET",//18
+  "APPFS",//19
+  "LINK", // 20
+  "UNISTD",//21
+  "DEVFS",//22
+  "SYS", // 23
+  "USER0",//24
+  "USER1",//25
+  "USER2", //26
+  "USER3", // 27
+  "USER4", //28
+  "USER5," //29
+  "TASK" //30
+};
 
 typedef struct {
   char buffer[256];
@@ -46,7 +63,9 @@ void sos_debug_svcall_write(void *args) {
 int sos_debug_printf(const char *format, ...) {
   va_list args;
   va_start(args, format);
-  return sos_debug_vprintf(format, args);
+  int is_running = 0;
+  const int result = sos_debug_vprintf(format, args);
+  return result;
 }
 
 int sos_debug_vprintf(const char *format, va_list args) {
@@ -62,14 +81,48 @@ int sos_debug_vprintf(const char *format, va_list args) {
 }
 
 void sos_debug_vlog(u32 o_flags, const char *intro, const char *format, va_list args) {
-  if ((sos_config.debug.flags & 0x03) >= (o_flags & 3)) { // check the level
-    if ((sos_config.debug.flags & o_flags) & ~0x03) {     // check the subsystem
-      u32 first_flag = __builtin_ctz(o_flags & ~0x03);
+  if ((sos_config.debug.flags & 0x07) >= (o_flags & 7)) { // check the level
+    if ((sos_config.debug.flags & o_flags) & ~0x07) {     // check the subsystem
+      u32 first_flag = __builtin_ctz(o_flags & ~0x07);
       sos_debug_printf("%s:%s:", intro, flag_names[first_flag]);
       sos_debug_vprintf(format, args);
       sos_debug_printf("\n");
     }
   }
+}
+
+void sos_debug_vlog_report(u32 o_flags, const char *intro, const char *format, va_list args) {
+  if ((sos_config.debug.flags & 0x07) >= (o_flags & 7)) { // check the level
+    if ((sos_config.debug.flags & o_flags) & ~0x07) {     // check the subsystem
+      sos_debug_printf("%s:", intro);
+      sos_debug_vprintf(format, args);
+      sos_debug_printf("\n");
+    }
+  }
+}
+
+void sos_debug_log_datum(u32 o_flags, const char *format, ...){
+  va_list args;
+  va_start(args, format);
+  sos_debug_vlog_report(SOS_DEBUG_DATUM | o_flags, "DAT", format, args);
+}
+
+void sos_debug_log_event(u32 o_flags, const char *format, ...){
+  va_list args;
+  va_start(args, format);
+  sos_debug_vlog_report(SOS_DEBUG_EVENT | o_flags, "EV", format, args);
+}
+
+void sos_debug_log_directive(u32 o_flags, const char *format, ...){
+  va_list args;
+  va_start(args, format);
+  sos_debug_vlog_report(SOS_DEBUG_DIRECTIVE | o_flags, "DIR", format, args);
+}
+
+void sos_debug_log_message(u32 o_flags, const char *format, ...){
+  va_list args;
+  va_start(args, format);
+  sos_debug_vlog_report(SOS_DEBUG_MESSAGE | o_flags, "MSG", format, args);
 }
 
 void sos_debug_log_info(u32 o_flags, const char *format, ...) {

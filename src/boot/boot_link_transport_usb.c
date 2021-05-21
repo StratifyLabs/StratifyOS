@@ -94,6 +94,7 @@ int boot_link_transport_usb_write(
   link_transport_phy_t handle,
   const void *buf,
   int nbyte) {
+  MCU_UNUSED_ARGUMENT(handle);
   int ret;
   ret = mcu_sync_io(
     m_context->handle, mcu_usb_write, SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT | 0x80, buf,
@@ -137,6 +138,7 @@ static int write_buffer(const char *src, int nbyte) {
 }
 
 int boot_link_transport_usb_read(link_transport_phy_t handle, void *buf, int nbyte) {
+  MCU_UNUSED_ARGUMENT(handle);
   int ret;
   int bytes_read;
   char buffer[SOS_LINK_TRANSPORT_USB_BULK_ENDPOINT_SIZE];
@@ -162,6 +164,7 @@ int boot_link_transport_usb_read(link_transport_phy_t handle, void *buf, int nby
 }
 
 int boot_link_transport_usb_close(link_transport_phy_t *handle) {
+  MCU_UNUSED_ARGUMENT(handle);
   return mcu_usb_close(m_context->handle);
 }
 
@@ -173,6 +176,7 @@ void boot_link_transport_usb_wait(int msec) {
 }
 
 void boot_link_transport_usb_flush(link_transport_phy_t handle) {
+  MCU_UNUSED_ARGUMENT(handle);
   m_read_head = 0;
   m_read_tail = 0;
 }

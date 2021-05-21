@@ -73,16 +73,23 @@ void cortexm_reset_handler() __attribute__((section(".reset_vector")));
 void cortexm_nmi_handler() MCU_ROOT_EXEC_CODE;
 void cortexm_debug_monitor_handler() MCU_ROOT_EXEC_CODE;
 
-bootloader_api_t *cortexm_get_bootloader_api() MCU_ROOT_EXEC_CODE;
+const bootloader_api_t* cortexm_get_bootloader_api() MCU_ROOT_EXEC_CODE;
 u32 cortexm_get_hardware_id() MCU_ROOT_EXEC_CODE;
+
+void cortexm_enter_cycle_scope() MCU_ROOT_EXEC_CODE;
+u32 cortexm_exit_cycle_scope() MCU_ROOT_EXEC_CODE;
+
+void cortexm_initialize_dwt();
+void cortexm_start_cycle_counter(int * was_running) MCU_ROOT_EXEC_CODE;
+void cortexm_stop_cycle_counter(int * is_running)MCU_ROOT_EXEC_CODE;
+u32 cortexm_get_cycle_counter()MCU_ROOT_EXEC_CODE;
 
 // This is used to ensure that privileged code executes from start to finish (argument
 // validation cannot be bypassed)
 extern cortexm_svcall_t cortexm_svcall_validation MCU_SYS_MEM;
 #define CORTEXM_SVCALL_ENTER() (cortexm_svcall_validation = (cortexm_svcall_t)__FUNCTION__)
-
-
 #define CORTEXM_DECLARE_LINK_REGISTER(x) register long x asm("lr")
+
 
 #endif
 

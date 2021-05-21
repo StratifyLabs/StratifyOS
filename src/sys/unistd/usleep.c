@@ -1,6 +1,5 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
-
 /*! \addtogroup unistd
  * @{
  */
@@ -20,6 +19,7 @@ static void svcall_usleep(void *args) MCU_ROOT_EXEC_CODE;
 static void svcall_get_usecond_tmr(void *args);
 /*! \endcond */
 
+
 /*! \details Causes the calling thread to sleep for \a useconds microseconds.
  *
  * If useconds is greater than a threshold, the calling thread will
@@ -29,6 +29,7 @@ static void svcall_get_usecond_tmr(void *args);
  * - EINVAL: \a useconds is greater than 1 million.
  */
 int usleep(useconds_t useconds) {
+  SOS_DEBUG_ENTER_TIMER_SCOPE_AVERAGE(usleep);
   if (task_get_current()) {
     scheduler_check_cancellation();
   }
@@ -68,6 +69,11 @@ int usleep(useconds_t useconds) {
     errno = EINVAL;
     return -1;
   }
+
+#if SOS_DEBUG
+  usleep_sum -= useconds;
+#endif
+  SOS_DEBUG_EXIT_TIMER_SCOPE_AVERAGE(SOS_DEBUG_UNISTD, usleep, 100);
   return 0;
 }
 

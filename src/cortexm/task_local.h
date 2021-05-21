@@ -1,6 +1,5 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
-
 #ifndef TASK_LOCAL_H_
 #define TASK_LOCAL_H_
 
@@ -78,6 +77,11 @@ void task_save_context() {
     "STMDB r1!, {r4-r11}\n\t"
     "MSR psp, r1\n\t");
 }
+#define TASK_SAVE_CONTEXT()                                                              \
+  asm volatile(                                                                          \
+    "MRS r1, psp\n\t"                                                                    \
+    "STMDB r1!, {r4-r11}\n\t"                                                            \
+    "MSR psp, r1\n\t")
 
 static inline void task_load_context() MCU_ALWAYS_INLINE;
 void task_load_context() {
@@ -86,6 +90,11 @@ void task_load_context() {
     "LDMFD r1!, {r4-r11}\n\t"
     "MSR psp, r1\n\t");
 }
+#define TASK_LOAD_CONTEXT()                                                              \
+  asm volatile(                                                                          \
+    "MRS r1, psp\n\t"                                                                    \
+    "LDMFD r1!, {r4-r11}\n\t"                                                            \
+    "MSR psp, r1\n\t")
 
 static inline void task_return_context() MCU_ALWAYS_INLINE;
 void task_return_context() {

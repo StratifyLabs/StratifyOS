@@ -42,6 +42,17 @@ void svcall_set_time(void *args) {
 }
 /*! \endcond */
 
+static int settimeofday_rtc(const struct timeval *tp);
+
+int _settimeofday(const struct timeval *tp, const struct timezone *tzp) {
+  MCU_UNUSED_ARGUMENT(tzp);
+  settimeofday_rtc(tp);
+  // also, set the simulated time
+  cortexm_svcall(svcall_set_time, (void *)tp);
+
+  return 0;
+}
+
 /*! \details This function sets the current time of day to the
  * time stored in \a tp.  The timezone (\a tzp) is ignored.
  *
@@ -49,18 +60,13 @@ void svcall_set_time(void *args) {
  * - EIO: IO error when setting the real time clock
  *
  */
-int settimeofday(const struct timeval *tp, const struct timezone *tzp);
+int settimeofday(const struct timeval *tp, const struct timezone *tzp){
+  return _settimeofday(tp, tzp);
+}
 
 /*! \cond */
-static int settimeofday_rtc(const struct timeval *tp);
 
-int _settimeofday(const struct timeval *tp, const struct timezone *tzp) {
-  settimeofday_rtc(tp);
-  // also, set the simulated time
-  cortexm_svcall(svcall_set_time, (void *)tp);
 
-  return 0;
-}
 
 int settimeofday_rtc(const struct timeval *tp) {
   int fd;

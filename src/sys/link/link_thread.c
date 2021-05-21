@@ -42,7 +42,8 @@ static int read_device_callback(void *context, void *buf, int nbyte);
 static int write_device_callback(void *context, void *buf, int nbyte);
 static void translate_link_stat(struct link_stat *dest, struct stat *src);
 
-static int read_path(link_transport_driver_t *driver, char *path, size_t size, size_t capacity);
+static int
+read_path(link_transport_driver_t *driver, char *path, size_t size, size_t capacity);
 
 typedef struct {
   link_op_t op;
@@ -94,6 +95,12 @@ void *link_update(void *arg) {
     return 0;
   }
 
+  sos_debug_log_directive(
+    SOS_DEBUG_LINK,
+    "sequenceDiagram:OS Link Messages:linkm:OS Device Host Message Sequences");
+  sos_debug_log_datum(SOS_DEBUG_LINK, "linkm:participant H as host");
+  sos_debug_log_datum(SOS_DEBUG_LINK, "linkm:participant D as device");
+
   sos_debug_log_info(SOS_DEBUG_LINK, "start link update");
   while (1) {
 
@@ -119,6 +126,9 @@ void *link_update(void *arg) {
 
     // send the reply
     if (data.op.cmd != 0) {
+      sos_debug_log_datum(
+        SOS_DEBUG_LINK, "linkm:D->>H: Reply %d errno %d", data.reply.err,
+        data.reply.err_number);
       link_transport_slavewrite(driver, &data.reply, sizeof(data.reply), NULL, NULL);
       data.op.cmd = 0;
     }
@@ -150,6 +160,7 @@ void svcall_get_serialno(void *dest) {
 }
 
 void link_cmd_readserialno(link_transport_driver_t *driver, link_data_t *args) {
+  sos_debug_log_datum(SOS_DEBUG_LINK, "linkm:H->>D: read serial no");
   char serialno[LINK_PACKET_DATA_SIZE];
   memset(serialno, 0, LINK_PACKET_DATA_SIZE);
   cortexm_svcall(svcall_get_serialno, serialno);
@@ -179,7 +190,7 @@ void link_cmd_open(link_transport_driver_t *driver, link_data_t *args) {
     return;
   }
 
-
+  sos_debug_log_datum(SOS_DEBUG_LINK, "linkm:H->>D: open %s", path);
   args->reply.err = open(path, args->op.open.flags, args->op.open.mode);
   if (args->reply.err < 0) {
     sos_debug_log_error(SOS_DEBUG_LINK, "Failed to open %s (%d)", path, errno);
@@ -200,6 +211,7 @@ void link_cmd_link(link_transport_driver_t *driver, link_data_t *args) {
     return;
   }
 
+  sos_debug_log_datum(SOS_DEBUG_LINK, "linkm:H->>D: link %s %s", old_path, new_path);
   args->reply.err = link(old_path, new_path);
   if (args->reply.err < 0) {
     sos_debug_log_error(SOS_DEBUG_LINK, "Failed to link %s (%d)", old_path, errno);
@@ -220,6 +232,9 @@ void link_cmd_ioctl(link_transport_driver_t *driver, link_data_t *args) {
     }
   }
 
+  sos_debug_log_datum(
+    SOS_DEBUG_LINK, "linkm:H->>D: ioctl %d 0x%08x", args->op.ioctl.fildes,
+    args->op.ioctl.request);
   if (args->op.ioctl.fildes != driver->handle) {
     if (_IOCTL_IOCTLRW(args->op.ioctl.request) == 0) {
       // This means the third argument is just an integer
@@ -254,6 +269,9 @@ void link_cmd_ioctl(link_transport_driver_t *driver, link_data_t *args) {
 }
 
 void link_cmd_read(link_transport_driver_t *driver, link_data_t *args) {
+  sos_debug_log_datum(
+    SOS_DEBUG_LINK, "linkm:H->>D: read fd=%d size=%d", args->op.read.fildes,
+    args->op.read.nbyte);
   if (args->op.read.fildes != driver->handle) {
     errno = 0;
     args->reply.err = read_device(driver, args->op.read.fildes, args->op.read.nbyte);
@@ -268,6 +286,9 @@ void link_cmd_read(link_transport_driver_t *driver, link_data_t *args) {
 }
 
 void link_cmd_write(link_transport_driver_t *driver, link_data_t *args) {
+  sos_debug_log_datum(
+    SOS_DEBUG_LINK, "linkm:H->>D: write fd=%d size=%d", args->op.write.fildes,
+    args->op.write.nbyte);
   if (args->op.write.fildes != driver->handle) {
     errno = 0;
     args->reply.err = write_device(driver, args->op.write.fildes, args->op.write.nbyte);
@@ -284,6 +305,7 @@ void link_cmd_write(link_transport_driver_t *driver, link_data_t *args) {
 }
 
 void link_cmd_close(link_transport_driver_t *driver, link_data_t *args) {
+  sos_debug_log_datum(SOS_DEBUG_LINK, "linkm:H->>D: close fd=%d", args->op.write.fildes);
   if (args->op.ioctl.fildes != driver->handle) {
     args->reply.err = close(args->op.close.fildes);
   } else {
@@ -302,6 +324,7 @@ void link_cmd_unlink(link_transport_driver_t *driver, link_data_t *args) {
     driver->flush(driver->handle);
     return;
   }
+  sos_debug_log_datum(SOS_DEBUG_LINK, "linkm:H->>D: unlink %s", path);
   args->reply.err = unlink(path);
   if (args->reply.err < 0) {
     sos_debug_log_error(SOS_DEBUG_LINK, "Failed to unlink (%d)", errno);
@@ -310,6 +333,9 @@ void link_cmd_unlink(link_transport_driver_t *driver, link_data_t *args) {
 }
 
 void link_cmd_lseek(link_transport_driver_t *driver, link_data_t *args) {
+  sos_debug_log_datum(
+    SOS_DEBUG_LINK, "linkm:H->>D: lseek fd=%d whence=%d offset=%d", args->op.lseek.fildes,
+    args->op.lseek.whence, args->op.lseek.offset);
   args->reply.err =
     lseek(args->op.lseek.fildes, args->op.lseek.offset, args->op.lseek.whence);
   if (args->reply.err < 0) {
@@ -327,10 +353,17 @@ void link_cmd_stat(link_transport_driver_t *driver, link_data_t *args) {
     driver->flush(driver->handle);
     return;
   }
+  sos_debug_log_datum(
+    SOS_DEBUG_LINK, "linkm:H->>D: stat %s", path);
   args->reply.err = stat(path, &st);
   if (args->reply.err < 0) {
+    sos_debug_log_datum(
+      SOS_DEBUG_LINK, "linkm:D->>H: failed");
     sos_debug_log_error(SOS_DEBUG_LINK, "Failed to stat (%d)", errno);
     args->reply.err_number = errno;
+  } else {
+    sos_debug_log_datum(
+      SOS_DEBUG_LINK, "linkm:D->>H: size=%d mode=0%o", st.st_size, st.st_mode);
   }
 
   translate_link_stat(&lst, &st);
@@ -354,6 +387,10 @@ void link_cmd_fstat(link_transport_driver_t *driver, link_data_t *args) {
   int err;
   struct stat st;
   struct link_stat lst;
+
+  sos_debug_log_datum(
+    SOS_DEBUG_LINK, "linkm:H->>D: fstat fd=%d", args->op.fstat.fildes);
+
   args->reply.err = fstat(args->op.fstat.fildes, (struct stat *)&st);
   if (args->reply.err < 0) {
     args->reply.err_number = errno;
@@ -383,6 +420,8 @@ void link_cmd_mkdir(link_transport_driver_t *driver, link_data_t *args) {
     return;
   }
 
+  sos_debug_log_datum(
+    SOS_DEBUG_LINK, "linkm:H->>D: mkdir %s 0%o", path, args->op.mkdir.mode);
   args->reply.err = mkdir(path, args->op.mkdir.mode);
   if (args->reply.err < 0) {
     args->reply.err_number = errno;
@@ -395,6 +434,8 @@ void link_cmd_rmdir(link_transport_driver_t *driver, link_data_t *args) {
     driver->flush(driver->handle);
     return;
   }
+  sos_debug_log_datum(
+    SOS_DEBUG_LINK, "linkm:H->>D: rmdir %s", path);
   args->reply.err = rmdir(path);
   if (args->reply.err < 0) {
     args->reply.err_number = errno;
@@ -408,6 +449,8 @@ void link_cmd_opendir(link_transport_driver_t *driver, link_data_t *args) {
     return;
   }
 
+  sos_debug_log_datum(
+    SOS_DEBUG_LINK, "linkm:H->>D: opendir %s", path);
   args->reply.err = (int)opendir(path);
   if (args->reply.err == 0) {
     sos_debug_log_error(SOS_DEBUG_LINK, "Failed to open dir %s (%d)", path, errno);
@@ -419,6 +462,9 @@ void link_cmd_readdir(link_transport_driver_t *driver, link_data_t *args) {
   struct dirent de;
   struct link_dirent lde;
 
+  sos_debug_log_datum(
+    SOS_DEBUG_LINK, "linkm:H->>D: readdir dirp=%p", args->op.readdir.dirp);
+
   args->reply.err = readdir_r((DIR *)args->op.readdir.dirp, &de, NULL);
 
   if (args->reply.err < 0) {
@@ -427,12 +473,18 @@ void link_cmd_readdir(link_transport_driver_t *driver, link_data_t *args) {
     if (errno != 2) {
       sos_debug_log_error(SOS_DEBUG_LINK, "Failed to read dir (%d)", errno);
     }
+    sos_debug_log_datum(
+      SOS_DEBUG_LINK, "linkm:D->>H: end of directory");
+  } else {
+    sos_debug_log_datum(
+      SOS_DEBUG_LINK, "linkm:D->>H: %s", de.d_name);
   }
 
   args->op.cmd = 0;
 
   lde.d_ino = de.d_ino;
   strcpy(lde.d_name, de.d_name);
+
 
   if (
     link_transport_slavewrite(driver, &args->reply, sizeof(link_reply_t), NULL, NULL)
@@ -449,6 +501,8 @@ void link_cmd_readdir(link_transport_driver_t *driver, link_data_t *args) {
 }
 
 void link_cmd_closedir(link_transport_driver_t *driver, link_data_t *args) {
+  sos_debug_log_datum(
+    SOS_DEBUG_LINK, "linkm:H->>D: closedir dirp=%p", args->op.closedir.dirp);
   args->reply.err = closedir((DIR *)args->op.closedir.dirp);
   if (args->reply.err < 0) {
     args->reply.err_number = errno;
@@ -469,6 +523,8 @@ void link_cmd_rename(link_transport_driver_t *driver, link_data_t *args) {
     return;
   }
 
+  sos_debug_log_datum(
+    SOS_DEBUG_LINK, "linkm:H->>D: rename %s to %s", old_path, new_path);
   args->reply.err = rename(old_path, new_path);
   if (args->reply.err < 0) {
     args->reply.err_number = errno;
@@ -482,6 +538,9 @@ void link_cmd_chown(link_transport_driver_t *driver, link_data_t *args) {
     return;
   }
 
+  sos_debug_log_datum(
+    SOS_DEBUG_LINK, "linkm:H->>D: chown %s uid=%d gid=%d", path, args->op.chown.uid, args->op.chown.gid);
+
   args->reply.err = chown(path, args->op.chown.uid, args->op.chown.gid);
   if (args->reply.err < 0) {
     args->reply.err_number = errno;
@@ -494,6 +553,9 @@ void link_cmd_chmod(link_transport_driver_t *driver, link_data_t *args) {
     driver->flush(driver->handle);
     return;
   }
+
+  sos_debug_log_datum(
+    SOS_DEBUG_LINK, "linkm:H->>D: chmod %s mode=0%o gid=%d", path, args->op.chmod.mode);
 
   args->reply.err = chmod(path, args->op.chmod.mode);
   if (args->reply.err < 0) {
@@ -509,6 +571,10 @@ void link_cmd_exec(link_transport_driver_t *driver, link_data_t *args) {
     driver->flush(driver->handle);
     return;
   }
+
+
+  sos_debug_log_datum(
+    SOS_DEBUG_LINK, "linkm:H->>D: exec %s", path_arg);
 
   args->reply.err = process_start(path_arg, NULL);
   if (args->reply.err < 0) {
@@ -534,6 +600,9 @@ void link_cmd_mkfs(link_transport_driver_t *driver, link_data_t *args) {
 
   // tells the caller not to send the reply later
   args->op.cmd = 0;
+
+  sos_debug_log_datum(
+    SOS_DEBUG_LINK, "linkm:H->>D: mkfs %s", path);
 
   args->reply.err = mkfs(path);
   if (args->reply.err < 0) {

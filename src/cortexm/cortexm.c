@@ -10,6 +10,19 @@ extern int sos_main();
 // this is used to ensure svcall's execute from start to finish
 cortexm_svcall_t cortexm_svcall_validation MCU_SYS_MEM;
 
+void cortexm_initialize_dwt() {
+  CoreDebug->DEMCR = CoreDebug_DEMCR_TRCENA_Msk;
+  DWT->CTRL = (1 << DWT_CTRL_CYCTAP_Pos) | (0xF << DWT_CTRL_POSTINIT_Pos)
+              | (0xF << DWT_CTRL_POSTPRESET_Pos) | (1 << DWT_CTRL_CYCCNTENA_Pos);
+}
+
+void cortexm_enter_cycle_scope() {
+  DWT->CYCCNT = 0;
+  DWT->CTRL |= 0x01; // turn on the cycle counter
+}
+
+u32 cortexm_exit_cycle_scope() { return DWT->CYCCNT; }
+
 void cortexm_delay_systick(u32 ticks) {
   u32 countdown = ticks;
   u32 start = cortexm_get_systick_value();
@@ -175,7 +188,10 @@ int cortexm_validate_callback(mcu_callback_t callback) {
   return -1;
 }
 
-void cortexm_reset(void *args) { NVIC_SystemReset(); }
+void cortexm_reset(void *args) {
+  MCU_UNUSED_ARGUMENT(args);
+  NVIC_SystemReset();
+}
 
 void cortexm_disable_irq(s16 x) { NVIC_DisableIRQ(x); }
 
@@ -259,7 +275,7 @@ void cortexm_start_systick() {
                                        // Internal Clock CPU and enable the timer
 }
 
-bootloader_api_t *cortexm_get_bootloader_api() {
+const bootloader_api_t *cortexm_get_bootloader_api() {
   if (sos_config.sys.bootloader_start_address == 0xffffffff) {
     return NULL;
   }
@@ -271,7 +287,9 @@ bootloader_api_t *cortexm_get_bootloader_api() {
 }
 
 u32 cortexm_get_hardware_id() {
-  return *(
-    ((u32 *)cortexm_get_vector_table_addr())
-    + BOOTLOADER_HARDWARE_ID_OFFSET / sizeof(u32));
+  const bootloader_api_t *api = cortexm_get_bootloader_api();
+  if (api) {
+    return api->hardware_id;
+  }
+  return 0xffffffff;
 }

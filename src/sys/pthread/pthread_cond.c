@@ -176,6 +176,7 @@ int pthread_cond_timedwait(
   pthread_cond_t *cond,
   pthread_mutex_t *mutex,
   const struct timespec *abstime) {
+  SOS_DEBUG_ENTER_TIMER_SCOPE(pthread_cond_timedwait);
   scheduler_check_cancellation();
   int pid;
   svcall_cond_wait_t args;
@@ -231,6 +232,7 @@ int pthread_cond_timedwait(
   }
 #endif
 
+  SOS_DEBUG_EXIT_TIMER_SCOPE(SOS_DEBUG_PTHREAD, pthread_cond_timedwait);
   return 0;
 }
 

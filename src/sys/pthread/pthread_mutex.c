@@ -49,6 +49,7 @@ static void svcall_mutex_unblocked(svcall_mutex_trylock_t *args) MCU_ROOT_EXEC_C
  *
  */
 int pthread_mutex_lock(pthread_mutex_t *mutex) {
+  SOS_DEBUG_ENTER_TIMER_SCOPE_AVERAGE(pthread_mutex_lock);
   int ret;
 
   if (task_get_current() == 0) {
@@ -69,6 +70,8 @@ int pthread_mutex_lock(pthread_mutex_t *mutex) {
   default:
     break;
   }
+
+  SOS_DEBUG_EXIT_TIMER_SCOPE_AVERAGE(SOS_DEBUG_PTHREAD, pthread_mutex_lock, 20);
   return 0;
 }
 
@@ -115,6 +118,7 @@ int pthread_mutex_trylock(pthread_mutex_t *mutex) {
  *
  */
 int pthread_mutex_unlock(pthread_mutex_t *mutex) {
+  SOS_DEBUG_ENTER_TIMER_SCOPE_AVERAGE(pthread_mutex_unlock);
   pthread_mutex_root_unlock_t args;
 
   if (task_get_current() == 0) {
@@ -140,6 +144,7 @@ int pthread_mutex_unlock(pthread_mutex_t *mutex) {
 
   args.mutex = mutex; // The Mutex
   cortexm_svcall((cortexm_svcall_t)pthread_mutex_svcall_unlock, &args);
+  SOS_DEBUG_EXIT_TIMER_SCOPE_AVERAGE(SOS_DEBUG_PTHREAD, pthread_mutex_unlock, 20);
   return 0;
 }
 

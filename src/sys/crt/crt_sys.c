@@ -54,7 +54,7 @@ void crt_load_data(void *global_reent, int code_size, int data_size) {
   cortexm_svcall(svcall_load_data, &args);
 }
 
-char **const crt_import_argv(char *path_arg, int *argc) {
+char ** crt_import_argv(char *path_arg, int *argc) {
   *argc = 0;
 
   if (path_arg == 0) {
@@ -97,7 +97,7 @@ char **const crt_import_argv(char *path_arg, int *argc) {
   count = 0;
   argv[count++] = arg_buffer;
   int is_next = 0;
-  for (u32 i = 0; i < len - 1; i++) {
+  for (int i = 0; i < len - 1; i++) {
     if (isspace(arg_buffer[i])) {
       arg_buffer[i] = 0;
     }
@@ -110,6 +110,9 @@ char **const crt_import_argv(char *path_arg, int *argc) {
   }
 
   *argc = count;
+
+  sos_debug_log_directive(SOS_DEBUG_MALLOC, "hist:mallocPerf");
+  sos_debug_log_directive(SOS_DEBUG_MALLOC, "hist:freePerf");
 
   return argv;
 }

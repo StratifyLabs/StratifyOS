@@ -68,11 +68,7 @@ int gettimeofday_rtc(struct timeval *ptimeval) {
     return -1;
   }
 
-  if (ioctl(fd, I_RTC_GET, &cal_time) < 0) {
-    close(fd);
-    return -1;
-  }
-
+  ioctl(fd, I_RTC_GET, &cal_time);
   ptimeval->tv_sec = mktime(&cal_time);
   ptimeval->tv_usec = 0;
   close(fd);

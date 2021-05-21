@@ -108,6 +108,7 @@ int devfs_mcu_ioctl(
 #define DEVFS_DRIVER_PORT(object) (((const object##_config_t *)handle->config)->port)
 
 #define DEVFS_DRIVER_DECLARE_LOCAL(object, port_count)                                   \
+  const object##_config_t *config = handle->config;                                      \
   const u32 port = config->port;                                                         \
   if (port >= port_count) {                                                              \
     return SYSFS_SET_RETURN(EBUSY);                                                      \
@@ -123,6 +124,12 @@ int devfs_mcu_ioctl(
 
 #define DEVFS_DRIVER_DECLARE_CONFIG_STATE(object)                                        \
   const object##_config_t *config = handle->config;                                      \
+  object##_state_t *state = (object##_state_t *)handle->state
+
+#define DEVFS_DRIVER_DECLARE_CONFIG(object)                                              \
+  const object##_config_t *config = handle->config;
+
+#define DEVFS_DRIVER_DECLARE_STATE(object)                                               \
   object##_state_t *state = (object##_state_t *)handle->state
 
 #define DEVFS_DRIVER_OPEN_STATE_LOCAL_V4(object)                                         \
@@ -179,18 +186,26 @@ int devfs_mcu_ioctl(
   }
 
 #define DEVFS_BLOCK_DEVICE(                                                              \
-  device_name, periph_name, handle_port, handle_config, handle_state, mode_value,        \
-  uid_value, device_size)                                                                \
+  device_name, periph_name, handle_config, handle_state, mode_value, uid_value,          \
+  device_size)                                                                           \
   {                                                                                      \
     .name = device_name, DEVFS_MODE(mode_value, uid_value, S_IFBLK),                     \
-    .size = device_size, DEVFS_DRIVER(periph_name), .handle.port = handle_port,           \
-    .handle.state = handle_state, .handle.config = handle_config                         \
+    .size = device_size, DEVFS_DRIVER(periph_name), .handle.state = handle_state,        \
+    .handle.config = handle_config                                                       \
+  }
+
+#define DEVFS_CHAR_DEVICE(                                                               \
+  device_name, periph_name, handle_config, handle_state, mode_value, uid_value)          \
+  {                                                                                      \
+    .name = device_name, DEVFS_MODE(mode_value, uid_value, S_IFCHR), .size = 0,          \
+    DEVFS_DRIVER(periph_name), .handle.state = handle_state,                             \
+    .handle.config = handle_config                                                       \
   }
 
 #define DEVFS_TERMINATOR                                                                 \
   { .driver.open = NULL }
 
-static inline bool devfs_is_terminator(const devfs_device_t *dev){
+static inline bool devfs_is_terminator(const devfs_device_t *dev) {
   if (dev->driver.open == NULL) {
     return true;
   }

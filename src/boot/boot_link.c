@@ -74,6 +74,7 @@ void *boot_link_update(void *arg) {
   link_transport_driver_t *driver = arg;
   link_data_t data;
 
+  dstr("open driver\n");
   if ((driver->handle = driver->open(0, 0)) == LINK_PHY_ERROR) {
     return 0;
   }

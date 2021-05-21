@@ -166,6 +166,8 @@ void scheduler_root_update_on_stopped() {
   s8 next_priority;
 
   // Issue #130
+
+  SOS_DEBUG_ENTER_CYCLE_SCOPE_AVERAGE();
   cortexm_disable_interrupts();
   next_priority = SCHED_LOWEST_PRIORITY;
   for (i = 1; i < task_get_total(); i++) {
@@ -176,6 +178,7 @@ void scheduler_root_update_on_stopped() {
   }
   task_root_set_current_priority(next_priority);
   cortexm_enable_interrupts();
+  SOS_DEBUG_EXIT_CYCLE_SCOPE_AVERAGE(SOS_DEBUG_TASK, scheduler_critical, 5000);
 
   // this will cause an interrupt to execute but at a lower IRQ priority
   task_root_switch_context();

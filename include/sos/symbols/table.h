@@ -156,10 +156,11 @@ u32 const symbols_table[] = {
   (u32)__ledf2,  // alias:.global __ltdf2; __ltdf2 = __ledf2;
   (u32)__cmpdf2, // alias:.global __nedf2; __nedf2 = __cmpdf2; //alias:.global __eqdf2;
                  // __eqdf2 = __cmpdf2;
-  (u32)__aeabi_cdrcmple, (u32)__aeabi_cdcmpeq, (u32)__aeabi_dcmpeq, (u32)__aeabi_dcmplt,
-  (u32)__aeabi_dcmple, (u32)__aeabi_dcmpge, (u32)__aeabi_dcmpgt, (u32)__powidf2,
-  (u32)devfs_signal_callback, (u32)__sinit, (u32)task_setstackguard, (u32)crt_import_argv,
-  (u32)crt_load_data, (u32)posix_trace_attr_destroy, (u32)posix_trace_attr_getclockres,
+  (u32)__aeabi_cdrcmple, //__aeabi_cdrcmple
+  (u32)__aeabi_cdcmpeq, (u32)__aeabi_dcmpeq, (u32)__aeabi_dcmplt, (u32)__aeabi_dcmple,
+  (u32)__aeabi_dcmpge, (u32)__aeabi_dcmpgt, (u32)__powidf2, (u32)devfs_signal_callback,
+  (u32)__sinit, (u32)task_setstackguard, (u32)crt_import_argv, (u32)crt_load_data,
+  (u32)posix_trace_attr_destroy, (u32)posix_trace_attr_getclockres,
   (u32)posix_trace_attr_getcreatetime, (u32)posix_trace_attr_getgenversion,
   (u32)posix_trace_attr_getinherited, (u32)posix_trace_attr_getlogfullpolicy,
   (u32)posix_trace_attr_getlogsize, (u32)posix_trace_attr_getmaxdatasize,
@@ -211,7 +212,7 @@ u32 const symbols_table[] = {
   (u32)__aeabi_unwind_cpp_pr1, (u32)__cxa_atexit, (u32)getuid, (u32)setuid, (u32)geteuid,
   (u32)seteuid, (u32)sos_trace_stack, (u32)__assert_func, (u32)setenv, (u32)pthread_exit,
   (u32)pthread_testcancel, (u32)pthread_setcancelstate, (u32)pthread_setcanceltype,
-  (u32)__aeabi_atexit, 1};
+  (u32)__aeabi_atexit, (u32)settimeofday, 1};
 
 u32 symbols_total();
 
