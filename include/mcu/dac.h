@@ -21,8 +21,8 @@ typedef struct MCU_PACK {
 } dac_event_t;
 
 typedef struct MCU_PACK {
-  u32 port;
   dac_attr_t attr; // default attributes
+  u32 port;
   u32 reference_mv;
 } dac_config_t;
 

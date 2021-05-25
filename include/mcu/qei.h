@@ -21,8 +21,8 @@ typedef struct MCU_PACK {
 } qei_event_data_t;
 
 typedef struct MCU_PACK {
-  u32 port;
   qei_attr_t attr;
+  u32 port;
 } qei_config_t;
 
 int mcu_qei_open(const devfs_handle_t *handle) MCU_ROOT_CODE;

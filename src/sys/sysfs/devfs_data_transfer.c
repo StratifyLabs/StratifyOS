@@ -35,10 +35,9 @@ static void clear_device_action(
 int root_data_transfer_callback(void *context, const mcu_event_t *event) {
   // activate all tasks that are blocked on this signal
   // int i;
-  int new_priority;
   svcall_device_data_transfer_t *args = (svcall_device_data_transfer_t *)context;
 
-  new_priority = -1;
+  int new_priority = -1;
   if ((uint32_t)args->async.tid < task_get_total()) {
 
     // make sure the ID is still in use and hasn't crashed since the transfer started
@@ -62,16 +61,16 @@ int root_data_transfer_callback(void *context, const mcu_event_t *event) {
   // check to see if any tasks are waiting for this device -- is this even possible? Issue
   // #148
 #if 0
-	for(i = 1; i < task_get_total(); i++){
-		if ( task_enabled(i) && scheduler_inuse_asserted(i) ){
-			if ( sos_sched_table[i].block_object == (args->device + args->transfer_type) ){
-				scheduler_root_assert_active(i, SCHEDULER_UNBLOCK_TRANSFER);
-				if( !task_stopped_asserted(i) && (task_get_priority(i) > new_priority) ){
-					new_priority = task_get_priority(i);
-				}
-			}
-		}
-	}
+  for (i = 1; i < task_get_total(); i++) {
+    if (task_enabled(i) && scheduler_inuse_asserted(i)) {
+      if (sos_sched_table[i].block_object == (args->device + args->transfer_type)) {
+        scheduler_root_assert_active(i, SCHEDULER_UNBLOCK_TRANSFER);
+        if (!task_stopped_asserted(i) && (task_get_priority(i) > new_priority)) {
+          new_priority = task_get_priority(i);
+        }
+      }
+    }
+  }
 #endif
   args->transfer_type = ARGS_TRANSFER_DONE;
   scheduler_root_update_on_wake(-1, new_priority);

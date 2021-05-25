@@ -25,8 +25,8 @@ typedef struct MCU_PACK {
 } tmr_event_t;
 
 typedef struct MCU_PACK {
-  u32 port;
   tmr_attr_t attr;
+  u32 port;
 } tmr_config_t;
 
 #define MCU_TMR_IOCTL_REQUEST_DECLARATION(driver_name)                                   \

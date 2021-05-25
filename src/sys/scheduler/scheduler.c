@@ -277,12 +277,7 @@ int scheduler_root_unblock_all(void *block_object, int unblock_type) {
 }
 
 void start_first_thread() {
-  void *(*init)(void *);
   pthread_attr_t attr;
-  int err;
-
-  init = sos_sched_table[0].init;
-
   attr.stacksize = sos_config.task.start_stack_size;
   attr.stackaddr = malloc(attr.stacksize);
   if (attr.stackaddr == NULL) {
@@ -296,8 +291,8 @@ void start_first_thread() {
   PTHREAD_ATTR_SET_SCHED_POLICY((&attr), SCHED_RR);
   attr.schedparam.sched_priority = 21; // not the default priority
 
-  err = scheduler_create_thread(
-    init, sos_config.task.start_args, attr.stackaddr, attr.stacksize, &attr);
+  const int err = scheduler_create_thread(
+    sos_sched_table[0].init, sos_config.task.start_args, attr.stackaddr, attr.stacksize, &attr);
 
   if (!err) {
     sos_handle_event(SOS_EVENT_FATAL, "Failed to create thread");

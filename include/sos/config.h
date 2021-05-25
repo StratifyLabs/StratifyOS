@@ -15,7 +15,7 @@
 
 #define SOS_SCHEDULER_TIMEVAL_SECONDS 2048
 #define SOS_USECOND_PERIOD (1000000UL * SOS_SCHEDULER_TIMEVAL_SECONDS)
-#define SOS_PROCESS_TIMER_COUNT 4
+#define SOS_PROCESS_TIMER_COUNT 2
 
 // not used for porting, just needs to be here
 typedef struct {

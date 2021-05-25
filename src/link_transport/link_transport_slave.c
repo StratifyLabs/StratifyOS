@@ -35,7 +35,7 @@ int link_transport_slavewrite(
   int (*callback)(void *, void *, int),
   void *context) {
   // get sos board config for link transport
-  if (driver->transport_write == 0) {
+  if (driver->transport_write == NULL) {
     cortexm_svcall(transport_svcall_fatal, "transport write");
   }
   return driver->transport_write(driver, buf, nbyte, callback, context);

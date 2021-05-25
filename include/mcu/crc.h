@@ -11,8 +11,8 @@ extern "C" {
 #endif
 
 typedef struct MCU_PACK {
-  u32 port;
   crc_attr_t attr; // default attributes
+  u32 port;
 } crc_config_t;
 
 typedef struct MCU_PACK {

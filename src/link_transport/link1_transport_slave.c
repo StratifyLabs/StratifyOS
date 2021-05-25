@@ -1,5 +1,4 @@
 
-#include "sos/link/transport.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,6 +6,7 @@
 
 #include <sos/boot/boot_debug.h>
 
+#include "sos/link/transport.h"
 #include "sos/debug.h"
 
 #define pkt_checksum(pktp) ((pktp)->data[(pktp)->size])

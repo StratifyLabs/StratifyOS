@@ -22,8 +22,8 @@ typedef struct {
 } i2c_event_t;
 
 typedef struct MCU_PACK {
-  u32 port;
   i2c_attr_t attr; // default attributes
+  u32 port;
 } i2c_config_t;
 
 int mcu_i2c_open(const devfs_handle_t *handle) MCU_ROOT_CODE;

@@ -26,8 +26,8 @@ typedef struct {
 } rtc_event_t;
 
 typedef struct {
-  u32 port;
   rtc_attr_t attr;
+  u32 port;
 } rtc_config_t;
 
 int mcu_rtc_open(const devfs_handle_t *handle) MCU_ROOT_CODE;

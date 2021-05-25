@@ -26,8 +26,8 @@ extern "C" {
 #endif
 
 typedef struct MCU_PACK {
-  u32 port;
   eth_attr_t attr; // default attributes
+  u32 port;
 } eth_config_t;
 
 int mcu_eth_open(const devfs_handle_t *handle) MCU_ROOT_CODE;

@@ -21,8 +21,8 @@ typedef struct MCU_PACK {
 } spi_event_data_t;
 
 typedef struct MCU_PACK {
-  u32 port;
   spi_attr_t attr; // default attributes
+  u32 port;
 } spi_config_t;
 
 #define MCU_SPI_IOCTL_REQUEST_DECLARATION(driver_name)                                   \

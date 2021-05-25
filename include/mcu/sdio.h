@@ -21,8 +21,8 @@ typedef struct MCU_PACK {
 } sdio_event_data_t;
 
 typedef struct MCU_PACK {
-  u32 port;
   sdio_attr_t attr; // default attributes
+  u32 port;
 } sdio_config_t;
 
 #define MCU_SDIO_IOCTL_REQUEST_DECLARATION(driver_name)                                  \

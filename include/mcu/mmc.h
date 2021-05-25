@@ -21,8 +21,8 @@ typedef struct MCU_PACK {
 } mmc_event_data_t;
 
 typedef struct MCU_PACK {
-  u32 port;
   mmc_attr_t attr; // default attributes
+  u32 port;
 } mmc_config_t;
 
 #define MCU_MMC_IOCTL_REQUEST_DECLARATION(driver_name)                                   \

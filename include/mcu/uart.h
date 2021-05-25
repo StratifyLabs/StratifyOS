@@ -22,8 +22,8 @@ typedef struct MCU_PACK {
 } uart_event_t;
 
 typedef struct MCU_PACK {
-  u32 port;
   uart_attr_t attr; // default attributes
+  u32 port;
   const void *fifo_config;
 } uart_config_t;
 

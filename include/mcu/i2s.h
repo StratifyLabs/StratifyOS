@@ -26,8 +26,8 @@ extern "C" {
 #endif
 
 typedef struct MCU_PACK {
-  u32 port;
   i2s_attr_t attr; // default attributes
+  u32 port;
 } i2s_config_t;
 
 typedef struct MCU_PACK {

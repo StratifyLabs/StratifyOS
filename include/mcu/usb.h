@@ -22,8 +22,8 @@ typedef struct {
 } usb_event_t;
 
 typedef struct MCU_PACK {
-  u32 port;
   usb_attr_t attr; // default attributes
+  u32 port;
 } usb_config_t;
 
 int mcu_usb_open(const devfs_handle_t *handle) MCU_ROOT_CODE;

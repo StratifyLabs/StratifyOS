@@ -31,7 +31,7 @@ int devfs_execute_read_handler(
   u32 o_flags) {
   if (transfer_handler->read) {
     devfs_async_t *async = transfer_handler->read;
-    transfer_handler->read = 0;
+    transfer_handler->read = NULL;
     if (nbyte == 0) {
       async->result = async->nbyte;
     } else {
@@ -50,7 +50,7 @@ int devfs_execute_write_handler(
   u32 o_flags) {
   if (transfer_handler->write) {
     devfs_async_t *async = transfer_handler->write;
-    transfer_handler->write = 0;
+    transfer_handler->write = NULL;
     if (nbyte == 0) {
       async->result = async->nbyte;
     } else {

@@ -11,8 +11,8 @@ extern "C" {
 #endif
 
 typedef struct {
-  u32 port;
   crypt_attr_t attr;
+  u32 port;
 } crypt_config_t;
 
 #define MCU_CRYPT_IOCTL_REQUEST_DECLARATION(driver_name) \

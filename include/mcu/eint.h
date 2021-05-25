@@ -24,8 +24,8 @@ typedef struct MCU_PACK {
 } eint_event_t;
 
 typedef struct MCU_PACK {
-  u32 port;
   eint_attr_t attr; // default attributes
+  u32 port;
 } eint_config_t;
 
 int mcu_eint_open(const devfs_handle_t *handle) MCU_ROOT_CODE;

@@ -24,8 +24,8 @@ typedef struct MCU_PACK {
 } ltdc_event_t;
 
 typedef struct MCU_PACK {
-  u32 port;
   ltdc_attr_t attr; // default attributes
+  u32 port;
 } ltdc_config_t;
 
 int mcu_ltdc_open(const devfs_handle_t *handle) MCU_ROOT_CODE;

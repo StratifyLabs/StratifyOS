@@ -21,8 +21,8 @@ typedef struct MCU_PACK {
 } qspi_event_data_t;
 
 typedef struct MCU_PACK {
-  u32 port;
   qspi_attr_t attr; // default attributes
+  u32 port;
 } qspi_config_t;
 
 #define MCU_QSPI_IOCTL_REQUEST_DECLARATION(driver_name)                                  \
