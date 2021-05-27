@@ -310,26 +310,5 @@ for(i=0; i < 1000; i++){
 pwm.close():
 ````
 
-The Stratify API manages the files descriptors internally and uses the same
-file descriptor for all objects associated with a given device. So if close() is called on one PWM object, all PWM objects lose access.
-
-````c++
-#include <sapi/hal.hpp> //uses namespace hal - sos/dev/pio.h
-
-Pin pin0(0,1); //both of these pins access /dev/pio0 -- share a file descriptor
-Pin pin1(0,2);
-
-pin0.init(Pin::FLAG_SET_OUTPUT); //init() is a shortcut for open() then set_attr() and has the same args as set_attr()
-pin1.init(Pin::FLAG_SET_INPUT | Pin::FLAG_IS_PULLUP); //uses the same fd as pin0 because both use "/dev/pio0"
-printf("Pin1 value is %d\n", pin1.get_value()); //this will read the pin as 0 or 1
-pin0.close(); //closes all objects access to /dev/pio0
-printf("Pin1 value is %d\n", pin1.get_value()); //this won't work - returns -1
-````
-
-### Where to go from Here
-
-The [Stratify API](../StratifyAPI/) is a great place to get started accessing hardware. If you find the API limiting, you can look at <a href="https://github.com/StratifyLabs/StratifyAPI" target="_blank">the source code</a> which contains the underlying POSIX calls.
-
-
 
 
