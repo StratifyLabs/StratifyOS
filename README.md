@@ -16,6 +16,6 @@ Stratify OS is a fully featured microcontroller operating system designed specif
 
 ## License
 
-The Stratify OS source code is available under a commercial source available license. The license requires a hardware ID be issued by Stratify Labs, Inc and used to identify unique hardware configurations. Hardware IDs are available free of charge to hobbyist, educational and other non-commercial applications.
+The Stratify OS source code is available under a commercial source available license. The license requires a hardware ID be issued by Stratify Labs, Inc and used to identify unique hardware configurations. Hardware IDs are available free of charge and allow the licensee to use Stratify OS without any charges or fees on the hardware design associatd with the ID.
 
 
