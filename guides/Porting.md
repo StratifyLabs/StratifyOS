@@ -1,4 +1,4 @@
-# Porting Guide (experimental)
+# Porting Guide
 
 Stratify OS is an operating system specifically designed for the ARM Cortex-M architecture. It supports the following architectures:
 
