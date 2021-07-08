@@ -1,3 +1,9 @@
+# Version 4.1
+
+- Cleanup of device/fifo to remove warnings
+- Implement FIFO_FLAG_INIT (not just I_FIFO_INIT)
+
+
 # Version 4.0
 
 - Revamped cmake system compared to 3.x
