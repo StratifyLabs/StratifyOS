@@ -1,6 +1,5 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
-
 #include <errno.h>
 #include <fcntl.h>
 #include <stddef.h>
@@ -247,9 +246,17 @@ int fifo_close(const devfs_handle_t *handle) {
   return fifo_close_local(config, state);
 }
 
-int fifo_open_local(const fifo_config_t *config, fifo_state_t *state) { return 0; }
+int fifo_open_local(const fifo_config_t *config, fifo_state_t *state) {
+  MCU_UNUSED_ARGUMENT(config);
+  MCU_UNUSED_ARGUMENT(state);
+  return 0;
+}
 
-int fifo_close_local(const fifo_config_t *config, fifo_state_t *state) { return 0; }
+int fifo_close_local(const fifo_config_t *config, fifo_state_t *state) {
+  MCU_UNUSED_ARGUMENT(config);
+  MCU_UNUSED_ARGUMENT(state);
+  return 0;
+}
 
 int fifo_ioctl_local(
   const fifo_config_t *config,
@@ -288,6 +295,14 @@ int fifo_ioctl_local(
     fifo_data_transmitted(config, state); // something might be waiting to write the fifo
     return 0;
   case I_FIFO_SETATTR:
+
+    if( attr->o_flags & FIFO_FLAG_INIT ){
+      state->transfer_handler.read = NULL;
+      state->transfer_handler.write = NULL;
+      fifo_flush(state);
+      fifo_data_transmitted(config, state); // something might be waiting to write the fifo
+    }
+
     if (attr->o_flags & FIFO_FLAG_SET_WRITEBLOCK) {
       if (attr->o_flags & FIFO_FLAG_IS_OVERFLOW) {
         fifo_set_writeblock(state, 0);
@@ -301,6 +316,7 @@ int fifo_ioctl_local(
       fifo_data_transmitted(config, state); // something might be waiting to write the
                                             // fifo
     }
+
     return 0;
   }
   return SYSFS_SET_RETURN(EINVAL);

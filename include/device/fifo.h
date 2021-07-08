@@ -16,19 +16,15 @@ typedef union {
   u32 atomic_access; // read head and tail in one operation
 } fifo_atomic_position_t;
 
-typedef struct MCU_PACK {
+typedef struct {
   volatile fifo_atomic_position_t atomic_position; // 4 bytes
   devfs_transfer_handler_t transfer_handler;       // 8 bytes
   volatile u32 o_flags;                            // 4 bytes
 } fifo_state_t;
 
-/*! \brief FIFO Configuration
- * \details This structure defines the static FIFO configuration.
- *
- */
 typedef struct MCU_PACK {
-  u32 size /*! \brief The size of the buffer (only size-1 is usable) */;
-  char *buffer /*! \brief A pointer to the buffer */;
+  u32 size;
+  char *buffer;
 } fifo_config_t;
 
 int fifo_open(const devfs_handle_t *handle) MCU_ROOT_EXEC_CODE;
