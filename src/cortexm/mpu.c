@@ -169,19 +169,28 @@ u32 mpu_calc_region(
 
   switch (type) {
   case MPU_MEMORY_EXTERNAL_SRAM:
-    rasr_value |= sos_config.cache.external_sram_policy; // Outer and Inner Write-Back, no Write-Allocate
+    rasr_value |= sos_config.cache.external_sram_policy;
     break;
   case MPU_MEMORY_SRAM:
-    rasr_value |= sos_config.cache.sram_policy; // Outer and Inner Write-Back, no Write-Allocate
+    rasr_value |= sos_config.cache.sram_policy;
     break;
   case MPU_MEMORY_FLASH:
-    rasr_value |= sos_config.cache.flash_policy; // Outer and Inner Write-Back, no Write-Allocate
+    rasr_value |= sos_config.cache.flash_policy;
     break;
   case MPU_MEMORY_LCD:
-    rasr_value |= sos_config.cache.lcd_policy; // shareable, not cacheable
+    rasr_value |= sos_config.cache.lcd_policy;
     break;
   case MPU_MEMORY_PERIPHERALS:
-    rasr_value |= sos_config.cache.flash_policy; // shareable, not cacheable
+    rasr_value |= sos_config.cache.peripherals_policy;
+    break;
+  case MPU_MEMORY_EXTERNAL_FLASH:
+    rasr_value |= sos_config.cache.external_flash_policy;
+    break;
+  case MPU_MEMORY_TIGHTLY_COUPLED_DATA:
+    rasr_value |= sos_config.cache.tightly_coupled_data_policy;
+    break;
+  case MPU_MEMORY_TIGHTLY_COUPLED_INSTRUCTION:
+    rasr_value |= sos_config.cache.tightly_coupled_instruction_policy;
     break;
   }
 

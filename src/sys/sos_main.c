@@ -125,6 +125,17 @@ void check_config() {
   CHECK_CACHE_CONFIG(clean_data);
   CHECK_CACHE_CONFIG(clean_data_block);
 
+  CHECK_CACHE_POLICY_CONFIG(external_sram_policy);
+  CHECK_CACHE_POLICY_CONFIG(sram_policy);
+  CHECK_CACHE_POLICY_CONFIG(flash_policy);
+  CHECK_CACHE_POLICY_CONFIG(peripherals_policy);
+  CHECK_CACHE_POLICY_CONFIG(lcd_policy);
+  CHECK_CACHE_POLICY_CONFIG(external_flash_policy);
+  CHECK_CACHE_POLICY_CONFIG(tightly_coupled_data_policy);
+  CHECK_CACHE_POLICY_CONFIG(tightly_coupled_instruction_policy);
+  CHECK_CACHE_POLICY_CONFIG(os_data_mpu_type);
+  CHECK_CACHE_POLICY_CONFIG(os_system_data_mpu_type);
+
   // cache policy check
   if (sos_config.usb.logical_endpoint_count > 0) {
     CHECK_USB_CONFIG(set_attributes);

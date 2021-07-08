@@ -1,5 +1,9 @@
 # Version 4.1
 
+- Added additional cache policies
+  - You will need to update your `sos_config.cache` settings to add policies for external flash and tightly coupled memories
+  - You also need to update `sos_config.cache` to indicate how OS code/data memories should be treated
+- Fixed MPU cache settings for tasks
 - Invalidate cache when deleting flash blocks in appfs
 - Cleanup of device/fifo to remove warnings
 - Implement FIFO_FLAG_INIT (not just I_FIFO_INIT)

@@ -733,6 +733,34 @@ int appfs_util_is_executable(const appfs_file_t *info) {
   return 1;
 }
 
+int appfs_util_get_data_mpu_type(const appfs_file_t * file){
+  const u32 flags = file->exec.o_flags;
+
+  if( flags & APPFS_FLAG_IS_DATA_EXTERNAL ){
+    return MPU_MEMORY_EXTERNAL_SRAM;
+  }
+
+  if( flags & APPFS_FLAG_IS_DATA_TIGHTLY_COUPLED ){
+    return MPU_MEMORY_TIGHTLY_COUPLED_DATA;
+  }
+
+  return MPU_MEMORY_SRAM;
+}
+
+int appfs_util_get_code_mpu_type(const appfs_file_t * file){
+  const u32 flags = file->exec.o_flags;
+
+  if( flags & APPFS_FLAG_IS_CODE_EXTERNAL ){
+    return MPU_MEMORY_EXTERNAL_FLASH;
+  }
+
+  if( flags & APPFS_FLAG_IS_CODE_TIGHTLY_COUPLED ){
+    return MPU_MEMORY_TIGHTLY_COUPLED_INSTRUCTION;
+  }
+
+  return MPU_MEMORY_FLASH;
+}
+
 int populate_file_header(
   const devfs_device_t *device,
   appfs_file_t *file,

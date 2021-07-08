@@ -71,8 +71,11 @@ int task_init_mpu(void *system_memory, int system_memory_size) {
   // Memory Protection
   os_mem.code.address = (void *)text_start;
   os_mem.code.size = (char *)&_etext - (char *)text_start;
+  os_mem.code.type = sos_config.cache.os_code_mpu_type;
   os_mem.data.address = system_memory;
   os_mem.data.size = system_memory_size;
+  os_mem.data.type = sos_config.cache.os_data_mpu_type;
+
   err = init_os_memory_protection(&os_mem);
   if (err < 0) {
     return err;
@@ -126,31 +129,33 @@ int task_root_set_stackguard(int tid, void *stackaddr, int stacksize) {
 
   if ((u32)tid < task_get_total()) {
     int err;
+    const u32 type = sos_task_table[tid].mem.data.type;
 
     newaddr = (u32)stackaddr;
     newaddr = (newaddr & ~(stacksize - 1)) + stacksize; // align to the size of the guard
 
     err = mpu_calc_region(
       TASK_APPLICATION_STACK_GUARD_REGION, (void *)newaddr, stacksize, MPU_ACCESS_PRW,
-      MPU_MEMORY_SRAM, false, &rbar, &rasr);
+      type, false, &rbar, &rasr);
 
     if (err == 0) {
       return -1;
     }
 
+    sos_task_table[tid].mem.stackguard.address = (void *)newaddr;
+    sos_task_table[tid].mem.stackguard.size = stacksize;
+    sos_task_table[tid].mem.stackguard.type = type;
+    sos_task_table[tid].mem.stackguard.rbar = rbar;
+    sos_task_table[tid].mem.stackguard.rasr = rasr;
+
+    if (tid == task_get_current()) {
+      // make the settings effective now if the task is currently active
+      MPU->RBAR = rbar;
+      MPU->RASR = rasr;
+    }
+
   } else {
     return -1;
-  }
-
-  sos_task_table[tid].mem.stackguard.address = (void *)newaddr;
-  sos_task_table[tid].mem.stackguard.size = stacksize;
-  sos_task_table[tid].mem.stackguard.rbar = rbar;
-  sos_task_table[tid].mem.stackguard.rasr = rasr;
-
-  if (tid == task_get_current()) {
-    // make the settings effective now if the task is currently active
-    MPU->RBAR = rbar;
-    MPU->RASR = rasr;
   }
 
   return 0;
@@ -175,7 +180,7 @@ int init_os_memory_protection(task_memories_t *os_mem) {
   // Make OS System memory read-only -- region 0 -- highest priority
   err = mpu_enable_region(
     TASK_SYSTEM_STACK_MPU_REGION, &_sys, (char *)&_esys - (char *)&_sys,
-    MPU_ACCESS_PRW_UR, MPU_MEMORY_SRAM, 0);
+    MPU_ACCESS_PRW_UR, sos_config.cache.os_system_data_mpu_type, 0);
   if (err < 0) {
     sos_debug_log_error(
       SOS_DEBUG_SYS, "Failed to init OS read-only 0x%lX to 0x%lX (%d)", (u32)&_sys,
@@ -186,7 +191,7 @@ int init_os_memory_protection(task_memories_t *os_mem) {
   // Make the OS flash executable and readable
   err = mpu_enable_region(
     TASK_SYSTEM_CODE_MPU_REGION, os_mem->code.address, os_mem->code.size,
-    MPU_ACCESS_PR_UR, MPU_MEMORY_FLASH, 1);
+    MPU_ACCESS_PR_UR, os_mem->code.type, 1);
   if (err < 0) {
     sos_debug_log_error(
       SOS_DEBUG_SYS, "Failed to init OS flash 0x%lX -> 0x%ld bytes (%d)",
@@ -197,7 +202,7 @@ int init_os_memory_protection(task_memories_t *os_mem) {
   // Make the OS shared memory R/W
   err = mpu_enable_region(
     TASK_SYSTEM_DATA_MPU_REGION, os_mem->data.address, os_mem->data.size,
-    MPU_ACCESS_PRW_URW, MPU_MEMORY_SRAM, 0);
+    MPU_ACCESS_PRW_URW, os_mem->data.type, 0);
   if (err < 0) {
     sos_debug_log_error(
       SOS_DEBUG_SYS, "Failed to init shared mem 0x%lX -> 0x%lX bytes (%d)",
@@ -210,20 +215,14 @@ int init_os_memory_protection(task_memories_t *os_mem) {
 
 int task_mpu_calc_protection(task_memories_t *mem) {
   int err;
-  mpu_memory_t mem_type;
   uint32_t rasr = 0;
   uint32_t rbar = 0;
 
-  if (mem->code.address < (void *)&_data) {
-    mem_type = MPU_MEMORY_FLASH;
-  } else {
-    mem_type = MPU_MEMORY_SRAM;
-  }
 
   // Region 6
   err = mpu_calc_region(
     TASK_APPLICATION_CODE_MPU_REGION, mem->code.address, mem->code.size, MPU_ACCESS_PR_UR,
-    mem_type, true, &rbar, &rasr);
+    mem->code.type, true, &rbar, &rasr);
 
   if (err == 0) {
     return -1;
@@ -235,7 +234,7 @@ int task_mpu_calc_protection(task_memories_t *mem) {
   // Region 7
   err = mpu_calc_region(
     TASK_APPLICATION_DATA_MPU_REGION, mem->data.address, mem->data.size,
-    MPU_ACCESS_PRW_URW, MPU_MEMORY_SRAM, false, &rbar, &rasr);
+    MPU_ACCESS_PRW_URW, mem->data.type, false, &rbar, &rasr);
 
   if (err == 0) {
     return -1;

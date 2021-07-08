@@ -43,8 +43,7 @@ int task_create_process(
   task.priority = 0;
   task.parent = parent_id;
 
-  memcpy(&task_memories, mem, sizeof(task_memories_t));
-
+  task_memories = *mem;
   if ((err = task_mpu_calc_protection(&task_memories)) < 0) {
     return err;
   }

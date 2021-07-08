@@ -34,7 +34,10 @@ typedef enum {
   MPU_MEMORY_SRAM /*! SRAM */,
   MPU_MEMORY_EXTERNAL_SRAM /*! External SRAM */,
   MPU_MEMORY_PERIPHERALS /*! Peripheral Registers */,
-  MPU_MEMORY_LCD /*! Peripheral Registers */
+  MPU_MEMORY_LCD /*! Peripheral Registers */,
+  MPU_MEMORY_EXTERNAL_FLASH /*! External Flash */,
+  MPU_MEMORY_TIGHTLY_COUPLED_DATA /*! Tightly Coupled Data */,
+  MPU_MEMORY_TIGHTLY_COUPLED_INSTRUCTION /*! Tightly coupled instruction */
 } mpu_memory_t;
 
 /*! \details This lists the values for the size of memory

@@ -153,8 +153,11 @@ int appfs_startup(const void *cfg) {
       task_memories_t mem;
       mem.code.address = (void *)get_fileinfo_args.file_info.exec.code_start;
       mem.code.size = get_fileinfo_args.file_info.exec.code_size;
+      mem.code.type = appfs_util_get_code_mpu_type(&get_fileinfo_args.file_info);
       mem.data.address = (void *)get_fileinfo_args.file_info.exec.ram_start;
       mem.data.size = get_fileinfo_args.file_info.exec.ram_size;
+      mem.data.type = appfs_util_get_data_mpu_type(&get_fileinfo_args.file_info);
+
       int is_root = 0;
 
       if (get_fileinfo_args.file_info.exec.o_flags & APPFS_FLAG_IS_AUTHENTICATED) {

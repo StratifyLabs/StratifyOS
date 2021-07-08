@@ -212,6 +212,12 @@ typedef struct MCU_PACK {
   u32 flash_policy;
   u32 peripherals_policy;
   u32 lcd_policy;
+  u32 external_flash_policy;
+  u32 tightly_coupled_data_policy;
+  u32 tightly_coupled_instruction_policy;
+  u32 os_code_mpu_type;
+  u32 os_data_mpu_type;
+  u32 os_system_data_mpu_type;
 } sos_cache_config_t;
 
 /* Cache policy bits -- others are zero
@@ -226,6 +232,11 @@ typedef struct MCU_PACK {
 #define SOS_CACHE_DEFAULT_POLICY ((1 << 21) | (1 << 20) | (1 << 19) | (0 << 18) | (1 << 17) | (0 << 16))
 #define SOS_CACHE_PERIPHERALS_POLICY (((1 << 16) | (1 << 18)))
 
+#define SOS_CACHE_WRITE_BACK_NO_WRITE_ALLOCATE                                           \
+  ((0 << 21) | (0 << 20) | (0 << 19) | (0 << 18) | (1 << 17) | (1 << 16))
+
+#define SOS_CACHE_WRITE_BACK_READ_WRITE_ALLOCATE                                         \
+  ((0 << 21) | (0 << 20) | (1 << 19) | (0 << 18) | (1 << 17) | (1 << 16))
 
 typedef struct MCU_PACK {
   // called during RR scheduling when no tasks are active

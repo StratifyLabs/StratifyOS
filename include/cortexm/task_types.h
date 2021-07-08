@@ -21,6 +21,7 @@ typedef struct {
   u32 size /*! The size of the memory as input, converted to RASR after task starts */;
   u32 rbar;
   u32 rasr;
+  u32 type;
 } task_memory_t;
 
 typedef struct {
