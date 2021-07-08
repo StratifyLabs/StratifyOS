@@ -24,7 +24,8 @@ typedef struct {
   u32 checksum;
 } assetfs_handle_t;
 
-int assetfs_init(const void *cfg) {
+int assetfs_init(const void *config) {
+  MCU_UNUSED_ARGUMENT(config);
   // nothing to initialize
   return 0;
 }
@@ -33,8 +34,8 @@ static int get_directory_entry(const void *cfg, int loc, const assetfs_dirent_t 
 static const assetfs_dirent_t *find_file(const void *cfg, const char *path, int *ino);
 static void assign_stat(int ino, const assetfs_dirent_t *entry, struct stat *st);
 
-int assetfs_startup(const void *cfg) {
-  // check for any applications that are embedded and start them?
+int assetfs_startup(const void *config) {
+  MCU_UNUSED_ARGUMENT(config);
   return 0;
 }
 
@@ -153,6 +154,7 @@ void assign_stat(int ino, const assetfs_dirent_t *entry, struct stat *st) {
 }
 
 int assetfs_opendir(const void *cfg, void **handle, const char *path) {
+  MCU_UNUSED_ARGUMENT(cfg);
   if (strncmp(path, "", PATH_MAX) == 0) {
     *handle = VALID_DIR_HANDLE;
   } else {
@@ -179,6 +181,7 @@ int assetfs_readdir_r(const void *cfg, void *handle, int loc, struct dirent *ent
 }
 
 int assetfs_closedir(const void *cfg, void **handle) {
+  MCU_UNUSED_ARGUMENT(cfg);
   if (*handle != VALID_DIR_HANDLE) {
     return SYSFS_SET_RETURN(EINVAL);
   }
@@ -203,7 +206,7 @@ const assetfs_dirent_t *find_file(const void *cfg, const char *path, int *ino) {
 
 int get_directory_entry(const void *cfg, int loc, const assetfs_dirent_t **entry) {
   const assetfs_config_t *config = cfg;
-  const u32 count = config->count;
+  const int count = config->count;
   if (loc < 0) {
     return SYSFS_SET_RETURN(EINVAL);
   }

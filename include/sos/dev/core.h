@@ -110,6 +110,7 @@ typedef enum {
   CORE_PERIPH_DFSDM /*! DFSDM Pins */,
   CORE_PERIPH_FMP_I2C /*! Fast Mode Plus I2C */,
   CORE_PERIPH_DCMI /*! Digital Camera interface */,
+  CORE_PERIPH_OCTOSPI /*! Digital Camera interface */,
   CORE_PERIPH_TOTAL
 } core_periph_t;
 

@@ -23,13 +23,12 @@ void boot_invoke_bootloader(void *args) {
   *bootloader_software_request_address =
     sos_config.boot.software_bootloader_request_value;
 
+  sos_config.cache.clean_data();
   cortexm_reset(0);
 }
 
 void sos_handle_event(int event, void *args) {
-  if (sos_config.event_handler != NULL) {
-    sos_config.event_handler(event, args);
-  }
+  sos_config.event_handler(event, args);
 }
 
 extern u32 _etext;
