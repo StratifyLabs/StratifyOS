@@ -6,11 +6,10 @@
 #include "sos/debug.h"
 
 #if MCU_DEBUG
-#define VERSION "4.0.0d"
+#define VERSION "4.1.0d"
 #else
-#define VERSION "4.0.0"
+#define VERSION "4.1.0"
 #endif
-
 
 #include <stdint.h>
 
