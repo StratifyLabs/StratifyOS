@@ -78,6 +78,8 @@ typedef struct {
   const devfs_device_t *device;
   u32 start_page;
   u32 end_page;
+  u32 start_address;
+  u32 size;
   int result;
 } appfs_erase_pages_t;
 

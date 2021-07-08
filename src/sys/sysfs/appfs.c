@@ -99,7 +99,7 @@ void svcall_init(void *args) {
   appfs_util_root_get_meminfo(device, &info);
 
   // now scan each flash page to see what RAM is used by applications
-  for (int i = 0; i < info.flash_pages; i++) {
+  for (u32 i = 0; i < info.flash_pages; i++) {
     appfs_file_t appfs_file;
     if (
       (appfs_util_root_get_fileinfo(device, &appfs_file, i, MEM_FLAG_IS_FLASH, NULL)
@@ -139,8 +139,7 @@ int appfs_startup(const void *cfg) {
   cortexm_svcall(appfs_util_svcall_get_meminfo, &get_meminfo_args);
 
   int started = 0;
-  int i;
-  for (i = 0; i < get_meminfo_args.mem_info.flash_pages; i++) {
+  for (u32 i = 0; i < get_meminfo_args.mem_info.flash_pages; i++) {
 
     get_fileinfo_args.page = i;
     cortexm_svcall(appfs_util_svcall_get_fileinfo, &get_fileinfo_args);
@@ -180,11 +179,12 @@ int appfs_startup(const void *cfg) {
 }
 
 int appfs_mkfs(const void *cfg) {
-  // erase all user files in flash and ram
-  return 0;
+  MCU_UNUSED_ARGUMENT(cfg);
+  return SYSFS_SET_RETURN(ENOTSUP);
 }
 
 int appfs_open(const void *cfg, void **handle, const char *path, int flags, int mode) {
+  MCU_UNUSED_ARGUMENT(mode);
   int ret;
   appfs_handle_t *h;
   int path_type;
@@ -287,9 +287,12 @@ int appfs_unlink(const void *cfg, const char *path) {
   // executable files are deleted based on the header file
   if (mem_type == MEM_FLAG_IS_FLASH) {
     int start_page = get_pageinfo_args.page_info.num;
-    int size_deleted = 0; // start with the first page
+    const u32 start_address = get_pageinfo_args.page_info.addr;
+    const u32 size = file_info.exec.code_size + file_info.exec.data_size;
+    u32 size_deleted = 0; // start with the first page
+
     // need to read the size of each consecutive page until the size is met
-    while (size_deleted < (file_info.exec.code_size + file_info.exec.data_size)) {
+    while (size_deleted < size) {
 
       cortexm_svcall(appfs_util_svcall_get_pageinfo, &get_pageinfo_args);
       if (get_pageinfo_args.result < 0) {
@@ -306,8 +309,11 @@ int appfs_unlink(const void *cfg, const char *path) {
     erase_pages_args.device = device;
     erase_pages_args.start_page = start_page;
     erase_pages_args.end_page = end_page;
+    erase_pages_args.start_address = start_address;
+    erase_pages_args.size = size;
 
     cortexm_svcall(appfs_util_svcall_erase_pages, &erase_pages_args);
+
 
   } else {
     u32 rasr, rbar;
@@ -484,13 +490,13 @@ void svcall_read(void *args) {
     async.loc += sizeof(appfs_file_t);
   }
 
-  if (async.loc >= h->type.reg.size) {
+  if (async.loc >= (int)h->type.reg.size) {
     p->result = 0;
     return; // return EOF
   }
 
   // read should not go past the end of the file
-  if ((async.loc + async.nbyte) >= (h->type.reg.size)) {
+  if ((async.loc + async.nbyte) >= (int)(h->type.reg.size)) {
     async.nbyte = h->type.reg.size - async.loc;
   }
 
@@ -517,6 +523,12 @@ int appfs_write(
   int loc,
   const void *buf,
   int nbyte) {
+  MCU_UNUSED_ARGUMENT(cfg);
+  MCU_UNUSED_ARGUMENT(handle);
+  MCU_UNUSED_ARGUMENT(flags);
+  MCU_UNUSED_ARGUMENT(loc);
+  MCU_UNUSED_ARGUMENT(buf);
+  MCU_UNUSED_ARGUMENT(nbyte);
   return SYSFS_SET_RETURN(EROFS);
 }
 
@@ -536,6 +548,7 @@ void svcall_close(void *args) {
 }
 
 int appfs_close(const void *cfg, void **handle) {
+  MCU_UNUSED_ARGUMENT(cfg);
   // close a file
   appfs_handle_t *h = (appfs_handle_t *)*handle;
   if (h->is_install) {

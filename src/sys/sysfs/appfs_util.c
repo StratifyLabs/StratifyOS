@@ -106,6 +106,7 @@ void appfs_util_svcall_erase_pages(void *args) {
   CORTEXM_SVCALL_ENTER();
   appfs_erase_pages_t *p = args;
   p->result = appfs_util_root_erase_pages(p->device, p->start_page, p->end_page);
+  sos_config.cache.invalidate_data_block((void*)p->start_address, p->size);
 }
 
 static u32
@@ -177,7 +178,7 @@ u32 find_protectable_addr(
       return (u32)-1;
     }
 
-    if (pageinfo.o_flags == type) { // type should be an exact match with the page info
+    if (pageinfo.o_flags == (u32)type) { // type should be an exact match with the page info
                                     // flags (external, tightly coupled or normal)
 
       if (skip_protection) {
@@ -230,7 +231,7 @@ int check_for_free_space(const devfs_device_t *dev, int start_page, int type, in
 
     if (
       (last_addr != -1) && // make sure last_addr is initialized
-      (last_addr + last_size != page_info.addr)) {
+      (last_addr + last_size != (int)page_info.addr)) {
       // memory is not contiguous
       if (size <= free_size) {
         return free_size;
@@ -479,7 +480,6 @@ int appfs_util_root_writeinstall(
     const appfs_file_t *file;
     const u32 *ptr;
   } src;
-  int i;
   u32 code_start_addr;
   u32 data_start_addr;
   int code_page;
@@ -492,7 +492,7 @@ int appfs_util_root_writeinstall(
 
   union {
     appfs_file_t file;
-    u32 buf[attr->nbyte >> 2];
+    u32 buf[APPFS_PAGE_SIZE/sizeof(u32)];
   } dest;
 
   src.ptr = (const u32 *)attr->buffer;
@@ -668,7 +668,7 @@ int appfs_util_root_writeinstall(
     sos_debug_log_info(
       SOS_DEBUG_APPFS, "code startup is translated to at %p", dest.file.exec.startup);
 
-    for (i = sizeof(appfs_file_t) >> 2; i < (attr->nbyte >> 2); i++) {
+    for (u32 i = sizeof(appfs_file_t) >> 2; i < (attr->nbyte >> 2); i++) {
       dest.buf[i] = translate_value(
         src.ptr[i], h->type.install.rewrite_mask, h->type.install.code_start,
         h->type.install.data_start, h->type.install.kernel_symbols_total, &loc_err);
@@ -685,7 +685,7 @@ int appfs_util_root_writeinstall(
       sos_debug_log_error(SOS_DEBUG_APPFS, "word alignment error 0x%X\n", attr->loc);
       return SYSFS_SET_RETURN(EINVAL);
     }
-    for (i = 0; i < (attr->nbyte >> 2); i++) {
+    for (u32 i = 0; i < (attr->nbyte >> 2); i++) {
       dest.buf[i] = translate_value(
         src.ptr[i], h->type.install.rewrite_mask, h->type.install.code_start,
         h->type.install.data_start, h->type.install.kernel_symbols_total, &loc_err);
@@ -703,7 +703,6 @@ int appfs_util_root_writeinstall(
 }
 
 int get_flash_page_type(const devfs_device_t *dev, u32 address, u32 size) {
-  int len;
   appfs_file_t appfs_file;
 
   if (is_flash_blank(address, size)) {
@@ -711,10 +710,10 @@ int get_flash_page_type(const devfs_device_t *dev, u32 address, u32 size) {
   }
 
   read_appfs_file_header(dev, address, &appfs_file);
-  len = strnlen(appfs_file.hdr.name, APPFS_NAME_MAX_MINUS_1);
+  u32 len = strnlen(appfs_file.hdr.name, APPFS_NAME_MAX_MINUS_1);
   if (
     (len == APPFS_NAME_MAX_MINUS_1) || // check if the name is short enough
-    (len != strspn(appfs_file.hdr.name, sysfs_validset))
+    (len < APPFS_NAME_MAX_MINUS_1 && (len != strspn(appfs_file.hdr.name, sysfs_validset)))
     || // check if only valid characters are present
     (appfs_file.hdr.name[APPFS_NAME_MAX] != calc_checksum(appfs_file.hdr.name))
     || // check for a valid checksum
