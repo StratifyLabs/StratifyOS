@@ -1,5 +1,6 @@
 # Version 4.1
 
+- Invalidate cache when deleting flash blocks in appfs
 - Cleanup of device/fifo to remove warnings
 - Implement FIFO_FLAG_INIT (not just I_FIFO_INIT)
 
