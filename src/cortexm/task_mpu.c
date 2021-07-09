@@ -91,6 +91,10 @@ int task_init_mpu(void *system_memory, int system_memory_size) {
     sizeof(os_mem)); // Copy the OS mem to the task table
 
   const u32 heap_size = (u32)&_ebss - (u32)&_data;
+  if( system_memory_size < (int)heap_size ){
+    sos_handle_event(SOS_EVENT_ROOT_FATAL, "system memory size < heap size");
+  }
+
   task_root_set_stackguard(0, system_memory + heap_size, system_memory_size - heap_size);
 
   sos_handle_event(SOS_EVENT_ROOT_MPU_INITIALIZED, NULL);
