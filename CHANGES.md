@@ -1,5 +1,6 @@
 # Version 4.1
 
+- Add a short delay in `link_thread.c` when `link_slaveread` fails to account for fast USB drivers
 - M7 CPUs use MPU regions 9 to 15. This leaves lower priority regions 0 to 8 for user use.
 - Added additional cache policies
   - You will need to update your `sos_config.cache` settings to add policies for external flash and tightly coupled memories

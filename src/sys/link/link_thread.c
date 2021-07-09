@@ -110,13 +110,15 @@ void *link_update(void *arg) {
       if (
         (err = link_transport_slaveread(driver, &data.op, sizeof(data.op), NULL, NULL))
         <= 0) {
-        memset(&data.op, 0, sizeof(data.op));
+        data.op = (link_op_t){};
+        //very fast USB drivers (STM32H735) have trouble without a short delay here
+        //need to give the host a little time to react
+        usleep(100);
         sos_debug_log_warning(SOS_DEBUG_LINK, "slave read error %d", err);
         continue;
       }
       break;
     }
-
     if (data.op.cmd < LINK_CMD_TOTAL) {
       link_cmd_func_table[data.op.cmd](driver, &data);
     } else {
