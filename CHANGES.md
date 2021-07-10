@@ -1,6 +1,9 @@
 # Version 4.0.1
 
-- Roll version to 4.0.1
+
+## Bug Fixes
+
+- Emit a fatal event if system memory is too small
 - Add Changes.md
 - Cleanup of device/fifo to remove warnings
 - Implement FIFO_FLAG_INIT (not just I_FIFO_INIT)
