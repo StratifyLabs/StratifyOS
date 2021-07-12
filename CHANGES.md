@@ -9,7 +9,7 @@
 
 ## Bug Fixes
 
-- Emit a fatal event on bootup if system memory is too small
+- Emit a fatal event on bootup if system memory is too small (1cb40bb86321773185ee23a067d96f5ea59e850b)
 - Add a short delay in `link_thread.c` when `link_slaveread` fails to account for fast USB drivers
 - Fixed MPU cache settings for tasks
 - Invalidate cache when deleting flash blocks in appfs
