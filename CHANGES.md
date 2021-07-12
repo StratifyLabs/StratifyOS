@@ -1,11 +1,16 @@
 # Version 4.1
 
-- Emit a fatal event on bootup if system memory is too small
-- Add a short delay in `link_thread.c` when `link_slaveread` fails to account for fast USB drivers
-- M7 CPUs use MPU regions 9 to 15. This leaves lower priority regions 0 to 8 for user use.
+## New Features
+
 - Added additional cache policies
   - You will need to update your `sos_config.cache` settings to add policies for external flash and tightly coupled memories
   - You also need to update `sos_config.cache` to indicate how OS code/data memories should be treated
+- M7 CPUs use MPU regions 9 to 15. This leaves lower priority regions 0 to 8 for user use.
+
+## Bug Fixes
+
+- Emit a fatal event on bootup if system memory is too small
+- Add a short delay in `link_thread.c` when `link_slaveread` fails to account for fast USB drivers
 - Fixed MPU cache settings for tasks
 - Invalidate cache when deleting flash blocks in appfs
 - Cleanup of device/fifo to remove warnings
