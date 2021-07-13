@@ -10,6 +10,7 @@
 
 ## Bug Fixes
 
+- Make LWIP path headers PUBLIC for mcu target (d9208179a12cc02ae71563e246a7225f02aba0de)
 - Emit a fatal event on bootup if system memory is too small (1cb40bb)
 - Add a short delay in `link_thread.c` when `link_slaveread` fails to account for fast USB drivers (7114032)
 - Invalidate cache when deleting flash blocks in appfs (cae2798)
