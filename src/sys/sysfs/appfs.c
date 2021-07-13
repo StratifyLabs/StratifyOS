@@ -196,8 +196,6 @@ int appfs_open(const void *cfg, void **handle, const char *path, int flags, int 
     return SYSFS_SET_RETURN(ENOENT);
   }
 
-  ret = 0;
-
   // allocate memory for the handle
   h = malloc(sizeof(appfs_handle_t));
   if (h == NULL) {
@@ -259,8 +257,8 @@ int appfs_unlink(const void *cfg, const char *path) {
   const devfs_device_t *device = cfg;
   appfs_file_t file_info;
   mem_pageinfo_t page_info;
-  const char *name;
-  int mem_type;
+  const char *name = NULL;
+  int mem_type = 0;
 
   if (analyze_path(path, &name, &mem_type) < 0) {
     return SYSFS_SET_RETURN(ENOENT);
@@ -282,7 +280,7 @@ int appfs_unlink(const void *cfg, const char *path) {
 
   appfs_get_pageinfo_t get_pageinfo_args;
   get_pageinfo_args.device = device;
-  memcpy(&get_pageinfo_args.page_info, &page_info, sizeof(page_info));
+  get_pageinfo_args.page_info = page_info;
 
   // executable files are deleted based on the header file
   if (mem_type == MEM_FLAG_IS_FLASH) {
@@ -353,7 +351,7 @@ int appfs_fstat(const void *cfg, void *handle, struct stat *st) {
   appfs_handle_t *h = handle;
   const devfs_device_t *device = cfg;
 
-  memset(st, 0, sizeof(struct stat));
+  *st = (struct stat){};
 
   if (h->is_install == true) {
     st->st_mode = S_IFBLK | 0222;
@@ -467,7 +465,7 @@ void svcall_read(void *args) {
     return;
   }
 
-  memset(&async, 0, sizeof(async));
+  async = (devfs_async_t){};
   async.tid = task_get_current();
   async.buf = p->buf;
   async.nbyte = p->nbyte;
@@ -547,6 +545,7 @@ int appfs_close(const void *cfg, void **handle) {
 }
 
 int appfs_opendir(const void *cfg, void **handle, const char *path) {
+  MCU_UNUSED_ARGUMENT(cfg);
   if (strncmp(path, "", PATH_MAX) == 0) {
     *handle = (void *)0;
   } else if (strcmp(path, "flash") == 0) {
@@ -658,7 +657,7 @@ static int readdir_mem(const void *cfg, int loc, struct dirent *entry, int type)
 
   // this needs to load page number loc and see what the file is
 
-  appfs_get_fileinfo_t get_fileinfo_args;
+  appfs_get_fileinfo_t get_fileinfo_args = {};
   get_fileinfo_args.device = device;
   get_fileinfo_args.page = loc;
   get_fileinfo_args.type = type;

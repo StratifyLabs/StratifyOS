@@ -752,15 +752,15 @@ int populate_file_header(
   switch (page_type) {
   case APPFS_MEMPAGETYPE_SYS:
     strcpy(file->hdr.name, ".sys");
-    strcat(file->hdr.name, hex_num);
+    strncat(file->hdr.name, hex_num, APPFS_NAME_MAX_MINUS_1);
     file->hdr.mode = S_IFREG | 0444;
-    memset(&(file->exec), 0, sizeof(appfs_exec_t));
+    file->exec = (appfs_exec_t){};
     break;
   case APPFS_MEMPAGETYPE_FREE:
     strcpy(file->hdr.name, ".free");
-    strcat(file->hdr.name, hex_num);
+    strncat(file->hdr.name, hex_num, APPFS_NAME_MAX_MINUS_1);
     file->hdr.mode = S_IFREG | 0444;
-    memset(&(file->exec), 0, sizeof(appfs_exec_t));
+    file->exec = (appfs_exec_t){};
     break;
   case APPFS_MEMPAGETYPE_USER:
     break;
@@ -852,9 +852,6 @@ int appfs_util_lookupname(
     // go through each page
 
     cortexm_svcall(appfs_util_svcall_get_fileinfo, &get_fileinfo_args);
-    // if ( appfs_util_root_get_fileinfo(device, file_info, i, type, size) < 0){
-    //	return -1;
-    //}
 
     if (get_fileinfo_args.result < 0) {
       return get_fileinfo_args.result;
@@ -874,10 +871,8 @@ int appfs_util_lookupname(
         path, get_fileinfo_args.file_info.hdr.name,
         sizeof(get_fileinfo_args.file_info.hdr.name) - 1)
       == 0) {
-      memcpy(
-        file_info, &get_fileinfo_args.file_info, sizeof(get_fileinfo_args.file_info));
-      memcpy(
-        page_info, &get_pageinfo_args.page_info, sizeof(get_pageinfo_args.page_info));
+      *file_info = get_fileinfo_args.file_info;
+      *page_info = get_pageinfo_args.page_info;
       return 0;
     }
 
