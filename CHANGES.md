@@ -8,6 +8,7 @@
 
 ## Bug Fixes
 
+- Fix APPFS preprocessor define for RAM usage calcs (0634fd751eb49243981813769ac59232f7c2f674)
 - Add Changes.md
 - Cleanup of device/fifo to remove warnings
 - Implement FIFO_FLAG_INIT (not just I_FIFO_INIT)
