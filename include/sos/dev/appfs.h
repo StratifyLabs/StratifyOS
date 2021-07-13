@@ -8,7 +8,7 @@
 #include "../fs/types.h"
 
 #include "sos/link/types.h"
-#define APPFS_RAM_USAGE_WORDS(x) ((x * 2 + 31) / 32)
+#define APPFS_RAM_USAGE_WORDS(x) (((x) * 2 + 31) / 32)
 #define APPFS_IOC_IDENT_CHAR 'a'
 
 enum appfs_flags {
