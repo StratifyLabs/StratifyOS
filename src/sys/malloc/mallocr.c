@@ -15,7 +15,6 @@
 
 static void set_last_chunk(malloc_chunk_t *chunk);
 static void cleanup_memory(struct _reent *reent_ptr, int release_extra_memory);
-static int get_more_memory(struct _reent *reent_ptr, u32 size, int is_new_heap);
 static malloc_chunk_t *find_free_chunk(struct _reent *reent_ptr, u32 num_chunks);
 static int is_memory_corrupt(struct _reent *reent_ptr);
 
@@ -46,7 +45,7 @@ malloc_chunk_t *find_free_chunk(struct _reent *reent_ptr, u32 num_chunks) {
       SOS_DEBUG_MALLOC, "checking chunk %p %d %ld", chunk, chunk->header.num_chunks,
       chunk->header.actual_size);
 #endif
-    int is_free = malloc_chunk_is_free(chunk);
+    const int is_free = malloc_chunk_is_free(chunk);
 
     if (is_free == -1) {
       return NULL;
@@ -227,7 +226,7 @@ void _free_r(struct _reent *reent_ptr, void *addr) {
 
 }
 
-int get_more_memory(struct _reent *reent_ptr, u32 size, int is_new_heap) {
+int malloc_get_more_memory(struct _reent *reent_ptr, u32 size, int is_new_heap) {
   void *new_heap = 0;
   int extra_bytes = 0;
 
@@ -300,6 +299,7 @@ void *_malloc_r(struct _reent *reent_ptr, size_t size) {
 
   SOS_DEBUG_ENTER_TIMER_SCOPE(_malloc_r);
 
+
   if (reent_ptr == NULL) {
     errno = EINVAL;
     sos_debug_log_info(SOS_DEBUG_MALLOC, "EINVAL %s():%d<-", __FUNCTION__, __LINE__);
@@ -311,7 +311,7 @@ void *_malloc_r(struct _reent *reent_ptr, size_t size) {
   num_chunks = malloc_calc_num_chunks(size);
 
   if (reent_ptr->procmem_base->size == 0) {
-    if (get_more_memory(reent_ptr, size, 1) < 0) {
+    if (malloc_get_more_memory(reent_ptr, size, 1) < 0) {
       __malloc_unlock(reent_ptr);
       errno = ENOMEM;
       sos_debug_log_info(SOS_DEBUG_MALLOC, "ENOMEM %s():%d<-", __FUNCTION__, __LINE__);
@@ -339,7 +339,7 @@ void *_malloc_r(struct _reent *reent_ptr, size_t size) {
       }
 
       // Try to get more memory
-      if (get_more_memory(reent_ptr, size, 0) < 0) {
+      if (malloc_get_more_memory(reent_ptr, size, 0) < 0) {
         cleanup_memory(reent_ptr, 0); // give memory back to stack
         __malloc_unlock(reent_ptr);
         errno = ENOMEM;

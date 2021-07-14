@@ -40,6 +40,9 @@ int malloc_chunk_is_free(malloc_chunk_t *chunk);
 u16 malloc_calc_num_chunks(u32 size);
 malloc_chunk_t *malloc_chunk_from_addr(void *addr);
 
+int malloc_get_more_memory(struct _reent *reent_ptr, u32 size, int is_new_heap);
+
+
 void malloc_free_task_r(struct _reent *reent_ptr, int task_id);
 
 void __malloc_lock(struct _reent *ptr);
