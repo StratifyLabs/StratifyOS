@@ -10,6 +10,7 @@
 
 ## Bug Fixes
 
+- Fixed a major bug with `realloc` (it was basically unusable) (51b1840a30f69886d18185d747b1c88368b7a513)
 - Remove `MCU_PACK` from `ffifo_state_t` to avoid potential issues with unaligned access (90d879d6c6f42e4a754b9cd662e31aa4fe2e01a6)
 - Fix APPFS define for ram usage calculation (0634fd751eb49243981813769ac59232f7c2f674)
 - Make LWIP path headers PUBLIC for mcu target (d9208179a12cc02ae71563e246a7225f02aba0de)
