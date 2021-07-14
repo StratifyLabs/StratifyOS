@@ -10,6 +10,7 @@
 
 ## Bug Fixes
 
+- Remove `MCU_PACK` from `ffifo_state_t` to avoid potential issues with unaligned access (90d879d6c6f42e4a754b9cd662e31aa4fe2e01a6)
 - Fix APPFS define for ram usage calculation (0634fd751eb49243981813769ac59232f7c2f674)
 - Make LWIP path headers PUBLIC for mcu target (d9208179a12cc02ae71563e246a7225f02aba0de)
 - Emit a fatal event on bootup if system memory is too small (1cb40bb)
