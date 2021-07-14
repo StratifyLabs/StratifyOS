@@ -154,8 +154,6 @@ int ffifo_write_buffer(
       state->o_flags |= FIFO_FLAG_IS_WRITE_BUSY;
       frame = ffifo_get_frame(config, state->atomic_position.access.head);
       memcpy(frame, buf, frame_size);
-      u32 *src = (u32 *)buf;
-      u32 *dest = (u32 *)frame;
 
       // don't inc head until the data is copied
       ffifo_inc_head(state, frame_count);
@@ -193,6 +191,7 @@ int ffifo_getinfo(
       info->frame_count - atomic_position.access.tail + atomic_position.access.head;
   }
 
+  sos_debug_printf("%p count ready %d / %d\n", state, info->frame_count_ready, info->frame_count);
   info->o_flags = state->o_flags;
   state->o_flags &= ~FIFO_FLAG_IS_OVERFLOW; // clear the overflow since it has been read
   return 0;
@@ -377,11 +376,13 @@ int ffifo_write_local(
 
   // writes need to be a integer multiple of the frame size
   if ((async->nbyte % config->frame_size) != 0) {
+    sos_debug_printf("bad write size\n");
     bytes_written = SYSFS_SET_RETURN(EINVAL);
   } else {
     bytes_written = ffifo_write_buffer(
       config, state, async->buf_const,
       async->nbyte); // see if there are bytes in the buffer
+    sos_debug_printf("wrote %d bytes\n", bytes_written);
     if (bytes_written == 0) {
       if (async->flags & O_NONBLOCK) {
         bytes_written = SYSFS_SET_RETURN(EAGAIN);

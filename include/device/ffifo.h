@@ -7,13 +7,13 @@
 #include "sos/dev/ffifo.h"
 #include "sos/fs/devfs.h"
 
-typedef struct MCU_PACK {
+typedef struct {
   volatile fifo_atomic_position_t atomic_position;
   devfs_transfer_handler_t transfer_handler;
   volatile u32 o_flags;
 } ffifo_state_t;
 
-typedef struct MCU_PACK {
+typedef struct {
   u16 frame_count /*! The number of frames in the buffer */;
   u16 frame_size /*! The size of each frame */;
   char *buffer /*! A pointer to the buffer */;
