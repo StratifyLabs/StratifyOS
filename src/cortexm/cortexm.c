@@ -60,7 +60,7 @@ void cortexm_delay_us(u32 us) {
 }
 
 void cortexm_delay_ms(u32 ms) {
-  int i;
+  u32 i;
   for (i = 0; i < ms; i++) {
     cortexm_delay_us(1000);
   }

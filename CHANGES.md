@@ -2,6 +2,9 @@
 
 ## New Features
 
+
+- Add `sos_config.h` inclusion which must be provided by the CMake super project
+  - This allows fine tuning of the OS
 - Added additional cache policies
   - You will need to update your `sos_config.cache` settings to add policies for external flash and tightly coupled memories
   - You also need to update `sos_config.cache` to indicate how OS code/data memories should be treated

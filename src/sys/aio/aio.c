@@ -9,16 +9,21 @@
 
 /*! \file */
 
-#include "../scheduler/scheduler_local.h"
+
+#include <errno.h>
+#include <signal.h>
+#include <stdbool.h>
+#include <unistd.h>
+
 #include "../signal/sig_local.h"
 #include "../unistd/unistd_local.h"
 #include "cortexm/cortexm.h"
 #include "sos/debug.h"
 #include "sos/fs/sysfs.h"
-#include <errno.h>
-#include <signal.h>
-#include <stdbool.h>
-#include <unistd.h>
+
+#include "../scheduler/scheduler_root.h"
+#include "../scheduler/scheduler_timing.h"
+
 
 /*! \cond */
 static void svcall_suspend(void *args) MCU_ROOT_EXEC_CODE;

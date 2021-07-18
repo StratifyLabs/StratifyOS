@@ -4,11 +4,7 @@
 #ifndef SCHEDULER_SCHEDULER_TIMING_H_
 #define SCHEDULER_SCHEDULER_TIMING_H_
 
-#include "sos/sos.h"
-#include <sdk/types.h>
-
-#define SCHEDULER_TIMEVAL_SEC_INVALID UINT_MAX
-#define SCHEDULER_TIMEVAL_SECONDS SOS_SCHEDULER_TIMEVAL_SECONDS
+#include "scheduler_local.h"
 
 void scheduler_timing_init();
 

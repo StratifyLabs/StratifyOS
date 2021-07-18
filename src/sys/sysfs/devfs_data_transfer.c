@@ -6,9 +6,9 @@
 #include <stdarg.h>
 #include <sys/stat.h>
 
-#include "../scheduler/scheduler_local.h"
 #include "devfs_local.h"
-#include "sos/fs/sysfs.h"
+#include "../scheduler/scheduler_root.h"
+
 
 #define ARGS_TRANSFER_WRITE 0
 #define ARGS_TRANSFER_READ 1

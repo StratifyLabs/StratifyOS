@@ -5,7 +5,6 @@
 #include "config.h"
 #include "cortexm/mpu.h"
 #include "device/sys.h"
-#include "scheduler/scheduler_local.h"
 #include "sos/debug.h"
 #include "sos/dev/bootloader.h"
 #include "sos/dev/sys.h"
@@ -14,6 +13,7 @@
 #include "signal/sig_local.h"
 #include "symbols.h"
 
+#include "scheduler/scheduler_root.h"
 #include "cortexm/task_local.h"
 
 static int read_task(sys_taskattr_t *task);

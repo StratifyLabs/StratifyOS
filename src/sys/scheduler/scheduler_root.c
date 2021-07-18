@@ -8,7 +8,7 @@
 
 /*! \file */
 
-#include "scheduler_local.h"
+#include "scheduler_root.h"
 
 void scheduler_svcall_set_delaymutex(void *args) {
   CORTEXM_SVCALL_ENTER();

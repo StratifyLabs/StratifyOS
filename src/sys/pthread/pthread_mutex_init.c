@@ -29,7 +29,7 @@ int pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *attr) 
   mutex->flags = PTHREAD_MUTEX_FLAGS_INITIALIZED;
 
   if (attr == NULL) {
-    mutex->prio_ceiling = PTHREAD_MUTEX_PRIO_CEILING;
+    mutex->prio_ceiling = CONFIG_PTHREAD_MUTEX_PRIO_CEILING;
     if (task_get_current() == 0) {
       mutex->pid = 0;
     } else {

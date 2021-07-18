@@ -18,18 +18,18 @@
  * \return 0 on success
  */
 int pthread_attr_init(pthread_attr_t *attr /*! a pointer to the attributes structure */) {
-  attr->stacksize = PTHREAD_DEFAULT_STACK_SIZE;
+  attr->stacksize = CONFIG_PTHREAD_DEFAULT_STACK_SIZE;
   attr->stackaddr = 0;
 
   // for good measure zero out stack
   PTHREAD_ATTR_SET_IS_INITIALIZED((attr), 1);
   PTHREAD_ATTR_SET_CONTENTION_SCOPE((attr), PTHREAD_SCOPE_SYSTEM);
-  PTHREAD_ATTR_SET_GUARDSIZE((attr), SCHED_DEFAULT_STACKGUARD_SIZE);
+  PTHREAD_ATTR_SET_GUARDSIZE((attr), CONFIG_TASK_DEFAULT_STACKGUARD_SIZE);
   PTHREAD_ATTR_SET_INHERIT_SCHED((attr), PTHREAD_EXPLICIT_SCHED);
   PTHREAD_ATTR_SET_DETACH_STATE((attr), PTHREAD_CREATE_JOINABLE);
   PTHREAD_ATTR_SET_SCHED_POLICY((attr), SCHED_OTHER);
 
-  attr->schedparam.sched_priority = SCHED_DEFAULT_PRIORITY;
+  attr->schedparam.sched_priority = CONFIG_SCHED_DEFAULT_PRIORITY;
   return 0;
 }
 

@@ -32,8 +32,6 @@
 #include <errno.h>
 #include <sys/timespec.h>
 
-#include "sos/sos.h"
-
 #include "cortexm/cortexm.h"
 #include "cortexm/task.h"
 #include "../scheduler/scheduler_timing.h"

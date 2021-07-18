@@ -46,9 +46,9 @@ struct mallinfo _mallinfo_r(struct _reent *reent_ptr) {
 
   // this calculation may be wrong -- needs to account for the number o header entries
   // Issue #143
-  mi.arena = (total_chunks)*MALLOC_CHUNK_SIZE;
+  mi.arena = (total_chunks)*CONFIG_MALLOC_CHUNK_SIZE;
   mi.ordblks = total_free_chunks;
-  mi.fordblks = total_free_chunks * MALLOC_CHUNK_SIZE;
+  mi.fordblks = total_free_chunks * CONFIG_MALLOC_CHUNK_SIZE;
   mi.uordblks = total_used_memory;
 
   return mi;

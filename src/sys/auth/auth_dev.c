@@ -1,12 +1,11 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
-#include "../scheduler/scheduler_local.h"
+#include "../scheduler/scheduler_timing.h"
+#include "../scheduler/scheduler_root.h"
 #include "config.h"
 #include "cortexm/task.h"
 #include "device/auth.h"
 #include <errno.h>
-
-#include "tinycrypt_sha256.h"
 
 static const void *secret_key();
 static u8 generate_pseudo_random() MCU_ROOT_EXEC_CODE;
@@ -19,7 +18,7 @@ calculate(auth_token_t *dest, const auth_token_t *input0, const auth_token_t *in
   MCU_ROOT_EXEC_CODE;
 
 typedef struct {
-  struct tc_sha256_state_struct sha256;
+  //struct tc_sha256_state_struct sha256;
   auth_token_t random_token;
 } auth_state_t;
 
@@ -114,12 +113,13 @@ int calculate(
   auth_token_t *dest,
   const auth_token_t *input0,
   const auth_token_t *input1) {
-  if (tc_sha256_init(&m_auth_state.sha256) == TC_CRYPTO_FAIL) {
-    return SYSFS_SET_RETURN(EIO);
-  }
-  tc_sha256_update(&m_auth_state.sha256, (const u8 *)input0, sizeof(auth_token_t));
-  tc_sha256_update(&m_auth_state.sha256, (const u8 *)input1, sizeof(auth_token_t));
-  tc_sha256_final((u8 *)dest, &m_auth_state.sha256);
+
+  //if (tc_sha256_init(&m_auth_state.sha256) == TC_CRYPTO_FAIL) {
+  //  return SYSFS_SET_RETURN(EIO);
+  //}
+  //tc_sha256_update(&m_auth_state.sha256, (const u8 *)input0, sizeof(auth_token_t));
+  //tc_sha256_update(&m_auth_state.sha256, (const u8 *)input1, sizeof(auth_token_t));
+  //tc_sha256_final((u8 *)dest, &m_auth_state.sha256);
 
   return 0;
 }

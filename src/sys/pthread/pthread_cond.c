@@ -14,7 +14,8 @@
 #include <errno.h>
 #include <pthread.h>
 
-#include "../scheduler/scheduler_local.h"
+#include "../scheduler/scheduler_timing.h"
+#include "../scheduler/scheduler_root.h"
 #include "pthread_mutex_local.h"
 
 /*! \cond */

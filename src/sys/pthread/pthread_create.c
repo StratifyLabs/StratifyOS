@@ -6,7 +6,7 @@
 #include <errno.h>
 #include <pthread.h>
 
-#include "../scheduler/scheduler_local.h"
+#include "../scheduler/scheduler_root.h"
 
 static void svcall_join_thread(void *args) MCU_ROOT_EXEC_CODE;
 
@@ -40,7 +40,7 @@ int pthread_create(
     // memcpy(&attrs, attr, sizeof(pthread_attr_t));
   }
 
-  u32 mem_size = attrs.stacksize + sizeof(struct _reent) + SCHED_DEFAULT_STACKGUARD_SIZE;
+  u32 mem_size = attrs.stacksize + sizeof(struct _reent) + CONFIG_TASK_DEFAULT_STACKGUARD_SIZE;
   stack_addr = malloc(mem_size);
   if (stack_addr == NULL) {
     sos_debug_log_error(SOS_DEBUG_PTHREAD, "Failed to alloc stack memory:%d", mem_size);

@@ -3,6 +3,8 @@
 #include <errno.h>
 #include <string.h>
 
+#include "sos_config.h"
+
 #include "cortexm/task.h"
 #include "sos/sos.h"
 #include "sos/debug.h"
@@ -10,6 +12,8 @@
 #include "task_local.h"
 
 #define SYSTICK_MIN_CYCLES 10000
+
+volatile task_t sos_task_table[CONFIG_TASK_TOTAL] MCU_SYS_MEM;
 
 volatile s8 m_task_current_priority MCU_SYS_MEM;
 static volatile u8 m_task_exec_count MCU_SYS_MEM;
@@ -22,6 +26,7 @@ static void task_check_count_flag() MCU_ROOT_EXEC_CODE;
 
 static void system_reset(); // This is used if the OS process returns
 void system_reset() { cortexm_svcall(cortexm_reset, NULL); }
+u8 task_get_total() { return CONFIG_TASK_TOTAL; }
 u8 task_get_exec_count() { return m_task_exec_count; }
 
 void task_root_elevate_current_priority(s8 value) {

@@ -14,7 +14,7 @@
 #include <sys/reent.h>
 #include <unistd.h>
 
-#include "../scheduler/scheduler_local.h"
+#include "../scheduler/scheduler_root.h"
 #include "../signal/sig_local.h"
 #include "cortexm/mpu.h"
 #include "sos/dev/appfs.h"

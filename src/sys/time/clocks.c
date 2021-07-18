@@ -13,7 +13,7 @@
 #include <sys/times.h>
 #include <time.h>
 
-#include "../scheduler/scheduler_local.h"
+#include "../scheduler/scheduler_timing.h"
 
 /*! \cond */
 #define CLOCK_PROCESS_FLAG (1 << 31)

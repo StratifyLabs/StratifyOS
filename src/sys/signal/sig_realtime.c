@@ -1,6 +1,5 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
-
 /*! \addtogroup signal
  *
  * @{
@@ -14,7 +13,9 @@
 #include <stdlib.h>
 
 #include "cortexm/task.h"
-#include "../scheduler/scheduler_local.h"
+
+#include "../scheduler/scheduler_root.h"
+#include "../scheduler/scheduler_timing.h"
 #include "sig_local.h"
 
 /*! \cond */
@@ -170,7 +171,7 @@ int check_pending_set(const sigset_t *set) {
   sigset_t mask;
   mask = THREAD_SIGPENDING & *set;
   if (mask) {
-    for (int i = 0; i < SCHEDULER_NUM_SIGNALS; i++) {
+    for (int i = 0; i < CONFIG_TASK_NUM_SIGNALS; i++) {
       if (mask & (1 << i)) {            // cppcheck-suppress[shiftTooManyBitsSigned]
         THREAD_SIGPENDING &= ~(1 << i); // clear the pending signal
         // execute the handler

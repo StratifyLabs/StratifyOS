@@ -1,6 +1,5 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
-
 /*! \addtogroup signal
  *
  * @{
@@ -10,8 +9,8 @@
 /*! \file */
 
 #include "../scheduler/scheduler_local.h"
-#include "sos/debug.h"
 #include "sig_local.h"
+#include "sos/debug.h"
 #include <errno.h>
 #include <signal.h>
 
@@ -29,7 +28,7 @@ static int alloc_sigaction(int sig);
  *
  */
 _sig_func_ptr signal(int sig, _sig_func_ptr func) {
-  if (sig < SCHEDULER_NUM_SIGNALS) {
+  if (sig < CONFIG_TASK_NUM_SIGNALS) {
 
     // check for signals that cannot be caught or ignored
     if ((sig == SIGKILL) || (sig == SIGSTOP)) {
@@ -73,7 +72,7 @@ _sig_func_ptr signal(int sig, _sig_func_ptr func) {
  */
 int sigaction(int sig, const struct sigaction *act, struct sigaction *oact) {
 
-  if (sig < SCHEDULER_NUM_SIGNALS) {
+  if (sig < CONFIG_TASK_NUM_SIGNALS) {
 
     // check for signals that cannot be caught or ignored
     if ((sig == SIGKILL) || (sig == SIGSTOP)) {
@@ -91,10 +90,12 @@ int sigaction(int sig, const struct sigaction *act, struct sigaction *oact) {
 
     if (oact != NULL) {
       // copy the existing action to oact
-      memcpy(oact, GLOBAL_SIGACTION(sig), sizeof(struct sigaction));
+      *oact = *(GLOBAL_SIGACTION(sig));
+      //memcpy(oact, GLOBAL_SIGACTION(sig), sizeof(struct sigaction));
     }
 
-    memcpy(GLOBAL_SIGACTION(sig), act, sizeof(struct sigaction));
+    *(GLOBAL_SIGACTION(sig)) = *act;
+    //memcpy(GLOBAL_SIGACTION(sig), act, sizeof(struct sigaction));
     // GLOBAL_SIGACTION(sig)->sa_flags |= (1<<SA_SIGINFO);
 
   } else {
@@ -217,8 +218,7 @@ int sigrelse(int sig) {
 int alloc_sigactions() {
   void *mem;
   if (GLOBAL_SIGACTIONS == NULL) {
-    int tmp;
-    tmp = sizeof(struct sigaction *) * SCHEDULER_NUM_SIGNALS;
+    const size_t tmp = sizeof(struct sigaction *) * CONFIG_TASK_NUM_SIGNALS;
     mem = malloc(tmp);
     if (mem == NULL) {
       // memory allocation failure
@@ -233,8 +233,7 @@ int alloc_sigactions() {
 int alloc_sigaction(int sig) {
   void *mem;
   if (GLOBAL_SIGACTION(sig) == NULL) {
-    int tmp;
-    tmp = sizeof(struct sigaction);
+    const size_t tmp = sizeof(struct sigaction);
     mem = malloc(tmp);
     if (mem == NULL) {
       // memory allocation failure

@@ -7,4 +7,7 @@ else()
 	sos_sdk_add_subdirectory(SOURCELIST link)
 endif()
 
-set(SOURCES ${SOURCELIST} PARENT_SCOPE)
+set(SOURCES
+	${SOURCELIST}
+	sos_config_template.h
+	PARENT_SCOPE)

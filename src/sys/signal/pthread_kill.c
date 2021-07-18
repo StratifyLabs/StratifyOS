@@ -11,12 +11,12 @@
 #include <pthread.h>
 #include <signal.h>
 
-#include "../scheduler/scheduler_local.h"
 #include "config.h"
 #include "cortexm/task.h"
 #include "sos/debug.h"
 #include "sig_local.h"
-#include "sos/sos.h"
+#include "../scheduler/scheduler_root.h"
+
 
 #include "sos/debug.h"
 
@@ -54,7 +54,7 @@ void root_check_signal_stack(void *args) {
 
   // stackguard * 2 gives the handler a little bit of memory
   if (
-    (sp - task_interrupt_stacksize() - (2 * SCHED_DEFAULT_STACKGUARD_SIZE))
+    (sp - task_interrupt_stacksize() - (2 * CONFIG_TASK_DEFAULT_STACKGUARD_SIZE))
     < (u32)(sos_task_table[tid].mem.stackguard.address)) {
     *result = -1;
   }
@@ -90,7 +90,7 @@ int signal_root_forward(
   // make sure the task id is valid
   if ((u32)tid < task_get_total()) {
     if (si_signo != 0) {
-      if (si_signo < SCHEDULER_NUM_SIGNALS) {
+      if (si_signo < CONFIG_TASK_NUM_SIGNALS) {
 
         check_stack = tid;
         root_check_signal_stack(&check_stack);
@@ -138,7 +138,7 @@ int signal_root_send(
   // make sure the task id is valid
   if ((u32)tid < task_get_total()) {
     if (si_signo != 0) {
-      if (si_signo < SCHEDULER_NUM_SIGNALS) {
+      if (si_signo < CONFIG_TASK_NUM_SIGNALS) {
 
         check_stack = tid;
         svcall_check_signal_stack(&check_stack);
@@ -191,7 +191,7 @@ int signal_send(int tid, int si_signo, int si_sigcode, int sig_value) {
       }
     }
 
-    if (si_signo < SCHEDULER_NUM_SIGNALS) {
+    if (si_signo < CONFIG_TASK_NUM_SIGNALS) {
       check_stack = tid;
       cortexm_svcall(svcall_check_signal_stack, &check_stack);
       if (check_stack < 0) {

@@ -78,7 +78,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "../scheduler/scheduler_local.h"
+#include "../scheduler/scheduler_timing.h"
+#include "../scheduler/scheduler_root.h"
 #include "mqueue.h"
 #include "sos/debug.h"
 

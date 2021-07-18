@@ -11,7 +11,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "../scheduler/scheduler_local.h"
+#include "../scheduler/scheduler_timing.h"
 #include "sos/debug.h"
 
 /*! \cond */

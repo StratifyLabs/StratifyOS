@@ -10,7 +10,9 @@
 
 #include "../signal/sig_local.h"
 #include "cortexm/cortexm.h"
-#include "scheduler_local.h"
+
+#include "scheduler_root.h"
+#include "scheduler_timing.h"
 
 #include "sos/debug.h"
 
@@ -34,7 +36,7 @@ static inline u8 scheduler_timing_process_timer_id_offset(timer_t timer_id) {
   return timer_id & 0xFF;
 }
 static inline u8 scheduler_timing_process_timer_count() {
-  return SOS_PROCESS_TIMER_COUNT;
+  return CONFIG_TASK_PROCESS_TIMER_COUNT;
 }
 static void update_tmr_for_process_timer_match(volatile sos_process_timer_t *timer)
   MCU_ROOT_EXEC_CODE;
@@ -100,7 +102,7 @@ void root_allocate_timer(void *args) {
 void scheduler_timing_root_process_timer_initialize(u16 task_id) {
   memset(
     (void *)sos_sched_table[task_id].timer, 0,
-    sizeof(sos_process_timer_t) * SOS_PROCESS_TIMER_COUNT);
+    sizeof(sos_process_timer_t) * CONFIG_TASK_PROCESS_TIMER_COUNT);
 
   // the first available timer slot is reserved for alarm/ualarm
   if (task_get_parent(task_id) == task_id) {
@@ -342,7 +344,7 @@ static void svcall_unqueue_timer(void *args) {
   CORTEXM_SVCALL_ENTER();
   svcall_unqueue_timer_t *p = args;
   timer_t timer_id;
-  for (u8 j = 0; j < SOS_PROCESS_TIMER_COUNT; j++) {
+  for (u8 j = 0; j < CONFIG_TASK_PROCESS_TIMER_COUNT; j++) {
     timer_id = SCHEDULER_TIMING_PROCESS_TIMER(task_get_current(), j);
     volatile sos_process_timer_t *timer = scheduler_timing_process_timer(timer_id);
     if (
@@ -541,7 +543,7 @@ int root_handle_usecond_match_event(void *context, const mcu_event_t *data) {
   // Initialize variables
   chan_req.loc = SCHED_USECOND_TMR_SLEEP_OC;
   chan_req.value = SOS_USECOND_PERIOD + 1;
-  new_priority = SCHED_LOWEST_PRIORITY - 1;
+  new_priority = CONFIG_SCHED_LOWEST_PRIORITY - 1;
   next = SOS_USECOND_PERIOD;
 
   now = sos_config.clock.disable();
@@ -601,7 +603,7 @@ int root_handle_usecond_process_timer_match_event(
 
     if (task_enabled(i)) {
 
-      for (j = 0; j < SOS_PROCESS_TIMER_COUNT; j++) {
+      for (j = 0; j < CONFIG_TASK_PROCESS_TIMER_COUNT; j++) {
         volatile sos_process_timer_t *timer = sos_sched_table[i].timer + j;
 
         if (timer->o_flags & SCHEDULER_TIMING_PROCESS_TIMER_FLAG_IS_INITIALIZED) {
