@@ -15,7 +15,7 @@
 
 #include "sos/dev/rtc.h"
 
-#include "../scheduler/scheduler_local.h"
+#include "../scheduler/scheduler_timing.h"
 
 /*! \cond */
 struct timeval time_of_day_offset MCU_SYS_MEM;

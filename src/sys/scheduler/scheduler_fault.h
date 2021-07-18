@@ -4,7 +4,7 @@
 #ifndef SCHEDULER_SCHEDULER_FAULT_H_
 #define SCHEDULER_SCHEDULER_FAULT_H_
 
-#include <sdk/types.h>
+#include "scheduler_local.h"
 
 void scheduler_fault_build_memory_string(char * dest, const char * term);
 void scheduler_fault_build_string(char * dest, const char * term);

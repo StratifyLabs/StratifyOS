@@ -19,7 +19,7 @@
 
 #include "../unistd/unistd_local.h"
 #include "sched.h"
-#include "scheduler_local.h"
+#include "scheduler_root.h"
 #include "sos/debug.h"
 
 #include "cortexm/fault_local.h"
@@ -169,7 +169,7 @@ void scheduler_root_update_on_stopped() {
 
   SOS_DEBUG_ENTER_CYCLE_SCOPE_AVERAGE();
   cortexm_disable_interrupts();
-  next_priority = SCHED_LOWEST_PRIORITY;
+  next_priority = CONFIG_SCHED_LOWEST_PRIORITY;
   for (i = 1; i < task_get_total(); i++) {
     // Find the highest priority of all active tasks
     if (task_enabled_active_not_stopped(i) && (task_get_priority(i) > next_priority)) {
@@ -216,7 +216,7 @@ int scheduler_get_highest_priority_blocked(void *block_object) {
   int current_task = task_get_current();
 
   // check to see if another task is waiting for the mutex
-  priority = SCHED_LOWEST_PRIORITY - 1;
+  priority = CONFIG_SCHED_LOWEST_PRIORITY - 1;
   new_thread = -1;
 
   // Issue #139 - blocked mutexes should be awarded in a round robin fashion started with
@@ -257,7 +257,7 @@ int scheduler_get_highest_priority_blocked(void *block_object) {
 int scheduler_root_unblock_all(void *block_object, int unblock_type) {
   int i;
   int priority;
-  priority = SCHED_LOWEST_PRIORITY - 1;
+  priority = CONFIG_SCHED_LOWEST_PRIORITY - 1;
   for (i = 1; i < task_get_total(); i++) {
     if (task_enabled(i)) {
       if (
@@ -285,7 +285,7 @@ void start_first_thread() {
   }
   PTHREAD_ATTR_SET_IS_INITIALIZED((&attr), 1);
   PTHREAD_ATTR_SET_CONTENTION_SCOPE((&attr), PTHREAD_SCOPE_SYSTEM);
-  PTHREAD_ATTR_SET_GUARDSIZE((&attr), SCHED_DEFAULT_STACKGUARD_SIZE);
+  PTHREAD_ATTR_SET_GUARDSIZE((&attr), CONFIG_TASK_DEFAULT_STACKGUARD_SIZE);
   PTHREAD_ATTR_SET_INHERIT_SCHED((&attr), PTHREAD_EXPLICIT_SCHED);
   PTHREAD_ATTR_SET_DETACH_STATE((&attr), PTHREAD_CREATE_DETACHED);
   PTHREAD_ATTR_SET_SCHED_POLICY((&attr), SCHED_RR);

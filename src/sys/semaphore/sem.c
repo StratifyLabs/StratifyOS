@@ -16,7 +16,8 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "../scheduler/scheduler_local.h"
+#include "../scheduler/scheduler_root.h"
+#include "../scheduler/scheduler_timing.h"
 #include "semaphore.h"
 
 #include "sos/debug.h"

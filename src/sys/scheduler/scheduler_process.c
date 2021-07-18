@@ -12,8 +12,8 @@
 #include <fcntl.h>
 #include <sys/time.h>
 
-#include "cortexm/cortexm.h"
-#include "scheduler_local.h"
+#include "scheduler_root.h"
+#include "scheduler_timing.h"
 
 typedef struct {
   task_memories_t *mem;
@@ -74,7 +74,7 @@ void svcall_init_sched_task(init_sched_task_t *task) {
   PTHREAD_ATTR_SET_IS_INITIALIZED((&(sos_sched_table[id].attr)), 1);
   PTHREAD_ATTR_SET_SCHED_POLICY((&(sos_sched_table[id].attr)), SCHED_OTHER);
   PTHREAD_ATTR_SET_GUARDSIZE(
-    (&(sos_sched_table[id].attr)), SCHED_DEFAULT_STACKGUARD_SIZE);
+    (&(sos_sched_table[id].attr)), CONFIG_TASK_DEFAULT_STACKGUARD_SIZE);
   PTHREAD_ATTR_SET_CONTENTION_SCOPE((&(sos_sched_table[id].attr)), PTHREAD_SCOPE_SYSTEM);
   PTHREAD_ATTR_SET_INHERIT_SCHED((&(sos_sched_table[id].attr)), PTHREAD_EXPLICIT_SCHED);
   PTHREAD_ATTR_SET_DETACH_STATE((&(sos_sched_table[id].attr)), PTHREAD_CREATE_DETACHED);
@@ -101,7 +101,7 @@ void svcall_init_sched_task(init_sched_task_t *task) {
   scheduler_root_update_on_wake(id, task_get_priority(id));
   u32 stackguard = (u32)task->mem->data.address + sizeof(struct _reent);
   if (
-    task_root_set_stackguard(id, (void *)stackguard, SCHED_DEFAULT_STACKGUARD_SIZE) < 0) {
+    task_root_set_stackguard(id, (void *)stackguard, CONFIG_TASK_DEFAULT_STACKGUARD_SIZE) < 0) {
     sos_debug_log_warning(SOS_DEBUG_SCHEDULER, "Failed to set stackguard");
   }
 

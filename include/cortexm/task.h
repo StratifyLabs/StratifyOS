@@ -73,7 +73,7 @@ int task_mpu_calc_protection(task_memories_t *mem);
 u32 task_interrupt_stacksize();
 
 u8 task_get_exec_count();
-static inline u8 task_get_total() { return sos_config.task.task_total; }
+u8 task_get_total();
 
 extern volatile s8 m_task_current_priority MCU_SYS_MEM;
 static inline s8 task_get_current_priority() { return m_task_current_priority; }
@@ -85,7 +85,7 @@ void task_root_elevate_current_priority(s8 value) MCU_ROOT_EXEC_CODE;
 
 u32 task_reverse_memory_lookup(u32 input);
 
-#if defined __v7em_f5sh || defined __v7em_f5dh
+#if defined __v7em_f5dh
 #define TASK_MPU_REGION_OFFSET 8
 #else
 #define TASK_MPU_REGION_OFFSET 0

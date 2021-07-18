@@ -7,7 +7,7 @@
 
 /*! \file */
 
-#include "../scheduler/scheduler_local.h"
+#include "../scheduler/scheduler_timing.h"
 #include <time.h>
 #include <unistd.h>
 

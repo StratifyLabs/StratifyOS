@@ -5,25 +5,21 @@
 
 #include "sos/debug.h"
 
+#define BASE_VERSION (MCU_STRINGIFY(__PROJECT_VERSION_MAJOR) "." MCU_STRINGIFY(                \
+  __PROJECT_VERSION_MINOR) "." MCU_STRINGIFY(__PROJECT_VERSION_PATCH))
+
 #if MCU_DEBUG
-#define VERSION "4.1.0d"
+#define VERSION (BASE_VERSION "d")
 #else
-#define VERSION "4.1.0"
+#define VERSION (BASE_VERSION)
 #endif
 
 #include <stdint.h>
 
-
-#define PTHREAD_MAX_LOCKS 1024
-#define PTHREAD_MUTEX_PRIO_CEILING 0
-#define PTHREAD_STACK_MIN 128
-#define SCHED_LOWEST_PRIORITY 0
-#define SCHED_HIGHEST_PRIORITY 31
-#define SCHED_DEFAULT_PRIORITY 0
-#define SCHED_RR_DURATION 10
-
-#define USE_STDIO 1
-
 #include "sos/arch.h"
+
+//this file is the user provided configuration file for making
+//a few compile time tweaks
+#include "sos_config.h"
 
 #endif

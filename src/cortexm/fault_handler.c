@@ -13,6 +13,8 @@
 #include <errno.h>
 #include <signal.h>
 
+#include "../sys/scheduler/scheduler_local.h"
+
 #include "cortexm/cortexm.h"
 #include "cortexm/mpu.h"
 
@@ -63,7 +65,7 @@ void cortexm_fault_event_handler(fault_t *fault) {
       cortexm_get_thread_stack_ptr((void **)&stack);
       m_cortexm_fault.free_stack_size = (u32)stack
                                         - (u32)sos_sched_table[tid].attr.stackaddr
-                                        - SCHED_DEFAULT_STACKGUARD_SIZE;
+                                        - CONFIG_TASK_DEFAULT_STACKGUARD_SIZE;
     } else {
       // free stack is the same as the free heap for first thread in process
       m_cortexm_fault.free_stack_size = m_cortexm_fault.free_heap_size;

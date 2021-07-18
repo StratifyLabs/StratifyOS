@@ -132,43 +132,5 @@ if( ${SOS_BUILD_CONFIG} STREQUAL arm )
 		symbols.c
 		sys_dev.c
 		auth/auth_dev.c
-		auth/prng.c
-		auth/prng.h
-		auth/tinycrypt_sha256_api.c
-		auth/device_sha256_api.c
-		auth/device_aes_api.c
-		auth/device_random_api.c
-		#auth/tinycrypt_sha256.c
-		#auth/tinycrypt_sha256.h
-		auth/tinycrypt/lib/include/tinycrypt/aes.h
-		auth/tinycrypt/lib/include/tinycrypt/constants.h
-		auth/tinycrypt/lib/include/tinycrypt/cbc_mode.h
-		auth/tinycrypt/lib/include/tinycrypt/ccm_mode.h
-		auth/tinycrypt/lib/include/tinycrypt/cmac_mode.h
-		auth/tinycrypt/lib/include/tinycrypt/ctr_mode.h
-		auth/tinycrypt/lib/include/tinycrypt/ctr_prng.h
-		auth/tinycrypt/lib/include/tinycrypt/ecc_dh.h
-		auth/tinycrypt/lib/include/tinycrypt/ecc_dsa.h
-		auth/tinycrypt/lib/include/tinycrypt/ecc_platform_specific.h
-		auth/tinycrypt/lib/include/tinycrypt/ecc.h
-		auth/tinycrypt/lib/include/tinycrypt/hmac_prng.h
-		auth/tinycrypt/lib/include/tinycrypt/hmac.h
-		auth/tinycrypt/lib/include/tinycrypt/sha256.h
-		auth/tinycrypt/lib/include/tinycrypt/utils.h
-		auth/tinycrypt/lib/source/aes_decrypt.c
-		auth/tinycrypt/lib/source/aes_encrypt.c
-		auth/tinycrypt/lib/source/cbc_mode.c
-		auth/tinycrypt/lib/source/ccm_mode.c
-		auth/tinycrypt/lib/source/cmac_mode.c
-		auth/tinycrypt/lib/source/ctr_mode.c
-		auth/tinycrypt/lib/source/ctr_prng.c
-		auth/tinycrypt/lib/source/ecc_dh.c
-		auth/tinycrypt/lib/source/ecc_dsa.c
-		auth/tinycrypt/lib/source/ecc_platform_specific.c
-		auth/tinycrypt/lib/source/ecc.c
-		auth/tinycrypt/lib/source/hmac_prng.c
-		auth/tinycrypt/lib/source/hmac.c
-		auth/tinycrypt/lib/source/sha256.c
-		auth/tinycrypt/lib/source/utils.c
 		PARENT_SCOPE)
 endif()

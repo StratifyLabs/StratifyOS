@@ -24,7 +24,7 @@ u16 malloc_calc_num_chunks(u32 size) {
   int num_chunks;
   if (size > MALLOC_DATA_SIZE) {
     num_chunks =
-      ((size - MALLOC_DATA_SIZE) + MALLOC_CHUNK_SIZE - 1) / MALLOC_CHUNK_SIZE + 1;
+      ((size - MALLOC_DATA_SIZE) + CONFIG_MALLOC_CHUNK_SIZE - 1) / CONFIG_MALLOC_CHUNK_SIZE + 1;
   } else {
     num_chunks = 1;
   }
@@ -109,7 +109,7 @@ void cleanup_memory(struct _reent *reent_ptr, int release_extra_memory) {
   // next->header.num_chunks is 0 -- next and current are the same
   if (release_extra_memory && (last_chunk_if_free != 0)) {
     // do negative _sbrk to give memory back to stack
-    ptrdiff_t size = -1 * (last_chunk_if_free->header.num_chunks * MALLOC_CHUNK_SIZE);
+    ptrdiff_t size = -1 * (last_chunk_if_free->header.num_chunks * CONFIG_MALLOC_CHUNK_SIZE);
     _sbrk_r(reent_ptr, size);
     set_last_chunk(last_chunk_if_free);
   }
@@ -199,7 +199,7 @@ void _free_r(struct _reent *reent_ptr, void *addr) {
   }
 
   tmp = (unsigned int)chunk - (unsigned int)(&(base->base));
-  if (tmp % MALLOC_CHUNK_SIZE) {
+  if (tmp % CONFIG_MALLOC_CHUNK_SIZE) {
     sos_debug_log_warning(SOS_DEBUG_MALLOC, "Free addr not aligned");
     __malloc_unlock(reent_ptr);
     return;
@@ -231,12 +231,12 @@ int malloc_get_more_memory(struct _reent *reent_ptr, u32 size, int is_new_heap) 
   int extra_bytes = 0;
 
   if (is_new_heap) {
-    extra_bytes = MALLOC_SBRK_JUMP_SIZE;
+    extra_bytes = CONFIG_MALLOC_SBRK_JUMP_SIZE;
   }
 
-  // jump as size but round up to a multiple of MALLOC_SBRK_JUMP_SIZE
+  // jump as size but round up to a multiple of CONFIG_MALLOC_SBRK_JUMP_SIZE
   int jump_size =
-    ((size + MALLOC_SBRK_JUMP_SIZE - 1) / MALLOC_SBRK_JUMP_SIZE) * MALLOC_SBRK_JUMP_SIZE;
+    ((size + CONFIG_MALLOC_SBRK_JUMP_SIZE - 1) / CONFIG_MALLOC_SBRK_JUMP_SIZE) * CONFIG_MALLOC_SBRK_JUMP_SIZE;
   new_heap = _sbrk_r(reent_ptr, jump_size + extra_bytes);
 
   if (new_heap == NULL) {
@@ -252,16 +252,16 @@ int malloc_get_more_memory(struct _reent *reent_ptr, u32 size, int is_new_heap) 
       chunk = new_heap;
     } else {
       /*
-       * After the first call, there is always an extra MALLOC_SBRK_JUMP_SIZE bytes on the
-       * heap that needs to be adjusted for. This extra MALLOC_SBRK_JUMP_SIZE leaves room
+       * After the first call, there is always an extra CONFIG_MALLOC_SBRK_JUMP_SIZE bytes on the
+       * heap that needs to be adjusted for. This extra CONFIG_MALLOC_SBRK_JUMP_SIZE leaves room
        * to always have room for the last chunk header. That is, without the extra
-       * MALLOC_SBRK_JUMP_SIZE, the heap could run into the stack guard protected memory
+       * CONFIG_MALLOC_SBRK_JUMP_SIZE, the heap could run into the stack guard protected memory
        * and crash the program.
        *
        */
-      chunk = new_heap - MALLOC_SBRK_JUMP_SIZE;
+      chunk = new_heap - CONFIG_MALLOC_SBRK_JUMP_SIZE;
     }
-    malloc_set_chunk_free(chunk, jump_size / MALLOC_CHUNK_SIZE);
+    malloc_set_chunk_free(chunk, jump_size / CONFIG_MALLOC_CHUNK_SIZE);
     // mark the last block (heap should have extra room for this)
     set_last_chunk(chunk + chunk->header.num_chunks);
 #if ENABLE_DEEP_TRACE

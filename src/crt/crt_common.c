@@ -24,7 +24,7 @@ static siginfo_t signal_info[32];
 
 void crt_common(char *path_arg, int *ret, const char *name) {
   task_setstackguard(
-    pthread_self(), &_ebss + sizeof(proc_mem_t), SCHED_DEFAULT_STACKGUARD_SIZE);
+    pthread_self(), &_ebss + sizeof(proc_mem_t), CONFIG_TASK_DEFAULT_STACKGUARD_SIZE);
   int argc;
   char **argv;
 

@@ -9,7 +9,11 @@ set(CMAKE_TOOLCHAIN_FILE ${CMAKE_MODULE_PATH}/sos-toolchain.cmake)
 include(sos-sdk)
 
 set(SOS_NAME sos)
-project(StratifyOS CXX C ASM)
+set(SOS_PROJECT_VERSION 4.1.0 CACHE INTERNAL "Stratify OS version")
+
+project(StratifyOS
+	LANGUAGES CXX C ASM
+	VERSION ${SOS_PROJECT_VERSION})
 
 include( ${CMAKE_CURRENT_SOURCE_DIR}/${SOS_BUILD_CONFIG}.cmake )
 

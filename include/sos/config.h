@@ -1,44 +1,15 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
-#ifndef SOS_CONFIG_H
-#define SOS_CONFIG_H
+#ifndef STRATIFYOS_SOS_CONFIG_H
+#define STRATIFYOS_SOS_CONFIG_H
 
 #include <sdk/types.h>
-
-#include <trace.h>
 
 #include "cortexm/task_types.h"
 #include "dev/bootloader.h"
 #include "dev/pio.h"
 #include "fs/devfs.h"
 #include "trace.h"
-
-#define SOS_SCHEDULER_TIMEVAL_SECONDS 2048
-#define SOS_USECOND_PERIOD (1000000UL * SOS_SCHEDULER_TIMEVAL_SECONDS)
-#define SOS_PROCESS_TIMER_COUNT 2
-
-// not used for porting, just needs to be here
-typedef struct {
-  u32 o_flags;
-  struct mcu_timeval value;
-  struct mcu_timeval interval;
-  struct sigevent sigevent;
-} sos_process_timer_t;
-
-// not used for porting, just needs to be here
-typedef struct {
-  pthread_attr_t attr;
-  volatile void *block_object;
-  union {
-    volatile int exit_status;
-    void *(*init)(void *);
-  };
-  pthread_mutex_t *signal_delay_mutex;
-  volatile struct mcu_timeval wake;
-  volatile u16 flags;
-  trace_id_t trace_id;
-  sos_process_timer_t timer[SOS_PROCESS_TIMER_COUNT];
-} sched_task_t;
 
 typedef struct MCU_PACK {
   // pointer to device filesystem, required
@@ -97,7 +68,7 @@ typedef struct MCU_PACK {
 
 typedef struct MCU_PACK {
   // total number of tasks to support
-  u8 task_total;
+  //u8 task_total;
   // stack size of the first thread
   u16 start_stack_size;
   // function of the first thread
@@ -229,7 +200,8 @@ typedef struct MCU_PACK {
  *
  */
 
-#define SOS_CACHE_DEFAULT_POLICY ((1 << 21) | (1 << 20) | (1 << 19) | (0 << 18) | (1 << 17) | (0 << 16))
+#define SOS_CACHE_DEFAULT_POLICY                                                         \
+  ((1 << 21) | (1 << 20) | (1 << 19) | (0 << 18) | (1 << 17) | (0 << 16))
 #define SOS_CACHE_PERIPHERALS_POLICY (((1 << 16) | (1 << 18)))
 
 #define SOS_CACHE_WRITE_BACK_NO_WRITE_ALLOCATE                                           \
@@ -282,7 +254,6 @@ typedef struct MCU_PACK {
   void (*event_handler)(int, void *);
 } sos_config_t;
 
-#define SOS_DEFAULT_START_STACK_SIZE 2048
 #if !defined __link
 
 #if defined __cplusplus
@@ -290,17 +261,12 @@ extern "C" {
 #endif
 
 // must be provided by board support package
-extern volatile sched_task_t sos_sched_table[];
-extern volatile task_t sos_task_table[];
 extern const sos_config_t sos_config;
 
 #if defined __cplusplus
 }
 #endif
 
-#define SOS_DECLARE_TASK_TABLE(task_count)                                               \
-  volatile sched_task_t sos_sched_table[task_count] MCU_SYS_MEM;                         \
-  volatile task_t sos_task_table[task_count] MCU_SYS_MEM
 #endif
 
 #define SOS_USER_ROOT 0
@@ -329,4 +295,7 @@ extern const sos_config_t sos_config;
 
 #include "events.h"
 
-#endif // SOS_CONFIG_H
+#define SOS_SCHEDULER_TIMEVAL_SECONDS 2048
+#define SOS_USECOND_PERIOD (1000000UL * SOS_SCHEDULER_TIMEVAL_SECONDS)
+
+#endif // STRATIFYOS_SOS_CONFIG_H

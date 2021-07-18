@@ -200,7 +200,7 @@ static void set_open_file(int fildes, void * handle, uint16_t flags);
  */
 
 int u_init_stdio(int fildes) {
-#if USE_STDIO != 0
+#if CONFIG_USE_STDIO != 0
   FILE *ptr;
   switch (fildes) {
   case STDIN_FILENO:

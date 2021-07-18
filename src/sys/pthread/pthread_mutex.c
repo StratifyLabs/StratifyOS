@@ -16,10 +16,12 @@
 #include <stdbool.h>
 #include <unistd.h>
 
-#include "../scheduler/scheduler_local.h"
-#include "cortexm/cortexm.h"
 #include "pthread_mutex_local.h"
 #include "sos/debug.h"
+
+#include "../scheduler/scheduler_timing.h"
+#include "../scheduler/scheduler_root.h"
+
 
 /*! \cond */
 static void pthread_mutex_svcall_unlock(void *args);
@@ -297,7 +299,7 @@ int mutex_trylock(
     // If the mutex is recursive, simply update the count
     if (mutex->flags & PTHREAD_MUTEX_FLAGS_RECURSIVE) {
       // Check the maximum number of locks allowed
-      if (mutex->lock < PTHREAD_MAX_LOCKS) {
+      if (mutex->lock < CONFIG_PTHREAD_MAX_LOCKS) {
         mutex->lock++;
         return 0;
       } else {

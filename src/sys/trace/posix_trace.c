@@ -4,7 +4,7 @@
 #include <fcntl.h>
 #include <string.h>
 
-#include "../scheduler/scheduler_local.h"
+#include "../scheduler/scheduler_root.h"
 #include "cortexm/mpu.h"
 #include "cortexm/task.h"
 #include "sos/symbols.h"
@@ -117,12 +117,14 @@ static int trace_timedgetnext_event(
   const struct timespec *abs_timeout);
 
 int posix_trace_clear(trace_id_t id) {
+  MCU_UNUSED_ARGUMENT(id);
   // clear all events in the trace stream
   errno = ENOTSUP;
   return -1;
 }
 
 int posix_trace_close(trace_id_t id) {
+  MCU_UNUSED_ARGUMENT(id);
   // deallocate trace log
   errno = ENOTSUP;
   return -1;
@@ -174,7 +176,7 @@ int posix_trace_create(pid_t pid, const trace_attr_t *attr, trace_id_t *id) {
   if (attr == 0) {
     posix_trace_attr_init(&tmp_attr);
   } else {
-    memcpy(&tmp_attr, attr, (sizeof(trace_attr_t)));
+    tmp_attr = *attr;
   }
 
   pid_t tmp_pid;
@@ -205,7 +207,7 @@ int posix_trace_create(pid_t pid, const trace_attr_t *attr, trace_id_t *id) {
   trace_handle.pid = pid;
   trace_handle.status = 0; // trace is suspended on start
   trace_handle.tid = task_get_current();
-  memcpy(&(trace_handle.attr), &tmp_attr, sizeof(trace_attr_t));
+  trace_handle.attr = tmp_attr;
 
   // populate the timestamp
   clock_gettime(CLOCK_REALTIME, (struct timespec *)&(trace_handle.attr.create_time));
@@ -234,6 +236,10 @@ int posix_trace_create_withlog(
   const trace_attr_t *attr,
   int fd,
   trace_id_t *id) {
+  MCU_UNUSED_ARGUMENT(pid);
+  MCU_UNUSED_ARGUMENT(attr);
+  MCU_UNUSED_ARGUMENT(fd);
+  MCU_UNUSED_ARGUMENT(id);
   // create a new trace stream and associated log
   errno = ENOTSUP;
   return -1;
@@ -318,6 +324,9 @@ void posix_trace_event_addr(
 
 // This is used for applications -- trace an event
 void posix_trace_event(trace_event_id_t event_id, const void *data_ptr, size_t data_len) {
+  MCU_UNUSED_ARGUMENT(event_id);
+  MCU_UNUSED_ARGUMENT(data_ptr);
+  MCU_UNUSED_ARGUMENT(data_len);
   // MCU_CORE_DECLARE_CALLER_REGISTER(lr);
   // posix_trace_event_addr(event_id, data_ptr, data_len, lr);
 }
@@ -412,6 +421,8 @@ int posix_trace_eventid_get_name(
 }
 
 int posix_trace_eventid_open(const char *event_name, trace_event_id_t *event_id) {
+  MCU_UNUSED_ARGUMENT(event_name);
+  MCU_UNUSED_ARGUMENT(event_id);
   errno = ENOTSUP;
   return -1;
 }
@@ -508,12 +519,15 @@ int posix_trace_get_status(trace_id_t id, struct posix_trace_status_info *info) 
 
 int posix_trace_open(int fd, trace_id_t *id) {
   // associate id with an open trace log
+  MCU_UNUSED_ARGUMENT(fd);
+  MCU_UNUSED_ARGUMENT(id);
   errno = ENOTSUP;
   return -1;
 }
 
 int posix_trace_rewind(trace_id_t id) {
   // set timestamp to oldest in the log
+  MCU_UNUSED_ARGUMENT(id);
   errno = ENOTSUP;
   return -1;
 }
@@ -682,7 +696,7 @@ int trace_timedgetnext_event(
     return ret;
   }
 
-  if (ret < sizeof(struct posix_trace_event_info)) {
+  if (ret < (int)sizeof(struct posix_trace_event_info)) {
     return -1;
   }
 

@@ -23,7 +23,7 @@ typedef struct MCU_PACK {
   u32 checksum;
 } malloc_chunk_header_t;
 
-#define MALLOC_DATA_SIZE (MALLOC_CHUNK_SIZE - (sizeof(malloc_chunk_header_t)))
+#define MALLOC_DATA_SIZE (CONFIG_MALLOC_CHUNK_SIZE - (sizeof(malloc_chunk_header_t)))
 
 typedef struct {
   malloc_chunk_header_t header;

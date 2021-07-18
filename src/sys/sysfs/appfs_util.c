@@ -1,6 +1,5 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
-
 #include <errno.h>
 #include <limits.h>
 
@@ -106,7 +105,7 @@ void appfs_util_svcall_erase_pages(void *args) {
   CORTEXM_SVCALL_ENTER();
   appfs_erase_pages_t *p = args;
   p->result = appfs_util_root_erase_pages(p->device, p->start_page, p->end_page);
-  sos_config.cache.invalidate_data_block((void*)p->start_address, p->size);
+  sos_config.cache.invalidate_data_block((void *)p->start_address, p->size);
 }
 
 static u32
@@ -178,8 +177,9 @@ u32 find_protectable_addr(
       return (u32)-1;
     }
 
-    if (pageinfo.o_flags == (u32)type) { // type should be an exact match with the page info
-                                    // flags (external, tightly coupled or normal)
+    if (pageinfo.o_flags == (u32)type) { // type should be an exact match with the page
+                                         // info
+                                         // flags (external, tightly coupled or normal)
 
       if (skip_protection) {
         err = 0;
@@ -492,7 +492,7 @@ int appfs_util_root_writeinstall(
 
   union {
     appfs_file_t file;
-    u32 buf[APPFS_PAGE_SIZE/sizeof(u32)];
+    u32 buf[APPFS_PAGE_SIZE / sizeof(u32)];
   } dest;
 
   src.ptr = (const u32 *)attr->buffer;
@@ -505,18 +505,22 @@ int appfs_util_root_writeinstall(
     }
 
     // make sure the name is valid
-    memset(&dest.file, 0, sizeof(appfs_file_t));
-    memcpy(&dest.file, src.file, attr->nbyte);
-    int len = strnlen(dest.file.hdr.name, APPFS_NAME_MAX_MINUS_1);
-    if (len == (APPFS_NAME_MAX_MINUS_1)) {
-      // truncate the name if it is too long
-      dest.file.hdr.name[APPFS_NAME_MAX_MINUS_1] = 0;
+    {
+      dest.file = (appfs_file_t){};
+      memcpy(&dest.file, src.file, attr->nbyte);
+      const size_t name_len = strnlen(dest.file.hdr.name, APPFS_NAME_MAX_MINUS_1);
+      if (name_len == (APPFS_NAME_MAX_MINUS_1)) {
+        // truncate the name if it is too long
+        dest.file.hdr.name[APPFS_NAME_MAX_MINUS_1] = 0;
+      }
     }
 
-    len = strnlen(dest.file.hdr.id, APPFS_NAME_MAX_MINUS_1);
-    if (len == (APPFS_NAME_MAX_MINUS_1)) {
-      // truncate the name if it is too long
-      dest.file.hdr.id[APPFS_NAME_MAX_MINUS_1] = 0;
+    {
+      const size_t file_len = strnlen(dest.file.hdr.id, APPFS_NAME_MAX_MINUS_1);
+      if (file_len == (APPFS_NAME_MAX_MINUS_1)) {
+        // truncate the name if it is too long
+        dest.file.hdr.id[APPFS_NAME_MAX_MINUS_1] = 0;
+      }
     }
 
     // add a checksum to the name
@@ -733,28 +737,28 @@ int appfs_util_is_executable(const appfs_file_t *info) {
   return 1;
 }
 
-int appfs_util_get_data_mpu_type(const appfs_file_t * file){
+int appfs_util_get_data_mpu_type(const appfs_file_t *file) {
   const u32 flags = file->exec.o_flags;
 
-  if( flags & APPFS_FLAG_IS_DATA_EXTERNAL ){
+  if (flags & APPFS_FLAG_IS_DATA_EXTERNAL) {
     return MPU_MEMORY_EXTERNAL_SRAM;
   }
 
-  if( flags & APPFS_FLAG_IS_DATA_TIGHTLY_COUPLED ){
+  if (flags & APPFS_FLAG_IS_DATA_TIGHTLY_COUPLED) {
     return MPU_MEMORY_TIGHTLY_COUPLED_DATA;
   }
 
   return MPU_MEMORY_SRAM;
 }
 
-int appfs_util_get_code_mpu_type(const appfs_file_t * file){
+int appfs_util_get_code_mpu_type(const appfs_file_t *file) {
   const u32 flags = file->exec.o_flags;
 
-  if( flags & APPFS_FLAG_IS_CODE_EXTERNAL ){
+  if (flags & APPFS_FLAG_IS_CODE_EXTERNAL) {
     return MPU_MEMORY_EXTERNAL_FLASH;
   }
 
-  if( flags & APPFS_FLAG_IS_CODE_TIGHTLY_COUPLED ){
+  if (flags & APPFS_FLAG_IS_CODE_TIGHTLY_COUPLED) {
     return MPU_MEMORY_TIGHTLY_COUPLED_INSTRUCTION;
   }
 

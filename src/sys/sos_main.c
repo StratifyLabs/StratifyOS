@@ -1,12 +1,10 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
-#include "config.h"
 #include "cortexm/cortexm.h"
-#include "sos/sos.h"
 
 #include "check_config.h"
 
-#include "scheduler/scheduler_local.h"
+#include "scheduler/scheduler_timing.h"
 
 static void check_sys_config();
 static void check_debug_config();

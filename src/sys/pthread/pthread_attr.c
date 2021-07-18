@@ -299,7 +299,7 @@ int pthread_attr_setstacksize(
     return -1;
   }
 
-  if (stacksize >= PTHREAD_STACK_MIN) {
+  if (stacksize >= CONFIG_PTHREAD_STACK_MIN) {
     attr->stacksize = stacksize;
     return 0;
   }

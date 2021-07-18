@@ -2,8 +2,8 @@
 
 #include <string.h>
 
-#include "scheduler_local.h"
-#include "sos/sos.h"
+#include "scheduler_root.h"
+#include "scheduler_fault.h"
 
 #include "cortexm/fault_local.h"
 #include "cortexm/util.h"

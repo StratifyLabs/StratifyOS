@@ -13,8 +13,7 @@
 #include <errno.h>
 #include <pthread.h>
 
-#include "../scheduler/scheduler_flags.h"
-#include "../scheduler/scheduler_local.h"
+#include "../scheduler/scheduler_root.h"
 #include "cortexm/task.h"
 
 typedef struct {

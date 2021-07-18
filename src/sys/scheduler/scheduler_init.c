@@ -7,12 +7,14 @@
  */
 
 /*! \file */
-#include "config.h"
-#include "scheduler_local.h"
+#include "scheduler_fault.h"
+#include "scheduler_timing.h"
 
 #include "cortexm/fault_local.h"
 #include "sos/debug.h"
 #include "sos/symbols.h"
+
+volatile sched_task_t sos_sched_table[CONFIG_TASK_TOTAL] MCU_SYS_MEM;
 
 static void init_mpu() {
   sos_debug_log_info(SOS_DEBUG_SCHEDULER, "Init MPU");
@@ -27,8 +29,8 @@ static void init_mpu() {
 }
 
 void scheduler_init() {
-  memset((void *)sos_task_table, 0, sizeof(task_t) * sos_config.task.task_total);
-  memset((void *)sos_sched_table, 0, sizeof(sched_task_t) * sos_config.task.task_total);
+  memset((void *)sos_task_table, 0, sizeof(task_t) * CONFIG_TASK_TOTAL);
+  memset((void *)sos_sched_table, 0, sizeof(sched_task_t) * CONFIG_TASK_TOTAL);
 
   // Do basic init of task 0 so that memory allocation can happen before the scheduler
   // starts
@@ -44,7 +46,7 @@ void scheduler_start(void *(*init)(void *)) {
   sos_sched_table[0].attr.stackaddr = &_data;
   sos_sched_table[0].attr.stacksize = sos_config.sys.memory_size;
   task_init(
-    SCHED_RR_DURATION,
+    CONFIG_SCHED_RR_DURATION,
     scheduler, // run the scheduler
     // Let the task init function figure out where the stack needs to be
     NULL, sos_config.sys.memory_size);

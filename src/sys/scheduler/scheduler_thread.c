@@ -10,7 +10,8 @@
 #include <sys/time.h>
 
 #include "cortexm/cortexm.h"
-#include "scheduler_local.h"
+#include "scheduler_root.h"
+#include "scheduler_timing.h"
 #include "sos/debug.h"
 #include "sos/dev/sys.h"
 #include "sys/malloc/malloc_local.h"
@@ -121,7 +122,7 @@ void svcall_activate_thread(svcall_activate_thread_t *args) {
     scheduler_root_assert_authenticated(1);
   }
 
-  if (task_root_set_stackguard(id, args->stackguard, SCHED_DEFAULT_STACKGUARD_SIZE) < 0) {
+  if (task_root_set_stackguard(id, args->stackguard, CONFIG_TASK_DEFAULT_STACKGUARD_SIZE) < 0) {
     sos_debug_log_warning(SOS_DEBUG_SCHEDULER, "Failed to activate stack guard");
   }
   scheduler_root_update_on_wake(id, task_get_priority(id));
@@ -177,8 +178,8 @@ void svcall_elevate_priority(void *args) {
   u32 id = task_get_current();
   // Issue #161 -- need to set the effective priority -- not just the prio ceiling
   PTHREAD_ATTR_SET_SCHED_POLICY((&(sos_sched_table[id].attr)), SCHED_FIFO);
-  sos_sched_table[id].attr.schedparam.sched_priority = SCHED_HIGHEST_PRIORITY;
-  task_set_priority(id, SCHED_HIGHEST_PRIORITY);
+  sos_sched_table[id].attr.schedparam.sched_priority = CONFIG_SCHED_HIGHEST_PRIORITY;
+  task_set_priority(id, CONFIG_SCHED_HIGHEST_PRIORITY);
   task_assert_fifo(id);
   scheduler_root_update_on_stopped(); // this will cause the context switcher to update
                                       // the active priority

@@ -17,7 +17,7 @@
 
 #include "sos/dev/rtc.h"
 
-#include "../scheduler/scheduler_local.h"
+#include "../scheduler/scheduler_root.h"
 
 /*! \cond */
 static int set_alarm(int seconds);
@@ -35,7 +35,7 @@ void svcall_powerdown(void *args) {
 
 void root_prepare_hibernate(void *args) {
   // elevate task prio of caller so that nothing executes until prio is restored
-  task_root_set_current_priority(SCHED_HIGHEST_PRIORITY + 1);
+  task_root_set_current_priority(CONFIG_SCHED_HIGHEST_PRIORITY + 1);
   sos_handle_event(SOS_EVENT_ROOT_PREPARE_DEEPSLEEP, 0);
 }
 

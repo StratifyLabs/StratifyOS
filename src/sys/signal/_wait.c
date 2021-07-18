@@ -7,11 +7,12 @@
 
 /*! \file */
 
-#include "../scheduler/scheduler_local.h"
-#include "sig_local.h"
 #include <errno.h>
 #include <signal.h>
 #include <sys/wait.h>
+
+#include "../scheduler/scheduler_root.h"
+#include "sig_local.h"
 
 /*! \cond */
 static void svcall_wait_child(void *args) MCU_ROOT_EXEC_CODE;
