@@ -3,6 +3,8 @@
 ## New Features
 
 
+- Add link3 transport protocol using secure transmissions
+- Add support for low level cryptography hooks in `sos_config`.
 - Add `sos_config.h` inclusion which must be provided by the CMake super project
   - This allows fine tuning of the OS
 - Added additional cache policies
