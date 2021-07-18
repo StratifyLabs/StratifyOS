@@ -23,7 +23,17 @@
 #define LINK2_PACKET_ACK (0x07)
 #define LINK2_PACKET_NACK (0x54)
 
+#define LINK3_PACKET_START (18)
+#define LINK3_PACKET_HEADER_SIZE (6) // start, size, and checksum (2 bytes)
+#define LINK3_PACKET_DATA_SIZE (LINK3_MAX_PACKET_SIZE - LINK3_PACKET_HEADER_SIZE)
+#define LINK3_PACKET_PAYLOAD_SIZE (992)
+
+
+#define LINK3_PACKET_ACK (0x08)
+#define LINK3_PACKET_NACK (0x55)
+
 enum link2_flags { LINK2_FLAG_IS_CHECKSUM = (1 << 0) };
+enum link3_flags { LINK3_FLAG_IS_CHECKSUM = (1 << 0) };
 
 typedef struct MCU_PACK {
   u8 ack;
@@ -42,6 +52,39 @@ typedef struct MCU_PACK {
   u16 size;
   u8 data[LINK2_PACKET_DATA_SIZE + 2]; // 2 checksum bytes
 } link2_pkt_t;
+
+#define LINK3_STATE_OPEN 0
+#define LINK3_STATE_MASTER_INFO 1
+#define LINK3_STATE_DEVICE_INFO 2
+#define LINK3_STATE_MASTER_AUTH 3
+#define LINK3_STATE_DEVICE_AUTH 4
+#define LINK3_STATE_SECURE 5
+
+
+// generic link3 packet
+typedef struct MCU_PACK {
+  u32 data_size;
+  u8 iv[16];
+  u8 data[LINK3_PACKET_PAYLOAD_SIZE];
+} link3_pkt_data_t;
+
+#define LINK3_MAX_PACKET_SIZE (sizeof(link3_pkt_data_t) + 2)
+
+typedef struct MCU_PACK {
+  u8 start;
+  u8 o_flags;
+  u16 size;
+  u8 data[LINK3_MAX_PACKET_SIZE]; // 2 checksum bytes
+} link3_pkt_t;
+
+
+//sizeof link3_pkt_data_t.data must be divisible by 16
+
+typedef struct MCU_PACK {
+  u8 identifier[32];
+  u8 public_key[64];
+  u8 signature[64];
+} link3_pkt_auth_data_t;
 
 #if defined __link
 typedef void *link_transport_phy_t;
@@ -104,6 +147,22 @@ typedef struct {
   u32 transport_version; // which version of the protocol is the slave running
   u16 path_max;
   u16 arg_max;
+
+  // link3 session parameters
+  int (*sign)(
+    const u8 identifier[32],
+    const u8 random_number[64],
+    u8 signature[64]);
+  int (*verify)(
+    const u8 identifier[32],
+    const u8 signature[64]
+    );
+  void (*make_keys)(u8 private_key[32], u8 public_key[64]);
+  void (*create_shared_secret)(const u8 private_key[32], const u8 public_key[64]);
+  int (*randomize)(void * dest, u32 size);
+  int (*encrypt)(const u8 shared_secrect[32], const u8 iv[16], const void * plain, void * cipher, u32 nbyte);
+  int (*decrypt)(const u8 shared_secrect[32], const u8 iv[16], const void * cipher, void * plain, u32 nbyte);
+  u8 shared_secret[32];
 } link_transport_mdriver_t;
 
 typedef struct {
@@ -211,6 +270,37 @@ int link2_transport_wait_start(
   link_transport_driver_t *driver,
   link2_pkt_t *pkt,
   int timeout);
+
+void link3_transport_mastersettimeout(link_transport_mdriver_t *driver, int t);
+int link3_transport_masterwrite(
+  link_transport_mdriver_t *driver,
+  const void *buf,
+  int nbyte);
+int link3_transport_masterread(link_transport_mdriver_t *driver, void *buf, int nbyte);
+int link3_transport_slavewrite(
+  link_transport_driver_t *driver,
+  const void *buf,
+  int nbyte,
+  int (*callback)(void *, void *, int),
+  void *context);
+int link3_transport_slaveread(
+  link_transport_driver_t *driver,
+  void *buf,
+  int nbyte,
+  int (*callback)(void *, void *, int),
+  void *context);
+void link3_transport_insert_checksum(link3_pkt_t *pkt);
+bool link3_transport_checksum_isok(link3_pkt_t *pkt);
+int link3_transport_wait_packet(
+  link_transport_driver_t *driver,
+  link3_pkt_t *pkt,
+  int timeout);
+int link3_transport_wait_start(
+  link_transport_driver_t *driver,
+  link3_pkt_t *pkt,
+  int timeout);
+
+int link3_start_secure_session(link_transport_mdriver_t *driver);
 
 #if defined __cplusplus
 }

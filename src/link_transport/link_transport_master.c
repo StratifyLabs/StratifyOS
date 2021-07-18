@@ -33,9 +33,10 @@ void link_transport_mastersettimeout(link_transport_mdriver_t *driver, int t) {
     return link1_transport_mastersettimeout(driver, t);
   }
 
-  if (driver->transport_version == 2) {
+  if (driver->transport_version == 2 || driver->transport_version == 3) {
     return link2_transport_mastersettimeout(driver, t);
   }
+
 }
 
 int link_transport_masterread(link_transport_mdriver_t *driver, void *buf, int nbyte) {
@@ -51,6 +52,10 @@ int link_transport_masterread(link_transport_mdriver_t *driver, void *buf, int n
 
   if (driver->transport_version == 2) {
     return link2_transport_masterread(driver, buf, nbyte);
+  }
+
+  if (driver->transport_version == 3) {
+    return link3_transport_masterread(driver, buf, nbyte);
   }
 
   link_error("tranport version is an invalid value (%d)", driver->transport_version);
@@ -75,6 +80,10 @@ int link_transport_masterwrite(
     return link2_transport_masterwrite(driver, buf, nbyte);
   }
 
+  if (driver->transport_version == 3) {
+    return link3_transport_masterwrite(driver, buf, nbyte);
+  }
+
   link_error("tranport version is an invalid value (%d)", driver->transport_version);
   return LINK_PROT_ERROR;
 }
@@ -88,7 +97,7 @@ int resolve_protocol(link_transport_mdriver_t *driver) {
 
   if (driver->transport_version == 0) {
     // need to do protocol resolution starting with link1
-    int result = link1_transport_masterwrite(driver, 0, 0);
+    const int result = link1_transport_masterwrite(driver, 0, 0);
     if (result == 0) {
       // printf("------------------- Resolved to Link1 -------------------\n");
       driver->transport_version = 1;
@@ -97,6 +106,16 @@ int resolve_protocol(link_transport_mdriver_t *driver) {
       if (nack == LINK2_PACKET_NACK) {
         // printf("------------------- Resolved to Link2 -------------------\n");
         driver->transport_version = 2;
+      } else if (nack == LINK3_PACKET_NACK) {
+        // printf("------------------- Resolved to Link3 -------------------\n");
+        driver->transport_version = 3;
+
+        //need to start the secure session
+        const int link3_result = link3_start_secure_session(driver);
+        if( link3_result < 0 ){
+          return LINK_PROT_ERROR;
+        }
+
       } else {
         // printf("------------------- Not Resolved -------------------\n");
         return LINK_PROT_ERROR;
@@ -104,7 +123,7 @@ int resolve_protocol(link_transport_mdriver_t *driver) {
     }
   }
 
-  if (driver->transport_version > 2) {
+  if (driver->transport_version > 3) {
     driver->transport_version = 0;
     return LINK_PROT_ERROR;
   }
