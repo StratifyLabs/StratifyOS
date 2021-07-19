@@ -3,7 +3,7 @@
 #ifndef DEV_LINK_TRANSPORT_H_
 #define DEV_LINK_TRANSPORT_H_
 
-#include <sdk/types.h>
+#include <sdk/api.h>
 
 #define LINK_MAX_TRANSFER_SIZE 64
 #define LINK_MAX_PACKET_SIZE (63)
@@ -110,6 +110,19 @@ typedef struct {
   int parity;
 } link_transport_serial_options_t;
 
+typedef struct  {
+
+} link_transport_crypto_driver_t;
+
+typedef struct  {
+  void * ecc_context;
+  const crypt_ecc_api_t * ecc_api;
+  void * aes_context;
+  const crypt_aes_api_t * aes_api;
+  void * random_context;
+  const crypt_random_api_t * random_api;
+} link_transport_crypto_handle_t;
+
 typedef struct link_transport_driver {
   link_transport_phy_t handle;
   link_transport_phy_t (*open)(const char *, const void *options);
@@ -133,6 +146,8 @@ typedef struct link_transport_driver {
     void *context);
   int timeout;
   u8 o_flags;
+  u8 shared_secret[32];
+  const link_transport_crypto_handle_t * crypto_handle;
 } link_transport_driver_t;
 
 typedef struct {
@@ -157,12 +172,6 @@ typedef struct {
     const u8 identifier[32],
     const u8 signature[64]
     );
-  void (*make_keys)(u8 private_key[32], u8 public_key[64]);
-  void (*create_shared_secret)(const u8 private_key[32], const u8 public_key[64]);
-  int (*randomize)(void * dest, u32 size);
-  int (*encrypt)(const u8 shared_secrect[32], const u8 iv[16], const void * plain, void * cipher, u32 nbyte);
-  int (*decrypt)(const u8 shared_secrect[32], const u8 iv[16], const void * cipher, void * plain, u32 nbyte);
-  u8 shared_secret[32];
 } link_transport_mdriver_t;
 
 typedef struct {

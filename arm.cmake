@@ -1,6 +1,7 @@
 
 option(BUILD_ALL "Build All configurations" ON)
 option(BUILD_MCU "Build Stratify OS MCU Helper library" OFF)
+option(BUILD_AUTH "Build Stratify OS Authentication library" OFF)
 option(BUILD_CORTEXM "Build Stratify OS Cortex M library" OFF)
 option(BUILD_SYS "Build Stratify OS System library" OFF)
 option(BUILD_CRT "Build C Runtime library" OFF)
@@ -52,8 +53,12 @@ sos_sdk_add_subdirectory(BOOT_SOURCELIST src/boot)
 #Add Cortex-m sources
 sos_sdk_add_subdirectory(CORTEXM_SOURCELIST src/cortexm)
 
-#Add  MCU sources
+#Add MCU sources
 sos_sdk_add_subdirectory(MCU_SOURCELIST src/mcu)
+
+
+#Add Auth sources
+sos_sdk_add_subdirectory(AUTH_SOURCELIST src/auth)
 
 #Add link transport
 sos_sdk_add_subdirectory(LINK_TRANSPORT_SOURCELIST src/link_transport)
@@ -101,6 +106,7 @@ set(SYS_DEPENDENCIES
 	StratifyOS_linktransport
 	StratifyOS_device
 	StratifyOS_cortexm
+	StratifyOS_auth
 	compiler_rt)
 
 set(BOOT_DEPENDENCIES
@@ -108,6 +114,7 @@ set(BOOT_DEPENDENCIES
 	StratifyOS_device
 	StratifyOS_cortexm
 	StratifyOS_mcu
+	StratifyOS_auth
 	newlib_libc
 	newlib_libm
 	compiler_rt)
@@ -217,6 +224,27 @@ if(BUILD_USBD OR BUILD_ALL)
 
 	sos_sdk_library_add_arch_targets("${USBD_RELEASE_OPTIONS}" ${SOS_ARCH} "")
 	sos_sdk_library_add_arch_targets("${USBD_DEBUG_OPTIONS}" ${SOS_ARCH} "")
+endif()
+
+if(BUILD_MCU OR BUILD_ALL)
+	sos_sdk_library_target(AUTH_RELEASE StratifyOS auth release ${SOS_ARCH})
+	sos_sdk_library_target(AUTH_DEBUG StratifyOS auth debug ${SOS_ARCH})
+
+	add_library(${AUTH_RELEASE_TARGET} STATIC)
+	target_sources(${AUTH_RELEASE_TARGET} PRIVATE ${AUTH_SOURCELIST})
+	target_include_directories(${AUTH_RELEASE_TARGET}
+		PUBLIC ${SYS_INCLUDE_INTERFACE_DIRECTORIES}
+		PRIVATE ${AUTH_INCLUDE_DIRECTORIES})
+	target_compile_definitions(${AUTH_RELEASE_TARGET} PRIVATE ${COMPILE_DEFINITIONS_PRIVATE})
+	target_compile_options(${AUTH_RELEASE_TARGET} PUBLIC -Os ${COMPILE_OPTIONS} PRIVATE -mpure-code)
+	add_lwip_path(${AUTH_RELEASE_TARGET} PUBLIC)
+	set_property(TARGET ${AUTH_RELEASE_TARGET} PROPERTY INTERPROCEDURAL_OPTIMIZATION FALSE)
+
+	add_library(${AUTH_DEBUG_TARGET} STATIC)
+	sos_sdk_copy_target(${AUTH_RELEASE_TARGET} ${AUTH_DEBUG_TARGET})
+
+	sos_sdk_library_add_arch_targets("${AUTH_RELEASE_OPTIONS}" ${SOS_ARCH} "")
+	sos_sdk_library_add_arch_targets("${AUTH_DEBUG_OPTIONS}" ${SOS_ARCH} "")
 endif()
 
 

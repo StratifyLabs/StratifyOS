@@ -1,11 +1,13 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
+
+#include <errno.h>
+
 #include "../scheduler/scheduler_timing.h"
 #include "../scheduler/scheduler_root.h"
 #include "config.h"
 #include "cortexm/task.h"
 #include "device/auth.h"
-#include <errno.h>
 
 static const void *secret_key();
 static u8 generate_pseudo_random() MCU_ROOT_EXEC_CODE;
@@ -142,14 +144,14 @@ int authenticate(const devfs_handle_t *handle, auth_token_t *auth) {
   }
 
   result = memcmp(&output, auth, sizeof(auth_token_t));
-  memset(&output, 0, sizeof(output));
+  output = (auth_token_t){};
   if (result != 0) {
     return SYSFS_SET_RETURN(EINVAL);
   }
 
   // allow the caller to authenticate the auth dev has the secret key
   if (calculate(auth, &m_auth_state.random_token, secret_key()) < 0) {
-    memset(auth, 0, sizeof(auth_token_t));
+    *auth = (auth_token_t){};
     return SYSFS_SET_RETURN(EIO);
   }
 

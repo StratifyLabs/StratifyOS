@@ -64,12 +64,10 @@ void link3_transport_mastersettimeout(link_transport_mdriver_t *driver, int t) {
 
 int link3_transport_masterread(link_transport_mdriver_t *driver, void *buf, int nbyte) {
   link3_pkt_t pkt;
-  char *p;
-  int bytes;
   int err;
 
-  bytes = 0;
-  p = buf;
+  int bytes = 0;
+  char * p = buf;
 
   link3_pkt_data_t * const data = (link3_pkt_data_t *)pkt.data;
 
@@ -103,9 +101,9 @@ int link3_transport_masterread(link_transport_mdriver_t *driver, void *buf, int 
 
     // callback to handle incoming data as it arrives
     // copy the valid data to the buffer
-    if (pkt.size + bytes > nbyte) {
+    if (data->data_size + bytes > nbyte) {
       // if the target device has a bug, this will prevent a seg fault
-      pkt.size = nbyte - bytes;
+      data->data_size = nbyte - bytes;
     }
 
     if( driver->transport_version == 3 ){
