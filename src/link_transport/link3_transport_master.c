@@ -17,13 +17,47 @@
 
 static int wait_ack(link_transport_mdriver_t *driver, u8 checksum, int timeout);
 
+static void *ecc_context(link_transport_mdriver_t *driver) {
+  return driver->phy_driver.crypto_handle.ecc_context;
+}
+
+static const crypt_ecc_api_t *ecc_api(link_transport_mdriver_t *driver) {
+  return driver->phy_driver.crypto_driver->ecc_api;
+}
+
+static void *aes_context(link_transport_mdriver_t *driver) {
+  return driver->phy_driver.crypto_handle.aes_context;
+}
+
+static const crypt_aes_api_t *aes_api(link_transport_mdriver_t *driver) {
+  return driver->phy_driver.crypto_driver->aes_api;
+}
+
+static void *random_context(link_transport_mdriver_t *driver) {
+  return driver->phy_driver.crypto_handle.random_context;
+}
+
+static const crypt_random_api_t *random_api(link_transport_mdriver_t *driver) {
+  return driver->phy_driver.crypto_driver->random_api;
+}
+
 int link3_start_secure_session(link_transport_mdriver_t *driver) {
 
-  // send start link3
-  u8 private_key[32];
+  // deinit if needed
+  ecc_api(driver)->deinit(&(driver->phy_driver.crypto_handle.ecc_context));
+  aes_api(driver)->deinit(&(driver->phy_driver.crypto_handle.aes_context));
+  random_api(driver)->deinit(&(driver->phy_driver.crypto_handle.random_context));
 
+  // send start link3
+  random_api(driver)->init(&(driver->phy_driver.crypto_handle.random_context));
+  ecc_api(driver)->init(&(driver->phy_driver.crypto_handle.ecc_context));
+
+  // create a key pair, the device will sign the public key with it's secret, private key
   link3_pkt_auth_data_t master_info = {};
-  driver->make_keys(private_key, master_info.public_key);
+  u32 master_key_size = sizeof(master_info.public_key);
+  ecc_api(driver)->dh_create_key_pair(
+    ecc_context(driver), CRYPT_ECC_KEY_PAIR_SECP256R1, master_info.public_key,
+    &master_key_size);
 
   // need to generate a random number
   link3_transport_masterwrite(driver, &master_info, sizeof(master_info));
@@ -32,24 +66,63 @@ int link3_start_secure_session(link_transport_mdriver_t *driver) {
   link3_pkt_auth_data_t device_info = {};
   link3_transport_masterread(driver, &device_info, sizeof(device_info));
 
-  // call the auth callback with the device info
-  driver->sign(device_info.identifier, device_info.public_key, master_info.signature);
+  link_transport_device_keys_t device_keys;
+
+  const int get_device_keys_result =
+    driver->get_device_keys(device_info.identifier, &device_keys);
+
+  if (get_device_keys_result < 0) {
+    // send zero filled packet to indicate failure
+    master_info = (link3_pkt_auth_data_t){};
+    link3_transport_masterwrite(driver, &master_info, sizeof(master_info));
+    return -1;
+  }
+
+  u32 signature_size = sizeof(master_info.signature);
+  // need to fetch the device's private key to create the signature
+  void *ecc_sign_context = NULL;
+
+  ecc_api(driver)->init(&ecc_sign_context);
+
+  ecc_api(driver)->dsa_set_key_pair(
+    ecc_sign_context, device_keys.private_key, 32, device_keys.public_key, 64);
+  const int dsa_sign_result = ecc_api(driver)->dsa_sign(
+    ecc_sign_context, device_info.public_key, sizeof(device_info.public_key),
+    master_info.signature, &signature_size);
+
+  if (dsa_sign_result < 0) {
+    // send zero filled packet to indicate failure
+    master_info = (link3_pkt_auth_data_t){};
+    link3_transport_masterwrite(driver, &master_info, sizeof(master_info));
+    return -1;
+  }
 
   // send the auth signature + a random number
   link3_transport_masterwrite(driver, &master_info, sizeof(master_info));
 
   // wait for signature of random number
   link3_transport_masterread(driver, &device_info, sizeof(device_info));
-  if (driver->verify(device_info.identifier, device_info.signature) < 0) {
-    // failed to verify
 
-    return LINK_PROT_ERROR;
+  const int verify_device_signature_result = ecc_api(driver)->dsa_verify(
+    ecc_sign_context, device_info.signature, 64, device_keys.public_key, 64);
+
+  ecc_api(driver)->dh_calculate_shared_secret(
+    ecc_context(driver), device_info.public_key, sizeof(device_info.public_key),
+    driver->phy_driver.shared_secret, sizeof(driver->phy_driver.shared_secret));
+
+  if (verify_device_signature_result != 1) {
+    master_info = (link3_pkt_auth_data_t){};
+    link3_transport_masterwrite(driver, &master_info, sizeof(master_info));
+    return -1;
   }
 
-  driver->create_shared_secret(private_key, device_info.public_key);
-
-  // the session is ready -- this last message will be encrypted
+  // the session is ready -- messages after this will be encrypted
   link3_transport_masterwrite(driver, &master_info, sizeof(master_info));
+
+  driver->transport_version = 3;
+
+  aes_api(driver)->init(&(driver->phy_driver.crypto_handle.aes_context));
+  aes_api(driver)->set_key(aes_context(driver), driver->phy_driver.shared_secret, 128, 8);
 
   return 0;
 }
@@ -67,9 +140,9 @@ int link3_transport_masterread(link_transport_mdriver_t *driver, void *buf, int 
   int err;
 
   int bytes = 0;
-  char * p = buf;
+  u8 *p = buf;
 
-  link3_pkt_data_t * const data = (link3_pkt_data_t *)pkt.data;
+  link3_pkt_data_t *const data = (link3_pkt_data_t *)pkt.data;
 
   do {
 
@@ -98,21 +171,21 @@ int link3_transport_masterread(link_transport_mdriver_t *driver, void *buf, int 
       }
     }
 
-
     // callback to handle incoming data as it arrives
     // copy the valid data to the buffer
-    if (data->data_size + bytes > nbyte) {
+    if (data->data_size + bytes > (u32)nbyte) {
       // if the target device has a bug, this will prevent a seg fault
       data->data_size = nbyte - bytes;
     }
 
-    if( driver->transport_version == 3 ){
-      //decrypt the packet
+    if (driver->transport_version == 3) {
+      // decrypt the packet
       const u16 unaligned_bytes = pkt.size % 16;
       const u16 padding_bytes = unaligned_bytes ? 16 - unaligned_bytes : 0;
       memset(data->data + data->data_size, 0, padding_bytes);
-      driver->decrypt(
-        driver->shared_secret, data->iv, data->data, p, data->data_size + padding_bytes);
+      aes_api(driver)->decrypt_cbc(
+        aes_context(driver), data->data_size + padding_bytes, data->iv, data->data, p);
+
     } else {
       memcpy(p, pkt.data, data->data_size);
     }
@@ -129,7 +202,6 @@ int link3_transport_masterwrite(
   link_transport_mdriver_t *driver,
   const void *buf,
   int nbyte) {
-  char *p;
   int bytes;
   int err;
 
@@ -138,8 +210,8 @@ int link3_transport_masterwrite(
   }
 
   bytes = 0;
-  p = (void *)buf;
-  link3_pkt_t pkt = { .start = LINK3_PACKET_START, .o_flags = driver->phy_driver.o_flags};
+  const u8 * p = buf;
+  link3_pkt_t pkt = {.start = LINK3_PACKET_START, .o_flags = driver->phy_driver.o_flags};
   link3_pkt_data_t *data = (link3_pkt_data_t *)pkt.data;
 
   do {
@@ -153,15 +225,17 @@ int link3_transport_masterwrite(
     // total packet size -- data size plus header
     pkt.size = data->data_size + (sizeof(*data) - sizeof(data->data));
 
-
     if (driver->transport_version == 3) {
       // this is the actual number of data bytes before padding
       const u16 unaligned_bytes = pkt.size % 16;
       const u16 padding_bytes = unaligned_bytes ? 16 - unaligned_bytes : 0;
       memset(data->data + data->data_size, 0, padding_bytes);
-      driver->randomize(data->iv, sizeof(data->iv));
-      driver->encrypt(
-        driver->shared_secret, data->iv, p, data->data, data->data_size + padding_bytes);
+
+      random_api(driver)->random(random_context(driver), data->iv, sizeof(data->iv));
+
+      aes_api(driver)->encrypt_cbc(
+        aes_context(driver), data->data_size + padding_bytes, data->iv, p, data->data);
+
     } else {
       memcpy(data->data, p, data->data_size);
     }
@@ -209,7 +283,7 @@ int wait_ack(link_transport_mdriver_t *driver, u8 checksum, int timeout) {
   int ret;
 
   int count = 0;
-  char * p = (char *)&ack;
+  char *p = (char *)&ack;
   size_t bytes_read = 0;
   u64 start_time, stop_time;
   do {

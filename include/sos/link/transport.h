@@ -111,16 +111,15 @@ typedef struct {
 } link_transport_serial_options_t;
 
 typedef struct  {
-
+  const crypt_ecc_api_t * ecc_api;
+  const crypt_random_api_t * random_api;
+  const crypt_aes_api_t * aes_api;
 } link_transport_crypto_driver_t;
 
 typedef struct  {
   void * ecc_context;
-  const crypt_ecc_api_t * ecc_api;
   void * aes_context;
-  const crypt_aes_api_t * aes_api;
   void * random_context;
-  const crypt_random_api_t * random_api;
 } link_transport_crypto_handle_t;
 
 typedef struct link_transport_driver {
@@ -147,8 +146,14 @@ typedef struct link_transport_driver {
   int timeout;
   u8 o_flags;
   u8 shared_secret[32];
-  const link_transport_crypto_handle_t * crypto_handle;
+  link_transport_crypto_handle_t crypto_handle;
+  const link_transport_crypto_driver_t * crypto_driver;
 } link_transport_driver_t;
+
+typedef struct {
+  u8 private_key[32];
+  u8 public_key[64];
+} link_transport_device_keys_t;
 
 typedef struct {
   int (*getname)(char *dest, const char *last, int len);
@@ -164,14 +169,10 @@ typedef struct {
   u16 arg_max;
 
   // link3 session parameters
-  int (*sign)(
+  int (*get_device_keys)(
     const u8 identifier[32],
-    const u8 random_number[64],
-    u8 signature[64]);
-  int (*verify)(
-    const u8 identifier[32],
-    const u8 signature[64]
-    );
+    link_transport_device_keys_t * keys);
+
 } link_transport_mdriver_t;
 
 typedef struct {
