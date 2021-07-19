@@ -69,6 +69,25 @@ typedef struct MCU_PACK {
   u8 buf[BOOTLOADER_WRITEPAGESIZE] /*! \brief A buffer for writing to the flash */;
 } bootloader_writepage_t;
 
+typedef struct {
+  u8 result[32];
+  u8 auth_data[32];
+  u32 is_key_first;
+} bootloader_event_authenication_t;
+
+typedef struct {
+  u8 * iv;
+  u8 * cipher;
+  u8 * plain;
+  u32 nbyte;
+} bootloader_event_crypto_t;
+
+enum {
+  BOOTLOADER_EVENT_AUTHENTICATE,
+  BOOTLOADER_EVENT_ENCRYPT,
+  BOOTLOADER_EVENT_DECRYPT
+};
+
 /*! \brief Bootloader attributes.
  * \details This structure contains the attributes for the bootloader.
  */

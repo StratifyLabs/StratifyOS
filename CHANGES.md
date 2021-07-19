@@ -2,7 +2,7 @@
 
 ## New Features
 
-
+- Add encryption and authentication calls to bootloader API
 - Add link3 transport protocol using secure transmissions
 - Add support for low level cryptography hooks in `sos_config`.
 - Add `sos_config.h` inclusion which must be provided by the CMake super project

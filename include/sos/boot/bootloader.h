@@ -18,4 +18,7 @@ typedef struct {
   const char *key;
 } boot_event_crypt_t;
 
+void boot_main();
+int boot_handle_auth_event(int event, void * args);
+
 #endif /* SOS_BOOT_BOOTLOADER_H_ */

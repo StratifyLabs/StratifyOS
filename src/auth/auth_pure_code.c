@@ -45,27 +45,38 @@
   key[30] = 0xbe;                                                                        \
   key[31] = 0xbf
 
-int auth_pure_code_sign(
-  const u8 public_key[64],
-  const u8 *source,
-  size_t nbyte,
-  u8 signature[64]) {
-  // sl will dynamically update the private key
+int auth_pure_code_calculate_authentication(
+  auth_token_t *dest,
+  const auth_token_t *input,
+  int key_is_first) {
+
+  const crypt_hash_api_t *sha256_api =
+    sos_config.sys.kernel_request_api(CRYPT_SHA256_ROOT_API_REQUEST);
 
   DECLARE_KEY(private_key);
 
-  const crypt_ecc_api_t *api = sos_config.sys.kernel_request_api(CRYPT_ECC_ROOT_API_REQUEST);
-  const size_t context_size = api->get_context_size();
-  u8 context[context_size];
-  memset(context, 0, context_size);
-  api->dsa_set_key_pair(context, public_key, 64, (const u8 *)private_key, 32);
-  u32 signature_size = 64;
-  api->dsa_sign(context, source, nbyte, signature, &signature_size);
+  if (sha256_api == NULL) {
+    return -1;
+  }
+
+  u8 sha256_context[sha256_api->get_context_size()];
+  void *context = sha256_context;
+  sha256_api->init(&context);
+  if (key_is_first) {
+    sha256_api->update(context, (const u8 *)private_key, sizeof(auth_token_t));
+    sha256_api->update(context, (const u8 *)input, sizeof(auth_token_t));
+  } else {
+    sha256_api->update(context, (const u8 *)input, sizeof(auth_token_t));
+    sha256_api->update(context, (const u8 *)private_key, sizeof(auth_token_t));
+  }
+  sha256_api->finish(context, (u8 *)dest, sizeof(auth_token_t));
+  sha256_api->deinit(&context);
+
   return 0;
 }
 
 int auth_pure_code_encrypt_decrypt(
-  u8 iv[16],
+  u8 *iv,
   const u8 *source,
   u8 *dest,
   size_t nbyte,
@@ -73,11 +84,13 @@ int auth_pure_code_encrypt_decrypt(
   // sl will dynamically update the private key
   DECLARE_KEY(private_key);
 
-  const crypt_aes_api_t *api = sos_config.sys.kernel_request_api(CRYPT_AES_ROOT_API_REQUEST);
-  const size_t context_size = 64;
+  const crypt_aes_api_t *api =
+    sos_config.sys.kernel_request_api(CRYPT_AES_ROOT_API_REQUEST);
+  const size_t context_size = api->get_context_size();
 
-  u8 context[context_size];
-  memset(context, 0, context_size);
+  u8 context_buffer[context_size];
+  void *context = context_buffer;
+  api->init(&context);
 
   api->set_key(context, (const u8 *)private_key, 128, 8);
   if (is_encrypt) {
@@ -89,5 +102,7 @@ int auth_pure_code_encrypt_decrypt(
     u8 *plain = dest;
     api->decrypt_cbc(context, nbyte, iv, cipher, plain);
   }
+
+  api->deinit(&context);
   return 0;
 }

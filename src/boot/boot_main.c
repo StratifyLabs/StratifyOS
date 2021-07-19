@@ -1,6 +1,8 @@
 
 #include <sys/lock.h>
 
+#include "device/auth.h"
+
 #include "sos/arch.h"
 #include "sos/symbols.h"
 
@@ -27,16 +29,9 @@ void boot_invoke_bootloader(void *args) {
   cortexm_reset(0);
 }
 
-void sos_handle_event(int event, void *args) {
-  sos_config.event_handler(event, args);
-}
+void sos_handle_event(int event, void *args) { sos_config.event_handler(event, args); }
 
 extern u32 _etext;
-
-const bootloader_api_t mcu_core_bootloader_api = {
-  .code_size = (u32)&_etext,
-  .exec = boot_invoke_bootloader,
-  .event = sos_handle_event};
 
 void init_hw();
 
@@ -92,7 +87,8 @@ void boot_main() {
     run_bootloader();
   }
 
-  while (1);
+  while (1)
+    ;
 }
 
 void run_bootloader() {
@@ -132,6 +128,39 @@ int check_run_app() {
   }
 
   return 1;
+}
+
+int boot_handle_auth_event(int event, void *args) {
+  if (event == BOOTLOADER_EVENT_AUTHENTICATE) {
+    bootloader_event_authenication_t *auth = args;
+    auth_token_t result = {};
+    auth_token_t input = {};
+    memcpy(input.data, auth->auth_data, sizeof(input.data));
+    const int auth_result =
+      auth_pure_code_calculate_authentication(&result, &input, auth->is_key_first);
+    if (auth_result < 0) {
+      return auth_result;
+    }
+
+    memcpy(auth->auth_data, result.data, sizeof(auth->auth_data));
+    return 0;
+  }
+
+  if (event == BOOTLOADER_EVENT_ENCRYPT) {
+    bootloader_event_crypto_t *crypto = args;
+    const int crypto_result = auth_pure_code_encrypt_decrypt(
+      crypto->iv, crypto->plain, crypto->cipher, crypto->nbyte, AUTH_PURE_CODE_IS_ENCRYPT);
+    return crypto_result;
+  }
+
+  if (event == BOOTLOADER_EVENT_DECRYPT) {
+    bootloader_event_crypto_t *crypto = args;
+    const int crypto_result = auth_pure_code_encrypt_decrypt(
+      crypto->iv, crypto->plain, crypto->cipher, crypto->nbyte, AUTH_PURE_CODE_IS_DECRYPT);
+    return crypto_result;
+  }
+
+  return 0;
 }
 
 void init_hw() {

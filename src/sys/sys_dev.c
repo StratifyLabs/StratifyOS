@@ -111,19 +111,6 @@ int sys_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
   case I_SYS_SETATTR:
     return sys_setattr(handle, ctl);
 
-  case I_SYS_GETSECRETKEY: {
-    sys_secret_key_t *key = ctl;
-    memset(key, 0, sizeof(sys_secret_key_t));
-    if (scheduler_authenticated_asserted(task_get_current())) {
-      u32 size = sos_config.sys.secret_key_size > sizeof(sys_secret_key_t)
-                   ? sizeof(sys_secret_key_t)
-                   : sos_config.sys.secret_key_size;
-      memcpy(key->data, sos_config.sys.secret_key_address - 1, size);
-      return 0;
-    }
-    return SYSFS_SET_RETURN(EPERM);
-  }
-
   case I_SYS_ISAUTHENTICATED:
     return scheduler_authenticated_asserted(task_get_current()) != 0;
 

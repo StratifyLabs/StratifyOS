@@ -3,6 +3,7 @@ if( ${SOS_BUILD_CONFIG} STREQUAL arm )
 		set(SOURCES
 			cortexm_local.h
 			cortexm.c
+			auth.c
 			devfs.c
 			fault.c
 			util.c

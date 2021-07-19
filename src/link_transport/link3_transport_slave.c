@@ -12,29 +12,66 @@
 
 static int send_ack(link_transport_driver_t *driver, u8 ack, u8 checksum);
 
+static void *ecc_context(link_transport_driver_t *driver) {
+  return driver->crypto_handle.ecc_context;
+}
+
+static const crypt_ecc_api_t *ecc_api(link_transport_driver_t *driver) {
+  return driver->crypto_driver->ecc_api;
+}
+
+static void *aes_context(link_transport_driver_t *driver) {
+  return driver->crypto_handle.aes_context;
+}
+
+static const crypt_aes_api_t *aes_api(link_transport_driver_t *driver) {
+  return driver->crypto_driver->aes_api;
+}
+
+static void *random_context(link_transport_driver_t *driver) {
+  return driver->crypto_handle.random_context;
+}
+
+static const crypt_random_api_t *random_api(link_transport_driver_t *driver) {
+  return driver->crypto_driver->random_api;
+}
+
 int link3_slave_start_secure_session(link_transport_driver_t *driver) {
 
-  // send start link3
-  u8 private_key[32];
+  // deinit if needed
+  ecc_api(driver)->deinit(&(driver->crypto_handle.ecc_context));
+  aes_api(driver)->deinit(&(driver->crypto_handle.aes_context));
+  random_api(driver)->deinit(&(driver->crypto_handle.random_context));
 
+  random_api(driver)->init(&(driver->crypto_handle.random_context));
+  ecc_api(driver)->init(&(driver->crypto_handle.ecc_context));
+
+
+  //first read the master info
   link3_pkt_auth_data_t master_info = {};
-
-  // need to generate a random number
   link3_transport_slaveread(driver, &master_info, sizeof(master_info), NULL, NULL);
 
   // wait for device info
   link3_pkt_auth_data_t device_info = {};
-  //driver->make_keys(private_key, device_info.public_key);
+  u32 device_key_size = sizeof(device_info.public_key);
+  ecc_api(driver)->dh_create_key_pair(
+    ecc_context(driver), CRYPT_ECC_KEY_PAIR_SECP256R1, device_info.public_key,
+    &device_key_size);
+
+  //need to populate device_info with the key ID
+  //the key ID will allow the master to fetch the private/public key corresponding to this device
 
   link3_transport_slavewrite(driver, &device_info, sizeof(device_info), NULL, NULL);
 
-  // call the auth callback with the device info
-
-  // send the auth signature + a random number
+  //the master has signed the random number (generated public key)
   link3_transport_slaveread(driver, &master_info, sizeof(master_info), NULL, NULL);
 
-  // wait for signature of random number
-  //driver->sign(master_info.identifier, master_info.public_key, device_info.signature);
+  //the signature needs to be verified using the device key
+
+
+  //sign the master's public key using the devices private key
+  // auth_pure_code_sign()
+
   link3_transport_slavewrite(driver, &device_info, sizeof(device_info), NULL, NULL);
 #if 0
 const int verify_result = driver->verify(device_info.identifier, device_info.signature);
