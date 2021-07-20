@@ -26,6 +26,8 @@
 #include <stdbool.h>
 #include <sys/fcntl.h>
 
+#include "sos_config.h"
+
 #include "sos/symbols.h"
 
 #include "boot_config.h"
@@ -37,9 +39,17 @@
 #include "sos/led.h"
 #include "sos/sos.h"
 
-#define FLASH_PORT 0
-
 static bool is_erased = false;
+
+static u8 first_page[256];
+
+#if CONFIG_BOOT_IS_VERIFY
+static u8 ecc_context_buffer[256];
+static void *ecc_context = ecc_context_buffer;
+static u8 sha_context_buffer[256];
+static void *sha_context = sha_context_buffer;
+#endif
+
 const devfs_handle_t flash_dev = {.port = 0};
 
 static int read_flash(link_transport_driver_t *driver, int loc, int nbyte);
@@ -119,14 +129,17 @@ void *boot_link_update(void *arg) {
   return NULL;
 }
 
-void boot_link_cmd_none(link_transport_driver_t *driver, link_data_t *args) { return; }
+void boot_link_cmd_none(link_transport_driver_t *driver, link_data_t *args) {
+  MCU_UNUSED_ARGUMENT(driver);
+  MCU_UNUSED_ARGUMENT(args);
+  return;
+}
 
 void boot_link_cmd_readserialno(link_transport_driver_t *driver, link_data_t *args) {
-  char serialno[LINK_PACKET_DATA_SIZE];
+  char serialno[LINK_PACKET_DATA_SIZE] = {};
   mcu_sn_t tmp = {0};
   int i, j;
   char *p = serialno;
-  memset(serialno, 0, LINK_PACKET_DATA_SIZE);
 
   if (sos_config.sys.get_serial_number) {
     sos_config.sys.get_serial_number(&tmp);
@@ -159,11 +172,17 @@ void boot_link_cmd_readserialno(link_transport_driver_t *driver, link_data_t *ar
 
 void boot_link_cmd_ioctl(link_transport_driver_t *driver, link_data_t *args) {
   int err;
-  int size;
-  size = _IOCTL_SIZE(args->op.ioctl.request);
+  const int size = _IOCTL_SIZE(args->op.ioctl.request);
   bootloader_attr_t attr;
   bootloader_writepage_t wattr;
   static boot_event_flash_t event_args;
+
+#if CONFIG_BOOT_IS_VERIFY
+  const crypt_ecc_api_t *ecc_api =
+    sos_config.sys.kernel_request_api(CRYPT_ECC_ROOT_API_REQUEST);
+  const crypt_hash_api_t *sha_api =
+    sos_config.sys.kernel_request_api(CRYPT_SHA256_ROOT_API_REQUEST);
+#endif
 
   dstr("IOCTL REQ: ");
   dhex(args->op.ioctl.request);
@@ -219,7 +238,17 @@ void boot_link_cmd_ioctl(link_transport_driver_t *driver, link_data_t *args) {
       boot_link_cmd_reset_bootloader(driver, args);
     }
     break;
+
+  case I_BOOTLOADER_IS_SIGNATURE_REQUIRED:
+#if CONFIG_BOOT_IS_VERIFY
+    args->err = 1;
+#else
+    args->err = 0;
+#endif
+    break;
+
   case I_BOOTLOADER_WRITEPAGE:
+
     err = link_transport_slaveread(driver, &wattr, size, NULL, NULL);
     if (err < 0) {
       dstr("failed to read data\n");
@@ -232,19 +261,72 @@ void boot_link_cmd_ioctl(link_transport_driver_t *driver, link_data_t *args) {
     dint(wattr.nbyte);
     dstr("\n");
 
-    args->reply.err =
-      sos_config.boot.flash_write_page(&sos_config.boot.flash_handle, &wattr);
-    // args->reply.err = mcu_flash_writepage(FLASH_PORT, (flash_writepage_t *)&wattr);
-    if (args->reply.err < 0) {
-      dstr("Failed to write flash:");
-      dhex(args->reply.err);
-      dstr("\n");
+    if (wattr.addr == sos_config.boot.program_start_address) {
+      if (wattr.nbyte != 256) {
+        // this is an error
+        args->reply.err = -1;
+        args->reply.err_number = EINVAL;
+        return;
+      }
+      memcpy(first_page, wattr.buf, sizeof(first_page));
+
+#if CONFIG_BOOT_IS_VERIFY
+      ecc_api = sos_config.sys.kernel_request_api(CRYPT_ECC_ROOT_API_REQUEST);
+      sha_api = sos_config.sys.kernel_request_api(CRYPT_SHA256_ROOT_API_REQUEST);
+
+      ecc_api->init(&ecc_context);
+      sha_api->init(&sha_context);
+
+      sha_api->start(sha_context);
+      sha_api->update(sha_context, first_page, 256);
+#endif
+    } else {
+#if CONFIG_BOOT_IS_VERIFY
+      sha_api->update(sha_context, wattr.buf, wattr.nbyte);
+#endif
+
+      args->reply.err =
+        sos_config.boot.flash_write_page(&sos_config.boot.flash_handle, &wattr);
+
+      if (args->reply.err < 0) {
+        dstr("Failed to write flash:");
+        dhex(args->reply.err);
+        dstr("\n");
+      }
     }
 
     event_args.increment = wattr.nbyte;
     event_args.bytes += event_args.increment;
     sos_handle_event(SOS_EVENT_BOOT_WRITE_FLASH, &event_args);
     break;
+
+#if CONFIG_BOOT_IS_VERIFY
+  case I_BOOTLOADER_VERIFY_SIGNATURE: {
+    bootloader_signature_t signature;
+    err = link_transport_slaveread(driver, &signature, size, NULL, NULL);
+    if( err < 0 ){
+      return;
+    }
+
+    u8 hash[32];
+    sha_api->finish(sha_context, hash, sizeof(hash));
+    const int is_verified = ecc_api->dsa_verify(
+      ecc_context, hash, sizeof(hash), signature.signature, sizeof(signature));
+
+    if (is_verified == 1) {
+      // write first page to flash memory
+
+      wattr.addr = sos_config.boot.program_start_address;
+      wattr.nbyte = sizeof(first_page);
+      memcpy(wattr.buf, first_page, sizeof(first_page));
+
+      args->reply.err =
+        sos_config.boot.flash_write_page(&sos_config.boot.flash_handle, &wattr);
+    }
+
+  } break;
+#endif
+
   default:
     args->reply.err_number = EINVAL;
     args->reply.err = -1;
@@ -264,6 +346,8 @@ void boot_link_cmd_read(link_transport_driver_t *driver, link_data_t *args) {
 }
 
 void boot_link_cmd_write(link_transport_driver_t *driver, link_data_t *args) {
+  MCU_UNUSED_ARGUMENT(driver);
+  MCU_UNUSED_ARGUMENT(args);
   args->reply.err = -1;
   return;
 }
@@ -271,10 +355,7 @@ void boot_link_cmd_write(link_transport_driver_t *driver, link_data_t *args) {
 void erase_flash(link_transport_driver_t *driver) {
   int page = 0;
   int result;
-  boot_event_flash_t args;
-  args.abort = 0;
-  args.total = -1;
-  args.increment = -1;
+  boot_event_flash_t args = {.abort = 0, .total = -1, .increment = -1};
 
   while (sos_config.boot.flash_erase_page(&sos_config.boot.flash_handle, (void *)page++)
          != 0) {

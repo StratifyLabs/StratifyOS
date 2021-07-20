@@ -3,7 +3,8 @@
 
 #include "sos/boot/bootloader.h"
 
-#define BCDVERSION 0x200
+//version 4 will store the first page and write it after verification
+#define BCDVERSION 0x400
 
 //Un-comment to use UART for debugging
 #if defined ___debug

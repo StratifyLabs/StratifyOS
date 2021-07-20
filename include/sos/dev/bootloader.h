@@ -69,6 +69,10 @@ typedef struct MCU_PACK {
   u8 buf[BOOTLOADER_WRITEPAGESIZE] /*! \brief A buffer for writing to the flash */;
 } bootloader_writepage_t;
 
+typedef struct MCU_PACK {
+  u8 signature[64];
+} bootloader_signature_t;
+
 typedef struct {
   u8 * result;
   const u8 * auth_data;
@@ -153,6 +157,10 @@ extern void boot_invoke_bootloader(void *args);
  */
 #define I_BOOTLOADER_WRITEPAGE                                                           \
   _IOCTLW(BOOTLOADER_IOC_IDENT_CHAR, 3, bootloader_writepage_t)
+
+#define I_BOOTLOADER_VERIFY_SIGNATURE _IOCTLW(BOOTLOADER_IOC_IDENT_CHAR, 4, bootloader_signature_t)
+
+#define I_BOOTLOADER_IS_SIGNATURE_REQUIRED _IOCTL(BOOTLOADER_IOC_IDENT_CHAR, 5)
 
 #define I_BOOTLOADER_TOTAL 4
 

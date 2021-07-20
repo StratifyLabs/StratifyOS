@@ -68,7 +68,7 @@ typedef struct MCU_PACK {
 
 typedef struct MCU_PACK {
   // total number of tasks to support
-  //u8 task_total;
+  // u8 task_total;
   // stack size of the first thread
   u16 start_stack_size;
   // function of the first thread
@@ -275,6 +275,43 @@ extern const sos_config_t sos_config;
 #define SOS_DECLARE_SECRET_KEY_32(x)                                                     \
   static void x() MCU_ALIGN(32);                                                         \
   void x() {                                                                             \
+    asm volatile("NOP");                                                                 \
+    asm volatile("NOP");                                                                 \
+    asm volatile("NOP");                                                                 \
+    asm volatile("NOP");                                                                 \
+    asm volatile("NOP");                                                                 \
+    asm volatile("NOP");                                                                 \
+    asm volatile("NOP");                                                                 \
+    asm volatile("NOP");                                                                 \
+    asm volatile("NOP");                                                                 \
+    asm volatile("NOP");                                                                 \
+    asm volatile("NOP");                                                                 \
+    asm volatile("NOP");                                                                 \
+    asm volatile("NOP");                                                                 \
+    asm volatile("NOP");                                                                 \
+    asm volatile("NOP");                                                                 \
+    asm volatile("NOP");                                                                 \
+  }
+
+#define SOS_DECLARE_PUBLIC_KEY_64(x)                                                     \
+  static void x() MCU_ALIGN(64);                                                         \
+  void x() {                                                                             \
+    asm volatile("NOP");                                                                 \
+    asm volatile("NOP");                                                                 \
+    asm volatile("NOP");                                                                 \
+    asm volatile("NOP");                                                                 \
+    asm volatile("NOP");                                                                 \
+    asm volatile("NOP");                                                                 \
+    asm volatile("NOP");                                                                 \
+    asm volatile("NOP");                                                                 \
+    asm volatile("NOP");                                                                 \
+    asm volatile("NOP");                                                                 \
+    asm volatile("NOP");                                                                 \
+    asm volatile("NOP");                                                                 \
+    asm volatile("NOP");                                                                 \
+    asm volatile("NOP");                                                                 \
+    asm volatile("NOP");                                                                 \
+    asm volatile("NOP");                                                                 \
     asm volatile("NOP");                                                                 \
     asm volatile("NOP");                                                                 \
     asm volatile("NOP");                                                                 \
