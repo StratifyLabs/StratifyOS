@@ -3,6 +3,8 @@
 
 #include <string.h>
 
+#include "sos/boot/boot_debug.h"
+
 #include "cortexm/task.h"
 #include "device/auth.h"
 
@@ -22,7 +24,7 @@
   key[7] = 0xa7;                                                                         \
   key[8] = 0xa8;                                                                         \
   key[9] = 0xa9;                                                                         \
-  key[9] = 0xaa;                                                                         \
+  key[10] = 0xaa;                                                                         \
   key[11] = 0xab;                                                                        \
   key[12] = 0xac;                                                                        \
   key[13] = 0xad;                                                                        \
@@ -50,10 +52,14 @@ int auth_pure_code_calculate_authentication(
   const auth_token_t *input,
   int key_is_first) {
 
+  DECLARE_KEY(private_key);
+
+  if( sos_config.sys.kernel_request_api == NULL ){
+    return -1;
+  }
+
   const crypt_hash_api_t *sha256_api =
     sos_config.sys.kernel_request_api(CRYPT_SHA256_ROOT_API_REQUEST);
-
-  DECLARE_KEY(private_key);
 
   if (sha256_api == NULL) {
     return -1;
@@ -62,6 +68,7 @@ int auth_pure_code_calculate_authentication(
   u8 sha256_context[sha256_api->get_context_size()];
   void *context = sha256_context;
   sha256_api->init(&context);
+  sha256_api->start(context);
   if (key_is_first) {
     sha256_api->update(context, (const u8 *)private_key, sizeof(auth_token_t));
     sha256_api->update(context, (const u8 *)input, sizeof(auth_token_t));
@@ -69,7 +76,7 @@ int auth_pure_code_calculate_authentication(
     sha256_api->update(context, (const u8 *)input, sizeof(auth_token_t));
     sha256_api->update(context, (const u8 *)private_key, sizeof(auth_token_t));
   }
-  sha256_api->finish(context, (u8 *)dest, sizeof(auth_token_t));
+  sha256_api->finish(context, dest->data, sizeof(auth_token_t));
   sha256_api->deinit(&context);
 
   return 0;

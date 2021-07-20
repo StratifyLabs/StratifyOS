@@ -70,8 +70,8 @@ typedef struct MCU_PACK {
 } bootloader_writepage_t;
 
 typedef struct {
-  u8 result[32];
-  u8 auth_data[32];
+  u8 * result;
+  const u8 * auth_data;
   u32 is_key_first;
 } bootloader_event_authenication_t;
 

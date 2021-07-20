@@ -3,6 +3,8 @@
 #ifndef DEVICE_AUTH_H_
 #define DEVICE_AUTH_H_
 
+#include <sdk/api.h>
+
 #include "sos/dev/auth.h"
 #include "sos/fs/types.h"
 
@@ -29,5 +31,7 @@ int auth_pure_code_encrypt_decrypt(
   u8 *dest,
   size_t nbyte,
   int is_encrypt);
+
+extern const crypt_random_api_t random_root_api;
 
 #endif /* DEVICE_AUTH_H_ */

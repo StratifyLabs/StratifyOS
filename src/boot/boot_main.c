@@ -97,7 +97,7 @@ void run_bootloader() {
   led_flash_run_bootloader();
 
   // initialize link and run link update
-  dstr("Link Start\n");
+  dstr("Link Start-\n");
   boot_link_update((void *)sos_config.boot.link_transport_driver);
 }
 
@@ -133,16 +133,16 @@ int check_run_app() {
 int boot_handle_auth_event(int event, void *args) {
   if (event == BOOTLOADER_EVENT_AUTHENTICATE) {
     bootloader_event_authenication_t *auth = args;
-    auth_token_t result = {};
-    auth_token_t input = {};
-    memcpy(input.data, auth->auth_data, sizeof(input.data));
+    auth_token_t input;
+    auth_token_t result;
+    memcpy(input.data, auth->auth_data, 32);
     const int auth_result =
       auth_pure_code_calculate_authentication(&result, &input, auth->is_key_first);
     if (auth_result < 0) {
       return auth_result;
     }
 
-    memcpy(auth->auth_data, result.data, sizeof(auth->auth_data));
+    memcpy(auth->result, result.data, 32);
     return 0;
   }
 

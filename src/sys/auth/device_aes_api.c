@@ -25,7 +25,6 @@
 #include <unistd.h>
 
 #include "config.h"
-#include "sos/api/crypt_api.h"
 #include "sos/dev/crypt.h"
 
 typedef struct {

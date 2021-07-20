@@ -132,5 +132,8 @@ if( ${SOS_BUILD_CONFIG} STREQUAL arm )
 		symbols.c
 		sys_dev.c
 		auth/auth_dev.c
+		auth/device_aes_api.c
+		auth/device_random_api.c
+		auth/random_root_api.c
 		PARENT_SCOPE)
 endif()
