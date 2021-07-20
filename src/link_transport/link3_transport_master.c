@@ -58,8 +58,6 @@ int link3_start_secure_session(link_transport_mdriver_t *driver) {
   ecc_api(driver)->dh_create_key_pair(
     ecc_context(driver), CRYPT_ECC_KEY_PAIR_SECP256R1, master_info.public_key,
     &master_key_size);
-
-  // need to generate a random number
   link3_transport_masterwrite(driver, &master_info, sizeof(master_info));
 
   // wait for device info
@@ -105,6 +103,8 @@ int link3_start_secure_session(link_transport_mdriver_t *driver) {
 
   const int verify_device_signature_result = ecc_api(driver)->dsa_verify(
     ecc_sign_context, device_info.signature, 64, device_keys.public_key, 64);
+
+  ecc_api(driver)->deinit(&ecc_sign_context);
 
   ecc_api(driver)->dh_calculate_shared_secret(
     ecc_context(driver), device_info.public_key, sizeof(device_info.public_key),
