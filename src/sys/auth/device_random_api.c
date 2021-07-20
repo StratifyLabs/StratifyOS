@@ -33,19 +33,7 @@ typedef struct {
 
 static int set_device_attributes(device_random_context_t *context, u32 o_flags, u32 seed);
 
-static int device_random_init(void **context);
-static void device_random_deinit(void **context);
-static int device_random_seed(void *context, const unsigned char *data, u32 data_len);
-static int device_random_random(void *context, unsigned char *output, u32 output_length);
-
-const crypt_random_api_t device_random_api = {
-  .sos_api = {.name = "crypt_random_device", .version = 0x0001, .git_hash = SOS_GIT_HASH},
-  .init = device_random_init,
-  .deinit = device_random_deinit,
-  .seed = device_random_seed,
-  .random = device_random_random};
-
-int device_random_init(void **context) {
+static int device_random_init(void **context) {
   int fd = open("/dev/random", O_RDWR);
   if (fd < 0) {
     return -1;
@@ -64,7 +52,7 @@ int device_random_init(void **context) {
   return set_device_attributes(c, RANDOM_FLAG_ENABLE, 0);
 }
 
-void device_random_deinit(void **context) {
+static void device_random_deinit(void **context) {
   if (*context != 0) {
     void *c_ptr = *context;
     device_random_context_t *c = c_ptr;
@@ -76,22 +64,29 @@ void device_random_deinit(void **context) {
   }
 }
 
-int device_random_seed(void *context, const unsigned char *data, u32 data_len) {
+static int device_random_seed(void *context, const unsigned char *data, u32 data_len) {
   u32 seed = 0;
   data_len = data_len > sizeof(u32) ? sizeof(u32) : data_len;
   memcpy(&seed, data, data_len);
   return set_device_attributes(context, RANDOM_FLAG_SET_SEED, seed);
 }
 
-int device_random_random(void *context, unsigned char *output, u32 output_length) {
+static int device_random_random(void *context, unsigned char *output, u32 output_length) {
   device_random_context_t *c = context;
   return read(c->fd, output, output_length);
 }
 
-int set_device_attributes(device_random_context_t *context, u32 o_flags, u32 seed) {
+static int set_device_attributes(device_random_context_t *context, u32 o_flags, u32 seed) {
   random_attr_t attributes;
 
   attributes.o_flags = o_flags;
   attributes.seed = seed;
   return ioctl(context->fd, I_RANDOM_SETATTR, &attributes);
 }
+
+const crypt_random_api_t device_random_api = {
+  .sos_api = {.name = "crypt_random_device", .version = 0x0001, .git_hash = SOS_GIT_HASH},
+  .init = device_random_init,
+  .deinit = device_random_deinit,
+  .seed = device_random_seed,
+  .random = device_random_random};

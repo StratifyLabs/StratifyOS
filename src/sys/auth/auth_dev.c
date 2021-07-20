@@ -99,10 +99,15 @@ int calculate(auth_token_t *dest, const auth_token_t *input, int key_is_first) {
     return SYSFS_SET_RETURN(ENOTSUP);
   }
 
-  bootloader_event_authenication_t auth_event = {.is_key_first = key_is_first};
-  memcpy(auth_event.auth_data, input, sizeof(auth_event.auth_data));
+
+  bootloader_event_authenication_t auth_event = {
+    .auth_data = input->data,
+    .result = dest->data,
+    .is_key_first = key_is_first
+    };
+
   bootloader_api->event(BOOTLOADER_EVENT_AUTHENTICATE, &auth_event);
-  memcpy(dest, auth_event.result, sizeof(auth_event.result));
+
   return 0;
 }
 
