@@ -2,6 +2,9 @@
 
 ## New Features
 
+- `CONFIG_BOOT_IS_VERIFY_SIGNATURE` is used in the user `sos_config.h` file to turn signature verification on and off
+  - User must provide api's for requests: `CRYPT_SHA256_ROOT_API_REQUEST` and `CRYPT_ECC_ROOT_API_REQUEST` (just set key and verify)
+- Bootloader can authenticate with a secret key and verify an image with a public key
 - Add encryption and authentication calls to bootloader API
 - Add link3 transport protocol using secure transmissions
 - Add support for low level cryptography hooks in `sos_config`.
