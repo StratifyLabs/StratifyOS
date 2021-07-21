@@ -43,7 +43,9 @@ static bool is_erased = false;
 
 static u8 first_page[256];
 
-#if CONFIG_BOOT_IS_VERIFY
+static u32 hash_size = 0;
+
+#if CONFIG_BOOT_IS_VERIFY_SIGNATURE
 static u8 ecc_context_buffer[256];
 static void *ecc_context = ecc_context_buffer;
 static u8 sha_context_buffer[256];
@@ -51,7 +53,6 @@ static void *sha_context = sha_context_buffer;
 #endif
 
 const devfs_handle_t flash_dev = {.port = 0};
-
 
 static int read_flash(link_transport_driver_t *driver, int loc, int nbyte);
 static int read_flash_callback(void *context, void *buf, int nbyte);
@@ -74,8 +75,8 @@ boot_link_cmd_reset_bootloader(link_transport_driver_t *driver, link_data_t *arg
 static void erase_flash(link_transport_driver_t *driver);
 static void boot_link_cmd_reset(link_transport_driver_t *driver, link_data_t *args);
 
-static const u8 * get_public_key(){
-  return (const u8*)((u32)sos_config.sys.secret_key_address & ~0x01);
+static const u8 *get_public_key() {
+  return (const u8 *)((u32)sos_config.sys.secret_key_address & ~0x01);
 }
 
 void (*const boot_link_cmd_func_table[LINK_BOOTLOADER_CMD_TOTAL])(
@@ -182,7 +183,7 @@ void boot_link_cmd_ioctl(link_transport_driver_t *driver, link_data_t *args) {
   bootloader_writepage_t wattr;
   static boot_event_flash_t event_args;
 
-#if CONFIG_BOOT_IS_VERIFY
+#if CONFIG_BOOT_IS_VERIFY_SIGNATURE
   const crypt_ecc_api_t *ecc_api =
     sos_config.sys.kernel_request_api(CRYPT_ECC_ROOT_API_REQUEST);
   const crypt_hash_api_t *sha_api =
@@ -245,7 +246,7 @@ void boot_link_cmd_ioctl(link_transport_driver_t *driver, link_data_t *args) {
     break;
 
   case I_BOOTLOADER_IS_SIGNATURE_REQUIRED:
-#if CONFIG_BOOT_IS_VERIFY
+#if CONFIG_BOOT_IS_VERIFY_SIGNATURE
     dstr("signature is required\n");
     args->reply.err = 1;
 #else
@@ -277,16 +278,8 @@ void boot_link_cmd_ioctl(link_transport_driver_t *driver, link_data_t *args) {
         args->reply.err_number = EINVAL;
         return;
       }
-      memcpy(first_page, wattr.buf, sizeof(first_page));
 
-      wattr.addr += sizeof(first_page);
-      wattr.nbyte = wattr.nbyte - sizeof(first_page);
-      memcpy(wattr.buf, wattr.buf + sizeof(first_page), wattr.nbyte);
-
-      args->reply.err =
-        sos_config.boot.flash_write_page(&sos_config.boot.flash_handle, &wattr);
-
-#if CONFIG_BOOT_IS_VERIFY
+#if CONFIG_BOOT_IS_VERIFY_SIGNATURE
       ecc_api = sos_config.sys.kernel_request_api(CRYPT_ECC_ROOT_API_REQUEST);
       sha_api = sos_config.sys.kernel_request_api(CRYPT_SHA256_ROOT_API_REQUEST);
 
@@ -294,11 +287,22 @@ void boot_link_cmd_ioctl(link_transport_driver_t *driver, link_data_t *args) {
       sha_api->init(&sha_context);
 
       sha_api->start(sha_context);
-      sha_api->update(sha_context, first_page, 256);
-#endif
-    } else {
-#if CONFIG_BOOT_IS_VERIFY
       sha_api->update(sha_context, wattr.buf, wattr.nbyte);
+      hash_size = wattr.nbyte;
+#endif
+
+      memcpy(first_page, wattr.buf, sizeof(first_page));
+      wattr.addr += sizeof(first_page);
+      wattr.nbyte = wattr.nbyte - sizeof(first_page);
+      memcpy(wattr.buf, wattr.buf + sizeof(first_page), wattr.nbyte);
+
+      args->reply.err =
+        sos_config.boot.flash_write_page(&sos_config.boot.flash_handle, &wattr);
+
+    } else {
+#if CONFIG_BOOT_IS_VERIFY_SIGNATURE
+      sha_api->update(sha_context, wattr.buf, wattr.nbyte);
+      hash_size += wattr.nbyte;
 #endif
 
       args->reply.err =
@@ -318,19 +322,18 @@ void boot_link_cmd_ioctl(link_transport_driver_t *driver, link_data_t *args) {
 
   case I_BOOTLOADER_GET_PUBLIC_KEY: {
     bootloader_public_key_t key;
-#if CONFIG_BOOT_IS_VERIFY
+#if CONFIG_BOOT_IS_VERIFY_SIGNATURE
     memcpy(key.data, get_public_key(), sizeof(key.data));
 #else
     memset(key.data, 0, sizeof(key.data));
 #endif
-   link_transport_slavewrite(driver, key.data, size, NULL, NULL);
+    link_transport_slavewrite(driver, key.data, size, NULL, NULL);
 
     break;
   }
 
   case I_BOOTLOADER_VERIFY_SIGNATURE: {
-#if CONFIG_BOOT_IS_VERIFY
-    dstr("verify signature\n");
+#if CONFIG_BOOT_IS_VERIFY_SIGNATURE
     bootloader_signature_t signature;
     err = link_transport_slaveread(driver, signature.data, size, NULL, NULL);
     if (err < 0) {
@@ -339,20 +342,26 @@ void boot_link_cmd_ioctl(link_transport_driver_t *driver, link_data_t *args) {
     }
     u8 hash[32];
     sha_api->finish(sha_context, hash, sizeof(hash));
-    const u8 * public_key = get_public_key();
+    dstr("hash:"); dint(hash_size); dstr(":");
+    for (u32 i = 0; i < 32; i++) {
+      dhex(hash[i]);
+    }
+    dstr("\n");
+
+    const u8 *public_key = get_public_key();
     dstr("key:");
-    for(u32 i=0; i < 64; i++){
+    for (u32 i = 0; i < 64; i++) {
       dhex(public_key[i]);
     }
     dstr("\n");
     dstr("signature:");
-    for(u32 i=0; i < 64; i++){
+    for (u32 i = 0; i < 64; i++) {
       dhex(signature.data[i]);
     }
     dstr("\n");
+
     ecc_api->dsa_set_key_pair(
-      ecc_context, public_key,
-      sos_config.sys.secret_key_size, NULL, 0);
+      ecc_context, public_key, sos_config.sys.secret_key_size, NULL, 0);
 
     const int is_verified = ecc_api->dsa_verify(
       ecc_context, hash, sizeof(hash), signature.data, sizeof(signature));
@@ -463,7 +472,7 @@ void boot_link_cmd_reset_bootloader(link_transport_driver_t *driver, link_data_t
 }
 
 static int mcu_flash_read(const devfs_handle_t *cfg, devfs_async_t *async) {
-#if CONFIG_BOOT_IS_VERIFY
+#if CONFIG_BOOT_IS_VERIFY_SIGNATURE
   memset(async->buf, 0, async->nbyte);
 #else
   memcpy(async->buf, (const void *)async->loc, async->nbyte);
