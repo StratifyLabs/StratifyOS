@@ -52,6 +52,7 @@ static void *sha_context = sha_context_buffer;
 
 const devfs_handle_t flash_dev = {.port = 0};
 
+
 static int read_flash(link_transport_driver_t *driver, int loc, int nbyte);
 static int read_flash_callback(void *context, void *buf, int nbyte);
 
@@ -72,6 +73,10 @@ static void
 boot_link_cmd_reset_bootloader(link_transport_driver_t *driver, link_data_t *args);
 static void erase_flash(link_transport_driver_t *driver);
 static void boot_link_cmd_reset(link_transport_driver_t *driver, link_data_t *args);
+
+static const u8 * get_public_key(){
+  return (const u8*)((u32)sos_config.sys.secret_key_address & ~0x01);
+}
 
 void (*const boot_link_cmd_func_table[LINK_BOOTLOADER_CMD_TOTAL])(
   link_transport_driver_t *,
@@ -241,9 +246,11 @@ void boot_link_cmd_ioctl(link_transport_driver_t *driver, link_data_t *args) {
 
   case I_BOOTLOADER_IS_SIGNATURE_REQUIRED:
 #if CONFIG_BOOT_IS_VERIFY
-    args->err = 1;
+    dstr("signature is required\n");
+    args->reply.err = 1;
 #else
-    args->err = 0;
+    dstr("signature NOT required\n");
+    args->reply.err = 0;
 #endif
     break;
 
@@ -262,13 +269,22 @@ void boot_link_cmd_ioctl(link_transport_driver_t *driver, link_data_t *args) {
     dstr("\n");
 
     if (wattr.addr == sos_config.boot.program_start_address) {
-      if (wattr.nbyte != 256) {
+
+      if (wattr.nbyte < sizeof(first_page)) {
+        dstr("first page too small\n");
         // this is an error
         args->reply.err = -1;
         args->reply.err_number = EINVAL;
         return;
       }
       memcpy(first_page, wattr.buf, sizeof(first_page));
+
+      wattr.addr += sizeof(first_page);
+      wattr.nbyte = wattr.nbyte - sizeof(first_page);
+      memcpy(wattr.buf, wattr.buf + sizeof(first_page), wattr.nbyte);
+
+      args->reply.err =
+        sos_config.boot.flash_write_page(&sos_config.boot.flash_handle, &wattr);
 
 #if CONFIG_BOOT_IS_VERIFY
       ecc_api = sos_config.sys.kernel_request_api(CRYPT_ECC_ROOT_API_REQUEST);
@@ -300,32 +316,64 @@ void boot_link_cmd_ioctl(link_transport_driver_t *driver, link_data_t *args) {
     sos_handle_event(SOS_EVENT_BOOT_WRITE_FLASH, &event_args);
     break;
 
+  case I_BOOTLOADER_GET_PUBLIC_KEY: {
+    bootloader_public_key_t key;
 #if CONFIG_BOOT_IS_VERIFY
+    memcpy(key.data, get_public_key(), sizeof(key.data));
+#else
+    memset(key.data, 0, sizeof(key.data));
+#endif
+   link_transport_slavewrite(driver, key.data, size, NULL, NULL);
+
+    break;
+  }
+
   case I_BOOTLOADER_VERIFY_SIGNATURE: {
+#if CONFIG_BOOT_IS_VERIFY
+    dstr("verify signature\n");
     bootloader_signature_t signature;
-    err = link_transport_slaveread(driver, &signature, size, NULL, NULL);
-    if( err < 0 ){
+    err = link_transport_slaveread(driver, signature.data, size, NULL, NULL);
+    if (err < 0) {
+      dstr("failed to receive signature\n");
       return;
     }
-
     u8 hash[32];
     sha_api->finish(sha_context, hash, sizeof(hash));
+    const u8 * public_key = get_public_key();
+    dstr("key:");
+    for(u32 i=0; i < 64; i++){
+      dhex(public_key[i]);
+    }
+    dstr("\n");
+    dstr("signature:");
+    for(u32 i=0; i < 64; i++){
+      dhex(signature.data[i]);
+    }
+    dstr("\n");
+    ecc_api->dsa_set_key_pair(
+      ecc_context, public_key,
+      sos_config.sys.secret_key_size, NULL, 0);
+
     const int is_verified = ecc_api->dsa_verify(
-      ecc_context, hash, sizeof(hash), signature.signature, sizeof(signature));
+      ecc_context, hash, sizeof(hash), signature.data, sizeof(signature));
+#else
+    const int is_verified = 1;
+#endif
 
     if (is_verified == 1) {
       // write first page to flash memory
 
+      dstr("signature verified correctly\n");
       wattr.addr = sos_config.boot.program_start_address;
       wattr.nbyte = sizeof(first_page);
       memcpy(wattr.buf, first_page, sizeof(first_page));
 
       args->reply.err =
         sos_config.boot.flash_write_page(&sos_config.boot.flash_handle, &wattr);
+    } else {
+      dstr("image not signed\n");
     }
-
   } break;
-#endif
 
   default:
     args->reply.err_number = EINVAL;
@@ -415,7 +463,11 @@ void boot_link_cmd_reset_bootloader(link_transport_driver_t *driver, link_data_t
 }
 
 static int mcu_flash_read(const devfs_handle_t *cfg, devfs_async_t *async) {
+#if CONFIG_BOOT_IS_VERIFY
+  memset(async->buf, 0, async->nbyte);
+#else
   memcpy(async->buf, (const void *)async->loc, async->nbyte);
+#endif
   return async->nbyte;
 }
 
