@@ -155,7 +155,7 @@ int boot_handle_auth_event(int event, void *args) {
 
   if (event == BOOTLOADER_EVENT_GET_PUBLIC_KEY) {
     bootloader_public_key_t *key = args;
-    memcpy(key, get_public_key, sizeof(bootloader_public_key_t));
+    memcpy(key, get_public_key(), sizeof(bootloader_public_key_t));
     return 0;
   }
 #endif
