@@ -129,9 +129,9 @@ enum {
 #define I_AUTH_FINISH _IOCTLRW(AUTH_IOC_CHAR, 2, auth_token_t)
 
 
-typedef bootloader_signature_t auth_signature_t;
+typedef bootloader_public_key_t auth_public_key_t;
 
-#define I_AUTH_GET_PUBLIC_KEY _IOCTLR(AUTH_IOC_CHAR, 3, auth_signature_t)
+#define I_AUTH_GET_PUBLIC_KEY _IOCTLR(AUTH_IOC_CHAR, 3, auth_public_key_t)
 
 // this is how the pure code private key gets compiled
 // this will be modified with the actual secret key
