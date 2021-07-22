@@ -2,6 +2,7 @@
 
 ## New Features
 
+- `/dev/auth` can provide the public key from the bootloader using `I_AUTH_GET_PUBLIC_KEY`
 - Bootloader version bumped to `0x400` which handles new requests
   - `I_BOOTLOADER_IS_SIGNATURE_REQUIRED`
   - `I_BOOTLOADER_GET_PUBLIC_KEY`
