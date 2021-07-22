@@ -17,6 +17,12 @@ authenticate(const devfs_handle_t *handle, auth_token_t *auth) MCU_ROOT_EXEC_COD
 static int calculate(auth_token_t *dest, const auth_token_t *input, int key_is_first)
   MCU_ROOT_EXEC_CODE;
 
+static void get_public_key(auth_public_key_t *public_key) MCU_ROOT_EXEC_CODE;
+void get_public_key(auth_public_key_t *public_key) {
+  const bootloader_api_t *api = cortexm_get_bootloader_api();
+  api->event(BOOTLOADER_EVENT_GET_PUBLIC_KEY, public_key);
+}
+
 typedef struct {
   auth_token_t random_token;
 } auth_state_t;
@@ -36,6 +42,10 @@ int auth_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
 
   case I_AUTH_GETTOKEN:
     return SYSFS_SET_RETURN(ENOTSUP);
+
+  case I_AUTH_GET_PUBLIC_KEY:
+    get_public_key(ctl);
+    return 0;
 
   case I_AUTH_FINISH:
     result = authenticate(handle, ctl);
@@ -76,10 +86,9 @@ int get_random(const devfs_handle_t *handle, auth_token_t *auth) {
 
   const crypt_random_api_t *random_api =
     sos_config.sys.kernel_request_api(CRYPT_RANDOM_ROOT_API_REQUEST);
-  if( random_api == NULL ){
+  if (random_api == NULL) {
     return SYSFS_SET_RETURN(ENOTSUP);
   }
-
 
   u8 context_buffer[random_api->get_context_size()];
   void *context = context_buffer;
@@ -99,12 +108,10 @@ int calculate(auth_token_t *dest, const auth_token_t *input, int key_is_first) {
     return SYSFS_SET_RETURN(ENOTSUP);
   }
 
-
   bootloader_event_authenication_t auth_event = {
     .auth_data = input->data,
     .result = dest->data,
-    .is_key_first = key_is_first
-    };
+    .is_key_first = key_is_first};
 
   bootloader_api->event(BOOTLOADER_EVENT_AUTHENTICATE, &auth_event);
 
@@ -120,8 +127,7 @@ int authenticate(const devfs_handle_t *handle, auth_token_t *hash) {
 
   // calculate hash = key + random token previously sent
   auth_token_t request_token = {};
-  calculate(
-    &request_token, &m_auth_state.random_token, AUTH_PURE_CODE_KEY_IS_FIRST);
+  calculate(&request_token, &m_auth_state.random_token, AUTH_PURE_CODE_KEY_IS_FIRST);
 
   // compare hash received to the hash = key + random token calculated
   const int compare_result = memcmp(&request_token, hash, sizeof(auth_token_t));

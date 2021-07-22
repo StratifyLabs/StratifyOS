@@ -17,6 +17,12 @@
 #include "sos/sos.h"
 #include "usbd/control.h"
 
+#include "sos_config.h"
+
+static const u8 *get_public_key() {
+  return (const u8 *)((u32)sos_config.sys.secret_key_address & ~0x01);
+}
+
 void boot_invoke_bootloader(void *args) {
   MCU_UNUSED_ARGUMENT(args);
   // write SW location with key and then reset
@@ -131,6 +137,7 @@ int check_run_app() {
 }
 
 int boot_handle_auth_event(int event, void *args) {
+#if CONFIG_BOOT_IS_VERIFY_SIGNATURE
   if (event == BOOTLOADER_EVENT_AUTHENTICATE) {
     bootloader_event_authenication_t *auth = args;
     auth_token_t input;
@@ -146,6 +153,14 @@ int boot_handle_auth_event(int event, void *args) {
     return 0;
   }
 
+  if (event == BOOTLOADER_EVENT_GET_PUBLIC_KEY) {
+    bootloader_public_key_t *key = args;
+    memcpy(key, get_public_key, sizeof(bootloader_public_key_t));
+    return 0;
+  }
+#endif
+
+#if CONFIG_BOOT_IS_AES_CRYPTO
   if (event == BOOTLOADER_EVENT_ENCRYPT) {
     bootloader_event_crypto_t *crypto = args;
     const int crypto_result = auth_pure_code_encrypt_decrypt(
@@ -159,6 +174,7 @@ int boot_handle_auth_event(int event, void *args) {
       crypto->iv, crypto->plain, crypto->cipher, crypto->nbyte, AUTH_PURE_CODE_IS_DECRYPT);
     return crypto_result;
   }
+#endif
 
   return 0;
 }

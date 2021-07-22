@@ -18,6 +18,8 @@
 
 #include "sos/link/types.h"
 
+#include "bootloader.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -41,26 +43,6 @@ enum {
   AUTH_PUBLIC_KEY_TYPE_DEVICE_UNIQUE,
   AUTH_PUBLIC_KEY_TYPE_OTHER
 };
-
-#define AUTH_PUBLIC_KEY_VERSION 0x0001
-
-typedef struct MCU_PACK {
-  // zero terminated string
-  u16 version;
-  u16 type;
-  char id[AUTH_ID_SIZE + 1];
-  u8 public_key[128];
-  // key is signed by another key for authenticity
-  char signature_id[AUTH_ID_SIZE + 1];
-  u8 signature[64];
-} auth_public_key_t;
-
-typedef struct MCU_PACK {
-  // zero terminated string
-  char name[AUTH_ID_SIZE + 1];
-  u32 signature;
-  auth_public_key_t key;
-} auth_hardware_key_t;
 
 #define I_AUTH_GETVERSION _IOCTL(AUTH_IOC_CHAR, 0)
 
@@ -145,6 +127,11 @@ typedef struct MCU_PACK {
  *
  */
 #define I_AUTH_FINISH _IOCTLRW(AUTH_IOC_CHAR, 2, auth_token_t)
+
+
+typedef bootloader_signature_t auth_signature_t;
+
+#define I_AUTH_GET_PUBLIC_KEY _IOCTLR(AUTH_IOC_CHAR, 3, auth_signature_t)
 
 // this is how the pure code private key gets compiled
 // this will be modified with the actual secret key
