@@ -139,6 +139,58 @@ int link_resetbootloader(link_transport_mdriver_t *driver) {
   return reset_device(driver, 1);
 }
 
+int link_verify_signature(
+  link_transport_mdriver_t *driver,
+  const bootloader_attr_t *attr,
+  const bootloader_signature_t *signature) {
+  if (attr->version < 0x400) {
+    return 0;
+  }
+
+  bootloader_signature_t tmp = *signature;
+  return link_ioctl_delay(
+    driver, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_VERIFY_SIGNATURE, &tmp, 0, 0);
+}
+
+int link_get_public_key(
+  link_transport_mdriver_t *driver,
+  const bootloader_attr_t *attr,
+  u8 *public_key,
+  size_t public_key_size) {
+  if (attr->version < 0x400) {
+    printf("key is not supported\n");
+    return 0;
+  }
+
+  if (public_key_size != 64) {
+    printf("bad key size requested\n");
+    return -1;
+  }
+
+  bootloader_public_key_t key = {};
+  if (
+    link_ioctl_delay(
+      driver, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_GET_PUBLIC_KEY, &key, 0, 0)
+    < 0) {
+    printf("failed to get the key\n");
+    return -2;
+  }
+
+  memcpy(public_key, key.data, sizeof(key.data));
+  return 0;
+}
+
+int link_is_signature_required(
+  link_transport_mdriver_t *driver,
+  const bootloader_attr_t *attr) {
+  if (attr->version < 0x400) {
+    return 0;
+  }
+
+  return link_ioctl_delay(
+    driver, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_IS_SIGNATURE_REQUIRED, NULL, 0, 0);
+}
+
 int link_eraseflash(link_transport_mdriver_t *driver) {
   if (
     link_ioctl_delay(driver, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_ERASE, NULL, 0, 0)

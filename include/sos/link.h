@@ -135,6 +135,21 @@ int link_bootloader_attr_legacy(
 int link_readserialno(link_transport_mdriver_t *driver, char *serialno, int len);
 int link_reset(link_transport_mdriver_t *driver);
 
+int link_verify_signature(
+  link_transport_mdriver_t *driver,
+  const bootloader_attr_t *attr,
+  const bootloader_signature_t *signature);
+
+int link_get_public_key(
+  link_transport_mdriver_t *driver,
+  const bootloader_attr_t *attr,
+  u8 *public_key,
+  size_t public_key_size);
+
+int link_is_signature_required(
+  link_transport_mdriver_t *driver,
+  const bootloader_attr_t *attr);
+
 int link_resetbootloader(link_transport_mdriver_t *driver);
 int link_readflash(link_transport_mdriver_t *driver, int addr, void *buf, int nbyte);
 int link_writeflash(

@@ -2,6 +2,11 @@
 
 ## New Features
 
+- Bootloader version bumped to `0x400` which handles new requests
+  - `I_BOOTLOADER_IS_SIGNATURE_REQUIRED`
+  - `I_BOOTLOADER_GET_PUBLIC_KEY`
+  - `I_BOOTLOADER_VERIFY_SIGNATURE`
+- `link` functions added for bootloader signature and verification
 - `CONFIG_BOOT_IS_VERIFY_SIGNATURE` is used in the user `sos_config.h` file to turn signature verification on and off
   - User must provide api's for requests: `CRYPT_SHA256_ROOT_API_REQUEST` and `CRYPT_ECC_ROOT_API_REQUEST` (just set key and verify)
 - Bootloader can authenticate with a secret key and verify an image with a public key
