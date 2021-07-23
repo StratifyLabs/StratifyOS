@@ -28,6 +28,7 @@ static void svcall_read(void *args) MCU_ROOT_CODE;
 static void svcall_close(void *args) MCU_ROOT_CODE;
 static int readdir_rootdir(const void *cfg, int loc, struct dirent *entry);
 
+
 static int analyze_path(const char *path, const char **name, int *mem_type) {
   int elements;
 
@@ -589,8 +590,6 @@ void svcall_ioctl(void *args) {
 
   sos_config.mcu.reset_watchdog_timer();
 
-  sos_debug_printf("IOCTL 0x%08X 0x%08x\n", I_APPFS_GET_PUBLIC_KEY, request);
-
   // check permissions on this device - IOCTL needs read/write access
   if (sysfs_is_rw_ok(dev->mode, dev->uid, SYSFS_GROUP) == 0) {
     a->result = SYSFS_SET_RETURN(EPERM);
@@ -618,6 +617,7 @@ void svcall_ioctl(void *args) {
       sos_config.cache.invalidate_instruction();
     }
     break;
+
   case I_APPFS_IS_SIGNATURE_REQUIRED:
 #if CONFIG_APPFS_IS_VERIFY_SIGNATURE
     a->result = 1;
@@ -625,10 +625,12 @@ void svcall_ioctl(void *args) {
     a->result = 0;
 #endif
     break;
+
 #if CONFIG_APPFS_IS_VERIFY_SIGNATURE
   case I_APPFS_VERIFY_SIGNATURE: {
     u8 hash[32];
 
+    sos_debug_printf("verify signature\n");
     appfs_verify_signature_t *verify_signature = ctl;
     appfs_public_key_t public_key;
 
@@ -640,32 +642,42 @@ void svcall_ioctl(void *args) {
     h->type.install.ecc_api->dsa_set_key_pair(
       h->type.install.ecc_context, public_key.value, sizeof(public_key), NULL, 0);
 
+    appfs_file_t *file = (appfs_file_t *)h->type.install.first_page.buffer;
+
     if (h->type.install.ecc_api->dsa_verify(
           h->type.install.ecc_context, hash, sizeof(hash), verify_signature->data,
           sizeof(verify_signature->data))) {
 
+
       // adjust the permissions to match the key
-      appfs_file_t *file = (appfs_file_t *)h->type.install.first_page.buffer;
       // only allow flags if the key allows them
       file->exec.o_flags &= ~(public_key.o_flags);
-
-      const int result =
-        appfs_util_root_mem_write_page(dev, h, &h->type.install.first_page);
-      if (result < 0) {
-        a->result = result;
-        return;
-      }
-
       a->result = 0;
+
     } else {
+      //mark as non-executable
+      file->exec.signature = ~APPFS_CREATE_SIGNATURE;
+      file->exec.o_flags &= ~(APPFS_FLAG_IS_AUTHENTICATED | APPFS_FLAG_IS_STARTUP);
+      file->hdr.mode = 0444; //read only
+
       a->result = SYSFS_SET_RETURN(EPERM);
+
     }
+
+    const int result =
+      appfs_util_root_mem_write_page(dev, h, &h->type.install.first_page);
+    if (result < 0) {
+      sos_debug_printf("Failed to write first page\n");
+      a->result = result;
+      return;
+    }
+
 
   } break;
 
   case I_APPFS_GET_PUBLIC_KEY: {
-    appfs_public_key_t * public_key = ctl;
-    if( sos_config.sys.get_public_key(public_key->index, public_key) == 0 ){
+    appfs_public_key_t *public_key = ctl;
+    if (sos_config.sys.get_public_key(public_key->index, public_key) == 0) {
       a->result = 0;
     } else {
       a->result = SYSFS_SET_RETURN(EINVAL);

@@ -681,6 +681,7 @@ int appfs_util_root_writeinstall(
 #if CONFIG_APPFS_IS_VERIFY_SIGNATURE
     // if verifying the signature, the first page is cached
     // until the signature is verified
+    memcpy(attr->buffer, &dest, attr->nbyte);
     h->type.install.first_page = *attr;
     return attr->nbyte;
 #endif
