@@ -589,6 +589,8 @@ void svcall_ioctl(void *args) {
 
   sos_config.mcu.reset_watchdog_timer();
 
+  sos_debug_printf("IOCTL 0x%08X 0x%08x\n", I_APPFS_GET_PUBLIC_KEY, request);
+
   // check permissions on this device - IOCTL needs read/write access
   if (sysfs_is_rw_ok(dev->mode, dev->uid, SYSFS_GROUP) == 0) {
     a->result = SYSFS_SET_RETURN(EPERM);
@@ -657,6 +659,16 @@ void svcall_ioctl(void *args) {
       a->result = 0;
     } else {
       a->result = SYSFS_SET_RETURN(EPERM);
+    }
+
+  } break;
+
+  case I_APPFS_GET_PUBLIC_KEY: {
+    appfs_public_key_t * public_key = ctl;
+    if( sos_config.sys.get_public_key(public_key->index, public_key) == 0 ){
+      a->result = 0;
+    } else {
+      a->result = SYSFS_SET_RETURN(EINVAL);
     }
 
   } break;
