@@ -9,6 +9,7 @@
 #include "dev/bootloader.h"
 #include "dev/pio.h"
 #include "fs/devfs.h"
+#include "dev/appfs.h"
 #include "trace.h"
 
 typedef struct MCU_PACK {
@@ -141,6 +142,9 @@ typedef struct MCU_PACK {
   int (*kernel_request)(int request, void *data);
   // this is how "shared" libraries are implemented -- see STM32 example
   const void *(*kernel_request_api)(u32 request);
+  //a function to provide the requested application key
+  //This is run in root mode
+  int (*get_public_key)(u32 index, appfs_public_key_t * dest);
 } sos_sys_config_t;
 
 /*
@@ -238,6 +242,7 @@ typedef struct MCU_PACK {
   int (*flash_write_page)(const devfs_handle_t *handle, void *ctl);
   link_transport_driver_t *link_transport_driver;
 } sos_boot_config_t;
+
 
 typedef struct MCU_PACK {
   sos_sys_config_t sys;

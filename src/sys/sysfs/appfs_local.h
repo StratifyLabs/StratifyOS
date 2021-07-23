@@ -22,6 +22,13 @@ typedef struct {
   u32 data_size;
   u32 rewrite_mask;
   u32 kernel_symbols_total;
+#if CONFIG_APPFS_IS_VERIFY_SIGNATURE
+  void * sha256_context;
+  void * ecc_context;
+  const crypt_ecc_api_t * ecc_api;
+  const crypt_hash_api_t * sha256_api;
+  appfs_installattr_t first_page;
+#endif
 } appfs_util_handle_t;
 
 #define APPFS_MEMPAGETYPE_FREE 0
@@ -112,6 +119,10 @@ int appfs_util_root_writeinstall(
   appfs_installattr_t *attr) MCU_ROOT_CODE;
 int appfs_util_root_create(
   const devfs_device_t *device,
+  appfs_handle_t *h,
+  appfs_installattr_t *attr) MCU_ROOT_CODE;
+int appfs_util_root_mem_write_page(
+  const devfs_device_t *dev,
   appfs_handle_t *h,
   appfs_installattr_t *attr) MCU_ROOT_CODE;
 int appfs_util_root_free_ram(const devfs_device_t *device, appfs_handle_t *h)

@@ -371,8 +371,10 @@ int appfs_util_root_reclaim_ram(const devfs_device_t *dev, appfs_handle_t *h) {
   return 0;
 }
 
-static int
-mem_write_page(const devfs_device_t *dev, appfs_handle_t *h, appfs_installattr_t *attr) {
+int appfs_util_root_mem_write_page(
+  const devfs_device_t *dev,
+  appfs_handle_t *h,
+  appfs_installattr_t *attr) {
   // now write the buffer
   mem_writepage_t write_page;
 
@@ -469,7 +471,7 @@ int appfs_util_root_create(
   }
 
   // now write the buffer
-  return mem_write_page(dev, h, attr);
+  return appfs_util_root_mem_write_page(dev, h, attr);
 }
 
 int appfs_util_root_writeinstall(
@@ -537,16 +539,10 @@ int appfs_util_root_writeinstall(
     }
 
     // check the options
-    int type;
-    if ((src.file->exec.o_flags) & APPFS_FLAG_IS_FLASH) {
-      // This should be installed in flash
-      type = MEM_FLAG_IS_FLASH;
-    } else {
-      // This should be install in RAM
-      type = MEM_FLAG_IS_RAM;
-    }
+    const int type = ((src.file->exec.o_flags) & APPFS_FLAG_IS_FLASH) ? MEM_FLAG_IS_FLASH
+                                                                      : MEM_FLAG_IS_RAM;
 
-    int code_size =
+    const int code_size =
       src.file->exec.code_size + src.file->exec.data_size; // code plus initialized data
     int ram_size = src.file->exec.ram_size;
     u32 protectable_size;
@@ -682,6 +678,13 @@ int appfs_util_root_writeinstall(
       }
     }
 
+#if CONFIG_APPFS_IS_VERIFY_SIGNATURE
+    // if verifying the signature, the first page is cached
+    // until the signature is verified
+    h->type.install.first_page = *attr;
+    return attr->nbyte;
+#endif
+
   } else {
 
     if ((attr->loc & 0x03)) {
@@ -703,7 +706,7 @@ int appfs_util_root_writeinstall(
   memcpy(attr->buffer, &dest, attr->nbyte);
 
   // now write buffer
-  return mem_write_page(dev, h, attr);
+  return appfs_util_root_mem_write_page(dev, h, attr);
 }
 
 int get_flash_page_type(const devfs_device_t *dev, u32 address, u32 size) {

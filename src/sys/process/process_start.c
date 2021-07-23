@@ -62,7 +62,7 @@ int process_start(const char *path_arg, char *const envp[]) {
     return -1;
   }
 
-  len = strlen(path_arg);
+  len = strnlen(path_arg, ARG_MAX);
 
   if (access(path, X_OK) < 0) {
     sos_debug_log_warning(SOS_DEBUG_SYS, "no exec access:%s", path);
@@ -120,18 +120,18 @@ int process_start(const char *path_arg, char *const envp[]) {
     sos_debug_log_error(SOS_DEBUG_SYS, "couldn't alloc path argument in shared mem");
     return -1;
   }
-  strcpy(process_path, path_arg);
+  strncpy(process_path, path_arg, len);
 
   sos_debug_log_info(SOS_DEBUG_SYS, "process start: execute %s", process_path);
 
   int parent_id = task_get_current();
-  int is_authenticated = 0;
   u32 options = startup.exec.o_flags;
 
   if (options & APPFS_FLAG_IS_ORPHAN) {
     parent_id = 0;
   }
 
+  int is_authenticated = 0;
   if (options & APPFS_FLAG_IS_AUTHENTICATED) {
     is_authenticated = 1;
   }

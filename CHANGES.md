@@ -2,6 +2,13 @@
 
 ## New Features
 
+- Appfs updates
+  - Add support for `I_APPFS_GETVERSION` -- returns 0x400
+  - Add `I_APPFS_IS_SIGNATURE_REQUIRED` -- returns 1 if signature is required, 0 otherwise
+  - Add `I_APPFS_VERIFY_SIGNATURE` to send the signature of the installed image
+    - The signature is verified using the devices public keys and appropriate limitations are imposed on the installed application
+- Add `get_public_key()` to `sos_sys_config_t` to allow the system to provide public keys (can be NULL)
+- Add mechanisms to allow the appfs to have a list of allowed public keys
 - `/dev/auth` can provide the public key from the bootloader using `I_AUTH_GET_PUBLIC_KEY`
 - Bootloader version bumped to `0x400` which handles new requests
   - `I_BOOTLOADER_IS_SIGNATURE_REQUIRED`

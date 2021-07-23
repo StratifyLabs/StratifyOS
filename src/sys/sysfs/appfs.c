@@ -213,6 +213,14 @@ int appfs_open(const void *cfg, void **handle, const char *path, int flags, int 
       ret = SYSFS_SET_RETURN(EINVAL);
     }
     h->is_install = 1;
+#if CONFIG_APPFS_IS_VERIFY_SIGNATURE
+    h->type.install.ecc_api = sos_config.sys.kernel_request_api(CRYPT_ECC_API_REQUEST);
+    h->type.install.sha256_api =
+      sos_config.sys.kernel_request_api(CRYPT_SHA256_API_REQUEST);
+    h->type.install.ecc_api->init(&h->type.install.ecc_context);
+    h->type.install.sha256_api->init(&h->type.install.sha256_context);
+    h->type.install.sha256_api->start(h->type.install.sha256_context);
+#endif
     break;
 
   case ANALYZE_PATH_RAM:
@@ -315,7 +323,6 @@ int appfs_unlink(const void *cfg, const char *path) {
 
     cortexm_svcall(appfs_util_svcall_erase_pages, &erase_pages_args);
 
-
   } else {
     u32 rasr, rbar;
     ram.page = get_pageinfo_args.page_info.num;
@@ -407,33 +414,22 @@ int appfs_stat(const void *cfg, const char *path, struct stat *st) {
     return SYSFS_SET_RETURN(ENOENT);
   }
 
+  *st = (struct stat){};
   switch (path_type) {
   case ANALYZE_PATH_ROOT:
-    st->st_size = 0;
     st->st_blocks = 1;
-    st->st_uid = 0;
-    st->st_gid = 0;
     st->st_mode = S_IFDIR | 0777;
     return 0;
   case ANALYZE_PATH_INSTALL:
-    st->st_size = 0;
     st->st_blocks = 1;
-    st->st_uid = 0;
-    st->st_gid = 0;
     handle.is_install = true;
     break;
   case ANALYZE_PATH_FLASH_DIR:
-    st->st_size = 0;
     st->st_blocks = 1;
-    st->st_uid = 0;
-    st->st_gid = 0;
     st->st_mode = S_IFDIR | 0777;
     return 0;
   case ANALYZE_PATH_RAM_DIR:
-    st->st_size = 0;
     st->st_blocks = 1;
-    st->st_uid = 0;
-    st->st_gid = 0;
     st->st_mode = S_IFDIR | 0777;
     return 0;
 
@@ -555,6 +551,10 @@ int appfs_close(const void *cfg, void **handle) {
   if (h->is_install) {
     cortexm_svcall(svcall_close, h);
   }
+#if CONFIG_APPFS_IS_VERIFY_SIGNATURE
+  h->type.install.ecc_api->deinit(&h->type.install.ecc_context);
+  h->type.install.sha256_api->deinit(&h->type.install.sha256_context);
+#endif
   free(h);
   h = NULL;
   return 0;
@@ -599,15 +599,69 @@ void svcall_ioctl(void *args) {
   attr = ctl;
   switch (request) {
 
+  case I_APPFS_GETVERSION:
+    a->result = APPFS_DEV_VERSION;
+    break;
+
   // INSTALL and CREATE only with with the special .install file
   case I_APPFS_INSTALL:
     if (!h->is_install) {
       a->result = SYSFS_SET_RETURN(ENOTSUP);
     } else {
+#if CONFIG_APPFS_IS_VERIFY_SIGNATURE
+      h->type.install.sha256_api->update(
+        h->type.install.sha256_context, attr->buffer, attr->nbyte);
+#endif
       a->result = appfs_util_root_writeinstall(a->cfg, h, attr);
       sos_config.cache.invalidate_instruction();
     }
     break;
+  case I_APPFS_IS_SIGNATURE_REQUIRED:
+#if CONFIG_APPFS_IS_VERIFY_SIGNATURE
+    a->result = 1;
+#else
+    a->result = 0;
+#endif
+    break;
+#if CONFIG_APPFS_IS_VERIFY_SIGNATURE
+  case I_APPFS_VERIFY_SIGNATURE: {
+    u8 hash[32];
+
+    appfs_verify_signature_t *verify_signature = ctl;
+    appfs_public_key_t public_key;
+
+    h->type.install.sha256_api->finish(
+      h->type.install.sha256_context, hash, sizeof(hash));
+
+    sos_config.sys.get_public_key(verify_signature->public_key_index, &public_key);
+
+    h->type.install.ecc_api->dsa_set_key_pair(
+      h->type.install.ecc_context, public_key.value, sizeof(public_key), NULL, 0);
+
+    if (h->type.install.ecc_api->dsa_verify(
+          h->type.install.ecc_context, hash, sizeof(hash), verify_signature->data,
+          sizeof(verify_signature->data))) {
+
+      // adjust the permissions to match the key
+      appfs_file_t *file = (appfs_file_t *)h->type.install.first_page.buffer;
+      // only allow flags if the key allows them
+      file->exec.o_flags &= ~(public_key.o_flags);
+
+      const int result =
+        appfs_util_root_mem_write_page(dev, h, &h->type.install.first_page);
+      if (result < 0) {
+        a->result = result;
+        return;
+      }
+
+      a->result = 0;
+    } else {
+      a->result = SYSFS_SET_RETURN(EPERM);
+    }
+
+  } break;
+
+#endif
 
   case I_APPFS_CREATE:
     if (!h->is_install) {

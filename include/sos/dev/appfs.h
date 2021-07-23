@@ -11,6 +11,8 @@
 #define APPFS_RAM_USAGE_WORDS(x) (((x) * 2 + 31) / 32)
 #define APPFS_IOC_IDENT_CHAR 'a'
 
+#define APPFS_DEV_VERSION 0x400
+
 enum appfs_flags {
   APPFS_FLAG_IS_FLASH /*! Application is stored in flash */ = (1 << 0),
   APPFS_FLAG_IS_STARTUP /*! Application stored in flash runs at startup */ = (1 << 1),
@@ -60,6 +62,18 @@ typedef struct MCU_PACK {
   u32 resd[8];
 } appfs_info_t;
 
+typedef struct MCU_PACK {
+  u32 index;
+  u8 id[APPFS_ID_MAX + 1];
+  u8 value[64];
+  u32 o_flags;
+} appfs_public_key_t;
+
+typedef struct MCU_PACK {
+  u32 public_key_index;
+  u8 data[64];
+} appfs_verify_signature_t;
+
 #define I_APPFS_GETVERSION _IOCTL(APPFS_IOC_IDENT_CHAR, I_MCU_GETVERSION)
 
 // Install an executable in RAM or Flash
@@ -70,6 +84,9 @@ typedef struct MCU_PACK {
 #define I_APPFS_FREE_RAM _IOCTL(APPFS_IOC_IDENT_CHAR, 3)
 #define I_APPFS_RECLAIM_RAM _IOCTL(APPFS_IOC_IDENT_CHAR, 4)
 #define I_APPFS_GETINFO _IOCTLR(APPFS_IOC_IDENT_CHAR, 5, appfs_info_t)
+#define I_APPFS_GET_PUBLIC_KEY _IOCTLRW(APPFS_IOC_IDENT_CHAR, 6, appfs_public_key_t)
+#define I_APPFS_VERIFY_SIGNATURE _IOCTLRW(APPFS_IOC_IDENT_CHAR, 7, appfs_verify_signature_t)
+#define I_APPFS_IS_SIGNATURE_REQUIRED _IOCTL(APPFS_IOC_IDENT_CHAR, 8)
 
 #define APPFS_CREATE_SIGNATURE 0x12345678
 
