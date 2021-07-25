@@ -11,6 +11,7 @@
 #include "sos/dev/adc.h"
 #include "sos/dev/appfs.h"
 #include "sos/dev/bootloader.h"
+#include "sos/dev/auth.h"
 #include "sos/dev/core.h"
 #include "sos/dev/dac.h"
 #include "sos/dev/eint.h"
@@ -138,7 +139,7 @@ int link_reset(link_transport_mdriver_t *driver);
 int link_verify_signature(
   link_transport_mdriver_t *driver,
   const bootloader_attr_t *attr,
-  const bootloader_signature_t *signature);
+  const auth_signature_t *signature);
 
 int link_get_public_key(
   link_transport_mdriver_t *driver,

@@ -321,7 +321,7 @@ void boot_link_cmd_ioctl(link_transport_driver_t *driver, link_data_t *args) {
     break;
 
   case I_BOOTLOADER_GET_PUBLIC_KEY: {
-    bootloader_public_key_t key;
+    auth_public_key_t key;
 #if CONFIG_BOOT_IS_VERIFY_SIGNATURE
     memcpy(key.data, get_public_key(), sizeof(key.data));
 #else
@@ -334,7 +334,7 @@ void boot_link_cmd_ioctl(link_transport_driver_t *driver, link_data_t *args) {
 
   case I_BOOTLOADER_VERIFY_SIGNATURE: {
 #if CONFIG_BOOT_IS_VERIFY_SIGNATURE
-    bootloader_signature_t signature;
+    auth_signature_t signature;
     err = link_transport_slaveread(driver, signature.data, size, NULL, NULL);
     if (err < 0) {
       dstr("failed to receive signature\n");

@@ -129,7 +129,24 @@ enum {
 #define I_AUTH_FINISH _IOCTLRW(AUTH_IOC_CHAR, 2, auth_token_t)
 
 
-typedef bootloader_public_key_t auth_public_key_t;
+typedef struct MCU_PACK {
+  u8 data[64];
+} auth_signature_t;
+
+typedef struct MCU_PACK {
+  u8 data[64];
+} auth_public_key_t;
+
+#define AUTH_SIGNATURE_MARKER_START (0xFF00FF00)
+#define AUTH_SIGNATURE_MARKER_NEXT (0x1FBA2B3D)
+#define AUTH_SIGNATURE_MARKER_SIZE (0xB63A0000)
+
+typedef struct {
+  u32 start;
+  u32 next;
+  u32 size;
+  auth_signature_t signature;
+} auth_signature_marker_t;
 
 #define I_AUTH_GET_PUBLIC_KEY _IOCTLR(AUTH_IOC_CHAR, 3, auth_public_key_t)
 

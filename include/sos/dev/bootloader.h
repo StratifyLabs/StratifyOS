@@ -19,8 +19,11 @@
 #ifndef SOS_DEV_BOOTLOADER_H_
 #define SOS_DEV_BOOTLOADER_H_
 
-#include "sos/link/transport.h"
 #include <sdk/types.h>
+
+#include "sos/link/transport.h"
+
+#include "auth.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -68,14 +71,6 @@ typedef struct MCU_PACK {
   u32 nbyte /*! \brief The number of bytes to write */;
   u8 buf[BOOTLOADER_WRITEPAGESIZE] /*! \brief A buffer for writing to the flash */;
 } bootloader_writepage_t;
-
-typedef struct MCU_PACK {
-  u8 data[64];
-} bootloader_signature_t;
-
-typedef struct MCU_PACK {
-  u8 data[64];
-} bootloader_public_key_t;
 
 typedef struct {
   u8 * result;
@@ -163,10 +158,10 @@ extern void boot_invoke_bootloader(void *args);
 #define I_BOOTLOADER_WRITEPAGE                                                           \
   _IOCTLW(BOOTLOADER_IOC_IDENT_CHAR, 3, bootloader_writepage_t)
 
-#define I_BOOTLOADER_VERIFY_SIGNATURE _IOCTLW(BOOTLOADER_IOC_IDENT_CHAR, 4, bootloader_signature_t)
+#define I_BOOTLOADER_VERIFY_SIGNATURE _IOCTLW(BOOTLOADER_IOC_IDENT_CHAR, 4, auth_signature_t)
 
 #define I_BOOTLOADER_IS_SIGNATURE_REQUIRED _IOCTL(BOOTLOADER_IOC_IDENT_CHAR, 5)
-#define I_BOOTLOADER_GET_PUBLIC_KEY _IOCTLR(BOOTLOADER_IOC_IDENT_CHAR, 6, bootloader_public_key_t)
+#define I_BOOTLOADER_GET_PUBLIC_KEY _IOCTLR(BOOTLOADER_IOC_IDENT_CHAR, 6, auth_public_key_t)
 
 #define I_BOOTLOADER_TOTAL 4
 
