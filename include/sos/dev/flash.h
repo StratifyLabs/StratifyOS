@@ -25,11 +25,13 @@
 
 #include <sdk/types.h>
 
+#include "auth.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define FLASH_VERSION (0x030000)
+#define FLASH_VERSION (0x040000)
 #define FLASH_IOC_IDENT_CHAR 'f'
 
 #ifndef FLASH_MIN_WRITE_SIZE
@@ -61,6 +63,11 @@ typedef struct {
   u32 o_flags;
   u32 resd[8];
 } flash_attr_t;
+
+typedef struct {
+  u32 start;
+  u32 size;
+} flash_os_info_t;
 
 #define I_FLASH_GETVERSION _IOCTL(FLASH_IOC_IDENT_CHAR, I_MCU_GETVERSION)
 #define I_FLASH_GETINFO _IOCTLR(FLASH_IOC_IDENT_CHAR, I_MCU_GETINFO, flash_info_t)
@@ -169,6 +176,12 @@ typedef struct MCU_PACK {
  */
 #define I_FLASH_WRITEPAGE                                                                \
   _IOCTLW(FLASH_IOC_IDENT_CHAR, I_MCU_TOTAL + 5, flash_writepage_t)
+
+// added at version 0x040000
+#define I_FLASH_GETOSINFO _IOCTLR(FLASH_IOC_IDENT_CHAR, I_MCU_TOTAL + 6, flash_os_info_t)
+#define I_FLASH_IS_SIGNATURE_REQUIRED _IOCTL(FLASH_IOC_IDENT_CHAR, I_MCU_TOTAL + 7)
+#define I_FLASH_VERIFY_SIGNATURE                                                         \
+  _IOCTLW(FLASH_IOC_IDENT_CHAR, I_MCU_TOTAL + 8, auth_signature_t)
 
 #define I_FLASH_TOTAL 6
 

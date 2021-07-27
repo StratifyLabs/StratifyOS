@@ -20,6 +20,7 @@ if( ${SOS_BUILD_CONFIG} STREQUAL arm )
 		#led_pwm.c
 		null.c
 		random.c
+		auth_flash.c
 		drive_cfi_local.h
 		drive_cfi_spi.c
 		drive_cfi_qspi.c

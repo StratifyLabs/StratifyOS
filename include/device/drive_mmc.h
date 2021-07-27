@@ -28,10 +28,5 @@ int drive_mmc_read(const devfs_handle_t *handle, devfs_async_t *rop);
 int drive_mmc_write(const devfs_handle_t *handle, devfs_async_t *wop);
 int drive_mmc_close(const devfs_handle_t *handle);
 
-int drive_mmc_dma_open(const devfs_handle_t *handle);
-int drive_mmc_dma_ioctl(const devfs_handle_t *handle, int request, void *ctl);
-int drive_mmc_dma_read(const devfs_handle_t *handle, devfs_async_t *rop);
-int drive_mmc_dma_write(const devfs_handle_t *handle, devfs_async_t *wop);
-int drive_mmc_dma_close(const devfs_handle_t *handle);
 
 #endif /* DEVICE_MMC_H_ */

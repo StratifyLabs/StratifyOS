@@ -90,6 +90,10 @@ extern cortexm_svcall_t cortexm_svcall_validation MCU_SYS_MEM;
 #define CORTEXM_SVCALL_ENTER() (cortexm_svcall_validation = (cortexm_svcall_t)__FUNCTION__)
 #define CORTEXM_DECLARE_LINK_REGISTER(x) register long x asm("lr")
 
+//can be linked to by sys or boot to handle bootloader auth events
+//for either minimal bootloader mode or when using a full
+//Stratify OS instance as the bootloader
+int cortexm_auth_handle_event(int event, void *args);
 
 #endif
 
