@@ -37,23 +37,27 @@ int auth_flash_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
   case I_FLASH_IS_SIGNATURE_REQUIRED:
     return 1;
 
-  case I_FLASH_GETSTART:
-    return config->start_location;
+  case I_FLASH_GETOSINFO:{
+    flash_os_info_t * info = ctl;
+    info->start = config->os_start;
+    info->size = config->os_size;
+    return 0;
+  }
 
   case I_FLASH_WRITEPAGE: {
     flash_writepage_t *write_page = ctl;
 
-    if (write_page->addr < config->start_location) {
+    if (write_page->addr < config->os_start) {
       return SYSFS_SET_RETURN(EPERM);
     }
 
-    if (write_page->addr + write_page->nbyte > config->start_location + config->size) {
+    if (write_page->addr + write_page->nbyte > config->os_start + config->os_size) {
       return SYSFS_SET_RETURN(EPERM);
     }
 
-    if (write_page->addr == config->start_location) {
+    if (write_page->addr == config->os_start) {
 
-      if (write_page->nbyte < config->start_location_size) {
+      if (write_page->nbyte < config->os_size) {
         return SYSFS_SET_RETURN(EPERM);
       }
 

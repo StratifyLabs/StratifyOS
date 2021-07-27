@@ -14,9 +14,8 @@ typedef struct {
 
 typedef struct {
   devfs_device_t device;
-  u32 start_location;
-  u32 start_location_size;
-  u32 size;
+  u32 os_start;
+  u32 os_size;
 } auth_flash_config_t;
 
 

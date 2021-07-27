@@ -6,8 +6,8 @@
  * \ingroup IFACE_DEV
  *
  * \details The flash memory software module allows the user code to read memory
- * in the flash program space.  Reading the flash is portable across all supported MCU's.  However,
- * writing the flash is dependent on the MCU page size.
+ * in the flash program space.  Reading the flash is portable across all supported MCU's.
+ * However, writing the flash is dependent on the MCU page size.
  *
  * This interface is typically only used with the bootloader.  The preferred way to access
  * the flash is using the \ref MEM interface.
@@ -22,7 +22,6 @@
 
 #ifndef SOS_DEV_FLASH_H_
 #define SOS_DEV_FLASH_H_
-
 
 #include <sdk/types.h>
 
@@ -54,17 +53,21 @@ extern "C" {
 #define FLASH_MAX_WRITE_SIZE 1024
 #endif
 
-
 typedef struct {
-	u32 o_flags;
-	u32 o_events;
-	u32 resd[8];
+  u32 o_flags;
+  u32 o_events;
+  u32 resd[8];
 } flash_info_t;
 
 typedef struct {
-	u32 o_flags;
-	u32 resd[8];
+  u32 o_flags;
+  u32 resd[8];
 } flash_attr_t;
+
+typedef struct {
+  u32 start;
+  u32 size;
+} flash_os_info_t;
 
 #define I_FLASH_GETVERSION _IOCTL(FLASH_IOC_IDENT_CHAR, I_MCU_GETVERSION)
 #define I_FLASH_GETINFO _IOCTLR(FLASH_IOC_IDENT_CHAR, I_MCU_GETINFO, flash_info_t)
@@ -130,9 +133,9 @@ typedef struct {
  * \details This data structure holds the details of a flash page.
  */
 typedef struct {
-	u32 page /*! \brief The page number */;
-	u32 addr /*! \brief The starting address */;
-	u32 size /*! \brief The page size */;
+  u32 page /*! \brief The page number */;
+  u32 addr /*! \brief The starting address */;
+  u32 size /*! \brief The page size */;
 } flash_pageinfo_t;
 
 /*! \brief Flash page write data using I_FLASH_WRITEPAGE
@@ -140,11 +143,10 @@ typedef struct {
  * using I_FLASH_WRITEPAGE.
  */
 typedef struct MCU_PACK {
-	u32 addr /*! The address to write to */;
-	u32 nbyte /*! The number of bytes to write */;
-	u8 buf[FLASH_MAX_WRITE_SIZE] /*! \brief A buffer for writing to the flash */;
+  u32 addr /*! The address to write to */;
+  u32 nbyte /*! The number of bytes to write */;
+  u8 buf[FLASH_MAX_WRITE_SIZE] /*! \brief A buffer for writing to the flash */;
 } flash_writepage_t;
-
 
 /*!  \brief See details below
  * \details This request gets the page number for the specified
@@ -158,7 +160,8 @@ typedef struct MCU_PACK {
  * \endcode
  * \hideinitializer
  */
-#define I_FLASH_GETPAGEINFO _IOCTLRW(FLASH_IOC_IDENT_CHAR, I_MCU_TOTAL + 4, flash_pageinfo_t)
+#define I_FLASH_GETPAGEINFO                                                              \
+  _IOCTLRW(FLASH_IOC_IDENT_CHAR, I_MCU_TOTAL + 4, flash_pageinfo_t)
 #define I_FLASH_GET_PAGEINFO I_FLASH_GETPAGEINFO
 
 /*! \brief See details below
@@ -171,13 +174,14 @@ typedef struct MCU_PACK {
  * ioctl(flash_fd, I_FLASH_WRITEPAGE, &pwrite);
  * \endcode
  */
-#define I_FLASH_WRITEPAGE _IOCTLW(FLASH_IOC_IDENT_CHAR, I_MCU_TOTAL + 5, flash_writepage_t)
+#define I_FLASH_WRITEPAGE                                                                \
+  _IOCTLW(FLASH_IOC_IDENT_CHAR, I_MCU_TOTAL + 5, flash_writepage_t)
 
-
-//added at version 0x040000
-#define I_FLASH_GETSTART _IOCTL(FLASH_IOC_IDENT_CHAR, I_MCU_TOTAL + 6)
+// added at version 0x040000
+#define I_FLASH_GETOSINFO _IOCTLR(FLASH_IOC_IDENT_CHAR, I_MCU_TOTAL + 6, flash_os_info_t)
 #define I_FLASH_IS_SIGNATURE_REQUIRED _IOCTL(FLASH_IOC_IDENT_CHAR, I_MCU_TOTAL + 7)
-#define I_FLASH_VERIFY_SIGNATURE _IOCTLW(FLASH_IOC_IDENT_CHAR, I_MCU_TOTAL + 8, auth_signature_t)
+#define I_FLASH_VERIFY_SIGNATURE                                                         \
+  _IOCTLW(FLASH_IOC_IDENT_CHAR, I_MCU_TOTAL + 8, auth_signature_t)
 
 #define I_FLASH_TOTAL 6
 
@@ -185,9 +189,6 @@ typedef struct MCU_PACK {
 }
 #endif
 
-
 #endif // SOS_DEV_FLASH_H_
 
 /*! @} */
-
-
