@@ -122,7 +122,7 @@ typedef struct {
  * Example:
  * \code
  * int page;
- * size = ioctl(flash_fd, I_FLASH_GET_PAGE);
+ * size = ioctl(flash_fd, I_FLASH_GETSIZE);
  * \endcode
  * \hideinitializer
  */
