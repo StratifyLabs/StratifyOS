@@ -1,7 +1,8 @@
 
 #include "sos/config.h"
-
 #include "device/auth_flash.h"
+
+#include "sos/debug.h"
 
 static const u8 *get_public_key() {
   return (const u8 *)((u32)sos_config.sys.secret_key_address & ~0x01);
@@ -47,6 +48,10 @@ int auth_flash_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
   case I_FLASH_WRITEPAGE: {
     flash_writepage_t *write_page = ctl;
 
+    if (write_page->nbyte > sizeof(write_page->buf)) {
+      return SYSFS_SET_RETURN(EINVAL);
+    }
+
     if (write_page->addr < config->os_start) {
       return SYSFS_SET_RETURN(EPERM);
     }
@@ -56,8 +61,9 @@ int auth_flash_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
     }
 
     if (write_page->addr == config->os_start) {
+      SOS_DEBUG_LINE_TRACE();
 
-      if (write_page->nbyte < config->os_size) {
+      if (write_page->nbyte < config->os_start_size) {
         return SYSFS_SET_RETURN(EPERM);
       }
 
@@ -69,8 +75,21 @@ int auth_flash_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
 
       sha_api->start(state->sha_context);
       sha_api->update(state->sha_context, write_page->buf, write_page->nbyte);
-
       state->first_page = *write_page;
+
+      //truncate the first page and write it
+      state->first_page.addr = write_page->addr + config->os_start_size;
+      state->first_page.nbyte = write_page->nbyte - config->os_start_size;
+      memcpy(state->first_page.buf, write_page->buf + config->os_start_size, state->first_page.nbyte);
+
+      const int write_result = config->device.driver.ioctl(&(config->device.handle), I_FLASH_WRITEPAGE, &state->first_page);
+      if( write_result < 0 ){
+        return write_result;
+      }
+
+      state->first_page.addr = write_page->addr;
+      state->first_page.nbyte = config->os_start_size;
+      memcpy(state->first_page.buf, write_page->buf, config->os_start_size);
 
       // pretend it was successful
       return write_page->nbyte;
@@ -88,6 +107,7 @@ int auth_flash_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
 
   case I_FLASH_VERIFY_SIGNATURE: {
     u8 hash[32];
+    SOS_DEBUG_LINE_TRACE();
     sha_api->finish(state->sha_context, hash, sizeof(hash));
     auth_signature_t *signature = ctl;
 
@@ -99,6 +119,8 @@ int auth_flash_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
     const int is_verified = ecc_api->dsa_verify(
       state->ecc_context, hash, sizeof(hash), signature->data, sizeof(signature->data));
 
+
+
     ecc_api->deinit(&state->ecc_context);
     sha_api->deinit(&state->sha_context);
 
@@ -106,9 +128,13 @@ int auth_flash_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
     state->sha_context = NULL;
 
     if (is_verified) {
+      SOS_DEBUG_LINE_TRACE();
       // write the first page
-      config->device.driver.ioctl(&(config->device.handle), request, &state->first_page);
+      sos_debug_printf("First page: %p:%ld\n", state->first_page.addr, state->first_page.nbyte);
+      config->device.driver.ioctl(&(config->device.handle), I_FLASH_WRITEPAGE, &state->first_page);
+      state->first_page = (flash_writepage_t){};
     } else {
+      SOS_DEBUG_LINE_TRACE();
       return SYSFS_SET_RETURN(EINVAL);
     }
 

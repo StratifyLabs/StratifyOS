@@ -6,6 +6,8 @@ extern "C" {
 #endif
 
 void sos_led_startup();
+void sos_led_boot_startup();
+void sos_led_flash(int count);
 void sos_led_svcall_enable(void *args);
 void sos_led_svcall_disable(void *args);
 void sos_led_svcall_error(void *args);

@@ -23,3 +23,13 @@ void sos_led_startup() {
     usleep(duty);
   }
 }
+
+void sos_led_boot_startup(){
+  for(int i = 0; i < 3; i++){
+    cortexm_svcall(sos_led_svcall_enable, 0);
+    usleep(100000);
+    cortexm_svcall(sos_led_svcall_disable, 0);
+    usleep(100000);
+  }
+}
+
