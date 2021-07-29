@@ -56,7 +56,6 @@ int task_init_mpu(void *system_memory, int system_memory_size) {
   int err;
 
   // Calculate the device specific memory protection regions
-  // mpu_dev_init();
 
   // disable all regions
   for (u32 i = 0; i < 16; i++) {
@@ -98,7 +97,7 @@ int task_init_mpu(void *system_memory, int system_memory_size) {
     sos_handle_event(SOS_EVENT_ROOT_FATAL, "system memory size < heap size");
   }
 
-  task_root_set_stackguard(0, system_memory + heap_size, system_memory_size - heap_size);
+  task_root_set_stackguard(0, ((u8*)system_memory) + heap_size, system_memory_size - heap_size);
 
   sos_handle_event(SOS_EVENT_ROOT_MPU_INITIALIZED, NULL);
   return 0;
