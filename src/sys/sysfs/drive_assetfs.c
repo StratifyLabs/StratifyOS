@@ -1,16 +1,17 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
-
-#include "sos/fs/drive_assetfs.h"
-#include "cortexm/cortexm.h"
-#include "dirent.h"
-#include "sos/debug.h"
-#include "sos/fs/sysfs.h"
-#include "sos/sos.h"
 #include <errno.h>
+#include <fcntl.h>
 #include <sdk/types.h>
 #include <string.h>
 #include <sys/stat.h>
+
+#include "cortexm/cortexm.h"
+#include "dirent.h"
+#include "sos/debug.h"
+#include "sos/fs/drive_assetfs.h"
+#include "sos/fs/sysfs.h"
+#include "sos/sos.h"
 
 #define INVALID_DIR_HANDLE ((void *)0)
 #define VALID_DIR_HANDLE ((void *)0x12345678)
@@ -252,7 +253,7 @@ int find_file(
 int get_directory_entry(const void *cfg, int loc, drive_assetfs_dirent_t *entry) {
   u32 count;
   int result = read_drive(cfg, 0, &count, sizeof(u32));
-  if( result < 0 ){
+  if (result < 0) {
     SYSFS_PROCESS_RETURN(result);
     return result;
   }
