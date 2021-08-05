@@ -1,8 +1,10 @@
 
-#include "sos/config.h"
 #include "device/auth_flash.h"
+#include "sos/config.h"
 
 #include "sos/debug.h"
+
+#define REQUIRE_SIGNATURE CONFIG_BOOT_IS_VERIFY_SIGNATURE
 
 static const u8 *get_public_key() {
   return (const u8 *)((u32)sos_config.sys.secret_key_address & ~0x01);
@@ -28,18 +30,21 @@ int auth_flash_write(const devfs_handle_t *handle, devfs_async_t *async) {
 int auth_flash_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
   DEVFS_DRIVER_DECLARE_CONFIG_STATE(auth_flash);
 
+#if REQUIRE_SIGNATURE
   const crypt_ecc_api_t *ecc_api =
     sos_config.sys.kernel_request_api(CRYPT_ECC_ROOT_API_REQUEST);
   const crypt_hash_api_t *sha_api =
     sos_config.sys.kernel_request_api(CRYPT_SHA256_ROOT_API_REQUEST);
+#endif
 
   switch (request) {
 
   case I_FLASH_IS_SIGNATURE_REQUIRED:
+    // if REQUIRE_SIGNATURE is 0, siganture is not checked
     return 1;
 
-  case I_FLASH_GETOSINFO:{
-    flash_os_info_t * info = ctl;
+  case I_FLASH_GETOSINFO: {
+    flash_os_info_t *info = ctl;
     info->start = config->os_start;
     info->size = config->os_size;
     return 0;
@@ -67,6 +72,7 @@ int auth_flash_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
       }
 
       // intercept the first page and start hashing
+#if REQUIRE_SIGNATURE
       state->ecc_context = state->ecc_context_buffer;
       ecc_api->init(&state->ecc_context);
       state->sha_context = state->sha_context_buffer;
@@ -74,15 +80,19 @@ int auth_flash_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
 
       sha_api->start(state->sha_context);
       sha_api->update(state->sha_context, write_page->buf, write_page->nbyte);
+#endif
       state->first_page = *write_page;
 
-      //truncate the first page and write it
+      // truncate the first page and write it
       state->first_page.addr = write_page->addr + config->os_start_size;
       state->first_page.nbyte = write_page->nbyte - config->os_start_size;
-      memcpy(state->first_page.buf, write_page->buf + config->os_start_size, state->first_page.nbyte);
+      memcpy(
+        state->first_page.buf, write_page->buf + config->os_start_size,
+        state->first_page.nbyte);
 
-      const int write_result = config->device.driver.ioctl(&(config->device.handle), I_FLASH_WRITEPAGE, &state->first_page);
-      if( write_result < 0 ){
+      const int write_result = config->device.driver.ioctl(
+        &(config->device.handle), I_FLASH_WRITEPAGE, &state->first_page);
+      if (write_result < 0) {
         return write_result;
       }
 
@@ -94,17 +104,20 @@ int auth_flash_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
       return write_page->nbyte;
     } else {
 
+#if REQUIRE_SIGNATURE
       if (state->ecc_context == NULL) {
         return SYSFS_SET_RETURN(EINVAL);
       }
 
       sha_api->update(state->sha_context, write_page->buf, write_page->nbyte);
+#endif
     }
 
     break;
   }
 
   case I_FLASH_VERIFY_SIGNATURE: {
+#if REQUIRE_SIGNATURE
     u8 hash[32];
     sha_api->finish(state->sha_context, hash, sizeof(hash));
     auth_signature_t *signature = ctl;
@@ -117,17 +130,20 @@ int auth_flash_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
     const int is_verified = ecc_api->dsa_verify(
       state->ecc_context, hash, sizeof(hash), signature->data, sizeof(signature->data));
 
-
-
     ecc_api->deinit(&state->ecc_context);
     sha_api->deinit(&state->sha_context);
 
     state->ecc_context = NULL;
     state->sha_context = NULL;
 
+#else
+    const int is_verified = 1;
+#endif
+
     if (is_verified) {
       // write the first page
-      config->device.driver.ioctl(&(config->device.handle), I_FLASH_WRITEPAGE, &state->first_page);
+      config->device.driver.ioctl(
+        &(config->device.handle), I_FLASH_WRITEPAGE, &state->first_page);
       state->first_page = (flash_writepage_t){};
     } else {
       return SYSFS_SET_RETURN(EINVAL);
