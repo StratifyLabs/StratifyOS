@@ -5,6 +5,7 @@
 #include <sdk/types.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 
 #include "sos/debug.h"
 #include "sos/fs/assetfs.h"

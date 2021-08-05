@@ -23,9 +23,12 @@ set(SOURCES
 	netif_eth.h
 	stream_ffifo.h
 	uartfifo.h
+	auth_flash.h
 	cfifo.h
-	drive_mmc.h	ffifo.h
-	led_pio.h	null.h
+	drive_mmc.h
+	ffifo.h
+	led_pio.h
+	null.h
 	switchboard.h
 	urandom.h
 	microchip/sst25vf.h

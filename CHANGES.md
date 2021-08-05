@@ -2,6 +2,7 @@
 
 ## New Features
 
+- Added `auth_flash` device for installing signed OS using a full instance bootloader
 - Appfs updates
   - Add support for `I_APPFS_GETVERSION` -- returns 0x400
   - Add `I_APPFS_IS_SIGNATURE_REQUIRED` -- returns 1 if signature is required, 0 otherwise

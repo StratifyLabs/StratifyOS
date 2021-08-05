@@ -26,6 +26,8 @@
 #include <stdbool.h>
 #include <sys/fcntl.h>
 
+#include <device/auth.h>
+
 #include "sos_config.h"
 
 #include "sos/symbols.h"

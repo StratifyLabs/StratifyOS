@@ -14,16 +14,14 @@ include(compiler_rt)
 include(newlib)
 
 #check for LWIP
-if(NOT STRATIFYOS_LWIP_PATH)
-	message(STATUS "LWIP path not provided -- check system for LWIP")
-	if(NOT EXISTS ${SOS_SDK_PATH}/arm-none-eabi/include/lwip/sockets.h)
-		message(STATUS "Bootstrapping sockets")
-		set(BOOTSTRAP_SOCKETS 1)
-	else()
-		message(STATUS "LWIP is installed")
-		set(BOOTSTRAP_SOCKETS 0)
-	endif()
+if(NOT DEFINED STRATIFYOS_LWIP_PATH)
+	message(STATUS "No LWIP, Bootstrapping Sockets")
+	set(BOOTSTRAP_SOCKETS 1)
+else()
+	message(STATUS "LWIP is installed")
+	set(BOOTSTRAP_SOCKETS 0)
 endif()
+
 
 if(NOT SOS_CONFIG_PATH)
 	message(FATAL_ERROR "SOS_CONFIG_PATH must provide directory to `sos_config.h`")
@@ -72,15 +70,15 @@ sos_sdk_add_subdirectory(DEVICE_SOURCELIST src/device)
 
 set(SYS_INCLUDE_DIRECTORIES
 	${CMAKE_CURRENT_SOURCE_DIR}/src
-	${CMAKE_CURRENT_SOURCE_DIR}/src/sys/auth/tinycrypt/lib/include
 	${CMAKE_CURRENT_SOURCE_DIR}/include
 	$<BUILD_INTERFACE:${SOS_CONFIG_PATH}>
 	)
 
 set(SYS_INCLUDE_INTERFACE_DIRECTORIES
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/posix>
-  )
+	$<BUILD_INTERFACE:${SOS_CONFIG_PATH}>
+	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/posix>
+	)
 
 set(LINK_TRANSPORT_INCLUDE_DIRECTORIES
 	${SYS_INCLUDE_DIRECTORIES}
@@ -129,7 +127,7 @@ set(COMPILE_DEFINITIONS_PRIVATE
 list(APPEND SYS_SOURCELIST ${COMMON_SOURCES})
 
 macro(add_lwip_path TARGET DOMAIN)
-	if(NOT STRATIFYOS_LWIP_PATH)
+	if(NOT DEFINED STRATIFYOS_LWIP_PATH)
 		target_compile_definitions(${TARGET} ${DOMAIN} SOS_BOOTSTRAP_SOCKETS=${BOOTSTRAP_SOCKETS})
 	else()
 		string(COMPARE EQUAL ${DOMAIN} PRIVATE IS_PRIVATE)

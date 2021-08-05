@@ -142,12 +142,12 @@ int link_resetbootloader(link_transport_mdriver_t *driver) {
 int link_verify_signature(
   link_transport_mdriver_t *driver,
   const bootloader_attr_t *attr,
-  const bootloader_signature_t *signature) {
+  const auth_signature_t *signature) {
   if (attr->version < 0x400) {
     return 0;
   }
 
-  bootloader_signature_t tmp = *signature;
+  auth_signature_t tmp = *signature;
   return link_ioctl_delay(
     driver, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_VERIFY_SIGNATURE, &tmp, 0, 0);
 }
@@ -167,7 +167,7 @@ int link_get_public_key(
     return -1;
   }
 
-  bootloader_public_key_t key = {};
+  auth_public_key_t key = {};
   if (
     link_ioctl_delay(
       driver, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_GET_PUBLIC_KEY, &key, 0, 0)
