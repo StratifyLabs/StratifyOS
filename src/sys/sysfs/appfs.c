@@ -630,7 +630,6 @@ void svcall_ioctl(void *args) {
   case I_APPFS_VERIFY_SIGNATURE: {
     u8 hash[32];
 
-    sos_debug_printf("verify signature\n");
     appfs_verify_signature_t *verify_signature = ctl;
     appfs_public_key_t public_key;
 
