@@ -160,10 +160,10 @@ int devfs_open(const void *cfg, void **handle, const char *path, int flags, int 
 }
 
 int devfs_fstat(const void *cfg, void *handle, struct stat *st) {
+  MCU_UNUSED_ARGUMENT(cfg);
   const devfs_device_t *dev = handle;
   // populate the characteristics
-  int num;
-  num = (dev - sos_config.fs.devfs_list) / sizeof(devfs_device_t);
+  int num = (dev - sos_config.fs.devfs_list);
   st->st_dev = 0;
   st->st_rdev = num;
   st->st_ino = num;

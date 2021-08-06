@@ -551,11 +551,11 @@ int appfs_close(const void *cfg, void **handle) {
   appfs_handle_t *h = (appfs_handle_t *)*handle;
   if (h->is_install) {
     cortexm_svcall(svcall_close, h);
-  }
 #if CONFIG_APPFS_IS_VERIFY_SIGNATURE
-  h->type.install.ecc_api->deinit(&h->type.install.ecc_context);
-  h->type.install.sha256_api->deinit(&h->type.install.sha256_context);
+    h->type.install.ecc_api->deinit(&h->type.install.ecc_context);
+    h->type.install.sha256_api->deinit(&h->type.install.sha256_context);
 #endif
+  }
   free(h);
   h = NULL;
   return 0;
@@ -628,6 +628,12 @@ void svcall_ioctl(void *args) {
 
 #if CONFIG_APPFS_IS_VERIFY_SIGNATURE
   case I_APPFS_VERIFY_SIGNATURE: {
+
+    if (!h->is_install) {
+      a->result = SYSFS_SET_RETURN(ENOTSUP);
+      return;
+    }
+
     u8 hash[32];
 
     appfs_verify_signature_t *verify_signature = ctl;
@@ -666,7 +672,6 @@ void svcall_ioctl(void *args) {
     const int result =
       appfs_util_root_mem_write_page(dev, h, &h->type.install.first_page);
     if (result < 0) {
-      sos_debug_printf("Failed to write first page\n");
       a->result = result;
       return;
     }

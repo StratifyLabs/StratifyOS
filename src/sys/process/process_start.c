@@ -41,18 +41,17 @@ static uint8_t launch_count = 0;
 #endif
 
 int process_start(const char *path_arg, char *const envp[]) {
+  MCU_UNUSED_ARGUMENT(envp);
   int fd;
   int err;
   appfs_file_t startup;
   task_memories_t mem;
-  char tmp_path[PATH_MAX + 1];
   char *p;
   char *path;
   char *process_path;
-  int len;
 
   // find name - strip arguments
-  memset(tmp_path, 0, PATH_MAX + 1);
+  char tmp_path[PATH_MAX + 1] = {};
   strncpy(tmp_path, path_arg, PATH_MAX);
   path = strtok_r(tmp_path, sysfs_whitespace, &p);
 
@@ -62,7 +61,7 @@ int process_start(const char *path_arg, char *const envp[]) {
     return -1;
   }
 
-  len = strnlen(path_arg, ARG_MAX);
+  size_t len = strnlen(path_arg, ARG_MAX);
 
   if (access(path, X_OK) < 0) {
     sos_debug_log_warning(SOS_DEBUG_SYS, "no exec access:%s", path);
@@ -121,6 +120,7 @@ int process_start(const char *path_arg, char *const envp[]) {
     return -1;
   }
   strncpy(process_path, path_arg, len);
+  process_path[len] = 0;
 
   sos_debug_log_info(SOS_DEBUG_SYS, "process start: execute %s", process_path);
 
