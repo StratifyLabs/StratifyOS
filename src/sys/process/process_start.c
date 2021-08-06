@@ -123,6 +123,7 @@ int process_start(
 		return -1;
 	}
 	strcpy(process_path, path_arg);
+        process_path[len] = 0;
 
 	sos_debug_log_info(SOS_DEBUG_SYS, "process start: execute %s", process_path);
 
