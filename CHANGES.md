@@ -2,6 +2,9 @@
 
 ## Bug Fixes
 
+- Implement `I_SYS_GETVERSION` in `/dev/sys`
+- Zero terminate arguments when starting a new process
+- Fix `st_ino` assignment in `/dev/*` when using `stat()` and `fstat()`
 - Emit a fatal event if system memory is too small
 
 # Version 4.0.1
