@@ -78,10 +78,11 @@ void set_open_file(int fildes, const sysfs_t *fs, void *handle, uint16_t flags) 
  *  - ENAMETOOLONG:  \a name exceeds PATH_MAX or a component of \a name exceeds NAME_MAX
  *  - ENOENT: \a name could not be found
  *  - EIO: IO error
+ *  - EMFILE: Too many files are already open
  *  - EEXIST: \a name already exists and flags is not set to overwrite
  *  - ENOMEM: not enough memory to open another file
- *	- ENOTDIR: the path to \a name does not exist
- *	- EFBIG: size error with the file (file is likely corrupt)
+ *  - ENOTDIR: the path to \a name does not exist
+ *  - EFBIG: size error with the file (file is likely corrupt)
  *
  *
  */
@@ -89,7 +90,6 @@ int open(const char *name, int flags, ...);
 
 /*! \cond */
 int _open(const char *name, int flags, ...) {
-  int tmp;
   int ret;
   int fildes;
   int mode;
@@ -113,26 +113,12 @@ int _open(const char *name, int flags, ...) {
     return -1;
   }
 
-  tmp = 0;
-  // check the access mode
-  switch ((flags & O_ACCMODE)) {
-  case O_RDONLY:
-    tmp = R_OK;
-    break;
-  case O_WRONLY:
-    tmp = W_OK;
-    break;
-  case O_RDWR:
-    tmp = R_OK | W_OK;
-    break;
-  }
-
   if (flags & O_CREAT) {
     va_list ap;
     va_start(ap, flags);
     mode = va_arg(ap, mode_t);
     va_end(ap);
-    tmp = mode & S_IFMT;
+    int tmp = mode & S_IFMT;
     switch (tmp) {
     case S_IFDIR:
       // This is not the correct way to create a directory (must use mkdir)

@@ -31,7 +31,7 @@ int _fstat(int fildes, struct stat *buf) {
   }
 
   handle = get_handle(fildes);
-  memset(buf, 0, sizeof(*buf));
+  *buf = (struct stat){};
   fs = get_fs(fildes);
   if (fs != NULL) {
     int ret = fs->fstat(fs->config, handle, buf);

@@ -62,7 +62,10 @@ int unmount(const char *path) {
   return ret;
 }
 
-int sysfs_always_mounted(const void *cfg) { return 1; }
+int sysfs_always_mounted(const void *cfg) {
+  MCU_UNUSED_ARGUMENT(cfg);
+  return 1;
+}
 
 // get the filename from the end of the path
 const char *sysfs_getfilename(const char *path, int *elements) {
@@ -130,8 +133,8 @@ const char *sysfs_stripmountpath(const sysfs_t *fs, const char *path) {
   return path;
 }
 
-static bool isinvalid(const char *path, int max) {
-  int len;
+static bool isinvalid(const char *path, unsigned int max) {
+  unsigned int len;
   int tmp;
   const char *p;
   len = strnlen(path, max);
@@ -165,7 +168,7 @@ static bool isinvalid(const char *path, int max) {
 bool sysfs_ispathinvalid(const char *path) { return isinvalid(path, PATH_MAX); }
 
 bool sysfs_isvalidset(const char *path) {
-  int len = strnlen(path, PATH_MAX);
+  unsigned int len = strnlen(path, PATH_MAX);
   if (len == PATH_MAX) {
     return false;
   }
@@ -270,6 +273,7 @@ int sysfs_is_rw_ok(int file_mode, int file_uid, int file_gid) {
 }
 
 int sysfs_is_x_ok(int file_mode, int file_uid, int file_gid) {
+  MCU_UNUSED_ARGUMENT(file_gid);
   if (file_mode & S_IXOTH) {
     return 1;
   } else if ((file_mode & S_IXUSR) && (file_uid == getuid() || getuid() == SYSFS_ROOT)) {
