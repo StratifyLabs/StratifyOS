@@ -31,8 +31,10 @@ int sys_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
   int i;
 
   switch (request) {
+  case I_SYS_GETVERSION:
+    return SYS_VERSION;
   case I_SYS_GETINFO:
-    memset(info, 0, sizeof(sys_info_t));
+    *info = (sys_info_t){};
     strncpy(info->kernel_version, VERSION, 7);
     strncpy(
       info->sys_version, sos_config.sys.version, sizeof(sos_config.sys.version - 1));
