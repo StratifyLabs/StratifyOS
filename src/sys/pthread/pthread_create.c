@@ -37,7 +37,6 @@ int pthread_create(
     }
   } else {
     attrs = *attr;
-    // memcpy(&attrs, attr, sizeof(pthread_attr_t));
   }
 
   u32 mem_size = attrs.stacksize + sizeof(struct _reent) + CONFIG_TASK_DEFAULT_STACKGUARD_SIZE;
@@ -50,6 +49,16 @@ int pthread_create(
 
   attrs.stackaddr = stack_addr;
   memset(stack_addr, 0, mem_size); // nullify memory space
+
+  const int inherit_sched = PTHREAD_ATTR_GET_INHERIT_SCHED((&attrs));
+  if( inherit_sched == PTHREAD_INHERIT_SCHED ){
+    //set the policy and priority based on the calling thread
+    int policy;
+    struct sched_param param;
+    pthread_getschedparam(task_get_current(), &policy, &param);
+    pthread_attr_setschedpolicy(&attrs, policy);
+    pthread_attr_setschedparam(&attrs, &param);
+  }
 
   id = scheduler_create_thread(start_routine, arg, stack_addr, attrs.stacksize, &attrs);
 
@@ -91,7 +100,7 @@ int pthread_join(pthread_t thread, void **value_ptr) {
       if (
         (sos_sched_table[thread].block_object
          == (void *)&sos_sched_table[task_get_current()])
-        || (thread == task_get_current())) {
+        || ((int)thread == task_get_current())) {
         errno = EDEADLK;
         return -1;
       }

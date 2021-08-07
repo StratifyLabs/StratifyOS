@@ -2,6 +2,7 @@
 
 ## New Features
 
+- Implement `PTHREAD_INHERIT_SCHED` when creating new threads
 - If an application is signed, it can start as authenticated without the parent being authenticated
 - Update symbols table signature to have a base of `0x00000410`
 - Add `getppid()` to symbols list
