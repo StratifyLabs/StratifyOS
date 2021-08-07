@@ -18,7 +18,6 @@
 typedef struct {
   task_memories_t *mem;
   int tid;
-  int is_authenticated;
 } init_sched_task_t;
 
 static void svcall_init_sched_task(init_sched_task_t *task) MCU_ROOT_EXEC_CODE;
@@ -32,8 +31,7 @@ int scheduler_create_process(
   const char *path_arg /*! Path string with arguments */,
   task_memories_t *mem,
   void *reent /*! The location of the reent structure */,
-  int parent_id,
-  int is_authenticated) {
+  int parent_id) {
   int tid;
   init_sched_task_t args;
 
@@ -44,7 +42,6 @@ int scheduler_create_process(
     // update the scheduler table using a privileged call
     args.tid = tid;
     args.mem = mem;
-    args.is_authenticated = is_authenticated;
     cortexm_svcall((cortexm_svcall_t)svcall_init_sched_task, &args);
   } else {
     return -1;
@@ -69,7 +66,7 @@ void svcall_init_sched_task(init_sched_task_t *task) {
   CORTEXM_SVCALL_ENTER();
   int id = task->tid;
 
-  memset((void *)&sos_sched_table[id], 0, sizeof(sched_task_t));
+  sos_sched_table[id] = (sched_task_t){};
 
   PTHREAD_ATTR_SET_IS_INITIALIZED((&(sos_sched_table[id].attr)), 1);
   PTHREAD_ATTR_SET_SCHED_POLICY((&(sos_sched_table[id].attr)), SCHED_OTHER);
@@ -79,8 +76,15 @@ void svcall_init_sched_task(init_sched_task_t *task) {
   PTHREAD_ATTR_SET_INHERIT_SCHED((&(sos_sched_table[id].attr)), PTHREAD_EXPLICIT_SCHED);
   PTHREAD_ATTR_SET_DETACH_STATE((&(sos_sched_table[id].attr)), PTHREAD_CREATE_DETACHED);
 
-  if (task->is_authenticated && scheduler_authenticated_asserted(task_get_current())) {
-    scheduler_root_assert_authenticated(id);
+  {
+    const appfs_file_t *appfs_file = task->mem->code.address;
+    const int is_authenticated =
+      (appfs_file->exec.o_flags & APPFS_FLAG_IS_AUTHENTICATED) != 0;
+    if (
+      is_authenticated
+      && (CONFIG_APPFS_IS_VERIFY_SIGNATURE || scheduler_authenticated_asserted(task_get_current()))) {
+      scheduler_root_assert_authenticated(id);
+    }
   }
 
   sos_sched_table[id].attr.stackaddr =
@@ -88,7 +92,8 @@ void svcall_init_sched_task(init_sched_task_t *task) {
   sos_sched_table[id].attr.stacksize =
     task->mem->data.size; // Size of the memory (not just the stack)
   sos_sched_table[id].attr.schedparam.sched_priority =
-    0; // This is the priority to revert to after being escalated
+    CONFIG_SCHED_LOWEST_PRIORITY; // This is the priority to revert to after being
+                                  // escalated
 
   scheduler_timing_root_process_timer_initialize(id);
 
@@ -101,7 +106,8 @@ void svcall_init_sched_task(init_sched_task_t *task) {
   scheduler_root_update_on_wake(id, task_get_priority(id));
   u32 stackguard = (u32)task->mem->data.address + sizeof(struct _reent);
   if (
-    task_root_set_stackguard(id, (void *)stackguard, CONFIG_TASK_DEFAULT_STACKGUARD_SIZE) < 0) {
+    task_root_set_stackguard(id, (void *)stackguard, CONFIG_TASK_DEFAULT_STACKGUARD_SIZE)
+    < 0) {
     sos_debug_log_warning(SOS_DEBUG_SCHEDULER, "Failed to set stackguard");
   }
 
@@ -113,6 +119,7 @@ void svcall_init_sched_task(init_sched_task_t *task) {
 }
 
 static void cleanup_process(void *status) {
+  MCU_UNUSED_ARGUMENT(status);
   // Processes should ALWAYS use exit -- this should never get called but is here just in
   // case
   SOS_TRACE_FATAL("cleanup");

@@ -11,7 +11,7 @@
 // offset must be (__LINE__ - <line number of _signature>) * 4 + 1
 #define LINK_ADDR (0xDFFF8001 + ((__LINE__ - 14) * 4))
 
-.global _signature; _signature = 0x00000380 + __CORTEX_M;
+.global _signature; _signature = 0x00000410 + __CORTEX_M;
 //.global __cxa_pure_virtual; __cxa_pure_virtual = LINK_ADDR;
 .global _global_impure_ptr; _global_impure_ptr = LINK_ADDR;
 .global _impure_ptr; _impure_ptr = LINK_ADDR;
@@ -663,3 +663,4 @@
 .global pthread_setcanceltype; pthread_setcanceltype = LINK_ADDR;
 .global __aeabi_atexit; __aeabi_atexit = LINK_ADDR;
 .global settimeofday; settimeofday = LINK_ADDR;
+.global getppid; getppid = LINK_ADDR;

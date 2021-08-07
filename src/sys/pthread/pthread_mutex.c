@@ -1,6 +1,5 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
-
 /*! \addtogroup pthread
  * @{
  *
@@ -19,9 +18,8 @@
 #include "pthread_mutex_local.h"
 #include "sos/debug.h"
 
-#include "../scheduler/scheduler_timing.h"
 #include "../scheduler/scheduler_root.h"
-
+#include "../scheduler/scheduler_timing.h"
 
 /*! \cond */
 static void pthread_mutex_svcall_unlock(void *args);
@@ -257,6 +255,16 @@ int pthread_mutex_setprioceiling(
     return -1;
   }
 
+  if (prioceiling < CONFIG_SCHED_LOWEST_PRIORITY) {
+    errno = EINVAL;
+    return -1;
+  }
+
+  if (prioceiling > CONFIG_SCHED_HIGHEST_PRIORITY) {
+    errno = EINVAL;
+    return -1;
+  }
+
   if (old_ceiling != NULL) {
     *old_ceiling = mutex->prio_ceiling;
   }
@@ -413,7 +421,16 @@ void pthread_mutex_root_unlock(pthread_mutex_root_unlock_t *args) {
     args->mutex->pthread = new_thread;
     args->mutex->pid = task_get_pid(new_thread);
     args->mutex->lock = 1;
-    if (args->mutex->prio_ceiling > task_get_priority(new_thread)) {
+
+    //ensure prio ceiling is within the limits
+    const int effective_priority =
+      args->mutex->prio_ceiling > CONFIG_SCHED_HIGHEST_PRIORITY
+        ? CONFIG_SCHED_HIGHEST_PRIORITY
+      : args->mutex->prio_ceiling < CONFIG_SCHED_LOWEST_PRIORITY
+        ? CONFIG_SCHED_LOWEST_PRIORITY
+        : args->mutex->prio_ceiling;
+
+    if (effective_priority > task_get_priority(new_thread)) {
       task_set_priority(new_thread, args->mutex->prio_ceiling);
     }
     scheduler_root_assert_active(new_thread, SCHEDULER_UNBLOCK_MUTEX);

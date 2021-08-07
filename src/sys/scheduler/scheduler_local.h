@@ -99,9 +99,9 @@ int scheduler_create_thread(void *(*p)(void*)  /*! The function to execute for t
 void scheduler_thread_cleanup(void * status);
 
 int scheduler_create_process(void (*p)(char *),
-		const char * path_arg,
-		task_memories_t * mem,
-		void * reent, int parent_id, int is_root);
+                const char * path_arg,
+                task_memories_t * mem,
+                void * reent, int parent_id);
 
 int scheduler_switch_context(void * args);
 int scheduler_get_highest_priority_blocked(void * block_object);

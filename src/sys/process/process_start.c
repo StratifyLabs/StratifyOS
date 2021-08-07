@@ -131,19 +131,13 @@ int process_start(const char *path_arg, char *const envp[]) {
     parent_id = 0;
   }
 
-  int is_authenticated = 0;
-  if (options & APPFS_FLAG_IS_AUTHENTICATED) {
-    is_authenticated = 1;
-  }
-
   sos_debug_log_info(
     SOS_DEBUG_SYS, "process start: code:%p data:%p", (void *)startup.exec.startup,
     (void *)startup.exec.ram_start);
 
   err = scheduler_create_process(
     (void *)startup.exec.startup, process_path, &mem, (void *)startup.exec.ram_start,
-    parent_id,
-    is_authenticated // ignored if caller is not authenticated
+    parent_id
   );
 
   if (err < 0) {

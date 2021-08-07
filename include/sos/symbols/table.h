@@ -27,7 +27,7 @@ extern int seteuid(uid_t uid);
 u32 const symbols_table[] SYMBOLS_TABLE_WEAK;
 u32 const symbols_table[] = {
   // The first position is the signature
-  (u32)0x00000380 + __CORTEX_M, (u32)__cxa_pure_virtual, (u32)&_global_impure_ptr,
+  (u32)0x00000410 + __CORTEX_M, (u32)__cxa_pure_virtual, (u32)&_global_impure_ptr,
   (u32)&_impure_ptr, (u32)&__sf_fake_stdin, (u32)&__sf_fake_stdout,
   (u32)&__sf_fake_stderr, (u32)__aeabi_uldivmod, (u32)__aeabi_ldivmod, (u32)__aeabi_uidiv,
   (u32)__aeabi_uidivmod, (u32)__aeabi_idiv, (u32)__aeabi_idivmod, (u32)__umodsi3,
@@ -212,7 +212,7 @@ u32 const symbols_table[] = {
   (u32)__aeabi_unwind_cpp_pr1, (u32)__cxa_atexit, (u32)getuid, (u32)setuid, (u32)geteuid,
   (u32)seteuid, (u32)sos_trace_stack, (u32)__assert_func, (u32)setenv, (u32)pthread_exit,
   (u32)pthread_testcancel, (u32)pthread_setcancelstate, (u32)pthread_setcanceltype,
-  (u32)__aeabi_atexit, (u32)settimeofday, 1};
+  (u32)__aeabi_atexit, (u32)settimeofday, (u32)getppid, 1};
 
 u32 symbols_total();
 

@@ -92,6 +92,7 @@ int pthread_cond_broadcast(pthread_cond_t *cond) {
   }
 
   if ((*cond & (1 << INIT_FLAG)) == 0) {
+    sos_debug_printf("not initialized\n");
     errno = EINVAL;
     return -1;
   }

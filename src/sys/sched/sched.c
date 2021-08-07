@@ -88,8 +88,8 @@ int sched_getparam(pid_t pid, struct sched_param *param) {
   //! \todo check the permissions for EPERM
 
   // copy from sched_table to param
-  memcpy(
-    param, (void *)&sos_sched_table[tid].attr.schedparam, sizeof(struct sched_param));
+  *param = sos_sched_table[tid].attr.schedparam;
+
   return 0;
 }
 
@@ -210,6 +210,7 @@ int sched_yield() {
 /*! \cond */
 void svcall_yield(void *args) {
   CORTEXM_SVCALL_ENTER();
+  MCU_UNUSED_ARGUMENT(args);
   task_assert_yield(task_get_current());
   task_root_switch_context();
 }
@@ -224,8 +225,15 @@ void svcall_set_scheduling_param(void *args) {
 
     PTHREAD_ATTR_SET_SCHED_POLICY((&(sos_sched_table[id].attr)), p->policy);
 
-    memcpy(
-      (void *)&sos_sched_table[id].attr.schedparam, p->param, sizeof(struct sched_param));
+    sos_sched_table[id].attr.schedparam = *(p->param);
+
+    if( sos_sched_table[id].attr.schedparam.sched_priority > CONFIG_SCHED_HIGHEST_PRIORITY ){
+      sos_sched_table[id].attr.schedparam.sched_priority = CONFIG_SCHED_HIGHEST_PRIORITY;
+    }
+
+    if( sos_sched_table[id].attr.schedparam.sched_priority < CONFIG_SCHED_LOWEST_PRIORITY ){
+      sos_sched_table[id].attr.schedparam.sched_priority = CONFIG_SCHED_LOWEST_PRIORITY;
+    }
 
     // Issue #161 -- need to set the effective priority -- not just the prio ceiling
     task_set_priority(id, sos_sched_table[id].attr.schedparam.sched_priority);

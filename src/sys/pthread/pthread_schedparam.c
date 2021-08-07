@@ -45,9 +45,7 @@ int pthread_getschedparam(pthread_t thread, int *policy, struct sched_param *par
   }
 
   *policy = PTHREAD_ATTR_GET_SCHED_POLICY((&(sos_sched_table[thread].attr)));
-  memcpy(
-    param, (const void *)&(sos_sched_table[thread].attr.schedparam),
-    sizeof(struct sched_param));
+  *param = sos_sched_table[thread].attr.schedparam;
   return 0;
 }
 
@@ -103,8 +101,18 @@ void svcall_set_scheduling_param(void *args) {
   if (task_enabled(id)) {
 
     PTHREAD_ATTR_SET_SCHED_POLICY((&(sos_sched_table[id].attr)), p->policy);
-    memcpy(
-      (void *)&sos_sched_table[id].attr.schedparam, p->param, sizeof(struct sched_param));
+    sos_sched_table[id].attr.schedparam = *(p->param);
+
+    if (
+      sos_sched_table[id].attr.schedparam.sched_priority
+      > CONFIG_SCHED_HIGHEST_PRIORITY) {
+      sos_sched_table[id].attr.schedparam.sched_priority = CONFIG_SCHED_HIGHEST_PRIORITY;
+    }
+
+    if (
+      sos_sched_table[id].attr.schedparam.sched_priority < CONFIG_SCHED_LOWEST_PRIORITY) {
+      sos_sched_table[id].attr.schedparam.sched_priority = CONFIG_SCHED_LOWEST_PRIORITY;
+    }
 
     // Issue #161 -- need to set the effective priority -- not just the prio ceiling
     task_set_priority(id, sos_sched_table[id].attr.schedparam.sched_priority);
@@ -121,10 +129,10 @@ void svcall_set_scheduling_param(void *args) {
   }
 
 #if 0
-	sos_debug_log_info(SOS_DEBUG_PTHREAD, "%d:Set %d -> %d (%d)",
-							 task_get_current_priority(),
-							 id, sos_sched_table[id].attr.schedparam.sched_priority,
-							 task_enabled_active_not_stopped(id));
+  sos_debug_log_info(
+    SOS_DEBUG_PTHREAD, "%d:Set %d -> %d (%d)", task_get_current_priority(), id,
+    sos_sched_table[id].attr.schedparam.sched_priority,
+    task_enabled_active_not_stopped(id));
 #endif
 }
 /*! \endcond */

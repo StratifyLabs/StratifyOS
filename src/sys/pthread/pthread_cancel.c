@@ -86,7 +86,7 @@ int pthread_cancel(pthread_t thread) {
   return 0;
 }
 
-/*! \details This function is not supported.
+/*! \details sets the cancel state of the calling thread.
  * \return -1 with errno equal to ENOTSUP
  */
 int pthread_setcancelstate(int state, int *oldstate) {
@@ -114,18 +114,20 @@ int pthread_setcancelstate(int state, int *oldstate) {
   return 0;
 }
 
-/*! \details This function is not supported.
- * \return -1 with errno equal to ENOTSUP
+/*! \details Sets the cancel type of the calling thread.
+ * \return Zero on success or -1 with errno set to:
+ * - ENOTSUP: type is PTHREAD_CANCEL_ASYNCHRONOUS which is not supported
+ * - EINVAL: type is not PTHREAD_CANCEL_DEFERRED which is not supported
  */
 int pthread_setcanceltype(int type, int *oldtype) {
   // PTHREAD_CANCEL_DEFERRED or PTHREAD_CANCEL_ASYNCHRONOUS
 
-  svcall_cancel_update_t update = {0};
+  svcall_cancel_update_t update = {};
   update.tid = task_get_current();
   if (type == PTHREAD_CANCEL_ASYNCHRONOUS) {
     // update.asynchronous = 1;
     // for now don't support this -- too many problems
-    errno = EINVAL;
+    errno = ENOTSUP;
     return -1;
   } else if (type == PTHREAD_CANCEL_DEFERRED) {
     update.asynchronous = -1;

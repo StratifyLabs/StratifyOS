@@ -2,6 +2,9 @@
 
 ## New Features
 
+- If an application is signed, it can start as authenticated without the parent being authenticated
+- Update symbols table signature to have a base of `0x00000410`
+- Add `getppid()` to symbols list
 - Added `auth_flash` device for installing signed OS using a full instance bootloader
 - Appfs updates
   - Add support for `I_APPFS_GETVERSION` -- returns 0x400
@@ -32,6 +35,9 @@
 
 ## Bug Fixes
 
+- Return error (`EINVAL`) if attempting to set a priority ceiling that is invalid
+- Ensure priority elevation within SVCALL setting to prevent inadvertent priority elevation
+- Fixed vulnerability when starting authenticated apps
 - Fix assignment of `st_ino` in devfs when using `stat` and `fstat`
 - Implement `I_SYS_GETVERSION` on `/dev/sys`
 - Fixed a major bug with `realloc` (it was basically unusable) (51b1840a30f69886d18185d747b1c88368b7a513)
