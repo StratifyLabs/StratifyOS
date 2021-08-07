@@ -327,7 +327,7 @@ int mq_getattr(mqd_t mqdes, struct mq_attr *mqstat) {
   return 0;
 }
 
-/*! \details This function is not supported.
+/*! \details Sets the message queue attributes
  *
  * \return Zero on success or -1 with errno (see \ref errno) set to:
  * - ENOTSUP
