@@ -212,7 +212,7 @@ u32 const symbols_table[] = {
   (u32)__aeabi_unwind_cpp_pr1, (u32)__cxa_atexit, (u32)getuid, (u32)setuid, (u32)geteuid,
   (u32)seteuid, (u32)sos_trace_stack, (u32)__assert_func, (u32)setenv, (u32)pthread_exit,
   (u32)pthread_testcancel, (u32)pthread_setcancelstate, (u32)pthread_setcanceltype,
-  (u32)__aeabi_atexit, (u32)settimeofday, (u32)getppid, 1};
+  (u32)__aeabi_atexit, (u32)settimeofday, (u32)getppid, (u32)pthread_mutex_timedlock, 1};
 
 u32 symbols_total();
 

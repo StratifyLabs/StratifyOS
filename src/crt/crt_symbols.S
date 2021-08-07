@@ -664,3 +664,4 @@
 .global __aeabi_atexit; __aeabi_atexit = LINK_ADDR;
 .global settimeofday; settimeofday = LINK_ADDR;
 .global getppid; getppid = LINK_ADDR;
+.global pthread_mutex_timedlock; pthread_mutex_timedlock = LINK_ADDR;
