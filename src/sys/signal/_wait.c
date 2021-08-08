@@ -1,6 +1,5 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
-
 /*! \addtogroup signal
  * @{
  */
@@ -39,8 +38,8 @@ pid_t waitpid(pid_t pid, int *stat_loc, int options) {
     args.tid = 0;
     args.pid = pid;
     if (!(options & WNOHANG)) {
-      cortexm_svcall(svcall_wait_child, &args);
       // sleep here and wait for the signal to arrive
+      cortexm_svcall(svcall_wait_child, &args);
     }
 
     // process has awoken
@@ -54,6 +53,7 @@ pid_t waitpid(pid_t pid, int *stat_loc, int options) {
       }
     }
 
+    // no hang means check immediately and then return
     if (options & WNOHANG) {
       break;
     }
@@ -84,32 +84,22 @@ pid_t waitpid(pid_t pid, int *stat_loc, int options) {
 pid_t wait(int *stat_loc);
 
 /*! \cond */
-pid_t _wait(int *stat_loc) {
-  scheduler_check_cancellation();
-  return waitpid(-1, stat_loc, 0);
-}
+pid_t _wait(int *stat_loc) { return waitpid(-1, stat_loc, 0); }
 
 void svcall_check_for_zombie_child(void *args) {
   CORTEXM_SVCALL_ENTER();
-  int num_children;
-  svcall_check_for_zombie_child_t *p;
-  p = (svcall_check_for_zombie_child_t *)args;
-  int i;
-  int num_zombies;
-  int current_pid;
+  svcall_check_for_zombie_child_t *p = (svcall_check_for_zombie_child_t *)args;
+  int num_zombies = 0;
+  int num_children= 0;
 
-  num_zombies = 0;
-  num_children = 0;
-
-  current_pid = task_get_pid(task_get_current());
+  int current_pid = task_get_pid(task_get_current());
 
   p->tid = -1;
 
-  for (i = 1; i < task_get_total(); i++) {
+  for (int i = 1; i < task_get_total(); i++) {
     if (task_enabled(i)) {
       // must check to see if the child is orphaned as well -- don't wait for orphaned
       // children
-
       if (task_get_pid(task_get_parent(i)) == current_pid) { // is the task a child
         num_children++;
         if (scheduler_zombie_asserted(i)) {

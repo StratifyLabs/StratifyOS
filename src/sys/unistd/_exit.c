@@ -23,7 +23,6 @@
 /*! \cond */
 static void svcall_stop_threads(int *send_signal) MCU_ROOT_EXEC_CODE;
 static void svcall_zombie_process(int *signal_sent) MCU_ROOT_EXEC_CODE;
-static int get_exec_flags() MCU_ROOT_EXEC_CODE;
 /*! \endcond */
 
 /*! \details This function causes the calling process
@@ -72,7 +71,6 @@ void svcall_stop_threads(int *send_signal) {
   int i;
   int tmp;
   struct _reent *parent_reent;
-  int options = get_exec_flags();
 
   // set the exit status
   sos_sched_table[task_get_current()].exit_status = *send_signal;
@@ -111,23 +109,15 @@ void svcall_stop_threads(int *send_signal) {
     }
   }
 
-#if 0
-	//ORPHAN nevers sends a signal to parent and never becomes a zombie process
-	if( options & APPFS_FLAG_IS_ORPHAN ){
-		*send_signal = false;
-	}
-#endif
-
   if (scheduler_zombie_asserted(task_get_current())) {
     // This will be executed if a SIGTERM is sent to a ZOMBIE process
     *send_signal = false;
   } else if (*send_signal == true) {
     // assert the zombie flags
-    sos_sched_table[task_get_current()].flags |= (1 << SCHEDULER_TASK_FLAG_ZOMBIE);
 
     // send a signal to the parent process
     tmp = task_get_pid(task_get_parent(task_get_current()));
-    options = 0;
+    int options = 0;
     for (i = 0; i < task_get_total(); i++) {
       // send SIGCHLD to each thread of parent
       if ((tmp == task_get_pid(i)) && (task_enabled(i))) {
@@ -148,14 +138,10 @@ void svcall_stop_threads(int *send_signal) {
       // signal was never sent -- no matching parent
       *send_signal = false;
     }
-  }
-}
 
-int get_exec_flags() {
-  appfs_file_t *hdr;
-  // check to see if the app should discard itself
-  hdr = (appfs_file_t *)sos_task_table[task_get_current()].mem.code.address;
-  return hdr->exec.o_flags;
+    sos_sched_table[task_get_current()].flags |= (1 << SCHEDULER_TASK_FLAG_ZOMBIE);
+
+  }
 }
 
 void svcall_zombie_process(int *signal_sent) {

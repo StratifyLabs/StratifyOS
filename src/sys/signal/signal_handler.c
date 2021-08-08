@@ -141,6 +141,7 @@ void signal_handler(int tid, int si_signo, int si_sigcode, union sigval sig_valu
 }
 
 void abort_action(int signo, int flags) {
+  MCU_UNUSED_ARGUMENT(flags);
   // Exit the program
   char hex_buffer[9];
   char str[32];
@@ -152,6 +153,7 @@ void abort_action(int signo, int flags) {
 }
 
 void terminate_action(int signo, int flags) {
+  MCU_UNUSED_ARGUMENT(flags);
   // Exit the program
   char hex_buffer[9];
   char str[32];
@@ -164,6 +166,7 @@ void terminate_action(int signo, int flags) {
 
 void svcall_stoppid(void *args) {
   CORTEXM_SVCALL_ENTER();
+  MCU_UNUSED_ARGUMENT(args);
   int pid = task_get_pid(task_get_current());
   int i;
 
@@ -183,6 +186,7 @@ void svcall_stoppid(void *args) {
 
 void svcall_contpid(void *args) {
   CORTEXM_SVCALL_ENTER();
+  MCU_UNUSED_ARGUMENT(args);
   int highest_prio = 0;
   int pid = task_get_pid(task_get_current());
   int i;
@@ -226,6 +230,8 @@ void stop_action(int signo, int flags) {
 }
 
 void continue_action(int signo, int flags) {
+  MCU_UNUSED_ARGUMENT(signo);
+  MCU_UNUSED_ARGUMENT(flags);
   // continue this process
   if (task_get_pid(task_get_current()) == 0) {
     return;
@@ -235,7 +241,11 @@ void continue_action(int signo, int flags) {
   cortexm_svcall(svcall_contpid, NULL);
 }
 
-void ignore_action(int signo, int flags) {}
+void ignore_action(int signo, int flags) {
+  MCU_UNUSED_ARGUMENT(signo);
+  MCU_UNUSED_ARGUMENT(flags);
+
+}
 /*! \endcond */
 
 /*! @} */
