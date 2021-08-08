@@ -38,18 +38,18 @@
 #if CONFIG_TASK_PROCESS_TIMER_COUNT > 0
 unsigned int
 process_alarm(unsigned int seconds, useconds_t useconds, useconds_t interval) {
-  //alarm uses the timer associated with the primary process thread
-  timer_t timer_id = task_get_parent(task_get_current());
+  // alarm uses the timer associated with the primary process thread
+  const int pid = task_get_pid(task_get_current());
+  timer_t timer_id = SCHEDULER_TIMING_PROCESS_TIMER(task_get_thread_zero(pid), 0);
 
   // if timer is already set, get the number of seconds until it expires and reset
-  struct itimerspec timer;
   struct itimerspec o_timer;
 
-  timer.it_value.tv_sec = seconds;
-  timer.it_value.tv_nsec = useconds * 1000UL;
-  timer.it_interval.tv_sec = 0;
-  timer.it_interval.tv_nsec = interval * 1000UL;
+  const struct itimerspec timer = {
+    .it_value = {.tv_sec = seconds, .tv_nsec = useconds * 1000UL},
+    .it_interval = {.tv_sec = 0, .tv_nsec = interval * 1000UL}};
 
+  sos_debug_printf("set alarm %d\n", timer_id);
   timer_settime(timer_id, 0, &timer, &o_timer);
 
   return o_timer.it_value.tv_sec;
@@ -167,12 +167,12 @@ int timer_settime(
   struct mcu_timeval interval;
   struct mcu_timeval o_value;
   struct mcu_timeval o_interval;
-  int result;
+
 
   scheduler_timing_convert_timespec(&mcu_value, &value->it_value);
   scheduler_timing_convert_timespec(&interval, &value->it_interval);
 
-  result = scheduler_timing_process_set_timer(
+  int result = scheduler_timing_process_set_timer(
     timerid, flags, &mcu_value, &interval, &o_value, &o_interval);
 
   if ((result == 0) && ovalue) {

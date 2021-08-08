@@ -33,6 +33,7 @@ void scheduler_timing_root_process_timer_initialize(u16 task_id) MCU_ROOT_EXEC_C
 volatile sos_process_timer_t * scheduler_timing_process_timer(timer_t timer_id);
 timer_t scheduler_timing_process_create_timer(const struct sigevent *evp);
 int scheduler_timing_process_delete_timer(timer_t timer_id);
+void scheduler_timing_process_cancel_timer(timer_t timer_id);
 int scheduler_timing_process_set_timer(timer_t timerid, int flags,
 						const struct mcu_timeval * value,
 						const struct mcu_timeval * interval,
