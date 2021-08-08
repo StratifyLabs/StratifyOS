@@ -105,7 +105,9 @@ void svcall_activate_thread(svcall_activate_thread_t *args) {
     task_deassert_fifo(id);
   }
 
+#if CONFIG_TASK_PROCESS_TIMER_COUNT > 0
   scheduler_timing_root_process_timer_initialize(id);
+#endif
   sos_sched_table[id].wake.tv_sec = SCHEDULER_TIMEVAL_SEC_INVALID;
   sos_sched_table[id].wake.tv_usec = 0;
   scheduler_root_assert_cancel_enable(id);

@@ -338,7 +338,7 @@ int sysfs_aio_data_transfer_callback(void *context, const mcu_event_t *event) {
         aiocbp->aio_sigevent.sigev_value.sival_int, 1);
     }
 
-    // This needs to check if all operations in a list have complete and then use
+    // This needs to check if all operations in a list have completed and then use
     // SIGEV_NONE, SIGEV_SIGNAL, or SIGEV_THREAD to notify
   }
 

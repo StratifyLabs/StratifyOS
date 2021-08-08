@@ -22,6 +22,7 @@ struct mcu_timeval scheduler_timing_subtract_mcu_timeval(const struct mcu_timeva
 u32 scheduler_timing_get_realtime();
 u64 scheduler_timing_real64usec(struct mcu_timeval *tv);
 
+#if CONFIG_TASK_PROCESS_TIMER_COUNT > 0
 //per process timers
 #define SCHEDULER_TIMING_PROCESS_TIMER_FLAG_IS_INITIALIZED (1<<0)
 #define SCHEDULER_TIMING_PROCESS_TIMER_FLAG_IS_QUEUED (1<<1)
@@ -40,7 +41,7 @@ int scheduler_timing_process_set_timer(timer_t timerid, int flags,
 int scheduler_timing_process_get_timer(timer_t timerid, struct mcu_timeval * value, struct mcu_timeval * interval, struct mcu_timeval * now);
 
 void scheduler_timing_process_unqueue_timer(int tid, int si_signo, union sigval sig_value);
-
+#endif
 
 
 

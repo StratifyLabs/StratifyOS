@@ -95,7 +95,9 @@ void svcall_init_sched_task(init_sched_task_t *task) {
     CONFIG_SCHED_LOWEST_PRIORITY; // This is the priority to revert to after being
                                   // escalated
 
+#if CONFIG_TASK_PROCESS_TIMER_COUNT > 0
   scheduler_timing_root_process_timer_initialize(id);
+#endif
 
   sos_sched_table[id].wake.tv_sec = SCHEDULER_TIMEVAL_SEC_INVALID;
   sos_sched_table[id].wake.tv_usec = 0;

@@ -5,7 +5,6 @@
 
 #include <sdk/types.h>
 
-#include "cortexm/task_types.h"
 #include "dev/bootloader.h"
 #include "dev/pio.h"
 #include "fs/devfs.h"

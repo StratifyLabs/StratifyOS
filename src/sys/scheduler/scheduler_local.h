@@ -76,7 +76,9 @@ typedef struct {
   volatile struct mcu_timeval wake;
   volatile u16 flags;
   trace_id_t trace_id;
+#if CONFIG_TASK_PROCESS_TIMER_COUNT > 0
   sos_process_timer_t timer[CONFIG_TASK_PROCESS_TIMER_COUNT];
+#endif
 } sched_task_t;
 
 extern volatile sched_task_t sos_sched_table[];

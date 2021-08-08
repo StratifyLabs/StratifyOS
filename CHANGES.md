@@ -2,6 +2,7 @@
 
 ## New Features
 
+- Removed all per-process timer code when `CONFIG_TASK_PROCESS_TIMER_COUNT` is zero
 - Add `pthread_mutex_timedlock()` to symbol table
 - Implement `PTHREAD_INHERIT_SCHED` when creating new threads
 - If an application is signed, it can start as authenticated without the parent being authenticated

@@ -75,9 +75,11 @@ void signal_handler(int tid, int si_signo, int si_sigcode, union sigval sig_valu
 
   if (si_signo < CONFIG_TASK_NUM_SIGNALS) {
     struct sigaction *sa;
+#if CONFIG_TASK_PROCESS_TIMER_COUNT > 0
     if (si_sigcode == SI_TIMER) {
       scheduler_timing_process_unqueue_timer(tid, si_signo, sig_value);
     }
+#endif
 
     if (GLOBAL_SIGINFOS != NULL) {
       GLOBAL_SIGINFO(si_signo) = siginfo;

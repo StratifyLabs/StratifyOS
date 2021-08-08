@@ -31,6 +31,8 @@ static void task_timer_to_timespec(struct timespec *tp, u64 task_timer);
  * - ENOTSUP:  not supported
  */
 int clock_getcpuclockid(pid_t pid, clockid_t *clock_id) {
+  MCU_UNUSED_ARGUMENT(pid);
+  MCU_UNUSED_ARGUMENT(clock_id);
   errno = ENOTSUP;
   return -1;
 }
@@ -137,6 +139,8 @@ int clock_getres(clockid_t id, struct timespec *res) {
  *
  */
 int clock_settime(clockid_t id, const struct timespec *tp) {
+  MCU_UNUSED_ARGUMENT(id);
+  MCU_UNUSED_ARGUMENT(tp);
   errno = ENOTSUP;
   return -1;
 }
