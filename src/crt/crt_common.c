@@ -61,7 +61,13 @@ void crt_common(char *path_arg, int *ret, const char *name) {
   // import argv in to the process memory
   argv = crt_import_argv(path_arg, &argc);
 
+  static struct _on_exit_args _on_exit_args_instance = {{_NULL}, {_NULL}, 0, 0};
   _REENT->procmem_base->siginfos = &signal_info;
+
+  //newlib will use a system variable and cause problems
+  //on shutdown if we don't init our atexit structs correctly
+  _REENT->_atexit = &_REENT->_atexit0;
+  _REENT->_atexit0._on_exit_args_ptr = &_on_exit_args_instance;
 
   // Initialize STDIO
   __sinit(_GLOBAL_REENT);
