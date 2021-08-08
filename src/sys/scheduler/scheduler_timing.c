@@ -287,9 +287,6 @@ int root_handle_usecond_process_timer_match_event(
             // seconds are the sae and useconds are in the past
             || ((timer->value.tv_sec == sched_usecond_counter) && (tmp <= now))) {
 
-            sos_debug_printf(
-              "send %d.%d < %d.%d\n", timer->value.tv_sec, timer->value.tv_usec,
-              sched_usecond_counter, now);
             // reload the timer if interval is valid
             send_and_reload_timer(timer, i, now);
 
@@ -502,7 +499,6 @@ void svcall_settime(void *args) {
   if ((p->flags & TIMER_ABSTIME) == 0) {
     // value is a relative time -- convert to absolute time
     if ((p->value->tv_sec == 0) && (p->value->tv_usec == 0)) {
-      sos_debug_printf("set to invalid value\n");
       timer->value = (struct mcu_timeval){SCHEDULER_TIMEVAL_SEC_INVALID, 0};
     } else {
       timer->value = scheduler_timing_add_mcu_timeval(&abs_time, p->value);
@@ -519,10 +515,6 @@ void svcall_settime(void *args) {
     && (timer->interval.tv_usec < SCHED_USECOND_TMR_MINIMUM_PROCESS_TIMER_INTERVAL)) {
     timer->interval.tv_usec = SCHED_USECOND_TMR_MINIMUM_PROCESS_TIMER_INTERVAL;
   }
-
-  sos_debug_printf(
-    "settime %d %d.%d < %d.%d\n", p->timer_id, timer->value.tv_sec, timer->value.tv_usec,
-    abs_time.tv_sec, abs_time.tv_usec);
 
   // stop the timer -- see if event is in past, assign the values, start the timer
   update_tmr_for_process_timer_match(timer);
@@ -636,7 +628,6 @@ int send_and_reload_timer(volatile sos_process_timer_t *timer, u8 task_id, u32 n
   if (
     ((timer->o_flags & SCHEDULER_TIMING_PROCESS_TIMER_FLAG_IS_QUEUED) == 0)
     && (timer->sigevent.sigev_notify == SIGEV_SIGNAL)) {
-    sos_debug_printf("send %d\n", timer->sigevent.sigev_signo);
     int result = signal_root_send(
       0, task_id, timer->sigevent.sigev_signo, SI_TIMER,
       timer->sigevent.sigev_value.sival_int, task_get_current() == task_id);

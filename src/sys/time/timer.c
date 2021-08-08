@@ -49,7 +49,6 @@ process_alarm(unsigned int seconds, useconds_t useconds, useconds_t interval) {
     .it_value = {.tv_sec = seconds, .tv_nsec = useconds * 1000UL},
     .it_interval = {.tv_sec = 0, .tv_nsec = interval * 1000UL}};
 
-  sos_debug_printf("set alarm %d\n", timer_id);
   timer_settime(timer_id, 0, &timer, &o_timer);
 
   return o_timer.it_value.tv_sec;
@@ -108,6 +107,11 @@ int timer_create(clockid_t clock_id, struct sigevent *evp, timer_t *timerid) {
 #if CONFIG_TASK_PROCESS_TIMER_COUNT > 1
   if (clock_id != CLOCK_REALTIME) {
     errno = EINVAL;
+    return -1;
+  }
+
+  if( evp->sigev_notify == SIGEV_THREAD ){
+    errno = ENOTSUP;
     return -1;
   }
 
