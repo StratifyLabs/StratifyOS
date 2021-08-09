@@ -13,8 +13,8 @@
 #include "signal/sig_local.h"
 #include "symbols.h"
 
-#include "scheduler/scheduler_root.h"
 #include "cortexm/task_local.h"
+#include "scheduler/scheduler_root.h"
 
 static int read_task(sys_taskattr_t *task);
 static int sys_setattr(const devfs_handle_t *handle, void *ctl);
@@ -25,7 +25,6 @@ int sys_open(const devfs_handle_t *handle) {
 }
 
 int sys_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
-  sys_id_t *id = ctl;
   sys_info_t *info = ctl;
   sys_killattr_t *killattr = ctl;
   int i;
@@ -71,9 +70,12 @@ int sys_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
   case I_SYS_GETTASK:
     return read_task(ctl);
 
-  case I_SYS_GETID:
-    memcpy(id->id, sos_config.sys.id, PATH_MAX - 1);
+  case I_SYS_GETID: {
+    sys_id_t *id = ctl;
+    *id = (sys_id_t){};
+    strncpy(id->id, sos_config.sys.id, sizeof(id->id) -1);
     return 0;
+  }
 
   case I_SYS_KILL:
     for (i = 1; i < task_get_total(); i++) {
