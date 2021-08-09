@@ -5,6 +5,9 @@
 #include "sos/symbols.h"
 #include "task_local.h"
 
+#include "config.h"
+
+
 // returns 1 if target and size fit in task_memory
 static int is_part_of_memory(void *target, int size, volatile task_memory_t *task_memory);
 
