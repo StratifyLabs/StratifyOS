@@ -2,6 +2,7 @@
 
 ## Bug Fixes
 
+- Fix a critical bug with `I_SYS_GETID` copying too many bytes
 - Implement `I_SYS_GETVERSION` in `/dev/sys`
 - Zero terminate arguments when starting a new process
 - Fix `st_ino` assignment in `/dev/*` when using `stat()` and `fstat()`
