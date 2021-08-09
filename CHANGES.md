@@ -38,6 +38,7 @@
 
 ## Bug Fixes
 
+- Fixed bug with `I_SYS_GETID` where too many chars were copied on some platforms
 - Fixed bug with CRT where atexit() was not initialized correctly causing crashes when the application exited
 - `kill()` now always sends to the primary task (non-thread) of the specified pid
 - Return error (`EINVAL`) if attempting to set a priority ceiling that is invalid
