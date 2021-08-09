@@ -30,6 +30,7 @@ extern "C" {
  * for the memory protection unit.
  */
 typedef enum {
+  MPU_MEMORY_NULL /*! Unspecified type */,
   MPU_MEMORY_FLASH /*! Flash Memory */,
   MPU_MEMORY_SRAM /*! SRAM */,
   MPU_MEMORY_EXTERNAL_SRAM /*! External SRAM */,

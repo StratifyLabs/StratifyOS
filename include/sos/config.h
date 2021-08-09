@@ -98,9 +98,10 @@ typedef struct MCU_PACK {
 } sos_usb_config_t;
 
 typedef struct MCU_PACK {
-  // pointer to secret_key_size-bytes used as a secret system key
+  // the secret key is now part of pure_code, this is the public key
+  //use SOS_DECLARE_PUBLIC_KEY_64(name)
   const void *secret_key_address;
-  // size of secret key (usually 32 bytes)
+  // public key size (usually 64 bytes)
   u32 secret_key_size;
   // number of bytes used for the system heap/stack space
   u32 memory_size;
@@ -225,6 +226,10 @@ typedef struct MCU_PACK {
 typedef struct MCU_PACK {
   u16 interrupt_request_total;
   u16 interrupt_middle_priority;
+  //If the MCU has 8 regions, set this to zero
+  //If the MCU has 16 regions, set this to 8 to make the
+  //Stratify OS MPU regions the highest priority
+  u32 task_mpu_region_offset;
   void (*set_interrupt_priority)(int number, int priority);
   void (*reset_watchdog_timer)();
   int (*set_pin_function)(const mcu_pin_t *pin, int function, int periph_port);

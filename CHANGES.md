@@ -2,6 +2,10 @@
 
 ## New Features
 
+- Add `MPU_MEMORY_NULL` so all valid MPU memory types are non-zero
+- Add `sos_config.mcu.task_mpu_region_offset` to config defaults to zero and is OK for MCU's with only 8 regions. Set to 8 for MCUs with 16 regions
+- Use `SOS_EVENT_ROOT_FATAL` for all check config errors (look at the debug output if the system doesn't boot)
+- Add defaults to `config.h`
 - Removed all per-process timer code when `CONFIG_TASK_PROCESS_TIMER_COUNT` is zero
 - Add `pthread_mutex_timedlock()` to symbol table
 - Implement `PTHREAD_INHERIT_SCHED` when creating new threads

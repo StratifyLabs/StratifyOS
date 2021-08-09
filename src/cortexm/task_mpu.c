@@ -202,6 +202,7 @@ int init_os_memory_protection(task_memories_t *os_mem) {
     sos_debug_log_error(
       SOS_DEBUG_SYS, "Failed to init OS flash 0x%lX -> 0x%ld bytes (%d)",
       (u32)os_mem->code.address, (u32)os_mem->code.size, err);
+    sos_handle_event(SOS_EVENT_ROOT_FATAL, "Failed to init kernel code MPU region");
     return err;
   }
 
@@ -213,6 +214,7 @@ int init_os_memory_protection(task_memories_t *os_mem) {
     sos_debug_log_error(
       SOS_DEBUG_SYS, "Failed to init shared mem 0x%lX -> 0x%lX bytes (%d)",
       (u32)os_mem->data.address, (u32)os_mem->data.size, err);
+    sos_handle_event(SOS_EVENT_ROOT_FATAL, "Failed to init kernel data MPU region");
     return err;
   }
 

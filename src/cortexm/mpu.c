@@ -95,6 +95,7 @@ u32 mpu_calc_region(
     return 0; // too small, can't protect less than 32 bytes
   }
 
+  int iteration_count = 0;
   do {
     subregion_count = 0;
     subregion_offset = 0;
@@ -134,6 +135,10 @@ u32 mpu_calc_region(
     if (subregion_count == 0) {
       aligned_address -= aligned_size;
     }
+    iteration_count++;
+    if( iteration_count > 16*64 ){
+      sos_handle_event(SOS_EVENT_ROOT_FATAL, "can't find a memory region");
+    }
   } while ((subregion_count == 0) && (max_subregion_size != size));
 
   if (subregion_count == 0) {
@@ -168,6 +173,8 @@ u32 mpu_calc_region(
    */
 
   switch (type) {
+  case MPU_MEMORY_NULL:
+    break;
   case MPU_MEMORY_EXTERNAL_SRAM:
     rasr_value |= sos_config.cache.external_sram_policy;
     break;

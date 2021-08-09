@@ -29,8 +29,10 @@ static void init_mpu() {
 }
 
 void scheduler_init() {
-  memset((void *)sos_task_table, 0, sizeof(task_t) * CONFIG_TASK_TOTAL);
-  memset((void *)sos_sched_table, 0, sizeof(sched_task_t) * CONFIG_TASK_TOTAL);
+  for(int i=0; i < CONFIG_TASK_TOTAL; i++){
+    sos_task_table[i] = (task_t){};
+    sos_sched_table[i] = (sched_task_t){};
+  }
 
   // Do basic init of task 0 so that memory allocation can happen before the scheduler
   // starts
