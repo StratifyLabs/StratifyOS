@@ -76,8 +76,9 @@ void scheduler() {
   }
 }
 
-void svcall_fault_logged(void *args) {
+void svcall_fault_logged(void * args) {
   CORTEXM_SVCALL_ENTER();
+  MCU_UNUSED_ARGUMENT(args);
   m_cortexm_fault.fault.num = 0;
 }
 
