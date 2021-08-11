@@ -212,6 +212,18 @@ int appfs_open(const void *cfg, void **handle, const char *path, int flags, int 
     h->type.install.ecc_api = sos_config.sys.kernel_request_api(CRYPT_ECC_API_REQUEST);
     h->type.install.sha256_api =
       sos_config.sys.kernel_request_api(CRYPT_SHA256_API_REQUEST);
+    if( h->type.install.ecc_api == NULL ){
+      sos_handle_event(SOS_EVENT_FATAL, "missing api: CRYPT_ECC_API_REQUEST");
+    }
+
+    if( h->type.install.sha256_api == NULL ){
+      sos_handle_event(SOS_EVENT_FATAL, "missing api: CRYPT_SHA256_API_REQUEST");
+    }
+
+    if( sos_config.sys.get_public_key == NULL ){
+      sos_handle_event(SOS_EVENT_FATAL, "missing api: sos_config.sys.get_public_key");
+    }
+
     h->type.install.ecc_api->init(&h->type.install.ecc_context);
     h->type.install.sha256_api->init(&h->type.install.sha256_context);
     h->type.install.sha256_api->start(h->type.install.sha256_context);
