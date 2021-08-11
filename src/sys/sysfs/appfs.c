@@ -207,6 +207,7 @@ int appfs_open(const void *cfg, void **handle, const char *path, int flags, int 
       ret = SYSFS_SET_RETURN(EINVAL);
     }
     h->is_install = 1;
+    h->type.install = (appfs_util_handle_t){};
 #if CONFIG_APPFS_IS_VERIFY_SIGNATURE
     h->type.install.ecc_api = sos_config.sys.kernel_request_api(CRYPT_ECC_API_REQUEST);
     h->type.install.sha256_api =
@@ -541,12 +542,16 @@ void svcall_close(void *args) {
   if (sos_config.cache.enable) {
     sos_config.cache.invalidate_instruction();
 
-    appfs_handle_t *h = args;
-    sos_config.cache.clean_data_block(
-      (void *)(h->type.install.code_start), h->type.install.code_size);
+    const appfs_handle_t * h = args;
+    if (h->type.install.code_size) {
+      sos_config.cache.clean_data_block(
+        (void *)(h->type.install.code_start), h->type.install.code_size);
+    }
 
-    sos_config.cache.clean_data_block(
-      (void *)(h->type.install.data_start), h->type.install.data_size);
+    if (h->type.install.data_size) {
+      sos_config.cache.clean_data_block(
+        (void *)(h->type.install.data_start), h->type.install.data_size);
+    }
   }
 }
 
@@ -675,7 +680,7 @@ void svcall_ioctl(void *args) {
     } else {
       // mark as non-executable
       file->exec.signature = ~APPFS_CREATE_SIGNATURE;
-      //clear priviledged flags
+      // clear priviledged flags
       file->exec.o_flags &= ~(APPFS_FLAG_IS_AUTHENTICATED | APPFS_FLAG_IS_STARTUP);
       file->hdr.mode = 0444; // read only
 
