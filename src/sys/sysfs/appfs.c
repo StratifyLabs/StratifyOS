@@ -104,7 +104,7 @@ void svcall_init(void *args) {
     if (
       (appfs_util_root_get_fileinfo(device, &appfs_file, i, MEM_FLAG_IS_FLASH, NULL)
        == APPFS_MEMPAGETYPE_USER)
-      && (appfs_util_is_executable(&appfs_file))) {
+      && (appfs_util_is_executable(&appfs_file.exec))) {
 
       mem_pageinfo_t page_info;
       page_info.o_flags = MEM_FLAG_IS_QUERY;
@@ -146,7 +146,7 @@ int appfs_startup(const void *cfg) {
 
     if (
       (get_fileinfo_args.result == APPFS_MEMPAGETYPE_USER)
-      && appfs_util_is_executable(&get_fileinfo_args.file_info)
+      && appfs_util_is_executable(&get_fileinfo_args.file_info.exec)
       && (get_fileinfo_args.file_info.exec.o_flags & APPFS_FLAG_IS_STARTUP)) {
 
       // start the process
