@@ -104,7 +104,7 @@ int device_fifo_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
   switch (request) {
   case I_FIFO_GETINFO:
     fifo_getinfo(info, &(config->fifo), &(state->fifo));
-    break;
+    return 0;
   case I_MCU_SETACTION:
     if (action->handler.callback == 0) {
       fifo_cancel_async_read(&(state->fifo));
@@ -114,7 +114,7 @@ int device_fifo_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
     fifo_flush(&(state->fifo));
     devfs_execute_read_handler(
       &state->fifo.transfer_handler, 0, -1, MCU_EVENT_FLAG_CANCELED);
-    break;
+    return 0;
   case I_FIFO_INIT:
     fifo_cancel_async_read(&(state->fifo));
 
@@ -139,7 +139,7 @@ int device_fifo_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
     if (result < 0) {
       return SYSFS_SET_RETURN(EIO);
     }
-    break;
+    return 0;
 
   case I_FIFO_EXIT:
     // clear the callback for the device
@@ -147,6 +147,7 @@ int device_fifo_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
     if (result < 0) {
       return SYSFS_SET_RETURN(EIO);
     }
+    return 0;
   }
 
   return config->device.driver.ioctl(&config->device.handle, request, ctl);
