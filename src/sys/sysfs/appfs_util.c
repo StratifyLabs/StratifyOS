@@ -533,7 +533,7 @@ int appfs_util_root_writeinstall(
     dest.file.hdr.mode = 0555;
 
     // is signature correct
-    if (src.file->exec.signature != symbols_table[0]) {
+    if( appfs_util_is_executable(&src.file->exec) == 0){
       sos_debug_log_error(SOS_DEBUG_APPFS, "Not executable");
       return SYSFS_SET_RETURN(ENOEXEC);
     }
@@ -733,9 +733,15 @@ int get_flash_page_type(const devfs_device_t *dev, u32 address, u32 size) {
   return APPFS_MEMPAGETYPE_USER;
 }
 
-int appfs_util_is_executable(const appfs_file_t *info) {
+int appfs_util_is_executable(const appfs_exec_t *exec) {
   // do a priv read of the signature
-  if (info->exec.signature != symbols_table[0]) {
+  const int device_arch = symbols_table[0] & 0x0f;
+  const int app_arch = exec->signature & 0x0f;
+  if( app_arch > device_arch ){
+    return 0;
+  }
+
+  if (exec->signature > symbols_table[0]) {
     return 0;
   }
   return 1;

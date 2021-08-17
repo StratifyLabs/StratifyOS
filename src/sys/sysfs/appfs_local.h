@@ -99,7 +99,7 @@ int appfs_util_lookupname(
   int type,
   int *size);
 const appfs_file_t *appfs_util_getfile(appfs_handle_t *h);
-int appfs_util_is_executable(const appfs_file_t *info);
+int appfs_util_is_executable(const appfs_exec_t *exec);
 
 int appfs_util_get_data_mpu_type(const appfs_file_t * file);
 int appfs_util_get_code_mpu_type(const appfs_file_t * file);

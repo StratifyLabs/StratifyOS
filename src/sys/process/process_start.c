@@ -89,7 +89,7 @@ int process_start(const char *path_arg, char *const envp[]) {
   }
 
   // verify the signature
-  if (appfs_util_is_executable(&startup) == 0) {
+  if (appfs_util_is_executable(&startup.exec) == 0) {
     errno = ENOEXEC;
     sos_debug_log_error(SOS_DEBUG_SYS, "not executable");
     return -1;
