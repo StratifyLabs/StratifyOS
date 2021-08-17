@@ -1,3 +1,13 @@
+# Version 4.2.0
+
+## New Features
+
+- Nothing yet
+
+## Bug Fixes
+
+- Fix return value of ioctl calls to device fifo
+
 # Version 4.1.0
 
 ## New Features
