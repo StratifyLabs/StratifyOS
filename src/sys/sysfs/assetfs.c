@@ -147,11 +147,13 @@ int assetfs_stat(const void *cfg, const char *path, struct stat *st) {
 }
 
 void assign_stat(int ino, const assetfs_dirent_t *entry, struct stat *st) {
-  memset(st, 0, sizeof(struct stat));
+  *st = (struct stat){};
   st->st_size = entry->end - entry->start;
   st->st_ino = ino;
   st->st_mode = entry->mode | S_IFREG;
   st->st_uid = entry->uid;
+  //give the caller the direct address of the data
+  st->st_blocks = entry->start;
 }
 
 int assetfs_opendir(const void *cfg, void **handle, const char *path) {

@@ -2,7 +2,7 @@
 
 ## New Features
 
-- Nothing yet
+- `assetfs` provides a memory pointer in `st->st_blocks` allowing the caller to directly access the memory of the asset
 
 ## Bug Fixes
 

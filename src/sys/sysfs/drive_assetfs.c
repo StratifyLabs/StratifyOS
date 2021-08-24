@@ -70,7 +70,7 @@ int drive_assetfs_exit(const void *cfg) {
 }
 
 int drive_assetfs_startup(const void *cfg) {
-  // check for any applications that are embedded and start them?
+  MCU_UNUSED_ARGUMENT(cfg);
   return 0;
 }
 
@@ -188,7 +188,7 @@ int drive_assetfs_stat(const void *cfg, const char *path, struct stat *st) {
 }
 
 void assign_stat(int ino, const drive_assetfs_dirent_t *entry, struct stat *st) {
-  memset(st, 0, sizeof(struct stat));
+  *st = (struct stat){};
   st->st_size = entry->size;
   st->st_ino = ino;
   st->st_mode = entry->mode | S_IFREG;
@@ -196,6 +196,7 @@ void assign_stat(int ino, const drive_assetfs_dirent_t *entry, struct stat *st) 
 }
 
 int drive_assetfs_opendir(const void *cfg, void **handle, const char *path) {
+  MCU_UNUSED_ARGUMENT(cfg);
   if (strncmp(path, "", PATH_MAX) == 0) {
     *handle = VALID_DIR_HANDLE;
     return 0;
@@ -225,6 +226,7 @@ int drive_assetfs_readdir_r(
 }
 
 int drive_assetfs_closedir(const void *cfg, void **handle) {
+  MCU_UNUSED_ARGUMENT(cfg);
   if (*handle != VALID_DIR_HANDLE) {
     return SYSFS_SET_RETURN(EINVAL);
   }
@@ -251,14 +253,14 @@ int find_file(
 }
 
 int get_directory_entry(const void *cfg, int loc, drive_assetfs_dirent_t *entry) {
-  u32 count;
+  int count;
   int result = read_drive(cfg, 0, &count, sizeof(u32));
   if (result < 0) {
     SYSFS_PROCESS_RETURN(result);
     return result;
   }
 
-  if (count == 0xffffffff) {
+  if (count == -1) {
     count = 0;
   }
   if (loc < 0) {
