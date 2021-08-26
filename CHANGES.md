@@ -7,6 +7,7 @@
 ## Bug Fixes
 
 - Fix return value of ioctl calls to device fifo
+- Fixed a bug with the message queues. A very specific timing condition could cause a receive to miss a send.
 
 # Version 4.1.0
 
