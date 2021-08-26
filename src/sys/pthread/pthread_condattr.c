@@ -103,10 +103,12 @@ int pthread_condattr_getclock(const pthread_condattr_t *attr, clockid_t *clock_i
  * always use CLOCK_REALTIME.  This value
  * cannot be changed.
  *
- * \return Zero on success or -1 with errno set to:
+ * \return -1 with errno set to:
  * - ENOTSUP:  this function is not supported
  */
 int pthread_condattr_setclock(pthread_condattr_t *attr, clockid_t clock_id) {
+  MCU_UNUSED_ARGUMENT(attr);
+  MCU_UNUSED_ARGUMENT(clock_id);
   errno = ENOTSUP;
   return -1;
 }

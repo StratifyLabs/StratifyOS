@@ -219,6 +219,8 @@ int pthread_cond_timedwait(
 
   // release the mutex and block on the cond
   cortexm_svcall(svcall_cond_wait, &args);
+
+  //lock the mutex
   pthread_mutex_lock(mutex);
 
   if (scheduler_unblock_type(task_get_current()) == SCHEDULER_UNBLOCK_SLEEP) {
