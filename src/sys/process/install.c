@@ -42,8 +42,6 @@ int install(
   const void *update_context) {
 
   // appfs_file_t * hdr;
-  appfs_installattr_t attr;
-  struct stat st;
   char name[APPFS_NAME_MAX + 1];
   char target_path[PATH_MAX + 1];
   // int len;
@@ -92,18 +90,45 @@ int install(
       sos_debug_log_error(SOS_DEBUG_SYS, "Failed to open /app/.install %d", errno);
       return -1;
     }
+    struct stat st = {};
+    if( fstat(image_fd, &st) < 0 ){
+      return -1;
+    }
 
-    attr.loc = 0;
+    appfs_installattr_t attr = {};
     int bytes_cumm = 0;
-    int bytes_read;
+    int bytes_read = 0;
+    int page_size;
+    const int size =
+#if CONFIG_APPFS_IS_VERIFY_SIGNATURE
+      st.st_size - sizeof(auth_signature_marker_t);
+
+    if( st.st_size < (int)(sizeof(auth_signature_marker_t) + sizeof(appfs_header_t)) ){
+      close(install_fd);
+      close(image_fd);
+      errno = EINVAL;
+      return -1;
+    }
+#else
+      st.st_size;
+#endif
 
     do {
       // check the image
+      if( size - bytes_cumm > APPFS_PAGE_SIZE ){
+        page_size = APPFS_PAGE_SIZE;
+      } else {
+        page_size = size - bytes_cumm;
+      }
+
       memset(attr.buffer, 0xFF, APPFS_PAGE_SIZE);
-      bytes_read = read(image_fd, attr.buffer, APPFS_PAGE_SIZE);
+      bytes_read = read(image_fd, attr.buffer, page_size);
       if (bytes_read > 0) {
         attr.nbyte = bytes_read;
         bytes_cumm += attr.nbyte;
+
+//if the application is signed, it cannot be modified
+#if CONFIG_APPFS_IS_VERIFY_SIGNATURE == 0
         if (attr.loc == 0) {
           appfs_file_t *hdr = (appfs_file_t *)attr.buffer;
           // update the header for the image to be installed
@@ -121,6 +146,7 @@ int install(
             hdr->exec.ram_size = ram_size;
           }
         }
+#endif
 
         if (ioctl(install_fd, I_APPFS_INSTALL, &attr) < 0) {
           close(image_fd);
@@ -129,7 +155,7 @@ int install(
         }
 
         if (update_progress != 0) {
-          if (update_progress(update_context, bytes_cumm, st.st_size) < 0) {
+          if (update_progress(update_context, bytes_cumm, size) < 0) {
             // aborted by caller
             close(image_fd);
             close(install_fd);
@@ -137,10 +163,30 @@ int install(
           }
         }
 
-        attr.loc += APPFS_PAGE_SIZE;
+        attr.loc += page_size;
       }
 
-    } while (bytes_read == APPFS_PAGE_SIZE);
+    } while (bytes_cumm < size);
+
+#if CONFIG_APPFS_IS_VERIFY_SIGNATURE
+    auth_signature_marker_t marker;
+    if( read(image_fd, &marker, sizeof(marker)) < 0 ){
+      close(image_fd);
+      close(install_fd);
+      return -1;
+    }
+    appfs_verify_signature_t verify_signature = {
+      .public_key_index = (options >> 12) & 0x07
+    };
+    memcpy(verify_signature.data, &marker.signature, 64);
+    if( ioctl(install_fd, I_APPFS_VERIFY_SIGNATURE, &verify_signature) < 0 ){
+      close(image_fd);
+      close(install_fd);
+      return -1;
+    }
+#endif
+
+
     close(image_fd);
     close(install_fd);
   }

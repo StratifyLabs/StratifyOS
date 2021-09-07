@@ -3,6 +3,7 @@
 ## New Features
 
 - `assetfs` provides a memory pointer in `st->st_blocks` allowing the caller to directly access the memory of the asset
+- `install()` will use `I_APPFS_VERIFY_SIGNATURE` is a signature is required
 
 ## Bug Fixes
 
