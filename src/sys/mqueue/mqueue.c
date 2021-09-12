@@ -104,6 +104,7 @@ struct message {
 #define MQ_STATUS_NONBLOCK_MASK (1 << 17)
 #define MQ_STATUS_RDWR_MASK (1 << 18)
 #define MQ_STATUS_LOOP_MASK (1 << 19)
+#define MQ_STATUS_USER_MASK (1 << 20)
 
 #define MQ_NAME_MAX 23
 
@@ -114,7 +115,8 @@ typedef struct {
   int mode;                   // not currently implemented
   char name[MQ_NAME_MAX + 1]; // The name of the queue
   struct message *msg_table;  // a pointer to the message table
-  uint32_t status; // how many tasks are accessing the message queue, other flags
+  u32 status; // how many tasks are accessing the message queue, other flags
+  int pid;
   pthread_mutex_t mutex;
   pthread_cond_t send_cond;
   pthread_cond_t recv_cond;
@@ -125,26 +127,30 @@ typedef struct {
   void *next;
 } mq_list_t;
 
-static mq_list_t *mq_first = 0;
+static mq_list_t *mq_first = NULL;
 
 static int mq_entry_size(const mq_t *mq) { return sizeof(struct message) + mq->max_size; }
 
 static struct message *mq_next_message(const struct message *msg, int entry_size) {
-  const void *ptr;
-  ptr = msg + entry_size;
+  const u8 *ptr;
+  ptr = ((const u8*)msg) + entry_size;
   return (struct message *)ptr;
 }
 
 static mq_t *mq_find_named(const char *name) {
   mq_list_t *entry;
+  int pid = task_get_pid(task_get_current());
   for (entry = mq_first; entry != 0; entry = entry->next) {
     if (entry->mq.msg_table != 0) {
       if (strncmp(entry->mq.name, name, sizeof(entry->mq.name) - 1) == 0) {
-        return &entry->mq;
+        const int is_user = (entry->mq.status & MQ_STATUS_USER_MASK) != 0;
+        if( !is_user || (pid == entry->mq.pid) ){
+          return &entry->mq;
+        }
       }
     }
   }
-  return 0;
+  return NULL;
 }
 
 static ssize_t mq_cur_msgs(const mq_t *mq) {
@@ -196,7 +202,7 @@ static mq_t *mq_find_free() {
 
 static void mq_init_table(mq_t *mq) {
   struct message *imsg = mq->msg_table;
-  int entry_size = mq_entry_size(mq);
+  const int entry_size = mq_entry_size(mq);
   for (size_t i = 0; i < mq->max_msgs; i++) {
     imsg->size = 0;
     imsg = mq_next_message(imsg, entry_size);
@@ -266,7 +272,8 @@ static int mq_init_mutex(mq_t *mq) {
 
 static void mq_destroy(mq_t *mq) {
   if (mq->msg_table != NULL) {
-    _free_r(sos_task_table[0].global_reent, mq->msg_table);
+    const int is_user = (mq->status & MQ_STATUS_USER_MASK) != 0;
+    _free_r(is_user ? _REENT : sos_task_table[0].global_reent, mq->msg_table);
     mq->msg_table = NULL;
     pthread_mutex_destroy(&mq->mutex);
     pthread_cond_destroy(&mq->send_cond);
@@ -291,7 +298,6 @@ typedef struct {
   uint32_t not_signature;
   mq_t *mq;
 } msg_file_hdr_t;
-
 
 typedef struct {
   void *block;
@@ -386,6 +392,9 @@ int mq_setattr(mqd_t mqdes, const struct mq_attr *mqstat, struct mq_attr *omqsta
  * mqd_t mq_open(const char * name, int oflag, mode_t mode, const struct mq_attr * attr);
  * \endcode
  *
+ * If the name starts with `user`, the message queue will only be available to the calling
+ * process. All other message queues can be shared among processes.
+ *
  * \return Zero on success or -1 with errno (see \ref errno) set to:
  * - ENAMETOOLONG:  \a name length is greater than NAME_MAX
  * - EEXIST:  O_CREAT and O_EXCL are set in \a oflag but the queue already exists
@@ -407,7 +416,6 @@ mqd_t mq_open(
   mode_t mode;
   const struct mq_attr *attr;
   va_list ap;
-  struct _reent *reent_ptr;
   int tmp;
 
   if (strnlen(name, MQ_NAME_MAX) == MQ_NAME_MAX) {
@@ -461,7 +469,7 @@ mqd_t mq_open(
     }
 
     // Create the new message queue
-    reent_ptr = sos_task_table[0].global_reent;
+    struct _reent *reent_ptr = sos_task_table[0].global_reent;
     new_mq = mq_find_free();
     if (new_mq == NULL) {
       // errno is set by malloc
@@ -483,10 +491,16 @@ mqd_t mq_open(
       // aligned
       new_mq->max_size = attr->mq_msgsize;
     }
-    new_mq->status = 1;
     new_mq->age = 0;
-    new_mq->msg_table =
-      _calloc_r(reent_ptr, new_mq->max_msgs, (new_mq->max_size + sizeof(struct message)));
+
+    const int is_user = strncmp(name, "user", 4) == 0;
+
+    new_mq->pid = task_get_pid(task_get_current());
+    new_mq->status = 1 | (is_user ? MQ_STATUS_USER_MASK : 0);
+    struct _reent *message_reent_ptr = is_user ? _REENT : reent_ptr;
+
+    new_mq->msg_table = _calloc_r(
+      message_reent_ptr, new_mq->max_msgs, (new_mq->max_size + sizeof(struct message)));
     if (new_mq->msg_table == NULL) {
       return -1;
     }
@@ -569,7 +583,7 @@ int mq_unlink(const char *name /*! the full path to the message queue */) {
   }
 
   mq = mq_find_named(name);
-  if (mq == 0) {
+  if (mq == NULL) {
     errno = ENOENT;
     return -1;
   }
@@ -587,17 +601,15 @@ int mq_unlink(const char *name /*! the full path to the message queue */) {
 
 void mq_discard(mqd_t mqdes) {
   mq_t *mq = mq_get_ptr(mqdes);
-  if (mq == 0) {
+  if (mq == NULL) {
     return;
   }
-
-  _free_r(sos_task_table[0].global_reent, mq->msg_table);
-  mq->msg_table = 0;
+  mq_destroy(mq);
 }
 
 void mq_flush(mqd_t mqdes) {
   mq_t *mq = mq_get_ptr(mqdes);
-  if (mq != 0) {
+  if (mq != NULL) {
     mq_init_table(mq);
   }
 }
@@ -697,11 +709,10 @@ ssize_t mq_timedreceive(
         errno = EAGAIN;
         size = -1;
       } else {
-        //wait for a message to be sent
-        if( pthread_cond_timedwait(&mq->send_cond, &mq->mutex, abs_timeout) < 0 ){
+        // wait for a message to be sent
+        if (pthread_cond_timedwait(&mq->send_cond, &mq->mutex, abs_timeout) < 0) {
           size = -1;
         }
-
       }
     }
 
@@ -710,8 +721,8 @@ ssize_t mq_timedreceive(
   pthread_mutex_unlock(&mq->mutex);
 
   if (size > 0) {
-    //send a signal that a message
-    //to indicate there is space in the queue
+    // send a signal that a message
+    // to indicate there is space in the queue
     pthread_cond_signal(&mq->recv_cond);
   }
 
@@ -807,7 +818,7 @@ int mq_timedsend(
         errno = EAGAIN;
         size = -1;
       } else {
-        if( pthread_cond_timedwait(&mq->recv_cond, &mq->mutex, abs_timeout) < 0 ){
+        if (pthread_cond_timedwait(&mq->recv_cond, &mq->mutex, abs_timeout) < 0) {
           size = -1;
         }
       }
@@ -823,7 +834,6 @@ int mq_timedsend(
     // in the queue
     pthread_cond_signal(&mq->send_cond);
   }
-
 
   return size;
 }
