@@ -10,6 +10,8 @@
 #include <sdk/types.h>
 #include <stdlib.h>
 
+/*! \cond */
+
 #define SCHED_USECOND_TMR_RESET_OC 2
 #define SCHED_USECOND_TMR_SLEEP_OC 0
 #define SCHED_USECOND_TMR_SYSTEM_TIMER_OC 1
@@ -184,5 +186,7 @@ typedef u32 pwm_duty_t;
 #include <limits.h>
 typedef void *mcu_target_ptr_t;
 #endif
+
+/*! \endcond */
 
 #endif /* ARCH_H_ */

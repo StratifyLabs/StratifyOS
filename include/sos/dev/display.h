@@ -24,7 +24,9 @@
  * \endcode
  */
 
-/*! \file  */
+/*! \file 
+ */
+
 #ifndef SOS_DEV_DISPLAY_H_
 #define SOS_DEV_DISPLAY_H_
 

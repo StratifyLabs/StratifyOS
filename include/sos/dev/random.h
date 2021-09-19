@@ -12,7 +12,9 @@
  *
  */
 
-/*! \file  */
+/*! \file 
+ */
+
 
 #ifndef SOS_DEV_RANDOM_H_
 #define SOS_DEV_RANDOM_H_

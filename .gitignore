@@ -6,4 +6,6 @@ cmake_*
 *.gch
 *.8-pre1
 .vscode/
+doc/StratifyOS/
 build/
+doc/StratifyOS.tag

@@ -24,7 +24,9 @@
  *
  */
 
-/*! \file  */
+/*! \file 
+ */
+
 
 #ifndef SOS_DEV_STREAM_FFIFO_H_
 #define SOS_DEV_STREAM_FFIFO_H_

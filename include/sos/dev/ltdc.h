@@ -9,7 +9,9 @@
  * \details
  */
 
-/*! \file  */
+/*! \file 
+ */
+
 #ifndef SOS_DEV_LTDC_H_
 #define SOS_DEV_LTDC_H_
 

@@ -11,7 +11,8 @@
  *
  */
 
-/*! \file  */
+/*! \file 
+*/
 
 #ifndef SOS_DEV_CRYPT_H_
 #define SOS_DEV_CRYPT_H_

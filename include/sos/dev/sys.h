@@ -11,7 +11,9 @@
  *
  */
 
-/*! \file  */
+/*! \file 
+ */
+
 
 #ifndef SOS_DEV_SYS_H_
 #define SOS_DEV_SYS_H_

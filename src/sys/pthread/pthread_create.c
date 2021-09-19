@@ -8,7 +8,13 @@
 
 #include "../scheduler/scheduler_root.h"
 
+/*! \cond */
 static void svcall_join_thread(void *args) MCU_ROOT_EXEC_CODE;
+/*! \endcond */
+
+/*! \addtogroup pthread
+ * @{
+ */
 
 /*! \details This function creates a new thread.
  * \return Zero on success or -1 with \a errno (see \ref errno) set to:

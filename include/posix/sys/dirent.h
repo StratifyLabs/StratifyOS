@@ -28,13 +28,14 @@ struct dirent {
 	char d_name[NAME_MAX+1] /*! \brief Name of entry */;
 };
 
-
+/*! \cond */
 typedef struct {
 	const void * fs;
 	void * handle;
 	long loc;
 	 unsigned int checksum;
 } DIR;
+/*! \endcond */
 
 int closedir(DIR * dirp);
 DIR * opendir(const char * dirname);

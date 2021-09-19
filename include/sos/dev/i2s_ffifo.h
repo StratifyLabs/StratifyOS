@@ -12,7 +12,8 @@
  *
  */
 
-/*! \file  */
+/*! \file 
+ */
 
 #ifndef SOS_DEV_I2S_FFIFO_H_
 #define SOS_DEV_I2S_FFIFO_H_
