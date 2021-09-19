@@ -73,12 +73,14 @@ int pthread_cond_destroy(pthread_cond_t *cond) {
   return 0;
 }
 
+/*! \cond */
 void svcall_cond_broadcast(void *args) {
   CORTEXM_SVCALL_ENTER();
   int prio;
   prio = scheduler_root_unblock_all(args, SCHEDULER_UNBLOCK_COND);
   scheduler_root_update_on_wake(-1, prio);
 }
+/*! \endcond */
 
 /*! \details This function wakes all threads that are blocked on \a cond.
  *
@@ -102,12 +104,14 @@ int pthread_cond_broadcast(pthread_cond_t *cond) {
   return 0;
 }
 
+/*! \cond */
 void svcall_cond_signal(void *args) {
   CORTEXM_SVCALL_ENTER();
   int id = *((int *)args);
   scheduler_root_assert_active(id, SCHEDULER_UNBLOCK_COND);
   scheduler_root_update_on_wake(id, task_get_priority(id));
 }
+/*! \endcond */
 
 /*! \details This function wakes the highest priority thread
  * that is blocked on \a cond.
