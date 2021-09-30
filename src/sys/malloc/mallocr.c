@@ -430,7 +430,7 @@ int malloc_chunk_is_free(malloc_chunk_t *chunk) {
 void malloc_process_fault(void *loc) {
   sos_debug_log_error(
     SOS_DEBUG_SYS, "Heap: 0x%lX (id:%d,pid:%d)", (u32)loc, task_get_current(),
-    task_get_pid(task_get_current());
+    task_get_pid(task_get_current()));
 
   sos_trace_stack((u32)-1);
   if (task_get_pid(task_get_current()) > 0) {
