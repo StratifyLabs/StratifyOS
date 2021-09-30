@@ -8,6 +8,7 @@
 
 ## Bug Fixes
 
+- Fixed two possible buffer overflow errors when launching applications
 - Cleanup `realloc()` (functionally equivalent)
 - Fix return value of ioctl calls to device fifo
 - Fixed a bug with the message queues. A very specific timing condition could cause a receive to miss a send.

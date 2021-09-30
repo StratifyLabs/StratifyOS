@@ -31,8 +31,6 @@
 #include "sos/fs/devfs.h"
 #include "sos/fs/sysfs.h"
 
-static u8 launch_count = 0;
-
 int install(
   const char *path,
   char *exec_path,
@@ -58,7 +56,7 @@ int install(
   } else {
     strncpy(target_path, "/app/ram/", sizeof(target_path) - 1);
   }
-  strncat(target_path, name, sizeof(target_path) - 1);
+  strncat(target_path, name, sizeof(target_path) - strlen(target_path) - 1);
 
   // does the image already exist at the target location
   if (access(target_path, R_OK) == 0) {
@@ -121,7 +119,7 @@ int install(
         page_size = size - bytes_cumm;
       }
 
-      memset(attr.buffer, 0xFF, APPFS_PAGE_SIZE);
+      memset(attr.buffer, 0xFF, sizeof(attr.buffer));
       bytes_read = read(image_fd, attr.buffer, page_size);
       if (bytes_read > 0) {
         attr.nbyte = bytes_read;
