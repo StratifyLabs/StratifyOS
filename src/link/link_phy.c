@@ -28,15 +28,15 @@ typedef struct {
   char name[MAX_DEVICE_PATH];
 } link_phy_container_t;
 
-#define API_COM_PREFIX "serial@"
-#define API_COM_PORT_NAME "serial@COM"
+#define API_COM_PREFIX "/serial/"
+#define API_COM_PORT_NAME "serial/COM"
 #define COM_PORT_NAME "\\\\.\\COM"
 #define COM_PORT_MAX 500
 
 int link_phy_getname(char *dest, const char *last, int len) {
   int com_port = 0;
   char windows_name[24]; //\\\\.\\COM
-  char api_name[24];     // serial@COM4
+  char api_name[24];     // serial/COM4
   int does_not_exist;
 
   // first find the last port
@@ -111,7 +111,7 @@ link_transport_phy_t link_phy_open(const char *name, const void *options) {
   link_phy_container_t *handle;
   DCB params;
 
-  // convert from serial@ to \\.\COM
+  // convert from serial/ to \\.\COM
 
   char windows_name[64];
 
@@ -345,7 +345,7 @@ int link_phy_getname(char *dest, const char *last, int len) {
       snprintf(entry_path, 255, "/dev/%s", entry.d_name);
 
       if (past_last == true) {
-        if (strlen(entry.d_name) > len) {
+        if (strlen(entry.d_name) > (size_t)len) {
           // name won't fit in destination
           closedir(dirp);
           return LINK_PHY_ERROR;
@@ -376,10 +376,10 @@ link_transport_phy_t link_phy_open(const char *name, const void *s_options) {
     return LINK_PHY_OPEN_ERROR;
   }
 
-  const char *serial_prefix = "serial@";
+  const char *serial_prefix = "/serial";
   if (strncmp(name, serial_prefix, strlen(serial_prefix)) == 0) {
     name = name + strlen(serial_prefix);
-    link_debug(LINK_DEBUG_MESSAGE, "stripping serial@ from beginning of name: %s", name);
+    link_debug(LINK_DEBUG_MESSAGE, "stripping /serial from beginning of name: %s", name);
   }
 
   // open serial port
@@ -479,7 +479,6 @@ int link_phy_status(link_transport_phy_t handle) {
 }
 
 int link_phy_write(link_transport_phy_t handle, const void *buf, int nbyte) {
-  struct termios options;
   link_phy_container_t *phy = handle;
   int tmp;
   int ret;
