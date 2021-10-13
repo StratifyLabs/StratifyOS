@@ -376,10 +376,18 @@ link_transport_phy_t link_phy_open(const char *name, const void *s_options) {
     return LINK_PHY_OPEN_ERROR;
   }
 
-  const char *serial_prefix = "/serial";
-  if (strncmp(name, serial_prefix, strlen(serial_prefix)) == 0) {
-    name = name + strlen(serial_prefix);
+  const char slash_serial_prefix[] = "/serial";
+  const size_t slash_len = sizeof(slash_serial_prefix) - 1;
+  if (strncmp(name, slash_serial_prefix, slash_len) == 0) {
+    name = name + slash_len;
     link_debug(LINK_DEBUG_MESSAGE, "stripping /serial from beginning of name: %s", name);
+  }
+
+  const char serial_prefix_at[] = "serial@";
+  const size_t at_len = sizeof(serial_prefix_at) - 1;
+  if (strncmp(name, serial_prefix_at, at_len) == 0) {
+    name = name + at_len;
+    link_debug(LINK_DEBUG_MESSAGE, "stripping serial@ from beginning of name: %s", name);
   }
 
   // open serial port
