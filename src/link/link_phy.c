@@ -52,7 +52,7 @@ int link_phy_getname(char *dest, const char *last, int len) {
 
   does_not_exist = 1;
   while ((com_port < COM_PORT_MAX) && does_not_exist) {
-    snprintf(windows_name, 23, "%s%d", COM_PORT_NAME, com_port);
+	 snprintf(windows_name, 23, "%s%d", COM_PORT_NAME, com_port);
     snprintf(api_name, 23, "%s%d", API_COM_PORT_NAME, com_port);
 
     HANDLE test_handle;
@@ -115,11 +115,14 @@ link_transport_phy_t link_phy_open(const char *name, const void *options) {
 
   char windows_name[64];
 
-  const int len = strlen(API_COM_PREFIX);
-  if (strncmp(name, API_COM_PREFIX, len) == 0) {
-    snprintf(windows_name, 62, "\\\\.\\%s", name + len);
-  } else if (strncmp(name, "COM", 3) == 0) {
-    snprintf(windows_name, 62, "\\\\.\\%s", name);
+  const char at_prefix[] = "@serial/";
+  const int len = sizeof(at_prefix) - 1;
+  if (strncmp(name, at_prefix, len) == 0) {
+		name = name + len;
+  }
+
+  if (strncmp(name, "COM", 3) == 0) {
+	 snprintf(windows_name, 62, "\\\\.\\%s", name);
   } else {
     strncpy(windows_name, name, 63);
   }
@@ -139,8 +142,8 @@ link_transport_phy_t link_phy_open(const char *name, const void *options) {
   link_debug(LINK_DEBUG_INFO, "Open device %s as %s", name, windows_name);
 
   handle->handle = CreateFile(
-    windows_name, GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING,
-    FILE_ATTRIBUTE_NORMAL, 0);
+	 windows_name, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING,
+	 FILE_ATTRIBUTE_NORMAL, NULL);
   if (handle->handle == INVALID_HANDLE_VALUE) {
     free(handle);
     link_debug(LINK_DEBUG_INFO, "failed to open %s", windows_name);
