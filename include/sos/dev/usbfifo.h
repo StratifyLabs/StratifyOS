@@ -12,7 +12,8 @@
  *
  */
 
-/*! \file  */
+/*! \file 
+ */
 
 #ifndef SOS_DEV_USBFIFO_H_
 #define SOS_DEV_USBFIFO_H_

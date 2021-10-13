@@ -13,7 +13,8 @@
  *
  */
 
-/*! \file  */
+/*! \file 
+*/
 
 #ifndef SOS_DEV_CFIFO_H_
 #define SOS_DEV_CFIFO_H_

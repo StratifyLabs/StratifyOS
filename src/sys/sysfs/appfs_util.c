@@ -225,6 +225,7 @@ int check_for_free_space(const devfs_device_t *dev, int start_page, int type, in
   last_addr = -1;
   last_size = -1;
 
+
   do {
 
     appfs_util_root_get_pageinfo(dev, &page_info);
@@ -288,13 +289,13 @@ u32 find_protectable_free(
       space_available = check_for_free_space(dev, *page, type, *protectable_size);
       if (space_available > 0) {
 #if 0
-				//there is room here -- find the smallest free space where the program fits
-				space_available = tmp;
-				smallest_space_addr = start_addr;
-				smallest_space_page = *page;
-				if( size == space_available ){ //this is a perfect fit
-					return smallest_space_addr;
-				}
+        // there is room here -- find the smallest free space where the program fits
+        space_available = tmp;
+        smallest_space_addr = start_addr;
+        smallest_space_page = *page;
+        if (size == space_available) { // this is a perfect fit
+          return smallest_space_addr;
+        }
 #else
         return start_addr;
 #endif
@@ -533,7 +534,7 @@ int appfs_util_root_writeinstall(
     dest.file.hdr.mode = 0555;
 
     // is signature correct
-    if( appfs_util_is_executable(&src.file->exec) == 0){
+    if (appfs_util_is_executable(&src.file->exec) == 0) {
       sos_debug_log_error(SOS_DEBUG_APPFS, "Not executable");
       return SYSFS_SET_RETURN(ENOEXEC);
     }
@@ -737,7 +738,7 @@ int appfs_util_is_executable(const appfs_exec_t *exec) {
   // do a priv read of the signature
   const int device_arch = symbols_table[0] & 0x0f;
   const int app_arch = exec->signature & 0x0f;
-  if( app_arch > device_arch ){
+  if (app_arch > device_arch) {
     return 0;
   }
 

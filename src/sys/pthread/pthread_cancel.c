@@ -16,6 +16,7 @@
 #include "../scheduler/scheduler_root.h"
 #include "cortexm/task.h"
 
+/*! \cond */
 typedef struct {
   int tid;
   int cancel;
@@ -24,6 +25,7 @@ typedef struct {
   int old_state;
   int old_type;
 } svcall_cancel_update_t;
+
 
 static void svcall_cancel_update(void *args) MCU_ROOT_EXEC_CODE;
 
@@ -62,6 +64,9 @@ void svcall_cancel_update(void *args) {
     scheduler_root_deassert_cancel_asynchronous(tid);
   }
 }
+
+/*! \endcond */
+
 
 /*! \details This function cancels the specified thread.
  * \return Zero on success or -1 with errno set.

@@ -34,6 +34,10 @@
 extern "C" {
 #endif
 
+/*! \addtogroup link
+ * @{
+ */
+
 extern int link_errno;
 
 #include "link/commands.h"

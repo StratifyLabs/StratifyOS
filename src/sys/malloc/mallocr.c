@@ -23,8 +23,9 @@ void malloc_process_fault(void *loc);
 u16 malloc_calc_num_chunks(u32 size) {
   int num_chunks;
   if (size > MALLOC_DATA_SIZE) {
-    num_chunks =
-      ((size - MALLOC_DATA_SIZE) + CONFIG_MALLOC_CHUNK_SIZE - 1) / CONFIG_MALLOC_CHUNK_SIZE + 1;
+    num_chunks = ((size - MALLOC_DATA_SIZE) + CONFIG_MALLOC_CHUNK_SIZE - 1)
+                   / CONFIG_MALLOC_CHUNK_SIZE
+                 + 1;
   } else {
     num_chunks = 1;
   }
@@ -109,7 +110,8 @@ void cleanup_memory(struct _reent *reent_ptr, int release_extra_memory) {
   // next->header.num_chunks is 0 -- next and current are the same
   if (release_extra_memory && (last_chunk_if_free != 0)) {
     // do negative _sbrk to give memory back to stack
-    ptrdiff_t size = -1 * (last_chunk_if_free->header.num_chunks * CONFIG_MALLOC_CHUNK_SIZE);
+    ptrdiff_t size =
+      -1 * (last_chunk_if_free->header.num_chunks * CONFIG_MALLOC_CHUNK_SIZE);
     _sbrk_r(reent_ptr, size);
     set_last_chunk(last_chunk_if_free);
   }
@@ -222,8 +224,6 @@ void _free_r(struct _reent *reent_ptr, void *addr) {
   SOS_DEBUG_EXIT_TIMER_SCOPE(SOS_DEBUG_MALLOC, _free_r);
 
   sos_debug_log_datum(SOS_DEBUG_MALLOC, "heap%d:free,%d", getpid(), addr);
-
-
 }
 
 int malloc_get_more_memory(struct _reent *reent_ptr, u32 size, int is_new_heap) {
@@ -236,7 +236,8 @@ int malloc_get_more_memory(struct _reent *reent_ptr, u32 size, int is_new_heap) 
 
   // jump as size but round up to a multiple of CONFIG_MALLOC_SBRK_JUMP_SIZE
   int jump_size =
-    ((size + CONFIG_MALLOC_SBRK_JUMP_SIZE - 1) / CONFIG_MALLOC_SBRK_JUMP_SIZE) * CONFIG_MALLOC_SBRK_JUMP_SIZE;
+    ((size + CONFIG_MALLOC_SBRK_JUMP_SIZE - 1) / CONFIG_MALLOC_SBRK_JUMP_SIZE)
+    * CONFIG_MALLOC_SBRK_JUMP_SIZE;
   new_heap = _sbrk_r(reent_ptr, jump_size + extra_bytes);
 
   if (new_heap == NULL) {
@@ -252,11 +253,11 @@ int malloc_get_more_memory(struct _reent *reent_ptr, u32 size, int is_new_heap) 
       chunk = new_heap;
     } else {
       /*
-       * After the first call, there is always an extra CONFIG_MALLOC_SBRK_JUMP_SIZE bytes on the
-       * heap that needs to be adjusted for. This extra CONFIG_MALLOC_SBRK_JUMP_SIZE leaves room
-       * to always have room for the last chunk header. That is, without the extra
-       * CONFIG_MALLOC_SBRK_JUMP_SIZE, the heap could run into the stack guard protected memory
-       * and crash the program.
+       * After the first call, there is always an extra CONFIG_MALLOC_SBRK_JUMP_SIZE bytes
+       * on the heap that needs to be adjusted for. This extra
+       * CONFIG_MALLOC_SBRK_JUMP_SIZE leaves room to always have room for the last chunk
+       * header. That is, without the extra CONFIG_MALLOC_SBRK_JUMP_SIZE, the heap could
+       * run into the stack guard protected memory and crash the program.
        *
        */
       chunk = new_heap - CONFIG_MALLOC_SBRK_JUMP_SIZE;
@@ -298,7 +299,6 @@ void *_malloc_r(struct _reent *reent_ptr, size_t size) {
   alloc = NULL;
 
   SOS_DEBUG_ENTER_TIMER_SCOPE(_malloc_r);
-
 
   if (reent_ptr == NULL) {
     errno = EINVAL;
@@ -429,7 +429,7 @@ int malloc_chunk_is_free(malloc_chunk_t *chunk) {
 
 void malloc_process_fault(void *loc) {
   sos_debug_log_error(
-    SOS_DEBUG_SYS, "%Heap: 0x%lX (id:%d,pid:%d)", (u32)loc, task_get_current(),
+    SOS_DEBUG_SYS, "Heap: 0x%lX (id:%d,pid:%d)", (u32)loc, task_get_current(),
     task_get_pid(task_get_current()));
 
   sos_trace_stack((u32)-1);

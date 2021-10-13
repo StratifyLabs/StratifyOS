@@ -150,7 +150,7 @@ typedef struct MCU_PACK {
 typedef struct MCU_PACK {
   u8 periph_port /*! Peripheral port value (e.g. 0 for I2C0) */;
   u8 periph_func /*! Peripheral port function (see \ref core_periph_t) */;
-  mcu_pin_t io /*! PIO port and pin (see \ref mcu_pin_t) */;
+  mcu_pin_t io /*! PIO port and pin (see mcu_pin_t) */;
 } core_pinfunc_t;
 
 /*! \brief Data structure used for setting interrupt priorities

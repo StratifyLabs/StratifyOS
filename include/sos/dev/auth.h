@@ -11,7 +11,8 @@
  *
  */
 
-/*! \file  */
+/*! \file 
+*/
 
 #ifndef SOS_DEV_AUTH_H_
 #define SOS_DEV_AUTH_H_

@@ -34,6 +34,7 @@ void crt_common(char *path_arg, int *ret, const char *name) {
     (uint32_t)((char *)&_ebss - (char *)&_bss) // cppcheck-suppress[comparePointers]
   );
 
+
   _REENT->procmem_base = (proc_mem_t *)&_ebss;
   _REENT->procmem_base->proc_name = name;
   _REENT->procmem_base->size = 0;
@@ -55,8 +56,6 @@ void crt_common(char *path_arg, int *ret, const char *name) {
   __lock_init_recursive_global(__sfp_lock);
   __lock_init_recursive_global(__sinit_lock);
   __lock_init_recursive_global(__env_lock_object);
-
-
 
   // import argv in to the process memory
   argv = crt_import_argv(path_arg, &argc);
@@ -80,14 +79,21 @@ void crt_common(char *path_arg, int *ret, const char *name) {
 }
 
 void constructors() {
-  int i;
-  for (i = 0; i < (int)&_ctors_size; i++) {
-    (&_ctors)[i]();
+  const size_t ctor_count = (size_t)&_ctors_size;
+  for (size_t i = 0; i < ctor_count; i++) {
+    void (*ctor)() = (&_ctors)[i];
+    if( ctor != NULL ){
+      ctor();
+    }
   }
 }
+
 void destructors() {
-  int i;
-  for (i = 0; i < (int)&_dtors_size; i++) {
-    (&_dtors)[i]();
+  const size_t dtor_size = (size_t)&_dtors_size;
+  for (size_t i = 0; i < dtor_size; i++) {
+    void (*dtor)() = (&_dtors)[i];
+    if( dtor != NULL ){
+      dtor();
+    }
   }
 }

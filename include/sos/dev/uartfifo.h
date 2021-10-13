@@ -12,7 +12,9 @@
  *
  */
 
-/*! \file  */
+/*! \file 
+ */
+
 
 #ifndef SOS_DEV_UARTFIFO_H_
 #define SOS_DEV_UARTFIFO_H_

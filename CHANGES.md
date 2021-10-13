@@ -1,3 +1,19 @@
+# Version 4.2.0
+
+## New Features
+
+- When a message queue starts with `user`, the message queue is not shared between processes.
+- `assetfs` provides a memory pointer in `st->st_blocks` allowing the caller to directly access the memory of the asset
+- `install()` will use `I_APPFS_VERIFY_SIGNATURE` is a signature is required
+
+## Bug Fixes
+
+- Fixed two possible buffer overflow errors when launching applications
+- Cleanup `realloc()` (functionally equivalent)
+- Fix return value of ioctl calls to device fifo
+- Fixed a bug with the message queues. A very specific timing condition could cause a receive to miss a send.
+- Fixed a critical memory corruption bug in message queues.
+
 # Version 4.1.0
 
 ## New Features

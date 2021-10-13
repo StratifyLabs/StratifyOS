@@ -12,7 +12,7 @@
 
 /*! \details This function is not supported.
  *
- * \return Zero on success or -1 on error with errno (see \ref ERRNO) set to:
+ * \return Zero on success or -1 on error with errno (see \ref errno) set to:
  *  - ENOTSUP:  function is not supported
  *
  */
@@ -26,7 +26,7 @@ pid_t _fork(){
 
 /*! \details This function is not supported.
  *
- * \return Zero on success or -1 on error with errno (see \ref ERRNO) set to:
+ * \return Zero on success or -1 on error with errno (see \ref errno) set to:
  *  - ENOTSUP:  function is not supported
  *
  */

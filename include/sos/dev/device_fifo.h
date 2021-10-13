@@ -11,7 +11,8 @@
  *
  */
 
-/*! \file  */
+/*! \file 
+ */
 
 #ifndef SOS_DEV_DEVICE_FIFO_H_
 #define SOS_DEV_DEVICE_FIFO_H_

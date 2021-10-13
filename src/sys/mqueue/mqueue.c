@@ -78,8 +78,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "../scheduler/scheduler_timing.h"
 #include "../scheduler/scheduler_root.h"
+#include "../scheduler/scheduler_timing.h"
 #include "mqueue.h"
 #include "sos/debug.h"
 
@@ -104,6 +104,7 @@ struct message {
 #define MQ_STATUS_NONBLOCK_MASK (1 << 17)
 #define MQ_STATUS_RDWR_MASK (1 << 18)
 #define MQ_STATUS_LOOP_MASK (1 << 19)
+#define MQ_STATUS_USER_MASK (1 << 20)
 
 #define MQ_NAME_MAX 23
 
@@ -114,8 +115,11 @@ typedef struct {
   int mode;                   // not currently implemented
   char name[MQ_NAME_MAX + 1]; // The name of the queue
   struct message *msg_table;  // a pointer to the message table
-  uint32_t status; // how many tasks are accessing the message queue, other flags
+  u32 status; // how many tasks are accessing the message queue, other flags
+  int pid;
   pthread_mutex_t mutex;
+  pthread_cond_t send_cond;
+  pthread_cond_t recv_cond;
 } mq_t;
 
 typedef struct {
@@ -123,31 +127,30 @@ typedef struct {
   void *next;
 } mq_list_t;
 
-static mq_list_t *mq_first = 0;
-
-// static void root_send(void * args) MCU_ROOT_EXEC_CODE;
-// static void root_receive(void * args) MCU_ROOT_EXEC_CODE;
-static void svcall_wake_blocked(void *args) MCU_ROOT_EXEC_CODE;
-static void svcall_block_on_mq(void *args) MCU_ROOT_EXEC_CODE;
+static mq_list_t *mq_first = NULL;
 
 static int mq_entry_size(const mq_t *mq) { return sizeof(struct message) + mq->max_size; }
 
 static struct message *mq_next_message(const struct message *msg, int entry_size) {
-  const void *ptr;
-  ptr = msg + entry_size;
+  const u8 *ptr;
+  ptr = ((const u8*)msg) + entry_size;
   return (struct message *)ptr;
 }
 
 static mq_t *mq_find_named(const char *name) {
   mq_list_t *entry;
+  int pid = task_get_pid(task_get_current());
   for (entry = mq_first; entry != 0; entry = entry->next) {
     if (entry->mq.msg_table != 0) {
       if (strncmp(entry->mq.name, name, sizeof(entry->mq.name) - 1) == 0) {
-        return &entry->mq;
+        const int is_user = (entry->mq.status & MQ_STATUS_USER_MASK) != 0;
+        if( !is_user || (pid == entry->mq.pid) ){
+          return &entry->mq;
+        }
       }
     }
   }
-  return 0;
+  return NULL;
 }
 
 static ssize_t mq_cur_msgs(const mq_t *mq) {
@@ -199,7 +202,7 @@ static mq_t *mq_find_free() {
 
 static void mq_init_table(mq_t *mq) {
   struct message *imsg = mq->msg_table;
-  int entry_size = mq_entry_size(mq);
+  const int entry_size = mq_entry_size(mq);
   for (size_t i = 0; i < mq->max_msgs; i++) {
     imsg->size = 0;
     imsg = mq_next_message(imsg, entry_size);
@@ -248,20 +251,34 @@ static struct message *mq_find_free_msg(const mq_t *mq) {
 }
 
 static int mq_init_mutex(mq_t *mq) {
-  pthread_mutexattr_t mutexattr;
-
-  if (pthread_mutexattr_init(&mutexattr) < 0) {
-    return -1;
+  {
+    pthread_mutexattr_t mutexattr;
+    pthread_mutexattr_init(&mutexattr);
+    pthread_mutexattr_setpshared(&mutexattr, true);
+    pthread_mutexattr_setprioceiling(&mutexattr, 25);
+    pthread_mutex_init(&mq->mutex, &mutexattr);
   }
 
-  pthread_mutexattr_setpshared(&mutexattr, true);
-  pthread_mutexattr_setprioceiling(&mutexattr, 25);
-
-  if (pthread_mutex_init(&mq->mutex, &mutexattr)) {
-    return -1;
+  {
+    pthread_condattr_t condattr;
+    pthread_condattr_init(&condattr);
+    pthread_condattr_setpshared(&condattr, PTHREAD_PROCESS_SHARED);
+    pthread_cond_init(&mq->send_cond, &condattr);
+    pthread_cond_init(&mq->recv_cond, &condattr);
   }
 
   return 0;
+}
+
+static void mq_destroy(mq_t *mq) {
+  if (mq->msg_table != NULL) {
+    const int is_user = (mq->status & MQ_STATUS_USER_MASK) != 0;
+    _free_r(is_user ? _REENT : sos_task_table[0].global_reent, mq->msg_table);
+    mq->msg_table = NULL;
+    pthread_mutex_destroy(&mq->mutex);
+    pthread_cond_destroy(&mq->send_cond);
+    pthread_cond_destroy(&mq->recv_cond);
+  }
 }
 
 static mq_t *mq_get_ptr(mqd_t des) {
@@ -281,9 +298,6 @@ typedef struct {
   uint32_t not_signature;
   mq_t *mq;
 } msg_file_hdr_t;
-
-static void check_for_blocked_task(void *block);
-static int block_on_mq(void *block, const struct timespec *abs_timeout);
 
 typedef struct {
   void *block;
@@ -378,6 +392,9 @@ int mq_setattr(mqd_t mqdes, const struct mq_attr *mqstat, struct mq_attr *omqsta
  * mqd_t mq_open(const char * name, int oflag, mode_t mode, const struct mq_attr * attr);
  * \endcode
  *
+ * If the name starts with `user`, the message queue will only be available to the calling
+ * process. All other message queues can be shared among processes.
+ *
  * \return Zero on success or -1 with errno (see \ref errno) set to:
  * - ENAMETOOLONG:  \a name length is greater than NAME_MAX
  * - EEXIST:  O_CREAT and O_EXCL are set in \a oflag but the queue already exists
@@ -399,7 +416,6 @@ mqd_t mq_open(
   mode_t mode;
   const struct mq_attr *attr;
   va_list ap;
-  struct _reent *reent_ptr;
   int tmp;
 
   if (strnlen(name, MQ_NAME_MAX) == MQ_NAME_MAX) {
@@ -453,7 +469,7 @@ mqd_t mq_open(
     }
 
     // Create the new message queue
-    reent_ptr = sos_task_table[0].global_reent;
+    struct _reent *reent_ptr = sos_task_table[0].global_reent;
     new_mq = mq_find_free();
     if (new_mq == NULL) {
       // errno is set by malloc
@@ -475,10 +491,16 @@ mqd_t mq_open(
       // aligned
       new_mq->max_size = attr->mq_msgsize;
     }
-    new_mq->status = 1;
     new_mq->age = 0;
-    new_mq->msg_table =
-      _calloc_r(reent_ptr, new_mq->max_msgs, (new_mq->max_size + sizeof(struct message)));
+
+    const int is_user = strncmp(name, "user", 4) == 0;
+
+    new_mq->pid = task_get_pid(task_get_current());
+    new_mq->status = 1 | (is_user ? MQ_STATUS_USER_MASK : 0);
+    struct _reent *message_reent_ptr = is_user ? _REENT : reent_ptr;
+
+    new_mq->msg_table = _calloc_r(
+      message_reent_ptr, new_mq->max_msgs, (new_mq->max_size + sizeof(struct message)));
     if (new_mq->msg_table == NULL) {
       return -1;
     }
@@ -524,7 +546,7 @@ int mq_close(mqd_t mqdes /*! the message queue handler */) {
   }
 
   mq = mq_get_ptr(mqdes);
-  if (mq == 0) {
+  if (mq == NULL) {
     return -1;
   }
 
@@ -532,12 +554,10 @@ int mq_close(mqd_t mqdes /*! the message queue handler */) {
     mq->status--;
   }
 
-  if ((mq->status & MQ_STATUS_REFS_MASK) == 0) {
-    // Should message queue be unlinked now?
-    if (mq->status & MQ_STATUS_UNLINK_ON_CLOSE_MASK) {
-      _free_r(sos_task_table[0].global_reent, mq->msg_table);
-      mq->msg_table = 0;
-    }
+  if (
+    ((mq->status & MQ_STATUS_REFS_MASK) == 0)
+    && (mq->status & MQ_STATUS_UNLINK_ON_CLOSE_MASK)) {
+    mq_destroy(mq);
   }
 
   return 0;
@@ -563,14 +583,14 @@ int mq_unlink(const char *name /*! the full path to the message queue */) {
   }
 
   mq = mq_find_named(name);
-  if (mq == 0) {
+  if (mq == NULL) {
     errno = ENOENT;
     return -1;
   }
 
   if ((mq->status & MQ_STATUS_REFS_MASK) == 0) {
-    _free_r(sos_task_table[0].global_reent, mq->msg_table);
-    mq->msg_table = 0;
+    // no more references to this object -- can be destroyed
+    mq_destroy(mq);
   } else {
     // Mark the message queue for deletion when all refs are done
     mq->status |= MQ_STATUS_UNLINK_ON_CLOSE_MASK;
@@ -581,17 +601,15 @@ int mq_unlink(const char *name /*! the full path to the message queue */) {
 
 void mq_discard(mqd_t mqdes) {
   mq_t *mq = mq_get_ptr(mqdes);
-  if (mq == 0) {
+  if (mq == NULL) {
     return;
   }
-
-  _free_r(sos_task_table[0].global_reent, mq->msg_table);
-  mq->msg_table = 0;
+  mq_destroy(mq);
 }
 
 void mq_flush(mqd_t mqdes) {
   mq_t *mq = mq_get_ptr(mqdes);
-  if (mq != 0) {
+  if (mq != NULL) {
     mq_init_table(mq);
   }
 }
@@ -631,37 +649,6 @@ ssize_t mq_receive(
   return mq_timedreceive(mqdes, msg_ptr, msg_len, msg_prio, NULL);
 }
 
-/*
-void root_receive(void * args){
-        root_send_receive_t * p = (root_send_receive_t*)args;
-        void * ptr;
-        int current;
-
-        p->size = 0;
-
-        //current = mq_find_oldest_highest(p->mq);
-
-        if ( current != -1 ){
-                //calculate the pointer to the entry
-                ptr = p->mq->msg_table;
-                ptr += current * p->entry_size;
-                p->new_msg = ptr;
-
-                //Mark message as retrieved
-                if ( p->msg_len < p->new_msg->size){
-                        //The target buffer is too small to hold the entire message
-                        errno = EMSGSIZE;
-                        p->size = -1;
-                } else {
-                        //Remove the message from the queue
-                        p->size = p->new_msg->size;
-                        p->new_msg->size = 0;  //Mark message as received in the table
-                }
-        }
-
-}
- */
-
 /*! \details This function removes a message from the queue and stores
  * the message at \a msg_ptr.  If no messages are available, the thread is blocked
  * until either a messsage is available or the value of \a CLOCK_REALTIME is less then \a
@@ -693,24 +680,23 @@ ssize_t mq_timedreceive(
     return -1;
   }
 
-  size = 0;
-  do {
-    if (pthread_mutex_lock(&(mq->mutex)) < 0) {
-      return -1;
-    }
-    new_msg = mq_find_oldest_highest(mq);
-    if (new_msg != 0) {
+  pthread_mutex_lock(&mq->mutex);
 
+  do {
+
+    size = 0;
+    new_msg = mq_find_oldest_highest(mq);
+    if (new_msg != NULL) {
       // calculate the pointer to the entry
       // Mark message as retrieved
-      if (msg_len < new_msg->size) {
+      if (msg_len < (size_t)new_msg->size) {
         // The target buffer is too small to hold the entire message
         errno = EMSGSIZE;
         size = -1;
       } else {
         // copy the message data
         memcpy(msg_ptr, mq_message_data(new_msg), new_msg->size);
-        if (msg_prio != 0) {
+        if (msg_prio != NULL) {
           *(msg_prio) = new_msg->prio;
         }
 
@@ -719,24 +705,25 @@ ssize_t mq_timedreceive(
         new_msg->size = 0;
       }
     } else {
-      size = 0; // no data available
-    }
-    if (pthread_mutex_unlock(&(mq->mutex)) < 0) {
-      return -1;
-    }
-    if (size == 0) {
       if (mq->status & MQ_STATUS_NONBLOCK_MASK) {
         errno = EAGAIN;
-        return -1;
+        size = -1;
+      } else {
+        // wait for a message to be sent
+        if (pthread_cond_timedwait(&mq->send_cond, &mq->mutex, abs_timeout) < 0) {
+          size = -1;
+        }
       }
-      size = block_on_mq(mq, abs_timeout);
     }
+
   } while (size == 0); // wait for either a successful receive or an error
 
+  pthread_mutex_unlock(&mq->mutex);
+
   if (size > 0) {
-    // message was successfully received -- now see if any threads are blocked trying to
-    // send to this queue
-    check_for_blocked_task(mq);
+    // send a signal that a message
+    // to indicate there is space in the queue
+    pthread_cond_signal(&mq->recv_cond);
   }
 
   return size;
@@ -765,52 +752,6 @@ int mq_send(
   return mq_timedsend(mqdes, msg_ptr, msg_len, msg_prio, NULL);
 }
 
-/*
-void root_send(void * args){
-        root_send_receive_t * p = (root_send_receive_t*)args;
-        void * ptr;
-        int i;
-        int oldest;
-
-        //if this stays 0, there is no room for a message
-        p->size = 0;
-
-        ssize_t cur = mq_cur_msgs(p->mq);
-
-        //check for a loop condition with a full queue
-        if( (p->mq->status & MQ_STATUS_LOOP_MASK) != 0 ){
-                //if mq is full, discard the oldest message
-                if ( cur == p->mq->max_msgs ){
-                        //oldest = mq_find_oldest_highest(p->mq);
-                        ptr = p->mq->msg_table;
-                        ptr += oldest * p->entry_size;
-                        p->new_msg = ptr;
-                        p->new_msg->size = p->msg_len;
-                        p->size = p->msg_len;
-                        return;
-                }
-        }
-
-
-        //normal condition -- no message is sent if queue is full
-        if ( cur < p->mq->max_msgs ){
-                //add the message in the first free spot
-                ptr = p->new_msg;
-                //Find an open spot
-                for(i = 0; i < p->mq->max_msgs; i++){
-                        if ( p->new_msg->size == 0 ){
-                                //This slot is free
-                                p->new_msg->size = p->msg_len;
-                                p->size = p->msg_len;
-                                return;
-                        }
-                        ptr += p->entry_size;
-                        p->new_msg = ptr;
-                }
-        }
-}
- */
-
 /*! \details This function sends a message pointed to by \a msg_ptr.  If there is no room
  * in the queue (and O_NONBLOCK is not set in \a mqdes), the thread is blocked until
  * a message is removed from the queue or until the value of \a CLOCK_REALTIME exceeds
@@ -836,72 +777,65 @@ int mq_timedsend(
   mq_t *mq;
 
   mq = mq_get_ptr(mqdes);
-  if (mq == 0) {
+  if (mq == NULL) {
     return -1;
   }
 
-  if (mq->status & MQ_STATUS_RDWR_MASK) {
-
-    // Check the length of the message
-    if (mq->max_size < msg_len) {
-      // The message to send is too big
-      errno = EMSGSIZE;
-      return -1;
-    }
-
-    int size;
-    do {
-
-      if (pthread_mutex_lock(&(mq->mutex)) < 0) {
-        return -1;
-      }
-
-      // if this stays 0, there is no room for a message
-      size = 0;
-
-      struct message *new_msg = mq_find_free_msg(mq);
-
-      if (new_msg != 0) {
-        size = msg_len;
-      } else if ((mq->status & MQ_STATUS_LOOP_MASK) != 0) {
-        // if mq is full, discard the oldest message
-        new_msg = mq_find_oldest_highest(mq);
-        size = msg_len;
-      }
-
-      if (size > 0) {
-        memcpy(mq_message_data(new_msg), msg_ptr, msg_len);
-        new_msg->size = msg_len;
-        new_msg->age = mq->age++;
-        new_msg->prio = msg_prio;
-      }
-
-      if (pthread_mutex_unlock(&(mq->mutex)) < 0) {
-        return -1;
-      }
-
-      if (size == 0) {
-        if (mq->status & MQ_STATUS_NONBLOCK_MASK) {
-          // Non-blocking mode:  return an error
-          errno = EAGAIN;
-          size = -1;
-        } else {
-          size = block_on_mq(mq, abs_timeout);
-        }
-      }
-
-    } while (size == 0);
-
-    if (size > 0) {
-      // message was successfully sent -- now see if any threads are blocked trying to
-      // send to this queue
-      check_for_blocked_task(mq);
-    }
-    return size;
+  if ((mq->status & MQ_STATUS_RDWR_MASK) == 0) {
+    errno = EACCES;
+    return -1;
   }
 
-  errno = EACCES;
-  return -1;
+  // Check the length of the message
+  if (mq->max_size < msg_len) {
+    // The message to send is too big
+    errno = EMSGSIZE;
+    return -1;
+  }
+
+  int size = 0;
+  pthread_mutex_lock(&mq->mutex);
+
+  do {
+    struct message *new_msg = mq_find_free_msg(mq);
+
+    if (new_msg != NULL) {
+      size = msg_len;
+    } else if ((mq->status & MQ_STATUS_LOOP_MASK) != 0) {
+      // if mq is full, discard the oldest message
+      new_msg = mq_find_oldest_highest(mq);
+      size = msg_len;
+    }
+
+    if (size > 0) {
+      memcpy(mq_message_data(new_msg), msg_ptr, msg_len);
+      new_msg->size = msg_len;
+      new_msg->age = mq->age++;
+      new_msg->prio = msg_prio;
+    } else {
+      if (mq->status & MQ_STATUS_NONBLOCK_MASK) {
+        // Non-blocking mode:  return an error
+        errno = EAGAIN;
+        size = -1;
+      } else {
+        if (pthread_cond_timedwait(&mq->recv_cond, &mq->mutex, abs_timeout) < 0) {
+          size = -1;
+        }
+      }
+    }
+
+    // loop until a message is ready
+  } while (size == 0);
+
+  pthread_mutex_unlock(&mq->mutex);
+
+  if (size > 0) {
+    // signal that there is now a message
+    // in the queue
+    pthread_cond_signal(&mq->send_cond);
+  }
+
+  return size;
 }
 
 ssize_t mq_tryreceive(mqd_t mqdes, char *msg_ptr, size_t msg_len, unsigned *msg_prio) {
@@ -917,49 +851,5 @@ int mq_trysend(mqd_t mqdes, const char *msg_ptr, size_t msg_len, unsigned msg_pr
   abs_timeout.tv_nsec = 0;
   return mq_timedsend(mqdes, msg_ptr, msg_len, msg_prio, &abs_timeout);
 }
-
-/*! \cond */
-void svcall_block_on_mq(void *args) {
-  CORTEXM_SVCALL_ENTER();
-  root_block_on_mq_t *argsp = (root_block_on_mq_t *)args;
-  scheduler_timing_root_timedblock(argsp->block, &argsp->abs_timeout);
-}
-
-int block_on_mq(void *block, const struct timespec *abs_timeout) {
-  root_block_on_mq_t args;
-  args.block = block;
-  if (abs_timeout != 0) {
-    if ((abs_timeout->tv_sec == 0) && (abs_timeout->tv_nsec == 0)) {
-      errno = EAGAIN;
-      return -1;
-    }
-  }
-  scheduler_timing_convert_timespec(&args.abs_timeout, abs_timeout);
-  cortexm_svcall(svcall_block_on_mq, &args);
-  if (scheduler_unblock_type(task_get_current()) == SCHEDULER_UNBLOCK_SLEEP) {
-    errno = ETIMEDOUT;
-    return -1;
-  }
-  return 0;
-}
-
-void svcall_wake_blocked(void *args) {
-  CORTEXM_SVCALL_ENTER();
-  int *task = (int *)args;
-  int id = *task;
-  scheduler_root_assert_active(id, SCHEDULER_UNBLOCK_MQ);
-  scheduler_root_update_on_wake(id, task_get_priority(id));
-}
-
-void check_for_blocked_task(void *block) {
-  int new_thread;
-  new_thread = scheduler_get_highest_priority_blocked(block);
-  if (new_thread != -1) {
-    cortexm_svcall(svcall_wake_blocked, &new_thread);
-  } else {
-    // See if any tasks need to be notified if a message was just sent
-  }
-}
-/*! \endcond */
 
 /*! @} */

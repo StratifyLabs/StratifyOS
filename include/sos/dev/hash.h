@@ -12,7 +12,8 @@
  *
  */
 
-/*! \file  */
+/*! \file 
+ */
 
 #ifndef SOS_DEV_HASH_H_
 #define SOS_DEV_HASH_H_

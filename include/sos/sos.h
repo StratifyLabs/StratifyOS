@@ -2,7 +2,6 @@
 
 /*! \mainpage
  *
- * <small>\ref VERSION</small>
  *
  * \section INTRO Introduction
  *
@@ -31,7 +30,7 @@
  * This section is the kernel documentation.  You only need to read this is you want to
  * tinker with the kernel.  The API used for applications is <a
  * href="../../StratifyAPI/html/"><b>StratifyAPI</b> documentation</a>. If you want finer
- * control, you can use the built-in \ref POSIX and \ref STDC functions.
+ * control, you can use the built-in \ref POSIX and \ref stdc functions.
  *
  */
 
@@ -40,7 +39,7 @@
 /*! \addtogroup StratifyOS Stratify OS
  * @{
  *
- * \details <b>Stratify OS</b> includes two main APIs for users: the \ref STDC and the
+ * \details <b>Stratify OS</b> includes two main APIs for users: the \ref stdc and the
  * \ref POSIX API.
  *
  */
@@ -112,7 +111,7 @@
  * @{
  *
  * \details Unix style time functions are available in <b>Stratify OS</b> as documented
- * herein.  The C standard library time functions are also available (see \ref STDC).
+ * herein.  The C standard library time functions are also available (see \ref stdc).
  *
  */
 

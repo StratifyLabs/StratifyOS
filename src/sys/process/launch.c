@@ -42,7 +42,7 @@ int launch(
   const void *update_context,
   char *const envp[]) {
 
-  char exec_path[PATH_MAX + ARG_MAX];
+  char exec_path[PATH_MAX + ARG_MAX + 1];
 
   // check if path exists
   if (access(path, R_OK) < 0) {
@@ -79,8 +79,8 @@ int launch(
   }
 
   if (args) {
-    strncat(exec_path, " ", sizeof(exec_path) - 1);
-    strncat(exec_path, args, sizeof(exec_path) - 1);
+    strncat(exec_path, " ", sizeof(exec_path) - strlen(exec_path) - 1);
+    strncat(exec_path, args, sizeof(exec_path) - strlen(exec_path) - 1);
   }
 
   return process_start(exec_path, envp);

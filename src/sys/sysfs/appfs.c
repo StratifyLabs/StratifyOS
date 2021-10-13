@@ -212,15 +212,15 @@ int appfs_open(const void *cfg, void **handle, const char *path, int flags, int 
     h->type.install.ecc_api = sos_config.sys.kernel_request_api(CRYPT_ECC_API_REQUEST);
     h->type.install.sha256_api =
       sos_config.sys.kernel_request_api(CRYPT_SHA256_API_REQUEST);
-    if( h->type.install.ecc_api == NULL ){
+    if (h->type.install.ecc_api == NULL) {
       sos_handle_event(SOS_EVENT_FATAL, "missing api: CRYPT_ECC_API_REQUEST");
     }
 
-    if( h->type.install.sha256_api == NULL ){
+    if (h->type.install.sha256_api == NULL) {
       sos_handle_event(SOS_EVENT_FATAL, "missing api: CRYPT_SHA256_API_REQUEST");
     }
 
-    if( sos_config.sys.get_public_key == NULL ){
+    if (sos_config.sys.get_public_key == NULL) {
       sos_handle_event(SOS_EVENT_FATAL, "missing api: sos_config.sys.get_public_key");
     }
 
@@ -542,7 +542,7 @@ void svcall_close(void *args) {
   if (sos_config.cache.enable) {
     sos_config.cache.invalidate_instruction();
 
-    const appfs_handle_t * h = args;
+    const appfs_handle_t *h = args;
     if (h->type.install.code_size) {
       sos_config.cache.clean_data_block(
         (void *)(h->type.install.code_start), h->type.install.code_size);
@@ -645,8 +645,6 @@ void svcall_ioctl(void *args) {
     }
 
     u8 hash[32];
-    appfs_verify_signature_t *verify_signature = ctl;
-    appfs_public_key_t public_key;
 
     h->type.install.sha256_api->finish(
       h->type.install.sha256_context, hash, sizeof(hash));
@@ -654,29 +652,30 @@ void svcall_ioctl(void *args) {
     int is_verified = 0;
     u32 key_index = 0;
     int get_key_result = 0;
+    appfs_public_key_t public_key;
     do {
-
       get_key_result = sos_config.sys.get_public_key(key_index, &public_key);
       key_index++;
 
-      h->type.install.ecc_api->dsa_set_key_pair(
-        h->type.install.ecc_context, public_key.value, sizeof(public_key), NULL, 0);
+      if (get_key_result >= 0) {
+        h->type.install.ecc_api->dsa_set_key_pair(
+          h->type.install.ecc_context, public_key.value, sizeof(public_key), NULL, 0);
 
-      is_verified = h->type.install.ecc_api->dsa_verify(
-        h->type.install.ecc_context, hash, sizeof(hash), verify_signature->data,
-        sizeof(verify_signature->data));
+        appfs_verify_signature_t *verify_signature = ctl;
+        is_verified = h->type.install.ecc_api->dsa_verify(
+          h->type.install.ecc_context, hash, sizeof(hash), verify_signature->data,
+          sizeof(verify_signature->data));
+      }
 
     } while (is_verified != 1 && !(get_key_result < 0));
 
     appfs_file_t *file = (appfs_file_t *)h->type.install.first_page.buffer;
 
     if (is_verified) {
-
       // adjust the permissions to match the key
       // only allow flags if the key allows them
       file->exec.o_flags &= public_key.o_flags;
       a->result = 0;
-
     } else {
       // mark as non-executable
       file->exec.signature = ~APPFS_CREATE_SIGNATURE;
