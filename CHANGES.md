@@ -3,6 +3,7 @@
 ## Bug Fixes
 
 - device fifo needs to return 0 on ioctl calls it handles
+- On `link` build, fixed bugs for connecting to serial devices
 
 # Version 4.1.0
 
