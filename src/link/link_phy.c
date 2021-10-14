@@ -28,8 +28,8 @@ typedef struct {
   char name[MAX_DEVICE_PATH];
 } link_phy_container_t;
 
-#define API_COM_PREFIX "/serial/"
-#define API_COM_PORT_NAME "serial/COM"
+#define API_COM_PREFIX "@serial/"
+#define API_COM_PORT_NAME "@serial/COM"
 #define COM_PORT_NAME "\\\\.\\COM"
 #define COM_PORT_MAX 500
 
@@ -57,6 +57,8 @@ int link_phy_getname(char *dest, const char *last, int len) {
 
     HANDLE test_handle;
     DWORD err;
+
+		link_debug(LINK_DEBUG_INFO, "Try %s", windows_name);
 
     test_handle = CreateFile(
       windows_name, GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING,
