@@ -31,6 +31,8 @@
 #include "sos/fs/devfs.h"
 #include "sos/fs/sysfs.h"
 
+static u8 launch_count = 0;
+
 int install(
   const char *path,
   char *exec_path,
