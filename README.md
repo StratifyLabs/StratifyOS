@@ -4,7 +4,16 @@
 
 Welcome to Stratify OS 4. Version 3 is available as [master](https://github.com/StratifyLabs/StratifyOS/tree/master). The main change from Stratify OS 3 to 4 is how to port and integrate with the board support package. See the [porting guide](guides/Porting.md) for details.
 
-[Getting Started Guide](guides/Getting-Started.md)
+## Getting Started
+
+The fastest way to get started is to use one of the following board support packages:
+
+- [Nucleo144](https://github.com/StratifyLabs/StratifyOS-Nucleo144)
+- [STM32H735G-DK](https://github.com/StratifyLabs/STM32H735G-DK)
+
+The above projects have instructions to quickly and easily clone and build the required code.
+
+## About
 
 Stratify OS is a fully featured microcontroller operating system designed specifically for the ARM Cortex M architecture. It features:
 
