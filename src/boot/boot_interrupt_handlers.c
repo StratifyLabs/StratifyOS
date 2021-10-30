@@ -1,4 +1,5 @@
 #include "sos/symbols.h"
+#include <sys/cdefs.h>
 
 #include "cortexm/cortexm.h"
 #include "cortexm/fault.h"
@@ -59,5 +60,7 @@ void cortexm_debug_monitor_handler() {
 
 // used by startup for newlib
 int pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *attr) {
+  MCU_UNUSED_ARGUMENT(mutex);
+  MCU_UNUSED_ARGUMENT(attr);
   return 0;
 }

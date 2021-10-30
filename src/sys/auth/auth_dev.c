@@ -3,7 +3,6 @@
 #include <errno.h>
 
 #include "../scheduler/scheduler_root.h"
-#include "../scheduler/scheduler_timing.h"
 #include "config.h"
 #include "cortexm/task.h"
 #include "device/auth.h"
@@ -12,12 +11,15 @@
 
 static int
 get_random(const devfs_handle_t *handle, auth_token_t *auth) MCU_ROOT_EXEC_CODE;
+
 static int
-authenticate(const devfs_handle_t *handle, auth_token_t *auth) MCU_ROOT_EXEC_CODE;
+authenticate(const devfs_handle_t *handle, auth_token_t *hash) MCU_ROOT_EXEC_CODE;
+
 static int calculate(auth_token_t *dest, const auth_token_t *input, int key_is_first)
   MCU_ROOT_EXEC_CODE;
 
 static void get_public_key(auth_public_key_t *public_key) MCU_ROOT_EXEC_CODE;
+
 void get_public_key(auth_public_key_t *public_key) {
   const bootloader_api_t *api = cortexm_get_bootloader_api();
   *public_key = (auth_public_key_t){};
@@ -35,7 +37,7 @@ int auth_open(const devfs_handle_t *handle) {
   return 0;
 }
 
-int auth_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
+MCU_UNUSED int auth_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
   int result;
   switch (request) {
   case I_AUTH_START:
@@ -56,6 +58,8 @@ int auth_ioctl(const devfs_handle_t *handle, int request, void *ctl) {
       scheduler_root_deassert_authenticated(task_get_current());
     }
     return result;
+  default:
+    break;
   }
   return SYSFS_SET_RETURN(EINVAL);
 }

@@ -1,3 +1,5 @@
+#include <sys/_default_fcntl.h>
+#include <sys/cdefs.h>
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
 #include "cortexm/fault.h"
@@ -25,13 +27,11 @@ int cortexm_fault_init() {
   return 0;
 }
 
-void cortexm_hardfault_handler() MCU_WEAK;
+void cortexm_hardfault_handler() MCU_WEAK; // NOLINT(readability-redundant-declaration)
 void cortexm_hardfault_handler() {
   register hw_stack_frame_t *handler_stack;
   asm volatile("MRS %0, msp\n\t" : "=r"(handler_stack));
-  register u32 fault_status;
-
-  fault_status = SCB->HFSR;
+  register u32 fault_status = SCB->HFSR;
   SCB->HFSR = fault_status; // Clear the hard fault
 
   hardfault_handler(fault_status, handler_stack);
