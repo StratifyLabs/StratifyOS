@@ -8,6 +8,7 @@
 
 ## Bug Fixes
 
+- Add casts to `u32` in `ASSESTFS` defines
 - Fixed two possible buffer overflow errors when launching applications
 - Cleanup `realloc()` (functionally equivalent)
 - Fix return value of ioctl calls to device fifo

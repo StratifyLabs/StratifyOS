@@ -45,8 +45,8 @@ int assetfs_closedir(const void *cfg, void **handle);
   extern const __attribute__((aligned(16))) void *assetfs_incbin_##name##_start;         \
   extern const void *assetfs_incbin_##name##_end
 
-#define ASSETFS_START(name) (&assetfs_incbin_##name##_start)
-#define ASSETFS_END(name) (&assetfs_incbin_##name##_end)
+#define ASSETFS_START(name) ((u32)&assetfs_incbin_##name##_start)
+#define ASSETFS_END(name) ((u32)&assetfs_incbin_##name##_end)
 
 #define ASSETFS_ENTRY(file_name, object_name, mode_value, uid_value)                     \
   {                                                                                      \
