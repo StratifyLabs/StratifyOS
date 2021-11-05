@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../scheduler/scheduler_local.h"
 #include "cortexm/mpu.h"
 #include "cortexm/task.h"
 #include "sos/debug.h"
@@ -18,31 +17,28 @@ typedef struct {
 static void svcall_load_data(void *args) MCU_ROOT_EXEC_CODE;
 void svcall_load_data(void *args) {
   CORTEXM_SVCALL_ENTER();
-
   root_load_data_t *p = args;
-  int size;
-  void *code_addr;
-  u32 code_size;
-  void *src_addr;
-  void *dest_addr;
+
 
   // sanity check the size
-  size = sos_task_table[task_get_current()].mem.data.size;
+  u32 size = sos_task_table[task_get_current()].mem.data.size;
   if (p->data_size < size) { // p->data_size is the total amount of RAM available to the
                              // application
     size = p->data_size;
   }
 
-  code_size = p->code_size;
+  u32 code_size = p->code_size;
   if (code_size > sos_task_table[task_get_current()].mem.code.size) {
     // fatal error here?
     return;
   }
 
-  dest_addr = sos_task_table[task_get_current()].mem.data.address;
-  code_addr = sos_task_table[task_get_current()].mem.code.address;
-  code_size = p->code_size;
-  src_addr = (u8 *)code_addr + code_size;
+  void *dest_addr = sos_task_table[task_get_current()].mem.data.address;
+  void *code_addr = sos_task_table[task_get_current()].mem.code.address;
+  void *src_addr = (u8 *)code_addr + code_size;
+
+  //TODO Validate the source and dest values
+
   memcpy(dest_addr, src_addr, size);
 }
 

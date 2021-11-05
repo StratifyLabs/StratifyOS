@@ -12,13 +12,11 @@
 
 #include <errno.h>
 #include <signal.h>
-#include <stdbool.h>
 #include <unistd.h>
 
 #include "../signal/sig_local.h"
 #include "../unistd/unistd_local.h"
 #include "cortexm/cortexm.h"
-#include "sos/debug.h"
 #include "sos/fs/sysfs.h"
 
 #include "../scheduler/scheduler_root.h"
@@ -114,7 +112,7 @@ ssize_t aio_return(struct aiocb *aiocbp /*! a pointer to the AIO data struture *
   if (aiocbp->async.buf != NULL) {
     return -1;
   } else {
-    return aiocbp->aio_nbytes; // this is the number of bytes that was read or written
+    return aiocbp->aio_nbytes; // this is the number of bytes that was read or written NOLINT(cppcoreguidelines-narrowing-conversions)
   }
 }
 
@@ -278,9 +276,9 @@ void svcall_suspend(void *args) {
 int sysfs_aio_data_transfer_callback(void *context, const mcu_event_t *event) {
   MCU_UNUSED_ARGUMENT(event);
   struct aiocb *aiocbp;
-  unsigned int tid;
   aiocbp = context;
   aiocbp->async.buf = NULL;
+  int tid = aiocbp->async.tid;
 
   if (aiocbp->async.result < 0) {
     aiocbp->aio_nbytes = SYSFS_GET_RETURN(aiocbp->async.result); // given for aio_return
@@ -289,8 +287,6 @@ int sysfs_aio_data_transfer_callback(void *context, const mcu_event_t *event) {
     aiocbp->aio_nbytes = aiocbp->async.result; // given for aio_return
     aiocbp->async.result = 0;                  // given for aio_error()
   }
-
-  tid = aiocbp->async.tid;
 
   if (tid >= task_get_total()) {
     // This is not a valid task id

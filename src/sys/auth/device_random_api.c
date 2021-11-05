@@ -1,31 +1,14 @@
-/* Copyright 2011-2019 Tyler Gilbert;
- * This file is part of Stratify OS.
- *
- * Stratify OS is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Stratify OS is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Stratify OS.  If not, see <http://www.gnu.org/licenses/>.
- *
- *
- */
+// Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
 #include <sdk/api.h>
 
-#include "config.h"
-#include "sos/api/crypt_api.h"
-#include "sos/dev/random.h"
 #include <errno.h>
 #include <fcntl.h>
 #include <stdlib.h>
 #include <unistd.h>
+
+#include "config.h"
+#include "sos/dev/random.h"
 
 typedef struct {
   int fd;
@@ -84,7 +67,7 @@ static int set_device_attributes(device_random_context_t *context, u32 o_flags, 
   return ioctl(context->fd, I_RANDOM_SETATTR, &attributes);
 }
 
-const crypt_random_api_t device_random_api = {
+MCU_UNUSED const crypt_random_api_t device_random_api = {
   .sos_api = {.name = "crypt_random_device", .version = 0x0001, .git_hash = SOS_GIT_HASH},
   .init = device_random_init,
   .deinit = device_random_deinit,

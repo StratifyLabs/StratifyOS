@@ -17,7 +17,6 @@
 
 #include <string.h>
 
-#include "sos/arch.h"
 #include "sos/boot/boot_debug.h"
 #include "sos/config.h"
 
@@ -76,7 +75,7 @@ int dbin(int x) {
 
 void dwrite(const char *str) {
   if (sos_config.debug.write != NULL) {
-    sos_config.debug.write(str, strlen(str));
+    sos_config.debug.write(str, strlen(str)); // NOLINT(cppcoreguidelines-narrowing-conversions)
   }
 }
 
@@ -141,13 +140,13 @@ int dutoa(char dest[BUF_SIZE], uint32_t num, int base, char upper, int width) {
   memset(buf, '0', BUF_SIZE);
   while ((num > 0) && (j < BUF_SIZE)) {
     if (upper) {
-      c = Htoc(num % base);
+      c = Htoc(num % base); // NOLINT(cppcoreguidelines-narrowing-conversions)
     } else {
-      c = htoc(num % base);
+      c = htoc(num % base); // NOLINT(cppcoreguidelines-narrowing-conversions)
     }
     buf[j++] = c;
     num /= base;
-  };
+  }
   started = 0;
   j = 0;
   for (i = BUF_SIZE - 1; i >= 0; i--) {

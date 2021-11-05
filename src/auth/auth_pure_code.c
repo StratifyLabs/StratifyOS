@@ -3,8 +3,6 @@
 
 #include <string.h>
 
-#include "sos/boot/boot_debug.h"
-
 #include "cortexm/task.h"
 #include "device/auth.h"
 

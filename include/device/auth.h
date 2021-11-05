@@ -9,7 +9,8 @@
 #include "sos/fs/types.h"
 
 int auth_open(const devfs_handle_t *handle);
-int auth_ioctl(const devfs_handle_t *handle, int request, void *ctl);
+
+__attribute__((unused)) int auth_ioctl(const devfs_handle_t *handle, int request, void *ctl);
 int auth_read(const devfs_handle_t *handle, devfs_async_t *async);
 int auth_write(const devfs_handle_t *handle, devfs_async_t *async);
 int auth_close(const devfs_handle_t *handle);
