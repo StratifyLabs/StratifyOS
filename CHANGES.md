@@ -2,12 +2,14 @@
 
 ## New Features
 
+- Change mount path max value from `PATH_MAX` to a fixed `SYSFS_MOUNT_PATH_MAX` value
 - When a message queue starts with `user`, the message queue is not shared between processes.
 - `assetfs` provides a memory pointer in `st->st_blocks` allowing the caller to directly access the memory of the asset
 - `install()` will use `I_APPFS_VERIFY_SIGNATURE` if a signature is required
 
 ## Bug Fixes
 
+- Fix a bug in devfs where it checked `NAME_MAX` instead of `DEVFS_NAME_MAX`
 - Add casts to `u32` in `ASSESTFS` defines
 - Fixed two possible buffer overflow errors when launching applications
 - Cleanup `realloc()` (functionally equivalent)

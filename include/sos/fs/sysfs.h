@@ -53,8 +53,10 @@ int sysfs_always_mounted(const void *);
 #define SYSFS_NOTSUP ((void *)sysfs_notsup)
 #define SYSFS_NOTSUP_VOID ((void *)sysfs_notsup_void)
 
+#define SYSFS_MOUNT_PATH_MAX (23)
+
 typedef struct {
-  const char mount_path[PATH_MAX];
+  const char mount_path[SYSFS_MOUNT_PATH_MAX+1];
   const int permissions;
   const int owner;
   int (*mount)(const void *);

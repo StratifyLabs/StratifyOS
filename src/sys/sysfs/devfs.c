@@ -41,7 +41,7 @@ devfs_lookup_device(const devfs_device_t *list, const char *device_name) {
   int i;
   i = 0;
   while (devfs_is_terminator(&(list[i])) == 0) {
-    if (strncmp(device_name, list[i].name, NAME_MAX) == 0) {
+    if (strncmp(device_name, list[i].name, DEVFS_NAME_MAX) == 0) {
       return &list[i];
     }
     i++;

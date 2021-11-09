@@ -110,7 +110,7 @@ const sysfs_t *sysfs_find(const char *path, bool needs_parent) {
 
   i = 0;
   while (sysfs_isterminator(&(sysfs_list[i])) == false) {
-    int mountlen = strnlen(sysfs_list[i].mount_path, NAME_MAX);
+    int mountlen = strnlen(sysfs_list[i].mount_path, SYSFS_MOUNT_PATH_MAX);
     if (strncmp(path, sysfs_list[i].mount_path, mountlen) == 0) {
       if (needs_parent == true) {
         if ((pathlen > (mountlen + 1)) || (pathlen == 1)) {
