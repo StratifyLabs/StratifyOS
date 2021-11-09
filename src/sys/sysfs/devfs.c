@@ -3,8 +3,6 @@
 
 #include "sos/fs/sysfs.h"
 #include <errno.h>
-#include <reent.h>
-#include <stdarg.h>
 #include <sys/stat.h>
 
 #include "../scheduler/scheduler_local.h"
@@ -12,7 +10,6 @@
 #include "../unistd/unistd_local.h"
 
 #include "sos/fs/devfs.h"
-#include "sos/fs/sysfs.h"
 
 #include "devfs_local.h"
 
@@ -98,6 +95,7 @@ void svcall_open_device(void *args) {
 
 int devfs_init(const void *cfg) {
   // no initialization is required
+  MCU_UNUSED_ARGUMENT(cfg);
   return 0;
 }
 
