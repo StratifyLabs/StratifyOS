@@ -1,3 +1,11 @@
+# Version 4.3.0
+
+
+
+## Bug Fixes
+
+- remove cmake `include(newlib)` and `include(compiler-rt)`
+
 # Version 4.2.0
 
 ## New Features
