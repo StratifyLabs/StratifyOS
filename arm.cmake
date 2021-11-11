@@ -10,9 +10,6 @@ option(BUILD_DEVICE "Build Device library" OFF)
 option(BUILD_USBD "Build USB Device library" OFF)
 option(BUILD_LINK_TRANSPORT "Build Link transport library" OFF)
 
-include(compiler_rt)
-include(newlib)
-
 #check for LWIP
 if(NOT DEFINED STRATIFYOS_LWIP_PATH)
 	message(STATUS "No LWIP, Bootstrapping Sockets")
