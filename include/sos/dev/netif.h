@@ -12,9 +12,8 @@
  *
  */
 
-/*! \file 
+/*! \file
  */
-
 
 #ifndef SOS_DEV_NETIF_H_
 #define SOS_DEV_NETIF_H_
@@ -22,7 +21,7 @@
 #include "sos/link/types.h"
 #include <sdk/types.h>
 
-#define NETIF_VERSION (0x030100)
+#define NETIF_VERSION (0x040000)
 #define NETIF_IOC_CHAR 'N'
 
 #define NETIF_MAX_MAC_ADDRESS_SIZE 16
@@ -43,15 +42,24 @@ enum {
   NETIF_FLAG_IS_ETHERNET_ARP = (1 << 8),
   NETIF_FLAG_IS_IGMP = (1 << 9),
   NETIF_FLAG_IS_MLD6 = (1 << 10),
+  NETIF_FLAG_IS_IPV4 = (1 << 11),
+  NETIF_FLAG_IS_IPV6 = (1 << 12),
+  NETIF_FLAG_SET_IP_ADDRESS = (1 << 13)
 };
+
+typedef struct MCU_PACK {
+  u32 data[4];
+  u32 o_flags;
+} netif_ip_address_t;
 
 typedef struct MCU_PACK {
   u32 o_flags;
   u32 o_events;
   u8 mac_address[NETIF_MAX_MAC_ADDRESS_SIZE];
   u8 mac_address_length;
-  u8 resd;
+  u16 resd;
   u16 mtu;
+  netif_ip_address_t address;
 } netif_info_t;
 
 /*! \brief Network Interface attributes
@@ -60,6 +68,7 @@ typedef struct MCU_PACK {
   u32 o_flags;
   u16 mtu;
   u8 mac_address[NETIF_MAX_MAC_ADDRESS_SIZE];
+  netif_ip_address_t address;
 } netif_attr_t;
 
 #define I_NETIF_GETVERSION _IOCTL(NETIF_IOC_CHAR, I_MCU_GETVERSION)
