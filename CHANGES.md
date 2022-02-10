@@ -7,6 +7,7 @@
 ## Bug Fixes
 
 - Fixed a limitation in the `netif` device to provide a way to set/get the local IP address
+- remove cmake `include(newlib)` and `include(compiler-rt)`
 
 # Version 4.2.0
 
