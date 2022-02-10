@@ -1,3 +1,13 @@
+# Version 4.3.0
+
+## New Features
+
+- None Yet
+
+## Bug Fixes
+
+- Fixed a limitation in the `netif` device to provide a way to set/get the local IP address
+
 # Version 4.2.0
 
 ## New Features
