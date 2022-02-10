@@ -22,6 +22,7 @@
 - Fix return value of ioctl calls to device fifo
 - Fixed a bug with the message queues. A very specific timing condition could cause a receive to miss a send.
 - Fixed a critical memory corruption bug in message queues.
+- Fixed a limitation in the `netif` device to provide a way to set/get the local IP address
 
 # Version 4.1.0
 
