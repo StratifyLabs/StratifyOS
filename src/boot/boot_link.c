@@ -293,10 +293,13 @@ void boot_link_cmd_ioctl(link_transport_driver_t *driver, link_data_t *args) {
       hash_size = wattr.nbyte;
 #endif
 
+      //use a page size of 256, 512, or 1024
+
       memcpy(first_page, wattr.buf, sizeof(first_page));
       wattr.addr += sizeof(first_page);
       wattr.nbyte = wattr.nbyte - sizeof(first_page);
       memcpy(wattr.buf, wattr.buf + sizeof(first_page), wattr.nbyte);
+      memset(wattr.buf + wattr.nbyte, 0xff, sizeof(first_page));
 
       args->reply.err =
         sos_config.boot.flash_write_page(&sos_config.boot.flash_handle, &wattr);
