@@ -441,9 +441,9 @@ void erase_flash(link_transport_driver_t *driver) {
             &sos_config.boot.flash_handle, (void *)page++))
          == 0) {
     // while ((result = mcu_flash_erasepage(FLASH_PORT, (void *)page++)) == 0) {
-    sos_led_svcall_enable(0);
+    sos_led_root_enable(0);
     driver->wait(1);
-    sos_led_svcall_disable(0);
+    sos_led_root_disable(0);
     args.bytes = page;
     sos_handle_event(SOS_EVENT_BOOT_ERASE_FLASH, &args);
   }
@@ -452,11 +452,11 @@ void erase_flash(link_transport_driver_t *driver) {
   dint(SYSFS_GET_RETURN_ERRNO(result));
   dstr("\n");
 
-  sos_led_svcall_enable(0);
+  sos_led_root_enable(0);
 }
 
 void boot_link_cmd_reset(link_transport_driver_t *driver, link_data_t *args) {
-  sos_led_svcall_disable(0);
+  sos_led_root_disable();
   u32 *dfu_sw_req;
   driver->wait(500);
   driver->close(&(driver->handle));
