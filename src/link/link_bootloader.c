@@ -3,6 +3,8 @@
 #include <stdarg.h>
 #include <string.h>
 
+#include <sos/fs/sysfs.h>
+
 #include "link_local.h"
 #include "sos/dev/bootloader.h"
 
@@ -108,6 +110,9 @@ int reset_device(link_transport_mdriver_t *driver, int invoke_bootloader) {
   core_attr_t attr;
   int ret = 0;
 
+  link_debug(
+    LINK_DEBUG_MESSAGE, "Reset Device. Invoke bootloader? %d", invoke_bootloader);
+
   fd = link_open(driver, "/dev/core", LINK_O_RDWR);
   if (fd < 0) {
     ret = -1;
@@ -146,10 +151,17 @@ int link_verify_signature(
   if (attr->version < 0x400) {
     return 0;
   }
-
+  link_debug(LINK_DEBUG_MESSAGE, "Verify signature");
   auth_signature_t tmp = *signature;
-  return link_ioctl_delay(
+
+  // verify signature can write the flash
+  // so it needs a little extra time on the timeout
+  link_transport_mastersettimeout(driver, 5000);
+  const int result = link_ioctl_delay(
     driver, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_VERIFY_SIGNATURE, &tmp, 0, 0);
+  link_transport_mastersettimeout(driver, 0);
+
+  return result;
 }
 
 int link_get_public_key(
@@ -158,13 +170,15 @@ int link_get_public_key(
   u8 *public_key,
   size_t public_key_size) {
   if (attr->version < 0x400) {
-    printf("key is not supported\n");
+    link_debug(
+      LINK_DEBUG_MESSAGE,
+      "this function is only valid on bootloader version 0x400 and higher");
     return 0;
   }
 
   if (public_key_size != 64) {
-    printf("bad key size requested\n");
-    return -1;
+    link_debug(LINK_DEBUG_MESSAGE, "A bad key size was specified");
+    return SYSFS_SET_RETURN(EINVAL);
   }
 
   auth_public_key_t key = {};
@@ -172,8 +186,8 @@ int link_get_public_key(
     link_ioctl_delay(
       driver, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_GET_PUBLIC_KEY, &key, 0, 0)
     < 0) {
-    printf("failed to get the key\n");
-    return -2;
+    link_debug(LINK_DEBUG_MESSAGE, "Failed to get the public key");
+    return SYSFS_SET_RETURN(EINVAL);
   }
 
   memcpy(public_key, key.data, sizeof(key.data));
@@ -192,12 +206,8 @@ int link_is_signature_required(
 }
 
 int link_eraseflash(link_transport_mdriver_t *driver) {
-  if (
-    link_ioctl_delay(driver, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_ERASE, NULL, 0, 0)
-    < 0) {
-    return -1;
-  }
-  return 0;
+  link_debug(LINK_DEBUG_MESSAGE, "Erase flash using bootloader");
+  return link_ioctl_delay(driver, LINK_BOOTLOADER_FILDES, I_BOOTLOADER_ERASE, NULL, 0, 0);
 }
 
 int link_readflash(link_transport_mdriver_t *driver, int addr, void *buf, int nbyte) {
@@ -255,7 +265,8 @@ int link_writeflash(
   }
   wattr.nbyte = page_size;
 
-  link_debug(LINK_DEBUG_MESSAGE, "Page size is %d (%d)", page_size, nbyte);
+  link_debug(
+    LINK_DEBUG_MESSAGE, "Address 0x%x, Page size is %d (%d)", addr, page_size, nbyte);
 
   do {
     memset(wattr.buf, 0xFF, BOOTLOADER_WRITEPAGESIZE);
@@ -275,5 +286,8 @@ int link_writeflash(
     bytes_written += page_size;
 
   } while (bytes_written < nbyte);
+
+  link_debug(LINK_DEBUG_MESSAGE, "Write complete", nbyte);
+
   return nbyte;
 }

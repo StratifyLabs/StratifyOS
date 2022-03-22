@@ -2,7 +2,7 @@
 
 ## New Features
 
-- None Yet
+- Added better debug diagnostics in `link_bootloader` (does not affect embedded OS)
 
 ## Bug Fixes
 
