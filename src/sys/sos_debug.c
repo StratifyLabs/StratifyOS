@@ -71,7 +71,7 @@ int sos_debug_printf(const char *format, ...) {
 int sos_debug_vprintf(const char *format, va_list args) {
   sos_debug_buffer_t svcall_args;
   svcall_args.buffer[255] = 0;
-  svcall_args.len = vsnprintf(svcall_args.buffer, 255, format, args);
+  svcall_args.len = vsniprintf(svcall_args.buffer, 255, format, args);
   if (cortexm_is_root_mode()) {
     sos_config.debug.write(svcall_args.buffer, svcall_args.len);
   } else {
