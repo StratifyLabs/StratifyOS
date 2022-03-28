@@ -338,13 +338,13 @@ void boot_link_cmd_ioctl(link_transport_driver_t *driver, link_data_t *args) {
   }
 
   case I_BOOTLOADER_VERIFY_SIGNATURE: {
-#if CONFIG_BOOT_IS_VERIFY_SIGNATURE
     auth_signature_t signature;
     err = link_transport_slaveread(driver, signature.data, size, NULL, NULL);
     if (err < 0) {
       dstr("failed to receive signature\n");
       return;
     }
+#if CONFIG_BOOT_IS_VERIFY_SIGNATURE
     u8 hash[32];
     sha_api->finish(sha_context, hash, sizeof(hash));
     dstr("hash:"); dint(hash_size); dstr(":");
@@ -423,7 +423,7 @@ void erase_flash(link_transport_driver_t *driver) {
          != 0) {
     // while (mcu_flash_erasepage(FLASH_PORT, (void *)page++) != 0) {
     // these are the bootloader pages and won't be erased
-
+    dstr("here\n");
     sos_led_root_enable();
     driver->wait(1);
     sos_led_root_disable();
