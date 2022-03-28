@@ -2,6 +2,8 @@
 
 ## Bug Fixes
 
+- Use `iprintf` family for debugging rather than `printf`
+- Fix bootloader response when signature verification is off
 - Fixed a bug with the bootloader on LPCXX where the flash page write was writing 256 bytes erroneously
 - remove cmake `include(newlib)` and `include(compiler-rt)`
 - Fixed a limitation in the `netif` device to provide a way to set/get the local IP address
