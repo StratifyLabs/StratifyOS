@@ -88,7 +88,7 @@ int check_faults() {
     // Trace the fault -- and output on debug
     buffer[LINK_POSIX_TRACE_DATA_SIZE] = 0;
 
-    snprintf(buffer, LINK_POSIX_TRACE_DATA_SIZE, "fault:%d", m_cortexm_fault.fault.num);
+    sniprintf(buffer, LINK_POSIX_TRACE_DATA_SIZE, "fault:%d", m_cortexm_fault.fault.num);
     sos_trace_event_addr_tid(
       POSIX_TRACE_FATAL, buffer, strlen(buffer), (u32)m_cortexm_fault.fault.pc + 1,
       m_cortexm_fault.tid);
@@ -96,7 +96,7 @@ int check_faults() {
     usleep(2000);
     sos_debug_log_error(SOS_DEBUG_SYS, "%s", buffer);
 
-    snprintf(
+    sniprintf(
       buffer, LINK_POSIX_TRACE_DATA_SIZE - 1, "addr:%p", m_cortexm_fault.fault.addr);
 
     sos_trace_event_addr_tid(
@@ -114,7 +114,7 @@ int check_faults() {
       m_cortexm_fault.tid);
     usleep(2000);
 
-    snprintf(
+    sniprintf(
       buffer, LINK_POSIX_TRACE_DATA_SIZE - 1, "stack:%ld",
       m_cortexm_fault.free_stack_size);
 
@@ -126,7 +126,7 @@ int check_faults() {
       m_cortexm_fault.tid);
     usleep(2000);
 
-    snprintf(
+    sniprintf(
       buffer, LINK_POSIX_TRACE_DATA_SIZE - 1, "heap:%ld", m_cortexm_fault.free_heap_size);
 
     sos_trace_event_addr_tid(
