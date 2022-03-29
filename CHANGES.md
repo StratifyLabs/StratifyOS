@@ -6,6 +6,7 @@
 
 ## Bug Fixes
 
+- Added `#udef` guards where needed to exclude symbols from application function table
 - Use `iprintf` family for debugging rather than `printf`
 - Fix bootloader response when signature verification is off
 - Fixed a bug with the bootloader on LPCXX where the flash page write was writing 256 bytes erroneously
