@@ -168,12 +168,27 @@
 #define sigwait 0
 #define sigtimedwait 0
 #define sigwaitinfo 0
-#define sigaddset 0
-#define sigdelset 0
-#define sigismember 0
-#define sigfillset 0
-#define sigemptyset 0
 #define raise 0
+#if defined sigaddset
+#undef sigaddset
+#endif
+#define sigaddset 0
+#if defined sigaddset
+#undef sigdelset
+#endif
+#define sigdelset 0
+#if defined sigismember
+#undef sigismember
+#endif
+#define sigismember 0
+#if defined sigfillset
+#undef sigfillset
+#endif
+#define sigfillset 0
+#if defined sigemptyset
+#undef sigemptyset
+#endif
+#define sigemptyset 0
 #endif
 
 #if SYMBOLS_IGNORE_PTHREAD_MUTEX != 0
@@ -284,9 +299,21 @@
 #define fwide 0
 #define fwprintf 0
 #define fwscanf 0
+#if defined getwc
+#undef getwc
+#endif
 #define getwc 0
+#if defined getwchar
+#undef getwchar
+#endif
 #define getwchar 0
+#if defined putwc
+#undef putwc
+#endif
 #define putwc 0
+#if defined putwchar
+#undef putwchar
+#endif
 #define putwchar 0
 #define swprintf 0
 #define swscanf 0
