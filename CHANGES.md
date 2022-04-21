@@ -3,9 +3,12 @@
 ## New Features
 
 - Added better debug diagnostics in `link_bootloader` (does not affect embedded OS)
+- Remove `coverage` builds when building desktop interface library
+- Add support for building `wifi_api.h` on desktop (or rpi)
 
 ## Bug Fixes
 
+- Fix compiler warnings when casting `link_opendir` result
 - Added `#udef` guards where needed to exclude symbols from application function table
 - Use `iprintf` family for debugging rather than `printf`
 - Fix bootloader response when signature verification is off

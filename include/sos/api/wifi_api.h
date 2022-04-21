@@ -97,8 +97,12 @@ typedef struct {
 
 } wifi_api_t;
 
+extern const wifi_api_t wifi_api;
+
 #if !defined __link
 #define WIFI_API_REQUEST MCU_API_REQUEST_CODE('w', 'i', 'f', 'i')
+#else
+#define WIFI_API_REQUEST &wifi_api
 #endif
 
 #endif // SOS_API_WIFI_API_H

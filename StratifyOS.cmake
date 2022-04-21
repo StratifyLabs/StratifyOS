@@ -1,5 +1,5 @@
 if(SOS_IS_LINK)
-	set(STRATIFYOS_CMAKE_CONFIG_LIST release debug coverage)
+	set(STRATIFYOS_CMAKE_CONFIG_LIST release debug)
 	sos_sdk_include_target(StratifyOS "${STRATIFYOS_CMAKE_CONFIG_LIST}")
 else()
 	set(STRATIFYOS_CMAKE_CONFIG_LIST release debug)

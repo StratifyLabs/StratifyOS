@@ -196,7 +196,7 @@ int link_readdir_r(
     driver->phy_driver.handle);
 
   op.readdir.cmd = LINK_CMD_READDIR;
-  op.readdir.dirp = (u32)(u64)dirp;
+  op.readdir.dirp = (u32)(size_t)dirp;
 
   link_debug(LINK_DEBUG_MESSAGE, "Write op");
   if (link_transport_masterwrite(driver, &op, sizeof(link_readdir_t)) < 0) {
@@ -251,7 +251,7 @@ int link_closedir(link_transport_mdriver_t *driver, DIR *dirp) {
     LINK_DEBUG_INFO, "call with (0x%X) and handle %p", dirp, driver->phy_driver.handle);
 
   op.closedir.cmd = LINK_CMD_CLOSEDIR;
-  op.closedir.dirp = (u32)(u64)dirp;
+  op.closedir.dirp = (u32)(size_t)dirp;
 
   link_debug(LINK_DEBUG_MESSAGE, "Write op");
   err = link_transport_masterwrite(driver, &op, sizeof(link_closedir_t));
