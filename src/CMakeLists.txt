@@ -1,10 +1,10 @@
 
-if( ${SOS_BUILD_CONFIG} STREQUAL arm )
+if( ${CMSDK_BUILD_CONFIG} STREQUAL arm )
   list(APPEND SOURCELIST ${SRC_SOURCES_PREFIX}/config.h)
-	sos_sdk_add_subdirectory(SOURCELIST sys)
+	cmsdk_add_subdirectory(SOURCELIST sys)
 else()
-	sos_sdk_add_subdirectory(SOURCELIST link_transport)
-	sos_sdk_add_subdirectory(SOURCELIST link)
+	cmsdk_add_subdirectory(SOURCELIST link_transport)
+	cmsdk_add_subdirectory(SOURCELIST link)
 endif()
 
 set(SOURCES

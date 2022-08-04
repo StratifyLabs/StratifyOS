@@ -1,5 +1,5 @@
 
-if( ${SOS_BUILD_CONFIG} STREQUAL arm )
+if( ${CMSDK_BUILD_CONFIG} STREQUAL arm )
 		set(SOURCES
 			cortexm_local.h
 			cortexm.c

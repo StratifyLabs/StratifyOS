@@ -1,6 +1,6 @@
 
 
-if( ${SOS_BUILD_CONFIG} STREQUAL arm )
+if( ${CMSDK_BUILD_CONFIG} STREQUAL arm )
 	set(SOURCES
 		link1_transport.c
 		link2_transport.c
@@ -12,7 +12,7 @@ if( ${SOS_BUILD_CONFIG} STREQUAL arm )
 		PARENT_SCOPE)
 endif()
 
-if( ${SOS_BUILD_CONFIG} STREQUAL link )
+if( ${CMSDK_BUILD_CONFIG} STREQUAL link )
 	set(SOURCES
 		link_transport_master.c
 		link1_transport.c

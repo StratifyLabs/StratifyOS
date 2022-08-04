@@ -24,7 +24,7 @@ if(NOT SOS_CONFIG_PATH)
 	message(FATAL_ERROR "SOS_CONFIG_PATH must provide directory to `sos_config.h`")
 endif()
 
-sos_sdk_add_subdirectory(SOS_INTERFACE_SOURCELIST ${CMAKE_CURRENT_SOURCE_DIR}/include)
+cmsdk_add_subdirectory(SOS_INTERFACE_SOURCELIST ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 # Grab GLOB files - these don't affect the build so GLOB is OK
 file(GLOB_RECURSE CMAKE_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/cmake/*)
@@ -37,32 +37,32 @@ set(COMMON_SOURCES
 	${SOS_CONFIG_PATH}/sos_config.h)
 
 #Add sys sources
-sos_sdk_add_subdirectory(SYS_SOURCELIST src)
+cmsdk_add_subdirectory(SYS_SOURCELIST src)
 
 #Add sys sources
-sos_sdk_add_subdirectory(CRT_SOURCELIST src/crt)
+cmsdk_add_subdirectory(CRT_SOURCELIST src/crt)
 
 #Add bootloader sources
-sos_sdk_add_subdirectory(BOOT_SOURCELIST src/boot)
+cmsdk_add_subdirectory(BOOT_SOURCELIST src/boot)
 
 #Add Cortex-m sources
-sos_sdk_add_subdirectory(CORTEXM_SOURCELIST src/cortexm)
+cmsdk_add_subdirectory(CORTEXM_SOURCELIST src/cortexm)
 
 #Add MCU sources
-sos_sdk_add_subdirectory(MCU_SOURCELIST src/mcu)
+cmsdk_add_subdirectory(MCU_SOURCELIST src/mcu)
 
 
 #Add Auth sources
-sos_sdk_add_subdirectory(AUTH_SOURCELIST src/auth)
+cmsdk_add_subdirectory(AUTH_SOURCELIST src/auth)
 
 #Add link transport
-sos_sdk_add_subdirectory(LINK_TRANSPORT_SOURCELIST src/link_transport)
+cmsdk_add_subdirectory(LINK_TRANSPORT_SOURCELIST src/link_transport)
 
 #Add usbd
-sos_sdk_add_subdirectory(USBD_SOURCELIST src/usbd)
+cmsdk_add_subdirectory(USBD_SOURCELIST src/usbd)
 
 #add device library
-sos_sdk_add_subdirectory(DEVICE_SOURCELIST src/device)
+cmsdk_add_subdirectory(DEVICE_SOURCELIST src/device)
 
 
 set(SYS_INCLUDE_DIRECTORIES
@@ -146,8 +146,8 @@ macro(add_lwip_path TARGET DOMAIN)
 endmacro()
 
 if(BUILD_CORTEXM OR BUILD_ALL)
-	sos_sdk_library_target(CORTEXM_RELEASE StratifyOS cortexm release ${SOS_ARCH})
-	sos_sdk_library_target(CORTEXM_DEBUG StratifyOS cortexm debug ${SOS_ARCH})
+	cmsdk_library_target(CORTEXM_RELEASE StratifyOS cortexm release ${CMSDK_ARCH})
+	cmsdk_library_target(CORTEXM_DEBUG StratifyOS cortexm debug ${CMSDK_ARCH})
 
 	add_library(${CORTEXM_RELEASE_TARGET} STATIC)
 	target_sources(${CORTEXM_RELEASE_TARGET} PRIVATE ${CORTEXM_SOURCELIST})
@@ -158,15 +158,15 @@ if(BUILD_CORTEXM OR BUILD_ALL)
 	set_property(TARGET ${CORTEXM_RELEASE_TARGET} PROPERTY INTERPROCEDURAL_OPTIMIZATION FALSE)
 
 	add_library(${CORTEXM_DEBUG_TARGET} STATIC)
-	sos_sdk_copy_target(${CORTEXM_RELEASE_TARGET} ${CORTEXM_DEBUG_TARGET})
+	cmsdk_copy_target(${CORTEXM_RELEASE_TARGET} ${CORTEXM_DEBUG_TARGET})
 
-	sos_sdk_library_add_arch_targets("${CORTEXM_RELEASE_OPTIONS}" ${SOS_ARCH} "")
-	sos_sdk_library_add_arch_targets("${CORTEXM_DEBUG_OPTIONS}" ${SOS_ARCH} "")
+	cmsdk_library_add_arch_targets("${CORTEXM_RELEASE_OPTIONS}" ${CMSDK_ARCH} "")
+	cmsdk_library_add_arch_targets("${CORTEXM_DEBUG_OPTIONS}" ${CMSDK_ARCH} "")
 endif()
 
 if(BUILD_LINK_TRANSPORT OR BUILD_ALL)
-	sos_sdk_library_target(LINK_TRANSPORT_RELEASE StratifyOS linktransport release ${SOS_ARCH})
-	sos_sdk_library_target(LINK_TRANSPORT_DEBUG StratifyOS linktransport debug ${SOS_ARCH})
+	cmsdk_library_target(LINK_TRANSPORT_RELEASE StratifyOS linktransport release ${CMSDK_ARCH})
+	cmsdk_library_target(LINK_TRANSPORT_DEBUG StratifyOS linktransport debug ${CMSDK_ARCH})
 
 	add_library(${LINK_TRANSPORT_RELEASE_TARGET} STATIC)
 	target_sources(${LINK_TRANSPORT_RELEASE_TARGET} PRIVATE ${LINK_TRANSPORT_SOURCELIST})
@@ -177,15 +177,15 @@ if(BUILD_LINK_TRANSPORT OR BUILD_ALL)
 	set_property(TARGET ${LINK_TRANSPORT_RELEASE_TARGET} PROPERTY INTERPROCEDURAL_OPTIMIZATION FALSE)
 
 	add_library(${LINK_TRANSPORT_DEBUG_TARGET} STATIC)
-	sos_sdk_copy_target(${LINK_TRANSPORT_RELEASE_TARGET} ${LINK_TRANSPORT_DEBUG_TARGET})
+	cmsdk_copy_target(${LINK_TRANSPORT_RELEASE_TARGET} ${LINK_TRANSPORT_DEBUG_TARGET})
 
-	sos_sdk_library_add_arch_targets("${LINK_TRANSPORT_RELEASE_OPTIONS}" ${SOS_ARCH} "")
-	sos_sdk_library_add_arch_targets("${LINK_TRANSPORT_DEBUG_OPTIONS}" ${SOS_ARCH} "")
+	cmsdk_library_add_arch_targets("${LINK_TRANSPORT_RELEASE_OPTIONS}" ${CMSDK_ARCH} "")
+	cmsdk_library_add_arch_targets("${LINK_TRANSPORT_DEBUG_OPTIONS}" ${CMSDK_ARCH} "")
 endif()
 
 if(BUILD_DEVICE OR BUILD_ALL)
-	sos_sdk_library_target(DEVICE_RELEASE StratifyOS device release ${SOS_ARCH})
-	sos_sdk_library_target(DEVICE_DEBUG StratifyOS device debug ${SOS_ARCH})
+	cmsdk_library_target(DEVICE_RELEASE StratifyOS device release ${CMSDK_ARCH})
+	cmsdk_library_target(DEVICE_DEBUG StratifyOS device debug ${CMSDK_ARCH})
 
 	add_library(${DEVICE_RELEASE_TARGET} STATIC)
 	target_sources(${DEVICE_RELEASE_TARGET} PRIVATE ${DEVICE_SOURCELIST})
@@ -196,15 +196,15 @@ if(BUILD_DEVICE OR BUILD_ALL)
 	set_property(TARGET ${DEVICE_RELEASE_TARGET} PROPERTY INTERPROCEDURAL_OPTIMIZATION FALSE)
 
 	add_library(${DEVICE_DEBUG_TARGET} STATIC)
-	sos_sdk_copy_target(${DEVICE_RELEASE_TARGET} ${DEVICE_DEBUG_TARGET})
+	cmsdk_copy_target(${DEVICE_RELEASE_TARGET} ${DEVICE_DEBUG_TARGET})
 
-	sos_sdk_library_add_arch_targets("${DEVICE_RELEASE_OPTIONS}" ${SOS_ARCH} "")
-	sos_sdk_library_add_arch_targets("${DEVICE_DEBUG_OPTIONS}" ${SOS_ARCH} "")
+	cmsdk_library_add_arch_targets("${DEVICE_RELEASE_OPTIONS}" ${CMSDK_ARCH} "")
+	cmsdk_library_add_arch_targets("${DEVICE_DEBUG_OPTIONS}" ${CMSDK_ARCH} "")
 endif()
 
 if(BUILD_USBD OR BUILD_ALL)
-	sos_sdk_library_target(USBD_RELEASE StratifyOS usbd release ${SOS_ARCH})
-	sos_sdk_library_target(USBD_DEBUG StratifyOS usbd debug ${SOS_ARCH})
+	cmsdk_library_target(USBD_RELEASE StratifyOS usbd release ${CMSDK_ARCH})
+	cmsdk_library_target(USBD_DEBUG StratifyOS usbd debug ${CMSDK_ARCH})
 
 	add_library(${USBD_RELEASE_TARGET} STATIC)
 	target_sources(${USBD_RELEASE_TARGET} PRIVATE ${USBD_SOURCELIST})
@@ -215,15 +215,15 @@ if(BUILD_USBD OR BUILD_ALL)
 	set_property(TARGET ${USBD_RELEASE_TARGET} PROPERTY INTERPROCEDURAL_OPTIMIZATION FALSE)
 
 	add_library(${USBD_DEBUG_TARGET} STATIC)
-	sos_sdk_copy_target(${USBD_RELEASE_TARGET} ${USBD_DEBUG_TARGET})
+	cmsdk_copy_target(${USBD_RELEASE_TARGET} ${USBD_DEBUG_TARGET})
 
-	sos_sdk_library_add_arch_targets("${USBD_RELEASE_OPTIONS}" ${SOS_ARCH} "")
-	sos_sdk_library_add_arch_targets("${USBD_DEBUG_OPTIONS}" ${SOS_ARCH} "")
+	cmsdk_library_add_arch_targets("${USBD_RELEASE_OPTIONS}" ${CMSDK_ARCH} "")
+	cmsdk_library_add_arch_targets("${USBD_DEBUG_OPTIONS}" ${CMSDK_ARCH} "")
 endif()
 
 if(BUILD_MCU OR BUILD_ALL)
-	sos_sdk_library_target(AUTH_RELEASE StratifyOS auth release ${SOS_ARCH})
-	sos_sdk_library_target(AUTH_DEBUG StratifyOS auth debug ${SOS_ARCH})
+	cmsdk_library_target(AUTH_RELEASE StratifyOS auth release ${CMSDK_ARCH})
+	cmsdk_library_target(AUTH_DEBUG StratifyOS auth debug ${CMSDK_ARCH})
 
 	add_library(${AUTH_RELEASE_TARGET} STATIC)
 	target_sources(${AUTH_RELEASE_TARGET} PRIVATE ${AUTH_SOURCELIST})
@@ -236,16 +236,16 @@ if(BUILD_MCU OR BUILD_ALL)
 	set_property(TARGET ${AUTH_RELEASE_TARGET} PROPERTY INTERPROCEDURAL_OPTIMIZATION FALSE)
 
 	add_library(${AUTH_DEBUG_TARGET} STATIC)
-	sos_sdk_copy_target(${AUTH_RELEASE_TARGET} ${AUTH_DEBUG_TARGET})
+	cmsdk_copy_target(${AUTH_RELEASE_TARGET} ${AUTH_DEBUG_TARGET})
 
-	sos_sdk_library_add_arch_targets("${AUTH_RELEASE_OPTIONS}" ${SOS_ARCH} "")
-	sos_sdk_library_add_arch_targets("${AUTH_DEBUG_OPTIONS}" ${SOS_ARCH} "")
+	cmsdk_library_add_arch_targets("${AUTH_RELEASE_OPTIONS}" ${CMSDK_ARCH} "")
+	cmsdk_library_add_arch_targets("${AUTH_DEBUG_OPTIONS}" ${CMSDK_ARCH} "")
 endif()
 
 
 if(BUILD_MCU OR BUILD_ALL)
-	sos_sdk_library_target(MCU_RELEASE StratifyOS mcu release ${SOS_ARCH})
-	sos_sdk_library_target(MCU_DEBUG StratifyOS mcu debug ${SOS_ARCH})
+	cmsdk_library_target(MCU_RELEASE StratifyOS mcu release ${CMSDK_ARCH})
+	cmsdk_library_target(MCU_DEBUG StratifyOS mcu debug ${CMSDK_ARCH})
 
 	add_library(${MCU_RELEASE_TARGET} STATIC)
 	target_sources(${MCU_RELEASE_TARGET} PRIVATE ${MCU_SOURCELIST})
@@ -258,15 +258,15 @@ if(BUILD_MCU OR BUILD_ALL)
 	set_property(TARGET ${MCU_RELEASE_TARGET} PROPERTY INTERPROCEDURAL_OPTIMIZATION FALSE)
 
 	add_library(${MCU_DEBUG_TARGET} STATIC)
-	sos_sdk_copy_target(${MCU_RELEASE_TARGET} ${MCU_DEBUG_TARGET})
+	cmsdk_copy_target(${MCU_RELEASE_TARGET} ${MCU_DEBUG_TARGET})
 
-	sos_sdk_library_add_arch_targets("${MCU_RELEASE_OPTIONS}" ${SOS_ARCH} "")
-	sos_sdk_library_add_arch_targets("${MCU_DEBUG_OPTIONS}" ${SOS_ARCH} "")
+	cmsdk_library_add_arch_targets("${MCU_RELEASE_OPTIONS}" ${CMSDK_ARCH} "")
+	cmsdk_library_add_arch_targets("${MCU_DEBUG_OPTIONS}" ${CMSDK_ARCH} "")
 endif()
 
 if(BUILD_SYS OR BUILD_ALL)
-	sos_sdk_library_target(SYS_RELEASE StratifyOS sys release ${SOS_ARCH})
-	sos_sdk_library_target(SYS_DEBUG StratifyOS sys debug ${SOS_ARCH})
+	cmsdk_library_target(SYS_RELEASE StratifyOS sys release ${CMSDK_ARCH})
+	cmsdk_library_target(SYS_DEBUG StratifyOS sys debug ${CMSDK_ARCH})
 
 	add_library(${SYS_RELEASE_TARGET} STATIC)
 	target_sources(${SYS_RELEASE_TARGET} PRIVATE ${SYS_SOURCELIST})
@@ -279,16 +279,16 @@ if(BUILD_SYS OR BUILD_ALL)
 	set_property(TARGET ${SYS_RELEASE_TARGET} PROPERTY INTERPROCEDURAL_OPTIMIZATION FALSE)
 
 	add_library(${SYS_DEBUG_TARGET} STATIC)
-	sos_sdk_copy_target(${SYS_RELEASE_TARGET} ${SYS_DEBUG_TARGET})
+	cmsdk_copy_target(${SYS_RELEASE_TARGET} ${SYS_DEBUG_TARGET})
 
-	sos_sdk_library_add_arch_targets("${SYS_RELEASE_OPTIONS}" ${SOS_ARCH} "${SYS_DEPENDENCIES}")
-	sos_sdk_library_add_arch_targets("${SYS_DEBUG_OPTIONS}" ${SOS_ARCH} "${SYS_DEPENDENCIES}")
+	cmsdk_library_add_arch_targets("${SYS_RELEASE_OPTIONS}" ${CMSDK_ARCH} "${SYS_DEPENDENCIES}")
+	cmsdk_library_add_arch_targets("${SYS_DEBUG_OPTIONS}" ${CMSDK_ARCH} "${SYS_DEPENDENCIES}")
 endif()
 
 
 if(BUILD_CRT OR BUILD_ALL)
-	sos_sdk_library_target(CRT_RELEASE StratifyOS crt release ${SOS_ARCH})
-	sos_sdk_library_target(CRT_DEBUG StratifyOS crt debug ${SOS_ARCH})
+	cmsdk_library_target(CRT_RELEASE StratifyOS crt release ${CMSDK_ARCH})
+	cmsdk_library_target(CRT_DEBUG StratifyOS crt debug ${CMSDK_ARCH})
 
 	add_library(${CRT_RELEASE_TARGET} STATIC)
 	target_sources(${CRT_RELEASE_TARGET} PRIVATE ${CRT_SOURCELIST})
@@ -300,16 +300,16 @@ if(BUILD_CRT OR BUILD_ALL)
 	target_compile_options(${CRT_RELEASE_TARGET} PUBLIC -mlong-calls ${COMPILE_OPTIONS} PRIVATE -Os)
 
 	add_library(${CRT_DEBUG_TARGET} STATIC)
-	sos_sdk_copy_target(${CRT_RELEASE_TARGET} ${CRT_DEBUG_TARGET})
+	cmsdk_copy_target(${CRT_RELEASE_TARGET} ${CRT_DEBUG_TARGET})
 
 	# Create targets for all architectures using above settings
-	sos_sdk_library_add_arch_targets("${CRT_RELEASE_OPTIONS}" ${SOS_ARCH} "")
-	sos_sdk_library_add_arch_targets("${CRT_DEBUG_OPTIONS}" ${SOS_ARCH} "")
+	cmsdk_library_add_arch_targets("${CRT_RELEASE_OPTIONS}" ${CMSDK_ARCH} "")
+	cmsdk_library_add_arch_targets("${CRT_DEBUG_OPTIONS}" ${CMSDK_ARCH} "")
 endif()
 
 if(BUILD_BOOT OR BUILD_ALL)
-	sos_sdk_library_target(BOOT_RELEASE StratifyOS boot release ${SOS_ARCH})
-	sos_sdk_library_target(BOOT_DEBUG StratifyOS boot debug ${SOS_ARCH})
+	cmsdk_library_target(BOOT_RELEASE StratifyOS boot release ${CMSDK_ARCH})
+	cmsdk_library_target(BOOT_DEBUG StratifyOS boot debug ${CMSDK_ARCH})
 
 	add_library(${BOOT_RELEASE_TARGET} STATIC)
 	target_sources(${BOOT_RELEASE_TARGET} PRIVATE ${BOOT_SOURCELIST})
@@ -319,11 +319,11 @@ if(BUILD_BOOT OR BUILD_ALL)
 	add_lwip_path(${BOOT_RELEASE_TARGET} PUBLIC)
 
 	add_library(${BOOT_DEBUG_TARGET} STATIC)
-	sos_sdk_copy_target(${BOOT_RELEASE_TARGET} ${BOOT_DEBUG_TARGET})
+	cmsdk_copy_target(${BOOT_RELEASE_TARGET} ${BOOT_DEBUG_TARGET})
 
 	# Create targets for all architectures using above settings
-	sos_sdk_library_add_arch_targets("${BOOT_RELEASE_OPTIONS}" ${SOS_ARCH} "${BOOT_DEPENDENCIES}")
-	sos_sdk_library_add_arch_targets("${BOOT_DEBUG_OPTIONS}" ${SOS_ARCH} "${BOOT_DEPENDENCIES}")
+	cmsdk_library_add_arch_targets("${BOOT_RELEASE_OPTIONS}" ${CMSDK_ARCH} "${BOOT_DEPENDENCIES}")
+	cmsdk_library_add_arch_targets("${BOOT_DEBUG_OPTIONS}" ${CMSDK_ARCH} "${BOOT_DEPENDENCIES}")
 endif()
 
 install(DIRECTORY include/cortexm include/device include/mcu include/sos include/usbd DESTINATION include PATTERN CMakelists.txt EXCLUDE)

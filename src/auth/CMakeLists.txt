@@ -1,5 +1,5 @@
 
-if (${SOS_BUILD_CONFIG} STREQUAL arm)
+if (${CMSDK_BUILD_CONFIG} STREQUAL arm)
   set(SOURCELIST
     auth_pure_code.c)
 endif ()

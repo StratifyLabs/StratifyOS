@@ -1,6 +1,6 @@
 
 
-if( ${SOS_BUILD_CONFIG} STREQUAL link )
+if( ${CMSDK_BUILD_CONFIG} STREQUAL link )
 		set(SOURCES
 			link_bootloader.c
 			link_debug.c

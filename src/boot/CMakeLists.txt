@@ -1,6 +1,6 @@
 
 
-if( ${SOS_BUILD_CONFIG} STREQUAL arm )
+if( ${CMSDK_BUILD_CONFIG} STREQUAL arm )
 		set(SOURCES
 			boot_config.h
 			boot_debug.c

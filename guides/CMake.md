@@ -64,9 +64,9 @@ include(${SOS_TOOLCHAIN_CMAKE_PATH}/sos-variables.cmake)
 
 # SOS_* variables can start to be overriden here
 
-if( ${SOS_BUILD_CONFIG} STREQUAL arm )
+if( ${CMSDK_BUILD_CONFIG} STREQUAL arm )
 	set(CMAKE_TOOLCHAIN_FILE ${SOS_TOOLCHAIN_CMAKE_PATH}/sos-app-toolchain.cmake)
-elseif( ${SOS_BUILD_CONFIG} STREQUAL link )
+elseif( ${CMSDK_BUILD_CONFIG} STREQUAL link )
 	set(CMAKE_TOOLCHAIN_FILE ${SOS_TOOLCHAIN_CMAKE_PATH}/link-toolchain.cmake)
 endif()
 
@@ -84,15 +84,15 @@ list(APPEND SOS_SOURCELIST ${SOURCES})
 get_filename_component(SOS_NAME ${CMAKE_SOURCE_DIR} NAME)
 project(${SOS_NAME} CXX C)
 
-# SOS_BUILD_CONFIG is set by sos-variables and looks at the suffix of the build diretory
-if( ${SOS_BUILD_CONFIG} STREQUAL arm )
+# CMSDK_BUILD_CONFIG is set by sos-variables and looks at the suffix of the build diretory
+if( ${CMSDK_BUILD_CONFIG} STREQUAL arm )
 	# this means the build directory ends in _arm (usually cmake_arm)
 	#This will cross compile for all supported ARM architetures
 	include(${SOS_TOOLCHAIN_CMAKE_PATH}/sos-app-std.cmake)
-elseif( ${SOS_BUILD_CONFIG} STREQUAL link )
+elseif( ${CMSDK_BUILD_CONFIG} STREQUAL link )
 	# this means the build directory ends in _link_ (usually cmake_link)
 	#This will compile natively. If the program uses hardware, it can "link" to a board over USB
-	set(SOS_ARCH link)
+	set(CMSDK_ARCH link)
 	set(SOS_CONFIG release)
 	include(${SOS_TOOLCHAIN_CMAKE_PATH}/sos-app.cmake)
 endif()
@@ -126,9 +126,9 @@ if(NOT DEFINED SOS_SDK_PATH)
 endif()
 set(SOS_TOOLCHAIN_CMAKE_PATH ${SOS_SDK_PATH}/Tools/gcc/arm-none-eabi/cmake)
 
-if( ${SOS_BUILD_CONFIG} STREQUAL arm )
+if( ${CMSDK_BUILD_CONFIG} STREQUAL arm )
 	set(CMAKE_TOOLCHAIN_FILE ${SOS_TOOLCHAIN_CMAKE_PATH}/sos-lib-toolchain.cmake)
-elseif( ${SOS_BUILD_CONFIG} STREQUAL link )
+elseif( ${CMSDK_BUILD_CONFIG} STREQUAL link )
 	set(CMAKE_TOOLCHAIN_FILE ${SOS_TOOLCHAIN_CMAKE_PATH}/link-toolchain.cmake)
 endif()
 
@@ -136,9 +136,9 @@ get_filename_component(SOS_NAME ${CMAKE_SOURCE_DIR} NAME)
 
 include(${SOS_TOOLCHAIN_CMAKE_PATH}/sos-variables.cmake)
 
-if( ${SOS_BUILD_CONFIG} STREQUAL arm )
+if( ${CMSDK_BUILD_CONFIG} STREQUAL arm )
 	set(CMAKE_TOOLCHAIN_FILE ${SOS_TOOLCHAIN_CMAKE_PATH}/sos-lib-toolchain.cmake)
-elseif( ${SOS_BUILD_CONFIG} STREQUAL link )
+elseif( ${CMSDK_BUILD_CONFIG} STREQUAL link )
 	set(CMAKE_TOOLCHAIN_FILE ${SOS_TOOLCHAIN_CMAKE_PATH}/link-toolchain.cmake)
 endif()
 
@@ -147,7 +147,7 @@ project(${SOS_NAME} CXX C)
 
 install(DIRECTORY include/ DESTINATION include/sapi)
 set(SOS_INCLUDE_DIRECTORIES include)
-include( ${CMAKE_SOURCE_DIR}/${SOS_BUILD_CONFIG}.cmake )
+include( ${CMAKE_SOURCE_DIR}/${CMSDK_BUILD_CONFIG}.cmake )
 ```
 
 # Building OS Packages
@@ -195,7 +195,7 @@ set(SOURCES_PREFIX ${CMAKE_SOURCE_DIR}/boot)
 add_subdirectory(boot)
 list(APPEND BOOT_SOURCELIST ${SOURCES})
 
-set(SOS_ARCH v7m)
+set(CMSDK_ARCH v7m)
 set(SOS_DEVICE lpc1768)
 set(SOS_DEVICE_FAMILY lpc17xx)
 set(SOS_HARDWARD_ID 0x00000003)
@@ -271,13 +271,13 @@ This variable specifies build flags that are passed to the compiler.
 set(SOS_BUILD_FLAGS -Werror)
 ```
 
-## SOS_ARCH
+## CMSDK_ARCH
 
 Applies to applications, libraries, and OS packages.
 
 Libraries and application are typically built for all supported architectures when using the `sos-app-std.cmake` and `sos-lib-std.cmake` files. For OS packages, the architecture must be set to match the chip for which the package is being built.
 
-When building for `link` (native) architectures, this value is set to `link`. If the cmake build folder ends with `_link`, `SOS_BUILD_CONFIG` will be set to `link` and this value must be set to `link` as well.
+When building for `link` (native) architectures, this value is set to `link`. If the cmake build folder ends with `_link`, `CMSDK_BUILD_CONFIG` will be set to `link` and this value must be set to `link` as well.
 
 When the cmake build folder ends with `_arm`, the following architectures can be used.
 
@@ -379,41 +379,41 @@ Applies to OS packages.
  
 This variable specifies a list of sources for the kernel. This is only used in conjunction with `sos-bsp-std.cmake`.
 
-## SOS_ARCH_ARM_ALL
+## CMSDK_ARCH_ARM_ALL
 
 Applies to applications and libraries.
 
 This variables tells `sos-app-std.cmake` or `sos-lib-std.cmake` to build all ARM architectures. The default value is `ON`.
 
-## SOS_ARCH_ARM_V7M
+## CMSDK_ARCH_ARM_V7M
 
 Applies to applications and libraries.
 
-This variables tells `sos-app-std.cmake` or `sos-lib-std.cmake` to build only the v7m architecture. The default value is `OFF`.  To build only this architecture, `SOS_ARCH_ARM_ALL` needs to be set to off and this variable set to `ON`.
+This variables tells `sos-app-std.cmake` or `sos-lib-std.cmake` to build only the v7m architecture. The default value is `OFF`.  To build only this architecture, `CMSDK_ARCH_ARM_ALL` needs to be set to off and this variable set to `ON`.
 
-## SOS_ARCH_ARM_V7EM
-
-Applies to applications and libraries.
-
-This variables tells `sos-app-std.cmake` or `sos-lib-std.cmake` to build only the v7em architecture. The default value is `OFF`.  To build only this architecture, `SOS_ARCH_ARM_ALL` needs to be set to off and this variable set to `ON`.
-
-## SOS_ARCH_ARM_V7EM_F4SH
+## CMSDK_ARCH_ARM_V7EM
 
 Applies to applications and libraries.
 
-This variables tells `sos-app-std.cmake` or `sos-lib-std.cmake` to build only the v7em_f4sh architecture. The default value is `OFF`.  To build only this architecture, `SOS_ARCH_ARM_ALL` needs to be set to off and this variable set to `ON`.
+This variables tells `sos-app-std.cmake` or `sos-lib-std.cmake` to build only the v7em architecture. The default value is `OFF`.  To build only this architecture, `CMSDK_ARCH_ARM_ALL` needs to be set to off and this variable set to `ON`.
 
-## SOS_ARCH_ARM_V7EM_F5SH
-
-Applies to applications and libraries.
-
-This variables tells `sos-app-std.cmake` or `sos-lib-std.cmake` to build only the v7em_f5sh architecture. The default value is `OFF`.  To build only this architecture, `SOS_ARCH_ARM_ALL` needs to be set to off and this variable set to `ON`.
-
-## SOS_ARCH_ARM_V7EM_F5DH
+## CMSDK_ARCH_ARM_V7EM_F4SH
 
 Applies to applications and libraries.
 
-This variables tells `sos-app-std.cmake` or `sos-lib-std.cmake` to build only the v7em_f5dh architecture. The default value is `OFF`.  To build only this architecture, `SOS_ARCH_ARM_ALL` needs to be set to off and this variable set to `ON`.
+This variables tells `sos-app-std.cmake` or `sos-lib-std.cmake` to build only the v7em_f4sh architecture. The default value is `OFF`.  To build only this architecture, `CMSDK_ARCH_ARM_ALL` needs to be set to off and this variable set to `ON`.
+
+## CMSDK_ARCH_ARM_V7EM_F5SH
+
+Applies to applications and libraries.
+
+This variables tells `sos-app-std.cmake` or `sos-lib-std.cmake` to build only the v7em_f5sh architecture. The default value is `OFF`.  To build only this architecture, `CMSDK_ARCH_ARM_ALL` needs to be set to off and this variable set to `ON`.
+
+## CMSDK_ARCH_ARM_V7EM_F5DH
+
+Applies to applications and libraries.
+
+This variables tells `sos-app-std.cmake` or `sos-lib-std.cmake` to build only the v7em_f5dh architecture. The default value is `OFF`.  To build only this architecture, `CMSDK_ARCH_ARM_ALL` needs to be set to off and this variable set to `ON`.
 
 ## SOS_BUILD_C_FLAGS
 

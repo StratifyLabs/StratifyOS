@@ -1,5 +1,5 @@
 
-if( ${SOS_BUILD_CONFIG} STREQUAL arm )
+if( ${CMSDK_BUILD_CONFIG} STREQUAL arm )
 	set(SOURCES
 		microchip/sst25vf_share.c
 		microchip/sst25vf_ssp_tmr.c
