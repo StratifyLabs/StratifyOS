@@ -2,6 +2,7 @@
 
 ## New Features
 
+- Port cmake to `CMakeSDKv2.0`
 - Added better debug diagnostics in `link_bootloader` (does not affect embedded OS)
 - Remove `coverage` builds when building desktop interface library
 - Add support for building `wifi_api.h` on desktop (or rpi)
