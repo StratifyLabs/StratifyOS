@@ -37,28 +37,20 @@ set(COMMON_SOURCES
 
 #Add sys sources
 cmsdk_add_subdirectory(SYS_SOURCELIST src)
-
 #Add sys sources
 cmsdk_add_subdirectory(CRT_SOURCELIST src/crt)
-
 #Add bootloader sources
 cmsdk_add_subdirectory(BOOT_SOURCELIST src/boot)
-
 #Add Cortex-m sources
 cmsdk_add_subdirectory(CORTEXM_SOURCELIST src/cortexm)
-
 #Add MCU sources
 cmsdk_add_subdirectory(MCU_SOURCELIST src/mcu)
-
 #Add Auth sources
 cmsdk_add_subdirectory(AUTH_SOURCELIST src/auth)
-
 #Add link transport
 cmsdk_add_subdirectory(LINK_TRANSPORT_SOURCELIST src/link_transport)
-
 #Add usbd
 cmsdk_add_subdirectory(USBD_SOURCELIST src/usbd)
-
 #add device library
 cmsdk_add_subdirectory(DEVICE_SOURCELIST src/device)
 
@@ -121,26 +113,107 @@ set(COMPILE_DEFINITIONS_PRIVATE
 
 list(APPEND SYS_SOURCELIST ${COMMON_SOURCES})
 
-macro(add_lwip_path TARGET DOMAIN)
-  if(NOT DEFINED STRATIFYOS_LWIP_PATH)
-    target_compile_definitions(${TARGET} ${DOMAIN} SOS_BOOTSTRAP_SOCKETS=${BOOTSTRAP_SOCKETS})
-  else()
-    string(COMPARE EQUAL ${DOMAIN} PRIVATE IS_PRIVATE)
-    if(IS_PRIVATE)
-      target_include_directories(${TARGET}
-        PRIVATE
-        ${STRATIFYOS_LWIP_PATH}
-        )
-    else()
-      foreach(PATH ${STRATIFYOS_LWIP_PATH})
-        target_include_directories(${TARGET}
-          PUBLIC
-          $<BUILD_INTERFACE:${PATH}>
-          )
-      endforeach()
-    endif()
-  endif()
-endmacro()
+cmsdk2_add_library(
+  NAME StratifyOS
+  OPTION interface
+  CONFIG release
+  TYPE INTERFACE
+  ARCH ${CMSDK_ARCH}
+  TARGET INTERFACE_RELEASE_TARGET)
+cmsdk2_add_library(
+  NAME StratifyOS
+  OPTION interface
+  TYPE INTERFACE
+  CONFIG debug
+  ARCH ${CMSDK_ARCH}
+  TARGET INTERFACE_DEBUG_TARGET)
+if(NOT DEFINED STRATIFYOS_LWIP_PATH)
+  target_compile_definitions(${INTERFACE_RELEASE_TARGET} INTERFACE SOS_BOOTSTRAP_SOCKETS=${BOOTSTRAP_SOCKETS})
+else()
+  foreach(PATH ${STRATIFYOS_LWIP_PATH})
+    target_include_directories(${INTERFACE_RELEASE_TARGET}
+      INTERFACE
+      $<BUILD_INTERFACE:${PATH}>
+      )
+  endforeach()
+endif()
+target_include_directories(${INTERFACE_RELEASE_TARGET}
+  INTERFACE ${SYS_INCLUDE_INTERFACE_DIRECTORIES})
+target_compile_definitions(${INTERFACE_RELEASE_TARGET}
+  INTERFACE __StratifyOS__ CMSDK_BUILD_GIT_HASH=${CMSDK_GIT_HASH})
+target_compile_options(${INTERFACE_RELEASE_TARGET}
+  INTERFACE -Os ${COMPILE_OPTIONS} -mthumb -ffunction-sections -fdata-sections ${BUILD_FLOAT_OPTIONS})
+cmsdk2_copy_target(
+  SOURCE ${INTERFACE_RELEASE_TARGET}
+  DESTINATION ${INTERFACE_DEBUG_TARGET})
+cmsdk2_library_add_dependencies(
+  TARGET ${INTERFACE_RELEASE_TARGET}
+  TARGETS INTERFACE_RELEASE_TARGET_LIST)
+cmsdk2_library_add_dependencies(
+  TARGET ${INTERFACE_DEBUG_TARGET}
+  TARGETS INTERFACE_DEBUG_TARGET_LIST)
+foreach(RELEASE_TARGET ${INTERFACE_RELEASE_TARGET_LIST})
+  get_target_property(ARCH ${RELEASE_TARGET} CMSDK_PROPERTY_ARCH)
+  cmsdk2_get_arm_arch(
+    ARCHITECTURE ${ARCH}
+    FLOAT_OPTIONS BUILD_FLOAT_OPTIONS)
+  target_compile_definitions(
+    ${RELEASE_TARGET}
+    INTERFACE ___release __${ARCH})
+  target_compile_options(
+    ${RELEASE_TARGET}
+    INTERFACE ${BUILD_FLOAT_OPTIONS})
+endforeach()
+foreach(DEBUG_TARGET ${INTERFACE_DEBUG_TARGET_LIST})
+  get_target_property(ARCH ${DEBUG_TARGET} CMSDK_PROPERTY_ARCH)
+  cmsdk2_get_arm_arch(
+    ARCHITECTURE ${ARCH}
+    FLOAT_OPTIONS BUILD_FLOAT_OPTIONS)
+  target_compile_definitions(
+    ${DEBUG_TARGET}
+    INTERFACE ___debug __${ARCH})
+  target_compile_options(
+    ${DEBUG_TARGET}
+    INTERFACE ${BUILD_FLOAT_OPTIONS})
+endforeach()
+
+if(BUILD_MCU OR BUILD_ALL)
+  cmsdk2_add_library(
+    NAME StratifyOS
+    OPTION mcu
+    CONFIG release
+    ARCH ${CMSDK_ARCH}
+    TARGET MCU_RELEASE_TARGET)
+  cmsdk2_add_library(
+    NAME StratifyOS
+    OPTION mcu
+    CONFIG debug
+    ARCH ${CMSDK_ARCH}
+    TARGET MCU_DEBUG_TARGET)
+
+  target_sources(${MCU_RELEASE_TARGET} PRIVATE ${MCU_SOURCELIST})
+  target_include_directories(${MCU_RELEASE_TARGET}
+    PUBLIC ${SYS_INCLUDE_INTERFACE_DIRECTORIES}
+    PRIVATE ${MCU_INCLUDE_DIRECTORIES})
+  target_compile_definitions(${MCU_RELEASE_TARGET} PRIVATE ${COMPILE_DEFINITIONS_PRIVATE})
+  set_property(TARGET ${MCU_RELEASE_TARGET} PROPERTY INTERPROCEDURAL_OPTIMIZATION FALSE)
+  cmsdk2_get_arm_arch(
+    ARCHITECTURE ${CMSDK_ARCH}
+    FLOAT_OPTIONS BUILD_FLOAT_OPTIONS
+    FLOAT_DIRECTORY BUILD_FLOAT_DIRECTORY
+    INSTALL_DIRECTORY BUILD_INSTALL_DIRECTORY)
+
+  cmsdk2_copy_target(
+    SOURCE ${MCU_RELEASE_TARGET}
+    DESTINATION ${MCU_DEBUG_TARGET})
+  cmsdk2_library_add_dependencies(
+    TARGET ${MCU_RELEASE_TARGET}
+    DEPENDENCIES StratifyOS_interface)
+  cmsdk2_library_add_dependencies(
+    TARGET ${MCU_DEBUG_TARGET}
+    DEPENDENCIES StratifyOS_interface)
+
+endif()
 
 if(BUILD_CORTEXM OR BUILD_ALL)
   cmsdk2_add_library(
@@ -159,15 +232,17 @@ if(BUILD_CORTEXM OR BUILD_ALL)
   target_sources(${CORTEXM_RELEASE_TARGET} PRIVATE ${CORTEXM_SOURCELIST})
   target_include_directories(${CORTEXM_RELEASE_TARGET} PRIVATE ${CORTEXM_INCLUDE_DIRECTORIES})
   target_compile_definitions(${CORTEXM_RELEASE_TARGET} PRIVATE ${COMPILE_DEFINITIONS_PRIVATE})
-  target_compile_options(${CORTEXM_RELEASE_TARGET} PUBLIC -Os ${COMPILE_OPTIONS})
-  add_lwip_path(${CORTEXM_RELEASE_TARGET} PRIVATE)
   set_property(TARGET ${CORTEXM_RELEASE_TARGET} PROPERTY INTERPROCEDURAL_OPTIMIZATION FALSE)
 
   cmsdk2_copy_target(
     SOURCE ${CORTEXM_RELEASE_TARGET}
     DESTINATION ${CORTEXM_DEBUG_TARGET})
-  cmsdk2_library_add_dependencies(TARGET ${CORTEXM_RELEASE_TARGET})
-  cmsdk2_library_add_dependencies(TARGET ${CORTEXM_DEBUG_TARGET})
+  cmsdk2_library_add_dependencies(
+    TARGET ${CORTEXM_RELEASE_TARGET}
+    DEPENDENCIES StratifyOS_mcu)
+  cmsdk2_library_add_dependencies(
+    TARGET ${CORTEXM_DEBUG_TARGET}
+    DEPENDENCIES StratifyOS_mcu)
 endif()
 
 if(BUILD_LINK_TRANSPORT OR BUILD_ALL)
@@ -187,15 +262,18 @@ if(BUILD_LINK_TRANSPORT OR BUILD_ALL)
   target_include_directories(${LINK_TRANSPORT_RELEASE_TARGET} PRIVATE ${LINK_TRANSPORT_INCLUDE_DIRECTORIES})
   target_compile_definitions(${LINK_TRANSPORT_RELEASE_TARGET} PRIVATE ${COMPILE_DEFINITIONS_PRIVATE})
   target_compile_options(${LINK_TRANSPORT_RELEASE_TARGET} PUBLIC -Os ${COMPILE_OPTIONS})
-  add_lwip_path(${LINK_TRANSPORT_RELEASE_TARGET} PRIVATE)
   set_property(TARGET ${LINK_TRANSPORT_RELEASE_TARGET} PROPERTY INTERPROCEDURAL_OPTIMIZATION FALSE)
 
   cmsdk2_copy_target(
     SOURCE ${LINK_TRANSPORT_RELEASE_TARGET}
     DESTINATION ${LINK_TRANSPORT_DEBUG_TARGET})
 
-  cmsdk2_library_add_dependencies(TARGET ${LINK_TRANSPORT_RELEASE_TARGET})
-  cmsdk2_library_add_dependencies(TARGET ${LINK_TRANSPORT_DEBUG_TARGET})
+  cmsdk2_library_add_dependencies(
+    TARGET ${LINK_TRANSPORT_RELEASE_TARGET}
+    DEPENDENCIES StratifyOS_interface)
+  cmsdk2_library_add_dependencies(
+    TARGET ${LINK_TRANSPORT_DEBUG_TARGET}
+    DEPENDENCIES StratifyOS_interface)
 endif()
 
 if(BUILD_DEVICE OR BUILD_ALL)
@@ -215,15 +293,18 @@ if(BUILD_DEVICE OR BUILD_ALL)
   target_include_directories(${DEVICE_RELEASE_TARGET} PRIVATE ${DEVICE_INCLUDE_DIRECTORIES})
   target_compile_definitions(${DEVICE_RELEASE_TARGET} PRIVATE ${COMPILE_DEFINITIONS_PRIVATE})
   target_compile_options(${DEVICE_RELEASE_TARGET} PUBLIC -Os ${COMPILE_OPTIONS})
-  add_lwip_path(${DEVICE_RELEASE_TARGET} PRIVATE)
   set_property(TARGET ${DEVICE_RELEASE_TARGET} PROPERTY INTERPROCEDURAL_OPTIMIZATION FALSE)
 
   cmsdk2_copy_target(
     SOURCE ${DEVICE_RELEASE_TARGET}
     DESTINATION ${DEVICE_DEBUG_TARGET})
 
-  cmsdk2_library_add_dependencies(TARGET ${DEVICE_RELEASE_TARGET})
-  cmsdk2_library_add_dependencies(TARGET ${DEVICE_DEBUG_TARGET})
+  cmsdk2_library_add_dependencies(
+    TARGET ${DEVICE_RELEASE_TARGET}
+    DEPENDENCIES StratifyOS_interface)
+  cmsdk2_library_add_dependencies(
+    TARGET ${DEVICE_DEBUG_TARGET}
+    DEPENDENCIES StratifyOS_interface)
 endif()
 
 if(BUILD_USBD OR BUILD_ALL)
@@ -243,15 +324,18 @@ if(BUILD_USBD OR BUILD_ALL)
   target_include_directories(${USBD_RELEASE_TARGET} PRIVATE ${USBD_INCLUDE_DIRECTORIES})
   target_compile_definitions(${USBD_RELEASE_TARGET} PRIVATE ${COMPILE_DEFINITIONS_PRIVATE})
   target_compile_options(${USBD_RELEASE_TARGET} PUBLIC -Os ${COMPILE_OPTIONS})
-  add_lwip_path(${USBD_RELEASE_TARGET} PRIVATE)
   set_property(TARGET ${USBD_RELEASE_TARGET} PROPERTY INTERPROCEDURAL_OPTIMIZATION FALSE)
 
   cmsdk2_copy_target(
     SOURCE ${USBD_RELEASE_TARGET}
     DESTINATION ${USBD_DEBUG_TARGET})
 
-  cmsdk2_library_add_dependencies(TARGET ${USBD_RELEASE_TARGET})
-  cmsdk2_library_add_dependencies(TARGET ${USBD_DEBUG_TARGET})
+  cmsdk2_library_add_dependencies(
+    TARGET ${USBD_RELEASE_TARGET}
+    DEPENDENCIES StratifyOS_interface)
+  cmsdk2_library_add_dependencies(
+    TARGET ${USBD_DEBUG_TARGET}
+    DEPENDENCIES StratifyOS_interface)
 endif()
 
 if(BUILD_MCU OR BUILD_ALL)
@@ -274,46 +358,18 @@ if(BUILD_MCU OR BUILD_ALL)
     PRIVATE ${AUTH_INCLUDE_DIRECTORIES})
   target_compile_definitions(${AUTH_RELEASE_TARGET} PRIVATE ${COMPILE_DEFINITIONS_PRIVATE})
   target_compile_options(${AUTH_RELEASE_TARGET} PUBLIC -Os ${COMPILE_OPTIONS} PRIVATE -mpure-code)
-  add_lwip_path(${AUTH_RELEASE_TARGET} PUBLIC)
   set_property(TARGET ${AUTH_RELEASE_TARGET} PROPERTY INTERPROCEDURAL_OPTIMIZATION FALSE)
 
   cmsdk2_copy_target(
     SOURCE ${AUTH_RELEASE_TARGET}
     DESTINATION ${AUTH_DEBUG_TARGET})
 
-  cmsdk2_library_add_dependencies(TARGET ${AUTH_RELEASE_TARGET})
-  cmsdk2_library_add_dependencies(TARGET ${AUTH_DEBUG_TARGET})
-endif()
-
-if(BUILD_MCU OR BUILD_ALL)
-  cmsdk2_add_library(
-    NAME StratifyOS
-    OPTION mcu
-    CONFIG release
-    ARCH ${CMSDK_ARCH}
-    TARGET MCU_RELEASE_TARGET)
-  cmsdk2_add_library(
-    NAME StratifyOS
-    OPTION mcu
-    CONFIG debug
-    ARCH ${CMSDK_ARCH}
-    TARGET MCU_DEBUG_TARGET)
-
-  target_sources(${MCU_RELEASE_TARGET} PRIVATE ${MCU_SOURCELIST})
-  target_include_directories(${MCU_RELEASE_TARGET}
-    PUBLIC ${SYS_INCLUDE_INTERFACE_DIRECTORIES}
-    PRIVATE ${MCU_INCLUDE_DIRECTORIES})
-  target_compile_definitions(${MCU_RELEASE_TARGET} PRIVATE ${COMPILE_DEFINITIONS_PRIVATE})
-  target_compile_options(${MCU_RELEASE_TARGET} PUBLIC -Os ${COMPILE_OPTIONS})
-  add_lwip_path(${MCU_RELEASE_TARGET} PUBLIC)
-  set_property(TARGET ${MCU_RELEASE_TARGET} PROPERTY INTERPROCEDURAL_OPTIMIZATION FALSE)
-
-  cmsdk2_copy_target(
-    SOURCE ${MCU_RELEASE_TARGET}
-    DESTINATION ${MCU_DEBUG_TARGET})
-
-  cmsdk2_library_add_dependencies(TARGET ${MCU_RELEASE_TARGET})
-  cmsdk2_library_add_dependencies(TARGET ${MCU_DEBUG_TARGET})
+  cmsdk2_library_add_dependencies(
+    TARGET ${AUTH_RELEASE_TARGET}
+    DEPENDENCIES StratifyOS_interface)
+  cmsdk2_library_add_dependencies(
+    TARGET ${AUTH_DEBUG_TARGET}
+    DEPENDENCIES StratifyOS_interface)
 endif()
 
 if(BUILD_SYS OR BUILD_ALL)
@@ -336,7 +392,6 @@ if(BUILD_SYS OR BUILD_ALL)
     PRIVATE ${SYS_INCLUDE_DIRECTORIES})
   target_compile_definitions(${SYS_RELEASE_TARGET} PRIVATE ${COMPILE_DEFINITIONS_PRIVATE})
   target_compile_options(${SYS_RELEASE_TARGET} PUBLIC -Os ${COMPILE_OPTIONS})
-  add_lwip_path(${SYS_RELEASE_TARGET} PUBLIC)
   set_property(TARGET ${SYS_RELEASE_TARGET} PROPERTY INTERPROCEDURAL_OPTIMIZATION FALSE)
 
   cmsdk2_copy_target(
@@ -368,16 +423,25 @@ if(BUILD_CRT OR BUILD_ALL)
   target_include_directories(${CRT_RELEASE_TARGET}
     PUBLIC ${SYS_INCLUDE_INTERFACE_DIRECTORIES}
     PRIVATE ${SYS_INCLUDE_DIRECTORIES})
-  target_compile_definitions(${CRT_RELEASE_TARGET} PUBLIC __StratifyOS__ PRIVATE ${COMPILE_DEFINITIONS_PRIVATE})
-  add_lwip_path(${CRT_RELEASE_TARGET} PUBLIC)
-  target_compile_options(${CRT_RELEASE_TARGET} PUBLIC -mlong-calls ${COMPILE_OPTIONS} PRIVATE -Os)
+  target_compile_definitions(
+    ${CRT_RELEASE_TARGET}
+    PRIVATE ${COMPILE_DEFINITIONS_PRIVATE})
+
+  target_compile_options(
+    ${CRT_RELEASE_TARGET}
+    PUBLIC -mlong-calls)
 
   cmsdk2_copy_target(
     SOURCE ${CRT_RELEASE_TARGET}
     DESTINATION ${CRT_DEBUG_TARGET})
 
-  cmsdk2_library_add_dependencies(TARGET ${CRT_RELEASE_TARGET})
-  cmsdk2_library_add_dependencies(TARGET ${CRT_DEBUG_TARGET})
+  cmsdk2_library_add_dependencies(
+    TARGET ${CRT_RELEASE_TARGET}
+    DEPENDENCIES StratifyOS_interface)
+  cmsdk2_library_add_dependencies(
+    TARGET ${CRT_DEBUG_TARGET}
+    DEPENDENCIES StratifyOS_interface)
+
 endif()
 
 if(BUILD_BOOT OR BUILD_ALL)
@@ -397,7 +461,6 @@ if(BUILD_BOOT OR BUILD_ALL)
   target_include_directories(${BOOT_RELEASE_TARGET} PRIVATE ${SYS_INCLUDE_DIRECTORIES})
   target_compile_definitions(${BOOT_RELEASE_TARGET} PRIVATE ${COMPILE_DEFINITIONS_PRIVATE})
   target_compile_options(${BOOT_RELEASE_TARGET} PUBLIC -Os)
-  add_lwip_path(${BOOT_RELEASE_TARGET} PUBLIC)
 
   cmsdk2_copy_target(
     SOURCE ${BOOT_RELEASE_TARGET}
@@ -415,5 +478,4 @@ install(DIRECTORY include/cortexm include/device include/mcu include/sos include
 install(DIRECTORY include/posix/ DESTINATION include PATTERN CMakelists.txt EXCLUDE)
 install(DIRECTORY ldscript/ DESTINATION lib/ldscripts PATTERN CMakelists.txt EXCLUDE)
 
-
-#/Users/tgil/gitv4/StratifyOS-Nucleo144/SDK/local/bin/arm-none-eabi-gcc -DCMSDK_BUILD_GIT_HASH=09ce5a4 -DMCU_ARCH_STM32 -DSTM32F446xx=1 -D__StratifyOS__ -D___release -D__stm32f446xx -D__v7em_f4sh -I/Users/tgil/gitv4/StratifyOS-Nucleo144/SDK/local/arm-none-eabi/include/StratifyOS -I/Users/tgil/gitv4/StratifyOS-Nucleo144/SDK/config -I/Users/tgil/gitv4/StratifyOS-Nucleo144/SDK/dependencies/StratifyOS-mcu-stm32/include -I/Users/tgil/gitv4/StratifyOS-Nucleo144/SDK/dependencies/StratifyOS-mcu-stm32/src -I/Users/tgil/gitv4/StratifyOS-Nucleo144/SDK/dependencies/StratifyOS-mcu-stm32/src/stm32f4xx -I/Users/tgil/gitv4/StratifyOS-Nucleo144/SDK/dependencies/StratifyOS-mcu-stm32/include/cmsis -mthumb -ffunction-sections -fdata-sections -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -U__SOFTFP__ -D__FPU_PRESENT=1 -DARM_MATH_CM4=1 -Os -MD -MT SDK/StratifyOS-mcu-stm32/CMakeFiles/StratifyOS_stm32f446xx_release_v7em_f4sh.dir/src/core/core_startup.c.obj -MF SDK/StratifyOS-mcu-stm32/CMakeFiles/StratifyOS_stm32f446xx_release_v7em_f4sh.dir/src/core/core_startup.c.obj.d -o SDK/StratifyOS-mcu-stm32/CMakeFiles/StratifyOS_stm32f446xx_release_v7em_f4sh.dir/src/core/core_startup.c.obj -c /Users/tgil/gitv4/StratifyOS-Nucleo144/SDK/dependencies/StratifyOS-mcu-stm32/src/core/core_startup.c
+#/Users/tgil/gitv4/StratifyOS-Nucleo144/SDK/local/bin/arm-none-eabi-gcc -DCMSDK_BUILD_GIT_HASH=225c186 -D__PROJECT_VERSION_MAJOR=4 -D__PROJECT_VERSION_MINOR=2 -D__PROJECT_VERSION_PATCH=0 -D___debug -D__v7em_f4sh -I/Users/tgil/gitv4/StratifyOS-Nucleo144/SDK/dependencies/StratifyOS/src -I/Users/tgil/gitv4/StratifyOS-Nucleo144/SDK/dependencies/StratifyOS/include -I/Users/tgil/gitv4/StratifyOS-Nucleo144/SDK/dependencies/StratifyOS/include/posix -I/Users/tgil/gitv4/StratifyOS-Nucleo144/SDK/config -I/Users/tgil/gitv4/StratifyOS-Nucleo144/SDK/dependencies/InetAPI/lwip/include -I/Users/tgil/gitv4/StratifyOS-Nucleo144/SDK/dependencies/InetAPI/lwip/lwip-2.1.2/src/include -Os -mthumb -ffunction-sections -fdata-sections -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -U__SOFTFP__ -D__FPU_PRESENT=1 -DARM_MATH_CM4=1 -MD -MT SDK/StratifyOS/CMakeFiles/StratifyOS_cortexm_debug_v7em_f4sh.dir/src/cortexm/devfs.c.obj -MF SDK/StratifyOS/CMakeFiles/StratifyOS_cortexm_debug_v7em_f4sh.dir/src/cortexm/devfs.c.obj.d -o SDK/StratifyOS/CMakeFiles/StratifyOS_cortexm_debug_v7em_f4sh.dir/src/cortexm/devfs.c.obj -c /Users/tgil/gitv4/StratifyOS-Nucleo144/SDK/dependencies/StratifyOS/src/cortexm/devfs.c
