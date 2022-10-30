@@ -1,4 +1,4 @@
-# Version 4.3.1 (unreleased)
+# Version 4.3.1 
 
 ## Bug Fixes
 
