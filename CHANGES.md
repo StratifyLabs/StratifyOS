@@ -1,3 +1,9 @@
+# Version 4.3.1 (unreleased)
+
+## Bug Fixes
+
+- Fix version info in CMake
+
 # Version 4.3.0
 
 ## New Features
