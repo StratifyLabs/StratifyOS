@@ -34,7 +34,6 @@ void crt_common(char *path_arg, int *ret, const char *name) {
     (uint32_t)((char *)&_ebss - (char *)&_bss) // cppcheck-suppress[comparePointers]
   );
 
-
   _REENT->procmem_base = (proc_mem_t *)&_ebss;
   _REENT->procmem_base->proc_name = name;
   _REENT->procmem_base->size = 0;
@@ -79,8 +78,8 @@ void crt_common(char *path_arg, int *ret, const char *name) {
 }
 
 void constructors() {
-  const size_t ctor_count = (size_t)&_ctors_size;
-  for (size_t i = 0; i < ctor_count; i++) {
+  const size_t count = ((size_t)&_ctors_size) & ~0x00001000;
+  for (size_t i = 0; i < count; i++) {
     void (*ctor)() = (&_ctors)[i];
     if( ctor != NULL ){
       ctor();
@@ -89,8 +88,8 @@ void constructors() {
 }
 
 void destructors() {
-  const size_t dtor_size = (size_t)&_dtors_size;
-  for (size_t i = 0; i < dtor_size; i++) {
+  const size_t count = ((size_t)&_dtors_size) & ~0x00001000;
+  for (size_t i = 0; i < count; i++) {
     void (*dtor)() = (&_dtors)[i];
     if( dtor != NULL ){
       dtor();
