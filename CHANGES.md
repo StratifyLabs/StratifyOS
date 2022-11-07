@@ -1,3 +1,9 @@
+# Version 4.3.2 (unreleased)
+
+## Bug Fixes
+
+- Various fixes to support GCC 11
+
 # Version 4.3.1 
 
 ## Bug Fixes
