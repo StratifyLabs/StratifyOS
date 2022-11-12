@@ -70,15 +70,15 @@ int settimeofday(const struct timeval *tp, const struct timezone *tzp){
 
 int settimeofday_rtc(const struct timeval *tp) {
   int fd;
-  rtc_time_t cal_time;
 
   fd = open("/dev/rtc", O_RDWR);
   if (fd < 0) {
     return -1;
   }
 
-  gmtime_r((time_t *)&tp, (struct tm *)&cal_time.time);
-  cal_time.useconds = tp->tv_usec;
+  struct link_tm time_struct;
+  gmtime_r((time_t *)&tp, (struct tm *)&time_struct);
+  rtc_time_t cal_time = {.time = time_struct, .useconds = tp->tv_usec};
 
   if (ioctl(fd, I_RTC_SET, &cal_time) < 0) {
     close(fd);

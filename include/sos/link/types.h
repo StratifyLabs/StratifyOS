@@ -303,7 +303,7 @@ typedef u32 link_trace_event_id_t;
 typedef u32 link_trace_event_set_t;
 typedef u32 link_mqd_t;
 
-typedef struct MCU_PACK {
+typedef struct {
   u32 status;
   link_trace_event_set_t filter;
   link_trace_attr_t attr;

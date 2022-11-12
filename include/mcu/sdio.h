@@ -20,7 +20,7 @@ typedef struct MCU_PACK {
   u32 value;
 } sdio_event_data_t;
 
-typedef struct MCU_PACK {
+typedef struct {
   sdio_attr_t attr; // default attributes
   u32 port;
 } sdio_config_t;

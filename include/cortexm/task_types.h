@@ -46,7 +46,7 @@ typedef struct {
   int pid /*! The process ID assigned to the new thread */;
 } task_thread_t;
 
-typedef struct MCU_PACK {
+typedef struct {
   volatile void *sp /*! The task stack pointer */;
   int pid /*! The process id */;
   volatile s8 priority /*! Task priority */;

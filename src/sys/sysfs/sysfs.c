@@ -126,7 +126,7 @@ const sysfs_t *sysfs_find(const char *path, bool needs_parent) {
 }
 
 const char *sysfs_stripmountpath(const sysfs_t *fs, const char *path) {
-  path = path + strnlen(fs->mount_path, NAME_MAX);
+  path = path + strnlen(fs->mount_path, SYSFS_MOUNT_PATH_MAX);
   if (path[0] == '/') {
     path++;
   }

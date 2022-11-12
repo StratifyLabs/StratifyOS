@@ -71,9 +71,12 @@ int set_alarm(int seconds) {
 
   fd = open("/dev/rtc", O_RDWR);
   if (fd >= 0) {
-    attr.time.time_t = time(NULL);
+    time_t t = time(NULL);
+    attr.time.time_t = t;
     attr.time.time_t += seconds;
-    gmtime_r((time_t *)&attr.time.time_t, (struct tm *)&attr.time.time);
+    struct link_tm time_struct;
+    gmtime_r(&t, (struct tm *)&time_struct);
+    attr.time.time = time_struct;
     attr.o_flags = RTC_FLAG_IS_ALARM_ONCE | RTC_FLAG_ENABLE_ALARM;
 
     // set the alarm for "seconds" from now
