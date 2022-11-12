@@ -68,9 +68,9 @@ static trace_id_handle_t *trace_get_ptr(trace_id_t id) {
   return 0;
 }
 
-static uint32_t calc_checksum(trace_id_t id) {
-  uint32_t check;
-  uint32_t *ptr = (uint32_t *)id;
+static u32 calc_checksum(trace_id_t id) {
+  u32 check;
+  u32 *ptr = (u32 *)id;
   int i;
   check = 0xAA55AA55;
   // go over handle excluding checksum value
@@ -210,8 +210,10 @@ int posix_trace_create(pid_t pid, const trace_attr_t *attr, trace_id_t *id) {
   trace_handle.attr = tmp_attr;
 
   // populate the timestamp
-  clock_gettime(CLOCK_REALTIME, (struct timespec *)&(trace_handle.attr.create_time));
-
+  struct timespec clock_time;
+  clock_gettime(CLOCK_REALTIME, (struct timespec *)&clock_time);
+  trace_handle.attr.create_time.tv_sec = clock_time.tv_sec;
+  trace_handle.attr.create_time.tv_nsec = clock_time.tv_nsec;
   update_checksum(&trace_handle);
 
   *id = trace_find_free();

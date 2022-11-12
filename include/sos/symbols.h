@@ -70,7 +70,7 @@ extern u32 __aeabi_f2uiz();
 extern u32 __aeabi_f2ulz();
 extern u32 __clzsi2();
 extern u32 __clzdi2();
-extern u32 __muldi3();
+extern long long int __muldi3(int,int);
 extern u32 __negdi2();
 extern u32 __cmpdi2();
 extern u32 __ucmpdi2();
@@ -191,9 +191,6 @@ extern void __div0();
 useconds_t _EXFUN(ualarm, (useconds_t __useconds, useconds_t __interval));
 extern void crt_load_data(void * global_reent, int code_size, int data_size);
 extern char ** const crt_import_argv(int argc, char * const argv[]);
-
-extern void sg_api();
-extern void son_api();
 
 #include "sys/socket.h"
 

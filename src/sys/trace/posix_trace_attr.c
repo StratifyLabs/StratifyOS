@@ -103,8 +103,8 @@ int posix_trace_attr_setmaxdatasize(trace_attr_t *attr, size_t size) {
 }
 
 int posix_trace_attr_setname(trace_attr_t *attr, const char *name) {
-  memset(attr->name, 0, NAME_MAX + 1);
-  strncpy(attr->name, name, NAME_MAX);
+  strncpy(attr->name, name, APPFS_NAME_MAX);
+  attr->name[APPFS_NAME_MAX] = 0;
   return 0;
 }
 

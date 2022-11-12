@@ -8,14 +8,14 @@ extern "C" {
 #endif
 
 #define SOS_TRACE_MESSAGE(msg)                                                           \
-  sos_trace_event(LINK_POSIX_TRACE_MESSAGE, msg, strnlen(msg, LINK_POSIX_TRACE_DATA_SIZE))
+  sos_trace_event(LINK_POSIX_TRACE_MESSAGE, msg, sizeof(msg))
 #define SOS_TRACE_WARNING(msg)                                                           \
-  sos_trace_event(LINK_POSIX_TRACE_WARNING, msg, strnlen(msg, LINK_POSIX_TRACE_DATA_SIZE))
+  sos_trace_event(LINK_POSIX_TRACE_WARNING, msg, sizeof(msg))
 #define SOS_TRACE_CRITICAL(msg)                                                          \
   sos_trace_event(                                                                       \
-    LINK_POSIX_TRACE_CRITICAL, msg, strnlen(msg, LINK_POSIX_TRACE_DATA_SIZE))
+    LINK_POSIX_TRACE_CRITICAL, msg, sizeof(msg))
 #define SOS_TRACE_FATAL(msg)                                                             \
-  sos_trace_event(LINK_POSIX_TRACE_FATAL, msg, strnlen(msg, LINK_POSIX_TRACE_DATA_SIZE))
+  sos_trace_event(LINK_POSIX_TRACE_FATAL, msg, sizeof(msg))
 
 void sos_trace_event(
   link_trace_event_id_t event_id,

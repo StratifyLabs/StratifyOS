@@ -20,7 +20,7 @@ typedef struct MCU_PACK {
   u32 value;
 } mmc_event_data_t;
 
-typedef struct MCU_PACK {
+typedef struct {
   mmc_attr_t attr; // default attributes
   u32 port;
 } mmc_config_t;
