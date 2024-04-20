@@ -161,7 +161,7 @@ foreach(RELEASE_TARGET ${INTERFACE_RELEASE_TARGET_LIST})
     FLOAT_OPTIONS BUILD_FLOAT_OPTIONS)
   target_compile_definitions(
     ${RELEASE_TARGET}
-    INTERFACE ___release __${ARCH})
+    INTERFACE ___release __${ARCH}=__${ARCH})
   target_compile_options(
     ${RELEASE_TARGET}
     INTERFACE ${BUILD_FLOAT_OPTIONS})
@@ -173,7 +173,7 @@ foreach(DEBUG_TARGET ${INTERFACE_DEBUG_TARGET_LIST})
     FLOAT_OPTIONS BUILD_FLOAT_OPTIONS)
   target_compile_definitions(
     ${DEBUG_TARGET}
-    INTERFACE ___debug __${ARCH})
+    INTERFACE ___debug)
   target_compile_options(
     ${DEBUG_TARGET}
     INTERFACE ${BUILD_FLOAT_OPTIONS})
