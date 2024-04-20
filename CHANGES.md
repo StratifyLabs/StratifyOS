@@ -1,8 +1,9 @@
-# Version 4.3.2 (unreleased)
+# Version 4.3.2
 
 ## Bug Fixes
 
 - Various fixes to support GCC 11
+- Fix __${ARCH} def for consistency
 
 # Version 4.3.1 
 
