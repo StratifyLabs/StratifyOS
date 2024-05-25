@@ -1,0 +1,21 @@
+"""
+C Runtime Library
+"""
+
+load("//deps/StratifyOS/src/library.bzl", "sos_library")
+
+sos_library(
+    name = "crt",
+    srcs = [
+        "crt_common.c",
+        "crt.c",
+        "crt_symbols.S",
+        "operator.cpp",
+    ],
+    headers = [
+        "crt_common.h",
+    ],
+    deps = [
+        "root//deps/local/arm-none-eabi/lib/thumb/v7e-m+dp/hard:libstdcpp"
+    ]
+)

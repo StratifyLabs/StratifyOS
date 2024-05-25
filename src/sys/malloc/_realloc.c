@@ -1,6 +1,6 @@
 // Copyright 2011-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
-#include <sys/malloc/malloc_local.h>
+#include "sys/malloc/malloc_local.h"
 
 void *_realloc_r(struct _reent *reent_ptr, void *addr, size_t size) {
 

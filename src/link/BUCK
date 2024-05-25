@@ -1,0 +1,24 @@
+"""
+Transport Link library
+"""
+
+load("//deps/StratifyOS/src/library.bzl", "sos_library")
+
+sos_library(
+    name = "link",
+    srcs = [
+        "link_bootloader.c",
+        "link_debug.c",
+        "link_dir.c",
+        "link_file.c",
+        "link_phy.c",
+        "link_process.c",
+        "link_stdio.c",
+        "link_sys_attr.c",
+        "link_time.c",
+        "link.c",
+    ],
+    headers = [
+        "link_local.h",
+    ],
+)

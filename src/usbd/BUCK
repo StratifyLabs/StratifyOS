@@ -1,0 +1,32 @@
+"""
+USB Device Library
+"""
+
+load("//deps/StratifyOS/src/library.bzl", "sos_library")
+
+srcs = select(
+    {
+        "toolchains//config:stratifyos": [
+            "usbd_control.c",
+            "usbd_standard.c",
+            "sos_link_transport_usb_link_descriptors.c",
+            "sos_link_transport_usb_link_vcp_descriptors.c",
+            "sos_link_transport_usb_vcp_descriptors.c",
+            "sos_link_transport_usb_dual_vcp_descriptors.c",
+            "sos_link_transport_usb.c",
+        ],
+    },
+)
+
+sos_library(
+    name = "usbd",
+    srcs = [
+        "usbd_control.c",
+        "usbd_standard.c",
+        "sos_link_transport_usb_link_descriptors.c",
+        "sos_link_transport_usb_link_vcp_descriptors.c",
+        "sos_link_transport_usb_vcp_descriptors.c",
+        "sos_link_transport_usb_dual_vcp_descriptors.c",
+        "sos_link_transport_usb.c",
+    ],
+)

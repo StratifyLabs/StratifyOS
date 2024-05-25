@@ -1,0 +1,20 @@
+"""
+Boot library
+"""
+
+load("//deps/StratifyOS/src/library.bzl", "sos_library")
+
+sos_library(
+    name = "boot",
+    srcs = [
+        "boot_main.c",
+        "boot_interrupt_handlers.c",
+        "boot_debug.c",
+        "boot_link_transport_usb.c",
+        "boot_link.c",
+    ],
+    headers = [
+        "boot_link.h",
+        "boot_config.h",
+    ]
+)

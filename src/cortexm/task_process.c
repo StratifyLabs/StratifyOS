@@ -2,7 +2,7 @@
 
 #include <errno.h>
 
-#include "cortexm/task_local.h"
+#include "task_local.h"
 
 int task_create_process(
   void (*p)(char *),

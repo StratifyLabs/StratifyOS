@@ -1,0 +1,43 @@
+"""
+Transport Link library
+"""
+
+load("//deps/StratifyOS/src/library.bzl", "sos_library")
+
+cxx_library(
+    name = "link_transport_host",
+    target_compatible_with = ["//config:os_macos"],
+    srcs = [
+        "link_transport_master.c",
+        "link1_transport.c",
+        "link1_transport_master.c",
+        "link2_transport.c",
+        "link2_transport_master.c",
+        "link3_transport.c",
+        "link3_transport_master.c",
+    ],
+    _cxx_toolchain = select({
+        "config//os:macos": "toolchains//:cxx",
+    }),
+)
+
+sos_library(
+    name = "link_transport",
+    srcs = [
+        "link1_transport.c",
+        "link2_transport.c",
+        "link3_transport.c",
+        "link_transport_slave.c",
+        "link1_transport_slave.c",
+        "link2_transport_slave.c",
+        "link3_transport_slave.c",
+    ],
+    deps = [
+        "//deps/StratifyOS/include:sos_include",
+        "//config:stratifyos_config",
+    ],
+    _cxx_toolchain = select({
+        "toolchains//config:stratifyos": "toolchains//:arm-none-eabi",
+        "config//os:macos": "toolchains//:cxx",
+    }),
+)

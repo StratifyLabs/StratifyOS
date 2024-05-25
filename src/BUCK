@@ -1,0 +1,8 @@
+
+
+cxx_library(
+    name = "config",
+    exported_headers = ["config.h"],
+    header_namespace = "",
+    visibility = ["PUBLIC"]
+)

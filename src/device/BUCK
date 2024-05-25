@@ -1,0 +1,43 @@
+"""
+Device library
+"""
+
+load("//deps/StratifyOS/src/library.bzl", "sos_library")
+
+sos_library(
+    name = "device",
+    srcs = [
+        "microchip/sst25vf_share.c",
+        "microchip/sst25vf_ssp_tmr.c",
+        "microchip/sst25vf_ssp.c",
+        "microchip/sst25vf_tmr.c",
+        "microchip/sst25vf.c",
+        "device_fifo.c",
+        "ffifo.c",
+        "fifo.c",
+        "stream_ffifo.c",
+        "i2s_ffifo.c",
+        "i2s_spi_ffifo.c",
+        "full.c",
+        "null.c",
+        "random.c",
+        "auth_flash.c",
+        "drive_cfi_spi.c",
+        "drive_cfi_qspi.c",
+        "drive_ram.c",
+        "drive_mmc.c",
+        "drive_sdio.c",
+        "drive_device.c",
+        "drive_sdspi.c",
+        "switchboard.c",
+        "uartfifo.c",
+        "urandom.c",
+        "zero.c",
+        "reset_tmr.c",
+    ],
+    headers = [
+        "drive_cfi_local.h",
+        "drive_sdspi_local.h",
+        "microchip/sst25vf_local.h",
+    ]
+)

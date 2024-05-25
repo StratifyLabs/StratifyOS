@@ -1,0 +1,17 @@
+"""
+MCU library
+"""
+
+load("//deps/StratifyOS/src/library.bzl", "sos_library")
+
+sos_library(
+    name = "mcu",
+    srcs = [
+        "mcu_sync_io.c",
+        "mcu.c",
+    ],
+    headers = [
+        "variant.h",
+        "local.h",
+    ]
+)

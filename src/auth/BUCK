@@ -1,0 +1,13 @@
+"""
+Auth library
+"""
+
+load("//deps/StratifyOS/src/library.bzl", "sos_library")
+
+sos_library(
+    name = "auth",
+    srcs = [
+        "auth_boot_event.c",
+        "auth_pure_code.c",
+    ],
+)

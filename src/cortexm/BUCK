@@ -1,0 +1,37 @@
+"""
+CortexM Library
+"""
+
+load("//deps/StratifyOS/src/library.bzl", "sos_library")
+
+cxx_library(
+    name = "cortexm_local_headers",
+    exported_headers = [
+        "cortexm_local.h",
+        "fault_local.h",
+        "task_local.h",
+    ],
+    header_namespace = "cortexm",
+    visibility = ["//deps/StratifyOS/src/sys:sys"],
+)
+
+sos_library(
+    name = "cortexm",
+    srcs = [
+        "cortexm.c",
+        "auth.c",
+        "devfs.c",
+        "fault.c",
+        "util.c",
+        "fault_handler.c",
+        "mpu.c",
+        "task_mpu.c",
+        "task_process.c",
+        "task.c",
+    ],
+    headers = [
+        "cortexm_local.h",
+        "fault_local.h",
+        "task_local.h",
+    ]
+)
