@@ -1,4 +1,4 @@
-[deps.CMakeSDK]
-git = "https://github.com/StratifyLabs/CMakeSDK"
-rev = "cb924c740106fcd02a2c74652f5bb040ed0d6a26"
+[deps.SDK]
+git = "https://github.com/StratifyLabs/SDK"
+rev = "1f17fb0c6b4fc56f3c430a7390daa16a12c8a892"
 branch = "main"
