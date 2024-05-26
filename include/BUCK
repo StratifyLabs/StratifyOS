@@ -225,7 +225,7 @@ cxx_library(
         "netdb.h": "posix/netdb.h",
     },
     exported_deps = [
-        "CMakeSDK//:sdk",
+        "SDK//:sdk",
     ],
 )
 
@@ -236,6 +236,6 @@ cxx_library(
     exported_headers = headers,
     exported_deps = [
         ":sos_posix",
-        "CMakeSDK//:sdk",
+        "SDK//:sdk",
     ],
 )
