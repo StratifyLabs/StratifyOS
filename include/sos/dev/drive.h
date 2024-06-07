@@ -35,7 +35,7 @@
 #define DRIVE_VERSION (0x030000)
 #define DRIVE_IOC_IDENT_CHAR 'd'
 
-enum {
+typedef enum {
 	DRIVE_FLAG_PROTECT /*! Enables driver write protection. */ = (1<<0),
 	DRIVE_FLAG_UNPROTECT /*! Disables driver write protection. */ = (1<<1),
 	DRIVE_FLAG_ERASE_BLOCKS /*! Erases blocks on the disk. A block consists of the smallest eraseable memory size (\sa driver_info_t and erase_block_size). The return value is the amount of memory actually erased. Some devices can only erase only block at a time. */ = (1<<2),
