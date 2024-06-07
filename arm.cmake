@@ -458,7 +458,7 @@ if(BUILD_BOOT OR BUILD_ALL)
   target_sources(${BOOT_RELEASE_TARGET} PRIVATE ${BOOT_SOURCELIST})
   target_include_directories(${BOOT_RELEASE_TARGET} PRIVATE ${SYS_INCLUDE_DIRECTORIES})
   target_compile_definitions(${BOOT_RELEASE_TARGET} PRIVATE ${COMPILE_DEFINITIONS_PRIVATE})
-  target_compile_options(${BOOT_RELEASE_TARGET} PUBLIC -Os)
+  target_compile_options(${BOOT_RELEASE_TARGET} PUBLIC -Os PRIVATE -Wno-address-of-packed-member)
 
   cmsdk2_copy_target(
     SOURCE ${BOOT_RELEASE_TARGET}
@@ -475,5 +475,3 @@ endif()
 install(DIRECTORY include/cortexm include/device include/mcu include/sos include/usbd DESTINATION include PATTERN CMakelists.txt EXCLUDE)
 install(DIRECTORY include/posix/ DESTINATION include PATTERN CMakelists.txt EXCLUDE)
 install(DIRECTORY ldscript/ DESTINATION lib/ldscripts PATTERN CMakelists.txt EXCLUDE)
-
-#/Users/tgil/gitv4/StratifyOS-Nucleo144/SDK/local/bin/arm-none-eabi-gcc -DCMSDK_BUILD_GIT_HASH=225c186 -D__PROJECT_VERSION_MAJOR=4 -D__PROJECT_VERSION_MINOR=2 -D__PROJECT_VERSION_PATCH=0 -D___debug -D__v7em_f4sh -I/Users/tgil/gitv4/StratifyOS-Nucleo144/SDK/dependencies/StratifyOS/src -I/Users/tgil/gitv4/StratifyOS-Nucleo144/SDK/dependencies/StratifyOS/include -I/Users/tgil/gitv4/StratifyOS-Nucleo144/SDK/dependencies/StratifyOS/include/posix -I/Users/tgil/gitv4/StratifyOS-Nucleo144/SDK/config -I/Users/tgil/gitv4/StratifyOS-Nucleo144/SDK/dependencies/InetAPI/lwip/include -I/Users/tgil/gitv4/StratifyOS-Nucleo144/SDK/dependencies/InetAPI/lwip/lwip-2.1.2/src/include -Os -mthumb -ffunction-sections -fdata-sections -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16 -U__SOFTFP__ -D__FPU_PRESENT=1 -DARM_MATH_CM4=1 -MD -MT SDK/StratifyOS/CMakeFiles/StratifyOS_cortexm_debug_v7em_f4sh.dir/src/cortexm/devfs.c.obj -MF SDK/StratifyOS/CMakeFiles/StratifyOS_cortexm_debug_v7em_f4sh.dir/src/cortexm/devfs.c.obj.d -o SDK/StratifyOS/CMakeFiles/StratifyOS_cortexm_debug_v7em_f4sh.dir/src/cortexm/devfs.c.obj -c /Users/tgil/gitv4/StratifyOS-Nucleo144/SDK/dependencies/StratifyOS/src/cortexm/devfs.c
