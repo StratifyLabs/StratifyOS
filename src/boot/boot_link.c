@@ -160,7 +160,7 @@ void boot_link_cmd_readserialno(link_transport_driver_t *driver, link_data_t *ar
     }
   }
 
-  args->reply.err = strnlen(serialno, 256);
+  args->reply.err = strnlen(serialno, LINK_PACKET_DATA_SIZE-1);
   args->reply.err_number = 0;
 
   if (
